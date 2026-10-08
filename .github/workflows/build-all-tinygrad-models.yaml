@@ -37,6 +37,7 @@ jobs:
           repository: sunnypilot/sunnypilot
           path: sunnypilot
           submodules: recursive
+          fetch-depth: 1
 
       - name: Get tinygrad_repo ref
         id: get-tinygrad-ref
@@ -54,6 +55,7 @@ jobs:
           ref: gh-pages
           path: docs
           ssh-key: ${{ secrets.CI_SUNNYPILOT_DOCS_PRIVATE_KEY }}
+          fetch-depth: 1
 
       - name: Get next JSON version to use (from GitHub docs repo)
         id: get-json
