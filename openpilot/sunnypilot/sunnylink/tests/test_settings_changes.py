@@ -215,3 +215,14 @@ class TestNotEngagedReplacement(OpenpilotTestCase):
     rule_types = _flatten_rule_types(item.get("enablement"))
     assert "offroad_only" not in rule_types, f"{key} still uses offroad_only"
     assert "not_engaged" in rule_types, f"{key} missing not_engaged"
+
+
+class TestHkgLowSpeedTorqueCCNC(OpenpilotTestCase):
+  def test_sorento_switch_in_generated_steering_schema(self, schema):
+    section = _find_section(schema, "steering", "hkg_low_speed_torque")
+    assert section is not None
+    item = _find_item(schema, "HkgLowSpeedTorque")
+    assert item is not None
+    assert item["widget"] == "toggle"
+    assert _references_capability_field(item.get("enablement"), "hkg_low_speed_torque_available")
+    assert any(rule.get("type") == "offroad_only" for rule in item.get("enablement", []))

@@ -48,6 +48,15 @@ def load_po_text(po_path: Path) -> str:
 
 
 class TestTranslations(OpenpilotTestCase):
+  def test_traditional_chinese_ccnc_is_selectable(self):
+    assert "zh-CHT" in TRANSLATION_LANGUAGES.values()
+    assert any("Traditional Chinese" in name for name, code in TRANSLATION_LANGUAGES.items() if code == "zh-CHT")
+    from openpilot.system.ui.lib.multilang import load_translations
+    translations, _ = load_translations(PO_DIR / "app_zh-CHT.po")
+    assert translations["Change Language"] == "變更語言"
+    assert translations["HKG Low-Speed Steering Torque (Experimental)"] == "HKG 低速轉向扭力（實驗功能）"
+
+
   @parameterized.expand(sorted(TRANSLATION_LANGUAGES.values()))
   def test_translation_file_exists(self, language_code: str):
     po_path = PO_DIR / f"app_{language_code}.po"

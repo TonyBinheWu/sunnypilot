@@ -19,6 +19,13 @@ UI_DIR = files("openpilot.selfdrive.ui")
 TRANSLATIONS_DIR = UI_DIR.joinpath("translations")
 LANGUAGES_FILE = TRANSLATIONS_DIR.joinpath("languages.json")
 
+LANGUAGE_CODE_ALIASES = {
+  "zh-TW": "zh-CHT",
+  "zh-Hant": "zh-CHT",
+  "zh-Hant-TW": "zh-CHT",
+  "zh_TW": "zh-CHT",
+}
+
 FONT_FALLBACK_LANGUAGES = [
   "th",
   "zh-CHT",
@@ -180,6 +187,7 @@ class Multilang:
       self._plurals = {}
 
   def change_language(self, language_code: str) -> None:
+    language_code = LANGUAGE_CODE_ALIASES.get(language_code, language_code)
     self._params.put("LanguageSetting", language_code, block=True)
     self._language = language_code
     self.setup()
@@ -202,6 +210,7 @@ class Multilang:
 
     if self._params is not None:
       lang = str(self._params.get("LanguageSetting")).removeprefix("main_")
+      lang = LANGUAGE_CODE_ALIASES.get(lang, lang)
       if lang in self.codes:
         self._language = lang
 

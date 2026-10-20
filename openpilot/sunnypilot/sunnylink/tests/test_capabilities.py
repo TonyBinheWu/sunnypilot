@@ -62,6 +62,13 @@ class TestProtocolVersion(OpenpilotTestCase):
     )
 
 
+class TestHkgLowSpeedTorqueCapability(OpenpilotTestCase):
+  def test_field_exists_and_is_boolean(self, caps):
+    assert "hkg_low_speed_torque_available" in CAPABILITY_FIELDS
+    assert "hkg_low_speed_torque_available" in CAPABILITY_LABELS
+    assert isinstance(caps["hkg_low_speed_torque_available"], bool)
+
+
 class TestOpaquePerBrandFlags(OpenpilotTestCase):
   def test_subaru_has_sng_field_present(self):
     assert "subaru_has_sng" in CAPABILITY_FIELDS
