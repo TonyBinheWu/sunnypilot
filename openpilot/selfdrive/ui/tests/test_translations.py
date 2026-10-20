@@ -50,11 +50,19 @@ def load_po_text(po_path: Path) -> str:
 class TestTranslations(OpenpilotTestCase):
   def test_traditional_chinese_ccnc_is_selectable(self):
     assert "zh-CHT" in TRANSLATION_LANGUAGES.values()
-    assert any("Traditional Chinese" in name for name, code in TRANSLATION_LANGUAGES.items() if code == "zh-CHT")
+    assert TRANSLATION_LANGUAGES["中文（繁體）"] == "zh-CHT"
     from openpilot.system.ui.lib.multilang import load_translations
     translations, _ = load_translations(PO_DIR / "app_zh-CHT.po")
     assert translations["Change Language"] == "變更語言"
     assert translations["HKG Low-Speed Steering Torque (Experimental)"] == "HKG 低速轉向扭力（實驗功能）"
+    # The comma 4 Device > Change Language picker must expose the same
+    # localized option and callback as the tested hkg-enhanced UI.
+    from openpilot.selfdrive.ui.layouts.settings.device import DeviceLayout
+    import inspect
+    picker_source = inspect.getsource(DeviceLayout._show_language_dialog)
+    assert "multilang.languages" in picker_source
+    assert "multilang.change_language(selected_language)" in picker_source
+
 
 
   @parameterized.expand(sorted(TRANSLATION_LANGUAGES.values()))
