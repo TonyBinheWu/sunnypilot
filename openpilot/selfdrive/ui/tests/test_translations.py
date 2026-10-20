@@ -57,11 +57,10 @@ class TestTranslations(OpenpilotTestCase):
     assert translations["HKG Low-Speed Steering Torque (Experimental)"] == "HKG 低速轉向扭力（實驗功能）"
     # The comma 4 Device > Change Language picker must expose the same
     # localized option and callback as the tested hkg-enhanced UI.
-    from openpilot.selfdrive.ui.layouts.settings.device import DeviceLayout
-    import inspect
-    picker_source = inspect.getsource(DeviceLayout._show_language_dialog)
-    assert "multilang.languages" in picker_source
-    assert "multilang.change_language(selected_language)" in picker_source
+    device_source = (Path(__file__).parents[1] / "layouts/settings/device.py").read_text(encoding="utf-8")
+    assert 'callback=self._show_language_dialog' in device_source
+    assert 'MultiOptionDialog(tr("Select a language"), multilang.languages' in device_source
+    assert "multilang.change_language(selected_language)" in device_source
 
 
 
