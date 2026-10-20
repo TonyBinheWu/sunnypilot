@@ -143,11 +143,11 @@ msgstr "變更語言"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Changing this setting will restart sunnypilot if the car is powered on."
-msgstr ""
+msgstr "車輛通電時變更此設定，將重新啟動 sunnypilot。"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "Choose your sponsorship tier and confirm your support"
-msgstr ""
+msgstr "選擇贊助方案並確認支持"
 
 #: openpilot/selfdrive/ui/widgets/pairing_dialog.py
 msgid "Click \"add new device\" and scan the QR code on the right"
@@ -171,7 +171,7 @@ msgstr "拒絕"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
 msgid "Decline, uninstall sunnypilot"
-msgstr ""
+msgstr "不同意並解除安裝 sunnypilot"
 
 #: openpilot/selfdrive/ui/layouts/settings/settings.py
 msgid "Developer"
@@ -235,7 +235,7 @@ msgstr "實驗模式已開啟"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "Early Access: Become a sunnypilot Sponsor"
-msgstr ""
+msgstr "搶先體驗：成為 sunnypilot 贊助者"
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
@@ -264,15 +264,15 @@ msgstr "啟用網路共享"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Enable driver monitoring even when sunnypilot is not engaged."
-msgstr ""
+msgstr "即使 sunnypilot 未接管，也持續啟用駕駛監控。"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Enable sunnypilot"
-msgstr ""
+msgstr "啟用 sunnypilot"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Enable the sunnypilot longitudinal control (alpha) toggle to allow Experimental mode."
-msgstr ""
+msgstr "啟用 sunnypilot 縱向控制（Alpha）開關後，才能使用實驗模式。"
 
 #: system/ui/widgets/network.py
 msgid "Enter APN"
@@ -292,7 +292,7 @@ msgstr "輸入密碼"
 
 #: system/ui/sunnypilot/widgets/tree_dialog.py
 msgid "Enter search query"
-msgstr ""
+msgstr "輸入搜尋文字"
 
 #: openpilot/selfdrive/ui/widgets/ssh_key.py
 msgid "Enter your GitHub username"
@@ -328,7 +328,7 @@ msgstr "Firehose 模式"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "Follow the prompts to complete the pairing process"
-msgstr ""
+msgstr "依照畫面指示完成配對程序"
 
 #: system/ui/widgets/network.py
 msgid "Forget"
@@ -364,7 +364,7 @@ msgstr "IP 位址"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "If sponsorship status was not updated, please contact a moderator on the community forum at https://community.sunnypilot.ai"
-msgstr ""
+msgstr "若贊助狀態尚未更新，請至 https://community.sunnypilot.ai 聯絡社群論壇管理員"
 
 #: openpilot/selfdrive/ui/layouts/settings/software.py
 msgid "Install Update"
@@ -372,7 +372,7 @@ msgstr "安裝更新"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "Join our Community Forum at https://community.sunnypilot.ai and reach out to a moderator if you have issues"
-msgstr ""
+msgstr "如有問題，請加入 https://community.sunnypilot.ai 社群論壇並聯絡管理員"
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
 msgid "Joystick Debug Mode"
@@ -388,7 +388,7 @@ msgstr "LTE"
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
 msgid "Lateral Maneuver Mode"
-msgstr ""
+msgstr "橫向操控模式"
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
 msgid "Longitudinal Maneuver Mode"
@@ -466,7 +466,7 @@ msgstr "配對裝置"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "Pair your GitHub account"
-msgstr ""
+msgstr "綁定你的 GitHub 帳號"
 
 #: openpilot/selfdrive/ui/widgets/pairing_dialog.py
 msgid "Pair your device to your comma account"
@@ -515,7 +515,7 @@ msgstr "檢視"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "Re-enter the \"sunnylink\" panel to verify sponsorship status"
-msgstr ""
+msgstr "重新進入「sunnylink」頁面，確認贊助狀態"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "Reboot"
@@ -575,7 +575,7 @@ msgstr "檢視訓練指南"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "Review the rules, features, and limitations of sunnypilot"
-msgstr ""
+msgstr "查看 sunnypilot 的使用規則、功能與限制"
 
 #: openpilot/selfdrive/ui/layouts/settings/software.py
 msgid "SELECT"
@@ -587,11 +587,11 @@ msgstr "SSH 金鑰"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "Scan the QR code to login to your GitHub account"
-msgstr ""
+msgstr "掃描 QR Code 登入你的 GitHub 帳號"
 
 #: system/ui/sunnypilot/widgets/sunnylink_pairing_dialog.py
 msgid "Scan the QR code to visit sunnyhaibin's GitHub Sponsors page"
-msgstr ""
+msgstr "掃描 QR Code 開啟 sunnyhaibin 的 GitHub Sponsors 頁面"
 
 #: system/ui/widgets/network.py
 msgid "Scanning Wi-Fi networks..."
@@ -599,7 +599,7 @@ msgstr "正在掃描 Wi‑Fi 網路…"
 
 #: system/ui/sunnypilot/widgets/tree_dialog.py
 msgid "Search"
-msgstr ""
+msgstr "搜尋"
 
 #: system/ui/widgets/option_dialog.py
 msgid "Select"
@@ -703,11 +703,11 @@ msgstr "等待開始"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
 msgid "Welcome to sunnypilot"
-msgstr ""
+msgstr "歡迎使用 sunnypilot"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "When enabled, pressing the accelerator pedal will disengage sunnypilot."
-msgstr ""
+msgstr "啟用後，踩下加速踏板將解除 sunnypilot 控制。"
 
 #: openpilot/selfdrive/ui/layouts/sidebar.py
 msgid "Wi-Fi"
@@ -723,11 +723,11 @@ msgstr "密碼錯誤"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
 msgid "You must accept the Terms of Service in order to use sunnypilot."
-msgstr ""
+msgstr "必須同意服務條款才能使用 sunnypilot。"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
 msgid "You must accept the Terms of Service to use sunnypilot. Read the latest terms at https://sunnypilot.ai/terms before continuing."
-msgstr ""
+msgstr "使用 sunnypilot 前必須接受服務條款。請先閱讀 https://sunnypilot.ai/terms 的最新條款。"
 
 #: openpilot/selfdrive/ui/onroad/driver_camera_dialog.py
 msgid "camera starting"
@@ -799,19 +799,19 @@ msgstr "右"
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
 msgid "sunnypilot Longitudinal Control (Alpha)"
-msgstr ""
+msgstr "sunnypilot 縱向控制（Alpha）"
 
 #: openpilot/selfdrive/ui/onroad/alert_renderer.py
 msgid "sunnypilot Unavailable"
-msgstr ""
+msgstr "sunnypilot 無法使用"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "sunnypilot longitudinal control may come in a future update."
-msgstr ""
+msgstr "sunnypilot 縱向控制可能於未來更新提供。"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 msgid "sunnypilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."
-msgstr ""
+msgstr "sunnypilot 裝置的左右傾斜不得超過 4°，向上不得超過 5°、向下不得超過 9°。"
 
 #: system/ui/widgets/network.py
 msgid "unmetered"
@@ -1770,3 +1770,22 @@ msgstr "沒有警示"
 msgid "pair with comma connect"
 msgstr "連接 comma connect"
 
+# CCNC Traditional Chinese localization
+msgid "{} ALERT"
+msgstr "{} 警示"
+
+# CCNC Traditional Chinese localization
+msgid "{} segment of your driving is in the training dataset so far."
+msgstr "目前已有 {} 段行車資料納入訓練資料集。"
+
+# CCNC Traditional Chinese localization
+msgid "{} minute ago"
+msgstr "{} 分鐘前"
+
+# CCNC Traditional Chinese localization
+msgid "{} hour ago"
+msgstr "{} 小時前"
+
+# CCNC Traditional Chinese localization
+msgid "{} day ago"
+msgstr "{} 天前"
