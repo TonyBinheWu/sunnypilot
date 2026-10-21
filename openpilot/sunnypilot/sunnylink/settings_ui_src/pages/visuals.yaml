@@ -91,7 +91,7 @@ sections:
     description: When enabled, the speedometer on the onroad screen is not displayed.
 - id: ccnc_cluster
   title: ccNC Factory Cluster Integration (Unverified)
-  description: OEM data is preserved. New graphics are blocked until the exact cluster protocol has been validated.
+  description: OEM data is preserved. Extra cluster graphics remain disabled until exact platform/asset verification.
   items:
   - key: CcncClusterDisplayEnabled
     widget: toggle
