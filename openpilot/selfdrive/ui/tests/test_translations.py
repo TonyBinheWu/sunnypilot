@@ -64,6 +64,48 @@ class TestTranslations(OpenpilotTestCase):
 
 
 
+  def test_mici_traditional_chinese_menu_and_safety_warnings(self):
+    """comma 4 Mici has its own string consumers, separate from the classic UI."""
+    from openpilot.system.ui.lib.multilang import load_translations
+
+    translations, _ = load_translations(PO_DIR / "app_zh-CHT.po")
+    expected = {
+      "toggles": "功能開關",
+      "network": "網路",
+      "device": "裝置",
+      "software": "軟體",
+      "developer": "開發者",
+      "firehose": "資料分享",
+      "models": "模型",
+      "slide to exit always offroad": "滑動以離開持續停駛模式",
+      "slide to force offroad": "滑動以強制進入停駛模式",
+      "enabling\\nexperimental mode": "啟用\\n實驗模式",
+      "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)":
+        "警告：Alpha 縱向控制可能使原廠自動緊急煞車（AEB）失效。",
+    }
+    for source, translated in expected.items():
+      assert translations.get(source) == translated, f"Missing comma 4 Chinese translation: {source!r}"
+
+  def test_mici_localized_labels_refresh_after_language_change(self):
+    button_py = (Path(__file__).parents[1] / "mici/widgets/button.py").read_text(encoding="utf-8")
+    assert "self._label = UnifiedLabel(tr(text)" in button_py
+    assert "self._sub_label = UnifiedLabel(tr(value)" in button_py
+    assert "self._label.set_text(tr(self.text))" in button_py
+    assert "self._sub_label.set_text(tr(self.value))" in button_py
+    assert "self._locale_when_rendered != multilang.language" in button_py
+    assert "self.value = value" in button_py  # Parameter options remain raw, not translated.
+
+  def test_mici_translation_markers_are_extracted(self):
+    from openpilot.selfdrive.ui.translations.potools import extract_strings
+
+    base = Path(__file__).resolve().parents[4]
+    relative = "openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py"
+    extracted = {entry.msgid for entry in extract_strings([relative], str(base))}
+    for key in ("toggles", "network", "device", "developer", "slide to exit always offroad",
+                "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)"):
+      assert key in extracted, f"Mici translation marker missing: {key}"
+
+
   @parameterized.expand(sorted(TRANSLATION_LANGUAGES.values()))
   def test_translation_file_exists(self, language_code: str):
     po_path = PO_DIR / f"app_{language_code}.po"
