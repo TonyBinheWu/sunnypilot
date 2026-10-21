@@ -8,8 +8,7 @@ import json
 
 from openpilot.cereal import custom, messaging
 from opendbc.car.structs import car
-from opendbc.car.hyundai.values import CAR as HYUNDAI_CAR, HyundaiFlags, UNSUPPORTED_LONGITUDINAL_CAR
-from opendbc.car.hyundai.hyundaicanfd import CCNC_VERIFIED_CLUSTER_PLATFORMS
+from opendbc.car.hyundai.values import CAR as HYUNDAI_CAR, UNSUPPORTED_LONGITUDINAL_CAR
 from opendbc.sunnypilot.car.hyundai.torque import supports_low_speed_torque
 from opendbc.car.subaru.values import CAR as SUBARU_CAR, SubaruFlags
 from opendbc.sunnypilot.car.tesla.values import TeslaFlagsSP
@@ -31,7 +30,6 @@ CAPABILITY_FIELDS = (
   "icbm_available",
   "torque_allowed",
   "hkg_low_speed_torque_available",
-  "ccnc_cluster_verified",
   "brand",
   "pcm_cruise",
   "alpha_long_available",
@@ -55,7 +53,6 @@ CAPABILITY_LABELS: dict[str, str] = {
   "icbm_available": "ICBM available",
   "torque_allowed": "torque steering (not available for angle steering vehicles)",
   "hkg_low_speed_torque_available": "Compatible HKG CAN-FD torque steering (vehicle fingerprint required)",
-  "ccnc_cluster_verified": "Validated fingerprint-specific ccNC instrument protocol",
   "brand": "Vehicle brand",
   "pcm_cruise": "PCM cruise",
   "alpha_long_available": "Alpha Longitudinal available",
@@ -188,9 +185,6 @@ def generate_capabilities(params: Params | None = None) -> dict:
   # Only a fingerprinted CarParams can enable this safety-sensitive capability.
   # Do not guess eligibility from a manually selected Sorento platform.
   caps["hkg_low_speed_torque_available"] = supports_low_speed_torque(CP)
-  caps["ccnc_cluster_verified"] = bool(CP is not None and CP.brand == "hyundai" and
-                                       CP.flags & HyundaiFlags.CCNC and
-                                       CP.carFingerprint in CCNC_VERIFIED_CLUSTER_PLATFORMS)
 
   return caps
 

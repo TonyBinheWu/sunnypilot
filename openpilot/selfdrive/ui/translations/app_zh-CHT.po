@@ -1790,37 +1790,6 @@ msgstr "{} 小時前"
 msgid "{} day ago"
 msgstr "{} 天前"
 
-# CCNC factory cluster integration
-msgid "CCNC Cluster Integration (Unverified)"
-msgstr "ccNC 原廠儀表整合（尚未驗證）"
-
-msgid "CCNC Driving Assistance Icons"
-msgstr "ccNC 駕駛輔助圖示"
-
-msgid "CCNC Lane and Lane-Change Graphics"
-msgstr "ccNC 車道與變道圖形"
-
-msgid "CCNC Nearby Vehicle Graphics"
-msgstr "ccNC 周圍車輛圖形"
-
-msgid "CCNC Speed Limits and Traffic Signs"
-msgstr "ccNC 速限與交通標誌"
-
-msgid "OEM instrument pass-through is preserved. New overlays remain blocked until this exact cluster protocol is validated."
-msgstr "保留原廠儀表訊息。尚未確認此車型的儀表協定前，不會啟用新增圖形。"
-
-msgid "Use real LFA and cruise control states only; no invented HDA/HDP or FCA status."
-msgstr "僅使用真實 LFA 與巡航控制狀態，不會偽造 HDA／HDP 或 FCA 狀態。"
-
-msgid "Requires verified lane confidence, coordinate conversion and valid lane-change state; currently disabled."
-msgstr "需完成車道可信度、座標轉換及有效變道狀態驗證，目前停用。"
-
-msgid "Requires timestamped classified targets and verified OEM shape mappings; currently disabled."
-msgstr "需具備時間戳記、可信的物件分類及經確認的原廠圖形對照，目前停用。"
-
-msgid "Requires confirmed sign semantics and current road-sign data; currently disabled."
-msgstr "需確認標誌欄位意義並取得有效的道路標誌資料，目前停用。"
-
 #: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
 msgid "starting"
 msgstr "啟動中"
