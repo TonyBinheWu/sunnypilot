@@ -1789,3 +1789,387 @@ msgstr "{} 小時前"
 # CCNC Traditional Chinese localization
 msgid "{} day ago"
 msgstr "{} 天前"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "starting"
+msgstr "啟動中"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "not connected"
+msgstr "尚未連線"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "enabling alpha longitudinal"
+msgstr "啟用 Alpha 縱向控制"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "joystick debug\nmode"
+msgstr "搖桿除錯模式"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "enabling\nexperimental mode"
+msgstr "啟用\n實驗模式"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "End-to-End Longitudinal Control"
+msgstr "端到端縱向控制"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "New Driving Visualization"
+msgstr "全新駕駛視覺化"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Please connect to Wi-Fi to complete initial pairing."
+msgstr "請先連接 Wi-Fi，才能完成初次配對。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Device must be registered with the comma.ai backend to pair."
+msgstr "裝置必須先在 comma.ai 伺服器完成註冊，才能配對。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Please connect to Wi-Fi to update."
+msgstr "請先連接 Wi-Fi，才能更新。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Failed to get available branches. Ensure you're connected to the internet and try again."
+msgstr "無法取得可用分支，請確認網際網路連線後重試。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "uninstall sunnypilot"
+msgstr "解除安裝 sunnypilot"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Frequently Asked Questions"
+msgstr "常見問題"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Does it matter how or where I drive?"
+msgstr "行駛方式與路線是否會影響資料使用？"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Nope, just drive as you normally would."
+msgstr "不會，依照平常的方式駕駛即可。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Do all of my segments get pulled in Firehose Mode?"
+msgstr "Firehose 模式會上傳全部行程片段嗎？"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "No, we selectively pull a subset of your segments."
+msgstr "不會，僅會選取部分行程片段。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "What's a good USB-C adapter?"
+msgstr "建議使用哪種 USB-C 充電器？"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Any fast phone or laptop charger should be fine."
+msgstr "支援快充的手機或筆電充電器通常即可。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Does it matter which software I run?"
+msgstr "使用的軟體版本是否有影響？"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Yes, only upstream openpilot (and particular forks) are able to be used for training."
+msgstr "有，目前只有官方 openpilot 及部分相容分支的資料可用於訓練。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "ACTIVE"
+msgstr "運作中"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "INACTIVE: connect to an unmetered network"
+msgstr "未啟用：請連線至非計量網路"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to forget"
+msgstr "滑動以忘記此網路"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "active"
+msgstr "使用中"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to delete"
+msgstr "滑動以刪除"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Ensure you're connected to the internet and try again."
+msgstr "請確認網際網路連線後再試一次。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "esim error"
+msgstr "eSIM 錯誤"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "add profile"
+msgstr "新增設定檔"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to exit always offroad"
+msgstr "滑動以離開持續停駛模式"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "disengage to enable always offroad"
+msgstr "請先解除輔助駕駛，才能啟用持續停駛模式"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to force offroad"
+msgstr "滑動以強制進入停駛模式"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "big model"
+msgstr "大型模型"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "unavailable"
+msgstr "無法使用"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "getting ready"
+msgstr "準備中"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "small model"
+msgstr "小型模型"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "active model"
+msgstr "目前使用的模型"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "refresh models"
+msgstr "更新模型清單"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "clear cache"
+msgstr "清除快取"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "small models"
+msgstr "小型模型清單"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "big models"
+msgstr "大型模型清單"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "No models available"
+msgstr "沒有可用的模型"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "No models are available for this hardware yet. Connect to the internet and refresh the model list."
+msgstr "這台裝置目前沒有可用模型，請連線後重新整理模型清單。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to"
+msgstr "滑動以"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "clearing..."
+msgstr "清除中…"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "fetching..."
+msgstr "取得資料中…"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "error"
+msgstr "錯誤"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "download failed"
+msgstr "下載失敗"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "verifying"
+msgstr "驗證中"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "downloading"
+msgstr "下載中"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "cancel verification"
+msgstr "取消驗證"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "queued"
+msgstr "排隊等候中"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "progress"
+msgstr "進度"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "downloaded"
+msgstr "已下載"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to\nreset"
+msgstr "滑動以\n重設"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to\nreboot"
+msgstr "滑動以\n重新啟動"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to\npower off"
+msgstr "滑動以\n關閉電源"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "slide to\nuninstall"
+msgstr "滑動以\n解除安裝"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "scroll for details"
+msgstr "捲動查看詳細資訊"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "scroll to exit"
+msgstr "捲動以離開"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "pairing"
+msgstr "配對中"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "enable\nexperimental mode"
+msgstr "啟用\n實驗模式"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "enable alpha\nlongitudinal"
+msgstr "啟用 Alpha\n縱向控制"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)"
+msgstr "警告：Alpha 縱向控制可能使原廠自動緊急煞車（AEB）失效。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "On this car, openpilot defaults to the stock system's built-in ACC."
+msgstr "這台車預設使用原廠主動車距控制（ACC）。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Enabling this will switch to openpilot longitudinal control."
+msgstr "啟用後將改由 openpilot 控制加速與煞車。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "openpilot defaults to driving in chill mode."
+msgstr "openpilot 預設使用一般駕駛模式。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Experimental mode enables alpha-level features that aren't ready for chill mode."
+msgstr "實驗模式會啟用尚在測試階段的功能。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Let the driving model control the gas and brakes."
+msgstr "由駕駛模型控制加速與煞車。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "openpilot will drive as it thinks a human would, including stopping for red lights and stop signs."
+msgstr "openpilot 會嘗試依照一般駕駛行為行駛，包括在紅燈及停止標誌前停車。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "The set speed will only act as an upper bound."
+msgstr "設定速度僅作為車速上限。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "This is an alpha quality feature; mistakes should be expected."
+msgstr "這仍是早期測試功能，可能發生判斷錯誤。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "The path will change colors to communicate acceleration intent."
+msgstr "行駛路徑會以不同顏色表示加減速意圖。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Red for braking, green for acceleration, and gray for coasting."
+msgstr "紅色代表煞車、綠色代表加速、灰色代表滑行。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Share the device’s internet connection through a Wi-Fi hotspot."
+msgstr "透過 Wi-Fi 熱點分享裝置的網路連線。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Allow cellular data roaming."
+msgstr "允許行動數據漫遊。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Prevent large uploads over the cellular connection."
+msgstr "避免透過行動網路上傳大量資料。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Metered prevents large uploads on this Wi-Fi connection. Default uses the network’s detected setting."
+msgstr "使用計量網路設定時，會限制透過此 Wi-Fi 進行大量上傳；預設依網路偵測結果決定。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Set the access point name required by your cellular carrier. Leave blank for automatic configuration."
+msgstr "設定電信業者要求的 APN；留空則使用自動設定。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Standard is recommended.\nAggressive follows closer, with firmer gas and braking.\nRelaxed leaves more space.\nUse the steering wheel distance button on supported cars."
+msgstr "建議使用一般模式。\n積極模式跟車距離較短，加速與煞車較明顯。\n輕鬆模式會保留較多距離。\n相容車型可透過方向盤跟車距離按鈕切換。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Let the driving model control gas and brakes.\nIncludes stopping for red lights and stop signs.\nSet speed is a maximum, not a target.\nThese are alpha features. Expect mistakes.\nThe path colors show acceleration and braking."
+msgstr "由駕駛模型控制加速與煞車。\n包含紅燈及停止標誌前停車。\n設定速度是上限，不是目標速度。\n此功能仍在測試階段，可能發生錯誤。\n路徑顏色顯示加減速意圖。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Warn when you drift across a detected lane line.\nOnly above 31 mph (50 km/h), with no turn signal."
+msgstr "偏離辨識到的車道線時發出警示。\n僅在車速超過 50 km/h 且未打方向燈時啟用。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Monitor the driver even when sunnypilot is not engaged."
+msgstr "即使 sunnypilot 未接管也持續監控駕駛狀態。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Upload cabin camera data to help improve driver monitoring."
+msgstr "上傳車內攝影機資料，以改善駕駛監控。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Record microphone audio while driving.\nAudio is included in dashcam videos in sunnylink."
+msgstr "行駛時錄製麥克風音訊。\n錄音也會包含在 sunnylink 行車影片中。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Enable to use sunnypilot driver assistance.\nDisable to use your car's stock driver assistance."
+msgstr "啟用 sunnypilot 駕駛輔助。\n關閉後使用原廠駕駛輔助系統。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Use alpha openpilot longitudinal control instead of stock ACC. This may disable Automatic Emergency Braking (AEB)."
+msgstr "以 openpilot Alpha 縱向控制取代原廠 ACC；可能停用自動緊急煞車（AEB）。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Control the car with a joystick for debugging."
+msgstr "使用搖桿進行車輛控制測試。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Run longitudinal maneuvers for testing gas and brake control."
+msgstr "測試縱向加速及煞車控制。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Run lateral maneuvers for testing steering control."
+msgstr "測試橫向轉向控制。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Use Android Debug Bridge (ADB) over USB or the network."
+msgstr "透過 USB 或網路使用 Android Debug Bridge（ADB）。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Access the device remotely using your SSH keys."
+msgstr "透過 SSH 金鑰遠端存取裝置。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Grant SSH access to all public keys in your GitHub settings. Only enter your own username."
+msgstr "允許 GitHub 帳號設定中的公開金鑰透過 SSH 存取。請只輸入自己的帳號。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "Show touch locations and the UI frame rate."
+msgstr "顯示觸控位置與介面影格率。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "sunnypilot learns to drive by watching humans, like you, drive.\n\nFirehose Mode allows you to maximize your training data uploads to improve openpilot's driving models. More data means bigger models, which means better Experimental Mode."
+msgstr "sunnypilot 透過觀察駕駛行為學習。\n\nFirehose 模式可提高行車訓練資料的上傳量，協助改進 openpilot 駕駛模型與實驗模式。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
+msgid "For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n\nFirehose Mode can also work while you're driving if connected to a hotspot or unlimited SIM card."
+msgstr "建議每週將裝置帶至室內，連接品質良好的 USB-C 電源及 Wi-Fi，以獲得最佳效果。\n\n若行駛途中使用熱點或不限流量的 SIM 卡，Firehose 模式也能運作。"
