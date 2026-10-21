@@ -86,7 +86,7 @@ class WifiButton(BigButton):
   SUB_LABEL_WIDTH = 402 - BigButton.LABEL_HORIZONTAL_PADDING * 2
 
   def __init__(self, network: Network, wifi_manager: WifiManager):
-    super().__init__(normalize_ssid(network.ssid), scroll=True)
+    super().__init__(normalize_ssid(network.ssid), scroll=True, localize_title=False)
 
     self._network = network
     self._wifi_manager = wifi_manager

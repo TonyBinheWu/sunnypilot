@@ -41,11 +41,11 @@ class SoftwareInfoLayoutMici(Widget):
 
     subheader_color = rl.Color(255, 255, 255, int(255 * 0.9 * 0.65))
     max_width = int(self._rect.width - 20)
-    self._version_label = UnifiedLabel("version", 48, max_width=max_width, font_weight=FontWeight.DISPLAY, wrap_text=False)
+    self._version_label = UnifiedLabel(tr("version"), 48, max_width=max_width, font_weight=FontWeight.DISPLAY, wrap_text=False)
     self._version_text_label = UnifiedLabel("", 32, max_width=max_width, text_color=subheader_color,
                                             font_weight=FontWeight.ROMAN, wrap_text=False)
 
-    self._branch_label = UnifiedLabel("branch", 48, max_width=max_width, font_weight=FontWeight.DISPLAY, wrap_text=False)
+    self._branch_label = UnifiedLabel(tr("branch"), 48, max_width=max_width, font_weight=FontWeight.DISPLAY, wrap_text=False)
     self._branch_text_label = UnifiedLabel("", 32, max_width=max_width, text_color=subheader_color,
                                            font_weight=FontWeight.ROMAN, wrap_text=False, scroll=True)
 
@@ -234,7 +234,7 @@ class BranchSelectPage(NavScroller):
 
     buttons = []
     for branch in branches:
-      btn = BigButton(branch, "", check_icon if branch == current_target else None, scroll=True)
+      btn = BigButton(branch, "", check_icon if branch == current_target else None, scroll=True, localize_title=False)
       btn.set_click_callback(lambda b=branch: self.dismiss(lambda: on_select(b)))
       buttons.append(btn)
     self._scroller.add_widgets(buttons)
@@ -243,7 +243,7 @@ class BranchSelectPage(NavScroller):
 class TargetBranchButton(BigButton):
   def __init__(self, check_update_btn: CheckUpdateButton):
     super().__init__("target branch", ui_state.params.get("UpdaterTargetBranch") or "",
-                     description="Select the software branch to download on the next update check.")
+                     description="Select the software branch to download on the next update check.", localize_value=False)
     self._check_update_btn = check_update_btn
     self.set_click_callback(self._on_click)
     self.set_visible(not ui_state.params.get_bool("IsTestedBranch"))

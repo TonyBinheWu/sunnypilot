@@ -12,6 +12,7 @@ from openpilot.selfdrive.ui.mici.onroad.model_renderer import ModelRenderer
 from openpilot.selfdrive.ui.mici.onroad.confidence_ball import ConfidenceBall
 from openpilot.selfdrive.ui.mici.onroad.cameraview import CameraView
 from openpilot.system.ui.lib.application import FontWeight, gui_app, MousePos, MouseEvent, TextAlignment, TextAlignmentVertical
+from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets import Widget
 from openpilot.common.filter_simple import BounceFilter
@@ -156,7 +157,7 @@ class AugmentedRoadView(CameraView):
     self._alert_renderer = AlertRenderer()
     self._driver_state_renderer = DriverStateRenderer()
     self._confidence_ball = ConfidenceBall()
-    self._offroad_label = UnifiedLabel("start the car to\nuse sunnypilot", 54, FontWeight.DISPLAY,
+    self._offroad_label = UnifiedLabel(tr("start the car to\nuse sunnypilot"), 54, FontWeight.DISPLAY,
                                        text_color=rl.Color(255, 255, 255, int(255 * 0.9)),
                                        alignment=TextAlignment.CENTER,
                                        alignment_vertical=TextAlignmentVertical.MIDDLE)
@@ -172,11 +173,11 @@ class AugmentedRoadView(CameraView):
 
     # update offroad label
     if ui_state.panda_type == log.PandaState.PandaType.unknown:
-      self._offroad_label.set_text("system booting")
+      self._offroad_label.set_text(tr("system booting"))
     elif ui_state.ignition and not ui_state.started:
-      self._offroad_label.set_text("openpilot can't start\ncheck alerts")
+      self._offroad_label.set_text(tr("openpilot can't start\ncheck alerts"))
     else:
-      self._offroad_label.set_text("start the car to\nuse sunnypilot")
+      self._offroad_label.set_text(tr("start the car to\nuse sunnypilot"))
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
     # Don't trigger click callback if bookmark was triggered

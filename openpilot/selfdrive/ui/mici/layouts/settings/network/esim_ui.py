@@ -128,7 +128,7 @@ class QRScannerDialog(NavWidget):
       label_y = rect.y + rect.height * 3 / 4
       label_rect = rl.Rectangle(rect.x, label_y + (rect.height - label_y) / 2 - 20, rect.width, 40)
       text = "not an LPA code" if rl.get_time() < self._invalid_code_until else "hold QR code to camera"
-      gui_label(label_rect, text, font_size=32, font_weight=FontWeight.MEDIUM,
+      gui_label(label_rect, tr(text), font_size=32, font_weight=FontWeight.MEDIUM,
                 alignment=TextAlignment.CENTER,
                 color=rl.Color(255, 255, 255, int(255 * 0.9)))
 

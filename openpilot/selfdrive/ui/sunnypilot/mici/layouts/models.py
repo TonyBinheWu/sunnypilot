@@ -81,17 +81,17 @@ class ModelsLayoutMici(NavScroller):
     self._was_downloading = False
     self._selection_source: str | None = None
 
-    self.select_model_btn = BigButton(tr("select model"))
+    self.select_model_btn = BigButton("select model")
     self.select_model_btn.set_click_callback(self._show_folders)
 
-    self.refresh_btn = BigButton(tr("refresh models"))
+    self.refresh_btn = BigButton("refresh models")
     self.refresh_btn.set_click_callback(self._refresh_models)
     self._refresh_start: float | None = None
 
-    self.cancel_download_btn = BigButton(tr("cancel download"))
+    self.cancel_download_btn = BigButton("cancel download")
     self.cancel_download_btn.set_click_callback(lambda: ui_state.params.remove("ModelManager_DownloadRef"))
 
-    self.clear_cache_btn = BigButton(tr("clear cache"), value=f"{model_cache_size_mb():.1f} MB")
+    self.clear_cache_btn = BigButton("clear cache", value=f"{model_cache_size_mb():.1f} MB")
     self.clear_cache_btn.set_click_callback(self._confirm_clear_cache)
     self._cache_size_time = 0.0
 
@@ -129,7 +129,7 @@ class ModelsLayoutMici(NavScroller):
       value = (bundle.internalName if bundle else default_model_name(source)).lower()
       if source == active:
         value += f" ({tr('active')})"
-      btn = BigButton(label.lower(), value=value)
+      btn = BigButton(label.lower(), value=value, localize_value=False)
       btn.set_click_callback(lambda s=source: self._select_hardware(s))
       hardware_btns.append(btn)
     self._push_selection_view(hardware_btns)
@@ -148,12 +148,12 @@ class ModelsLayoutMici(NavScroller):
     folders = self._get_grouped_bundles(bundles, favorites)
 
     folder_buttons = []
-    default_btn = BigButton(default_model_name(source).lower())
+    default_btn = BigButton(default_model_name(source).lower(), localize_title=False)
     default_btn.set_click_callback(lambda s=source: self._select_default(s))
     folder_buttons.append(default_btn)
 
     for folder in sorted(folders.keys(), key=lambda f: max((bundle.index for bundle in folders[f]), default=-1), reverse=True):
-      btn = BigButton(folder.lower())
+      btn = BigButton(folder.lower(), localize_title=False)
       btn.set_click_callback(lambda f=folder: self._select_folder(f))
       if folder.lower() == "favorites":
         folder_buttons.insert(0, btn)
@@ -194,7 +194,7 @@ class ModelsLayoutMici(NavScroller):
 
     btns = []
     for bundle in bundles:
-      btn = BigButton(bundle.displayName.lower())
+      btn = BigButton(bundle.displayName.lower(), localize_title=False)
       btn.set_click_callback(lambda b=bundle: self._select_model(b))
       btns.append(btn)
     self._push_selection_view(btns)

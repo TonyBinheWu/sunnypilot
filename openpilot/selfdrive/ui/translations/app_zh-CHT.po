@@ -1789,3 +1789,299 @@ msgstr "{} 小時前"
 # CCNC Traditional Chinese localization
 msgid "{} day ago"
 msgstr "{} 天前"
+
+# C4 (mici) Traditional Chinese interface and status translations.
+msgid "slide to exit always offroad"
+msgstr "滑動以退出常駐停車模式"
+
+msgid "disengage to enable always offroad"
+msgstr "請先解除輔助駕駛，再啟用常駐停車模式"
+
+msgid "slide to force offroad"
+msgstr "滑動以強制進入停車模式"
+
+msgid "big model"
+msgstr "大型模型"
+
+msgid "small model"
+msgstr "小型模型"
+
+msgid "active model"
+msgstr "目前使用的模型"
+
+msgid "unavailable"
+msgstr "無法使用"
+
+msgid "getting ready"
+msgstr "準備中"
+
+msgid "refresh models"
+msgstr "重新整理模型"
+
+msgid "clear cache"
+msgstr "清除快取"
+
+msgid "small models"
+msgstr "小型模型"
+
+msgid "big models"
+msgstr "大型模型"
+
+msgid "active"
+msgstr "使用中"
+
+msgid "No models available"
+msgstr "沒有可用的模型"
+
+msgid "No models are available for this hardware yet. Connect to the internet and refresh the model list."
+msgstr "目前沒有適用於此硬體的模型。請連線網際網路並重新整理模型清單。"
+
+msgid "slide to"
+msgstr "滑動以"
+
+msgid "clearing..."
+msgstr "清除中…"
+
+msgid "fetching..."
+msgstr "取得資料中…"
+
+msgid "error"
+msgstr "錯誤"
+
+msgid "download failed"
+msgstr "下載失敗"
+
+msgid "verifying"
+msgstr "驗證中"
+
+msgid "downloading"
+msgstr "下載中"
+
+msgid "cancel verification"
+msgstr "取消驗證"
+
+msgid "queued"
+msgstr "排隊中"
+
+msgid "progress"
+msgstr "進度"
+
+msgid "downloaded"
+msgstr "已下載"
+
+msgid "Please connect to Wi-Fi to complete initial pairing."
+msgstr "請先連線至 Wi-Fi 才能完成初次配對。"
+
+msgid "Device must be registered with the comma.ai backend to pair."
+msgstr "裝置必須先註冊至 comma.ai 服務才能配對。"
+
+msgid "Please connect to Wi-Fi to update."
+msgstr "請先連線至 Wi-Fi 才能更新。"
+
+msgid "Failed to get available branches. Ensure you're connected to the internet and try again."
+msgstr "無法取得可用分支。請確認網際網路連線後重試。"
+
+msgid "Ensure you're connected to the internet and try again."
+msgstr "請確認網際網路連線後重試。"
+
+msgid "ACTIVE"
+msgstr "啟用中"
+
+msgid "INACTIVE: connect to an unmetered network"
+msgstr "未啟用：請連線至非計量付費網路"
+
+msgid "uninstall sunnypilot"
+msgstr "解除安裝 sunnypilot"
+
+msgid "uninstall"
+msgstr "解除安裝"
+
+msgid "enabling\nexperimental mode"
+msgstr "正在啟用\n實驗模式"
+
+msgid "enable\nexperimental mode"
+msgstr "啟用\n實驗模式"
+
+msgid "End-to-End Longitudinal Control"
+msgstr "端到端縱向控制"
+
+msgid "New Driving Visualization"
+msgstr "新版行車視覺化"
+
+msgid "enabling alpha longitudinal"
+msgstr "正在啟用 Alpha 縱向控制"
+
+msgid "enable alpha\nlongitudinal"
+msgstr "啟用 Alpha\n縱向控制"
+
+msgid "joystick debug\nmode"
+msgstr "搖桿除錯\n模式"
+
+msgid "enable\nsunnylink"
+msgstr "啟用\nsunnylink"
+
+msgid "disable\nsunnylink"
+msgstr "停用\nsunnylink"
+
+msgid "enter password..."
+msgstr "輸入密碼…"
+
+msgid "enter APN..."
+msgstr "輸入 APN…"
+
+msgid "enter GitHub username..."
+msgstr "輸入 GitHub 使用者名稱…"
+
+msgid "slide to forget"
+msgstr "滑動以忘記此網路"
+
+msgid "esim error"
+msgstr "eSIM 錯誤"
+
+msgid "add profile"
+msgstr "新增設定檔"
+
+msgid "nickname"
+msgstr "暱稱"
+
+msgid "slide to delete"
+msgstr "滑動以刪除"
+
+msgid "enter a nickname..."
+msgstr "輸入暱稱…"
+
+msgid "starting"
+msgstr "啟動中"
+
+msgid "not connected"
+msgstr "未連線"
+
+msgid "loading..."
+msgstr "載入中…"
+
+msgid "no sim"
+msgstr "未偵測到 SIM 卡"
+
+msgid "sim"
+msgstr "SIM 卡"
+
+msgid "esim"
+msgstr "eSIM"
+
+msgid "obtaining IP..."
+msgstr "取得 IP 位址中…"
+
+msgid "searching for networks"
+msgstr "正在搜尋網路"
+
+msgid "scroll for details"
+msgstr "捲動以查看詳細資訊"
+
+msgid "not an LPA code"
+msgstr "不是有效的 eSIM 啟用碼"
+
+msgid "hold QR code to camera"
+msgstr "請將 QR 碼對準鏡頭"
+
+msgid "openpilot defaults to driving in chill mode."
+msgstr "openpilot 預設使用平穩駕駛模式。"
+
+msgid "Experimental mode enables alpha-level features that aren't ready for chill mode."
+msgstr "實驗模式會啟用尚未納入平穩模式的測試功能。"
+
+msgid "Let the driving model control the gas and brakes."
+msgstr "由駕駛模型控制加速與煞車。"
+
+msgid "openpilot will drive as it thinks a human would, including stopping for red lights and stop signs."
+msgstr "openpilot 會模擬人類駕駛行為，包括在紅燈與停車標誌前停車。"
+
+msgid "The set speed will only act as an upper bound."
+msgstr "設定車速僅作為速度上限。"
+
+msgid "This is an alpha quality feature; mistakes should be expected."
+msgstr "這是早期測試功能，可能發生判斷錯誤。"
+
+msgid "The path will change colors to communicate acceleration intent."
+msgstr "行駛路徑會以顏色表示加減速意圖。"
+
+msgid "Red for braking, green for acceleration, and gray for coasting."
+msgstr "紅色表示煞車、綠色表示加速、灰色表示滑行。"
+
+msgid "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)"
+msgstr "警告：Alpha 縱向控制可能停用自動緊急煞車（AEB）。"
+
+msgid "On this car, openpilot defaults to the stock system's built-in ACC."
+msgstr "此車型預設使用原廠主動車距控制（ACC）。"
+
+msgid "Enabling this will switch to openpilot longitudinal control."
+msgstr "啟用後會改由 openpilot 控制縱向加減速。"
+
+msgid "Please connect to Wi-Fi to fetch your key."
+msgstr "請先連線至 Wi-Fi 以取得金鑰。"
+
+msgid "Grant SSH access to all public keys in your GitHub settings. Only enter your own username."
+msgstr "允許 GitHub 帳號設定中的所有公開金鑰進行 SSH 存取。請僅輸入自己的使用者名稱。"
+
+msgid "Use Android Debug Bridge (ADB) over USB or the network."
+msgstr "透過 USB 或網路使用 Android Debug Bridge（ADB）。"
+
+msgid "Access the device remotely using your SSH keys."
+msgstr "使用 SSH 金鑰遠端連線裝置。"
+
+msgid "Control the car with a joystick for debugging."
+msgstr "以搖桿控制車輛進行除錯。"
+
+msgid "Run longitudinal maneuvers for testing gas and brake control."
+msgstr "執行縱向操控測試，以檢查加速及煞車控制。"
+
+msgid "Run lateral maneuvers for testing steering control."
+msgstr "執行橫向操控測試，以檢查轉向控制。"
+
+msgid "Use alpha openpilot longitudinal control instead of stock ACC. This may disable Automatic Emergency Braking (AEB)."
+msgstr "使用 Alpha 版 openpilot 縱向控制取代原廠 ACC；可能停用自動緊急煞車（AEB）。"
+
+msgid "Show touch locations and the UI frame rate."
+msgstr "顯示觸控位置及介面影格率。"
+
+msgid "Share the device’s internet connection through a Wi-Fi hotspot."
+msgstr "透過 Wi-Fi 熱點分享裝置的網際網路連線。"
+
+msgid "Metered prevents large uploads on this Wi-Fi connection. Default uses the network’s detected setting."
+msgstr "計量付費設定會避免透過此 Wi-Fi 大量上傳。預設值使用偵測到的網路設定。"
+
+msgid "Allow cellular data roaming."
+msgstr "允許行動網路資料漫遊。"
+
+msgid "Set the access point name required by your cellular carrier. Leave blank for automatic configuration."
+msgstr "設定電信業者要求的存取點名稱（APN）；留空則自動設定。"
+
+msgid "Prevent large uploads over the cellular connection."
+msgstr "避免透過行動網路大量上傳。"
+
+msgid "Select the software branch to download on the next update check."
+msgstr "選擇下次檢查更新時要下載的軟體分支。"
+
+msgid "Remove openpilot from this device."
+msgstr "從本裝置解除安裝 openpilot。"
+
+msgid "Monitor the driver even when sunnypilot is not engaged."
+msgstr "即使 sunnypilot 未啟用輔助駕駛，也持續監控駕駛。"
+
+msgid "Upload cabin camera data to help improve driver monitoring."
+msgstr "上傳車內鏡頭資料，協助改善駕駛監控。"
+
+msgid "Enable to use sunnypilot driver assistance.\nDisable to use your car's stock driver assistance."
+msgstr "啟用後使用 sunnypilot 輔助駕駛。\n停用後使用車輛原廠輔助駕駛。"
+
+msgid "Warn when you drift across a detected lane line.\nOnly above 31 mph (50 km/h), with no turn signal."
+msgstr "在未打方向燈且車速高於 50 km/h 時，若偏離偵測到的車道線便發出警示。"
+
+msgid "Record microphone audio while driving.\nAudio is included in dashcam videos in sunnylink."
+msgstr "行車時錄製麥克風音訊。\n音訊會包含在 sunnylink 行車影片中。"
+
+msgid "Standard is recommended.\nAggressive follows closer, with firmer gas and braking.\nRelaxed leaves more space.\nUse the steering wheel distance button on supported cars."
+msgstr "建議使用標準模式。\n積極模式跟車較近，加減速較明顯。\n舒適模式保留更長車距。\n支援的車型可使用方向盤上的車距按鈕切換。"
+
+msgid "Let the driving model control gas and brakes.\nIncludes stopping for red lights and stop signs.\nSet speed is a maximum, not a target.\nThese are alpha features. Expect mistakes.\nThe path colors show acceleration and braking."
+msgstr "由駕駛模型控制加速與煞車。\n包含紅燈及停車標誌停車。\n設定車速僅為上限，並非目標速度。\n此為 Alpha 測試功能，可能出現錯誤。\n路徑顏色會顯示加減速意圖。"
+

@@ -7,6 +7,7 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.scroller import DO_ZOOM
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos, TextAlignmentVertical
+from openpilot.system.ui.lib.multilang import multilang, tr
 from openpilot.common.filter_simple import BounceFilter
 
 if TYPE_CHECKING:
@@ -144,11 +145,15 @@ class BigButton(BaseButton):
 
   def __init__(self, text: str, value: str = "", icon: Union[rl.Texture, None] = None, scroll: bool = False,
                *, description: str = "",
-               description_icon: Union[rl.Texture, None] = None):
+               description_icon: Union[rl.Texture, None] = None,
+               localize_title: bool = True, localize_value: bool = True):
     super().__init__(description, text, description_icon or icon or None)
     self.set_rect(rl.Rectangle(0, 0, 402, 180))
-    self.text = text
+    self.text = text  # Keep raw values for selection and programmatic comparisons.
     self.value = value
+    self._localize_title = localize_title
+    self._localize_value = localize_value
+    self._display_language = multilang.language
     self._txt_icon = icon
     self._scroll = scroll
 
@@ -158,10 +163,10 @@ class BigButton(BaseButton):
 
     self._rotate_icon_t: float | None = None
 
-    self._label = UnifiedLabel(text, font_size=self._get_label_font_size(), font_weight=FontWeight.BOLD,
+    self._label = UnifiedLabel(tr(text) if self._localize_title else text, font_size=self._get_label_font_size(), font_weight=FontWeight.BOLD,
                                text_color=LABEL_COLOR, alignment_vertical=TextAlignmentVertical.BOTTOM, scroll=scroll,
                                line_height=0.9)
-    self._sub_label = UnifiedLabel(value, font_size=COMPLICATION_SIZE, font_weight=FontWeight.ROMAN,
+    self._sub_label = UnifiedLabel(tr(value) if self._localize_value else value, font_size=COMPLICATION_SIZE, font_weight=FontWeight.ROMAN,
                                    text_color=COMPLICATION_GREY, alignment_vertical=TextAlignmentVertical.BOTTOM)
     self._update_label_layout()
 
@@ -193,7 +198,8 @@ class BigButton(BaseButton):
     return int(self._rect.width - self.LABEL_HORIZONTAL_PADDING * 2)
 
   def _get_label_font_size(self):
-    if len(self.text) <= 18:
+    label_text = tr(self.text) if self._localize_title else self.text
+    if len(label_text) <= 18:
       return 48
     else:
       return 42
@@ -205,14 +211,21 @@ class BigButton(BaseButton):
     else:
       self._label.set_alignment_vertical(TextAlignmentVertical.BOTTOM)
 
+  def _sync_language(self):
+    if self._display_language != multilang.language:
+      self._display_language = multilang.language
+      self._label.set_text(tr(self.text) if self._localize_title else self.text)
+      self._sub_label.set_text(tr(self.value) if self._localize_value else self.value)
+      self._update_label_layout()
+
   def set_text(self, text: str):
     self.text = text
-    self._label.set_text(text)
+    self._label.set_text(tr(text) if self._localize_title else text)
     self._update_label_layout()
 
   def set_value(self, value: str):
     self.value = value
-    self._sub_label.set_text(value)
+    self._sub_label.set_text(tr(value) if self._localize_value else value)
     self._update_label_layout()
 
   def get_value(self) -> str:
@@ -242,6 +255,7 @@ class BigButton(BaseButton):
     return txt_bg, btn_x, btn_y, scale
 
   def _draw_content(self, btn_y: float):
+    self._sync_language()
     # LABEL ------------------------------------------------------------------
     label_x = self._rect.x + self.LABEL_HORIZONTAL_PADDING
 
