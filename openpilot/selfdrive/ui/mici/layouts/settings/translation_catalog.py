@@ -26,11 +26,18 @@ MICI_TRANSLATION_MESSAGES = (
   tr_noop("Failed to get available branches. Ensure you're connected to the internet and try again."),
   tr_noop("Firehose Mode"),
   tr_noop("For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n\n"),
-  tr_noop("For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n\nFirehose Mode can also work while you're driving if connected to a hotspot or unlimited SIM card."),
+  tr_noop(
+    "For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi "
+    "weekly.\n\nFirehose Mode can also work while you're driving if connected to a hotspot or unlimited SIM card."
+  ),
   tr_noop("Frequently Asked Questions"),
   tr_noop("Grant SSH access to all public keys in your GitHub settings. Only enter your own username."),
   tr_noop("INACTIVE: connect to an unmetered network"),
-  tr_noop("Let the driving model control gas and brakes.\nIncludes stopping for red lights and stop signs.\nSet speed is a maximum, not a target.\nThese are alpha features. Expect mistakes.\nThe path colors show acceleration and braking."),
+  tr_noop(
+    "Let the driving model control gas and brakes.\nIncludes stopping for red lights and stop signs.\nSet speed is a "
+    "maximum, not a target.\nThese are alpha features. Expect mistakes.\nThe path colors show acceleration and "
+    "braking."
+  ),
   tr_noop("Let the driving model control the gas and brakes."),
   tr_noop("Loading..."),
   tr_noop("Metered prevents large uploads on this Wi-Fi connection. Default uses the network’s detected setting."),
@@ -55,7 +62,10 @@ MICI_TRANSLATION_MESSAGES = (
   tr_noop("Set the access point name required by your cellular carrier. Leave blank for automatic configuration."),
   tr_noop("Share the device’s internet connection through a Wi-Fi hotspot."),
   tr_noop("Show touch locations and the UI frame rate."),
-  tr_noop("Standard is recommended.\nAggressive follows closer, with firmer gas and braking.\nRelaxed leaves more space.\nUse the steering wheel distance button on supported cars."),
+  tr_noop(
+    "Standard is recommended.\nAggressive follows closer, with firmer gas and braking.\nRelaxed leaves more "
+    "space.\nUse the steering wheel distance button on supported cars."
+  ),
   tr_noop("The path will change colors to communicate acceleration intent."),
   tr_noop("The set speed will only act as an upper bound."),
   tr_noop("This is an alpha quality feature; mistakes should be expected."),
@@ -175,7 +185,11 @@ MICI_TRANSLATION_MESSAGES = (
   tr_noop("sunnylink"),
   tr_noop("sunnylink dongle id not found"),
   tr_noop("sunnypilot learns to drive by watching humans, like you, drive.\n\n"),
-  tr_noop("sunnypilot learns to drive by watching humans, like you, drive.\n\nFirehose Mode allows you to maximize your training data uploads to improve openpilot's driving models. More data means bigger models, which means better Experimental Mode."),
+  tr_noop(
+    "sunnypilot learns to drive by watching humans, like you, drive.\n\nFirehose Mode allows you to maximize your "
+    "training data uploads to improve openpilot's driving models. More data means bigger models, which means better "
+    "Experimental Mode."
+  ),
   tr_noop("terms &\nconditions"),
   tr_noop("tethering"),
   tr_noop("tethering password"),
