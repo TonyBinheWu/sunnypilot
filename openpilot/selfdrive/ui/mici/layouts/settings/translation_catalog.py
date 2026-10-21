@@ -1,3 +1,4 @@
+# ruff: noqa: ISC002  # Adjacent literals must stay AST constants for translation extraction.
 """Translatable comma 4 Mici UI literals.
 
 Many legacy Mici widgets provide plain strings rather than tr("...") calls.
