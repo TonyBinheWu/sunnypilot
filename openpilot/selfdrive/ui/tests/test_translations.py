@@ -82,7 +82,14 @@ class TestTranslations(OpenpilotTestCase):
     body = app_source[start:end]
     assert "FontWeight.UNIFONT" in body
     assert "font.texture.id == unifont.texture.id" in body
-    assert body.index("return font") < body.index("return gui_app.fallback_font()")
+    assert body.index("return font") < body.index("return gui_app.fallback_font(text)")
+    app_details = app_source[app_source.index("  def fallback_font("):app_source.index("  @property", app_source.index("  def fallback_font("))]
+    assert "self._fallback_codepoints[language]" in app_details
+    assert 'language + ":unifont"' in app_details
+    assert "fallback_font_glyphs(language, EXTRA_FONT_CHARS)" in app_details
+    for path in ("text_measure.py", "wrap_text.py"):
+      source = (Path(__file__).parents[3] / f"system/ui/lib/{path}").read_text(encoding="utf-8")
+      assert "font_fallback(font, text)" in source
 
   def test_mici_traditional_chinese_menu_and_safety_warnings(self):
     """comma 4 Mici has its own string consumers, separate from the classic UI."""
