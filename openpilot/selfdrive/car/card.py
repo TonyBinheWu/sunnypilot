@@ -116,6 +116,28 @@ class Car:
       self.CP = self.CI.CP
       self.CP_SP = self.CI.CP_SP
 
+      # CCNC cluster compatibility is a separately validated UI protocol:
+      # a CAN-FD fingerprint alone does not authorize instrument overrides.
+      if self.CP.brand == "hyundai" and self.CI.CC is not None:
+        from opendbc.car.hyundai.hyundaicanfd import CCNC_VERIFIED_CLUSTER_PLATFORMS
+        from opendbc.car.hyundai.values import HyundaiFlags as CcncHyundaiFlags
+        is_ccnc = bool(self.CP.flags & CcncHyundaiFlags.CCNC)
+        verified = is_ccnc and self.CP.carFingerprint in CCNC_VERIFIED_CLUSTER_PLATFORMS
+        self.CI.CC.ccnc_protocol_verified = verified
+        self.CI.CC.ccnc_display_options = {
+          "master": self.params.get_bool("CcncClusterDisplayEnabled"),
+          "assist": self.params.get_bool("CcncClusterAssistIcons"),
+          "lanes": self.params.get_bool("CcncClusterLaneGuidance"),
+          "objects": self.params.get_bool("CcncClusterSurroundingObjects"),
+          "signs": self.params.get_bool("CcncClusterTrafficSigns")
+        }
+        if self.CI.CC.ccnc_display_options["master"] and not verified:
+          cloudlog.warning({
+            "event": "ccnc_cluster_display_blocked",
+            "platform": str(self.CP.carFingerprint),
+            "reason": "unverified_cluster_protocol",
+          })
+
       # Diagnose opt-in HKG steering initialization once, before Panda safety is
       # configured. Logging only; never alter the safety flags from this path.
       if self.CP.brand == "hyundai":

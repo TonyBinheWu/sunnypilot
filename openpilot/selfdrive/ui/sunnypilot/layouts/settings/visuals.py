@@ -5,6 +5,8 @@ This file is part of sunnypilot and is licensed under the MIT License.
 See the LICENSE.md file in the root directory for more details.
 """
 from openpilot.common.params import Params
+from opendbc.car.hyundai.hyundaicanfd import CCNC_VERIFIED_CLUSTER_PLATFORMS
+from opendbc.car.hyundai.values import HyundaiFlags
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.system.ui.sunnypilot.widgets.list_view import toggle_item_sp, multiple_button_item_sp
@@ -28,6 +30,31 @@ class VisualsLayout(Widget):
 
   def _initialize_items(self):
     self._toggle_defs = {
+      "CcncClusterDisplayEnabled": (
+        lambda: tr("CCNC Cluster Integration (Unverified)"),
+        tr("OEM instrument pass-through is preserved. New overlays remain blocked until this exact cluster protocol is validated."),
+        None,
+      ),
+      "CcncClusterAssistIcons": (
+        lambda: tr("CCNC Driving Assistance Icons"),
+        tr("Use real LFA and cruise control states only; no invented HDA/HDP or FCA status."),
+        None,
+      ),
+      "CcncClusterLaneGuidance": (
+        lambda: tr("CCNC Lane and Lane-Change Graphics"),
+        tr("Requires verified lane confidence, coordinate conversion and valid lane-change state; currently disabled."),
+        None,
+      ),
+      "CcncClusterSurroundingObjects": (
+        lambda: tr("CCNC Nearby Vehicle Graphics"),
+        tr("Requires timestamped classified targets and verified OEM shape mappings; currently disabled."),
+        None,
+      ),
+      "CcncClusterTrafficSigns": (
+        lambda: tr("CCNC Speed Limits and Traffic Signs"),
+        tr("Requires confirmed sign semantics and current road-sign data; currently disabled."),
+        None,
+      ),
       "BlindSpot": (
         lambda: tr("Show Blind Spot Warnings"),
         tr("Enabling this will display warnings when a vehicle is detected in your " +
@@ -132,6 +159,13 @@ class VisualsLayout(Widget):
 
     for param in self._toggle_defs:
       self._toggles[param].action_item.set_state(self._params.get_bool(param))
+
+    CP = ui_state.CP
+    cluster_verified = (CP is not None and CP.brand == "hyundai" and
+                        bool(CP.flags & HyundaiFlags.CCNC) and
+                        CP.carFingerprint in CCNC_VERIFIED_CLUSTER_PLATFORMS)
+    for param in ["CcncClusterDisplayEnabled","CcncClusterAssistIcons","CcncClusterLaneGuidance","CcncClusterSurroundingObjects","CcncClusterTrafficSigns"]:
+      self._toggles[param].action_item.set_enabled(ui_state.is_offroad() and cluster_verified)
 
     self._dev_ui_info.action_item.set_selected_button(ui_state.params.get("DevUIInfo", return_default=True))
 
