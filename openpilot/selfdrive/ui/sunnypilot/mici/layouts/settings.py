@@ -82,11 +82,11 @@ class SettingsLayoutSP(OP.SettingsLayout):
     self.icon_offroad_slider = gui_app.texture("icons_mici/settings/device/lkas.png", BIG_ICON_SIZE, BIG_ICON_SIZE)
 
     sunnylink_panel = SunnylinkLayoutMici()
-    sunnylink_btn = SunnylinkBigButton(tr("sunnylink"), "", gui_app.texture("../../sunnypilot/selfdrive/assets/icons_mici/sunnylink.png", 76, 44))
+    sunnylink_btn = SunnylinkBigButton("sunnylink", "", gui_app.texture("../../sunnypilot/selfdrive/assets/icons_mici/sunnylink.png", 76, 44))
     sunnylink_btn.set_click_callback(lambda: gui_app.push_widget(sunnylink_panel))
 
     models_panel = ModelsLayoutMici()
-    models_btn = SettingsBigButton(tr("models"), "", gui_app.texture("../../sunnypilot/selfdrive/assets/offroad/icon_models.png", ICON_SIZE, ICON_SIZE))
+    models_btn = SettingsBigButton("models", "", gui_app.texture("../../sunnypilot/selfdrive/assets/offroad/icon_models.png", ICON_SIZE, ICON_SIZE))
     models_btn.set_click_callback(lambda: gui_app.push_widget(models_panel))
 
     # onroad: enable button sits at the front (left of toggles)
