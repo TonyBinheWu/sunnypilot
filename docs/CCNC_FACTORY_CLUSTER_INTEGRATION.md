@@ -4,7 +4,7 @@ This document describes **the ccNC Port variant only**. It is not a claim that a
 
 ## What exists
 
-- `opendbc/car/hyundai/carstate.py` currently reads factory camera CAN-FD cluster messages `CCNC_0x161` and `CCNC_0x162` via the camera parser, along with `FR_CMR_03_50ms`. On eligible CCNC non-LKA-steering platforms the decoded values are copied.
+- `opendbc/car/hyundai/carstate.py` currently reads factory camera CAN-FD cluster messages `CCNC_0x161` and `CCNC_0x162` via the camera parser, along with `FR_CMR_03_50ms`. On eligible CCNC non-LKA-steering platforms the decoded values and CANParser COUNTER timestamps are copied.
 - `opendbc/car/hyundai/carcontroller.py` already emits these same two IDs on `CanBus(CP).ECAN` at the existing 20 Hz schedule when the OEM decoded source is available.
 - `opendbc/car/hyundai/hyundaicanfd.py` now repacks source values without removing original FCA/ADAS/HDP faults, warning sounds, traffic signs, nearby targets, and navigation indicators. The input mappings remain untouched.
 - Existing Panda CCNC safety allowlisting permits `0x161` and `0x162` only in its explicitly selected CCNC configuration at E-CAN bus 0 and 32 bytes. No new TX authorization was introduced.
@@ -49,7 +49,7 @@ No Panda safety or ECU-disable change is introduced. CANPacker is responsible fo
 ## Safety and outstanding validation
 
 1. Capture synchronized camera/cluster video, bus captures, exact vehicle fingerprint and firmware, while factory symbols are naturally visible at supported speeds.
-2. Compare original CAN counter/checksum, payload and transmission timing against repacked 0x161/0x162. Test camera loss and stalled counters; the current parser-copy method cannot guarantee freshness and **should not be treated as a complete fail-safe** without further work.
+2. Compare original CAN counter/checksum, payload and transmission timing against repacked 0x161/0x162. The current parser timestamps and a 300 ms freshness gate for both 0x161 and 0x162 prevent retransmission of obviously stale values. Test camera loss, counters, scheduler stalls, mismatched clock domains and recovery; this remains **not a full end-to-end fail-safe** until verified on hardware.
 3. Confirm mode transitions for LFA standby/engaged, factory HDA and LCA, lane geometry confidence, arrows, blind-spot warnings, FCA/AEB status and emergency alerts.
 4. Verify track classification, front/rear coordinate conventions and expiry. Never fabricate distances from blindspot Boolean values or categories from plain radar range.
 5. Verify sign/mapping enums, regional cluster firmware and visibility. Check no error or warning is hidden.
