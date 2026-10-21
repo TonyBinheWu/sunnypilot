@@ -22,7 +22,7 @@ class EsimNetworkButton(BigButton):
       NetworkStrength.good: gui_app.texture("icons_mici/settings/network/cell_strength_high.png", 64, 47),
       NetworkStrength.great: gui_app.texture("icons_mici/settings/network/cell_strength_full.png", 64, 47),
     }
-    super().__init__("esim", "loading...", self._cell_icons[NetworkStrength.unknown], scroll=True, description=description)
+    super().__init__("esim", "loading...", self._cell_icons[NetworkStrength.unknown], scroll=True, description=description, localize_title=False)
 
   def _update_state(self):
     super()._update_state()
@@ -64,7 +64,7 @@ class WifiNetworkButton(BigButton):
     self._wifi_medium_txt = gui_app.texture("icons_mici/settings/network/wifi_strength_medium.png", 64, 47)
     self._wifi_full_txt = gui_app.texture("icons_mici/settings/network/wifi_strength_full.png", 64, 47)
 
-    super().__init__("wi-fi", "not connected", self._wifi_slash_txt, scroll=True, description=description)
+    super().__init__("wi-fi", "not connected", self._wifi_slash_txt, scroll=True, description=description, localize_title=False)
 
   def _update_state(self):
     super()._update_state()
