@@ -19,7 +19,7 @@ from typing import NamedTuple
 from importlib.resources import as_file, files
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware import HARDWARE, PC
-from openpilot.system.ui.lib.multilang import FONT_FALLBACK_LANGUAGES, TRANSLATIONS_DIR, multilang
+from openpilot.system.ui.lib.multilang import FONT_FALLBACK_LANGUAGES, TRANSLATIONS_DIR, fallback_font_glyphs, multilang
 from openpilot.common.realtime import Ratekeeper
 
 from openpilot.system.ui.sunnypilot.lib.application import GuiApplicationExt
@@ -131,7 +131,12 @@ class TextAlignmentVertical(IntEnum):
 
 
 def font_fallback(font: rl.Font) -> rl.Font:
-  """Use a Noto fallback for languages not covered by Inter."""
+  """Use the current Noto font, except for the universal language picker."""
+  # The comma 4 picker uses UNIFONT for all native-language labels. Do not
+  # replace it with a single language's limited Noto glyph atlas.
+  unifont = gui_app._fonts.get(FontWeight.UNIFONT)
+  if unifont is not None and font.texture.id == unifont.texture.id:
+    return font
   if multilang.requires_font_fallback():
     return gui_app.fallback_font()
   return font
@@ -709,9 +714,8 @@ class GuiApplication(GuiApplicationExt):
   def fallback_font(self) -> rl.Font:
     language = multilang.language
     if language not in self._fallback_fonts:
-      chars = set(map(chr, range(32, 127))) | set(EXTRA_FONT_CHARS)
-      chars.update(TRANSLATIONS_DIR.joinpath(f"app_{language}.po").read_text(encoding="utf-8"))
-      codepoints = sorted(map(ord, chars))
+      # Language names, including "繁體" and punctuation, must also be loaded.
+      codepoints = sorted(map(ord, fallback_font_glyphs(language, EXTRA_FONT_CHARS)))
       codepoint_buffer = rl.ffi.new("int[]", codepoints)
       with as_file(FONT_DIR) as fspath:
         font = rl.load_font_ex((fspath / NOTO_FONTS[language]).as_posix(), 48,

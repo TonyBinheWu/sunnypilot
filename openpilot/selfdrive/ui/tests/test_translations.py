@@ -64,6 +64,26 @@ class TestTranslations(OpenpilotTestCase):
 
 
 
+  def test_c4_language_names_loaded_into_noto_fallback(self):
+    from openpilot.system.ui.lib.multilang import fallback_font_glyphs
+
+    menu_glyphs = set("".join(TRANSLATION_LANGUAGES))
+    for code in ("zh-CHT", "zh-CHS", "ja", "ko", "th"):
+      atlas = fallback_font_glyphs(code)
+      assert menu_glyphs.issubset(atlas), f"Missing native language picker glyphs: {code}"
+    assert set("中文（繁體）").issubset(fallback_font_glyphs("zh-CHT"))
+
+  def test_c4_language_picker_preserves_universal_font(self):
+    # The picker explicitly uses UNIFONT, which must not be replaced by
+    # the active Noto font after switching LanguageSetting.
+    app_source = (Path(__file__).parents[3] / "system/ui/lib/application.py").read_text(encoding="utf-8")
+    start = app_source.index("def font_fallback(")
+    end = app_source.index("class MousePos", start)
+    body = app_source[start:end]
+    assert "FontWeight.UNIFONT" in body
+    assert "font.texture.id == unifont.texture.id" in body
+    assert body.index("return font") < body.index("return gui_app.fallback_font()")
+
   def test_mici_traditional_chinese_menu_and_safety_warnings(self):
     """comma 4 Mici has its own string consumers, separate from the classic UI."""
     from openpilot.system.ui.lib.multilang import load_translations
