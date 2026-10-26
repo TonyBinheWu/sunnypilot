@@ -1,0 +1,34 @@
+name: Model runtime contract
+on:
+  pull_request:
+    paths:
+      - '.gitmodules'
+      - 'tinygrad_repo'
+      - 'openpilot/sunnypilot/modeld_v2/**'
+      - 'tools/diagnostics/check_runtime_contract.py'
+      - '.github/workflows/model-runtime-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verified-cpu-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the pinned runtime only
+        run: git submodule update --init tinygrad_repo
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install CPU test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang llvm
+          python -m pip install 'numpy==2.2.6'
+      - name: Validate loader API and execute verified CPU artifact
+        env:
+          DEV: CPU:LLVM
+          GMMU: '0'
+          PYTHONPATH: ${{ github.workspace }}/tinygrad_repo:${{ github.workspace }}
+        run: python tools/diagnostics/check_runtime_contract.py
