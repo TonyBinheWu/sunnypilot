@@ -85,11 +85,11 @@ def use_sunnylink_uploader_shim(started, params, CP: car.CarParams) -> bool:
 
 def is_tinygrad_model(started, params, CP: car.CarParams) -> bool:
   """Check if the active model runner is tinygrad."""
-  return bool(get_active_model_runner(params, not started) == custom.ModelManagerSP.Runner.tinygrad)
+  return bool(get_active_model_runner(params, force_check=True) == custom.ModelManagerSP.Runner.tinygrad)
 
 def is_stock_model(started, params, CP: car.CarParams) -> bool:
   """Check if the active model runner is stock."""
-  return bool(get_active_model_runner(params, not started) == custom.ModelManagerSP.Runner.stock)
+  return bool(get_active_model_runner(params, force_check=True) == custom.ModelManagerSP.Runner.stock)
 
 def mapd_ready(started: bool, params: Params, CP: car.CarParams) -> bool:
   return bool(os.path.exists(Paths.mapd_root()))
