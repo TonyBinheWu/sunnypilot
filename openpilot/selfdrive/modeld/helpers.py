@@ -1,6 +1,7 @@
 import io
 import pickle
 import struct
+import time
 from pathlib import Path
 
 from openpilot.common.file_chunker import get_manifest_path
@@ -33,6 +34,14 @@ def chestnut_present() -> bool:
     except Exception:
       pass
   return False
+
+def wait_for_chestnut(timeout: float = 10.) -> None:
+  st = time.monotonic()
+  while not chestnut_present():
+    if time.monotonic() - st > timeout:
+      raise TimeoutError("chestnut did not enumerate")
+    time.sleep(0.1)
+
 
 def chestnut_compiled() -> bool:
   path = modeld_pkl_path(chestnut=True)
