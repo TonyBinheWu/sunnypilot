@@ -1,85 +1,79 @@
-name: Test Models Compatibility With Tinygrad Changes
+name: Validate CTM v3 Plain Tinygrad Loader
 on:
   pull_request:
     paths:
       - 'tinygrad_repo'
+      - 'openpilot/sunnypilot/modeld_v2/**'
+      - 'openpilot/sunnypilot/models/fetcher.py'
+      - '.github/workflows/test_models.yml'
   workflow_dispatch:
 
 jobs:
-  generate-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      models: ${{ steps.set-matrix.outputs.models }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Fetch and Parse json
-        id: set-matrix
-        run: |
-          python3 -c '
-          import json, urllib.request, os, re
-
-          with open("openpilot/sunnypilot/models/fetcher.py", "r") as f:
-            urls = re.findall(r"MODEL_URL(?:_CHESTNUT)?\s*=\s*[\"'"'"']([^\"'"'"']+)[\"'"'"']", f.read())
-
-          artifacts = []
-          for url in urls:
-            data = json.loads(urllib.request.urlopen(url).read())
-            for bundle in data.get("bundles", []):
-              for model in bundle.get("models", []):
-                if "artifact" in model:
-                  artifacts.append(model["artifact"])
-
-          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-            f.write(f"models={json.dumps(artifacts)}\n")
-          '
-
-  test-model:
-    name: Test ${{ matrix.artifact.file_name }}
-    needs: generate-matrix
+  ctmv3-model-load:
     runs-on: ubuntu-latest
     container: ghcr.io/commaai/openpilot-base:latest
-    strategy:
-      fail-fast: false
-      matrix:
-        artifact: ${{ fromJson(needs.generate-matrix.outputs.models) }}
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - name: Download Model Chunks in Parallel
+      - name: Validate v28 manifest and tinygrad revision
+        id: manifest
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import ast
+          import subprocess
+          import urllib.request
+          from pathlib import Path
+
+          fetcher = Path("openpilot/sunnypilot/models/fetcher.py").read_text()
+          catalog_line = next((line for line in fetcher.splitlines() if line.strip().startswith('MODEL_URL_CHESTNUT =')), None)
+          assert catalog_line, 'Missing Chestnut catalog URL'
+          catalog_url = ast.literal_eval(catalog_line.split('=', 1)[1].strip())
+          with urllib.request.urlopen(catalog_url, timeout=30) as response:
+            data = json.load(response)
+          bundle = next((b for b in data["bundles"] if b.get("short_name") == "CTV3M"), None)
+          assert bundle is not None, "CTM v3 is missing from catalog"
+          assert int(bundle["minimum_selector_version"]) == 21, "Unexpected catalog version"
+          artifact = bundle["models"][0]["artifact"]
+          assert artifact["download_uri"]["url"] and artifact["download_uri"]["sha256"]
+          assert not artifact.get("chunks"), "Expected v28 whole-file model artifact"
+          ref = subprocess.check_output(["git", "-C", "tinygrad_repo", "rev-parse", "HEAD"], text=True).strip()
+          assert ref == data["tinygrad_ref"], f"tinygrad mismatch: {ref} != {data['tinygrad_ref']}"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+            out.write(f"filename={artifact['file_name']}\n")
+            out.write(f"url={artifact['download_uri']['url']}\n")
+            out.write(f"sha256={artifact['download_uri']['sha256']}\n")
+          PY
+
+      - name: Download CTM v3 and verify SHA-256
         env:
+          MODEL_URL: ${{ steps.manifest.outputs.url }}
+          MODEL_SHA256: ${{ steps.manifest.outputs.sha256 }}
+          FILE_NAME: ${{ steps.manifest.outputs.filename }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        shell: bash
         run: |
-          mkdir -p /tmp/model_chunks
-          echo '${{ toJson(matrix.artifact.chunks) }}' > chunks.json
+          mkdir -p /tmp/models
+          if [ -n "${HF_TOKEN:-}" ]; then
+            curl --fail --location --retry 4 --retry-all-errors --connect-timeout 30 \
+              -H "Authorization: Bearer ${HF_TOKEN}" \
+              -o "/tmp/models/${FILE_NAME}" "${MODEL_URL}"
+          else
+            curl --fail --location --retry 4 --retry-all-errors --connect-timeout 30 \
+              -o "/tmp/models/${FILE_NAME}" "${MODEL_URL}"
+          fi
+          printf '%s  %s\n' "${MODEL_SHA256}" "/tmp/models/${FILE_NAME}" | sha256sum --check
 
-          BASE_URL="${{ matrix.artifact.download_uri.url }}"
-          export BASE_DIR=$(dirname "$BASE_URL")
-
-          python3 -c '
-          import json, os
-          with open("chunks.json") as f:
-            chunks = json.load(f)
-          manifest_path = f"/tmp/model_chunks/${{ matrix.artifact.file_name }}.chunkmanifest"
-          with open(manifest_path, "w") as f:
-            f.write(str(len(chunks)))
-          base_dir = os.environ["BASE_DIR"]
-          hf_token = os.environ.get("HF_TOKEN", "")
-          with open("/tmp/curl_config.txt", "w") as f:
-            for c in chunks:
-              fn = c["file_name"]
-              f.write(f"url = \"{base_dir}/{fn}\"\noutput = \"/tmp/model_chunks/{fn}\"\n")
-              if hf_token:
-                f.write(f"header = \"Authorization: Bearer {hf_token}\"\n")
-          '
-          curl -Z --parallel-immediate --parallel-max 12 --retry 3 --retry-all-errors -s -S -f -L -K /tmp/curl_config.txt
-
-      - name: Run Model Compatibility Test
+      - name: Validate CTM v3 plain artifact can load on CPU
         env:
-          MODEL_BASE_NAME: ${{ matrix.artifact.file_name }}
-          MODEL_CHUNK_DIR: "/tmp/model_chunks"
+          MODEL_BASE_NAME: ${{ steps.manifest.outputs.filename }}
+          MODEL_DIR: /tmp/models
+        shell: bash
         run: |
-          export PYTHONPATH="$GITHUB_WORKSPACE/tinygrad_repo:$GITHUB_WORKSPACE:$PYTHONPATH"
-          python3 -m pip uninstall -y tinygrad || uv pip uninstall -y tinygrad --system || true
-          python3 -m pytest openpilot/sunnypilot/modeld_v2/tests/test_models.py
+          export PYTHONPATH="${GITHUB_WORKSPACE}/tinygrad_repo:${GITHUB_WORKSPACE}:${PYTHONPATH:-}"
+          python3 -m pytest -q openpilot/sunnypilot/modeld_v2/tests/test_models.py
