@@ -73,6 +73,22 @@ def _find_driving_pkl(bundle):
   return None
 
 
+def _load_qcom_fallback(cam_w: int, cam_h: int, big_model_ready: bool):
+  """QCOM is optional only when Chestnut is already initialized.
+
+  A failed optional fallback must never replace an active model with invalid output.
+  If Chestnut later fails with no fallback, modeld exits and controls disengage.
+  """
+  try:
+    return ModelState(cam_w=cam_w, cam_h=cam_h, chestnut=False)
+  except Exception:
+    if not big_model_ready:
+      cloudlog.exception("QCOM model failed and no Chestnut model is available")
+      raise
+    cloudlog.exception("QCOM fallback unavailable; continuing with Chestnut only. No fallback if it fails.")
+    return None
+
+
 class FrameMeta:
   frame_id: int = 0
   timestamp_sof: int = 0
@@ -320,7 +336,8 @@ def main(demo=False):
     else:
       params.put_bool("ChestnutActive", model is not None)
 
-  small_model = ModelState(cam_w=vipc_client_main.width, cam_h=vipc_client_main.height, chestnut=False) if model is None or CHESTNUT else None
+  small_model = _load_qcom_fallback(vipc_client_main.width, vipc_client_main.height,
+                                    big_model_ready=model is not None) if model is None or CHESTNUT else None
   if model is None:
     model = small_model
   params.put_bool("ChestnutLoading", False)
@@ -465,7 +482,9 @@ def main(demo=False):
         raise
       cloudlog.exception("big model failed, fall back to small")
       params.put_bool("ChestnutActive", False)
-      assert small_model is not None
+      if small_model is None:
+        cloudlog.exception("Chestnut inference failed; no QCOM fallback is loaded, stopping modeld")
+        raise RuntimeError("Chestnut inference failed and QCOM fallback is unavailable")
       model = small_model
       if chestnut_state is not None:
         chestnut_state.big = False
