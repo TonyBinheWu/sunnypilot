@@ -25,15 +25,16 @@ jobs:
           python3 - <<'PY'
           import json
           import os
-          import re
+          import ast
           import subprocess
           import urllib.request
           from pathlib import Path
 
           fetcher = Path("openpilot/sunnypilot/models/fetcher.py").read_text()
-          match = re.search(r'MODEL_URL_CHESTNUT\\s*=\\s*["\\\']([^"\\\']+)', fetcher)
-          assert match, "Missing Chestnut catalog URL"
-          with urllib.request.urlopen(match.group(1), timeout=30) as response:
+          catalog_line = next((line for line in fetcher.splitlines() if line.strip().startswith('MODEL_URL_CHESTNUT =')), None)
+          assert catalog_line, 'Missing Chestnut catalog URL'
+          catalog_url = ast.literal_eval(catalog_line.split('=', 1)[1].strip())
+          with urllib.request.urlopen(catalog_url, timeout=30) as response:
             data = json.load(response)
           bundle = next((b for b in data["bundles"] if b.get("short_name") == "CTV3M"), None)
           assert bundle is not None, "CTM v3 is missing from catalog"
