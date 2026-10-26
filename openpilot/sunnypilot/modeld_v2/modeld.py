@@ -253,6 +253,22 @@ class ModelState(ModelStateBase):
     return log.ModelDataV2.Action(desiredCurvature=float(desired_curvature), desiredAcceleration=float(desired_accel), shouldStop=bool(stop))
 
 
+def _load_qcom_fallback(cam_w: int, cam_h: int, big_model_ready: bool):
+  """Initialize the small model without taking a working Chestnut model down.
+
+  No fallback is acceptable only while the big model is already loaded. If its
+  inference fails, stop modeld (and disengage) rather than using invalid data.
+  """
+  try:
+    return ModelState(cam_w=cam_w, cam_h=cam_h, chestnut=False)
+  except Exception:
+    if not big_model_ready:
+      cloudlog.exception("QCOM model failed and no Chestnut model is available")
+      raise
+    cloudlog.exception("QCOM fallback unavailable; continuing with Chestnut only. No fallback if it fails.")
+    return None
+
+
 def main(demo=False):
   cloudlog.warning("modeld init")
 
@@ -320,11 +336,15 @@ def main(demo=False):
     else:
       params.put_bool("ChestnutActive", model is not None)
 
-  small_model = ModelState(cam_w=vipc_client_main.width, cam_h=vipc_client_main.height, chestnut=False) if model is None or CHESTNUT else None
+  # An optional QCOM fallback must not kill an already initialized big model.
+  # When Chestnut is unavailable, QCOM remains mandatory and errors are fatal.
+  small_model = _load_qcom_fallback(vipc_client_main.width, vipc_client_main.height,
+                                    big_model_ready=model is not None) if model is None or CHESTNUT else None
   if model is None:
     model = small_model
   params.put_bool("ChestnutLoading", False)
-  assert model is not None
+  if model is None:
+    raise RuntimeError("Neither Chestnut nor QCOM driving model initialized")
   cloudlog.warning(f"models loaded in {time.monotonic() - st:.1f}s, modeld starting")
 
   config_realtime_process(7, 54)
@@ -460,12 +480,14 @@ def main(demo=False):
       send_chestnut = (chestnut_state is not None and
                        run_count % round(model.constants.MODEL_FREQ / SERVICE_LIST['chestnutGpuState'].frequency) == 0)
       model_output = model.run(bufs, transforms, inputs, chestnut_state.send if send_chestnut else None)
-    except Exception:
+    except Exception as e:
       if not model.chestnut:
         raise
-      cloudlog.exception("big model failed, fall back to small")
       params.put_bool("ChestnutActive", False)
-      assert small_model is not None
+      if small_model is None:
+        cloudlog.exception("Chestnut inference failed; no QCOM fallback is loaded, stopping modeld")
+        raise RuntimeError("Chestnut inference failed and QCOM fallback is unavailable") from e
+      cloudlog.exception("big model failed, fall back to small")
       model = small_model
       if chestnut_state is not None:
         chestnut_state.big = False
