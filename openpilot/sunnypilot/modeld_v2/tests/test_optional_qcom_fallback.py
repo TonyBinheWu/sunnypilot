@@ -17,7 +17,7 @@ class TestQcomFallback(unittest.TestCase):
     with (mock.patch.object(modeld, "ModelState", side_effect=AssertionError("No driving pkl found for small model")),
           mock.patch.object(modeld.cloudlog, "exception") as logger):
       self.assertIsNone(modeld._load_qcom_fallback(1928, 1208, big_model_ready=True))
-    self.assertIn("QCOM fallback unavailable", logger.call_args.args[0])
+    self.assertTrue(logger.call_args.args[0].startswith("QCOM fallback unavailable"))
 
   def test_invalid_qcom_is_fatal_without_big_model(self):
     failure = RuntimeError("QCOM model incompatible")
@@ -25,4 +25,4 @@ class TestQcomFallback(unittest.TestCase):
           mock.patch.object(modeld.cloudlog, "exception") as logger):
       with self.assertRaisesRegex(RuntimeError, "QCOM model incompatible"):
         modeld._load_qcom_fallback(1928, 1208, big_model_ready=False)
-    self.assertIn("no Chestnut model", logger.call_args.args[0])
+    self.assertTrue("no Chestnut model" in logger.call_args.args[0])
