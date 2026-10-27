@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.params import Params
 from openpilot.selfdrive.locationd.calibrationd import HEIGHT_INIT
-from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.ui_state import UIStatus, ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.shader_polygon import draw_polygon, Gradient
 from openpilot.system.ui.widgets import Widget
@@ -432,7 +432,7 @@ class ModelRenderer(Widget, ChevronMetrics, ModelRendererSP):
       left_screen = left_screen[:, keep]
       right_screen = right_screen[:, keep]
 
-    return np.vstack((left_screen.T, right_screen[:, ::-1].T)).astype(np.float32)
+    return np.vstack((left_screen.T, right_screen.T[::-1])).astype(np.float32)
 
   @staticmethod
   def _hsla_to_color(h, s, l, a):
