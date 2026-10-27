@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import time
 from types import SimpleNamespace
 from typing import cast
@@ -16,7 +17,6 @@ from unittest import mock
 from openpilot.cereal import messaging
 from openpilot.common.hardware.comma.hardware import get_device_type
 from openpilot.common.test import OpenpilotTestCase
-from openpilot.selfdrive.test.helpers import processes_context
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -38,7 +38,8 @@ class TestDualDeviceCompat(OpenpilotTestCase):
     for alias in ("system/hardware/tici/agnos.json", "openpilot/system/hardware/comma/agnos.json"):
       with self.subTest(alias=alias):
         self.assertEqual((ROOT / alias).resolve(strict=True), manifest.resolve(strict=True))
-    subprocess.run(["bash", "-n", "launch_env.sh", "launch_chffrplus.sh"], cwd=ROOT, check=True)
+    for script in ("launch_env.sh", "launch_chffrplus.sh"):
+      subprocess.run(["bash", "-n", script], cwd=ROOT, check=True)
 
   def test_device_identity_is_not_forced(self):
     for device in ("mici", "tizi"):
@@ -55,7 +56,7 @@ class TestDualDeviceCompat(OpenpilotTestCase):
     from openpilot.selfdrive.ui import ui
     from openpilot.system.ui.lib.application import gui_app
     device = os.environ["EXPECTED_DEVICE"]
-    self.assertIn(device, ("mici", "tizi"))  # codespell:ignore assertin
+    self.assertTrue(device in ("mici", "tizi"))
     expected_big = device == "tizi"
     self.assertEqual(os.environ["BIG"], "1" if expected_big else "0")
     self.assertEqual(gui_app.big_ui(), expected_big)
@@ -92,15 +93,26 @@ class TestDualDeviceCompat(OpenpilotTestCase):
 
   def test_ui_process_produces_frames(self):
     sock = messaging.sub_sock("uiDebug", conflate=False, timeout=100)
-    with processes_context(["ui"]) as processes:
+    # A new interpreter cannot inherit UI singletons from earlier tests.
+    process = subprocess.Popen([sys.executable, "-m", "openpilot.selfdrive.ui.ui"], cwd=ROOT)
+    try:
       frames = []
       deadline = time.monotonic() + 15
       while len(frames) < 5 and time.monotonic() < deadline:
-        self.assertIsNone(processes[0].proc.exitcode, "UI exited before rendering frames")
+        self.assertIsNone(process.poll(), "UI exited before rendering frames")
         frames.extend(messaging.drain_sock(sock))
         time.sleep(0.02)
       self.assertGreaterEqual(len(frames), 5, "UI did not publish enough rendered-frame messages")
       self.assertTrue(all(frame.valid for frame in frames))
+      self.assertIsNone(process.poll(), "UI exited after publishing frames")
+    finally:
+      if process.poll() is None:
+        process.terminate()
+      try:
+        process.wait(timeout=5)
+      except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait(timeout=5)
 
 
 if __name__ == "__main__":
