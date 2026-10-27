@@ -432,7 +432,7 @@ class ModelRenderer(Widget, ChevronMetrics, ModelRendererSP):
       left_screen = left_screen[:, keep]
       right_screen = right_screen[:, keep]
 
-    return np.vstack((left_screen.T, right_screen[:, ::-1].T)).astype(np.float32)
+    return np.vstack((left_screen.T, right_screen.T[::-1])).astype(np.float32)
 
   @staticmethod
   def _hsla_to_color(h, s, l, a):
