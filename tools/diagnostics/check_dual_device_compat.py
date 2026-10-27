@@ -4,6 +4,7 @@ Run once with BIG=0 EXPECTED_DEVICE=mici and again with BIG=1
 EXPECTED_DEVICE=tizi. Only the UI process is started; no vehicle process runs.
 """
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -103,7 +104,17 @@ class TestDualDeviceCompat(OpenpilotTestCase):
         frames.extend(messaging.drain_sock(sock))
         time.sleep(0.02)
       self.assertGreaterEqual(len(frames), 5, "UI did not publish enough rendered-frame messages")
-      self.assertTrue(all(frame.valid for frame in frames))
+      # ui.py leaves the diagnostic uiDebug valid flag at new_message's default.
+      # Check real frame emission and timing, not a driving-data validity contract.
+      previous_time = 0
+      for frame in frames:
+        self.assertEqual(frame.which(), "uiDebug")
+        self.assertGreater(frame.logMonoTime, previous_time)
+        previous_time = frame.logMonoTime
+        for value in (frame.uiDebug.cpuTimeMillis, frame.uiDebug.frameTimeMillis):
+          self.assertTrue(math.isfinite(value))
+          self.assertGreaterEqual(value, 0)
+        self.assertGreater(frame.uiDebug.frameTimeMillis, 0)
       self.assertIsNone(process.poll(), "UI exited after publishing frames")
     finally:
       if process.poll() is None:
