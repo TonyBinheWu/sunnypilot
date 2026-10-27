@@ -1,0 +1,47 @@
+name: C4 and C3X compatibility
+on:
+  pull_request:
+    paths:
+      - 'launch*.sh'
+      - 'openpilot/common/hardware/**'
+      - 'openpilot/system/hardware/**'
+      - 'openpilot/selfdrive/ui/**'
+      - 'openpilot/system/ui/**'
+      - 'tools/diagnostics/check_dual_device_compat.py'
+      - '.github/workflows/dual-device-compat.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host-ui-profile:
+    name: Host UI profile (${{ matrix.device }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: mici
+            big: '0'
+          - device: tizi
+            big: '1'
+    env:
+      CI: '1'
+      PYTHONPATH: ${{ github.workspace }}
+      BIG: ${{ matrix.big }}
+      EXPECTED_DEVICE: ${{ matrix.device }}
+      SUNNYPILOT_UI: '1'
+      RAYLIB_BACKEND: headless
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: lfs.fetchexclude
+      GIT_CONFIG_VALUE_0: openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up repository and pinned dependencies
+        run: ./tools/op.sh setup
+      - name: Install headless graphics dependencies
+        run: sudo apt-get install -y --no-install-recommends libgles2 libegl1
+      - name: Build host dependencies
+        run: .venv/bin/scons -j4
+      - name: Verify bootstrap, platform identity, custom UI and rendered frames
+        run: .venv/bin/python tools/diagnostics/check_dual_device_compat.py
