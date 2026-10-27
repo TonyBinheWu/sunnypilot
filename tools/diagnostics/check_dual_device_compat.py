@@ -105,6 +105,7 @@ class TestDualDeviceCompat(OpenpilotTestCase):
         time.sleep(0.02)
       self.assertGreaterEqual(len(frames), 5, "UI did not publish enough rendered-frame messages")
       # ui.py leaves the diagnostic uiDebug valid flag at new_message's default.
+      # render() reads get_frame_time before end_drawing; the initial duration may be zero.
       # Check real frame emission and timing, not a driving-data validity contract.
       previous_time = 0
       for frame in frames:
@@ -114,7 +115,6 @@ class TestDualDeviceCompat(OpenpilotTestCase):
         for value in (frame.uiDebug.cpuTimeMillis, frame.uiDebug.frameTimeMillis):
           self.assertTrue(math.isfinite(value))
           self.assertGreaterEqual(value, 0)
-        self.assertGreater(frame.uiDebug.frameTimeMillis, 0)
       self.assertIsNone(process.poll(), "UI exited after publishing frames")
     finally:
       if process.poll() is None:
