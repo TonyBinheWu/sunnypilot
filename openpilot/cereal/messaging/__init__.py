@@ -3,6 +3,7 @@ from msgq import fake_event_handle, drain_sock_raw, MultiplePublishersError, Ipc
                  Context, Poller, SubSocket, PubSocket, SocketEventHandle, toggle_fake_events, \
                  set_fake_prefix, get_fake_prefix, delete_fake_prefix, wait_for_one_event
 import msgq
+import math
 import os
 import capnp
 import time
@@ -170,18 +171,24 @@ class FrequencyTracker:
     if self.avg_dt.count == 0:
       return False
 
-    avg_freq = 1.0 / self.avg_dt.get_average()
-    if self.min_freq <= avg_freq <= self.max_freq:
-      return True
-
-    avg_freq_recent = 1.0 / self.recent_avg_dt.get_average()
-    return self.min_freq <= avg_freq_recent <= self.max_freq
+    # A duplicated receive timestamp can leave either window at zero. Invalid
+    # intervals must fail their frequency check, not crash every subscriber.
+    for average in (self.avg_dt, self.recent_avg_dt):
+      dt = average.get_average()
+      if dt > 0.0 and math.isfinite(dt):
+        avg_freq = 1.0 / dt
+        if self.min_freq <= avg_freq <= self.max_freq:
+          return True
+    return False
 
 
 class SubMaster:
   def __init__(self, services: list[str], poll: str | None = None,
                ignore_alive: list[str] | None = None, ignore_avg_freq: list[str] | None = None,
                ignore_valid: list[str] | None = None, addr: str = "127.0.0.1", frequency: float | None = None):
+    # Extension lists may repeat a base service. Register exactly one socket
+    # per service, preserving order and leaving the caller's list unchanged.
+    services = list(dict.fromkeys(services))
     self.frame = -1
     self.services = services
     self.seen = dict.fromkeys(services, False)
