@@ -1789,3 +1789,7 @@ msgstr "更新項目"
 #: openpilot/selfdrive/ui/mici/layouts/settings/software.py
 msgid "Installed version notes"
 msgstr "目前版本更新說明"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/toggles.py
+msgid "enabling\nexperimental mode"
+msgstr "啟用\n實驗模式"

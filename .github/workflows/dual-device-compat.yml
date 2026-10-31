@@ -1,5 +1,7 @@
 name: C4 and C3X compatibility
 on:
+  push:
+    branches: [hkg-enhanced]
   pull_request:
     paths:
       - 'launch*.sh'

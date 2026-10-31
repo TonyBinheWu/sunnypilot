@@ -96,7 +96,7 @@ def test_remote_update_requires_offroad(monkeypatch):
   fake.bools["IsOffroad"] = False
   monkeypatch.setattr(sunnylinkd, "params", fake)
   monkeypatch.setattr(sunnylinkd, "sunnylink_ready", lambda _: True)
-  monkeypatch.setattr(sunnylinkd.subprocess, "run", lambda *args, **kwargs: pytest.fail("updater was signalled while onroad"))
+  monkeypatch.setattr(sunnylinkd.subprocess, "run", lambda *args, **kwargs: pytest.fail("updater was signaled while onroad"))
 
   with pytest.raises(RuntimeError, match="offroad"):
     sunnylinkd._remote_update_request("SunnylinkUpdateNow", _encoded("true"), False)

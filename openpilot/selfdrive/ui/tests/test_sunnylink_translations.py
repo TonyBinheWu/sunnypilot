@@ -28,7 +28,7 @@ class TestSunnylinkTranslations(unittest.TestCase):
       catalog = {entry.msgid: entry.msgstr for entry in entries}
       for entry in sources:
         with self.subTest(language=language, source=entry.msgid):
-          translated = catalog.get(entry.msgid)
+          translated = catalog.get(entry.msgid, "")
           self.assertTrue(translated, "missing or empty sunnylink translation")
           source_fields = sorted((name, spec, conv) for _, name, spec, conv in formatter.parse(entry.msgid) if name is not None)
           translated_fields = sorted((name, spec, conv) for _, name, spec, conv in formatter.parse(translated) if name is not None)
@@ -50,7 +50,7 @@ class TestSunnylinkTranslations(unittest.TestCase):
       for key in ("Backing up {progress}%", "Restoring {progress}%", "{progress}%"):
         for progress in (0, 37.5, 100):
           with self.subTest(language=language, key=key, progress=progress):
-            self.assertIn(f"{progress}%", catalog[key].format(progress=progress))
+            self.assertTrue(f"{progress}%" in catalog[key].format(progress=progress))
 
 
 if __name__ == "__main__":
