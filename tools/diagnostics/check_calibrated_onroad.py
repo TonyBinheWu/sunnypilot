@@ -23,6 +23,9 @@ class TestCalibratedOnroad(OpenpilotTestCase):
     gui_app.init_window("Calibrated onroad regression")
     view = None
     try:
+      # Production refreshes persisted settings before a calibrated onroad session.
+      # Do not confuse an uninitialized test fixture with a post-calibration fault.
+      ui_state.update_params()
       sm = ui_state.sm
       ui_state.started = True
       ui_state.ignition = True
@@ -63,6 +66,9 @@ class TestCalibratedOnroad(OpenpilotTestCase):
       message("longitudinalPlan", {"allowThrottle": True})
       message("carOutput", {})
       message("selfdriveStateSP", {"mads": {"available": False}})
+      message("driverStateV2", {"leftDriverData": {"faceOrientation": [0.05, -0.08, 0.01]},
+                                "rightDriverData": {"faceOrientation": [-0.03, 0.06, -0.01]}})
+      message("driverMonitoringState", {})
       view = road.AugmentedRoadView()
       rect = rl.Rectangle(0, 0, gui_app.width, gui_app.height)
       renderer = view.model_renderer if big else view._model_renderer
