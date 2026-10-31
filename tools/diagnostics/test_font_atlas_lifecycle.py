@@ -13,6 +13,7 @@ class FakeRaylib:
   def __init__(self):
     self.loads = []
     self.unloads = []
+    self.Font = object
     self.ffi = SimpleNamespace(new=lambda signature, values: list(values), cast=lambda signature, values: values)
     self.TextureFilter = SimpleNamespace(TEXTURE_FILTER_TRILINEAR=1, TEXTURE_FILTER_BILINEAR=2)
 
