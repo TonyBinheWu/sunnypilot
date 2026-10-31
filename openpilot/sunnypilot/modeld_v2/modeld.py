@@ -17,7 +17,7 @@ import time
 from setproctitle import setproctitle
 
 import openpilot.cereal.messaging as messaging
-from openpilot.common.hardware import COMMA_HARDWARE
+from openpilot.common.hardware import COMMA_HARDWARE, HARDWARE
 from openpilot.selfdrive.modeld.helpers import chestnut_present, wait_for_chestnut
 from openpilot.cereal import log
 from opendbc.car.structs import car
@@ -87,6 +87,14 @@ def _load_qcom_fallback(cam_w: int, cam_h: int, big_model_ready: bool):
       raise
     cloudlog.exception("QCOM fallback unavailable; continuing with Chestnut only. No fallback if it fails.")
     return None
+
+
+def _load_qcom_for_device(cam_w: int, cam_h: int, big_model_ready: bool):
+  # Match sunnypilot/master on C3X: initialize QCOM ModelState directly.
+  # Preserve C4's existing optional QCOM fallback when Chestnut is ready.
+  if HARDWARE.get_device_type() == "tizi":
+    return ModelState(cam_w=cam_w, cam_h=cam_h, chestnut=False)
+  return _load_qcom_fallback(cam_w, cam_h, big_model_ready)
 
 
 class FrameMeta:
@@ -336,8 +344,8 @@ def main(demo=False):
     else:
       params.put_bool("ChestnutActive", model is not None)
 
-  small_model = _load_qcom_fallback(vipc_client_main.width, vipc_client_main.height,
-                                    big_model_ready=model is not None) if model is None or CHESTNUT else None
+  small_model = _load_qcom_for_device(vipc_client_main.width, vipc_client_main.height,
+                                       big_model_ready=model is not None) if model is None or CHESTNUT else None
   if model is None:
     model = small_model
   params.put_bool("ChestnutLoading", False)
