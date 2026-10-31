@@ -400,7 +400,11 @@ class ModelManagerSP:
           # offroad re-download of the user's existing QCOM selection, rather
           # than keeping an onroad tinygrad runner with no loadable .pkl.
           if qcom_bundle is not None and not self._c3x_qcom_repair_queued and self.params.get("ModelManager_DownloadRef") is None:
-            missing = invalid_qcom_models(Paths.model_root(), qcom_bundle)
+            try:
+              missing = invalid_qcom_models(Paths.model_root(), qcom_bundle)
+            except (OSError, ValueError):
+              cloudlog.exception("C3X QCOM integrity preflight failed; continuing normal validation")
+              missing = []
             if missing and qcom_bundle.ref:
               resolved = resolve_bundle_by_ref(qcom_bundle.ref, {"qcom": self.source_models["qcom"]})
               if resolved is not None:
