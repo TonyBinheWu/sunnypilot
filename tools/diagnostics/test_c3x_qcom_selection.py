@@ -1,14 +1,15 @@
 """C3X vs C4 model source validation regression (run after compiled imports)."""
 import hashlib
+import asyncio
 import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 
 from openpilot.cereal import custom
 from openpilot.common.file_chunker import get_chunk_name, get_manifest_path
-from openpilot.sunnypilot.models import helpers
+from openpilot.sunnypilot.models import helpers, manager
 
 
 def digest(b):
@@ -69,6 +70,33 @@ class TestC3XQcomRuntimeValidation(unittest.TestCase):
 
   def test_chestnut_source_does_not_change(self):
     self.assertTrue(self.valid("tizi", "chestnut"))
+
+
+class TestC3XDownloadReadiness(unittest.TestCase):
+  def setUp(self):
+    self.tmp = tempfile.TemporaryDirectory()
+    self.addCleanup(self.tmp.cleanup)
+    self.root = Path(self.tmp.name)
+    self.artifact = SimpleNamespace(
+      fileName="driving.pkl", downloadUri=SimpleNamespace(uri="https://example.invalid/test.pkl", sha256="test"),
+      downloadProgress=SimpleNamespace(canceling=False))
+    self.download = AsyncMock()
+    self.fake = SimpleNamespace(
+      _set_progress=lambda *args, **kwargs: None, _download_file=self.download,
+      _download_start_times={}, _download_interrupted=lambda: False)
+
+  def exercise(self, platform):
+    with patch.object(manager.HARDWARE, "get_device_type", return_value=platform), \
+         patch.object(manager, "verify_file", new=AsyncMock(return_value=True)):
+      asyncio.run(manager.ModelManagerSP._process_artifact(self.fake, self.artifact, str(self.root)))
+
+  def test_tizi_downloads_missing_full_model_even_when_chunks_verify(self):
+    self.exercise("tizi")
+    self.assertEqual(self.download.await_count, 1)
+
+  def test_mici_keeps_existing_download_cache_path(self):
+    self.exercise("mici")
+    self.assertEqual(self.download.await_count, 0)
 
 
 if __name__ == "__main__":
