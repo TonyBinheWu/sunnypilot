@@ -14,6 +14,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from openpilot.common.params import Params
+from openpilot.common.hardware import HARDWARE
+from openpilot.sunnypilot.models.qcom_repair import repair_qcom_bundle
 from openpilot.common.realtime import Ratekeeper
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware.hw import Paths
@@ -376,6 +378,15 @@ class ModelManagerSP:
         self.chestnut_present = self.sm['deviceState'].chestnutPresent
         self.source_models = {source: self.model_fetcher.get_bundles_for_source(source) for source in ModelFetcher.MODEL_SOURCES}
         self.available_models = self.source_models[ModelFetcher.active_source(self.chestnut_present)]
+        # On C3X only: the catalog can verify separate chunks while modeld_v2
+        # can only mmap a complete .pkl. Repair offroad before validating the
+        # selected bundle; leave the working C4/Chestnut path unchanged.
+        if HARDWARE.get_device_type() == "tizi" and self.sm.all_checks(["deviceState"]) and not self.sm["deviceState"].started:
+          try:
+            for filename in repair_qcom_bundle(Paths.model_root(), get_selected_bundle(self.params, "qcom")):
+              cloudlog.warning(f"C3X QCOM compiled model reconstructed: {filename}")
+          except (OSError, ValueError):
+            cloudlog.exception("C3X QCOM model reconstruction failed; selected model will be validated normally")
         validate_active_bundles(self.params, self.source_models)
         self.active_bundle = get_active_bundle(self.params, chestnut=self.chestnut_present)
 
