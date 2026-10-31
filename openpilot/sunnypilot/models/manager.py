@@ -138,6 +138,7 @@ class ModelManagerSP:
     self._block_size = 128 * 1000  # 128 KB network read blocks
     self._download_start_times: dict[str, float] = {}  # Track start time per model
     self._download_ref: bytes | str | None = None
+    self._c3x_qcom_repair_queued = False
 
   def _download_interrupted(self) -> bool:
     # only removal cancels: a different ref is a queued selection that
@@ -382,11 +383,25 @@ class ModelManagerSP:
         # can only mmap a complete .pkl. Repair offroad before validating the
         # selected bundle; leave the working C4/Chestnut path unchanged.
         if HARDWARE.get_device_type() == "tizi" and self.sm.all_checks(["deviceState"]) and not self.sm["deviceState"].started:
+          qcom_bundle = get_selected_bundle(self.params, "qcom")
           try:
-            for filename in repair_qcom_bundle(Paths.model_root(), get_selected_bundle(self.params, "qcom")):
+            for filename in repair_qcom_bundle(Paths.model_root(), qcom_bundle):
               cloudlog.warning(f"C3X QCOM compiled model reconstructed: {filename}")
           except (OSError, ValueError):
             cloudlog.exception("C3X QCOM model reconstruction failed; selected model will be validated normally")
+          # Some older installations have no matching chunks at all. Queue one
+          # offroad re-download of the user's existing QCOM selection, rather
+          # than keeping an onroad tinygrad runner with no loadable .pkl.
+          if qcom_bundle is not None and not self._c3x_qcom_repair_queued and self.params.get("ModelManager_DownloadRef") is None:
+            missing = [m.artifact.fileName for m in qcom_bundle.models
+                       if m.artifact.fileName.endswith(".pkl") and
+                       not os.path.isfile(os.path.join(Paths.model_root(), m.artifact.fileName))]
+            if missing and qcom_bundle.ref:
+              resolved = resolve_bundle_by_ref(qcom_bundle.ref, {"qcom": self.source_models["qcom"]})
+              if resolved is not None:
+                self._c3x_qcom_repair_queued = True
+                self.params.put("ModelManager_DownloadRef", qcom_bundle.ref, block=True)
+                cloudlog.warning(f"C3X QCOM model missing {missing}; queued one offroad re-download of selected bundle")
         validate_active_bundles(self.params, self.source_models)
         self.active_bundle = get_active_bundle(self.params, chestnut=self.chestnut_present)
 
