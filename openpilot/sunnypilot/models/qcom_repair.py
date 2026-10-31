@@ -14,6 +14,34 @@ from openpilot.common.file_chunker import get_chunk_name, get_manifest_path
 COPY_SIZE = 4 * 1024 * 1024
 
 
+def invalid_qcom_models(model_root: str, bundle) -> list[str]:
+  """Return missing or corrupt compiled model paths for offroad recovery."""
+  if bundle is None:
+    return []
+  root = Path(model_root).resolve()
+  invalid = []
+  for model in bundle.models:
+    artifact = model.artifact
+    name = artifact.fileName
+    if not name or not name.endswith(".pkl"):
+      continue
+    target = root / name
+    if not target.resolve().is_relative_to(root) or target.is_symlink():
+      raise ValueError("model artifact path escapes model storage")
+    if not target.is_file():
+      invalid.append(name)
+      continue
+    expected = getattr(artifact.downloadUri, "sha256", None)
+    if expected:
+      digest = hashlib.sha256()
+      with target.open("rb") as source:
+        for block in iter(lambda: source.read(COPY_SIZE), b""):
+          digest.update(block)
+      if digest.hexdigest().lower() != str(expected).lower():
+        invalid.append(name)
+  return invalid
+
+
 def repair_qcom_bundle(model_root: str, bundle) -> list[str]:
   """Reconstruct missing full model files, after verifying all source chunks.
 
