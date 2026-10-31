@@ -62,6 +62,11 @@ class TestC3XQcomRuntimeValidation(unittest.TestCase):
     self.path.write_bytes(self.full + b"tamper")
     self.assertFalse(self.valid("tizi", "qcom"))
 
+  def test_tizi_rejects_empty_tinygrad_bundle(self):
+    self.bundle.models = []
+    self.assertFalse(self.valid("tizi", "qcom"))
+    self.assertTrue(self.valid("mici", "qcom"))
+
   def test_chestnut_source_does_not_change(self):
     self.assertTrue(self.valid("tizi", "chestnut"))
 
