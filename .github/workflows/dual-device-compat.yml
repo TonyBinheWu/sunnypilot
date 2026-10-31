@@ -8,6 +8,7 @@ on:
       - 'openpilot/selfdrive/ui/**'
       - 'openpilot/system/ui/**'
       - 'tools/diagnostics/check_dual_device_compat.py'
+      - 'tools/diagnostics/check_calibrated_onroad.py'
       - '.github/workflows/dual-device-compat.yml'
   workflow_dispatch:
 permissions:
@@ -45,3 +46,5 @@ jobs:
         run: .venv/bin/scons -j4
       - name: Verify bootstrap, platform identity, custom UI and rendered frames
         run: .venv/bin/python tools/diagnostics/check_dual_device_compat.py
+      - name: Exercise calibration transition and real onroad overlays
+        run: .venv/bin/python tools/diagnostics/check_calibrated_onroad.py
