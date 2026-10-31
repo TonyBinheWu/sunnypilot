@@ -2173,3 +2173,11 @@ msgstr "sunnypilot 透過觀察駕駛行為學習。\n\nFirehose 模式可提高
 #: openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py
 msgid "For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n\nFirehose Mode can also work while you're driving if connected to a hotspot or unlimited SIM card."
 msgstr "建議每週將裝置帶至室內，連接品質良好的 USB-C 電源及 Wi-Fi，以獲得最佳效果。\n\n若行駛途中使用熱點或不限流量的 SIM 卡，Firehose 模式也能運作。"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/software.py
+msgid "Update notes"
+msgstr "更新項目"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/software.py
+msgid "Installed version notes"
+msgstr "目前版本更新說明"

@@ -5,6 +5,7 @@ from enum import IntEnum
 from collections.abc import Callable
 
 from openpilot.common.time_helpers import system_time_valid
+from openpilot.common.release_notes import release_notes_lines
 from openpilot.selfdrive.ui.mici.layouts.settings.device import EngagedConfirmationButton
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog
@@ -207,12 +208,62 @@ class InstallUpdateButton(BigButton):
   def _handle_mouse_release(self, mouse_pos: MousePos):
     super()._handle_mouse_release(mouse_pos)
 
+    description = ui_state.params.get("UpdaterNewDescription") or ""
+    notes = (ui_state.params.get("UpdaterNewReleaseNotes") or b"").decode("utf-8", "replace")
+    gui_app.push_widget(ReleaseNotesPage(description, notes, install_callback=self._install))
+
+  def _install(self):
+    if not ui_state.is_offroad() or not ui_state.params.get_bool("UpdateAvailable"):
+      return
     self.set_enabled(False)
 
     def run():
       ui_state.params.put_bool("DoReboot", True, block=True)
 
     threading.Thread(target=run, daemon=True).start()
+
+
+class ReleaseNotesPage(NavScroller):
+  def __init__(self, description: str, notes: str, install_callback: Callable[[], None] | None = None):
+    super().__init__(horizontal=False)
+    width = gui_app.width - 60
+    lines = [description, *release_notes_lines(notes)]
+    if not notes.strip():
+      lines.append(tr("No release notes available."))
+    labels = []
+    for index, line in enumerate(lines):
+      label = UnifiedLabel(line, 36 if index == 0 else 28, max_width=width, elide=False)
+      label.set_rect(rl.Rectangle(0, 0, width, label.get_content_height(width) + 20))
+      labels.append(label)
+    self._scroller.add_widgets(labels)
+    if install_callback is not None:
+      install_button = BigButton("install now", "")
+      install_button.set_click_callback(lambda: self.dismiss(install_callback))
+      self._scroller.add_widget(install_button)
+
+
+class ReleaseNotesButton(BigButton):
+  def __init__(self, available: bool):
+    super().__init__("Update notes" if available else "Installed version notes", "")
+    self._available = available
+    self._prefix = "UpdaterNew" if available else "UpdaterCurrent"
+    if available:
+      self.set_visible(lambda: ui_state.is_offroad() and ui_state.params.get_bool("UpdateAvailable"))
+    self.set_click_callback(self._show_notes)
+
+  def _update_state(self):
+    title = tr("Update notes") if self._available else tr("Installed version notes")
+    if self.get_text() != title:
+      self.set_text(title)
+    super()._update_state()
+    desc = _split_description(ui_state.params.get(self._prefix + "Description") or "")
+    self.set_value(f"{desc[0]} ({desc[1]})" if desc else "")
+
+  def _show_notes(self):
+    # Read at click time: an update may have finished while this page was open.
+    description = ui_state.params.get(self._prefix + "Description") or ""
+    notes = (ui_state.params.get(self._prefix + "ReleaseNotes") or b"").decode("utf-8", "replace")
+    gui_app.push_widget(ReleaseNotesPage(description, notes))
 
 
 class BranchSelectPage(NavScroller):
@@ -285,7 +336,9 @@ class SoftwareLayoutMici(NavScroller):
     self._scroller.add_widgets([
       SoftwareInfoLayoutMici(),
       check_update_btn,
+      ReleaseNotesButton(available=True),
       InstallUpdateButton(),
+      ReleaseNotesButton(available=False),
       TargetBranchButton(check_update_btn),
       uninstall_openpilot_btn,
     ])
