@@ -41,6 +41,21 @@ class TestC3XQcomRepair(unittest.TestCase):
     self.assertEqual(repair_qcom_bundle(str(self.root), self.bundle(meta)), [])
     self.assertEqual(list(self.root.glob(".qcom-repair-*")), [])
 
+  def test_manifest_only_model_index_is_supported(self):
+    # Upstream driving_models_v25.json publishes a full SHA, but omits
+    # artifact.chunks even when model.type is "chunked".
+    meta = artifact("driving.pkl", self.raw, self.root)
+    meta.chunks = []
+    self.assertEqual(repair_qcom_bundle(str(self.root), self.bundle(meta)), ["driving.pkl"])
+    self.assertEqual((self.root / "driving.pkl").read_bytes(), self.raw)
+
+  def test_manifest_only_bad_full_sha_is_rejected(self):
+    meta = artifact("driving.pkl", self.raw, self.root, tamper=True)
+    meta.chunks = []
+    with self.assertRaisesRegex(ValueError, "model checksum mismatch"):
+      repair_qcom_bundle(str(self.root), self.bundle(meta))
+    self.assertFalse((self.root / "driving.pkl").exists())
+
   def test_corrupt_chunk_does_not_replace_model(self):
     meta = artifact("driving.pkl", self.raw, self.root, tamper=True)
     with self.assertRaisesRegex(ValueError, "checksum mismatch"):
