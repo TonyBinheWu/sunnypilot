@@ -19,6 +19,22 @@ UI_DIR = files("openpilot.selfdrive.ui")
 TRANSLATIONS_DIR = UI_DIR.joinpath("translations")
 LANGUAGES_FILE = TRANSLATIONS_DIR.joinpath("languages.json")
 
+
+def fallback_font_glyphs(language_code: str, extra_chars: str = "") -> set[str]:
+  """Reserve glyphs for translated UI strings and native language names.
+
+  The comma 4 language picker contains names that may be absent from the
+  currently active .po file. Without those glyphs, Noto renders '?'.
+  """
+  glyphs = set(map(chr, range(32, 127))) | set(extra_chars)
+  glyphs.update(TRANSLATIONS_DIR.joinpath(f"app_{language_code}.po").read_text(encoding="utf-8"))
+  with LANGUAGES_FILE.open(encoding="utf-8") as f:
+    language_labels = json.load(f)
+  for label in language_labels:
+    glyphs.update(label)
+  return glyphs
+
+
 LANGUAGE_CODE_ALIASES = {
   "zh-TW": "zh-CHT",
   "zh-Hant": "zh-CHT",
