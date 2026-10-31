@@ -484,7 +484,7 @@ def main(demo=False):
       params.put_bool("ChestnutActive", False)
       if small_model is None:
         cloudlog.exception("Chestnut inference failed; no QCOM fallback is loaded, stopping modeld")
-        raise RuntimeError("Chestnut inference failed and QCOM fallback is unavailable")
+        raise RuntimeError("Chestnut inference failed and QCOM fallback is unavailable") from None
       model = small_model
       if chestnut_state is not None:
         chestnut_state.big = False

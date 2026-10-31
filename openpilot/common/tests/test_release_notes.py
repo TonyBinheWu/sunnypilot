@@ -21,16 +21,16 @@ class TestReleaseNotes(unittest.TestCase):
     self.write("已安裝版本\n========\n* 舊版功能\n")
     with tempfile.TemporaryDirectory() as staged:
       Path(staged, "CHANGELOG.md").write_text("待更新版本\n========\n* 新版修正\n", encoding="utf-8")
-      self.assertIn("新版修正", read_release_notes(staged))
+      self.assertTrue("新版修正" in read_release_notes(staged))
       self.assertNotIn("舊版功能", read_release_notes(staged))
-      self.assertIn("舊版功能", read_release_notes(str(self.root)))
+      self.assertTrue("舊版功能" in read_release_notes(str(self.root)))
 
   def test_complete_latest_entry_with_blank_lines_and_crlf(self):
     self.write("新版\n========\n\n* 第一項\n\n* 最後一項\n\n舊版\n========\n* 不應出現\n")
     path = self.root / "CHANGELOG.md"
     path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
     notes = read_release_notes(str(self.root))
-    self.assertIn("最後一項", notes)
+    self.assertTrue("最後一項" in notes)
     self.assertNotIn("不應出現", notes)
     self.assertNotIn("\r", notes)
 
@@ -50,7 +50,7 @@ class TestReleaseNotes(unittest.TestCase):
     for branch in ("hkg-enhanced", "ccnc-port"):
       with self.subTest(branch=branch):
         self.write(f"sunnypilot {branch} Version 2026.003.001 (2026-10-31)\n========\n"
-                   "* C3X：更新說明\n* C4：更新說明\n\n舊版\n========\n* 舊項目\n")
+                   + "* C3X：更新說明\n* C4：更新說明\n\n舊版\n========\n* 舊項目\n")
         check_release_notes(self.root)
         check_release_notes(self.root, expected_branch=branch)
         other_branch = "ccnc-port" if branch == "hkg-enhanced" else "hkg-enhanced"
@@ -78,8 +78,8 @@ class TestReleaseNotes(unittest.TestCase):
     sources = {entry.msgid for entry in entries}
     _, translated = parse_po(root / "openpilot/selfdrive/ui/translations/app_zh-CHT.po")
     messages = {entry.msgid: entry.msgstr for entry in translated}
-    self.assertIn("Update notes", sources)
-    self.assertIn("Installed version notes", sources)
+    self.assertTrue("Update notes" in sources)
+    self.assertTrue("Installed version notes" in sources)
     self.assertEqual(messages["Update notes"], "更新項目")
     self.assertEqual(messages["Installed version notes"], "目前版本更新說明")
 

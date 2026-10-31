@@ -1,5 +1,7 @@
 name: Model runtime contract
 on:
+  push:
+    branches: [hkg-enhanced, ccnc-port]
   pull_request:
     paths:
       - '.gitmodules'

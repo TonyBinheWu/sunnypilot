@@ -106,7 +106,7 @@ class TestTranslations(OpenpilotTestCase):
       "models": "模型",
       "slide to exit always offroad": "滑動以離開持續停駛模式",
       "slide to force offroad": "滑動以強制進入停駛模式",
-      "enabling\\nexperimental mode": "啟用\\n實驗模式",
+      "enabling\nexperimental mode": "啟用\n實驗模式",
       "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)":
         "警告：Alpha 縱向控制可能使原廠自動緊急煞車（AEB）失效。",
     }
