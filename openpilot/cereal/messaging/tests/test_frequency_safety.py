@@ -88,10 +88,7 @@ class TestFrequencySafety(unittest.TestCase):
 class TestSubMasterFrequencySafety(OpenpilotTestCase):
   def setUp(self):
     super().setUp()
-    self.addCleanup(patch.dict(os.environ, {'SIMULATION': '0'}).start().__class__ if False else lambda: None)
-    self.env = patch.dict(os.environ, {'SIMULATION': '0'})
-    self.env.start()
-    self.addCleanup(self.env.stop)
+    self.enterContext(patch.dict(os.environ, {'SIMULATION': '0'}))
 
   def test_duplicate_services_create_one_socket_each(self):
     services = ['gpsLocation', 'modelV2', 'gpsLocation', 'modelV2']
@@ -153,7 +150,7 @@ class TestSubMasterFrequencySafety(OpenpilotTestCase):
     self.assertFalse(sm.all_alive())
 
   def test_actual_ui_base_and_extension_lists_are_deduplicated(self):
-    root = Path(__file__).resolve().parents[4]
+    root = Path(__file__).resolve().parents[3]
     base = ast.parse((root / 'selfdrive/ui/ui_state.py').read_text())
     ext = ast.parse((root / 'selfdrive/ui/sunnypilot/ui_state.py').read_text())
     ui_class = next(n for n in base.body if isinstance(n, ast.ClassDef) and n.name == 'UIState')
