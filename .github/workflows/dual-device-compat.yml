@@ -7,8 +7,8 @@ on:
       - 'openpilot/system/hardware/**'
       - 'openpilot/selfdrive/ui/**'
       - 'openpilot/system/ui/**'
-      - 'tools/diagnostics/check_dual_device_compat.py'
-      - 'tools/diagnostics/check_calibrated_onroad.py'
+      - 'openpilot/system/manager/**'
+      - 'tools/diagnostics/**'
       - '.github/workflows/dual-device-compat.yml'
   workflow_dispatch:
 permissions:
@@ -48,3 +48,9 @@ jobs:
         run: .venv/bin/python tools/diagnostics/check_dual_device_compat.py
       - name: Exercise calibration transition and real onroad overlays
         run: .venv/bin/python tools/diagnostics/check_calibrated_onroad.py
+      - name: Exercise enabled developer and optional onroad overlays
+        run: .venv/bin/python tools/diagnostics/check_onroad_options.py
+      - name: Verify C3X-only recovery and unchanged C4 lifecycle
+        run: .venv/bin/python tools/diagnostics/check_ui_runtime.py
+      - name: Verify persistent Python, thread and native crash evidence
+        run: .venv/bin/python tools/diagnostics/check_ui_crash_capture.py

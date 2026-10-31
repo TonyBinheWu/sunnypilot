@@ -20,6 +20,8 @@ def main():
 
   gui_app.init_window("UI")
   if BIG_UI:
+    # Legacy onroad widgets read settings before the asynchronous refresh can finish.
+    ui_state.update_params()
     MainLayout()
   else:
     MiciMainLayout()
