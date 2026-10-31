@@ -5,10 +5,12 @@ This file is part of sunnypilot and is licensed under the MIT License.
 See the LICENSE.md file in the root directory for more details.
 """
 import base64
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
 import tempfile
+from unittest.mock import patch
 
 from openpilot.sunnypilot.sunnylink.athena import sunnylinkd
 from openpilot.common.test import OpenpilotTestCase
@@ -127,7 +129,7 @@ class TestRemoteUpdateRequests(OpenpilotTestCase):
     fake = RemoteParams()
     monkeypatch.setattr(sunnylinkd, "params", fake)
     monkeypatch.setattr(sunnylinkd, "sunnylink_ready", lambda _: True)
-    monkeypatch.setenv("UPDATER_STAGING_ROOT", str(tmp_path))
+    self.enterContext(patch.dict(os.environ, {"UPDATER_STAGING_ROOT": str(tmp_path)}))
     monkeypatch.setattr(sunnylinkd, "BASEDIR", str(tmp_path / "installed"))
 
     class DeviceState:

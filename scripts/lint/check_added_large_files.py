@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import math
 import os
 import subprocess
+
+# This licensed CJK font is deliberately stored outside LFS so device updates
+# always include it. Keep the exception limited to the reviewed file contents.
+BUNDLED_FONT = "openpilot/selfdrive/assets/fonts/SourceHanSansTC-Regular.otf"
+BUNDLED_FONT_SHA256 = "10e6d832bc73650840aa7fbfec4e10c527f8136ae2aec71c3e1c13a67475c24a"
 
 
 def lfs_files(filenames: list[str]) -> set[str]:
@@ -24,6 +30,12 @@ def check_added_large_files(filenames: list[str], max_kb: int) -> int:
   failed = False
   ignored = lfs_files(filenames)
   for filename in filenames:
+    if filename == BUNDLED_FONT:
+      with open(filename, "rb") as font:
+        if hashlib.file_digest(font, "sha256").hexdigest() != BUNDLED_FONT_SHA256:
+          print(f"{filename}: bundled font checksum changed; review its source and license.")
+          failed = True
+      continue
     if filename in ignored:
       continue
 

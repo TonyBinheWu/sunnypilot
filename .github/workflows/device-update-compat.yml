@@ -44,4 +44,4 @@ jobs:
         if: always()
         with:
           name: update-notes-${{ matrix.device }}
-          path: update-notes-${{ matrix.device }}.png
+          path: update-notes-${{ matrix.device }}*.png
