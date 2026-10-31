@@ -107,6 +107,13 @@ class TestBootDiagnostics(unittest.TestCase):
     path = diag.report("ui", 'Fatal Python error: Segmentation fault\nFile "inner.py", line 3\nFile "outer.py", line 8', -11)
     self.assertEqual(json.loads(path.read_text())["location"], "inner.py:3")
 
+  def test_native_stack_selects_faulting_thread(self):
+    trace = ('Fatal Python error: Segmentation fault\nThread 0x123 (most recent call first):\n'
+             '  File "worker.py", line 10\nCurrent thread 0x456 (most recent call first):\n'
+             '  File "fault.py", line 42\n  File "outer.py", line 8')
+    report = json.loads(diag.report("ui", trace, -11).read_text())
+    self.assertEqual(report["location"], "fault.py:42")
+
   def test_ui_crash_is_shown_once(self):
     proc = SimpleNamespace(pid=1234, exitcode=1)
     ui = SimpleNamespace(proc=proc, enabled=True, shutting_down=False)
@@ -151,6 +158,24 @@ class TestBootDiagnostics(unittest.TestCase):
     for path in diag.directory().glob("manager.log*"):
       self.assertLessEqual(path.stat().st_size, diag.MAX_LOG)
     self.assertEqual(len(list(diag.directory().glob("manager.log*"))), 2)
+
+  @unittest.skipUnless(Path("/dev/full").exists(), "Requires Linux ENOSPC test device")
+  def test_disk_full_flush_and_close_do_not_fail_successful_child(self):
+    source = f"""import runpy, sys
+from pathlib import Path
+from unittest.mock import patch
+m = runpy.run_path({str(GUARD)!r})
+original = Path.open
+def full_log(path, *args, **kwargs):
+  if path.name == "build.log":
+    return open("/dev/full", "wb")
+  return original(path, *args, **kwargs)
+with patch.object(Path, "open", full_log):
+  raise SystemExit(m["run"]("build", [sys.executable, "-c", "print('force buffered flush')"]))
+"""
+    result = subprocess.run([sys.executable, "-c", source], capture_output=True, timeout=10)
+    self.assertEqual(result.returncode, 0, result.stderr.decode())
+    self.assertFalse((Path(self.temp.name) / "latest-error.json").exists())
 
   def test_retain_five_sessions_without_deleting_unowned_files(self):
     root = Path(self.temp.name)

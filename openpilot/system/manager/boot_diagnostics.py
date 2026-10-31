@@ -109,7 +109,13 @@ def report(stage: str, detail: str, code: int | None = None) -> Path | None:
     starts = [detail.rfind("Traceback (most recent call last):"), detail.rfind("Fatal Python error:")]
     if max(starts) >= 0:
       detail = detail[max(starts):]
-    frames = re.findall(r'File "([^"]+)", line (\d+)', detail)
+    stack = detail
+    if "Fatal Python error:" in detail:
+      # all_threads dumps can list a waiting thread before the faulting thread.
+      current = re.search(r"^Current thread .*:$", detail, re.MULTILINE)
+      if current is not None:
+        stack = detail[current.start():]
+    frames = re.findall(r'File "([^"]+)", line (\d+)', stack)
     frame = (frames[0] if "Fatal Python error:" in detail else frames[-1]) if frames else None
     location = f"{frame[0].replace(str(ROOT) + '/', '')}:{frame[1]}" if frame else "No Python frame recorded"
     errors = [line.strip() for line in detail.splitlines()
@@ -225,8 +231,18 @@ def mark_clean_exit() -> None:
       pass
 
 
+def close_log(log) -> None:
+  # Buffered close can repeat a failed flush (e.g. ENOSPC). Never fail the guard.
+  if log is not None:
+    try:
+      log.close()
+    except OSError:
+      pass
+
+
 def run(stage: str, command: list[str]) -> int:
   """Capture imports, signals and child output without importing built modules."""
+  log = None
   try:
     path = directory()
     retain_sessions(path)
@@ -235,6 +251,7 @@ def run(stage: str, command: list[str]) -> int:
     if stage == "manager":
       (path / "manager-clean-exit").unlink(missing_ok=True)
   except OSError:
+    close_log(log)
     return subprocess.call(command)  # Storage failure must not prevent startup.
 
   interrupted = False
@@ -271,19 +288,19 @@ def run(stage: str, command: list[str]) -> int:
         try:
           sys.stdout.buffer.write(data)
           sys.stdout.buffer.flush()
-        except (OSError, BrokenPipeError):
+        except OSError:
           pass
         try:
           if log is not None:
             if log.tell() + len(data) > MAX_LOG:
-              log.close()
+              close_log(log)
+              log = None
               log_path.replace(log_path.with_suffix(".log.1"))
               log = log_path.open("wb")
             log.write(data)
             log.flush()
         except OSError:
-          if log is not None:
-            log.close()
+          close_log(log)
           log = None  # Disk full/read-only must not terminate the child.
     code = child.wait()
     child.stdout.close()
@@ -295,8 +312,7 @@ def run(stage: str, command: list[str]) -> int:
     except OSError:
       pass
   finally:
-    if log is not None:
-      log.close()
+    close_log(log)
     for sig, handler in handlers.items():
       signal.signal(sig, handler)
 
