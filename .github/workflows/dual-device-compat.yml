@@ -48,14 +48,6 @@ jobs:
         run: ./tools/op.sh setup
       - name: Install headless graphics dependencies
         run: sudo apt-get install -y --no-install-recommends libgles2 libegl1
-      - name: Build host dependencies
-        run: .venv/bin/scons -j4
-      - name: Verify normal timing and recovery after stalls
-        run: .venv/bin/python -m unittest openpilot.common.tests.test_ratekeeper_stall -v
-      - name: Verify bootstrap, platform identity, custom UI and rendered frames
-        run: .venv/bin/python tools/diagnostics/check_dual_device_compat.py
-      - name: Exercise calibration transition and real onroad overlays
-        run: .venv/bin/python tools/diagnostics/check_calibrated_onroad.py
       - name: Render independent diagnostic screen
         run: |
           .venv/bin/python - <<'PYCODE'
@@ -69,6 +61,14 @@ jobs:
           PYCODE
           .venv/bin/python openpilot/system/ui/crash_screen.py diagnostic-test.json --device "${{ matrix.device }}" --frames 3 --screenshot "diagnostic-${{ matrix.device }}.png"
           test -s "diagnostic-${{ matrix.device }}.png"
+      - name: Build host dependencies
+        run: .venv/bin/scons -j4
+      - name: Verify normal timing and recovery after stalls
+        run: .venv/bin/python -m unittest openpilot.common.tests.test_ratekeeper_stall -v
+      - name: Verify bootstrap, platform identity, custom UI and rendered frames
+        run: .venv/bin/python tools/diagnostics/check_dual_device_compat.py
+      - name: Exercise calibration transition and real onroad overlays
+        run: .venv/bin/python tools/diagnostics/check_calibrated_onroad.py
       - name: Upload diagnostic rendering
         uses: actions/upload-artifact@v4
         with:

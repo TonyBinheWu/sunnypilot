@@ -59,16 +59,20 @@ def main() -> None:
   chinese_font = None
   try:
     # Load only our small fixed label alphabet. Never load the full UI font atlas.
-    path = ROOT / "openpilot/selfdrive/assets/fonts/SourceHanSansTC-Regular.otf"
-    if path.exists():
-      with path.open("rb") as f:
-        is_font = f.read(4) == b"OTTO"
-      if is_font:
-        points = sorted({ord(c) for c in LABELS})
-        buffer = rl.ffi.new("int[]", points)
-        candidate = rl.load_font_ex(str(path), int(18 * scale), buffer, len(points))
-        if candidate.texture.id != default_font.texture.id and candidate.texture.id:
-          chinese_font = candidate
+    try:
+      path = ROOT / "openpilot/selfdrive/assets/fonts/SourceHanSansTC-Regular.otf"
+      if path.exists():
+        with path.open("rb") as f:
+          is_font = f.read(4) == b"OTTO"
+        if is_font:
+          points = sorted({ord(c) for c in LABELS})
+          buffer = rl.ffi.new("int[]", points)
+          candidate = rl.load_font_ex(str(path), int(18 * scale), rl.ffi.cast("int *", buffer), len(points))
+          if candidate.texture.id != default_font.texture.id and candidate.texture.id:
+            chinese_font = candidate
+    except Exception as e:
+      print(f"Optional label font unavailable: {e}", flush=True)
+    print("Diagnostic font: " + ("Traditional Chinese" if chinese_font else "built-in ASCII"), flush=True)
 
     # Measure the widest ASCII glyph; long paths and unbroken tokens cannot clip.
     char_width = max(rl.measure_text_ex(default_font, chr(c), font_size, 0).x for c in range(32, 127))  # noqa: TID251
