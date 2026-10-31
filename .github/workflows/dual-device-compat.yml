@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'launch*.sh'
+      - 'openpilot/cereal/messaging/**'
       - 'openpilot/common/hardware/**'
       - 'openpilot/common/realtime.py'
       - 'openpilot/common/tests/test_ratekeeper_stall.py'
@@ -63,6 +64,8 @@ jobs:
           test -s "diagnostic-${{ matrix.device }}.png"
       - name: Build host dependencies
         run: .venv/bin/scons -j4
+      - name: Verify GPS UI crash regression and normal messaging
+        run: .venv/bin/python -m unittest openpilot.cereal.messaging.tests.test_frequency_safety openpilot.cereal.messaging.tests.test_pub_sub_master -v
       - name: Verify normal timing and recovery after stalls
         run: .venv/bin/python -m unittest openpilot.common.tests.test_ratekeeper_stall -v
       - name: Verify bootstrap, platform identity, custom UI and rendered frames
