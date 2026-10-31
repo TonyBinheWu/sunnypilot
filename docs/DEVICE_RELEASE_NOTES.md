@@ -32,3 +32,9 @@ sunnypilot hkg-enhanced Version 2026.003.001 (2026-10-31)
 若製作 prebuilt 或 stripped 套件，必須保留版本標頭、CHANGELOG 與 release_notes 模組；若打包流程覆寫版號，需同步更新對應說明，不能沿用來源版本的標頭。
 
 GitHub Actions 的 Device release notes 工作會檢查版號、分支標示、C3X／C4 說明與舊更新器格式相容性；文字是否正確使用繁體中文仍需人工審閱。
+
+## 相容性與重播基準
+
+`C3X and C4 update compatibility` 會在兩個維護分支推送後，分別以 tizi（C3X）與 mici（C4）的介面配置執行 Linux 主機繪圖測試；它不代表實機 AGNOS、GPU 或行車驗證。
+
+程序重播使用 `openpilot/selfdrive/test/process_replay/ref_commit` 固定的 sunnypilot 共同基底 `3323aafb5422cee72653206dc83a56e66c61799d`，並沿用該基底的路線。兩個維護分支的 openpilot 基底仍為 0.11.2，不能直接比較上游持續變動的 0.11.3 結果；例如新版 CarParams 欄位與 Tesla 路線已不同。升級基底時須同步審閱參考提交、路線與重播差異，不能直接以本次輸出覆寫參考資料來消除失敗。

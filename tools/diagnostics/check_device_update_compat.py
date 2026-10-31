@@ -77,6 +77,15 @@ class TestDeviceUpdates(unittest.TestCase):
     screenshot = Path(f"update-notes-{os.environ['EXPECTED_DEVICE']}.png")
     rl.take_screenshot(str(screenshot))
     self.assertTrue(screenshot.is_file() and screenshot.stat().st_size > 0)
+    if not gui_app.big_ui():
+      # Capture actual Chinese update items as well as the version heading.
+      view._scroller.scroll_panel.set_offset(-sum(label.rect.height + 20 for label in labels[:2]))
+      for _ in range(3):
+        rl.begin_drawing()
+        rl.clear_background(rl.BLACK)
+        render()
+        rl.end_drawing()
+      rl.take_screenshot(f"update-notes-{os.environ['EXPECTED_DEVICE']}-content.png")
 
 
 if __name__ == "__main__":
