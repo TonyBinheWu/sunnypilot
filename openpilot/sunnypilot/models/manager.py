@@ -253,7 +253,14 @@ class ModelManagerSP:
 
     try:
       self._set_progress(artifact, status.verifying, 0)
-      if await verify_file(full_path, expected_hash):
+      verified = await verify_file(full_path, expected_hash)
+      # On tizi the runtime requires a whole mmap-able tinygrad .pkl.
+      # A valid .chunkmanifest plus chunk files is NOT enough even if its
+      # concatenated SHA matches the catalog; fetch the complete file.
+      runtime_ready = True
+      if HARDWARE.get_device_type() == "tizi" and filename.endswith(".pkl"):
+        runtime_ready = os.path.isfile(full_path)
+      if verified and runtime_ready:
         self._set_progress(artifact, status.cached, 100)
         return
 
