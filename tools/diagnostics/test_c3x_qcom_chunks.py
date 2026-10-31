@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from openpilot.common.file_chunker import get_chunk_name, get_manifest_path
-from openpilot.sunnypilot.models.qcom_repair import repair_qcom_bundle
+from openpilot.sunnypilot.models.qcom_repair import repair_qcom_bundle, invalid_qcom_models
 
 
 def digest(blob):
@@ -55,6 +55,14 @@ class TestC3XQcomRepair(unittest.TestCase):
     with self.assertRaisesRegex(ValueError, "model checksum mismatch"):
       repair_qcom_bundle(str(self.root), self.bundle(meta))
     self.assertFalse((self.root / "driving.pkl").exists())
+
+  def test_preflight_identifies_missing_and_bad_full_files(self):
+    meta = artifact("driving.pkl", self.raw, self.root)
+    self.assertEqual(invalid_qcom_models(str(self.root), self.bundle(meta)), ["driving.pkl"])
+    (self.root / "driving.pkl").write_bytes(self.raw + b"bad")
+    self.assertEqual(invalid_qcom_models(str(self.root), self.bundle(meta)), ["driving.pkl"])
+    (self.root / "driving.pkl").write_bytes(self.raw)
+    self.assertEqual(invalid_qcom_models(str(self.root), self.bundle(meta)), [])
 
   def test_corrupt_chunk_does_not_replace_model(self):
     meta = artifact("driving.pkl", self.raw, self.root, tamper=True)
