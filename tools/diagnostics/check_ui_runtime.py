@@ -1,10 +1,13 @@
 """UI lifecycle tests. No manager loop, camera or vehicle-control process starts."""
+import json
+import multiprocessing
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
-from openpilot.system.manager.process import PythonProcess, launcher
+from openpilot.system.manager.process import PythonProcess, join_process, launcher
 from openpilot.system.manager.ui_process import C3xUIProcess, RETRY_DELAYS, make_ui_process
 
 
@@ -84,6 +87,35 @@ class TestUIRecovery(unittest.TestCase):
       proc.start()
       self.assertEqual(start.call_count, len(RETRY_DELAYS))
       self.assertIs(proc.proc, exited)
+
+  @unittest.skipUnless(multiprocessing.get_start_method() == "fork", "Requires inherited test-only crash-root override")
+  def test_real_child_crash_is_recorded_and_retries_are_bounded(self):
+    root = Path(self.tmp.name)
+    (root / "ui_crash_probe.py").write_text('def main():\n  raise RuntimeError("controlled-ui-crash")\n')
+    proc = C3xUIProcess()
+    proc.module = "ui_crash_probe"
+    proc.should_run(False, None, None)
+    pids = []
+    try:
+      with mock.patch.object(sys, "path", [str(root), *sys.path]), \
+           mock.patch("openpilot.system.manager.ui_process.RETRY_DELAYS", (0.0, 0.0, 0.0)):
+        for _ in range(4):
+          proc.start()
+          self.assertIsNotNone(proc.proc)
+          pids.append(proc.proc.pid)
+          join_process(proc.proc, 5)
+          self.assertIsNotNone(proc.proc.exitcode, "Test child did not exit")
+          self.assertNotEqual(proc.proc.exitcode, 0)
+        last = proc.proc
+        proc.start()
+        self.assertIs(proc.proc, last)
+        self.assertEqual(len(set(pids)), 4)
+        self.assertEqual(proc._restarts, 3)
+      self.assertTrue("controlled-ui-crash" in (root / "ui.log").read_text())
+      events = [json.loads(line) for line in (root / "events.jsonl").read_text().splitlines()]
+      self.assertEqual(sum(e["event"] == "ui_offroad_restart" for e in events), 3)
+    finally:
+      proc.stop()
 
 
 class TestUIStartup(unittest.TestCase):

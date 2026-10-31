@@ -26,6 +26,20 @@ def command(args: list[str]) -> str:
     return f"unavailable: {exc}\n"
 
 
+def latest_logs(directory: Path, count: int = 3) -> list[Path]:
+  files = []
+  try:
+    for path in directory.iterdir():
+      try:
+        if path.is_file() and not path.is_symlink():
+          files.append((path.stat().st_mtime_ns, path))
+      except OSError:
+        pass
+  except OSError:
+    return []
+  return [path for _, path in sorted(files, reverse=True)[:count]]
+
+
 def main() -> None:
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument("--output", type=Path)
@@ -53,9 +67,14 @@ def main() -> None:
     ]
     for args in commands:
       report.write("\n=== " + " ".join(args) + " ===\n" + command(args))
-    paths = [Path("/VERSION"), Path("/proc/meminfo"), Path("/tmp/tmux_error.log")]
-    paths += [Path("/data/params/d") / key for key in ("GitCommit", "GitBranch", "IsOffroad", "LastManagerExitReason")]
+    paths = [Path("/VERSION"), Path("/proc/meminfo"), Path("/tmp/tmux_error.log"),
+             Path("/proc/sys/kernel/random/boot_id"), Path("/sys/firmware/devicetree/base/model")]
+    paths += [Path("/data/params/d") / key for key in (
+      "GitCommit", "GitBranch", "IsOffroad", "LastManagerExitReason", "DevUIInfo", "ShowTurnSignals",
+      "BlindSpot", "TorqueBar", "RainbowMode", "RainbowModeStyle", "PredictedStopMarker", "NavigationEnabled",
+    )]
     paths += [root / "c3x-ui" / name for name in ("ui.log", "ui.log.1", "ui.log.2", "events.jsonl", "events.jsonl.1")]
+    paths += latest_logs(Path("/data/log"))
     try:
       paths += sorted(Path("/sys/fs/pstore").glob("*"))[:6]
     except OSError:

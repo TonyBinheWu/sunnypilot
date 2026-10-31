@@ -1,4 +1,5 @@
 """Persistent C3X UI diagnostics; exceptions and fatal signals remain fatal."""
+import datetime
 import faulthandler
 import json
 import os
@@ -19,7 +20,7 @@ def record_event(root: Path, event: str, **fields) -> None:
     path = root / "events.jsonl"
     if path.exists() and path.stat().st_size > MAX_TRACEBACK_BYTES:
       path.replace(root / "events.jsonl.1")
-    line = json.dumps({"time": time.time(), "event": event, **fields}) + "\n"
+    line = json.dumps({"utc": datetime.datetime.now(datetime.timezone.utc).isoformat(), "monotonic": time.monotonic(), "event": event, **fields}) + "\n"
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
     with os.fdopen(fd, "a") as f:
       f.write(line)
@@ -64,7 +65,7 @@ def capture_ui_crashes(root: Path, **metadata):
         current.replace(previous)
       fd = os.open(current, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
       stream = os.fdopen(fd, "wb", buffering=0)
-      write(json.dumps({"time": time.time(), "pid": os.getpid(), **metadata}) + "\n")
+      write(json.dumps({"utc": datetime.datetime.now(datetime.timezone.utc).isoformat(), "monotonic": time.monotonic(), "pid": os.getpid(), **metadata}) + "\n")
       faulthandler.enable(file=stream, all_threads=True)
       fault_handler_installed = True
       threading.excepthook = thread_hook
