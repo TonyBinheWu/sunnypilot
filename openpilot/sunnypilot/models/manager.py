@@ -394,7 +394,7 @@ class ModelManagerSP:
           # than keeping an onroad tinygrad runner with no loadable .pkl.
           if qcom_bundle is not None and not self._c3x_qcom_repair_queued and self.params.get("ModelManager_DownloadRef") is None:
             missing = [m.artifact.fileName for m in qcom_bundle.models
-                       if m.artifact.fileName.endswith(".pkl") and
+                       if m.artifact.fileName and m.artifact.fileName.endswith(".pkl") and
                        not os.path.isfile(os.path.join(Paths.model_root(), m.artifact.fileName))]
             if missing and qcom_bundle.ref:
               resolved = resolve_bundle_by_ref(qcom_bundle.ref, {"qcom": self.source_models["qcom"]})
