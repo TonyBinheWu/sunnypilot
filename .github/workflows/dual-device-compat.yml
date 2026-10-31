@@ -8,6 +8,8 @@ on:
       - 'openpilot/common/realtime.py'
       - 'openpilot/common/tests/test_ratekeeper_stall.py'
       - 'openpilot/system/hardware/**'
+      - 'openpilot/sunnypilot/models/**'
+      - 'openpilot/sunnypilot/modeld_v2/**'
       - 'openpilot/selfdrive/ui/**'
       - 'openpilot/system/ui/**'
       - 'openpilot/system/manager/**'
@@ -64,6 +66,13 @@ jobs:
           test -s "diagnostic-${{ matrix.device }}.png"
       - name: Build host dependencies
         run: .venv/bin/scons -j4
+      - name: Verify upstream C3X and unchanged C4 model/USB semantics
+        run: |
+          .venv/bin/python -m unittest openpilot.system.hardware.tests.test_upstream_tizi_usb -v
+          .venv/bin/python -m unittest openpilot.sunnypilot.models.tests.test_upstream_tizi_parity -v
+          .venv/bin/python -m unittest openpilot.sunnypilot.modeld_v2.tests.test_upstream_tizi_qcom openpilot.sunnypilot.modeld_v2.tests.test_optional_qcom_fallback -v
+      - name: Verify existing model download behavior
+        run: .venv/bin/python -m unittest openpilot.sunnypilot.models.tests.test_manager_download -v
       - name: Verify GPS UI crash regression and normal messaging
         run: .venv/bin/python -m unittest openpilot.cereal.messaging.tests.test_frequency_safety openpilot.cereal.messaging.tests.test_pub_sub_master -v
       - name: Verify normal timing and recovery after stalls
