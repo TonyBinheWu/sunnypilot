@@ -5,7 +5,8 @@ import numpy as np
 import requests
 
 import openpilot.cereal.messaging as messaging
-from openpilot.common.api import API_HOST, Api
+from openpilot.common.api import Api
+from openpilot.common.api.comma_connect import API_HOST
 from openpilot.common.params import Params
 from openpilot.common.realtime import Ratekeeper
 from openpilot.common.swaglog import cloudlog

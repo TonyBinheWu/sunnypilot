@@ -8,7 +8,7 @@ import base64
 from pathlib import Path
 from types import SimpleNamespace
 
-import pytest
+import tempfile
 
 from openpilot.sunnypilot.sunnylink.athena import sunnylinkd
 from openpilot.common.test import OpenpilotTestCase
@@ -91,86 +91,88 @@ def _encoded(value: str) -> str:
   return base64.b64encode(value.encode("utf-8")).decode("ascii")
 
 
-def test_remote_update_requires_offroad(monkeypatch):
-  fake = RemoteParams()
-  fake.bools["IsOffroad"] = False
-  monkeypatch.setattr(sunnylinkd, "params", fake)
-  monkeypatch.setattr(sunnylinkd, "sunnylink_ready", lambda _: True)
-  monkeypatch.setattr(sunnylinkd.subprocess, "run", lambda *args, **kwargs: pytest.fail("updater was signaled while onroad"))
+class TestRemoteUpdateRequests(OpenpilotTestCase):
+  def test_remote_update_requires_offroad(self, monkeypatch):
+    fake = RemoteParams()
+    fake.bools["IsOffroad"] = False
+    monkeypatch.setattr(sunnylinkd, "params", fake)
+    monkeypatch.setattr(sunnylinkd, "sunnylink_ready", lambda _: True)
+    monkeypatch.setattr(sunnylinkd.subprocess, "run", lambda *args, **kwargs: self.fail("updater was signaled while onroad"))
 
-  with pytest.raises(RuntimeError, match="offroad"):
-    sunnylinkd._remote_update_request("SunnylinkUpdateNow", _encoded("true"), False)
-  assert fake.bools["SunnylinkUpdateNow"] is False
-  assert fake.values["SunnylinkUpdateRequestStatus"].startswith("failed:")
-
-
-def test_remote_update_wakes_existing_updater(monkeypatch):
-  fake = RemoteParams()
-  commands = []
-  monkeypatch.setattr(sunnylinkd, "params", fake)
-  monkeypatch.setattr(sunnylinkd, "sunnylink_ready", lambda _: True)
-
-  def run(cmd, **kwargs):
-    commands.append(cmd)
-    return SimpleNamespace(returncode=0)
-
-  monkeypatch.setattr(sunnylinkd.subprocess, "run", run)
-  sunnylinkd._remote_update_request("SunnylinkUpdateNow", _encoded("1"), False)
-  assert commands == [["pkill", "-SIGHUP", "-f", "openpilot.system.updated.updated"]]
-  assert fake.bools["SunnylinkUpdateNow"] is False
-  assert fake.values["SunnylinkUpdateRequestStatus"] == "download requested"
+    with self.assertRaisesRegex(RuntimeError, "offroad"):
+      sunnylinkd._remote_update_request("SunnylinkUpdateNow", _encoded("true"), False)
+    assert fake.bools["SunnylinkUpdateNow"] is False
+    assert fake.values["SunnylinkUpdateRequestStatus"].startswith("failed:")
 
 
-def test_remote_install_requires_ready_update_and_ignition_off(monkeypatch, tmp_path):
-  fake = RemoteParams()
-  monkeypatch.setattr(sunnylinkd, "params", fake)
-  monkeypatch.setattr(sunnylinkd, "sunnylink_ready", lambda _: True)
-  monkeypatch.setenv("UPDATER_STAGING_ROOT", str(tmp_path))
-  monkeypatch.setattr(sunnylinkd, "BASEDIR", str(tmp_path / "installed"))
+  def test_remote_update_wakes_existing_updater(self, monkeypatch):
+    fake = RemoteParams()
+    commands = []
+    monkeypatch.setattr(sunnylinkd, "params", fake)
+    monkeypatch.setattr(sunnylinkd, "sunnylink_ready", lambda _: True)
 
-  class DeviceState:
-    started = False
+    def run(cmd, **kwargs):
+      commands.append(cmd)
+      return SimpleNamespace(returncode=0)
 
-  class PandaState:
-    ignitionLine = True
-    ignitionCan = False
+    monkeypatch.setattr(sunnylinkd.subprocess, "run", run)
+    sunnylinkd._remote_update_request("SunnylinkUpdateNow", _encoded("1"), False)
+    assert commands == [["pkill", "-SIGHUP", "-f", "openpilot.system.updated.updated"]]
+    assert fake.bools["SunnylinkUpdateNow"] is False
+    assert fake.values["SunnylinkUpdateRequestStatus"] == "download requested"
 
-  class FakeSubMaster:
-    def __init__(self, *args, **kwargs):
-      pass
 
-    def update(self, timeout):
-      pass
+  def test_remote_install_requires_ready_update_and_ignition_off(self, monkeypatch):
+    tmp_path = Path(self.enterContext(tempfile.TemporaryDirectory()))
+    fake = RemoteParams()
+    monkeypatch.setattr(sunnylinkd, "params", fake)
+    monkeypatch.setattr(sunnylinkd, "sunnylink_ready", lambda _: True)
+    monkeypatch.setenv("UPDATER_STAGING_ROOT", str(tmp_path))
+    monkeypatch.setattr(sunnylinkd, "BASEDIR", str(tmp_path / "installed"))
 
-    def all_checks(self, services):
-      return True
+    class DeviceState:
+      started = False
 
-    def __getitem__(self, service):
-      return DeviceState() if service == "deviceState" else [PandaState()]
+    class PandaState:
+      ignitionLine = True
+      ignitionCan = False
 
-  monkeypatch.setattr(sunnylinkd.messaging, "SubMaster", FakeSubMaster)
-  with pytest.raises(RuntimeError, match="vehicle must be off"):
+    class FakeSubMaster:
+      def __init__(self, *args, **kwargs):
+        pass
+
+      def update(self, timeout):
+        pass
+
+      def all_checks(self, services):
+        return True
+
+      def __getitem__(self, service):
+        return DeviceState() if service == "deviceState" else [PandaState()]
+
+    monkeypatch.setattr(sunnylinkd.messaging, "SubMaster", FakeSubMaster)
+    with self.assertRaisesRegex(RuntimeError, "vehicle must be off"):
+      sunnylinkd._remote_update_request("SunnylinkInstallUpdate", _encoded("1"), False)
+    assert ("DoReboot", True) not in fake.writes
+
+    PandaState.ignitionLine = False
+    with self.assertRaisesRegex(RuntimeError, "incomplete"):
+      sunnylinkd._remote_update_request("SunnylinkInstallUpdate", _encoded("1"), False)
+    assert ("DoReboot", True) not in fake.writes
+
+    finalized = tmp_path / "finalized"
+    finalized.mkdir()
+    (finalized / ".overlay_consistent").touch()
+
+    def run(cmd, **kwargs):
+      assert cmd[:2] == ["git", "-C"]
+      if cmd[-2:] == ["--abbrev-ref", "HEAD"]:
+        return SimpleNamespace(stdout="hkg-enhanced\n")
+      return SimpleNamespace(stdout="new\n" if Path(cmd[2]) == finalized else "old\n")
+
+    monkeypatch.setattr(sunnylinkd.subprocess, "run", run)
     sunnylinkd._remote_update_request("SunnylinkInstallUpdate", _encoded("1"), False)
-  assert ("DoReboot", True) not in fake.writes
-
-  PandaState.ignitionLine = False
-  with pytest.raises(RuntimeError, match="incomplete"):
+    assert ("DoReboot", True) not in fake.writes
+    assert fake.values["SunnylinkUpdateRequestStatus"].startswith("armed:")
     sunnylinkd._remote_update_request("SunnylinkInstallUpdate", _encoded("1"), False)
-  assert ("DoReboot", True) not in fake.writes
-
-  finalized = tmp_path / "finalized"
-  finalized.mkdir()
-  (finalized / ".overlay_consistent").touch()
-
-  def run(cmd, **kwargs):
-    assert cmd[:2] == ["git", "-C"]
-    if cmd[-2:] == ["--abbrev-ref", "HEAD"]:
-      return SimpleNamespace(stdout="hkg-enhanced\\n")
-    return SimpleNamespace(stdout="new\\n" if Path(cmd[2]) == finalized else "old\\n")
-
-  monkeypatch.setattr(sunnylinkd.subprocess, "run", run)
-  sunnylinkd._remote_update_request("SunnylinkInstallUpdate", _encoded("1"), False)
-  assert ("DoReboot", True) not in fake.writes
-  assert fake.values["SunnylinkUpdateRequestStatus"].startswith("armed:")
-  sunnylinkd._remote_update_request("SunnylinkInstallUpdate", _encoded("1"), False)
-  assert ("DoReboot", True) in fake.writes
+    assert ("DoReboot", True) in fake.writes

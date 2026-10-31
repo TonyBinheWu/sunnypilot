@@ -1828,7 +1828,7 @@
               "widget": "toggle",
               "title": "Check and Download Update",
               "description": "One-time request to check and download the latest commit of the installed branch. The switch resets after the request.",
-                "enablement": [
+              "enablement": [
                 {
                   "type": "offroad_only"
                 },
@@ -1844,7 +1844,7 @@
               "widget": "toggle",
               "title": "Install Downloaded Update",
               "description": "Request once to arm for 60 seconds, then request again to confirm reboot and installation. Requires a staged update, offroad device, and ignition off. Refresh between requests if the switch still appears on.",
-                "enablement": [
+              "enablement": [
                 {
                   "type": "offroad_only"
                 },

@@ -24,6 +24,7 @@ jobs:
         id: manifest
         shell: bash
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           python3 - <<'PY'
           import json
           import os
@@ -82,4 +83,4 @@ jobs:
         shell: bash
         run: |
           export PYTHONPATH="${GITHUB_WORKSPACE}/tinygrad_repo:${GITHUB_WORKSPACE}:${PYTHONPATH:-}"
-          python3 -m pytest -q openpilot/sunnypilot/modeld_v2/tests/test_models.py
+          python3 -m unittest openpilot.sunnypilot.modeld_v2.tests.test_models -v

@@ -1,24 +1,17 @@
-import requests
+from pathlib import Path
+import subprocess
 
-from openpilot.sunnypilot.models.tinygrad_ref import get_tinygrad_ref
-from openpilot.sunnypilot.models.fetcher import ModelFetcher
+import tinygrad
+
+from openpilot.common.basedir import BASEDIR
 from openpilot.common.test import OpenpilotTestCase
-
-def fetch_tinygrad_ref():
-  response = requests.get(ModelFetcher.MODEL_URL, timeout=10)
-  response.raise_for_status()
-  json_data = response.json()
-  return json_data.get("tinygrad_ref")
+from openpilot.sunnypilot.models.tinygrad_ref import get_tinygrad_ref
 
 
 class TestTinygradRef(OpenpilotTestCase):
-  def test_tinygrad_ref(self):
-    current_ref = get_tinygrad_ref()
-    remote_ref = fetch_tinygrad_ref()
-    assert remote_ref == current_ref, (
-      f"""tinygrad_repo ref does not match remote tinygrad_ref of current compiled driving models json.
-    Current: {current_ref}
-    Remote: {remote_ref}
-    Please run build-all workflow to update models."""
-    )
-    print("tinygrad_repo ref matches current compiled driving models json ref.")
+  def test_installed_runtime_matches_source_pin(self):
+    # Plain artifacts are independent of the compiler's Python class revision.
+    # The artifact-loading workflow and CPU contract test verify compatibility.
+    pinned = subprocess.check_output(["git", "rev-parse", "HEAD:tinygrad_repo"], cwd=BASEDIR, text=True).strip()
+    self.assertEqual(get_tinygrad_ref(), pinned)
+    self.assertTrue(Path(tinygrad.__file__).resolve().is_relative_to((Path(BASEDIR) / "tinygrad_repo").resolve()))
