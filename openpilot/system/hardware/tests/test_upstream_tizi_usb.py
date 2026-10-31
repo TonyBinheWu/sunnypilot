@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 import unittest
 
-SOURCE = Path(__file__).resolve().parents[3] / "openpilot/system/hardware/hardwared.py"
+SOURCE = Path(__file__).resolve().parents[4] / "openpilot/system/hardware/hardwared.py"
 
 
 def initial_usb_expr():
