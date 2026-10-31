@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from openpilot.common.params import Params
 from openpilot.common.hardware import HARDWARE
-from openpilot.sunnypilot.models.qcom_repair import repair_qcom_bundle
+from openpilot.sunnypilot.models.qcom_repair import repair_qcom_bundle, invalid_qcom_models
 from openpilot.common.realtime import Ratekeeper
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware.hw import Paths
@@ -400,15 +400,13 @@ class ModelManagerSP:
           # offroad re-download of the user's existing QCOM selection, rather
           # than keeping an onroad tinygrad runner with no loadable .pkl.
           if qcom_bundle is not None and not self._c3x_qcom_repair_queued and self.params.get("ModelManager_DownloadRef") is None:
-            missing = [m.artifact.fileName for m in qcom_bundle.models
-                       if m.artifact.fileName and m.artifact.fileName.endswith(".pkl") and
-                       not os.path.isfile(os.path.join(Paths.model_root(), m.artifact.fileName))]
+            missing = invalid_qcom_models(Paths.model_root(), qcom_bundle)
             if missing and qcom_bundle.ref:
               resolved = resolve_bundle_by_ref(qcom_bundle.ref, {"qcom": self.source_models["qcom"]})
               if resolved is not None:
                 self._c3x_qcom_repair_queued = True
                 self.params.put("ModelManager_DownloadRef", qcom_bundle.ref, block=True)
-                cloudlog.warning(f"C3X QCOM model missing {missing}; queued one offroad re-download of selected bundle")
+                cloudlog.warning(f"C3X QCOM model missing or corrupt {missing}; queued one offroad re-download of selected bundle")
         validate_active_bundles(self.params, self.source_models)
         self.active_bundle = get_active_bundle(self.params, chestnut=self.chestnut_present)
 
