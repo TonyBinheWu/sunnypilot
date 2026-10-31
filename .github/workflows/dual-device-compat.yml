@@ -11,6 +11,7 @@ on:
       - 'openpilot/system/ui/**'
       - 'openpilot/system/manager/**'
       - 'tools/diagnostics/test_boot_diagnostics.py'
+      - 'tools/diagnostics/test_font_atlas_lifecycle.py'
       - 'tools/diagnostics/check_dual_device_compat.py'
       - 'tools/diagnostics/check_calibrated_onroad.py'
       - '.github/workflows/dual-device-compat.yml'
@@ -44,6 +45,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fault injection without built dependencies
         run: python3 tools/diagnostics/test_boot_diagnostics.py
+      - name: Verify stable CJK font atlas and unsupported glyph behavior
+        run: python3 tools/diagnostics/test_font_atlas_lifecycle.py
       - name: Set up repository and pinned dependencies
         run: ./tools/op.sh setup
       - name: Install headless graphics dependencies

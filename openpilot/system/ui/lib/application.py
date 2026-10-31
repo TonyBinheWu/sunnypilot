@@ -231,6 +231,7 @@ class GuiApplication(GuiApplicationExt):
     self._fonts: dict[FontWeight, rl.Font] = {}
     self._fallback_fonts: dict[str, rl.Font] = {}
     self._fallback_codepoints: dict[str, set[int]] = {}
+    self._fallback_unavailable_codepoints: dict[str, set[int]] = {}
     self._width = width if width is not None else GuiApplication._default_width()
     self._height = height if height is not None else GuiApplication._default_height()
 
@@ -590,6 +591,8 @@ class GuiApplication(GuiApplicationExt):
     for font in self._fallback_fonts.values():
       rl.unload_font(font)
     self._fallback_fonts = {}
+    self._fallback_codepoints = {}
+    self._fallback_unavailable_codepoints = {}
 
     if self._render_texture is not None:
       rl.unload_render_texture(self._render_texture)
@@ -735,22 +738,27 @@ class GuiApplication(GuiApplicationExt):
     if any(not c.isspace() and ord(c) not in self._fallback_codepoints[language] for c in text):
       fallback_key = language + ":unifont"
       required_codepoints = {ord(c) for c in text if not c.isspace()}
-      loaded_codepoints = self._fallback_codepoints.get(fallback_key, set())
-      if not required_codepoints.issubset(loaded_codepoints):
+      if fallback_key not in self._fallback_fonts:
         chars = set(map(chr, range(32, 127))) | set(EXTRA_FONT_CHARS)
         chars.update(TRANSLATIONS_DIR.joinpath(f"app_{language}.po").read_text(encoding="utf-8"))
-        chars.update(map(chr, loaded_codepoints))
         chars.update(text)
         codepoints = sorted(map(ord, chars))
         buffer = rl.ffi.new("int[]", codepoints)
         with as_file(FONT_DIR) as fspath:
           fallback = rl.load_font_ex((fspath / "unifont.otf").as_posix(), 48, rl.ffi.cast("int *", buffer), len(codepoints))
         rl.set_texture_filter(fallback.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
-        old_fallback = self._fallback_fonts.get(fallback_key)
+        # Keep a stable font atlas for the duration of this UI session.
+        # Rebuilding/unloading textures from within draw_text_ex can stall the render
+        # loop, and unsupported glyphs would otherwise force a reload every frame.
         self._fallback_fonts[fallback_key] = fallback
         self._fallback_codepoints[fallback_key] = {fallback.glyphs[i].value for i in range(fallback.glyphCount)}
-        if old_fallback is not None:
-          rl.unload_font(old_fallback)
+      # A font can legitimately lack glyphs requested by a dynamic string. Log
+      # those once rather than attempting GPU allocation on every subsequent draw.
+      missing = required_codepoints - self._fallback_codepoints[fallback_key]
+      unseen = missing - self._fallback_unavailable_codepoints.setdefault(fallback_key, set())
+      if unseen:
+        self._fallback_unavailable_codepoints[fallback_key].update(unseen)
+        cloudlog.warning(f"UI fallback font missing {len(unseen)} new glyphs for {language}; keeping cached font")
       return self._fallback_fonts[fallback_key]
     return self._fallback_fonts[language]
 
