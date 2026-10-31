@@ -44,7 +44,8 @@ class TestCalibratedOnroad(OpenpilotTestCase):
         setattr(event, service, values)
         sm.data[service] = getattr(event, service)
         sm.valid[service] = sm.alive[service] = sm.seen[service] = sm.updated[service] = True
-        sm.recv_frame[service] = 10
+        # Projection cache keys include the calibration receive frame.
+        sm.recv_frame[service] = max(10, sm.recv_frame[service] + 1)
         sm.recv_time[service] = time.monotonic()
         return sm.data[service]
 
@@ -80,8 +81,11 @@ class TestCalibratedOnroad(OpenpilotTestCase):
         self.assertTrue(np.isfinite(matrix).all())
         rl.draw_rectangle_rec(content_rect, rl.BLACK)
 
-      with mock.patch.object(road.CameraView, "_render", render_camera):
+      transforms = []
+      with mock.patch.object(road.CameraView, "_render", render_camera), \
+           mock.patch.object(renderer, "set_transform", wraps=renderer.set_transform) as set_transform:
         for calibrated in (False, True):
+          calls_before = set_transform.call_count
           message("extrinsicsCalibration", {"calStatus": "calibrated" if calibrated else "uncalibrated",
                                             "rpyCalib": [0.01, -0.02, 0.01], "wideFromDeviceEuler": [0.0, 0.0, 0.0],
                                             "height": [1.22]})
@@ -93,7 +97,8 @@ class TestCalibratedOnroad(OpenpilotTestCase):
                 ui_state.rainbow_path = style in ("rainbow", "blue")
                 ui_state.rainbow_mode_style = 1 if style == "blue" else 0
                 ui_state.predicted_stop_marker = True
-                message("selfdriveState", {"experimentalMode": style == "experimental", "enabled": status == UIStatus.ENGAGED})
+                message("selfdriveState", {"experimentalMode": style == "experimental", "enabled": status == UIStatus.ENGAGED,
+                                           "alertSize": "none" if calibrated else "mid"})
                 message("radarState", {"leadOne": {"present": True, "dRel": 30.0, "vRel": -1.0, "yRel": 0.0}})
                 for service in ("modelV2", "carState"):
                   sm.recv_time[service] = time.monotonic()
@@ -105,6 +110,9 @@ class TestCalibratedOnroad(OpenpilotTestCase):
                     rl.end_drawing()
                 self.assertGreater(len(renderer._path.projected_points), 0, "Fixture did not exercise projected path")
                 self.assertTrue(np.isfinite(renderer._path.projected_points).all())
+          self.assertGreater(set_transform.call_count, calls_before, "Projection did not refresh for new calibration")
+          transforms.append(set_transform.call_args.args[0].copy())
+      self.assertFalse(np.allclose(*transforms), "Calibrated projection must differ from the uncalibrated projection")
 
       if big:
         # Observe real native release, not a stub that hides a double free.
