@@ -259,7 +259,7 @@ class ModelManagerSP:
       # concatenated SHA matches the catalog; fetch the complete file.
       runtime_ready = True
       if HARDWARE.get_device_type() == "tizi" and filename.endswith(".pkl"):
-        runtime_ready = os.path.isfile(full_path)
+        runtime_ready = await asyncio.to_thread(os.path.isfile, full_path)
       if verified and runtime_ready:
         self._set_progress(artifact, status.cached, 100)
         return
