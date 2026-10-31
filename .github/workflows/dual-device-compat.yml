@@ -10,6 +10,8 @@ on:
       - 'openpilot/selfdrive/ui/**'
       - 'openpilot/system/ui/**'
       - 'openpilot/system/manager/**'
+      - 'openpilot/sunnypilot/models/**'
+      - 'tools/diagnostics/test_c3x_qcom_chunks.py'
       - 'tools/diagnostics/test_boot_diagnostics.py'
       - 'tools/diagnostics/check_dual_device_compat.py'
       - 'tools/diagnostics/check_calibrated_onroad.py'
@@ -44,6 +46,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fault injection without built dependencies
         run: python3 tools/diagnostics/test_boot_diagnostics.py
+      - name: Verify C3X QCOM artifact reconstruction
+        run: python3 tools/diagnostics/test_c3x_qcom_chunks.py
       - name: Set up repository and pinned dependencies
         run: ./tools/op.sh setup
       - name: Install headless graphics dependencies
