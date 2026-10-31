@@ -13,6 +13,7 @@ from openpilot.cereal import custom
 from openpilot.common.params import Params
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware.hw import Paths
+from openpilot.common.hardware import HARDWARE
 from openpilot.selfdrive.modeld.helpers import chestnut_present
 
 # SET ME TO THE EXACT JSON VERSION WE SET IN SUNNYPILOT_MODELS REPO
@@ -29,8 +30,14 @@ _LAST_VALIDATED_RAW: dict[str, dict | None] = {}
 
 
 def _compute_hash(file_path: str) -> str | None:
+  # Match upstream on C3X: modeld_tinygrad opens a real, complete .pkl.
+  # A readable sequence of chunks must not count as a runnable model file.
+  # Preserve the existing chunk-aware cache behavior for working C4 devices.
   from openpilot.common.file_chunker import open_file_chunked
   try:
+    if HARDWARE.get_device_type() == "tizi":
+      with open(file_path, 'rb') as file:
+        return hashlib.file_digest(file, "sha256").hexdigest().lower()
     with open_file_chunked(file_path) as file:
       return hashlib.file_digest(file, "sha256").hexdigest().lower()
   except FileNotFoundError:
@@ -60,18 +67,23 @@ def _bundle_artifacts(bundle: custom.ModelManagerSP.ModelBundle) -> list[tuple[s
   artifacts = []
   from openpilot.common.file_chunker import get_chunk_name
   for model in getattr(bundle, 'models', []) or []:
-    for artifact in (getattr(model, 'artifact', None),):
-      if artifact and getattr(artifact, 'fileName', None):
-        if len(artifact.chunks) > 0:
-          for i, chunk in enumerate(artifact.chunks):
-            chunk_name = get_chunk_name(artifact.fileName, i, len(artifact.chunks))
-            if getattr(chunk, 'sha256', None):
-              artifacts.append((chunk_name, chunk.sha256))
-        else:
-          if getattr(artifact, 'downloadUri', None):
-            sha256 = getattr(artifact.downloadUri, 'sha256', None)
-            if sha256:
-              artifacts.append((artifact.fileName, sha256))
+    artifact = getattr(model, 'artifact', None)
+    if not artifact or not getattr(artifact, 'fileName', None):
+      continue
+    # C3X follows sunnypilot/master: check the actual compiled model artifact,
+    # never just the component chunks. Keep the existing C4 cache semantics.
+    if HARDWARE.get_device_type() == "tizi":
+      if getattr(artifact, 'downloadUri', None):
+        if sha256 := getattr(artifact.downloadUri, 'sha256', None):
+          artifacts.append((artifact.fileName, sha256))
+    elif len(artifact.chunks) > 0:
+      for i, chunk in enumerate(artifact.chunks):
+        chunk_name = get_chunk_name(artifact.fileName, i, len(artifact.chunks))
+        if getattr(chunk, 'sha256', None):
+          artifacts.append((chunk_name, chunk.sha256))
+    elif getattr(artifact, 'downloadUri', None):
+      if sha256 := getattr(artifact.downloadUri, 'sha256', None):
+        artifacts.append((artifact.fileName, sha256))
   return artifacts
 
 

@@ -222,7 +222,10 @@ def hardware_thread(end_event, hw_queue) -> None:
     network_strength=NetworkStrength.unknown,
     network_stats={'wwanTx': -1, 'wwanRx': -1},
     modem_temps=[],
-    usb_state=[],
+    # Match upstream's initial USB enumeration on C3X, so deviceState can
+    # report a connected Chestnut before the background hardware poll.
+    # Keep C4's existing initialization unchanged.
+    usb_state=get_usb_state() if HARDWARE.get_device_type() == "tizi" else [],
   )
 
   all_temp_filter = FirstOrderFilter(0., TEMP_TAU, DT_HW, initialized=False)
