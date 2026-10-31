@@ -65,14 +65,14 @@ def repair_qcom_bundle(model_root: str, bundle) -> list[str]:
     try:
       whole_digest = hashlib.sha256()
       with os.fdopen(fd, "wb") as output:
-        for source_path, chunk in zip(files, chunks, strict=True):
+        for i, source_path in enumerate(files):
           chunk_digest = hashlib.sha256()
           with source_path.open("rb") as source:
             for block in iter(lambda: source.read(COPY_SIZE), b""):
               chunk_digest.update(block)
               whole_digest.update(block)
               output.write(block)
-          if chunks and chunk_digest.hexdigest().lower() != str(chunk.sha256).lower():
+          if chunks and chunk_digest.hexdigest().lower() != str(chunks[i].sha256).lower():
             raise ValueError(f"QCOM model chunk checksum mismatch: {source_path.name}")
         output.flush()
         os.fsync(output.fileno())
