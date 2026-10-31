@@ -151,9 +151,10 @@ class CameraView(Widget):
       rl.unload_texture(self.egl_texture)
       self.egl_texture = None
 
-    # Clean up shader
+    # Clean up shader. __del__ may call close again after explicit cleanup.
     if self.shader and self.shader.id:
       rl.unload_shader(self.shader)
+      self.shader = None
 
     self.frame = None
     self.available_streams.clear()
