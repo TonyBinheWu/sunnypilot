@@ -27,20 +27,28 @@ def repair_qcom_bundle(model_root: str, bundle) -> list[str]:
   for model in bundle.models:
     artifact = model.artifact
     name = artifact.fileName
-    if not name or not name.endswith(".pkl") or not artifact.chunks:
+    if not name or not name.endswith(".pkl"):
       continue
     target = root / name
     if not target.resolve().is_relative_to(root) or target.is_symlink():
       raise ValueError("model artifact path escapes model storage")
-    chunks = list(artifact.chunks)
+    chunks = list(getattr(artifact, "chunks", ()) or ())
     manifest = Path(get_manifest_path(str(target)))
-    if not manifest.is_file() or manifest.is_symlink() or manifest.read_text().strip() != str(len(chunks)):
+    if not manifest.is_file() or manifest.is_symlink():
       continue
-    files = [Path(get_chunk_name(str(target), i, len(chunks))) for i in range(len(chunks))]
+    try:
+      count = int(manifest.read_text().strip())
+    except ValueError:
+      continue
+    if not 1 <= count <= 256 or (chunks and len(chunks) != count):
+      continue
+    files = [Path(get_chunk_name(str(target), i, count)) for i in range(count)]
     if any(not p.is_file() or p.is_symlink() for p in files):
       continue
     expected_hash = getattr(artifact.downloadUri, "sha256", None)
-    if not all(getattr(chunk, "sha256", None) for chunk in chunks):
+    # Official QCOM index often has an artifact SHA without per-chunk SHAs.
+    # In that case the final SHA256 is still sufficient to verify the entire file.
+    if not expected_hash and (not chunks or not all(getattr(chunk, "sha256", None) for chunk in chunks)):
       continue
     # If the full file is already verified, leave the normal runtime unchanged.
     if target.is_file() and expected_hash:
@@ -64,7 +72,7 @@ def repair_qcom_bundle(model_root: str, bundle) -> list[str]:
               chunk_digest.update(block)
               whole_digest.update(block)
               output.write(block)
-          if chunk_digest.hexdigest().lower() != str(chunk.sha256).lower():
+          if chunks and chunk_digest.hexdigest().lower() != str(chunk.sha256).lower():
             raise ValueError(f"QCOM model chunk checksum mismatch: {source_path.name}")
         output.flush()
         os.fsync(output.fileno())
