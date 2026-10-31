@@ -1,34 +1,60 @@
-![](https://user-images.githubusercontent.com/47793918/233812617-beab2e71-57b9-479e-8bff-c3931347ca40.png)
+# sunnypilot — hkg-enhanced
 
-## 🌞 What is sunnypilot?
-[sunnypilot](https://github.com/sunnyhaibin/sunnypilot) is a fork of comma.ai's openpilot, an open source driver assistance system. sunnypilot offers the user a unique driving experience for over 300+ supported car makes and models with modified behaviors of driving assist engagements. sunnypilot complies with comma.ai's safety rules as accurately as possible.
+由 [TonyBinheWu](https://github.com/TonyBinheWu) 維護，基於 [sunnypilot](https://github.com/sunnypilot/sunnypilot)，並承襲 [comma.ai openpilot](https://github.com/commaai/openpilot)。本分支同時以 **comma 3X（C3X）與 comma four（C4）** 為持續維護對象。
 
-## 💭 Join our Community Forum
-Join the official sunnypilot community forum to stay up to date with all the latest features and be a part of shaping the future of sunnypilot!
-* https://community.sunnypilot.ai/
+## 分支定位與車種範圍
 
-## Documentation
-https://docs.sunnypilot.ai/ is your one stop shop for everything from features to installation to FAQ about the sunnypilot
+此分支用於既有車種的持續維護與功能更新，包含 HKG（Hyundai／Kia／Genesis）相關強化。各品牌、車型、年式與配備的相容性，請依本分支的[車型文件](docs/CARS.md)及實際釘選的 opendbc 資料確認。
 
-## 🚘 Running on a dedicated device in a car
-First, check out this list of items you'll need to [get started](https://community.sunnypilot.ai/t/getting-started-using-sunnypilot-in-your-supported-car/251).
+HKG 低速動態轉向扭力是預設關閉的實驗功能，僅適用符合條件的 CAN-FD 車型。設定方式、限制與驗證範圍請閱讀 [HKG 低速扭力說明](docs/HKG_LOW_SPEED_TORQUE.md)。
 
-## Installation
-Next, refer to the sunnypilot community forum for [installation instructions](https://community.sunnypilot.ai/t/read-before-installing-sunnypilot/254), as well as a complete list of [Recommended Branch Installations](https://community.sunnypilot.ai/t/recommended-branch-installations/235).
+需要 CCNC 車型支援時，請使用另一個維護分支 [ccnc-port](https://github.com/TonyBinheWu/sunnypilot/tree/ccnc-port)。
 
-## 🎆 Pull Requests
-We welcome both pull requests and issues on GitHub. Bug fixes are encouraged.
+## C3X 與 C4 維護目標
 
-Pull requests should be against the most current `master` branch.
+| 機種 | 維護方向 |
+| --- | --- |
+| C3X | 持續移植適用的上游功能、修正與相容性更新，維持可持續更新的使用體驗。 |
+| C4 | 跟進上游發展，並驗證本分支車輛支援與客製功能。 |
 
-## 📊 User Data
+兩種機器都納入發布檢查。模型、推論效能與硬體相依功能會依機種能力處理；特定機種的功能差異與限制會寫入更新項目。每次發布仍須分別完成 C3X 與 C4 的裝置驗證。
 
-By default, sunnypilot uploads the driving data to comma servers. You can also access your data through [comma connect](https://connect.comma.ai/).
+## 版本號與繁體中文更新項目
 
-sunnypilot is open source software. The user is free to disable data collection if they wish to do so.
+最新版本與發布日期請查看 [CHANGELOG.md](CHANGELOG.md)。裝置使用的版本定義位於 [SUNNYPILOT_VERSION](openpilot/sunnypilot/common/version.h)。
 
-sunnypilot logs the road-facing camera, CAN, GPS, IMU, magnetometer, thermal sensors, crashes, and operating system logs.
-The driver-facing camera and microphone are only logged if you explicitly opt-in in settings.
+* 更新說明標示分支名稱、版本號、發布日期，以及使用者可理解的繁體中文變更內容。
+* C3X：在軟體設定與更新通知查看對應版本的更新說明。
+* C4：在軟體設定查看「更新項目」與「目前版本更新說明」；安裝前先顯示可捲動閱讀的更新內容。
+* 將裝置語言設為繁體中文，以使用中文介面與對應字型。新的 C4 說明入口需先安裝包含此功能的版本。
+
+維護者每次發布都需同步更新版本標頭與 `CHANGELOG.md`。完整流程與檢查方式請參閱 [C3X／C4 版本與更新說明](docs/DEVICE_RELEASE_NOTES.md)。
+
+## 安裝與更新
+
+1. 確認車型、硬體與所需線組符合相容性要求，參閱 [sunnypilot 安裝指南](https://community.sunnypilot.ai/t/read-before-installing-sunnypilot/254)。
+2. 選用本儲存庫的 **`hkg-enhanced`** 分支。
+3. 在軟體資訊確認儲存庫為 `TonyBinheWu/sunnypilot`、分支為 `hkg-enhanced`，並核對版本與更新項目。
+4. 首次安裝或更新完成後，在停車狀態確認系統、模型與車輛辨識正常，再進行裝置及車型驗證。
+
+## 回報問題與貢獻
+
+請在[本儲存庫 Issues](https://github.com/TonyBinheWu/sunnypilot/issues) 提供分支、版本、C3X／C4 機種、車型年式、問題發生步驟與可供分析的紀錄。提交紀錄前請移除個人敏感資訊。
+
+針對本分支的修正，Pull Request 請以 **`hkg-enhanced`** 為目標。跨分支共用的更新需分別檢查車種範圍與兩種機器的相容性。
+
+## 上游文件與社群
+
+* [sunnypilot 原始碼](https://github.com/sunnypilot/sunnypilot/tree/master)
+* [openpilot 原始碼](https://github.com/commaai/openpilot)
+* [sunnypilot 文件](https://docs.sunnypilot.ai/)
+* [sunnypilot 社群論壇](https://community.sunnypilot.ai/)
+
+## 資料與隱私
+
+沿用 sunnypilot／openpilot 的資料處理機制。預設會向 comma 伺服器上傳駕駛資料，並可透過 [comma connect](https://connect.comma.ai/) 存取；使用者可依設定停用資料收集。
+
+系統記錄道路攝影機、CAN、GPS、IMU、磁力計、溫度感測器、當機與作業系統紀錄。駕駛攝影機及麥克風僅在使用者明確選擇啟用時記錄。使用本軟體與相關服務會產生可能被記錄及儲存的資料；原有資料使用條款與下列授權聲明仍適用。
 
 By using this software, you understand that use of this software or its related services will generate certain types of user data, which may be logged and stored at the sole discretion of comma. By accepting this agreement, you grant an irrevocable, perpetual, worldwide right to comma for the use of this data.
 

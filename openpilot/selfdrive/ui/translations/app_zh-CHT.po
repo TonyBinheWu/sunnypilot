@@ -1781,3 +1781,11 @@ msgstr "沒有警示"
 
 msgid "pair with comma connect"
 msgstr "連接 comma connect"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/software.py
+msgid "Update notes"
+msgstr "更新項目"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/software.py
+msgid "Installed version notes"
+msgstr "目前版本更新說明"

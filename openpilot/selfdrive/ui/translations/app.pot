@@ -1511,3 +1511,11 @@ msgstr ""
 
 msgid "pair with comma connect"
 msgstr ""
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/software.py
+msgid "Update notes"
+msgstr ""
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/software.py
+msgid "Installed version notes"
+msgstr ""

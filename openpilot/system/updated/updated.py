@@ -17,7 +17,7 @@ from openpilot.common.markdown import parse_markdown
 from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.selfdrived.alertmanager import set_offroad_alert
 from openpilot.common.hardware import AGNOS, HARDWARE
-from openpilot.common.version import get_build_metadata, SP_BRANCH_MIGRATIONS
+from openpilot.common.version import get_build_metadata, get_release_notes, SP_BRANCH_MIGRATIONS
 
 LOCK_FILE = os.getenv("UPDATER_LOCK_FILE", "/tmp/safe_staging_overlay.lock")
 STAGING_ROOT = os.getenv("UPDATER_STAGING_ROOT", "/data/safe_staging")
@@ -81,12 +81,11 @@ def set_consistent_flag(consistent: bool) -> None:
 
 def parse_release_notes(basedir: str) -> bytes:
   try:
-    with open(os.path.join(basedir, "CHANGELOG.md"), "rb") as f:
-      r = f.read().split(b'\n\n', 1)[0]  # Slice latest release notes
+    notes = get_release_notes(basedir)
     try:
-      return bytes(parse_markdown(r.decode("utf-8")), encoding="utf-8")
+      return parse_markdown(notes).encode("utf-8")
     except Exception:
-      return r + b"\n"
+      return (notes + "\n").encode("utf-8")
   except FileNotFoundError:
     pass
   except Exception:
