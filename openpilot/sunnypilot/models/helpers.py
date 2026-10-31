@@ -84,12 +84,14 @@ def _bundle_is_valid_locally(bundle: custom.ModelManagerSP.ModelBundle, source: 
   # C4/Chestnut retain their existing validation and runtime selection.
   if source == "qcom" and HARDWARE.get_device_type() == "tizi" and bundle.runner == custom.ModelManagerSP.Runner.tinygrad:
     assembled = set()
+    has_compiled_model = False
     from openpilot.common.file_chunker import get_chunk_name
     for model in bundle.models:
       artifact = model.artifact
       name = artifact.fileName
       if not name or not name.endswith(".pkl"):
         continue
+      has_compiled_model = True
       full_path = os.path.join(model_root, name)
       if not os.path.isfile(full_path):
         cloudlog.warning(f"C3X QCOM model is not assembled: {name}")
@@ -100,6 +102,9 @@ def _bundle_is_valid_locally(bundle: custom.ModelManagerSP.ModelBundle, source: 
           cloudlog.warning(f"C3X QCOM compiled model checksum failed: {name}")
           return False
         assembled.update(get_chunk_name(name, i, len(artifact.chunks)) for i in range(len(artifact.chunks)))
+    if not has_compiled_model:
+      cloudlog.warning("C3X selected tinygrad bundle has no compiled driving model")
+      return False
     # Fully hashed compiled artifacts need no extra chunk files after repair.
     artifacts = [(name, hash_value) for name, hash_value in artifacts if name not in assembled]
   return all(_verify_file(os.path.join(model_root, file_name), expected_hash)
