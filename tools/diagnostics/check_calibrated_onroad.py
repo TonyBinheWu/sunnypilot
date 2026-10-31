@@ -20,6 +20,7 @@ class TestCalibratedOnroad(OpenpilotTestCase):
     self.assertEqual(gui_app.big_ui(), big)
     package = "openpilot.selfdrive.ui.onroad" if big else "openpilot.selfdrive.ui.mici.onroad"
     road = importlib.import_module(package + ".augmented_road_view")
+    self.assertEqual(road.CameraView.__module__, package + ".cameraview")
     gui_app.init_window("Calibrated onroad regression")
     view = None
     try:
@@ -104,6 +105,31 @@ class TestCalibratedOnroad(OpenpilotTestCase):
                     rl.end_drawing()
                 self.assertGreater(len(renderer._path.projected_points), 0, "Fixture did not exercise projected path")
                 self.assertTrue(np.isfinite(renderer._path.projected_points).all())
+
+      if big:
+        # Observe real native release, not a stub that hides a double free.
+        self.assertGreater(view.shader.id, 0)
+        with mock.patch.object(rl, "unload_shader", wraps=rl.unload_shader) as unload:
+          view.close()
+          view.close()
+          view.__del__()
+          self.assertEqual(unload.call_count, 1)
+          self.assertIsNone(view.shader)
+        print("C3X repeated camera close/destructor: one native shader release", flush=True)
+
+        from openpilot.selfdrive.ui.onroad.cabin_camera_dialog import CabinCameraDialog
+        preview = CabinCameraDialog()
+        try:
+          self.assertGreater(preview.shader.id, 0)
+          with mock.patch.object(rl, "unload_shader", wraps=rl.unload_shader) as unload:
+            preview.hide_event()
+            preview.__del__()
+            self.assertEqual(unload.call_count, 1)
+            self.assertIsNone(preview.shader)
+          self.assertFalse(ui_state.params.get_bool("IsDriverViewEnabled"))
+          print("C3X cabin preview hide/destructor: one native shader release", flush=True)
+        finally:
+          preview.close()
     finally:
       if view is not None:
         view.close()
