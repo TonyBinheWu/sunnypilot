@@ -4,6 +4,8 @@ on:
     paths:
       - 'launch*.sh'
       - 'openpilot/common/hardware/**'
+      - 'openpilot/common/realtime.py'
+      - 'openpilot/common/tests/test_ratekeeper_stall.py'
       - 'openpilot/system/hardware/**'
       - 'openpilot/selfdrive/ui/**'
       - 'openpilot/system/ui/**'
@@ -44,6 +46,8 @@ jobs:
         run: sudo apt-get install -y --no-install-recommends libgles2 libegl1
       - name: Build host dependencies
         run: .venv/bin/scons -j4
+      - name: Verify normal timing and recovery after stalls
+        run: .venv/bin/python -m unittest openpilot.common.tests.test_ratekeeper_stall -v
       - name: Verify bootstrap, platform identity, custom UI and rendered frames
         run: .venv/bin/python tools/diagnostics/check_dual_device_compat.py
       - name: Exercise calibration transition and real onroad overlays
