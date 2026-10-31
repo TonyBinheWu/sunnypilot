@@ -14,6 +14,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from openpilot.common.params import Params
+from openpilot.common.hardware import HARDWARE
+from openpilot.sunnypilot.models.qcom_repair import repair_qcom_bundle, invalid_qcom_models
 from openpilot.common.realtime import Ratekeeper
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware.hw import Paths
@@ -136,6 +138,7 @@ class ModelManagerSP:
     self._block_size = 128 * 1000  # 128 KB network read blocks
     self._download_start_times: dict[str, float] = {}  # Track start time per model
     self._download_ref: bytes | str | None = None
+    self._c3x_qcom_last_checked_ref: str | None = None
 
   def _download_interrupted(self) -> bool:
     # only removal cancels: a different ref is a queued selection that
@@ -250,7 +253,14 @@ class ModelManagerSP:
 
     try:
       self._set_progress(artifact, status.verifying, 0)
-      if await verify_file(full_path, expected_hash):
+      verified = await verify_file(full_path, expected_hash)
+      # On tizi the runtime requires a whole mmap-able tinygrad .pkl.
+      # A valid .chunkmanifest plus chunk files is NOT enough even if its
+      # concatenated SHA matches the catalog; fetch the complete file.
+      runtime_ready = True
+      if HARDWARE.get_device_type() == "tizi" and filename.endswith(".pkl"):
+        runtime_ready = await asyncio.to_thread(os.path.isfile, full_path)
+      if verified and runtime_ready:
         self._set_progress(artifact, status.cached, 100)
         return
 
@@ -376,6 +386,32 @@ class ModelManagerSP:
         self.chestnut_present = self.sm['deviceState'].chestnutPresent
         self.source_models = {source: self.model_fetcher.get_bundles_for_source(source) for source in ModelFetcher.MODEL_SOURCES}
         self.available_models = self.source_models[ModelFetcher.active_source(self.chestnut_present)]
+        # C3X QCOM: reconstruct or re-download an unusable compiled model only
+        # while offroad. Check a particular selection once per manager lifetime
+        # to avoid hashing gigabyte model files every second.
+        if HARDWARE.get_device_type() == "tizi" and self.sm.all_checks(["deviceState"]) and not self.sm["deviceState"].started:
+          qcom_bundle = get_selected_bundle(self.params, "qcom")
+          selection_ref = (qcom_bundle.ref or qcom_bundle.internalName) if qcom_bundle is not None else None
+          if selection_ref is None:
+            self._c3x_qcom_last_checked_ref = None
+          elif selection_ref != self._c3x_qcom_last_checked_ref:
+            self._c3x_qcom_last_checked_ref = selection_ref
+            try:
+              for filename in repair_qcom_bundle(Paths.model_root(), qcom_bundle):
+                cloudlog.warning(f"C3X QCOM compiled model reconstructed: {filename}")
+            except (OSError, ValueError):
+              cloudlog.exception("C3X QCOM model reconstruction failed; continuing normal validation")
+            if self.params.get("ModelManager_DownloadRef") is None:
+              try:
+                missing = invalid_qcom_models(Paths.model_root(), qcom_bundle)
+              except (OSError, ValueError):
+                cloudlog.exception("C3X QCOM integrity preflight failed; continuing normal validation")
+                missing = []
+              if missing and qcom_bundle.ref:
+                resolved = resolve_bundle_by_ref(qcom_bundle.ref, {"qcom": self.source_models["qcom"]})
+                if resolved is not None:
+                  self.params.put("ModelManager_DownloadRef", qcom_bundle.ref, block=True)
+                  cloudlog.warning(f"C3X QCOM model missing or corrupt {missing}; queued one offroad re-download of selected bundle")
         validate_active_bundles(self.params, self.source_models)
         self.active_bundle = get_active_bundle(self.params, chestnut=self.chestnut_present)
 

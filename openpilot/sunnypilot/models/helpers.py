@@ -13,6 +13,7 @@ from openpilot.cereal import custom
 from openpilot.common.params import Params
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware.hw import Paths
+from openpilot.common.hardware import HARDWARE
 from openpilot.selfdrive.modeld.helpers import chestnut_present
 
 # SET ME TO THE EXACT JSON VERSION WE SET IN SUNNYPILOT_MODELS REPO
@@ -75,13 +76,43 @@ def _bundle_artifacts(bundle: custom.ModelManagerSP.ModelBundle) -> list[tuple[s
   return artifacts
 
 
-def _bundle_is_valid_locally(bundle: custom.ModelManagerSP.ModelBundle) -> bool:
+def _bundle_is_valid_locally(bundle: custom.ModelManagerSP.ModelBundle, source: str = "") -> bool:
   model_root = Paths.model_root()
+  artifacts = _bundle_artifacts(bundle)
+  # A verified set of chunks is not a loadable model: modeld_v2 and warmup both
+  # mmap the complete .pkl. Constrain this stronger preflight to C3X QCOM;
+  # C4/Chestnut retain their existing validation and runtime selection.
+  if source == "qcom" and HARDWARE.get_device_type() == "tizi" and bundle.runner == custom.ModelManagerSP.Runner.tinygrad:
+    assembled = set()
+    has_compiled_model = False
+    from openpilot.common.file_chunker import get_chunk_name
+    for model in bundle.models:
+      artifact = model.artifact
+      name = artifact.fileName
+      if not name or not name.endswith(".pkl"):
+        continue
+      has_compiled_model = True
+      full_path = os.path.join(model_root, name)
+      if not os.path.isfile(full_path):
+        cloudlog.warning(f"C3X QCOM model is not assembled: {name}")
+        return False
+      sha = getattr(artifact.downloadUri, "sha256", None)
+      if sha:
+        if not _verify_file(full_path, sha):
+          cloudlog.warning(f"C3X QCOM compiled model checksum failed: {name}")
+          return False
+        assembled.update(get_chunk_name(name, i, len(artifact.chunks)) for i in range(len(artifact.chunks)))
+    if not has_compiled_model:
+      cloudlog.warning("C3X selected tinygrad bundle has no compiled driving model")
+      return False
+    # Fully hashed compiled artifacts need no extra chunk files after repair.
+    artifacts = [(name, hash_value) for name, hash_value in artifacts if name not in assembled]
   return all(_verify_file(os.path.join(model_root, file_name), expected_hash)
-             for file_name, expected_hash in _bundle_artifacts(bundle))
+             for file_name, expected_hash in artifacts)
 
 
-def _bundle_needs_reset(active_bundle: custom.ModelManagerSP.ModelBundle, available_bundles: list[custom.ModelManagerSP.ModelBundle] | None) -> bool:
+def _bundle_needs_reset(active_bundle: custom.ModelManagerSP.ModelBundle, available_bundles: list[custom.ModelManagerSP.ModelBundle] | None,
+                        source: str = "") -> bool:
   if active_bundle is None:
     return False
 
@@ -105,7 +136,7 @@ def _bundle_needs_reset(active_bundle: custom.ModelManagerSP.ModelBundle, availa
     if set(_bundle_artifacts(active_bundle)) != set(_bundle_artifacts(matching_bundle)):
       return True
 
-  return not _bundle_is_valid_locally(active_bundle)
+  return not _bundle_is_valid_locally(active_bundle, source)
 
 
 def _parse_active_bundle(raw_bundle) -> "custom.ModelManagerSP.ModelBundle | None":
@@ -160,7 +191,7 @@ def _validate_active_bundle(params: Params, source: str, available_bundles: list
     return
 
   active_bundle = _parse_active_bundle(raw_bundle)
-  if active_bundle is None or _bundle_needs_reset(active_bundle, available_bundles):
+  if active_bundle is None or _bundle_needs_reset(active_bundle, available_bundles, source):
     cloudlog.warning(f"Active model bundle invalid for {source}; resetting to default")
     params.remove(key)
     _LAST_VALIDATED_RAW[key] = None
