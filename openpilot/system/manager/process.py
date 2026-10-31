@@ -3,6 +3,7 @@ import os
 import signal
 import time
 import subprocess
+import traceback
 from collections.abc import Callable, ValuesView
 from abc import ABC, abstractmethod
 from multiprocessing import Process
@@ -15,9 +16,12 @@ import openpilot.cereal.messaging as messaging
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
 from openpilot.common.swaglog import cloudlog
+from openpilot.system.manager.boot_diagnostics import init_ui_capture, save_ui_exception
 
 
 def launcher(proc: str, name: str) -> None:
+  if name == "ui":
+    init_ui_capture()
   try:
     # import the process
     mod = importlib.import_module(proc)
@@ -36,6 +40,8 @@ def launcher(proc: str, name: str) -> None:
   except KeyboardInterrupt:
     cloudlog.warning(f"child {proc} got SIGINT")
   except Exception:
+    if name == "ui":
+      save_ui_exception(traceback.format_exc())
     # can't install the crash handler because sys.excepthook doesn't play nice
     # with threads, so catch it here.
     cloudlog.exception("crash")
