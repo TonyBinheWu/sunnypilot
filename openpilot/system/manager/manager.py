@@ -14,6 +14,7 @@ from openpilot.common.text_window import TextWindow
 from openpilot.common.hardware import HARDWARE, PC
 from openpilot.system.manager.helpers import unblock_stdout, save_bootlog
 from openpilot.system.manager.process import ensure_running
+from openpilot.system.manager.boot_diagnostics import UiCrashMonitor, enabled as diagnostics_enabled, mark_clean_exit
 from openpilot.system.manager.process_config import managed_processes
 from openpilot.system.athena.registration import register, UNREGISTERED_DONGLE_ID
 from openpilot.common.swaglog import cloudlog, add_file_handler
@@ -21,6 +22,9 @@ from openpilot.common.version import get_build_metadata
 from openpilot.common.hardware.hw import Paths
 
 from openpilot.sunnypilot.system.params_migration import run_migration
+
+
+ui_crash_monitor = UiCrashMonitor()
 
 
 def manager_init() -> None:
@@ -103,6 +107,7 @@ def manager_init() -> None:
                        device=HARDWARE.get_device_type())
 
 def manager_cleanup() -> None:
+  ui_crash_monitor.close()
   # send signals to kill all procs
   for p in managed_processes.values():
     p.stop(block=False)
@@ -170,6 +175,9 @@ def manager_thread() -> None:
     msg.managerState.processes = [p.get_process_state_msg() for p in managed_processes.values()]
     pm.send('managerState', msg)
 
+    if "ui" not in ignore:
+      ui_crash_monitor.update(managed_processes["ui"])
+
     # kick AGNOS power monitoring watchdog
     try:
       if sm.all_checks(['deviceState']):
@@ -200,9 +208,12 @@ def main() -> None:
 
   try:
     manager_thread()
+    mark_clean_exit()
   except Exception:
     traceback.print_exc()
     cloudlog.exception("crash")
+    if diagnostics_enabled():
+      raise
   finally:
     manager_cleanup()
 
@@ -226,6 +237,9 @@ if __name__ == "__main__":
   except KeyboardInterrupt:
     print("got CTRL-C, exiting")
   except Exception:
+    if diagnostics_enabled():
+      # The outer stdlib guard records the full traceback and owns the error screen.
+      raise
     add_file_handler(cloudlog)
     cloudlog.exception("Manager failed to start")
 

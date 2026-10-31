@@ -88,12 +88,28 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  # Keep diagnostics outside the main UI and built Python dependencies.
+  if [ -f /AGNOS ]; then
+    export HKG_BOOT_DIAGNOSTICS=1
+    export HKG_DIAGNOSTICS_SESSION="session-$(date +%s)-$$"
+  fi
+
+  function guarded_start {
+    local stage="$1"
+    shift
+    if [ "$HKG_BOOT_DIAGNOSTICS" = "1" ]; then
+      python3 "$DIR/openpilot/system/manager/boot_diagnostics.py" "$stage" -- "$@"
+    else
+      "$@"
+    fi
+  }
+
   # start manager
   cd openpilot/system/manager
   if [ ! -f "$DIR/prebuilt" ]; then
-    ./build.py
+    guarded_start build ./build.py || { while true; do sleep 1; done; }
   fi
-  ./manager.py
+  guarded_start manager ./manager.py
 
   # if broken, keep on screen error
   while true; do sleep 1; done

@@ -58,7 +58,8 @@ def build() -> None:
 
     # Show TextWindow
     spinner.close()
-    if not os.getenv("CI"):
+    print(error_s, flush=True)
+    if not os.getenv("CI") and os.getenv("HKG_BOOT_DIAGNOSTICS") != "1":
       with TextWindow("openpilot failed to build\n \n" + error_s) as t:
         t.wait_for_exit()
     exit(1)
