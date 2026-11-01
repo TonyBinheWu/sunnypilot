@@ -528,6 +528,39 @@
           ]
         },
         {
+          "id": "low_speed_steering_tune",
+          "title": "Honda / Toyota Low-Speed Steering Tune",
+          "description": "Low-speed control tuning with existing vehicle torque limits",
+          "items": [
+            {
+              "key": "LowSpeedSteeringTune",
+              "widget": "toggle",
+              "title": "Honda / Toyota Low-Speed Steering Tune (Experimental)",
+              "description": "Defaults to off. Change offroad; applies next drive. Requires torque lateral control. Inactive with NNLC or Lateral Jerk Torque Controller. Vehicle torque limits are retained.",
+              "enablement": [
+                {
+                  "type": "offroad_only"
+                },
+                {
+                  "type": "capability",
+                  "field": "low_speed_steering_tune_available",
+                  "equals": true
+                },
+                {
+                  "type": "param",
+                  "key": "NeuralNetworkLateralControl",
+                  "equals": false
+                },
+                {
+                  "type": "param",
+                  "key": "LateralJerkTorqueController",
+                  "equals": false
+                }
+              ]
+            }
+          ]
+        },
+        {
           "id": "lane_change",
           "title": "Lane Change",
           "description": "Automatic lane change timing and behavior",

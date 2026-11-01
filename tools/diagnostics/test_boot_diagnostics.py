@@ -108,8 +108,8 @@ class TestBootDiagnostics(unittest.TestCase):
     self.assertEqual(json.loads(path.read_text())["location"], "inner.py:3")
 
   def test_native_stack_selects_faulting_thread(self):
-    trace = ('Fatal Python error: Segmentation fault\nThread 0x123 (most recent call first):\n'
-             '  File "worker.py", line 10\nCurrent thread 0x456 (most recent call first):\n'
+    trace = ('Fatal Python error: Segmentation fault\nThread 0x123 (most recent call first):\n' +
+             '  File "worker.py", line 10\nCurrent thread 0x456 (most recent call first):\n' +
              '  File "fault.py", line 42\n  File "outer.py", line 8')
     report = json.loads(diag.report("ui", trace, -11).read_text())
     self.assertEqual(report["location"], "fault.py:42")

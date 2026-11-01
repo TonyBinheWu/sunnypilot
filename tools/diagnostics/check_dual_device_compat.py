@@ -29,11 +29,11 @@ class TestDualDeviceCompat(OpenpilotTestCase):
     version = subprocess.check_output(
       ["bash", "-c", 'source ./launch_env.sh; printf "%s" "$AGNOS_VERSION"'], cwd=ROOT, env=env, text=True,
     )
-    self.assertEqual(version, "19.9")
+    self.assertEqual(version, "20.1")
     manifest = ROOT / "openpilot/common/hardware/comma/agnos.json"
     # Pin the actual upstream manifest, not just a version string.
     blob = subprocess.check_output(["git", "hash-object", str(manifest)], cwd=ROOT, text=True).strip()
-    self.assertEqual(blob, "96803bdb859c53b6ef3130c683f7730164c7daff")
+    self.assertEqual(blob, "4e90e7c8d82388f02078fffa8ddd928afebbc784")
     self.assertEqual({p["name"] for p in json.loads(manifest.read_text())},
                      {"xbl", "xbl_config", "abl", "aop", "devcfg", "boot", "system"})
     for alias in ("system/hardware/tici/agnos.json", "openpilot/system/hardware/comma/agnos.json"):

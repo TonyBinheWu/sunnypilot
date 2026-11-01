@@ -4,7 +4,7 @@
 
 此功能由 `ev6-low-speed-torque` 分支恢復至 `hkg-enhanced`，供 Hyundai／Kia／Genesis（HKG）CAN-FD 車型使用。
 
-opendbc 固定至 `TonyBinheWu/opendbc@5d3c7a8f456b12cbeda46ba08e6ca9c5c85a0c16`，讓 Python 控制器與 Panda safety 使用同一組動態扭力與轉向速率曲線及啟用旗標。
+目前 opendbc 固定至 `TonyBinheWu/opendbc@1c51731784729da5ebaf24b3c34106bd27aaf94b`，讓 Python 控制器與 Panda safety 使用同一組動態扭力與轉向速率曲線及啟用旗標。
 
 ## 安裝
 
@@ -18,7 +18,7 @@ install.sunnypilot.ai/fork/TonyBinheWu/hkg-enhanced
 
 `/fork/TonyBinheWu/` 指定此帳號的 `sunnypilot` 儲存庫。
 
-這是原始碼分支。安裝器會下載程式與子模組，首次啟動沿用 `launch_chffrplus.sh` → `openpilot/system/manager/build.py` 的 SCons 編譯流程；分支沒有 `prebuilt` 標記。首次安裝須保留穩定供電、Wi-Fi 與下載模型及編譯的時間。AGNOS 版本依本基底的 `launch_env.sh` 為 19.7，更新流程沿用基底。
+這是原始碼分支。安裝器會下載程式與子模組，首次啟動沿用 `launch_chffrplus.sh` → `openpilot/system/manager/build.py` 的 SCons 編譯流程；分支沒有 `prebuilt` 標記。首次安裝須保留穩定供電、Wi-Fi 與下載模型及編譯的時間。目前工作樹的 AGNOS 更新目標依 `launch_env.sh` 為 20.1，更新流程沿用基底；實機驗證範圍見[平台更新紀錄](architecture/PLATFORM_UPGRADE_2026_11.md)。
 
 目前裝有其他版本時，先在停車狀態透過原本的解除安裝流程回到自訂軟體畫面。不要在行駛時安裝或切換分支。
 

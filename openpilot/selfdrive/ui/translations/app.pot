@@ -1519,3 +1519,32 @@ msgstr ""
 #: openpilot/selfdrive/ui/mici/layouts/settings/software.py
 msgid "Installed version notes"
 msgstr ""
+
+#: openpilot/selfdrive/ui/sunnypilot/layouts/settings/steering.py
+msgid "Honda / Toyota Low-Speed Steering Tune (Experimental)"
+msgstr ""
+
+
+#: openpilot/selfdrive/ui/sunnypilot/layouts/settings/steering.py
+msgid "Unavailable for this vehicle. Requires a supported Honda or Toyota torque-steering platform."
+msgstr ""
+
+#: openpilot/selfdrive/ui/sunnypilot/layouts/settings/steering.py
+msgid "Compatible Honda or Toyota torque-steering platform detected."
+msgstr ""
+
+#: openpilot/selfdrive/ui/sunnypilot/layouts/settings/steering.py
+msgid "Improve low-speed steering while keeping vehicle torque limits."
+msgstr ""
+
+#: openpilot/selfdrive/ui/sunnypilot/layouts/settings/steering.py
+msgid "Default off. Offroad changes apply next drive. Torque control only; disabled with NNLC or Lateral Jerk Torque Controller."
+msgstr ""
+
+#: openpilot/selfdrive/ui/sunnypilot/mici/layouts/steering.py
+msgid "Low-Speed Steering Tune"
+msgstr ""
+
+#: openpilot/selfdrive/ui/sunnypilot/mici/layouts/steering.py
+msgid "Steering"
+msgstr ""

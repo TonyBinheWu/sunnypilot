@@ -8,7 +8,15 @@
 
 HKG 低速動態轉向扭力是預設關閉的實驗功能，僅適用符合條件的 CAN-FD 車型。設定方式、限制與驗證範圍請閱讀 [HKG 低速扭力說明](docs/HKG_LOW_SPEED_TORQUE.md)。
 
+Honda／Toyota 低速轉向調校已提供預設關閉的實驗設定，供符合條件的扭力控制路徑使用；保留既有扭力上限。請閱讀[設定、來源與驗證範圍](docs/LOW_SPEED_STEERING_TUNE.md)。
+
 需要 CCNC 車型支援時，請使用另一個維護分支 [ccnc-port](https://github.com/TonyBinheWu/sunnypilot/tree/ccnc-port)。
+
+## 本次維護版本
+
+`2026.003.003`：AGNOS 目標 `20.1`、openpilot 基底標示 `0.11.3`，並更新 Python 套件鎖定。這是指定項目移植，並非完整合併 openpilot master；實機驗證結果另行記錄。
+
+導航服務 `navd`／`mapsd` 已供兩分支共用，預設關閉；行車時依 `NavigationEnabled` 啟動。服務與導航影像不代表模型已接入導航輸入。
 
 ## C3X 與 C4 維護目標
 
@@ -36,6 +44,12 @@ HKG 低速動態轉向扭力是預設關閉的實驗功能，僅適用符合條�
 2. 選用本儲存庫的 **`hkg-enhanced`** 分支。
 3. 在軟體資訊確認儲存庫為 `TonyBinheWu/sunnypilot`、分支為 `hkg-enhanced`，並核對版本與更新項目。
 4. 首次安裝或更新完成後，在停車狀態確認系統、模型與車輛辨識正常，再進行裝置及車型驗證。
+
+## 架構與模組維護
+
+[架構與模組維護入口](docs/architecture/README.md)整理兩分支的啟動與資料流、15 個維護部件、子模組釘選、分支差異，以及 C3X／C4 的升級驗證順序。
+
+可在儲存庫根目錄執行 `python tools/maintenance/module_inventory.py --check` 檢查模組地圖，或用 `--diff HEAD~1` 查看改動的直接與間接影響。
 
 ## 回報問題與貢獻
 
