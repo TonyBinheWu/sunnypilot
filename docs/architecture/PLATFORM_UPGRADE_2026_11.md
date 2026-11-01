@@ -2,6 +2,20 @@
 
 工作樹版本：兩分支均為 `2026.003.003`。本頁記錄此版本的改動與主機驗證；裝置的安裝與實機驗證需另行確認。
 
+## 依機種分流 AGNOS：hkg-enhanced 007／ccnc-port 004
+
+預設從 `/sys/firmware/devicetree/base/model` 讀取實體機種：`tizi`（C3X）選用 AGNOS `19.9`，`mici`（C4）維持 `20.1`。其他機種及主機測試維持既有的 `20.1` 預設。明確設定的 `AGNOS_VERSION` 開發覆寫仍可使用，但只接受已有清單的版本，且會重新配對映像路徑。
+
+`launch_env.sh` 同時輸出 `AGNOS_VERSION` 及 `AGNOS_MANIFEST`；開機的 `agnos_init`、背景更新器與 `tools/op.sh` 手動入口均使用這組選擇。背景更新會清除舊行程繼承的版本與清單，從待套用程式樹重新讀取實體機種政策。舊版程式樹未輸出清單時保留既有路徑的相容處理。
+
+19.9 清單完整取自 [sunnypilot master `6f7a2c94`](https://github.com/sunnypilot/sunnypilot/blob/6f7a2c94c10dffcf9a83b120ab1e6985e4496868/openpilot/common/hardware/comma/agnos.json)，新增為 `agnos-19.9.json`，Git blob 為 `96803bdb859c53b6ef3130c683f7730164c7daff`。20.1 沿用現有 `agnos.json`，blob 為 `4e90e7c8d82388f02078fffa8ddd928afebbc784`；已核對當日 openpilot master `4d5d6c47` 的目標仍是 20.1。未來新版映像需另行核對與更新，並非不受控地追隨遠端最新映像。
+
+既有更新器以版本不相等判斷安裝需求，因此 20.1→19.9 也會寫入另一個 A/B 槽。兩份清單的 7 個分區均為 A/B；保留官方下載與校驗、未完成映像不切換、校驗後才啟用目標槽的流程。此次沒有在實機執行降版。
+
+驗證：兩分支各 7 項唯讀／模擬更新測試，涵蓋機種偵測、版本清單配對、覆寫與錯誤版本、官方清單校驗、背景降版及同版跳過、C4 更新、手動入口與 Shell 語法。19.9 的 7 個官方映像 URL 均已確認回應 HTTP 200。這些檢查不代表實機可開機或 eGPU 已穩定。
+
+C3X 更新時需停車並維持穩定供電，完成映像寫入與重啟後確認 `/VERSION` 為 19.9；C4 應為 20.1。需重新執行相同設備／模型條件的 eGPU 測試，保留故障當分鐘 rlog。CCNC 另補齊已確認缺少的 `ChestnutRetry` 參數及同一組原生回歸案例。
+
 ## 更新內容
 
 * 參考 `commaai/openpilot@afedebcfd4213a76b99b1f11b5310ed05cee04df` 的 [launch_env.sh](https://github.com/commaai/openpilot/blob/afedebcfd4213a76b99b1f11b5310ed05cee04df/launch_env.sh)、[版本標頭](https://github.com/commaai/openpilot/blob/afedebcfd4213a76b99b1f11b5310ed05cee04df/openpilot/common/version.h)及 [AGNOS manifest](https://github.com/commaai/openpilot/blob/afedebcfd4213a76b99b1f11b5310ed05cee04df/openpilot/common/hardware/comma/agnos.json)，將兩分支 AGNOS 目標改為 20.1，openpilot 基底標示改為 0.11.3。這是指定項目移植，並非完整合併 master。

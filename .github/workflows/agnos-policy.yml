@@ -1,0 +1,30 @@
+name: Device-specific AGNOS policy
+on:
+  push:
+    branches: [hkg-enhanced, ccnc-port]
+    paths:
+      - 'launch*.sh'
+      - 'tools/op.sh'
+      - 'openpilot/common/hardware/comma/agnos*.json'
+      - 'openpilot/system/updated/**'
+      - 'tools/diagnostics/test_agnos_policy.py'
+      - '.github/workflows/agnos-policy.yml'
+  pull_request:
+    paths:
+      - 'launch*.sh'
+      - 'tools/op.sh'
+      - 'openpilot/common/hardware/comma/agnos*.json'
+      - 'openpilot/system/updated/**'
+      - 'tools/diagnostics/test_agnos_policy.py'
+      - '.github/workflows/agnos-policy.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  selection-and-update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test C3X downgrade and C4 update paths without flashing
+        run: python3 -m unittest tools.diagnostics.test_agnos_policy -v
