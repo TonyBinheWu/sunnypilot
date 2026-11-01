@@ -112,5 +112,34 @@ class TestBundledFirmware(unittest.TestCase):
       functions['validate_image'](broken)
 
 
+class TestBigModelReady(unittest.TestCase):
+  def test_ready_requires_an_active_big_model_and_loading_transition(self):
+    path = ROOT / 'openpilot/selfdrive/selfdrived/selfdrived.py'
+    tree = ast.parse(path.read_text(encoding='utf-8'))
+    cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == 'SelfdriveD')
+    update = next(node for node in cls.body if isinstance(node, ast.FunctionDef) and node.name == 'update_events')
+    def assignment_to(node, name):
+      return isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == name for t in node.targets)
+    start = next(i for i, node in enumerate(update.body) if assignment_to(node, 'loading'))
+    end = next(i for i, node in enumerate(update.body) if assignment_to(node, 'chestnut_present'))
+    code = compile(ast.Module(body=update.body[start:end], type_ignores=[]), str(path), 'exec')
+    for active, loading, was_loading, expected in (
+      (True, False, True, True), (False, False, True, False), (None, False, True, False),
+      (True, True, True, False), (True, False, False, False),
+    ):
+      with self.subTest(active=active, loading=loading, was_loading=was_loading):
+        state = SimpleNamespace(params=SimpleNamespace(get_bool=Mock(return_value=loading), get=Mock(return_value=active)),
+                                big_model_loading=was_loading, big_model_ready_t=0., events_sp=Mock(), events=Mock())
+        namespace = {'self': state, 'time': SimpleNamespace(monotonic=lambda: 123.),
+                     'custom': SimpleNamespace(OnroadEventSP=SimpleNamespace(EventName=SimpleNamespace(bigModelReady='ready'))),
+                     'EventName': SimpleNamespace(bigModelLoading='loading')}
+        exec(code, namespace)
+        self.assertEqual(state.events_sp.add.called, expected)
+        self.assertEqual(state.events.add.called, loading)
+        self.assertEqual(state.big_model_loading, loading)
+        # Keep the existing input-settling timer even when falling back to the small model.
+        self.assertEqual(state.big_model_ready_t, 123. if was_loading and not loading else 0.)
+
+
 if __name__ == '__main__':
   unittest.main()

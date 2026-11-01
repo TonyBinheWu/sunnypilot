@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import time
 from types import SimpleNamespace
 from typing import cast
@@ -26,19 +27,26 @@ class TestDualDeviceCompat(OpenpilotTestCase):
   def test_agnos_version_manifest_and_legacy_paths(self):
     env = dict(os.environ)
     env.pop("AGNOS_VERSION", None)
-    version = subprocess.check_output(
-      ["bash", "-c", 'source ./launch_env.sh; printf "%s" "$AGNOS_VERSION"'], cwd=ROOT, env=env, text=True,
-    )
-    self.assertEqual(version, "20.1")
-    manifest = ROOT / "openpilot/common/hardware/comma/agnos.json"
+    env.pop("AGNOS_MANIFEST", None)
+    device = os.environ["EXPECTED_DEVICE"]
+    with tempfile.TemporaryDirectory() as temporary:
+      model = Path(temporary) / "model"
+      model.write_bytes(f"comma {device}\0".encode())
+      env["AGNOS_DEVICE_MODEL_PATH"] = str(model)
+      version, selected = subprocess.check_output(
+        ["bash", "-c", 'source ./launch_env.sh && printf "%s\\n%s\\n" "$AGNOS_VERSION" "$AGNOS_MANIFEST"'],
+        cwd=ROOT, env=env, text=True,
+      ).strip().splitlines()
+    self.assertEqual(version, "19.9" if device == "tizi" else "20.1")
+    manifest = ROOT / selected
     # Pin the actual upstream manifest, not just a version string.
     blob = subprocess.check_output(["git", "hash-object", str(manifest)], cwd=ROOT, text=True).strip()
-    self.assertEqual(blob, "4e90e7c8d82388f02078fffa8ddd928afebbc784")
+    self.assertEqual(blob, "96803bdb859c53b6ef3130c683f7730164c7daff" if device == "tizi" else "4e90e7c8d82388f02078fffa8ddd928afebbc784")
     self.assertEqual({p["name"] for p in json.loads(manifest.read_text())},
                      {"xbl", "xbl_config", "abl", "aop", "devcfg", "boot", "system"})
     for alias in ("system/hardware/tici/agnos.json", "openpilot/system/hardware/comma/agnos.json"):
       with self.subTest(alias=alias):
-        self.assertEqual((ROOT / alias).resolve(strict=True), manifest.resolve(strict=True))
+        self.assertEqual((ROOT / alias).resolve(strict=True), (ROOT / "openpilot/common/hardware/comma/agnos.json").resolve(strict=True))
     for script in ("launch_env.sh", "launch_chffrplus.sh"):
       subprocess.run(["bash", "-n", script], cwd=ROOT, check=True)
 
