@@ -1548,3 +1548,51 @@ msgstr ""
 #: openpilot/selfdrive/ui/sunnypilot/mici/layouts/steering.py
 msgid "Steering"
 msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Leave onroad mode before changing steering tuning."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Start the vehicle once to identify it, then return offroad."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Turn off NNLC to use low-speed steering tuning."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Turn off Lateral Jerk Torque Controller to use low-speed steering tuning."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Low-speed steering tuning is unavailable for angle steering."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Steering tuning is unavailable in dashcam-only mode."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Steering control is unavailable. Check that sunnypilot is enabled, then restart the vehicle to refresh identification."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "This vehicle is not supported by low-speed steering tuning."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Enable torque lateral control; low-speed tuning will apply on the next drive."
+msgstr ""
+
+#: openpilot/system/ui/sunnypilot/lib/low_speed_steering.py
+msgid "Low-speed steering tuning is available. Changes apply on the next drive."
+msgstr ""
+
+#: openpilot/selfdrive/ui/sunnypilot/mici/layouts/steering.py
+msgid "Turn off NNLC / Jerk"
+msgstr ""
+
+#: openpilot/selfdrive/ui/sunnypilot/mici/layouts/steering.py
+msgid "Turn off conflicting steering tuning. The low-speed tuning switch stays unchanged."
+msgstr ""

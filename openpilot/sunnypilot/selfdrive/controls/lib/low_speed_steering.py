@@ -6,7 +6,7 @@ selfdrive/controls/lib/latcontrol_torque.py. See docs/LOW_SPEED_STEERING_TUNE.md
 for attribution, adaptations and the intentionally narrower activation scope.
 
 Adapted portions are provided under the StarPilot MIT license:
-+Copyright (c) 2018, Comma.ai, Inc.
+Copyright (c) 2018, Comma.ai, Inc.
 Copyright (c) 2026, firestar5683 and StarPilot contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -37,18 +37,41 @@ from opendbc.car.structs import CarParams
 from openpilot.common.params import Params
 
 
-def supports_low_speed_tune(CP: CarParams | None) -> bool:
-  if CP is None or CP.dashcamOnly or CP.steerControlType != CarParams.SteerControlType.torque:
-    return False
+def low_speed_tune_vehicle_blocker(CP: CarParams | None) -> str | None:
+  if CP is None:
+    return "no_car"
+  if CP.dashcamOnly:
+    return "dashcam"
+  if CP.steerControlType != CarParams.SteerControlType.torque:
+    return "angle"
+  if not ((CP.brand == "toyota" and CP.carFingerprint in TOYOTA) or (CP.brand == "honda" and CP.carFingerprint in HONDA)):
+    return "unsupported"
   if not CP.safetyConfigs:
-    return False
+    return "configuration"
   safety = CP.safetyConfigs[-1]
   if CP.brand == "toyota":
-    return bool(CP.carFingerprint in TOYOTA and safety.safetyModel == CarParams.SafetyModel.toyota and
-                not safety.safetyParam & ToyotaSafetyFlags.LTA)
-  if CP.brand == "honda":
-    return bool(CP.carFingerprint in HONDA and safety.safetyModel in (CarParams.SafetyModel.hondaNidec, CarParams.SafetyModel.hondaBosch))
-  return False
+    compatible = safety.safetyModel == CarParams.SafetyModel.toyota and not safety.safetyParam & ToyotaSafetyFlags.LTA
+  else:
+    compatible = safety.safetyModel in (CarParams.SafetyModel.hondaNidec, CarParams.SafetyModel.hondaBosch)
+  return None if compatible else "configuration"
+
+
+def supports_low_speed_tune(CP: CarParams | None) -> bool:
+  return low_speed_tune_vehicle_blocker(CP) is None
+
+
+def low_speed_tune_block_reason(CP: CarParams | None, params: Params, offroad: bool) -> str | None:
+  """Explain the settings gate without changing controller or safety eligibility."""
+  if not offroad:
+    return "onroad"
+  blocker = low_speed_tune_vehicle_blocker(CP)
+  if blocker is not None:
+    return blocker
+  if params.get_bool("NeuralNetworkLateralControl"):
+    return "nnlc"
+  if params.get_bool("LateralJerkTorqueController"):
+    return "jerk"
+  return None
 
 
 class LowSpeedSteeringTune:

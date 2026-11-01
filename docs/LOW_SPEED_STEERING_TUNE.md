@@ -35,6 +35,23 @@ StarPilot 為 MIT 授權；改編模組內保留完整來源版權及授權文�
 
 記錄中的 `LateralTorqueState.version` 為 100（v0＋此調校）或 101（v1＋此調校）；關閉或不符合條件時維持原版本。這個標記表示選中的調校路徑，不表示每一幀都在施加低速補償。
 
+## C4 顯示不可用時
+
+`2026.003.004` 起，C4「轉向」頁面先顯示目前狀態，區分尚未辨識車型、仍在行車模式、NNLC／橫向 Jerk 衝突、角度控制、僅記錄模式或轉向設定未就緒。
+
+RAV4 2019–2020 對應的 `TOYOTA_RAV4_TSS2`，以及 `TOYOTA_COROLLA`／`TOYOTA_COROLLA_TSS2` 的序列化車型資料，都可通過目前的 C4 設定判斷。若啟用 NNLC 或 Lateral Jerk Torque Controller，開關仍會依原設計禁用；不能只根據「不可用」推斷該年式不受支援。個別車輛仍以實際辨識平台及設定為準。
+
+衝突時可於非行車狀態按 **關閉 NNLC／Jerk**，明確關閉這兩項調校後再選擇低速調校。此操作不會自動開啟低速調校，也不更改強制扭力控制、車型或 safety 限制；下次行車才使用新的控制器設定。若狀態提示需要扭力控制，再依既有設定啟用「強制扭力橫向控制」。
+
+若新版狀態仍不符合預期，可在已完成編譯的裝置執行唯讀診斷：
+
+```bash
+cd /data/openpilot
+python tools/diagnostics/check_low_speed_steering.py
+```
+
+報告只讀取機種、版本、相關開關與必要的車型／轉向設定，不變更 Params，也不包含 VIN、路線或金鑰。`block_reason` 會列出實際禁用原因；`would_enable_with_current_car_params` 是依目前資料重建控制器時的判斷，不代表正在行車的控制器已即時切換。
+
 ## 驗證與維護
 
 `test_low_speed_steering.py` 驗證車型排除、Toyota 平台初始化不變、v0／v1 的低速反應與輸出界限、停用／接管／重啟、其他控制器排除、前饋與速度邊界、sunnylink 能力及中文抽取。
