@@ -36,6 +36,10 @@ def read_int(path: Path, base: int = 10) -> int:
     return 0
 
 
+def cable_connected() -> bool:
+  return read_int(TYPEC_CC_ORIENTATION_PATH) != 0
+
+
 def usb_devices() -> list[Path]:
   try:
     devices = (d for d in USB_DEVICES_PATH.glob("*") if (d / "idVendor").exists())

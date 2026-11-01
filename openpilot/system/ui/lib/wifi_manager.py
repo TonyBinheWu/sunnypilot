@@ -805,10 +805,18 @@ class WifiManager:
       if active:
         self.activate_connection(self._tethering_ssid, block=True)
 
-        if not self._ipv4_forward:
-          time.sleep(5)
-          cloudlog.warning("net.ipv4.ip_forward = 0")
-          subprocess.run(["sudo", "sysctl", "net.ipv4.ip_forward=0"], check=False)
+        # NetworkManager's ipv4.method=shared needs IPv4 forwarding for hotspot NAT.
+        # Never disable forwarding here: doing so disconnects all tethered clients.
+        try:
+          forward = subprocess.run(["sysctl", "-n", "net.ipv4.ip_forward"],
+                                   capture_output=True, text=True, check=False, timeout=5)
+          if forward.returncode != 0 or forward.stdout.strip() != "1":
+            enable = subprocess.run(["sudo", "-n", "sysctl", "-w", "net.ipv4.ip_forward=1"],
+                                    capture_output=True, text=True, check=False, timeout=5)
+            if enable.returncode != 0:
+              cloudlog.warning(f"Failed to enable hotspot IPv4 forwarding: {enable.stderr.strip()}")
+        except (OSError, subprocess.TimeoutExpired) as e:
+          cloudlog.warning(f"Failed checking hotspot IPv4 forwarding: {e}")
       else:
         self._deactivate_connection(self._tethering_ssid)
 

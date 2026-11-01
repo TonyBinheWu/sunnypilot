@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+      - hkg-enhanced
+      - ccnc-port
   pull_request:
   workflow_dispatch:
   workflow_call:

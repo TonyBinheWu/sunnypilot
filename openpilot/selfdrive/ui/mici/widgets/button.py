@@ -8,6 +8,7 @@ from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.scroller import DO_ZOOM
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos, TextAlignmentVertical
 from openpilot.common.filter_simple import BounceFilter
+from openpilot.system.ui.lib.multilang import multilang, tr
 
 if TYPE_CHECKING:
   from openpilot.common.params import Params
@@ -36,7 +37,7 @@ class BaseButton(Widget):
     if description:
       # Dialogs also use buttons; import lazily to avoid a circular import.
       from openpilot.selfdrive.ui.mici.widgets.dialog import SettingDescriptionDialog
-      self.set_long_press_callback(lambda: gui_app.push_widget(SettingDescriptionDialog(title, description, icon)))
+      self.set_long_press_callback(lambda: gui_app.push_widget(SettingDescriptionDialog(tr(title), tr(description), icon)))
     else:
       self.set_long_press_callback(self.trigger_shake)
 
@@ -149,6 +150,7 @@ class BigButton(BaseButton):
     self.set_rect(rl.Rectangle(0, 0, 402, 180))
     self.text = text
     self.value = value
+    self._locale_when_rendered = multilang.language
     self._txt_icon = icon
     self._scroll = scroll
 
@@ -158,10 +160,10 @@ class BigButton(BaseButton):
 
     self._rotate_icon_t: float | None = None
 
-    self._label = UnifiedLabel(text, font_size=self._get_label_font_size(), font_weight=FontWeight.BOLD,
+    self._label = UnifiedLabel(tr(text), font_size=self._get_label_font_size(), font_weight=FontWeight.BOLD,
                                text_color=LABEL_COLOR, alignment_vertical=TextAlignmentVertical.BOTTOM, scroll=scroll,
                                line_height=0.9)
-    self._sub_label = UnifiedLabel(value, font_size=COMPLICATION_SIZE, font_weight=FontWeight.ROMAN,
+    self._sub_label = UnifiedLabel(tr(value), font_size=COMPLICATION_SIZE, font_weight=FontWeight.ROMAN,
                                    text_color=COMPLICATION_GREY, alignment_vertical=TextAlignmentVertical.BOTTOM)
     self._update_label_layout()
 
@@ -207,13 +209,24 @@ class BigButton(BaseButton):
 
   def set_text(self, text: str):
     self.text = text
-    self._label.set_text(text)
+    self._label.set_text(tr(text))
     self._update_label_layout()
 
   def set_value(self, value: str):
+    # Retain the raw value for settings logic and option matching. Translate
+    # only the rendered subtitle, not the underlying setting representation.
     self.value = value
-    self._sub_label.set_text(value)
+    self._sub_label.set_text(tr(value))
     self._update_label_layout()
+
+  def _sync_localized_text(self):
+    # comma 4 switches LanguageSetting without reconstructing the scroller.
+    # Keep the existing buttons in sync when the language changes at runtime.
+    if self._locale_when_rendered != multilang.language:
+      self._locale_when_rendered = multilang.language
+      self._label.set_text(tr(self.text))
+      self._sub_label.set_text(tr(self.value))
+      self._update_label_layout()
 
   def get_value(self) -> str:
     return self.value
@@ -242,6 +255,7 @@ class BigButton(BaseButton):
     return txt_bg, btn_x, btn_y, scale
 
   def _draw_content(self, btn_y: float):
+    self._sync_localized_text()
     # LABEL ------------------------------------------------------------------
     label_x = self._rect.x + self.LABEL_HORIZONTAL_PADDING
 

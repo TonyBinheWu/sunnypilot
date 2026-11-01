@@ -6,6 +6,7 @@ from typing import Union
 from collections.abc import Callable
 from openpilot.system.ui.widgets.nav_widget import NavWidget
 from openpilot.system.ui.widgets.scroller import NavScroller
+from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.mici_keyboard import MiciKeyboard
 from openpilot.system.ui.lib.text_measure import measure_text_cached
@@ -71,11 +72,15 @@ class BigConfirmationDialog(BigDialogBase):
     self._confirm_callback = confirm_callback
     self._exit_on_confirm = exit_on_confirm
 
-    self._slider: BigSlider | RedBigSlider
+    # Localize confirmations without changing the action/callback semantics.
+    # Multi-line titles are assembled by the device page at runtime.
+    label = tr(title)
+    if label == title and title.startswith("slide to\n"):
+      label = tr("slide to") + "\n" + tr(title.removeprefix("slide to\n"))
     if red:
-      self._slider = self._child(RedBigSlider(title, icon, confirm_callback=self._on_confirm))
+      self._slider = self._child(RedBigSlider(label, icon, confirm_callback=self._on_confirm))
     else:
-      self._slider = self._child(BigSlider(title, icon, confirm_callback=self._on_confirm))
+      self._slider = self._child(BigSlider(label, icon, confirm_callback=self._on_confirm))
     self._slider.set_enabled(lambda: self.enabled and not self.is_dismissing)  # for nav stack + NavWidget
 
   def _on_confirm(self):

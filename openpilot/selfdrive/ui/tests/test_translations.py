@@ -50,11 +50,87 @@ def load_po_text(po_path: Path) -> str:
 class TestTranslations(OpenpilotTestCase):
   def test_traditional_chinese_ccnc_is_selectable(self):
     assert "zh-CHT" in TRANSLATION_LANGUAGES.values()
-    assert any("Traditional Chinese" in name for name, code in TRANSLATION_LANGUAGES.items() if code == "zh-CHT")
+    assert TRANSLATION_LANGUAGES["中文（繁體）"] == "zh-CHT"
     from openpilot.system.ui.lib.multilang import load_translations
     translations, _ = load_translations(PO_DIR / "app_zh-CHT.po")
     assert translations["Change Language"] == "變更語言"
     assert translations["HKG Low-Speed Steering Torque (Experimental)"] == "HKG 低速轉向扭力（實驗功能）"
+    # The comma 4 Device > Change Language picker must expose the same
+    # localized option and callback as the tested hkg-enhanced UI.
+    device_source = (Path(__file__).parents[1] / "layouts/settings/device.py").read_text(encoding="utf-8")
+    assert 'callback=self._show_language_dialog' in device_source
+    assert 'MultiOptionDialog(tr("Select a language"), multilang.languages' in device_source
+    assert "multilang.change_language(selected_language)" in device_source
+
+
+
+  def test_c4_language_names_loaded_into_noto_fallback(self):
+    from openpilot.system.ui.lib.multilang import fallback_font_glyphs
+
+    menu_glyphs = set("".join(TRANSLATION_LANGUAGES))
+    for code in ("zh-CHT", "zh-CHS", "ja", "ko", "th"):
+      atlas = fallback_font_glyphs(code)
+      assert menu_glyphs.issubset(atlas), f"Missing native language picker glyphs: {code}"
+    assert set("中文（繁體）").issubset(fallback_font_glyphs("zh-CHT"))
+
+  def test_c4_language_picker_preserves_universal_font(self):
+    # The picker explicitly uses UNIFONT, which must not be replaced by
+    # the active Noto font after switching LanguageSetting.
+    app_source = (Path(__file__).parents[3] / "system/ui/lib/application.py").read_text(encoding="utf-8")
+    start = app_source.index("def font_fallback(")
+    end = app_source.index("class MousePos", start)
+    body = app_source[start:end]
+    assert "FontWeight.UNIFONT" in body
+    assert "font.texture.id == unifont.texture.id" in body
+    assert body.index("return font") < body.index("return gui_app.fallback_font(text)")
+    app_details = app_source[app_source.index("  def fallback_font("):app_source.index("  @property", app_source.index("  def fallback_font("))]
+    assert "self._fallback_codepoints[language]" in app_details
+    assert 'language + ":unifont"' in app_details
+    assert "fallback_font_glyphs(language, EXTRA_FONT_CHARS)" in app_details
+    for path in ("text_measure.py", "wrap_text.py"):
+      source = (Path(__file__).parents[3] / f"system/ui/lib/{path}").read_text(encoding="utf-8")
+      assert "font_fallback(font, text)" in source
+
+  def test_mici_traditional_chinese_menu_and_safety_warnings(self):
+    """comma 4 Mici has its own string consumers, separate from the classic UI."""
+    from openpilot.system.ui.lib.multilang import load_translations
+
+    translations, _ = load_translations(PO_DIR / "app_zh-CHT.po")
+    expected = {
+      "toggles": "功能開關",
+      "network": "網路",
+      "device": "裝置",
+      "software": "軟體",
+      "developer": "開發者",
+      "firehose": "資料分享",
+      "models": "模型",
+      "slide to exit always offroad": "滑動以離開持續停駛模式",
+      "slide to force offroad": "滑動以強制進入停駛模式",
+      "enabling\nexperimental mode": "啟用\n實驗模式",
+      "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)":
+        "警告：Alpha 縱向控制可能使原廠自動緊急煞車（AEB）失效。",
+    }
+    for source, translated in expected.items():
+      assert translations.get(source) == translated, f"Missing comma 4 Chinese translation: {source!r}"
+
+  def test_mici_localized_labels_refresh_after_language_change(self):
+    button_py = (Path(__file__).parents[1] / "mici/widgets/button.py").read_text(encoding="utf-8")
+    assert "self._label = UnifiedLabel(tr(text)" in button_py
+    assert "self._sub_label = UnifiedLabel(tr(value)" in button_py
+    assert "self._label.set_text(tr(self.text))" in button_py
+    assert "self._sub_label.set_text(tr(self.value))" in button_py
+    assert "self._locale_when_rendered != multilang.language" in button_py
+    assert "self.value = value" in button_py  # Parameter options remain raw, not translated.
+
+  def test_mici_translation_markers_are_extracted(self):
+    from openpilot.selfdrive.ui.translations.potools import extract_strings
+
+    base = Path(__file__).resolve().parents[4]
+    relative = "openpilot/selfdrive/ui/mici/layouts/settings/translation_catalog.py"
+    extracted = {entry.msgid for entry in extract_strings([relative], str(base))}
+    for key in ("toggles", "network", "device", "developer", "slide to exit always offroad",
+                "WARNING: alpha longitudinal control may disable Automatic Emergency Braking (AEB)"):
+      assert key in extracted, f"Mici translation marker missing: {key}"
 
 
   @parameterized.expand(sorted(TRANSLATION_LANGUAGES.values()))

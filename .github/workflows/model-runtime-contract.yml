@@ -1,0 +1,69 @@
+name: Model runtime contract
+on:
+  push:
+    branches: [hkg-enhanced, ccnc-port]
+  pull_request:
+    paths:
+      - '.gitmodules'
+      - 'tinygrad_repo'
+      - 'launch*.sh'
+      - 'openpilot/common/hardware/**'
+      - 'openpilot/system/hardware/**'
+      - 'system/hardware/**'
+      - 'openpilot/sunnypilot/modeld_v2/**'
+      - 'tools/diagnostics/check_runtime_contract.py'
+      - '.github/workflows/model-runtime-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verified-cpu-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the pinned runtime only
+        run: git submodule update --init tinygrad_repo
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify paired AGNOS configuration and installer paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n launch_env.sh
+          bash -n launch_chffrplus.sh
+          # Baseline: hkg-enhanced ccf458fd. Update version and manifest together.
+          # These are host configuration checks, not flashing or GPU hardware tests.
+          test "$(env -u AGNOS_VERSION bash -c 'source ./launch_env.sh; printf "%s" "$AGNOS_VERSION"')" = '19.9'
+          test "$(git hash-object openpilot/common/hardware/comma/agnos.json)" = '96803bdb859c53b6ef3130c683f7730164c7daff'
+          test "$(git -C tinygrad_repo rev-parse HEAD)" = "$(git rev-parse HEAD:tinygrad_repo)"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path.cwd()
+          manifest = root / 'openpilot/common/hardware/comma/agnos.json'
+          for alias in ('system/hardware/tici/agnos.json', 'openpilot/system/hardware/comma/agnos.json'):
+            assert (root / alias).read_bytes() == manifest.read_bytes(), f'Stale installer manifest: {alias}'
+          partitions = json.loads(manifest.read_text())
+          assert {p['name'] for p in partitions} == {'xbl', 'xbl_config', 'abl', 'aop', 'devcfg', 'boot', 'system'}
+          for partition in partitions:
+            assert partition['has_ab'] is True, partition['name']
+            assert partition['size'] > 0, partition['name']
+            for key in ('hash', 'hash_raw', 'ondevice_hash'):
+              value = partition[key]
+              assert len(value) == 64 and all(c in '0123456789abcdef' for c in value), (partition['name'], key)
+          print('AGNOS version/manifest pair, legacy installer aliases, A/B metadata and runtime pin verified')
+          PY
+      - name: Install CPU test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang llvm
+          python -m pip install 'numpy==2.2.6'
+      - name: Validate loader API and execute verified CPU artifact
+        env:
+          DEV: CPU:LLVM
+          GMMU: '0'
+          PYTHONPATH: ${{ github.workspace }}/tinygrad_repo:${{ github.workspace }}
+        run: python tools/diagnostics/check_runtime_contract.py

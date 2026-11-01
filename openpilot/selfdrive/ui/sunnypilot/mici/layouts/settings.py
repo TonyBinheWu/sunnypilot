@@ -7,13 +7,15 @@ See the LICENSE.md file in the root directory for more details.
 from openpilot.selfdrive.ui.mici.layouts.settings import settings as OP
 from openpilot.selfdrive.ui.mici.layouts.settings.settings import SettingsBigButton
 from openpilot.selfdrive.ui.mici.layouts.settings.device import DeviceLayoutMici
+from openpilot.selfdrive.ui.mici.widgets.button import BigButton
 from openpilot.selfdrive.ui.mici.widgets.button import BigCircleButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog, BigDialog
 from openpilot.selfdrive.ui.sunnypilot.mici.layouts.sunnylink import SunnylinkLayoutMici
 from openpilot.selfdrive.ui.sunnypilot.mici.layouts.models import ModelsLayoutMici
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app, FontWeight
-from openpilot.system.ui.lib.multilang import tr
+from openpilot.system.ui.lib.multilang import multilang, tr
+from openpilot.system.ui.widgets.scroller import NavScroller
 
 ICON_SIZE = 70
 BIG_ICON_SIZE = 110
@@ -29,11 +31,48 @@ class SunnylinkBigButton(SettingsBigButton):
     return 56
 
 
+class LanguageLayoutMici(NavScroller):
+  def __init__(self):
+    super().__init__()
+    self._buttons = {}
+    for name, code in multilang.languages.items():
+      button = BigButton(name)
+      button._label.set_font_weight(FontWeight.UNIFONT)
+      button.set_click_callback(lambda selected=code: self._select_language(selected))
+      self._scroller.add_widget(button)
+      self._buttons[code] = button
+    self._refresh()
+
+  def _select_language(self, code: str):
+    if not ui_state.is_offroad():
+      return
+    multilang.change_language(code)
+    self._refresh()
+
+  def _refresh(self):
+    for code, button in self._buttons.items():
+      button.set_value(tr("Selected") if code == multilang.language else "")
+
+
+class DeviceLayoutSP(DeviceLayoutMici):
+  def __init__(self):
+    super().__init__()
+    self._language_button = BigButton("language", multilang.codes.get(multilang.language, "English"),
+                                      gui_app.texture("icons_mici/settings/device/info.png", 64, 64))
+    self._language_button.set_click_callback(lambda: gui_app.push_widget(LanguageLayoutMici()))
+    self._language_button.set_enabled(ui_state.is_offroad)
+    self._scroller.add_widget(self._language_button)
+
+  def _update_state(self):
+    super()._update_state()
+    self._language_button.set_value(multilang.codes.get(multilang.language, "English"))
+
+
 class SettingsLayoutSP(OP.SettingsLayout):
   def __init__(self):
     OP.SettingsLayout.__init__(self)
 
-    device_panel = DeviceLayoutMici()
+    device_panel = DeviceLayoutSP()
     self._scroller._items[2].set_click_callback(lambda: gui_app.push_widget(device_panel))
 
     self.icon_offroad_enable = gui_app.texture("../../sunnypilot/selfdrive/assets/icons_mici/always_offroad.png", BIG_ICON_SIZE,
@@ -43,11 +82,11 @@ class SettingsLayoutSP(OP.SettingsLayout):
     self.icon_offroad_slider = gui_app.texture("icons_mici/settings/device/lkas.png", BIG_ICON_SIZE, BIG_ICON_SIZE)
 
     sunnylink_panel = SunnylinkLayoutMici()
-    sunnylink_btn = SunnylinkBigButton(tr("sunnylink"), "", gui_app.texture("../../sunnypilot/selfdrive/assets/icons_mici/sunnylink.png", 76, 44))
+    sunnylink_btn = SunnylinkBigButton("sunnylink", "", gui_app.texture("../../sunnypilot/selfdrive/assets/icons_mici/sunnylink.png", 76, 44))
     sunnylink_btn.set_click_callback(lambda: gui_app.push_widget(sunnylink_panel))
 
     models_panel = ModelsLayoutMici()
-    models_btn = SettingsBigButton(tr("models"), "", gui_app.texture("../../sunnypilot/selfdrive/assets/offroad/icon_models.png", ICON_SIZE, ICON_SIZE))
+    models_btn = SettingsBigButton("models", "", gui_app.texture("../../sunnypilot/selfdrive/assets/offroad/icon_models.png", ICON_SIZE, ICON_SIZE))
     models_btn.set_click_callback(lambda: gui_app.push_widget(models_panel))
 
     # onroad: enable button sits at the front (left of toggles)

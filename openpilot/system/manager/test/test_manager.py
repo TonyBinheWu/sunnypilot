@@ -33,6 +33,18 @@ class TestManager(OpenpilotTestCase):
   def test_duplicate_procs(self):
     assert len(procs) == len(managed_processes), "Duplicate process names"
 
+  def test_navigation_services_follow_onroad_setting(self):
+    params = Params()
+    cp = car.CarParams.new_message()
+    for enabled in (False, True):
+      params.put_bool("NavigationEnabled", enabled, block=True)
+      for started in (False, True):
+        for name in ("navd", "mapsd"):
+          with self.subTest(process=name, enabled=enabled, started=started):
+            proc = managed_processes[name]
+            self.assertTrue(proc.enabled)
+            self.assertEqual(proc.should_run(started, params, cp), started and enabled)
+
   def test_blacklisted_procs(self):
     # TODO: ensure there are blacklisted procs until we have a dedicated test
     assert len(BLACKLIST_PROCS), "No blacklisted procs to test not_run"
