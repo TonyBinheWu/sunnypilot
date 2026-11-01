@@ -7,6 +7,8 @@ on:
       - 'launch*.sh'
       - 'openpilot/cereal/messaging/**'
       - 'openpilot/common/hardware/**'
+      - 'openpilot/common/params_keys.h'
+      - 'openpilot/common/tests/test_params.py'
       - 'openpilot/common/realtime.py'
       - 'openpilot/common/tests/test_ratekeeper_stall.py'
       - 'openpilot/system/hardware/**'
@@ -69,6 +71,8 @@ jobs:
           test -s "diagnostic-${{ matrix.device }}.png"
       - name: Build host dependencies
         run: .venv/bin/scons -j4
+      - name: Verify eGPU retry parameter and model load failure recovery
+        run: .venv/bin/python -m unittest openpilot.common.tests.test_params.TestParams.test_chestnut_retry_lifecycle openpilot.common.tests.test_params.TestParams.test_model_load_failure_retries_once_then_selects_fallback -v
       - name: Verify GPS UI crash regression and normal messaging
         run: .venv/bin/python -m unittest openpilot.cereal.messaging.tests.test_frequency_safety openpilot.cereal.messaging.tests.test_pub_sub_master -v
       - name: Verify normal timing and recovery after stalls

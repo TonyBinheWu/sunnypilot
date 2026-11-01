@@ -2,6 +2,18 @@
 
 平台更新基準：兩分支 `2026.003.003`。本頁記錄平台更新與後續 eGPU 修正；裝置的安裝與實機驗證需另行確認。
 
+## hkg-enhanced 2026.003.006：暖機失敗後的參數缺失
+
+原廠線紀錄顯示，大模型在暖機輸出讀回時拋出 `AMD failed with -1`，隨後讀取未註冊的 `ChestnutRetry` 再次拋出 `UnknownKeyName`，使 modeld 在載入小模型之前退出。這與前幾次已進入推論後成功回退小模型的故障路徑不同。
+
+補回 sunnypilot master 的 `ChestnutRetry` 定義：`BOOL`，於 `CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_ON` 清除。此狀態不在 `CLEAR_ON_OFFROAD_TRANSITION` 或 `CLEAR_ON_ONROAD_TRANSITION` 清除，才能讓既有的 `OnroadCycleRequested` 流程每次點火僅重試一次，而不反覆切換。
+
+新增兩個原生 Params 回歸，分別檢查參數讀寫／清除生命週期，以及直接執行標準與 sunnypilot 模型執行器的載入失敗分支。這不模擬真實 GPU；上游單次重試與回退策略未另行改寫，也沒有放寬 USB 或定位檢查。
+
+Linux 原生驗證已在修正前重現 `UnknownKeyName: ChestnutRetry`；補上參數並重建後，完整 Params、更新說明與 eGPU 啟動測試共 28 項通過，`scons --minimal` 建置成功。C3X／C4 CI 矩陣新增上述兩項原生 Params 回歸；主機驗證結果不代表實體 GPU 已恢復穩定。
+
+`AMD failed with -1` 的傳輸原因仍未確定；原廠線亦重現，只能排除「僅先前那條非原廠線造成」的說法，不能證明所有線材、供電或平台均正常。此修正處理其後的程式崩潰，不代表已修復 eGPU 鏈路本身。
+
 ## hkg-enhanced 2026.003.005：eGPU 上游差異與修正
 
 比對基準為 [sunnypilot master `6f7a2c94`](https://github.com/sunnypilot/sunnypilot/tree/6f7a2c94c10dffcf9a83b120ab1e6985e4496868)。此處僅同步 eGPU 韌體與啟動流程，不代表完整合併 master。

@@ -1,3 +1,9 @@
+sunnypilot hkg-enhanced Version 2026.003.006 (2026-11-01)
+========================
+* C3X／C4 eGPU：補齊上游 ChestnutRetry 參數定義，修復大模型暖機失敗後再次發生 UnknownKeyName，導致模型服務退出的問題。
+* 模型回退：恢復原有的單次啟動重試與後續小模型回退判斷；重試狀態跨行車流程切換保留，在重新點火或管理服務啟動時重設。
+* 驗證範圍：此修正處理錯誤回復流程，不代表已排除 eGPU 的 AMD failed with -1／PCIe 鏈路異常；接管保護維持原設定。
+
 sunnypilot hkg-enhanced Version 2026.003.005 (2026-11-01)
 ========================
 * C3X／C4 eGPU：同步 sunnypilot master 的 Chestnut 韌體 8516b768 與配套版本辨識，裝置將沿用非行車時的韌體更新流程。
