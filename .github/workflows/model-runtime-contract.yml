@@ -33,16 +33,17 @@ jobs:
           set -euo pipefail
           bash -n launch_env.sh
           bash -n launch_chffrplus.sh
-          # Baseline: hkg-enhanced ccf458fd. Update version and manifest together.
+          # Validate both hardware selections and their paired manifests.
           # These are host configuration checks, not flashing or GPU hardware tests.
-          test "$(env -u AGNOS_VERSION bash -c 'source ./launch_env.sh; printf "%s" "$AGNOS_VERSION"')" = '19.9'
-          test "$(git hash-object openpilot/common/hardware/comma/agnos.json)" = '96803bdb859c53b6ef3130c683f7730164c7daff'
+          python -m unittest tools.diagnostics.test_agnos_policy -v
           test "$(git -C tinygrad_repo rev-parse HEAD)" = "$(git rev-parse HEAD:tinygrad_repo)"
           python - <<'PY'
           import json
+          import subprocess
           from pathlib import Path
 
           root = Path.cwd()
+          assert subprocess.check_output(['git', 'hash-object', str(root / 'openpilot/common/hardware/comma/agnos.json')], text=True).strip() == '4e90e7c8d82388f02078fffa8ddd928afebbc784'
           manifest = root / 'openpilot/common/hardware/comma/agnos.json'
           for alias in ('system/hardware/tici/agnos.json', 'openpilot/system/hardware/comma/agnos.json'):
             assert (root / alias).read_bytes() == manifest.read_bytes(), f'Stale installer manifest: {alias}'
