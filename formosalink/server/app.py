@@ -1,0 +1,232 @@
+import asyncio
+import json
+import secrets
+import time
+from collections import defaultdict, deque
+from pathlib import Path
+from urllib.parse import urlparse
+
+from cryptography.exceptions import InvalidSignature
+from fastapi import FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, ConfigDict, Field
+
+from openpilot.sunnypilot.formosalink.protocol import MAX_FRAME_BYTES, ONLINE_SECONDS, VERSION, fingerprint, validate_snapshot, verify
+from formosalink.server.config import load, password_hash
+from formosalink.server.store import Store
+
+COOKIE = "formosalink_session"
+
+
+class Login(BaseModel):
+  model_config = ConfigDict(extra="forbid")
+  password: str = Field(min_length=1, max_length=256)
+
+
+class Pair(BaseModel):
+  model_config = ConfigDict(extra="forbid")
+  code: str = Field(min_length=12, max_length=24)
+  fingerprint: str = Field(pattern=r"^[a-fA-F0-9]{24}$")
+  name: str = Field(min_length=1, max_length=60)
+
+
+class Limit:
+  def __init__(self):
+    self.buckets = defaultdict(deque)
+
+  def check(self, key, maximum, seconds=60):
+    now = time.monotonic()
+    # All routes also use a global bucket; cap bookkeeping for anonymous clients.
+    if len(self.buckets) >= 2048 and key not in self.buckets:
+      self.buckets = defaultdict(deque, {k: v for k, v in self.buckets.items() if v and now - v[-1] < seconds})
+      if len(self.buckets) >= 2048:
+        raise HTTPException(429, "try later")
+    bucket = self.buckets[key]
+    while bucket and now - bucket[0] >= seconds:
+      bucket.popleft()
+    if len(bucket) >= maximum:
+      raise HTTPException(429, "too many requests; try later")
+    bucket.append(now)
+
+
+def create_app(data_dir, web_dir=None):
+  directory, config = load(data_dir)
+  store = Store(directory / "formosalink.sqlite3")
+  app = FastAPI(title="FormosaLink", version="0.1.0", docs_url=None, redoc_url=None, openapi_url=None)
+  app.state.store = store
+  limiter = Limit()
+  connections = {}
+  secure = config["origin"].startswith("https:")
+
+  def owner(request):
+    if not store.authenticated(request.cookies.get(COOKIE)):
+      raise HTTPException(401, "sign in required")
+
+  def rate(request, kind, maximum):
+    # Do not trust client-supplied forwarding headers. IIS forwards to loopback;
+    # this intentionally makes the limit global behind IIS for release 0.1.
+    limiter.check(kind + ":global", maximum * 4)
+    limiter.check(kind + ":" + request.client.host, maximum)
+
+  @app.middleware("http")
+  async def security(request: Request, call_next):
+    if request.url.path.startswith("/api/"):
+      if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
+        return Response(status_code=400)
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path != "/api/v1/agent/enroll":
+        if request.headers.get("origin") != config["origin"]:
+          return Response(status_code=403)
+      try:
+        length = int(request.headers.get("content-length", "0"))
+      except ValueError:
+        return Response(status_code=400)
+      if length > MAX_FRAME_BYTES:
+        return Response(status_code=413)
+      # Bound streamed/chunked requests as well as declared Content-Length.
+      body = bytearray()
+      async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > MAX_FRAME_BYTES:
+          return Response(status_code=413)
+      request._body = bytes(body)
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store" if request.url.path.startswith("/api/") else "no-cache"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    if secure:
+      response.headers["Strict-Transport-Security"] = "max-age=31536000"
+    return response
+
+  @app.get("/api/v1/health")
+  def health():
+    return {"service": "FormosaLink", "version": VERSION}
+
+  @app.post("/api/v1/login")
+  def login(body: Login, request: Request, response: Response):
+    rate(request, "login", 8)
+    actual = password_hash(body.password, config["password_salt"])
+    if not secrets.compare_digest(actual, config["password_hash"]):
+      raise HTTPException(401, "invalid password")
+    response.set_cookie(COOKIE, store.session(), httponly=True, secure=secure, samesite="strict", max_age=43200, path="/api")
+    return {"ok": True}
+
+  @app.post("/api/v1/logout")
+  def logout(request: Request, response: Response):
+    owner(request)
+    store.logout(request.cookies.get(COOKIE))
+    response.delete_cookie(COOKIE, path="/api")
+    return {"ok": True}
+
+  @app.get("/api/v1/devices")
+  def devices(request: Request):
+    owner(request)
+    rows = store.devices()
+    now = time.time()
+    for row in rows:
+      row["online"] = row["state"] == "paired" and row["id"] in connections and now - (row["last_seen"] or 0) <= ONLINE_SECONDS
+      snapshot = row["snapshot"]
+      row["stale"] = not row["online"] or not snapshot or not snapshot["metrics"].get("sample_valid", False) or abs(now - snapshot["sampled_at"]) > ONLINE_SECONDS
+    return {"devices": rows, "server_time": now, "protocol_version": VERSION}
+
+  @app.post("/api/v1/pair")
+  def pair(body: Pair, request: Request):
+    owner(request)
+    rate(request, "pair", 10)
+    try:
+      device_id = store.pair(body.code, body.fingerprint, body.name.strip() or "FormosaPilot")
+    except ValueError as exc:
+      raise HTTPException(400, str(exc)) from exc
+    return {"device_id": device_id}
+
+  @app.post("/api/v1/devices/{device_id}/revoke")
+  async def revoke(device_id: str, request: Request):
+    owner(request)
+    try:
+      store.revoke(device_id)
+    except ValueError as exc:
+      raise HTTPException(404, str(exc)) from exc
+    socket = connections.pop(device_id, None)
+    if socket:
+      try:
+        await socket.close(code=4003)
+      except (RuntimeError, WebSocketDisconnect):
+        pass
+    return {"ok": True}
+
+  @app.post("/api/v1/agent/enroll")
+  async def enroll(request: Request):
+    rate(request, "enroll", 10)
+    try:
+      envelope = await request.json()
+      public_key = envelope["payload"]["public_key"]
+      verified = verify(envelope, public_key, "enroll")
+      if set(verified["payload"]) != {"public_key"}:
+        raise ValueError("invalid enrollment")
+      store.consume_nonce(verified["device_id"], verified["nonce"])
+      return store.enroll(verified["device_id"], public_key, fingerprint(public_key))
+    except (ValueError, KeyError, TypeError, InvalidSignature) as exc:
+      raise HTTPException(400, "invalid enrollment or unavailable identity") from exc
+
+  @app.websocket("/api/v1/agent/ws")
+  async def agent_socket(socket: WebSocket):
+    if socket.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower() or socket.headers.get("origin"):
+      await socket.close(code=1008)
+      return
+    try:
+      limiter.check("ws:global", 120)
+    except HTTPException:
+      await socket.close(code=1013)
+      return
+    await socket.accept()
+    device_id = None
+    try:
+      raw = await asyncio.wait_for(socket.receive_text(), timeout=10)
+      if len(raw.encode()) > MAX_FRAME_BYTES:
+        raise ValueError("oversized authentication")
+      envelope = json.loads(raw)
+      row = store.get(envelope["device_id"])
+      if not row or row["state"] != "paired":
+        await socket.close(code=4003)
+        return
+      verified = verify(envelope, row["public_key"], "connect")
+      if verified["payload"]:
+        raise ValueError("unexpected connect payload")
+      store.consume_nonce(row["id"], verified["nonce"])
+      device_id = row["id"]
+      old = connections.get(device_id)
+      connections[device_id] = socket
+      if old:
+        await old.close(code=4009)
+      await socket.send_json({"type": "ready", "version": VERSION, "sample_interval": 5})
+      previous = -1
+      last_received = 0
+      while True:
+        raw = await asyncio.wait_for(socket.receive_text(), timeout=20)
+        if len(raw.encode()) > MAX_FRAME_BYTES or time.monotonic() - last_received < 1:
+          raise ValueError("oversized or excessive telemetry")
+        data = validate_snapshot(json.loads(raw))
+        if data["sequence"] <= previous or abs(time.time() - data["sampled_at"]) > 90:
+          raise ValueError("old or invalid snapshot")
+        if connections.get(device_id) is not socket or not store.snapshot(device_id, data):
+          await socket.close(code=4003)
+          return
+        previous = data["sequence"]
+        last_received = time.monotonic()
+        # Acknowledgement only: there is deliberately no command dispatcher.
+        await socket.send_json({"type": "ack", "sequence": previous})
+    except WebSocketDisconnect:
+      pass
+    except (ValueError, KeyError, TypeError, InvalidSignature, asyncio.TimeoutError):
+      try:
+        await socket.close(code=1008)
+      except (RuntimeError, WebSocketDisconnect):
+        pass
+    finally:
+      if device_id and connections.get(device_id) is socket:
+        connections.pop(device_id, None)
+
+  web = Path(web_dir) if web_dir else Path(__file__).resolve().parents[1] / "web"
+  if web.is_dir():
+    app.mount("/", StaticFiles(directory=web, html=True), name="web")
+  return app

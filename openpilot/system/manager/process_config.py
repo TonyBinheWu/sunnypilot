@@ -22,6 +22,10 @@ def driverview(started: bool, params: Params, CP: car.CarParams) -> bool:
 def notcar(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and CP.notCar
 
+def formosalink_enabled(started: bool, params: Params, CP: car.CarParams) -> bool:
+  return params.get_bool("FormosaLinkEnabled")
+
+
 def iscar(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and not CP.notCar
 
@@ -163,6 +167,9 @@ procs = [
   NativeProcess("bridge", "openpilot/cereal/messaging", ["./bridge"], notcar),
   PythonProcess("webrtcd", "openpilot.system.webrtc.webrtcd", or_(livestream, notcar)),
   PythonProcess("joystick", "openpilot.tools.joystick.joystick_control", and_(joystick, iscar)),
+
+  # Optional FormosaPilot companion; telemetry only, independent of sunnylink.
+  PythonProcess("formosalink", "openpilot.sunnypilot.formosalink.agent", formosalink_enabled),
 
   # sunnylink <3
   DaemonProcess("manage_sunnylinkd", "openpilot.sunnypilot.sunnylink.athena.manage_sunnylinkd", "SunnylinkdPid"),
