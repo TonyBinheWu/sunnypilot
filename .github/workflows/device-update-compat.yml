@@ -38,6 +38,8 @@ jobs:
         run: sudo apt-get install -y --no-install-recommends libgles2 libegl1
       - name: Build host dependencies
         run: .venv/bin/scons -j4
+      - name: Verify CCNC dynamic torque normalization and cache isolation
+        run: .venv/bin/python -m unittest openpilot.sunnypilot.selfdrive.controls.lib.tests.test_hkg_torque_scale -v
       - name: Check real updater output and render the device UI
         run: .venv/bin/python tools/diagnostics/check_device_update_compat.py
       - uses: actions/upload-artifact@v4
