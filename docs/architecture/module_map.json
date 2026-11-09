@@ -396,6 +396,10 @@
         "openpilot/system/webrtc/",
         "openpilot/system/loggerd/uploader.py",
         "openpilot/sunnypilot/sunnylink/",
+        "openpilot/sunnypilot/formosalink/",
+        "formosalink/",
+        "tools/deploy/publish_formosalink_iis.ps1",
+        "tools/maintenance/sync_formosalink.py",
         "teleoprtc_repo"
       ],
       "contracts": [
@@ -412,6 +416,7 @@
       "optional_requires": [],
       "upgrade_unit": "認證／能力／設定 schema／產生的 JSON／備份與更新請求限制一起審閱；不假設兩分支雲端功能相同",
       "checks": [
+        ".github/workflows/formosalink.yml",
         ".github/workflows/tests.yaml"
       ]
     },

@@ -44,3 +44,7 @@ python tools/maintenance/module_inventory.py --catalog
 模組地圖中的 `requires` 表示升級時要一起審閱的介面依賴，`optional_requires` 表示該分支啟用功能時的依賴。它們不是 Python import 的完整清單，也不是行車資料流的拓撲排序。
 
 `--catalog` 從同一份 JSON 輸出兩分支完整部件目錄，更新模組地圖後可用它重新產生 `COMPONENTS.md`。JSON 差異報告的 `inactive_module_paths` 會列出目標分支未啟用功能的路徑，例如歷史版本中未啟用的導航目錄；目前兩分支均已納入導航。
+
+## FormosaPilot / FormosaLink
+
+兩分支共用獨立配對與唯讀監看模組；部署、協定、驗證限制與三語操作說明見 [FormosaLink](../../formosalink/README.md)。預設停用代理，保留各分支原有行車行為。

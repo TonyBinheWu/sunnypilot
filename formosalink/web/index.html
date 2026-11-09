@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#102a31"><meta name="description" content="FormosaLink — FormosaPilot device companion">
+  <title>FormosaLink · FormosaPilot</title>
+  <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/assets/formosapilot-logo.png">
+  <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="FormosaLink"><img src="/assets/formosapilot-logo.png" alt="FormosaPilot"><span>FormosaLink<small>FORMOSAPILOT</small></span></a>
+    <div class="header-actions"><label class="sr-only" for="language" data-i18n="language"></label><select id="language"><option value="zh-TW">繁體中文</option><option value="en">English</option><option value="ja">日本語</option></select><button id="logout" class="quiet" hidden data-i18n="logout"></button></div>
+  </header>
+  <main>
+    <section id="login-view" class="welcome">
+      <div class="welcome-copy"><span class="eyebrow">FORMOSAPILOT / FORMOSALINK</span><h1 data-i18n="welcome"></h1><p class="lead" data-i18n="intro"></p><div class="landscape" aria-hidden="true"><i></i><i></i><i></i><span>FORMOSA · 23.5° N</span></div><p class="caption" data-i18n="selfHosted"></p></div>
+      <form id="login-form" class="panel login-panel"><img class="login-logo" src="/assets/formosapilot-logo.png" alt="FormosaPilot"><span class="eyebrow" data-i18n="privateSpace"></span><h2 data-i18n="signin"></h2><label for="password" data-i18n="ownerPassword"></label><input id="password" type="password" autocomplete="current-password" required maxlength="256"><button class="primary" type="submit" data-i18n="signin"></button><p class="caption" data-i18n="loginNote"></p></form>
+    </section>
+    <section id="dashboard" hidden>
+      <div class="page-heading"><div><span class="eyebrow" data-i18n="companion"></span><h1 data-i18n="dashboard"></h1><p class="lead" data-i18n="dashboardIntro"></p></div><button id="open-pair" class="primary" data-i18n="pairDevice"></button></div>
+      <div class="overview"><div><span class="stat-label" data-i18n="devices"></span><strong id="device-count">—</strong></div><div><span class="stat-label" data-i18n="online"></span><strong id="online-count">—</strong></div><div class="refresh-info"><span class="status-dot"></span><span id="refresh-label" data-i18n="waiting"></span><button id="refresh" class="quiet" data-i18n="refresh"></button></div></div>
+      <div id="empty" class="panel empty" hidden><img src="/assets/formosapilot-logo.png" alt=""><h2 data-i18n="noDevices"></h2><p data-i18n="emptyHelp"></p><button class="primary" id="empty-pair" data-i18n="pairDevice"></button></div>
+      <div id="device-grid" class="device-grid"></div>
+      <aside class="scope-note"><span class="scope-icon" aria-hidden="true">↗</span><div><strong data-i18n="readonly"></strong><p data-i18n="scope"></p></div></aside>
+    </section>
+    <p id="message" class="message" role="status" aria-live="polite" hidden></p>
+  </main>
+  <dialog id="pair-dialog"><form id="pair-form"><div class="dialog-heading"><span class="eyebrow" data-i18n="securePairing"></span><button id="close-pair" type="button" class="quiet" data-i18n="close"></button></div><h2 data-i18n="pairDevice"></h2><p class="caption" data-i18n="pairHelp"></p><label for="device-name" data-i18n="deviceName"></label><input id="device-name" required maxlength="60" value="FormosaPilot"><label for="pair-code" data-i18n="pairCode"></label><input id="pair-code" required minlength="12" maxlength="24" autocomplete="off" spellcheck="false"><label for="fingerprint" data-i18n="fingerprint"></label><input id="fingerprint" required minlength="24" maxlength="24" pattern="[a-fA-F0-9]{24}" autocomplete="off" spellcheck="false"><p class="caption" data-i18n="fingerprintHelp"></p><button type="submit" class="primary" data-i18n="confirmPair"></button></form></dialog>
+  <footer><span>FormosaPilot <b> / </b> FormosaLink</span><span data-i18n="footer"></span></footer>
+</body>
+</html>
