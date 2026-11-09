@@ -11,6 +11,7 @@ from openpilot.common.pid import PIDController
 
 from openpilot.sunnypilot.selfdrive.controls.lib.latcontrol_torque_ext import LatControlTorqueExt
 from openpilot.sunnypilot.selfdrive.controls.lib.low_speed_steering import LowSpeedSteeringTune
+from openpilot.sunnypilot.selfdrive.controls.lib.hkg_torque_scale import HkgTorqueScale
 
 # At higher speeds (25+mph) we can assume:
 # Lateral acceleration achieved by a specific car correlates to
@@ -51,6 +52,7 @@ class LatControlTorque(LatControl):
 
     self.extension = LatControlTorqueExt(self, CP, CP_SP, CI)
     self.low_speed_tune = LowSpeedSteeringTune(CP, dt)
+    self.hkg_torque_scale = HkgTorqueScale(CP)
 
   def update_torque_parameters(self, latAccelFactor, latAccelOffset, friction):
     self.torque_params.latAccelFactor = latAccelFactor
@@ -63,6 +65,10 @@ class LatControlTorque(LatControl):
                         self.lateral_accel_from_torque(-self.steer_max, self.torque_params))
 
   def update(self, active, CS, VM, params, steer_limited_by_safety, desired_curvature, calibrated_pose, curvature_limited, lat_delay):
+    if self.hkg_torque_scale.enabled:
+      self.steer_max = self.hkg_torque_scale.controller_limit(CS.vEgoRaw)
+      self.update_limits()
+      self.extension.update_limits()
     if self.low_speed_tune.enabled and (not active or CS.steeringPressed):
       self.low_speed_tune.reset(desired_curvature)
       self.pid.reset()
@@ -71,7 +77,7 @@ class LatControlTorque(LatControl):
       self.update_limits()
 
     pid_log = log.ControlsState.LateralTorqueState.new_message()
-    pid_log.version = VERSION + (100 if self.low_speed_tune.enabled else 0)
+    pid_log.version = VERSION + (200 if self.low_speed_tune.enabled else 0)
     if not active:
       output_torque = 0.0
       pid_log.active = False
@@ -97,8 +103,8 @@ class LatControlTorque(LatControl):
 
       setpoint = lat_delay * desired_lateral_jerk + expected_lateral_accel
       error = setpoint - measurement
-      current_kp = float(np.interp(CS.vEgo, self.pid._k_p[0], self.pid._k_p[1]))
-      error = self.low_speed_tune.scale_error(error, CS.vEgo, current_kp)
+      # KP_INTERP already compensates low speed. Keep the physical acceleration
+      # error unchanged for P, I and friction instead of amplifying it a second time.
 
       # do error correction in lateral acceleration space, convert at end to handle non-linear torque responses correctly
       pid_log.error = float(error)
@@ -138,4 +144,6 @@ class LatControlTorque(LatControl):
       pid_log.saturated = bool(self._check_saturation(self.steer_max - abs(output_torque) < 1e-3, CS, steer_limited_by_safety, curvature_limited))
 
     # TODO left is positive in this convention
+    output_torque = self.hkg_torque_scale.normalize(output_torque, CS.vEgoRaw)
+    pid_log.output = float(-output_torque)
     return -output_torque, 0.0, pid_log

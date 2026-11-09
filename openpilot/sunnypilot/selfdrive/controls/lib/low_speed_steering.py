@@ -1,6 +1,6 @@
 """Opt-in Honda/Toyota torque-controller tuning, retaining the vehicle's CAN/safety limits.
 
-The low-speed error compensation, curvature history, roll/offset fade and center jerk
+The curvature history, roll/offset fade and center jerk
 deadzone follow StarPilotHQ/StarPilot@98f8443122909a86c5a5fd628337c4077cd1f957,
 selfdrive/controls/lib/latcontrol_torque.py. See docs/LOW_SPEED_STEERING_TUNE.md
 for attribution, adaptations and the intentionally narrower activation scope.
@@ -82,7 +82,8 @@ class LowSpeedSteeringTune:
                     CP.lateralTuning.which() == "torque" and not params.get_bool("NeuralNetworkLateralControl") and
                     not params.get_bool("LateralJerkTorqueController"))
     self.active = False
-    self.history = deque(maxlen=max(2, int(1.0 / dt)))
+    self.history_size = max(2, int(1.0 / dt))
+    self.history = deque(maxlen=self.history_size)
 
   @staticmethod
   def weight(speed: float) -> float:
@@ -92,7 +93,7 @@ class LowSpeedSteeringTune:
   def reset(self, curvature: float) -> None:
     self.active = False
     self.history.clear()
-    self.history.extend([curvature] * self.history.maxlen)
+    self.history.extend([curvature] * self.history_size)
 
   def expected_accel(self, baseline: float, curvature: float, speed: float, delay_frames: int,
                      active: bool, steering_pressed: bool, append_first: bool) -> float:
@@ -111,12 +112,6 @@ class LowSpeedSteeringTune:
       return baseline
     weight = self.weight(speed)
     return baseline + weight * (expected - baseline)
-
-  def scale_error(self, error: float, speed: float, kp: float) -> float:
-    if not self.active or self.weight(speed) == 0:
-      return error
-    factor = (float(np.interp(speed, [0, 10, 20, 30], [12, 10.5, 8, 5])) / max(speed, 1.0)) ** 2
-    return error * (1 + self.weight(speed) * factor / max(kp, 1e-3))
 
   def feedforward(self, baseline: float, roll: float, offset: float, speed: float) -> float:
     if not self.active:

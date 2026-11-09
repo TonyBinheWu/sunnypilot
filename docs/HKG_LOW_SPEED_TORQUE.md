@@ -18,7 +18,7 @@ install.sunnypilot.ai/fork/TonyBinheWu/hkg-enhanced
 
 `/fork/TonyBinheWu/` 指定此帳號的 `sunnypilot` 儲存庫。
 
-這是原始碼分支。安裝器會下載程式與子模組，首次啟動沿用 `launch_chffrplus.sh` → `openpilot/system/manager/build.py` 的 SCons 編譯流程；分支沒有 `prebuilt` 標記。首次安裝須保留穩定供電、Wi-Fi 與下載模型及編譯的時間。目前工作樹的 AGNOS 更新目標依 `launch_env.sh` 為 20.1，更新流程沿用基底；實機驗證範圍見[平台更新紀錄](architecture/PLATFORM_UPGRADE_2026_11.md)。
+這是原始碼分支。安裝器會下載程式與子模組，首次啟動沿用 `launch_chffrplus.sh` → `openpilot/system/manager/build.py` 的 SCons 編譯流程；分支沒有 `prebuilt` 標記。首次安裝須保留穩定供電、Wi-Fi 與下載模型及編譯的時間。AGNOS 依 `launch_env.sh` 選擇 C3X 19.9／C4 20.1；實機驗證範圍見[平台更新紀錄](architecture/PLATFORM_UPGRADE_2026_11.md)。
 
 目前裝有其他版本時，先在停車狀態透過原本的解除安裝流程回到自訂軟體畫面。不要在行駛時安裝或切換分支。
 
@@ -76,6 +76,22 @@ MADS、Chestnut 模型載入與既有裝置編譯流程沿用本分支基底。�
 CarController 計算速度上限，Panda 另由 CAN 輪速取樣獨立計算與檢查。Panda 使用既有輪速取樣最小值，因此加速跨過邊界時，可能短暫保留先前較低的輪速樣本；當取樣最小值達 17 m/s 時，上限為 270。
 
 本基底的 Panda `SConscript` 直接包含已釘選 opendbc 的 safety 原始碼。裝置編譯後，`pandad` 會依韌體簽章比對更新 Panda；不需要手動繞過 Panda 或改刷不相符的韌體。
+
+## 2026.003.008：低速左右晃動的換算修正
+
+舊版將控制器正規化需求直接乘以當下的動態上限。同樣的 `0.1` 需求，關閉高扭時為 27 CAN 單位，低速開啟時變成約 41；409 上限相對 270 的額外餘裕，因此也放大了小幅轉向修正。大、小模型共用此控制路徑，模型輸出的小幅正負變化可能被這個額外增益加劇。
+
+本版用獨立的 `HkgTorqueScale` 部件處理換算：
+
+* v0／v1、NNLC／Jerk 延伸控制器內部維持原本 270 單位的調校基準；可用 PID 上限依車速擴展到 `動態上限 / 270`。
+* 送入 CarController 前，將需求轉回當下動態上限的正規化尺度。因此相同的小幅需求維持約 27 CAN 單位；當持續轉向需求足夠時，仍可用完整 409 單位。
+* 使用 `vEgoRaw` 與相同的速度量化、取整方式配對 CarController，避免 13～17 m/s 過渡區使用不同換算。
+* 扭力學習改讀 `torqueOutputCan / 270`，不再直接使用會隨動態上限改變的正規化輸出。高扭啟用時學習版本為 101，拒絕還原舊尺度的快取；開關狀態不同的快取亦分開。
+* 上限曲線、4／6→2／3 速率、Panda safety、駕駛介入與 EPS 故障避免邏輯維持原設定，未修改 opendbc pin 或韌體；沒有新增模型輸出濾波延遲。
+
+驗證以實際 v0／v1 與 Hyundai CarController 串接，覆蓋 EV6、IONIQ 5、GV60 的 20 Hz 左右交替需求、409／340／270 上限、421 個速度量化點與學習快取隔離。這是控制器層的相容性修正；尚未執行指定大模型或故障車 EPS 的實機測試，不能保證已排除所有方向盤震盪原因。
+
+2026-11-09 原生 Linux 驗證：舊版重現 24 組轉向需求放大與 1 組學習尺度錯誤；修正後含既有 HKG 車型初始化、速率、駕駛介入、EPS 故障避免、控制器延伸、Honda／Toyota 與更新說明共 68 項測試通過。修改的 Python 檔案 Ruff 通過；C3X／C4 相容性工作流程已加入這組新回歸測試，遠端 Actions 以對應提交的實際結果為準。
 
 ## 確認與還原
 

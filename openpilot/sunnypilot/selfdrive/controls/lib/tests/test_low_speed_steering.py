@@ -115,15 +115,10 @@ class TestLowSpeedSteering(OpenpilotTestCase):
       self.assertIn(key, extracted)
       self.assertTrue(translations.get(key))
 
-  def test_gain_fade_and_friction_boundaries(self):
+  def test_feedforward_and_friction_boundaries(self):
     controller, _, _ = make_controller()
     tune = controller.low_speed_tune
     tune.expected_accel(0, 0, 5, 20, True, False, False)
-    self.assertAlmostEqual(tune.scale_error(0.01, 5, 11.5), 0.01 * (1 + (11.25 / 5) ** 2 / 11.5))
-    for speed in (0.0, 0.3, 1.0, 5.0, 10.0, 12.5, 15.0, 30.0):
-      self.assertTrue(math.isfinite(tune.scale_error(0.001, speed, 0.0)))
-      self.assertAlmostEqual(tune.scale_error(-0.01, speed, 1.0), -tune.scale_error(0.01, speed, 1.0))
-    self.assertEqual(tune.scale_error(0.01, 15, 1), 0.01)
     self.assertAlmostEqual(tune.feedforward(-0.5, 0.3, 0.2, 0.5), 0.0)
     self.assertAlmostEqual(tune.feedforward(-0.5, 0.3, 0.2, 1.5), -0.25)
     self.assertEqual(tune.feedforward(-0.5, 0.3, 0.2, 2.5), -0.5)
@@ -148,12 +143,10 @@ class TestLowSpeedSteering(OpenpilotTestCase):
       for model in (TOYOTA.TOYOTA_PRIUS, HONDA.HONDA_CIVIC):
         with self.subTest(controller=cls.__module__, model=model):
           tuned, vm, cp = make_controller(cls, model)
-          baseline, baseline_vm, _ = make_controller(cls, model, enabled=False)
           tuned_before = cp.to_dict()
           for _ in range(100):
             tuned_out = run_frame(tuned, vm)[0]
-            base_out = run_frame(baseline, baseline_vm)[0]
-          self.assertGreater(abs(tuned_out), abs(base_out))
+          self.assertTrue(math.isfinite(tuned_out))
           for speed in (0.3, 1.0, 5.0, 10.0, 12.5, 15.0, 30.0):
             for curvature in (-0.1, 0.0, 0.1):
               output, _, _ = run_frame(tuned, vm, speed=speed, curvature=curvature)
@@ -168,6 +161,29 @@ class TestLowSpeedSteering(OpenpilotTestCase):
           run_frame(tuned, vm, limited=True)
           self.assertEqual(tuned.pid.i, 0)
           self.assertEqual(cp.to_dict(), tuned_before)
+
+  def test_small_alternating_requests_do_not_amplify_feedback(self):
+    # Replay a small left/right request at the model's 20 Hz update cadence.
+    # Compare P and I, not just clipped torque: saturation can hide excess gain.
+    for cls in (TorqueV0, TorqueV1):
+      for model in (TOYOTA.TOYOTA_RAV4_TSS2, HONDA.HONDA_CIVIC):
+        for speed in (0.3, 1.0, 5.0, 10.0, 12.5, 15.0):
+          with self.subTest(controller=cls.__module__, model=model, speed=speed):
+            tuned, vm, cp = make_controller(cls, model)
+            baseline, base_vm, _ = make_controller(cls, model, enabled=False)
+            before = cp.to_dict()
+            for _ in range(100):
+              run_frame(tuned, vm, speed=speed, curvature=0.0)
+              run_frame(baseline, base_vm, speed=speed, curvature=0.0)
+            for frame in range(120):
+              curvature = 0.0001 if (frame // 5) % 2 else -0.0001
+              _, _, actual = run_frame(tuned, vm, speed=speed, curvature=curvature)
+              _, _, expected = run_frame(baseline, base_vm, speed=speed, curvature=curvature)
+              self.assertAlmostEqual(actual.error, expected.error, places=12)
+              self.assertAlmostEqual(actual.p, expected.p, places=12)
+              self.assertAlmostEqual(actual.i, expected.i, places=12)
+              self.assertEqual(actual.version, 200 if cls is TorqueV0 else 201)
+            self.assertEqual(cp.to_dict(), before)
 
   def test_disabled_outputs_match_pre_port_fixture(self):
     fixture = json.loads(Path(__file__).with_name("low_speed_steering_baseline.json").read_text())

@@ -14,6 +14,9 @@ on:
       - 'openpilot/system/hardware/**'
       - 'openpilot/selfdrive/ui/**'
       - 'openpilot/selfdrive/selfdrived/selfdrived.py'
+      - 'openpilot/selfdrive/controls/lib/latcontrol_torque.py'
+      - 'openpilot/selfdrive/locationd/torqued.py'
+      - 'openpilot/sunnypilot/selfdrive/controls/lib/**'
       - 'openpilot/system/ui/**'
       - 'openpilot/system/manager/**'
       - 'tools/diagnostics/test_boot_diagnostics.py'
@@ -77,6 +80,8 @@ jobs:
           test -s "diagnostic-${{ matrix.device }}.png"
       - name: Build host dependencies
         run: .venv/bin/scons -j4
+      - name: Verify HKG torque normalization and low-speed steering regression
+        run: .venv/bin/python -m unittest openpilot.sunnypilot.selfdrive.controls.lib.tests.test_hkg_torque_scale openpilot.sunnypilot.selfdrive.controls.lib.tests.test_low_speed_steering -v
       - name: Verify eGPU retry parameter and model load failure recovery
         run: .venv/bin/python -m unittest openpilot.common.tests.test_params.TestParams.test_chestnut_retry_lifecycle openpilot.common.tests.test_params.TestParams.test_model_load_failure_retries_once_then_selects_fallback -v
       - name: Verify GPS UI crash regression and normal messaging
