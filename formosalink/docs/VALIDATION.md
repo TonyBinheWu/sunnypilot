@@ -2,6 +2,8 @@
 
 Date: 2026-11-09 (Asia/Taipei). First batch, FormosaLink 0.1.0 / protocol v1.
 
+This is the initial implementation record. Later service fixes have 29 passing backend tests on isolated Python 3.14.10 plus two passing UI tests. For the actual pre-push native UI/telemetry matrix, model failures and baseline comparison, see [SIMULATION_2026_11_09.md](SIMULATION_2026_11_09.md). Deployment state below reflects the initial publication, not the subsequent service startup.
+
 | Check | hkg-enhanced | ccnc-port |
 | --- | --- | --- |
 | Python host suite, including real HTTP/WebSocket client | 25 passed | 25 passed |

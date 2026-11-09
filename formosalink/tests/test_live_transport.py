@@ -11,7 +11,7 @@ import uvicorn
 
 from formosalink.server.app import create_app
 from formosalink.server.config import initialize
-from openpilot.sunnypilot.formosalink.agent import connect_once
+from openpilot.sunnypilot.formosalink.agent import connect_once, connect_http
 from openpilot.sunnypilot.formosalink.identity import create
 from openpilot.sunnypilot.formosalink.protocol import sign
 from openpilot.sunnypilot.formosalink.telemetry import DemoSampler
@@ -49,6 +49,16 @@ def test_real_agent_http_and_websocket(tmp_path):
       rows = owner.get(origin+"/api/v1/devices",timeout=5).json()["devices"]
       assert rows[0]["snapshot"]["metrics"]["software_version"] == "FormosaPilot demo"
       assert rows[0]["snapshot"]["sequence"] == 0
+      connect_http(identity, private, DemoSampler(), stop=stop, samples=1)
+      # A fresh stop event lets the actual HTTPS fallback send exactly one frame.
+      next_stop = threading.Event()
+      class HttpOnce:
+        def sample(self, sequence):
+          next_stop.set()
+          return DemoSampler().sample(sequence)
+      connect_http(identity, private, HttpOnce(), stop=next_stop, samples=1)
+      rows = owner.get(origin+"/api/v1/devices",timeout=5).json()["devices"]
+      assert rows[0]["transport"] == "https"
   finally:
     server.should_exit = True
     thread.join(timeout=10)

@@ -45,6 +45,24 @@ def connect_once(identity, private, sampler, stop=None):
     ws.close()
 
 
+def connect_http(identity, private, sampler, stop=None, samples=60):
+  import requests
+  with requests.Session() as session:
+    for sequence in range(samples):
+      if stop and stop.is_set():
+        return
+      snapshot = sampler.sample(sequence)
+      envelope = sign(private, identity["device_id"], "telemetry", snapshot)
+      response = session.post(identity["origin"] + "/api/v1/agent/telemetry", json=envelope, timeout=15)
+      response.raise_for_status()
+      if len(response.content) > MAX_FRAME_BYTES or response.json() != {"type": "ack", "sequence": sequence}:
+        raise ValueError("unexpected HTTPS acknowledgement")
+      if stop:
+        stop.wait(SAMPLE_INTERVAL)
+      else:
+        time.sleep(SAMPLE_INTERVAL)
+
+
 def run(directory=None, demo=False, stop=None):
   from openpilot.sunnypilot.formosalink.telemetry import DemoSampler, OpenpilotSampler
   sampler = DemoSampler() if demo else OpenpilotSampler()
@@ -52,7 +70,11 @@ def run(directory=None, demo=False, stop=None):
   while stop is None or not stop.is_set():
     try:
       identity, private, _ = read(directory or default_directory())
-      connect_once(identity, private, sampler, stop)
+      try:
+        connect_once(identity, private, sampler, stop)
+      except Exception as exc:
+        log.info("FormosaLink WebSocket unavailable (%s); using signed HTTPS telemetry", type(exc).__name__)
+        connect_http(identity, private, sampler, stop)
       failures = 0
     except Exception as exc:
       # No credentials, pairing codes, request bodies or private keys in logs.

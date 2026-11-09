@@ -57,6 +57,7 @@ def pair(client):
 
 
 def test_auth_csrf_host_and_cookie(client):
+  assert "signed-https-telemetry" in client.get("/api/v1/health").json()["features"]
   assert client.get("/api/v1/devices").status_code == 401
   assert client.post("/api/v1/login", json={"password": PASSWORD}).status_code == 403
   assert client.get("/api/v1/health", headers={"Host": "attacker.example"}).status_code == 400
@@ -299,3 +300,28 @@ def test_iis_setup_is_windows_powershell_compatible_utf8():
   assert "-Password" not in source
   assert "S-1-5-19" in source and "-AtStartup" in source
   assert "--log-file" in source
+
+
+def test_signed_https_telemetry_replay_and_revocation(client):
+  device_id, private, _ = pair(client)
+  packet = sign(private,device_id,"telemetry",DemoSampler().sample(0))
+  response = client.post("/api/v1/agent/telemetry",json=packet)
+  assert response.status_code == 200 and response.json() == {"type":"ack","sequence":0}
+  row = client.get("/api/v1/devices").json()["devices"][0]
+  assert row["online"] and row["transport"] == "https" and not row["stale"]
+  assert client.post("/api/v1/agent/telemetry",json=packet).status_code == 403
+  assert client.post(f"/api/v1/devices/{device_id}/revoke",json={},headers={"Origin":ORIGIN}).status_code == 200
+  packet = sign(private,device_id,"telemetry",DemoSampler().sample(1))
+  assert client.post("/api/v1/agent/telemetry",json=packet).status_code == 403
+  assert not client.get("/api/v1/devices").json()["devices"][0]["online"]
+
+
+def test_https_telemetry_rejects_unpaired_tampered_and_expired(client):
+  device_id, private, _, _ = enroll(client)
+  assert client.post("/api/v1/agent/telemetry",json=sign(private,device_id,"telemetry",DemoSampler().sample(0))).status_code == 403
+  device_id, private, _ = pair(client)
+  packet = sign(private,device_id,"telemetry",DemoSampler().sample(0))
+  packet["payload"]["metrics"]["cpu_temp_c"] = 100
+  assert client.post("/api/v1/agent/telemetry",json=packet).status_code == 403
+  old = DemoSampler().sample(1); old["sampled_at"] -= 120
+  assert client.post("/api/v1/agent/telemetry",json=sign(private,device_id,"telemetry",old)).status_code == 403

@@ -15,11 +15,13 @@ FormosaPilot は保守対象の sunnypilot を基盤とするブランドです�
 - UI: 繁體中文 (default), English, 日本語. Buildless ES modules; no Node build or CDN required on IIS.
 - Single owner, single Python worker, local SQLite. Multiple devices. No OIDC or PostgreSQL required for this batch.
 - Dedicated Ed25519 device keys, expiring one-use pairing codes, fingerprint confirmation, signed/replay-protected connection authentication.
+- WebSocket is preferred; proxies with incompatible upgrade handling use per-request signed HTTPS telemetry, retaining TLS verification, replay protection and revocation checks.
 - Device state, temperatures, memory, storage, speed when valid, installed version/branch/commit. No location, driver-camera data, raw CAN, image streaming, remote commands or parameter reads.
 - Agent default: **disabled**. Local CLI configuration is required; first batch does not add a device-screen pairing panel.
 - Cloud outages do not gate the existing driving processes. Existing comma/sunnylink services are not redirected or silently disabled.
-- SQLite stores the latest snapshot only (not journey history); audit is bounded to 10,000 events. Online is a live authenticated connection with telemetry received within 20 seconds. Invalid or old samples are shown as stale.
+- SQLite stores the latest snapshot only (not journey history); audit is bounded to 10,000 events. Online requires a live authenticated WebSocket or recent signed HTTPS telemetry within 20 seconds. Invalid or old samples are shown as stale.
 - First-batch backend auth uses one local owner password, PBKDF2-SHA256, HttpOnly/Secure/SameSite cookies and Origin checks. OIDC/multi-user sharing is deferred.
+- For other users: deploy independent private instances today; central GitHub login requires the owner-isolation work in [MULTI_USER.md](docs/MULTI_USER.md). Public signup remains disabled.
 
 ## Source map
 
@@ -44,5 +46,7 @@ node --test formosalink/tests/web.test.mjs
 On restricted Windows hosts, use a new workspace-local `--basetemp build/formosalink-tests-<unique>` if the default temp directory is inaccessible. TestClient needs local socketpair access. CI runs Python 3.12 on Windows and Linux for both maintained branches; Node is needed only for the UI test, not production.
 
 Both `hkg-enhanced` and `ccnc-port` use the same companion files and protocol. Only the optional manager entry and disabled-by-default Params key are added to each branch. Vehicle controllers, safety, models and AGNOS are not part of this change. See [protocol and upstream maintenance](docs/PROTOCOL.md).
+
+Native pre-push checks and real-model simulator failures are recorded in [SIMULATION_2026_11_09.md](docs/SIMULATION_2026_11_09.md). All four PC UI/telemetry profiles passed; three model scenarios failed, including a failure reproduced on the pre-feature baseline. These are not physical-device driving acceptance results.
 
 Not yet verified by host tests: end-to-end IIS ARR/WebSocket forwarding to the Python service, C3X/C4 runtime/build, physical vehicle telemetry, power/thermal behavior. Do not equate host tests with device validation. See the [validation record](docs/VALIDATION.md). The current logo and prompt are recorded in [BRAND.md](docs/BRAND.md).

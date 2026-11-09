@@ -56,6 +56,7 @@ def create_app(data_dir, web_dir=None):
   app.state.store = store
   limiter = Limit()
   connections = {}
+  http_channels = {}
   secure = config["origin"].startswith("https:")
 
   def owner(request):
@@ -73,7 +74,7 @@ def create_app(data_dir, web_dir=None):
     if request.url.path.startswith("/api/"):
       if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
         return Response(status_code=400)
-      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path != "/api/v1/agent/enroll":
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry"):
         if request.headers.get("origin") != config["origin"]:
           return Response(status_code=403)
       try:
@@ -100,7 +101,7 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry"]}
 
   @app.post("/api/v1/login")
   def login(body: Login, request: Request, response: Response):
@@ -124,7 +125,9 @@ def create_app(data_dir, web_dir=None):
     rows = store.devices()
     now = time.time()
     for row in rows:
-      row["online"] = row["state"] == "paired" and row["id"] in connections and now - (row["last_seen"] or 0) <= ONLINE_SECONDS
+      active = row["id"] in connections or now - http_channels.get(row["id"], 0) <= ONLINE_SECONDS
+      row["online"] = row["state"] == "paired" and active and now - (row["last_seen"] or 0) <= ONLINE_SECONDS
+      row["transport"] = "websocket" if row["id"] in connections else "https" if active else None
       snapshot = row["snapshot"]
       row["stale"] = not row["online"] or not snapshot or not snapshot["metrics"].get("sample_valid", False) or abs(now - snapshot["sampled_at"]) > ONLINE_SECONDS
     return {"devices": rows, "server_time": now, "protocol_version": VERSION}
@@ -147,6 +150,7 @@ def create_app(data_dir, web_dir=None):
     except ValueError as exc:
       raise HTTPException(404, str(exc)) from exc
     socket = connections.pop(device_id, None)
+    http_channels.pop(device_id, None)
     if socket:
       try:
         await socket.close(code=4003)
@@ -167,6 +171,28 @@ def create_app(data_dir, web_dir=None):
       return store.enroll(verified["device_id"], public_key, fingerprint(public_key))
     except (ValueError, KeyError, TypeError, InvalidSignature) as exc:
       raise HTTPException(400, "invalid enrollment or unavailable identity") from exc
+
+  @app.post("/api/v1/agent/telemetry")
+  async def http_telemetry(request: Request):
+    # Proxy-safe fallback; device signatures and replay protection are mandatory.
+    rate(request, "telemetry", 3600)
+    try:
+      envelope = await request.json()
+      row = store.get(envelope["device_id"])
+      if not row or row["state"] != "paired":
+        raise ValueError("device unavailable")
+      verified = verify(envelope, row["public_key"], "telemetry")
+      data = validate_snapshot(verified["payload"])
+      if abs(time.time() - data["sampled_at"]) > 90:
+        raise ValueError("expired sample")
+      limiter.check("device-telemetry:" + row["id"], 20)
+      store.consume_nonce(row["id"], verified["nonce"])
+      if not store.snapshot(row["id"], data):
+        raise ValueError("device revoked")
+      http_channels[row["id"]] = time.time()
+      return {"type": "ack", "sequence": data["sequence"]}
+    except (ValueError, KeyError, TypeError, InvalidSignature) as exc:
+      raise HTTPException(403, "invalid device telemetry") from exc
 
   @app.websocket("/api/v1/agent/ws")
   async def agent_socket(socket: WebSocket):

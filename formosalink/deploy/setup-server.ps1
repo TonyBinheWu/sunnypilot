@@ -77,7 +77,26 @@ $pythonExe = Join-Path $venvRoot 'Scripts\python.exe'
 & $pythonExe -m pip install --disable-pip-version-check -r (Join-Path $source 'formosalink\requirements.txt')
 if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
 if ($existing) { Stop-ScheduledTask -TaskName $taskName; Start-Sleep -Seconds 2 }
-Get-ChildItem -LiteralPath $source -Force | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $codeRoot -Recurse -Force }
+# A venv launcher may leave its child interpreter alive after a task stop.
+# Only terminate listeners whose command and executable identify this service.
+$listeners = @(Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique)
+foreach ($processId in $listeners) {
+  $running = Get-CimInstance Win32_Process -Filter "ProcessId=$processId"
+  $allowedExecutables = @([IO.Path]::GetFullPath($pythonExe),[IO.Path]::GetFullPath($basePython))
+  if (-not $running -or $running.CommandLine -notmatch '\-m\s+formosalink\.server\b' -or $running.CommandLine -notmatch [regex]::Escape($dataRoot) -or $running.ExecutablePath -notin $allowedExecutables) {
+    throw 'Port 8765 is held by an unidentified process; refusing to stop it.'
+  }
+  Stop-Process -Id $processId -Force
+}
+if ($listeners.Count) { Start-Sleep -Seconds 1 }
+$sourcePrefix = $source.TrimEnd('\') + '\'
+Get-ChildItem -LiteralPath $source -Recurse -File | ForEach-Object {
+  $relative = $_.FullName.Substring($sourcePrefix.Length)
+  $destination = Join-Path $codeRoot $relative
+  New-Item -ItemType Directory -Path ([IO.Path]::GetDirectoryName($destination)) -Force | Out-Null
+  Copy-Item -LiteralPath $_.FullName -Destination $destination -Force
+  if ((Get-FileHash -LiteralPath $_.FullName).Hash -ne (Get-FileHash -LiteralPath $destination).Hash) { throw "Runtime copy verification failed: $relative" }
+}
 foreach ($path in @($codeRoot,$venvRoot)) {
   & icacls.exe $path /inheritance:r /grant:r '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-18:(OI)(CI)F' '*S-1-5-19:(OI)(CI)RX' | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'Service code ACL setup failed.' }
@@ -102,7 +121,7 @@ $hostHeader = ([Uri]$Origin).Authority
 for ($attempt=0; $attempt -lt 20; $attempt++) {
   try {
     $health = Invoke-RestMethod -Uri 'http://127.0.0.1:8765/api/v1/health' -Headers @{Host=$hostHeader} -TimeoutSec 2
-    if ($health.service -eq 'FormosaLink') { Write-Output $text.ready; return }
+    if ($health.service -eq 'FormosaLink' -and $health.features -contains 'signed-https-telemetry') { Write-Output $text.ready; return }
   } catch { }
   Start-Sleep -Seconds 1
 }

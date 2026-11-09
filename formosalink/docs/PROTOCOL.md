@@ -2,7 +2,7 @@
 
 ## Boundaries
 
-The first batch has no command bus. Only signed enrollment, signed connection authentication, validated telemetry frames and acknowledgements exist. Telemetry cannot invoke Params, shell commands, CAN publishers or the updater. Driver-camera, road-camera and location are excluded. No arbitrary cereal-service selection or Params enumeration is exposed.
+The first batch has no command bus. Only signed enrollment, signed connection authentication, validated telemetry frames and acknowledgements exist. If a proxy cannot forward a valid WebSocket handshake, the agent uses signed HTTPS telemetry instead. Telemetry cannot invoke Params, shell commands, CAN publishers or the updater. Driver-camera, road-camera and location are excluded. No arbitrary cereal-service selection or Params enumeration is exposed.
 
 ## Authentication
 
@@ -19,6 +19,8 @@ The agent opens `wss://<origin>/api/v1/agent/ws` without browser Origin/cookies.
 Every 5 seconds the agent sends `{"version":1,"sequence":0,"sampled_at":<unix_seconds>,"metrics":{...}}`. Sequence strictly increases within the connection. Maximum frame size is 16 KiB; telemetry cannot exceed one frame per second. Frames more than 90 seconds away from server time are rejected. The server accepts only fields declared by `METRIC_KEYS` and responds only `{"type":"ack","sequence":0}`. Missing/invalid ACKs are errors. No incoming command is executed. Idle sessions close after 20 seconds; authentication times out after 10 seconds. Reconnect uses exponential backoff with jitter, capped near 60 seconds. Device time must be synchronized.
 
 ## Freshness and persistence
+
+HTTPS fallback: `POST /api/v1/agent/telemetry` carries the same snapshot as the payload of a signed envelope with purpose `telemetry`. Every request has a fresh nonce and is subject to the same timestamp, field allowlist, TLS and revocation checks. Only paired identities are accepted. The server persists nonce consumption before storing a snapshot. A recent signed HTTPS update counts as online for 20 seconds; no permanent session is inferred. The agent retries WebSocket after at most 60 HTTPS samples. Browser CSRF exemptions apply only to signature-authenticated device enrollment/telemetry routes, never owner operations.
 
 Telemetry adapter checks source validity and producer monotonic timestamps (deviceState ≤5 seconds, carState ≤2 seconds); it does not apply high-frequency subscriber checks to a low-rate observer. Invalid deviceState yields null live fields and `sample_valid=false`; invalid carState yields null speed. Online requires an active socket and receipt within 20 seconds. Stale also includes invalid sample validity and sample timestamps more than 20 seconds from server time. The UI blanks current metrics on stale/offline data, retains clearly labelled timestamps/version information, and marks all retained data stale when API requests fail.
 
