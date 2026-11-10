@@ -191,6 +191,11 @@ def test_private_stdin_configuration_rejects_incomplete_input(tmp_path, monkeypa
   oauth.main()
   assert oauth.settings(tmp_path)["client_secret"] == secret
   assert secret not in capsys.readouterr().out
+  for encoding in ("utf-8-sig", "utf-16"):
+    payload = json.dumps({"client_id": "test-client-id", "client_secret": secret}).encode(encoding)
+    monkeypatch.setattr("sys.stdin", io.TextIOWrapper(io.BytesIO(payload)))
+    oauth.main()
+    assert oauth.settings(tmp_path)["client_secret"] == secret
   for invalid in ("", "\x16", "test-client-id", "x"*20+"\n"):
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"client_id": "test-client-id", "client_secret": invalid})))
     with pytest.raises(SystemExit):

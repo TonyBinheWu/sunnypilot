@@ -73,7 +73,11 @@ def main():
   value = None
   if args.stdin:
     try:
-      value = json.loads(sys.stdin.read(4096))
+      # Native Windows PowerShell may prepend a BOM or use UTF-16 for redirected
+      # pipelines. json.loads(bytes) detects these encodings independently of the
+      # interpreter's console code page. Bound the private input before parsing.
+      raw = getattr(sys.stdin, "buffer", sys.stdin).read(8192)
+      value = json.loads(raw.lstrip("\ufeff") if isinstance(raw, str) else raw)
     except (ValueError, UnicodeError):
       raise SystemExit(errors[2]) from None
     if not isinstance(value, dict) or not valid_client_id(value.get("client_id")):
