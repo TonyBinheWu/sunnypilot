@@ -6,6 +6,7 @@
 - C3X/C4 × hkg-enhanced/ccnc-port：每組 8/8 原生檢查通過。新增三語實際繪圖截取後解碼 QR（共 12 張）、行車中阻擋、停用／關閉後忽略舊回應、撤銷關閉 agent、兩種原生設定入口建構。檔案路徑修正及測試副本分支設定來源修正後，完整四組重新通過。
 - 瀏覽器本機測試：參考 sunnylink 深藍／紫藍介面，三語桌面與 390px 手機布局無水平溢出；無密碼或手動配對輸入。使用本機 mock OAuth provider 驗證「QR → 登入往返 → 自動確認畫面 → 配對成功」；同頁 hashchange 亦可接收 QR。
 - 本批沒有修改車輛控制、安全、模型或 AGNOS；C3X/C4 是原生 PC profile 測試，不是實機／實車驗收。既有閉迴路模擬限制仍見下方歷史紀錄。
+- 功能提交 2fa6f12（hkg-enhanced）、112b5e5（ccnc-port）的 Windows/Linux × Python 3.12/3.14 CI 全部成功：[HKG QR CI](https://github.com/TonyBinheWu/sunnypilot/actions/runs/42790750027)、[CCNC QR CI](https://github.com/TonyBinheWu/sunnypilot/actions/runs/42790761848)。
 - IIS 新增 `qr-pairing` health 與簽章狀態 API；更新時保留原 GitHub 設定、資料庫及裝置。部署與重啟方式見 [QR_PAIRING.md](QR_PAIRING.md)。
 
 English: Both branches pass 43 backend and 4 web tests. Each of four native branch/device profiles passes 8 checks, including actual rendered QR decoding in three languages. Browser QA verifies responsive layouts and QR/OAuth confirmation with a local mock provider. These are PC profile checks, not physical device or driving acceptance.
