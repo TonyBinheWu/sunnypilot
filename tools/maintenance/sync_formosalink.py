@@ -54,6 +54,32 @@ def hook_changes(target):
     raise ValueError("existing FormosaLink process differs; review manually")
   if text != path.read_text(encoding="utf-8"):
     changes[path] = text
+  # Keep independent QR pairing next to the native device pairing entries.
+  path = target / "openpilot/selfdrive/ui/sunnypilot/layouts/settings/device.py"
+  text = path.read_text(encoding="utf-8")
+  import_line = "from openpilot.sunnypilot.formosalink.ui import formosalink_button\n"
+  text = text.replace(import_line, "")
+  anchor = "from openpilot.selfdrive.ui.layouts.settings.device import DeviceLayout\n"
+  if text.count(anchor) != 1:
+    raise ValueError("C3X device import anchor is ambiguous")
+  text = text.replace(anchor, anchor + import_line, 1)
+  if "      formosalink_button()," not in text:
+    anchor = "      self._pair_device_btn,\n"
+    if text.count(anchor) != 1:
+      raise ValueError("C3X pairing entry anchor is ambiguous")
+    text = text.replace(anchor, anchor + "      LineSeparator(),\n      formosalink_button(),\n", 1)
+  if text != path.read_text(encoding="utf-8"):
+    changes[path] = text
+  path = target / "openpilot/selfdrive/ui/sunnypilot/mici/layouts/settings.py"
+  text = path.read_text(encoding="utf-8")
+  hook = "    from openpilot.sunnypilot.formosalink.ui import add_mici_pair_button\n    add_mici_pair_button(self._scroller)\n"
+  if hook.strip() not in text:
+    anchor = "    self._scroller.add_widget(self._language_button)\n"
+    if text.count(anchor) != 1:
+      raise ValueError("C4 pairing entry anchor is ambiguous")
+    text = text.replace(anchor, anchor + hook, 1)
+  if text != path.read_text(encoding="utf-8"):
+    changes[path] = text
   path = target / "docs/architecture/module_map.json"
   text = path.read_text(encoding="utf-8")
   start = text.index('"id": "cloud"')

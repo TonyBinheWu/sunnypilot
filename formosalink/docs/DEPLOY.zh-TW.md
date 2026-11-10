@@ -69,7 +69,7 @@ $python = 'C:\ProgramData\FormosaLink-venv\Scripts\python.exe'
 python -m openpilot.sunnypilot.formosalink.cli --lang zh-TW pair --url https://formosapilot.dinglu-t.com --enable
 ```
 
-瀏覽手機網站登入管理者帳號，選「配對裝置」，填入本機顯示的 12 位配對碼、24 位指紋與名稱。配對碼十分鐘內有效且僅可使用一次。啟用後 manager 自動管理 agent；手機沒有啟用駕駛或修改 Params 的功能。
+日常配對請在裝置設定 → 裝置 → FormosaLink 產生 QR，用手機掃描、以 GitHub 登入並確認。手機會自動帶入資訊，不需輸入配對碼或指紋。上方 CLI 可初始化自架網址並提供配對連結。啟用後 manager 自動管理 agent；詳見 [QR 配對](QR_PAIRING.md)。
 
 裝置身分存於 `/data/formosalink/identity.json`，權限 0600，獨立於 comma/sunnylink。不要上傳、複製到另一台裝置或納入一般設定備份。撤銷後此身分永久不可再連線；重新加入須在本機停用 agent、備存並移走舊身分檔，再重新配對，不能只在雲端取消撤銷。
 

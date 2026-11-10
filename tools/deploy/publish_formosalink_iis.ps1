@@ -51,6 +51,6 @@ foreach ($relative in ($files.Keys | Sort-Object)) {
   Copy-Item -LiteralPath $files[$relative] -Destination $target -Force
   if ((Get-FileHash -LiteralPath $target).Hash -ne (Get-FileHash -LiteralPath $files[$relative]).Hash) { throw "Hash mismatch: $relative" }
 }
-$manifest = @{ product = 'FormosaLink'; version = '0.2.0'; deployedAtUtc = [DateTime]::UtcNow.ToString('o'); files = @($files.Keys | Sort-Object) }
+$manifest = @{ product = 'FormosaLink'; version = '0.2.1'; deployedAtUtc = [DateTime]::UtcNow.ToString('o'); files = @($files.Keys | Sort-Object) }
 $manifest | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $marker -Encoding UTF8
 Write-Output "Published and hash-verified $($files.Count) files to $destinationRoot. IIS and Python service setup are still required."

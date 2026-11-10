@@ -62,6 +62,8 @@ class DeviceLayoutSP(DeviceLayoutMici):
     self._language_button.set_click_callback(lambda: gui_app.push_widget(LanguageLayoutMici()))
     self._language_button.set_enabled(ui_state.is_offroad)
     self._scroller.add_widget(self._language_button)
+    from openpilot.sunnypilot.formosalink.ui import add_mici_pair_button
+    add_mici_pair_button(self._scroller)
 
   def _update_state(self):
     super()._update_state()

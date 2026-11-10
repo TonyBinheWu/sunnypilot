@@ -7,6 +7,7 @@ import requests
 from openpilot.sunnypilot.formosalink.identity import create, default_directory, read
 from openpilot.sunnypilot.formosalink.i18n import MESSAGES
 from openpilot.sunnypilot.formosalink.protocol import fingerprint, sign, validate_origin
+from openpilot.sunnypilot.formosalink.pairing import pairing_url
 
 
 def main():
@@ -53,9 +54,8 @@ def main():
       raise SystemExit(t("bad_fingerprint"))
     print("FormosaPilot → FormosaLink")
     print(t("device") + ":", identity["device_id"])
-    print(t("fingerprint") + ":", result["fingerprint"])
     if result.get("pair_code"):
-      print(t("code") + ":", result["pair_code"])
+      print(t("pair_url") + ":", pairing_url(origin, result))
       print(t("instructions"))
     else:
       print(t("paired"))

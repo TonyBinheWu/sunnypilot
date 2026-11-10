@@ -2,9 +2,9 @@ name: FormosaLink shared platform
 on:
   push:
     branches: [hkg-enhanced, ccnc-port]
-    paths: ['formosalink/**', 'openpilot/sunnypilot/formosalink/**', 'openpilot/common/params_keys.h', 'openpilot/system/manager/process_config.py', 'tools/deploy/publish_formosalink_iis.ps1', '.github/workflows/formosalink.yml']
+    paths: ['formosalink/**', 'openpilot/sunnypilot/formosalink/**', 'openpilot/common/params_keys.h', 'openpilot/selfdrive/ui/sunnypilot/layouts/settings/device.py', 'openpilot/selfdrive/ui/sunnypilot/mici/layouts/settings.py', 'openpilot/system/manager/process_config.py', 'tools/deploy/publish_formosalink_iis.ps1', '.github/workflows/formosalink.yml']
   pull_request:
-    paths: ['formosalink/**', 'openpilot/sunnypilot/formosalink/**', 'openpilot/common/params_keys.h', 'openpilot/system/manager/process_config.py', 'tools/deploy/publish_formosalink_iis.ps1', '.github/workflows/formosalink.yml']
+    paths: ['formosalink/**', 'openpilot/sunnypilot/formosalink/**', 'openpilot/common/params_keys.h', 'openpilot/selfdrive/ui/sunnypilot/layouts/settings/device.py', 'openpilot/selfdrive/ui/sunnypilot/mici/layouts/settings.py', 'openpilot/system/manager/process_config.py', 'tools/deploy/publish_formosalink_iis.ps1', '.github/workflows/formosalink.yml']
   workflow_dispatch:
 permissions:
   contents: read
