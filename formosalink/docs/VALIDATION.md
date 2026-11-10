@@ -1,5 +1,17 @@
 # 驗證紀錄 / Validation / 検証記録
 
+## 2026-11-10 介面與 QR 配對（0.2.1）
+
+- 兩分支各 43 項後端測試、4 項前端測試通過。含 QR fragment 嚴格解析、期限、sessionStorage 往返／清除、偽造／重複欄位拒絕、簽章狀態查詢、防重放、QR 不被輪詢刷新，以及既有自架 origin 沿用。
+- C3X/C4 × hkg-enhanced/ccnc-port：每組 8/8 原生檢查通過。新增三語實際繪圖截取後解碼 QR（共 12 張）、行車中阻擋、停用／關閉後忽略舊回應、撤銷關閉 agent、兩種原生設定入口建構。檔案路徑修正及測試副本分支設定來源修正後，完整四組重新通過。
+- 瀏覽器本機測試：參考 sunnylink 深藍／紫藍介面，三語桌面與 390px 手機布局無水平溢出；無密碼或手動配對輸入。使用本機 mock OAuth provider 驗證「QR → 登入往返 → 自動確認畫面 → 配對成功」；同頁 hashchange 亦可接收 QR。
+- 本批沒有修改車輛控制、安全、模型或 AGNOS；C3X/C4 是原生 PC profile 測試，不是實機／實車驗收。既有閉迴路模擬限制仍見下方歷史紀錄。
+- IIS 新增 `qr-pairing` health 與簽章狀態 API；更新時保留原 GitHub 設定、資料庫及裝置。部署與重啟方式見 [QR_PAIRING.md](QR_PAIRING.md)。
+
+English: Both branches pass 43 backend and 4 web tests. Each of four native branch/device profiles passes 8 checks, including actual rendered QR decoding in three languages. Browser QA verifies responsive layouts and QR/OAuth confirmation with a local mock provider. These are PC profile checks, not physical device or driving acceptance.
+
+日本語：両ブランチでバックエンド 43 件、Web 4 件が成功しました。C3X/C4 の 4 組は各 8 件成功し、3 言語の実描画 QR を読み取れました。ブラウザーでモバイル表示とローカル mock OAuth の登録を確認しました。実機・実車の検証ではありません。
+
 ## 2026-11-10 GitHub 帳號及權限隔離（0.2）
 
 - Python 3.14.10 本機後端套件：39 passed。包含真實本機 HTTP／WebSocket agent 回報、GitHub HTTP 交換契約（MockTransport）、OAuth state／PKCE／到期／重放／瀏覽器綁定、登出取消連結、禁止帳號接管、雙用戶裝置清單及撤銷隔離、禁止傳入 owner_id，以及 SQLite v1 既有 session／裝置金鑰備份遷移。
@@ -7,11 +19,12 @@
 - 前端三語完整性與安全顯示測試：2 passed。Windows PowerShell 5.1 安裝腳本語法檢查通過。
 - 兩分支各 C3X（tizi/BIG=1）與 C4（mici/BIG=0）：每組 4/4 原生 Linux 整合檢查通過，包含 UI 真實 frame、AGNOS manifest 與 agent 預設關閉。這是 PC profile 檢查，並非實機模擬器或實車驗證。這批沒有修改行車模組／agent 協定；先前閉迴路模擬的限制仍見 [模擬紀錄](SIMULATION_2026_11_09.md)，不能視為行車驗收通過。
 - 正式 API 已確認 v2 schema 與 device-ownership 功能。原本配對的模擬裝置在升級後以相同金鑰送出一次簽章 HTTPS 回報，收到 200 / ack（sequence 10001），確認既有身分與配對仍有效。
-- 正式 GitHub 授權、原管理者連結，以及兩個真實不同 GitHub 帳號的外部隔離驗證，須等待 OAuth App 與 IIS 私有後端設定完成；本機 mock 測試不等於已通過正式 GitHub 登入。
+- 正式 GitHub 授權與原管理者連結已確認：瀏覽器顯示 GitHub · TonyBinheWu，原部署驗證模擬裝置保留；簽章 HTTPS 回報 200 / ack（sequence 10002），畫面顯示 1 台連線中及預期模擬數值。用戶目前沒有第二個 GitHub 帳號，兩個真實帳號的外部隔離尚未驗證；後端跨帳號測試已通過。
+- 功能提交 ea1e550（hkg-enhanced）、19ebde5（ccnc-port）的 Windows/Linux × Python 3.12/3.14 CI 全部成功：[HKG CI](https://github.com/TonyBinheWu/sunnypilot/actions/runs/42740648459)、[CCNC CI](https://github.com/TonyBinheWu/sunnypilot/actions/runs/42740831077)。
 
-English: 39 backend tests and 2 frontend tests pass locally; GitHub requests are mocked except real local agent transport. Four native UI/profile checks pass for each branch/profile. No physical C3X/C4 or vehicle acceptance is claimed. Live GitHub authorization and two-real-account validation remain pending host OAuth setup.
+English: 39 backend tests and 2 frontend tests pass locally; GitHub requests are mocked except real local agent transport. Four native UI/profile checks pass for each branch/profile. No physical C3X/C4 or vehicle acceptance is claimed. Production GitHub authorization, explicit administrator linking, original-device retention and signed demo monitoring are verified. A second real GitHub account was unavailable; live two-account isolation remains unverified.
 
-日本語：バックエンド 39 件・フロントエンド 2 件が成功し、両ブランチの C3X/C4 PC profile は各 4 件成功しました。実機・実車の検証ではありません。GitHub の本番認証と実アカウント 2 件での確認はホスト設定後に行います。
+日本語：バックエンド 39 件・フロントエンド 2 件が成功し、両ブランチの C3X/C4 PC profile は各 4 件成功しました。実機・実車の検証ではありません。GitHub の本番認証・管理者連携・既存デバイスと模擬監視を確認しました。第 2 の実アカウントがないため、実アカウント間の確認は未実施です。
 
 ## 2026-11-10 正式部署完成驗證
 

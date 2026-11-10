@@ -16,3 +16,43 @@ const accountMessages = {
   ja: {adminAccount:'管理者アカウント',githubLogin:'GitHub でログイン',githubUnavailable:'GitHub ログインは未設定です。管理者にお問い合わせください。',githubReady:'ログイン後は自分のデバイスのみ登録・監視できます。',githubLink:'既存の管理者に GitHub を連携',githubLinked:'GitHub 連携済み',githubConfirm:'次に認証する GitHub アカウントを既存の管理者に連携しますか？既存のデバイスはこのアカウントに保持されます。',oauthFailed:'GitHub ログインまたは連携に失敗しました。もう一度お試しください。'}
 };
 for (const lang of Object.keys(accountMessages)) Object.assign(translations[lang],accountMessages[lang]);
+
+const interfaceMessages = {
+  'zh-TW': {
+    navFeatures:'功能介紹',navHow:'如何開始',signinShort:'登入',releaseBadge:'為 FormosaPilot 而生',
+    heroTitle:'你的裝置，\n隨時隨地',heroAccent:'盡在掌握。',heroDescription:'連結你的 FormosaPilot，無論身在何處，都能安心查看裝置狀態。由台灣出發，以自己的服務，掌握自己的旅程。',getStarted:'了解配對方式',taiwanMade:'源自台灣',
+    previewLabel:'介面示意',previewCaption:'FormosaLink 儀表板示意 · 非即時裝置資料',
+    featuresTitle:'裝置管理，需要的都在這裡',featuresIntro:'簡單連結，安心監看。讓裝置與你的帳號，保持專屬的連結。',
+    featurePairTitle:'掃描，即可配對',featurePairText:'在裝置上開啟 FormosaLink，用手機掃描 QR Code，登入後確認即可完成配對。',
+    featureMonitorTitle:'狀態，一目了然',featureMonitorText:'隨時查看連線狀態、裝置溫度、記憶體與版本資訊。資料過期時清楚標示，不混淆即時狀態。',
+    featurePrivateTitle:'你的裝置，你的空間',featurePrivateText:'透過 GitHub 安全登入。每個帳號只看見自己的裝置，服務與資料由你自主架設及掌握。',
+    stepsTitle:'三個步驟，輕鬆連結',stepsIntro:'從裝置螢幕到手機，只要掃描一次。',stepSignIn:'開啟裝置配對',stepSignInText:'停車後，在裝置設定開啟 FormosaLink，選擇顯示配對 QR Code。',stepPair:'手機掃描 QR',stepPairText:'用手機相機掃描 QR Code，透過 GitHub 登入後確認配對。',stepMonitor:'隨時查看狀態',stepMonitorText:'將 FormosaLink 加到手機主畫面，隨時掌握專屬裝置的狀態。',
+    accountPrivate:'僅顯示自己的裝置',qrScanHelp:'請在裝置設定開啟 FormosaLink 配對畫面，使用手機相機掃描 QR Code。',qrReady:'已安全帶入裝置配對資訊',qrConfirmHelp:'請確認這是你剛剛掃描的裝置。配對後，這台裝置將歸屬目前登入的帳號。',qrLoginFirst:'已讀取 QR Code。請以 GitHub 登入，接著確認配對。',qrExpired:'QR Code 已過期或無效，請在裝置上重新產生並掃描。',qrStorageUnavailable:'此瀏覽器無法暫存配對資訊。請先登入，再重新掃描裝置 QR Code。',
+    pairHelp:'掃描裝置上的 QR Code，自動帶入配對資訊，不需要輸入配對碼或指紋。',emptyHelp:'停車後在裝置設定開啟 FormosaLink，再用手機掃描配對 QR Code。',invalidPair:'QR Code 已過期、已使用或不相符，請回到裝置重新產生並掃描。'
+  },
+  en: {
+    navFeatures:'Features',navHow:'How it works',signinShort:'Sign in',releaseBadge:'Built for FormosaPilot',
+    heroTitle:'Your device.\nConnected from',heroAccent:'anywhere.',heroDescription:'Stay close to your FormosaPilot, wherever the road takes you. Secure device monitoring, powered by your own service. Inspired by Taiwan. Owned by you.',getStarted:'How to pair',taiwanMade:'Inspired by Taiwan',
+    previewLabel:'Preview',previewCaption:'FormosaLink dashboard illustration · not live device data',
+    featuresTitle:'Everything you need to stay connected',featuresIntro:'Simple pairing. Clear monitoring. A private connection between your account and your devices.',
+    featurePairTitle:'Scan. Pair. Connected.',featurePairText:'Open FormosaLink on your device, scan its QR code with your phone, then sign in and confirm pairing.',
+    featureMonitorTitle:'Your status at a glance',featureMonitorText:'Check connectivity, temperatures, memory and software versions. Stale data is clearly marked so you always know what is current.',
+    featurePrivateTitle:'Your devices. Your space.',featurePrivateText:'Sign in securely with GitHub. Every account sees only its own devices, with services and data hosted on your own infrastructure.',
+    stepsTitle:'Get connected in three steps',stepsIntro:'From your device screen to your phone. Just scan.',stepSignIn:'Open device pairing',stepSignInText:'While parked, open FormosaLink in device settings and display the pairing QR code.',stepPair:'Scan with your phone',stepPairText:'Scan the QR code with your phone camera, sign in with GitHub and confirm pairing.',stepMonitor:'Check in from anywhere',stepMonitorText:'Add FormosaLink to your phone home screen and keep your own devices close at hand.',
+    accountPrivate:'Only your devices',qrScanHelp:'Open FormosaLink pairing in your device settings, then scan its QR code with your phone camera.',qrReady:'Device pairing details loaded securely',qrConfirmHelp:'Confirm this is the device you just scanned. It will belong to the account currently signed in.',qrLoginFirst:'QR code received. Sign in with GitHub, then confirm pairing.',qrExpired:'This QR code is expired or invalid. Generate a new one on the device and scan it again.',qrStorageUnavailable:'This browser cannot retain pairing details. Sign in first, then scan the device QR code again.',
+    pairHelp:'Scan the device QR code to load pairing details automatically. No code or fingerprint to type.',emptyHelp:'While parked, open FormosaLink in device settings and scan its pairing QR code with your phone.',invalidPair:'This QR code is expired, already used or mismatched. Generate a new one on the device and scan again.'
+  },
+  ja: {
+    navFeatures:'機能',navHow:'はじめ方',signinShort:'ログイン',releaseBadge:'FormosaPilot のために',
+    heroTitle:'あなたのデバイスを、',heroAccent:'どこからでも。',heroDescription:'旅先でも、あなたの FormosaPilot を身近に。自分のサーバーで安全にデバイスの状態を確認できます。台湾から着想を得た、あなた専用のサービス。',getStarted:'登録方法を見る',taiwanMade:'台湾からの着想',
+    previewLabel:'画面イメージ',previewCaption:'FormosaLink 画面イメージ · 実際のデータではありません',
+    featuresTitle:'つながるために必要な機能を、ひとつに',featuresIntro:'簡単な登録と、わかりやすい監視。自分のアカウントとデバイスだけの接続。',
+    featurePairTitle:'スキャンするだけで登録',featurePairText:'デバイスの FormosaLink を開き、スマートフォンで QR コードを読み取り、ログイン後に登録を確認します。',
+    featureMonitorTitle:'状態をひと目で確認',featureMonitorText:'接続状態、温度、メモリ、ソフトウェアのバージョンを確認できます。古いデータは明示し、最新状態と区別します。',
+    featurePrivateTitle:'自分のデバイスだけの空間',featurePrivateText:'GitHub で安全にログイン。各アカウントには自分のデバイスのみ表示し、サービスとデータは自分で管理できます。',
+    stepsTitle:'3 ステップで、すぐにつながる',stepsIntro:'デバイス画面からスマートフォンへ。スキャンするだけ。',stepSignIn:'デバイスで登録を開始',stepSignInText:'停車中にデバイス設定の FormosaLink を開き、登録用 QR コードを表示します。',stepPair:'スマートフォンでスキャン',stepPairText:'スマートフォンのカメラで QR コードを読み取り、GitHub でログインして登録を確認します。',stepMonitor:'どこからでも状態を確認',stepMonitorText:'FormosaLink をホーム画面に追加し、自分のデバイスの状態をいつでも確認できます。',
+    accountPrivate:'自分のデバイスのみ',qrScanHelp:'デバイス設定の FormosaLink 登録画面を開き、スマートフォンのカメラで QR コードを読み取ってください。',qrReady:'デバイスの登録情報を安全に読み込みました',qrConfirmHelp:'今読み取ったデバイスであることを確認してください。現在のアカウントに登録されます。',qrLoginFirst:'QR コードを読み込みました。GitHub でログインし、登録を確認してください。',qrExpired:'QR コードが無効または期限切れです。本体で再発行し、読み取ってください。',qrStorageUnavailable:'このブラウザーは登録情報を保持できません。ログイン後に QR コードをもう一度読み取ってください。',
+    pairHelp:'本体の QR コードから登録情報を自動取得します。コードやフィンガープリントの入力は不要です。',emptyHelp:'停車中にデバイス設定の FormosaLink を開き、スマートフォンで登録用 QR コードを読み取ってください。',invalidPair:'QR コードは期限切れ、使用済み、または不一致です。本体で再発行して読み取ってください。'
+  }
+};
+for(const lang of Object.keys(interfaceMessages))Object.assign(translations[lang],interfaceMessages[lang]);

@@ -32,7 +32,7 @@ python -m openpilot.sunnypilot.formosalink.cli --lang ja pair --url https://form
 python -m openpilot.sunnypilot.formosalink.cli --lang ja status
 ```
 
-スマートフォンでログインし、10 分以内に 12 文字のワンタイムコードと 24 文字のフィンガープリントを照合して入力します。有効化すると既存 manager が任意の agent を管理します。認証情報は `/data/formosalink/identity.json` に 0600 で保存し、comma/sunnylink とは独立しています。複製や一般設定バックアップへの混入は禁止してください。解除した ID では再接続できません。再登録には本体で agent を停止し、旧 ID を安全に保管して元の場所から移動した後、新規ペアリングを行います。停止コマンドは `python -m openpilot.sunnypilot.formosalink.cli --lang ja disable` です。
+停車中に設定 → デバイス → FormosaLink で QR を表示し、スマートフォンで読み取り、GitHub でログインして確認します。コードやフィンガープリントの入力は不要です。CLI は自架 URL の初期設定と登録リンクの発行に使用できます。[QR 登録](QR_PAIRING.md)を参照してください。有効化すると既存 manager が任意の agent を管理します。認証情報は `/data/formosalink/identity.json` に 0600 で保存し、comma/sunnylink とは独立しています。複製や一般設定バックアップへの混入は禁止してください。解除した ID では再接続できません。再登録には本体で agent を停止し、旧 ID を安全に保管して元の場所から移動した後、新規ペアリングを行います。停止コマンドは `python -m openpilot.sunnypilot.formosalink.cli --lang ja disable` です。
 
 5. HTTPS の health、未ログイン API の 401、App_Data・Python・秘密ファイルのダウンロード拒否、携帯回線からの配対、3 言語表示、ホーム画面への追加を確認します。切断時はオフライン、無効な値や 20 秒以上前の値は古いデータとして表示します。解除時の即時切断と再接続拒否も確認します。C3X／C4 と両保守ブランチで起動・停止、値の有効性、負荷を検証します。クラウド停止が運転支援の起動条件にならないことを確認します。
 

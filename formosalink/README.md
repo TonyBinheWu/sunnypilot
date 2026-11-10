@@ -1,12 +1,14 @@
-# FormosaPilot / FormosaLink 0.2
+# FormosaPilot / FormosaLink 0.2.1
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
-FormosaPilot 是目前 sunnypilot 維護版本的品牌；FormosaLink 是可自架的獨立裝置管理平台。這次僅交付獨立配對、唯讀狀態 agent、三語手機儀表板與部署骨架。行車功能維持原分支行為。
+[QR 配對 / QR pairing / QR 登録](docs/QR_PAIRING.md)：裝置設定顯示短效 QR，手機以 GitHub 登入並確認；網頁不再顯示管理者密碼及手動配對輸入。
 
-FormosaPilot brands the maintained sunnypilot distribution. FormosaLink is its self-hosted companion. Release 0.1 implements independent pairing, read-only telemetry, a trilingual mobile dashboard and deployment scaffolding. Existing driving behavior is preserved.
+FormosaPilot 是目前 sunnypilot 維護版本的品牌；FormosaLink 是可自架的獨立裝置管理平台。目前提供 GitHub 多用戶登入、帳號裝置隔離、車端 QR 配對、唯讀 agent 與三語手機儀表板。行車功能維持原分支行為。
 
-FormosaPilot は保守対象の sunnypilot を基盤とするブランドです。FormosaLink はセルフホスト型の連携サービスです。0.1 では独立したペアリング、読み取り専用の状態送信、3 言語対応のモバイル画面、導入用構成を提供します。既存の運転支援動作は維持します。
+FormosaPilot brands the maintained sunnypilot distribution. FormosaLink is its self-hosted companion. It provides GitHub accounts, isolated device ownership, native QR pairing, read-only telemetry and a trilingual mobile dashboard. Existing driving behavior is preserved.
+
+FormosaPilot は保守対象の sunnypilot を基盤とするブランドです。FormosaLink はセルフホスト型の連携サービスです。GitHub ログイン、所有者別のデバイス管理、本体の QR 登録、読み取り専用送信、3 言語のモバイル画面を提供します。既存の運転支援動作は維持します。
 
 ## Scope / 範圍 / 範囲
 
@@ -17,7 +19,7 @@ FormosaPilot は保守対象の sunnypilot を基盤とするブランドです�
 - Dedicated Ed25519 device keys, expiring one-use pairing codes, fingerprint confirmation, signed/replay-protected connection authentication.
 - WebSocket is preferred; proxies with incompatible upgrade handling use per-request signed HTTPS telemetry, retaining TLS verification, replay protection and revocation checks.
 - Device state, temperatures, memory, storage, speed when valid, installed version/branch/commit. No location, driver-camera data, raw CAN, image streaming, remote commands or parameter reads.
-- Agent default: **disabled**. Local CLI configuration is required; first batch does not add a device-screen pairing panel.
+- Agent default: **disabled**. Explicit offroad opt-in is available in Settings → Device → FormosaLink on both C3X and C4. Scan its QR with a phone to pair without typing codes or fingerprints.
 - Cloud outages do not gate the existing driving processes. Existing comma/sunnylink services are not redirected or silently disabled.
 - SQLite stores the latest snapshot only (not journey history); audit is bounded to 10,000 events. Online requires a live authenticated WebSocket or recent signed HTTPS telemetry within 20 seconds. Invalid or old samples are shown as stale.
 - GitHub OAuth uses one-time browser-bound state and S256 PKCE. The local administrator password remains a fallback. Device operations enforce ownership on the server.
@@ -43,9 +45,9 @@ python -m pytest formosalink/tests -q
 node --test formosalink/tests/web.test.mjs
 ```
 
-On restricted Windows hosts, use a new workspace-local `--basetemp build/formosalink-tests-<unique>` if the default temp directory is inaccessible. TestClient needs local socketpair access. CI runs Python 3.12 on Windows and Linux for both maintained branches; Node is needed only for the UI test, not production.
+On restricted Windows hosts, use a new workspace-local `--basetemp build/formosalink-tests-<unique>` if the default temp directory is inaccessible. TestClient needs local socketpair access. CI runs Python 3.12/3.14 on Windows and Linux for both maintained branches; Node is needed only for the UI test, not production.
 
-Both `hkg-enhanced` and `ccnc-port` use the same companion files and protocol. Only the optional manager entry and disabled-by-default Params key are added to each branch. Vehicle controllers, safety, models and AGNOS are not part of this change. See [protocol and upstream maintenance](docs/PROTOCOL.md).
+Both `hkg-enhanced` and `ccnc-port` use the same companion files and protocol. Narrow hooks add the optional manager process, disabled-by-default Params key and offroad QR entries; branch-specific settings are retained. Vehicle controllers, safety, models and AGNOS are not part of this change. See [protocol and upstream maintenance](docs/PROTOCOL.md).
 
 Native pre-push checks and real-model simulator failures are recorded in [SIMULATION_2026_11_09.md](docs/SIMULATION_2026_11_09.md). All four PC UI/telemetry profiles passed; three model scenarios failed, including a failure reproduced on the pre-feature baseline. These are not physical-device driving acceptance results.
 

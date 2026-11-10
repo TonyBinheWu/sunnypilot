@@ -57,7 +57,7 @@ def create_app(data_dir, web_dir=None):
   store = Store(directory / "formosalink.sqlite3")
   github = oauth.settings(directory)
   callback = config["origin"] + "/api/v1/auth/github/callback"
-  app = FastAPI(title="FormosaLink", version="0.2.0", docs_url=None, redoc_url=None, openapi_url=None)
+  app = FastAPI(title="FormosaLink", version="0.2.1", docs_url=None, redoc_url=None, openapi_url=None)
   app.state.store = store
   limiter = Limit()
   connections = {}
@@ -81,7 +81,7 @@ def create_app(data_dir, web_dir=None):
     if request.url.path.startswith("/api/"):
       if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
         return Response(status_code=400)
-      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry"):
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status"):
         if request.headers.get("origin") != config["origin"]:
           return Response(status_code=403)
       try:
@@ -108,7 +108,7 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership"], "database_version": 2}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing"], "database_version": 2}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):
@@ -253,6 +253,26 @@ def create_app(data_dir, web_dir=None):
       return {"type": "ack", "sequence": data["sequence"]}
     except (ValueError, KeyError, TypeError, InvalidSignature) as exc:
       raise HTTPException(403, "invalid device telemetry") from exc
+
+  @app.post("/api/v1/agent/status")
+  async def agent_status(request: Request):
+    # Device-signed state only: polling never rotates the QR credential or reveals ownership.
+    rate(request, "agent-status", 1800)
+    try:
+      envelope = await request.json()
+      if not isinstance(envelope, dict) or not isinstance(envelope.get("device_id"), str):
+        raise ValueError("invalid device identifier")
+      row = store.get(envelope["device_id"])
+      if not row:
+        raise ValueError("unknown device")
+      verified = verify(envelope, row["public_key"], "status")
+      if verified["payload"]:
+        raise ValueError("unexpected status payload")
+      limiter.check("device-status:" + row["id"], 30)
+      store.consume_nonce(row["id"], verified["nonce"])
+      return {"state": row["state"]}
+    except (ValueError, KeyError, TypeError, InvalidSignature) as exc:
+      raise HTTPException(403, "invalid device authentication") from exc
 
   @app.websocket("/api/v1/agent/ws")
   async def agent_socket(socket: WebSocket):

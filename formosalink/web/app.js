@@ -1,4 +1,5 @@
-import {translations} from './i18n.js?v=0.2.0';
+import {translations} from './i18n.js?v=0.2.1';
+import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.2.1';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';
 try { language = localStorage.getItem('formosalink-language') || 'zh-TW'; } catch {}
@@ -6,10 +7,23 @@ if (!translations[language]) language = 'zh-TW';
 let account = null, githubEnabled = false;
 let authEpoch = 0;
 let signedIn = false, devices = [], lastRefresh = null, networkFailed = false, busy = false;
+let pairStorage;
+try{pairStorage=sessionStorage;}catch{}
+let pendingPair=readPending(pairStorage), qrPresented=false, pairingNotice=null;
+function consumePairingHash(){
+  if(!new URLSearchParams(location.hash.slice(1)).has('pair'))return false;
+  pendingPair=parsePairingFragment(location.hash);
+  qrPresented=false;pairingNotice=null;
+  history.replaceState(null,'',location.pathname+location.search);
+  if(pendingPair){if(!savePending(pairStorage,pendingPair))pairingNotice='qrStorageUnavailable';}
+  else{clearPending(pairStorage);pairingNotice='qrExpired';}
+  return true;
+}
+consumePairingHash();
 const t = key => translations[language][key] || key;
 const date = seconds => seconds ? new Intl.DateTimeFormat(language,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(seconds*1000)) : '—';
 
-function notify(key, error=false) { $('message').textContent=t(key); $('message').hidden=false; $('message').classList.toggle('error',error); }
+function notify(key, error=false) { $('message').textContent=t(key); $('message').dataset.key=key; $('message').hidden=false; $('message').classList.toggle('error',error); }
 async function api(path, body) {
   let response;
   try { response = await fetch('/api/v1'+path,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:body===undefined?{}:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(12000),cache:'no-store'}); }
@@ -37,12 +51,12 @@ function render() {
     const status=element('div',undefined,'device-state');status.append(element('span',hidden||m.started===null||m.started===undefined?t('unknown'):m.started?t('driving'):t('parked')),element('strong',!hidden&&m.speed_kph!==null&&m.speed_kph!==undefined?`${Math.round(m.speed_kph)} km/h`:'—'));card.append(status);
     const metrics=element('div',undefined,'metrics');metric(metrics,'cpu',hidden?null:m.cpu_temp_c,'°C');metric(metrics,'gpu',hidden?null:m.gpu_temp_c,'°C');metric(metrics,'memory',hidden?null:m.memory_percent,'%');metric(metrics,'storage',hidden?null:m.free_space_percent,'%');card.append(metrics);
     const details=element('dl',undefined,'device-details');
-    for(const [key,value] of [['version',m.software_version],['branch',m.branch],['commit',m.commit?.slice(0,12)],['thermal',hidden?null:translations[language]['thermal_'+m.thermal_status]],['sampleTime',date(device.snapshot?.sampled_at)],['fingerprint',device.fingerprint]]){details.append(element('dt',t(key)),element('dd',value||'—'));}card.append(details);
+    for(const [key,value] of [['version',m.software_version],['branch',m.branch],['commit',m.commit?.slice(0,12)],['thermal',hidden?null:translations[language]['thermal_'+m.thermal_status]],['sampleTime',date(device.snapshot?.sampled_at)]]){details.append(element('dt',t(key)),element('dd',value||'—'));}card.append(details);
     const bottom=element('div',undefined,'card-bottom');bottom.append(element('span',`${t('received')} ${date(device.last_seen)}`));
     if(device.state==='paired'){const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
   }
 }
-function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;if(!value){devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
+function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
 async function refresh(){
   if(busy)return;
   busy=true;
@@ -59,30 +73,41 @@ async function refresh(){
     if(account?.id!==auth.user?.id){devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
     account=auth.user;githubEnabled=auth.github_enabled;
     $('github-login').disabled=!githubEnabled;
-    $('github-note').textContent=t(githubEnabled?'githubReady':'githubUnavailable');
+    $('github-note').textContent=t(githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');
     $('github-link').hidden=!githubEnabled||account?.id!=='local-admin'||!!account?.github_login;
     $('account-name').textContent=account?.github_login?'GitHub · '+account.github_login:account?.id==='local-admin'?t('adminAccount'):account?.name||'';
     if(!account){session(false);return;}
     const data=await api('/devices');
     if(epoch!==authEpoch)return;
     devices=data.devices;lastRefresh=data.server_time;networkFailed=false;session(true);
-    if($('message').classList.contains('error'))$('message').hidden=true;
+    if(['networkError','serverError','transportError','expired'].includes($('message').dataset.key))$('message').hidden=true;
     render();
+    if(pendingPair&&!qrPresented){qrPresented=true;openPair();}
   }catch(e){
     if(epoch!==authEpoch)return;
     if(e.status===401){session(false);if(e.key!=='expired')notify(e.key,true);}
     else{networkFailed=true;render();notify(e.key||'serverError',true);}
   }finally{busy=false;if(epoch!==authEpoch)refresh();}
 }
-function applyLanguage(){document.documentElement.lang=language==='zh-TW'?'zh-Hant':language;$('language').value=language;document.querySelectorAll('[data-i18n]').forEach(node=>node.textContent=t(node.dataset.i18n));$('github-note').textContent=t(githubEnabled?'githubReady':'githubUnavailable');if(signedIn)render();$('message').hidden=true;}
+function applyLanguage(){document.documentElement.lang=language==='zh-TW'?'zh-Hant':language;$('language').value=language;document.querySelectorAll('[data-i18n]').forEach(node=>node.textContent=t(node.dataset.i18n));$('github-note').textContent=t(githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');if(account?.id==='local-admin'&&!account.github_login)$('account-name').textContent=t('adminAccount');if(signedIn)render();$('message').hidden=true;}
 $('language').addEventListener('change',()=>{language=$('language').value;try{localStorage.setItem('formosalink-language',language);}catch{}applyLanguage();});
-$('login-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;try{await api('/login',{password:$('password').value});authEpoch++;$('password').value='';$('message').hidden=true;await refresh();}catch(e){notify(e.key||'serverError',true);}finally{button.disabled=false;}});
 $('logout').addEventListener('click',async()=>{try{await api('/logout',{});authEpoch++;session(false);$('message').hidden=true;}catch(e){notify(e.key||'serverError',true);}});
-function openPair(){$('pair-dialog').showModal();$('pair-code').focus();}
-$('open-pair').addEventListener('click',openPair);$('empty-pair').addEventListener('click',openPair);$('close-pair').addEventListener('click',()=>$('pair-dialog').close());
-$('pair-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;try{await api('/pair',{code:$('pair-code').value,fingerprint:$('fingerprint').value,name:$('device-name').value});$('pair-dialog').close();$('pair-code').value='';$('fingerprint').value='';notify('paired');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{button.disabled=false;}});
-$('refresh').addEventListener('click',refresh);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&signedIn)refresh();});
+function openPair(){
+  pendingPair=validatePairing(pendingPair);
+  if(!pendingPair)clearPending(pairStorage);
+  $('pair-scan-help').hidden=!!pendingPair;
+  $('pair-details').hidden=!pendingPair;
+  $('confirm-pair').hidden=!pendingPair;
+  $('device-name').disabled=!pendingPair;
+  if(!$('pair-dialog').open)$('pair-dialog').showModal();
+  (pendingPair?$('confirm-pair'):$('close-pair')).focus();
+}
+$('open-pair').addEventListener('click',openPair);$('empty-pair').addEventListener('click',openPair);$('sidebar-pair').addEventListener('click',openPair);$('close-pair').addEventListener('click',()=>$('pair-dialog').close());
+$('pair-form').addEventListener('submit',async event=>{event.preventDefault();pendingPair=validatePairing(pendingPair);if(!pendingPair){clearPending(pairStorage);openPair();notify('qrExpired',true);return;}const button=event.submitter;button.disabled=true;try{await api('/pair',{code:pendingPair.code,fingerprint:pendingPair.fingerprint,name:$('device-name').value});clearPending(pairStorage);pendingPair=null;$('pair-dialog').close();notify('paired');await refresh();}catch(e){if(e.status===400){clearPending(pairStorage);pendingPair=null;openPair();}if(e.status===401)session(false);notify(e.key||'serverError',true);}finally{button.disabled=false;}});
+function expirePairing(){if(pendingPair&&!validatePairing(pendingPair)){pendingPair=null;clearPending(pairStorage);if($('pair-dialog').open)openPair();$('github-note').textContent=t(githubEnabled?'githubReady':'githubUnavailable');notify('qrExpired',true);}}
+$('refresh').addEventListener('click',refresh);document.addEventListener('visibilitychange',()=>{if(!document.hidden){expirePairing();if(signedIn)refresh();}});
 $('github-login').addEventListener('click',()=>{location.assign('/api/v1/auth/github/start');});
 $('github-link').addEventListener('click',async()=>{if(!confirm(t('githubConfirm')))return;try{const result=await api('/auth/github/link',{});const target=new URL(result.url);if(target.origin!=='https://github.com')throw {};location.assign(target.href);}catch(e){notify(e.key||'serverError',true);}});
-applyLanguage();if(new URLSearchParams(location.search).has('auth')){notify('oauthFailed',true);history.replaceState(null,'','/');}refresh();setInterval(()=>{if(signedIn&&!document.hidden)refresh();},5000);
+window.addEventListener('hashchange',()=>{if(consumePairingHash()){applyLanguage();if(signedIn){qrPresented=true;openPair();}if(pairingNotice)notify(pairingNotice,true);}});
+applyLanguage();if(pairingNotice)notify(pairingNotice,true);if(new URLSearchParams(location.search).has('auth')){notify('oauthFailed',true);history.replaceState(null,'','/');}refresh();setInterval(()=>{if(!document.hidden){expirePairing();if(signedIn)refresh();}},5000);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
