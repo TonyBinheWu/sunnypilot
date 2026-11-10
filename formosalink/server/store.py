@@ -3,6 +3,8 @@ import json
 import secrets
 import sqlite3
 import time
+import uuid
+from pathlib import Path
 from contextlib import contextmanager
 
 
@@ -15,8 +17,14 @@ class Store:
     self.path = str(path)
     with self.connection() as db:
       version = db.execute("PRAGMA user_version").fetchone()[0]
-      if version not in (0, 1):
+      if version not in (0, 1, 2):
         raise ValueError("unsupported FormosaLink database version; explicit migration required")
+      if version == 1:
+        backup = Path(self.path + ".before-v2.sqlite3")
+        if backup.exists():
+          raise ValueError("migration backup already exists; inspect before retrying")
+        with sqlite3.connect(backup) as destination:
+          db.backup(destination)
       db.executescript("""
         CREATE TABLE IF NOT EXISTS devices (
           id TEXT PRIMARY KEY, public_key TEXT NOT NULL, fingerprint TEXT NOT NULL,
@@ -25,8 +33,18 @@ class Store:
         CREATE TABLE IF NOT EXISTS nonces (nonce TEXT PRIMARY KEY, expires REAL NOT NULL);
         CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, expires REAL NOT NULL);
         CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY, at REAL NOT NULL, action TEXT NOT NULL, device_id TEXT);
-        PRAGMA user_version=1;
       """)
+      if version < 2:
+        db.execute("BEGIN IMMEDIATE")
+        db.execute("CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT NOT NULL)")
+        db.execute("INSERT INTO users VALUES('local-admin','FormosaLink administrator')")
+        db.execute("ALTER TABLE devices ADD COLUMN owner_id TEXT REFERENCES users(id)")
+        db.execute("UPDATE devices SET owner_id='local-admin' WHERE state!='pending'")
+        db.execute("ALTER TABLE sessions ADD COLUMN user_id TEXT NOT NULL DEFAULT 'local-admin' REFERENCES users(id)")
+        db.execute("CREATE TABLE identities (github_id TEXT PRIMARY KEY, user_id TEXT NOT NULL UNIQUE REFERENCES users(id), login TEXT NOT NULL)")
+        db.execute("CREATE TABLE oauth_states (state_hash TEXT PRIMARY KEY, browser_hash TEXT NOT NULL, verifier TEXT NOT NULL, expires REAL NOT NULL, link_session TEXT)")
+        db.execute("CREATE INDEX device_owner ON devices(owner_id)")
+        db.execute("PRAGMA user_version=2")
 
   @contextmanager
   def connection(self):
@@ -76,20 +94,20 @@ class Store:
       self.audit(db, "enrollment_requested", device_id)
     return {"state": "pending", "pair_code": code, "expires_at": now + 600, "fingerprint": fingerprint}
 
-  def pair(self, code, fingerprint, name):
+  def pair(self, code, fingerprint, name, user_id="local-admin"):
     with self.connection() as db:
       db.execute("BEGIN IMMEDIATE")
       row = db.execute("SELECT * FROM devices WHERE pair_hash=? AND state='pending' AND pair_expires>?",
                        (digest(code.replace("-", "").replace(" ", "").upper()), time.time())).fetchone()
       if not row or not secrets.compare_digest(row["fingerprint"], fingerprint.lower()):
         raise ValueError("invalid/expired code or fingerprint mismatch")
-      db.execute("UPDATE devices SET state='paired',name=?,pair_hash=NULL,pair_expires=NULL WHERE id=?", (name, row["id"]))
+      db.execute("UPDATE devices SET state='paired',name=?,owner_id=?,pair_hash=NULL,pair_expires=NULL WHERE id=?", (name, user_id, row["id"]))
       self.audit(db, "device_paired", row["id"])
       return row["id"]
 
-  def revoke(self, device_id):
+  def revoke(self, device_id, user_id="local-admin"):
     with self.connection() as db:
-      result = db.execute("UPDATE devices SET state='revoked',snapshot=NULL,pair_hash=NULL WHERE id=? AND state='paired'", (device_id,))
+      result = db.execute("UPDATE devices SET state='revoked',snapshot=NULL,pair_hash=NULL WHERE id=? AND owner_id=? AND state='paired'", (device_id, user_id))
       if not result.rowcount:
         raise ValueError("device not found")
       self.audit(db, "device_revoked", device_id)
@@ -100,24 +118,61 @@ class Store:
                           (json.dumps(snapshot, allow_nan=False), time.time(), device_id))
       return bool(result.rowcount)
 
-  def devices(self):
+  def devices(self, user_id="local-admin"):
     with self.connection() as db:
-      rows = db.execute("SELECT id,name,fingerprint,state,last_seen,snapshot FROM devices WHERE state!='pending' ORDER BY created_at").fetchall()
+      rows = db.execute("SELECT id,name,fingerprint,state,last_seen,snapshot FROM devices WHERE state!='pending' AND owner_id=? ORDER BY created_at", (user_id,)).fetchall()
       return [{**dict(row), "snapshot": json.loads(row["snapshot"]) if row["snapshot"] else None} for row in rows]
 
-  def session(self):
+  def session(self, user_id="local-admin"):
     token = secrets.token_urlsafe(32)
     with self.connection() as db:
       db.execute("DELETE FROM sessions WHERE expires < ?", (time.time(),))
-      db.execute("INSERT INTO sessions VALUES(?,?)", (digest(token), time.time() + 43200))
+      db.execute("INSERT INTO sessions(token_hash,expires,user_id) VALUES(?,?,?)", (digest(token), time.time() + 43200, user_id))
       self.audit(db, "owner_login")
     return token
 
   def authenticated(self, token):
+    return self.principal(token) is not None
+
+  def principal(self, token):
     if not token or len(token) > 128:
-      return False
+      return None
     with self.connection() as db:
-      return db.execute("SELECT 1 FROM sessions WHERE token_hash=? AND expires>?", (digest(token), time.time())).fetchone() is not None
+      row = db.execute("SELECT u.id,u.name,i.login AS github_login FROM sessions s JOIN users u ON s.user_id=u.id LEFT JOIN identities i ON i.user_id=u.id WHERE s.token_hash=? AND s.expires>?", (digest(token), time.time())).fetchone()
+      return dict(row) if row else None
+
+  def oauth_start(self, state, browser, verifier, link_session=None):
+    with self.connection() as db:
+      db.execute("DELETE FROM oauth_states WHERE expires<?", (time.time(),))
+      db.execute("INSERT INTO oauth_states VALUES(?,?,?,?,?)", (digest(state), digest(browser), verifier, time.time()+600, digest(link_session) if link_session else None))
+
+  def oauth_consume(self, state, browser):
+    with self.connection() as db:
+      db.execute("BEGIN IMMEDIATE")
+      row = db.execute("SELECT * FROM oauth_states WHERE state_hash=?", (digest(state),)).fetchone()
+      db.execute("DELETE FROM oauth_states WHERE state_hash=?", (digest(state),))
+      if not row or row["expires"] < time.time() or not secrets.compare_digest(row["browser_hash"], digest(browser)):
+        return None
+      return dict(row)
+
+  def github_user(self, github_id, login, link_session=None):
+    with self.connection() as db:
+      db.execute("BEGIN IMMEDIATE")
+      identity = db.execute("SELECT user_id FROM identities WHERE github_id=?", (github_id,)).fetchone()
+      if link_session:
+        admin = db.execute("SELECT 1 FROM sessions WHERE token_hash=? AND user_id='local-admin' AND expires>?", (link_session, time.time())).fetchone()
+        if not admin or (identity and identity["user_id"] != "local-admin"):
+          raise ValueError("identity cannot be linked")
+        user_id = "local-admin"
+        existing = db.execute("SELECT github_id FROM identities WHERE user_id=?", (user_id,)).fetchone()
+        if existing and existing["github_id"] != github_id:
+          raise ValueError("administrator already linked")
+      else:
+        user_id = identity["user_id"] if identity else str(uuid.uuid4())
+      db.execute("INSERT INTO users VALUES(?,?) ON CONFLICT(id) DO NOTHING", (user_id, login))
+      db.execute("INSERT INTO identities VALUES(?,?,?) ON CONFLICT(github_id) DO UPDATE SET login=excluded.login", (github_id, user_id, login))
+      self.audit(db, "github_identity_verified")
+      return user_id
 
   def logout(self, token):
     with self.connection() as db:

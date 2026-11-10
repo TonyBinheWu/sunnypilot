@@ -9,11 +9,14 @@ from urllib.parse import urlparse
 from cryptography.exceptions import InvalidSignature
 from fastapi import FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
+import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
 from openpilot.sunnypilot.formosalink.protocol import MAX_FRAME_BYTES, ONLINE_SECONDS, VERSION, fingerprint, validate_snapshot, verify
 from formosalink.server.config import load, password_hash
 from formosalink.server.store import Store
+from formosalink.server import oauth
 
 COOKIE = "formosalink_session"
 
@@ -52,7 +55,9 @@ class Limit:
 def create_app(data_dir, web_dir=None):
   directory, config = load(data_dir)
   store = Store(directory / "formosalink.sqlite3")
-  app = FastAPI(title="FormosaLink", version="0.1.0", docs_url=None, redoc_url=None, openapi_url=None)
+  github = oauth.settings(directory)
+  callback = config["origin"] + "/api/v1/auth/github/callback"
+  app = FastAPI(title="FormosaLink", version="0.2.0", docs_url=None, redoc_url=None, openapi_url=None)
   app.state.store = store
   limiter = Limit()
   connections = {}
@@ -60,8 +65,10 @@ def create_app(data_dir, web_dir=None):
   secure = config["origin"].startswith("https:")
 
   def owner(request):
-    if not store.authenticated(request.cookies.get(COOKIE)):
+    user = store.principal(request.cookies.get(COOKIE))
+    if not user:
       raise HTTPException(401, "sign in required")
+    return user
 
   def rate(request, kind, maximum):
     # Do not trust client-supplied forwarding headers. IIS forwards to loopback;
@@ -101,7 +108,60 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry"]}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership"], "database_version": 2}
+
+  @app.get("/api/v1/auth/me")
+  def me(request: Request):
+    return {"user": store.principal(request.cookies.get(COOKIE)), "github_enabled": github is not None}
+
+  def begin_oauth(request, link=False):
+    rate(request, "oauth", 12)
+    if not github:
+      raise HTTPException(503, "GitHub OAuth is not configured")
+    link_session = None
+    if link:
+      if owner(request)["id"] != "local-admin":
+        raise HTTPException(403, "administrator required")
+      link_session = request.cookies.get(COOKIE)
+    state, browser, verifier = (secrets.token_urlsafe(32) for _ in range(3))
+    store.oauth_start(state, browser, verifier, link_session)
+    response = RedirectResponse(oauth.authorize_url(github, callback, state, verifier), status_code=303)
+    response.set_cookie("formosalink_oauth", browser, httponly=True, secure=secure, samesite="lax", max_age=600, path="/api/v1/auth/github/callback")
+    return response
+
+  @app.get("/api/v1/auth/github/start")
+  def github_start(request: Request):
+    return begin_oauth(request)
+
+  @app.post("/api/v1/auth/github/link")
+  def github_link(request: Request):
+    # Return a URL instead of following a cross-origin redirect in fetch.
+    response = begin_oauth(request, link=True)
+    result = Response(content=json.dumps({"url": response.headers["location"]}), media_type="application/json")
+    result.headers["set-cookie"] = response.headers["set-cookie"]
+    return result
+
+  @app.get("/api/v1/auth/github/callback")
+  async def github_callback(request: Request):
+    rate(request, "oauth-callback", 20)
+    state = request.query_params.get("state", "")
+    browser = request.cookies.get("formosalink_oauth", "")
+    flow = store.oauth_consume(state, browser) if len(state) <= 128 and len(browser) <= 128 else None
+    response = RedirectResponse("/?auth=failed", status_code=303)
+    response.delete_cookie("formosalink_oauth", path="/api/v1/auth/github/callback")
+    code = request.query_params.get("code", "")
+    if not github or not flow or not code or len(code) > 512 or "error" in request.query_params:
+      return response
+    try:
+      github_id, login_name = await oauth.exchange(github, callback, code, flow["verifier"])
+      user_id = store.github_user(github_id, login_name, flow["link_session"])
+    except (httpx.HTTPError, ValueError, KeyError, TypeError):
+      return response
+    # Replace the browser's old session after verified identity, never merge accounts.
+    store.logout(request.cookies.get(COOKIE))
+    response.headers["location"] = "/"
+    response.set_cookie(COOKIE, store.session(user_id), httponly=True, secure=secure, samesite="strict", max_age=43200, path="/api")
+    return response
 
   @app.post("/api/v1/login")
   def login(body: Login, request: Request, response: Response):
@@ -121,8 +181,8 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/devices")
   def devices(request: Request):
-    owner(request)
-    rows = store.devices()
+    user = owner(request)
+    rows = store.devices(user["id"])
     now = time.time()
     for row in rows:
       active = row["id"] in connections or now - http_channels.get(row["id"], 0) <= ONLINE_SECONDS
@@ -134,19 +194,19 @@ def create_app(data_dir, web_dir=None):
 
   @app.post("/api/v1/pair")
   def pair(body: Pair, request: Request):
-    owner(request)
+    user = owner(request)
     rate(request, "pair", 10)
     try:
-      device_id = store.pair(body.code, body.fingerprint, body.name.strip() or "FormosaPilot")
+      device_id = store.pair(body.code, body.fingerprint, body.name.strip() or "FormosaPilot", user["id"])
     except ValueError as exc:
       raise HTTPException(400, str(exc)) from exc
     return {"device_id": device_id}
 
   @app.post("/api/v1/devices/{device_id}/revoke")
   async def revoke(device_id: str, request: Request):
-    owner(request)
+    user = owner(request)
     try:
-      store.revoke(device_id)
+      store.revoke(device_id, user["id"])
     except ValueError as exc:
       raise HTTPException(404, str(exc)) from exc
     socket = connections.pop(device_id, None)

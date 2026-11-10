@@ -1,26 +1,50 @@
 # 多用戶與 GitHub 登入 / Multi-user access / 複数ユーザー
 
-## 目前可用方式
+## 已實作：GitHub 登入與用戶隔離
 
-0.1 是單一管理者、自架實例。每位使用者可各自部署一套，設定自己的密碼與裝置；不能共用本平台的管理者密碼。多人共用 `formosapilot.dinglu-t.com` 前，必須完成下列 GitHub 登入及權限改造。這份文件是下一階段設計，不代表目前已開放 GitHub 登入或公開註冊。
+新版使用 GitHub 數字 ID 識別用戶，username 僅供顯示。OAuth scope 為空，只取公開身分，不索取儲存庫權限。Token 僅用於當次 `/user` 驗證，不保存。配對會設定登入者為擁有者；清單、監看及撤銷均由後端限制為自己的裝置，管理者也沒有跨用戶讀取特權。裝置繼續使用獨立 Ed25519 身分回報。
 
-## 共用平台的必要改造
+### IIS 啟用
 
-1. GitHub OAuth 登入：建立專用 OAuth App；預定 callback 為 `https://formosapilot.dinglu-t.com/api/v1/auth/github/callback`。Client secret 僅保存在伺服器私有設定，不進 Git、網站目錄或前端。使用一次性 state、明確的重新導向白名單與短效登入流程。
-2. 使用穩定的 GitHub provider user ID 識別帳號，不能用可更名的 username 作為唯一身分。只要求登入必要權限，不要求讀取私人儲存庫或 SSH 權限。
-3. 新增 users、sessions.user_id、devices.owner_id；所有裝置清單、回報讀取、配對、撤銷與日後設定 API 都在後端驗證擁有者，不能只靠前端隱藏其他裝置。
-4. 保留獨立的裝置 Ed25519 身分與本機提出的配對碼。登入 GitHub 不等於取得裝置權限；使用者必須親自配對，裝置才屬於該帳號。
-5. 現有管理者及裝置需明確遷移：使用原管理者驗證完成認領；禁止讓第一個 GitHub 登入者自動取得既有裝置。擁有者移轉與分享另建明確流程及稽核。
-6. 登入憑證、OAuth token、device key 的用途分離。GitHub／Logto 登入、裝置認證與 GitHub SSH keys 是不同權限系統。
-7. 開放註冊前，驗證兩個真實不同帳號無法越權讀取、配對或撤銷對方裝置，並驗證 CSRF、OAuth state 重用、登出、撤權與遷移回復。
-8. 超出單程序部署時，將目前記憶體內的連線狀態移到共用訊息／狀態層，並規劃 PostgreSQL 遷移；不可直接增加 workers 後假設狀態與路由會自動一致。
+1. 在 [GitHub OAuth Apps](https://github.com/settings/developers) 建立 **FormosaLink**。Homepage URL：`https://formosapilot.dinglu-t.com/`。Authorization callback URL：`https://formosapilot.dinglu-t.com/api/v1/auth/github/callback`。不需啟用 Device Flow。
+2. 在 IIS 主機以系統管理員開啟 PowerShell 執行：
 
-sunnylink 公開前端使用 Logto SSO。可選擇自架 Logto 串接 GitHub，或在 FormosaLink 後端直接串接 GitHub OAuth；兩種方式都需要上述擁有權隔離，換一顆登入按鈕並不足夠。參考：[官方 sunnylink 前端](https://github.com/sunnypilot/sunnylink-frontend)。
+   ```powershell
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs\FormosaPilot\App_Data\setup-server.ps1" -InstallPython -ConfigureGitHub
+   ```
 
-## English
+3. 在主機輸入 Client ID 與隱藏輸入的 Client Secret，請勿貼到聊天。資料存於私有 `C:\ProgramData\FormosaLink\github.json`，原密碼不重設。成功後 `/api/v1/auth/me` 的 `github_enabled` 為 true，health 有 `device-ownership` 及 `database_version: 2`。僅複製網站檔案不會更新執行中的私有後端。
+4. **先用原管理者密碼登入**，再按「將 GitHub 連結至現有管理者」，確認授權的 GitHub 帳號，便可沿用原裝置。一般 GitHub 登入會建立空白獨立帳號，不會自動合併。已屬於另一用戶的 GitHub 身分不能被管理者連結接管。
+5. 其他用戶以 GitHub 登入，再於裝置本機提出配對，填入配對碼與指紋。未提供裝置共用、轉移或遠端控制。
 
-Release 0.1 is a private, single-owner instance. Other users can deploy their own instance with separate credentials. Do not share the administrator password. Central hosting requires GitHub OAuth, stable provider IDs, owner-scoped sessions and device authorization on every API. Device keys and explicit pairing remain independent from GitHub login. Migrate existing ownership only after verifying the current administrator; never grant existing devices to the first OAuth user. Keep secrets outside the web root/repository. Test cross-account isolation before enabling public signup. Multiple workers also require shared connection/state routing and an explicit database migration. GitHub login is not implemented by this design document.
+### 遷移與回復
 
-## 日本語
+第一次啟動先備份至私有資料目錄的 `formosalink.sqlite3.before-v2.sqlite3`，再於交易內將 SQLite v1 升級為 v2。原配對／撤銷裝置及登入階段歸屬 `local-admin`；ID、金鑰、名稱與回報保留。待配對裝置在配對時才設定擁有者。第一位 GitHub 用戶不會取得既有裝置。
 
-0.1 は単一管理者のプライベートな自架環境です。他の利用者は各自の環境とパスワードで運用できます。管理者パスワードは共有しないでください。共用サイトには GitHub OAuth、変更されない provider ID、ユーザー別セッション、すべての API での所有者チェックが必要です。デバイスの鍵と本体でのペアリングは GitHub ログインと分離します。既存デバイスは現在の管理者を確認してから移行し、最初の OAuth 利用者に自動で渡してはいけません。秘密情報は Web ルートと Git の外に保存します。公開登録前に別アカウント間の権限分離を検証します。複数ワーカーには共通の状態管理と DB 移行も必要です。この文書だけで GitHub ログインが有効になることはありません。
+回復前須停止排程及確認服務 Python 已結束，另存目前 v2 資料庫，再還原備份與對應舊程式；回復會失去升級後新增的帳號與配對。不要在服務執行中覆蓋 SQLite。若 v1 與升級備份同時存在，程式會停止要求人工檢查，避免覆蓋備份。
+
+OAuth 使用 10 分鐘有效、一次性且綁定瀏覽器的 state 與 S256 PKCE。管理者連結另綁定開始時的有效管理者 session，登出即使連結無效。登入 cookie 為 HttpOnly/Secure/SameSite=Strict；OAuth cookie 為 Lax，限定 callback 路徑。變更 API 驗證 Origin。後端關閉 access log；請在 IIS Logging / Select Fields 取消 `URI Query (cs-uri-query)`，CDN／代理也應遮罩查詢參數，避免記錄短效 OAuth code。勿開啟 HTTP debug log。
+
+單一 Python worker 限制維持。增加 worker 前須導入共用連線狀態及路由。已登入用戶、裝置回報與原管理者密碼登入不需持續連線至 GitHub。
+
+### English
+
+GitHub numeric IDs map to separate users; mutable usernames are display only. Empty scope requests public identity without repository access. Tokens are used once and never persisted. Pairing assigns the authenticated owner; all listing, monitoring and revocation are owner scoped. Administrators do not get cross-user access.
+
+Create the FormosaLink OAuth App with the homepage and exact callback above. Run the command on the IIS host as administrator, adding `-Language en` for English prompts. Enter Client ID and hidden Client Secret locally; credentials stay outside the web root. The original password is retained. Sign in with that password and explicitly link GitHub to the existing administrator before using ordinary GitHub login. Other GitHub users start with no devices. Existing separate accounts are never automatically merged.
+
+Schema v1 is backed up to `formosalink.sqlite3.before-v2.sqlite3` before transactional migration to v2. Existing devices, keys and sessions remain with `local-admin`. Stop the service before restoring the backup and matching old code; preserve the current DB first. Restoration loses post-migration changes. Existing migration backups require inspection before retrying a v1 migration.
+
+State is browser-bound, one-use and expires in ten minutes; S256 PKCE is required. Administrator linking requires the initiating session to remain valid. Backend access logs are disabled; disable IIS `cs-uri-query` and redact proxy/CDN queries. Keep one worker until shared device connection routing is available. Existing sessions, device ingestion and password fallback do not require GitHub availability.
+
+### 日本語
+
+GitHub の数値 ID ごとに独立したユーザーを作成し、ユーザー名は表示専用です。scope は空で、公開情報のみ取得し、トークンを保存しません。登録・一覧・監視・解除はサーバーで所有者を確認します。管理者にも他ユーザーのデバイスは表示しません。
+
+上記の Homepage と正確な callback で FormosaLink OAuth App を作成します。IIS ホストで上記コマンドに `-Language ja` を加えて実行し、Client ID と非表示の Client Secret を本体で入力してください。設定は Web ルート外に保存し、元のパスワードは維持します。まず元のパスワードでログインし、既存管理者に GitHub を明示的に連携してください。通常の GitHub ログインは空の独立アカウントを作成し、自動統合しません。
+
+v1 は `formosalink.sqlite3.before-v2.sqlite3` にバックアップ後、トランザクションで v2 に移行します。既存デバイス・鍵・セッションは `local-admin` に保持します。復元前にサービスを停止し、現在の DB を保存し、バックアップと対応する旧コードを戻してください。移行後の変更は失われます。v1 と既存バックアップがある場合は手動確認が必要です。
+
+OAuth はブラウザーに結び付けた一回限りの state、10 分の期限、S256 PKCE を使用します。管理者連携は開始時の有効な session が必要です。IIS の `cs-uri-query` を無効にし、CDN／プロキシもクエリーを記録しないよう設定してください。共通接続管理を実装するまでは単一ワーカーです。既存セッション・デバイス通信・パスワードログインは GitHub が停止しても利用できます。
+
+Reference: [GitHub OAuth web application flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps).

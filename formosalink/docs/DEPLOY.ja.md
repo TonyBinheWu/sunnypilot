@@ -1,5 +1,7 @@
 # FormosaLink：IIS / Python 導入手順
 
+GitHub OAuth / [MULTI_USER.md](MULTI_USER.md)
+
 URL は `https://formosapilot.dinglu-t.com`、配置先は `\\192.168.20.145\htdocs\FormosaPilot` です。専用 IIS サイトのルートで運用します。仮想サブディレクトリには対応しません。SMB はファイルの配置用であり、サーバー側の処理を実行する機能ではありません。
 
 スクリプトが無効の場合は、今回のプロセスだけ許可します：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs\FormosaPilot\App_Data\setup-server.ps1" -Language ja`。既存 Python が未対応の場合は `-InstallPython` を追加します。SHA-256 と PSF 署名を検証した公式 Python 3.14.10 NuGet 版を Web ルート外へ配置し、PATH、既存 Python、ランチャー登録、恒久的な実行ポリシーは変更しません。

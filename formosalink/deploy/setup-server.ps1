@@ -3,6 +3,7 @@
   [string]$Origin = 'https://formosapilot.dinglu-t.com',
   [string]$Python = '',
   [switch]$InstallPython,
+  [switch]$ConfigureGitHub,
   [ValidateSet('zh-TW','en','ja')][string]$Language = 'zh-TW',
   [switch]$CheckOnly
 )
@@ -108,6 +109,10 @@ try {
     & $pythonExe -m formosalink.server.config --data-dir $dataRoot --origin $Origin --lang $Language
     if ($LASTEXITCODE -ne 0) { throw 'Owner initialization did not complete.' }
   }
+  if ($ConfigureGitHub) {
+    & $pythonExe -m formosalink.server.oauth --data-dir $dataRoot --lang $Language
+    if ($LASTEXITCODE -ne 0) { throw 'GitHub OAuth configuration failed.' }
+  }
   & $pythonExe -c "import sys; from formosalink.server.config import load; assert load(sys.argv[1])[1]['origin'] == sys.argv[2].rstrip('/')" $dataRoot $Origin
   if ($LASTEXITCODE -ne 0) { throw 'Existing server origin differs; refusing to replace credentials.' }
 }
@@ -121,7 +126,7 @@ $hostHeader = ([Uri]$Origin).Authority
 for ($attempt=0; $attempt -lt 20; $attempt++) {
   try {
     $health = Invoke-RestMethod -Uri 'http://127.0.0.1:8765/api/v1/health' -Headers @{Host=$hostHeader} -TimeoutSec 2
-    if ($health.service -eq 'FormosaLink' -and $health.features -contains 'signed-https-telemetry') { Write-Output $text.ready; return }
+    if ($health.service -eq 'FormosaLink' -and $health.features -contains 'device-ownership' -and $health.database_version -eq 2) { Write-Output $text.ready; return }
   } catch { }
   Start-Sleep -Seconds 1
 }

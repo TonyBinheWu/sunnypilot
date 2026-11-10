@@ -1,5 +1,7 @@
 # FormosaLink: IIS / Python deployment
 
+GitHub OAuth / [MULTI_USER.md](MULTI_USER.md)
+
 Origin: `https://formosapilot.dinglu-t.com`. File destination: `\\192.168.20.145\htdocs\FormosaPilot`.
 Use a dedicated IIS site at the origin root, not a virtual subdirectory. SMB access uploads files; it does not execute server setup.
 
