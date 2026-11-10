@@ -77,6 +77,94 @@ if ($LASTEXITCODE -ne 0) { throw 'Virtual environment creation failed.' }
 $pythonExe = Join-Path $venvRoot 'Scripts\python.exe'
 & $pythonExe -m pip install --disable-pip-version-check -r (Join-Path $source 'formosalink\requirements.txt')
 if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
+function Read-FormosaSecret {
+  param([string]$Language)
+  Add-Type -AssemblyName System.Windows.Forms
+  Add-Type -AssemblyName System.Drawing
+  $labels = @{
+    'zh-TW' = @('請先在 GitHub 複製完整 Client Secret，再按「貼上 Secret」。','貼上 Secret','確認','取消','已輸入字元：')
+    'en' = @('Copy the full Client Secret from GitHub, then click Paste Secret.','Paste Secret','Confirm','Cancel','Characters entered: ')
+    'ja' = @('GitHub で完全な Client Secret をコピーし、貼り付けボタンを押してください。','Secret を貼り付け','確認','キャンセル','入力文字数：')
+  }
+  $words = $labels[$Language]
+  $form = New-Object Windows.Forms.Form
+  $form.Text = 'FormosaLink - GitHub Client Secret'
+  $form.ClientSize = New-Object Drawing.Size(540,210)
+  $form.StartPosition = 'CenterScreen'
+  $form.FormBorderStyle = 'FixedDialog'
+  $form.MaximizeBox = $false
+  $form.MinimizeBox = $false
+  $form.TopMost = $true
+  $description = New-Object Windows.Forms.Label
+  $description.Text = $words[0]
+  $description.Location = New-Object Drawing.Point(16,16)
+  $description.Size = New-Object Drawing.Size(505,42)
+  $secretBox = New-Object Windows.Forms.TextBox
+  $secretBox.Location = New-Object Drawing.Point(16,68)
+  $secretBox.Size = New-Object Drawing.Size(505,28)
+  $secretBox.UseSystemPasswordChar = $true
+  $secretBox.ShortcutsEnabled = $true
+  $secretBox.MaxLength = 512
+  $status = New-Object Windows.Forms.Label
+  $status.Location = New-Object Drawing.Point(16,106)
+  $status.Size = New-Object Drawing.Size(505,25)
+  $status.Text = $words[4] + '0'
+  $pasteButton = New-Object Windows.Forms.Button
+  $pasteButton.Text = $words[1]
+  $pasteButton.Location = New-Object Drawing.Point(16,155)
+  $pasteButton.Size = New-Object Drawing.Size(160,36)
+  $pasteButton.Add_Click({
+    if ([Windows.Forms.Clipboard]::ContainsText()) { $secretBox.Text = [Windows.Forms.Clipboard]::GetText().Trim(); $secretBox.Focus() }
+  }.GetNewClosure())
+  $confirmButton = New-Object Windows.Forms.Button
+  $confirmButton.Text = $words[2]
+  $confirmButton.Location = New-Object Drawing.Point(305,155)
+  $confirmButton.Size = New-Object Drawing.Size(100,36)
+  $confirmButton.DialogResult = [Windows.Forms.DialogResult]::OK
+  $confirmButton.Enabled = $false
+  $secretBox.Add_TextChanged({ $status.Text = $words[4] + $secretBox.TextLength; $confirmButton.Enabled = $secretBox.TextLength -ge 20 }.GetNewClosure())
+  $cancelButton = New-Object Windows.Forms.Button
+  $cancelButton.Text = $words[3]
+  $cancelButton.Location = New-Object Drawing.Point(420,155)
+  $cancelButton.Size = New-Object Drawing.Size(100,36)
+  $cancelButton.DialogResult = [Windows.Forms.DialogResult]::Cancel
+  $form.AcceptButton = $confirmButton
+  $form.CancelButton = $cancelButton
+  $form.Controls.AddRange(@($description,$secretBox,$status,$pasteButton,$confirmButton,$cancelButton))
+  try {
+    if ($form.ShowDialog() -ne [Windows.Forms.DialogResult]::OK) { throw 'OAuth configuration cancelled; backend remains available.' }
+    return ConvertTo-SecureString -String $secretBox.Text.Trim() -AsPlainText -Force
+  }
+  finally { $secretBox.Clear(); $form.Dispose() }
+}
+# Use PowerShell's native secure input: Python msvcrt/getpass can lose pasted text on older consoles.
+# Configure before stopping the service, and transmit only through stdin (not arguments or temporary files).
+if ($ConfigureGitHub) {
+  Push-Location -LiteralPath $source
+  try {
+    $githubClientId = Read-Host 'GitHub Client ID'
+    $githubSecureSecret = Read-FormosaSecret -Language $Language
+    $githubBstr = [IntPtr]::Zero
+    try {
+      $githubBstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($githubSecureSecret)
+      $githubSecretPlain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($githubBstr)
+      $githubPayload = @{client_id=$githubClientId.Trim();client_secret=$githubSecretPlain.Trim()} | ConvertTo-Json -Compress
+      $githubPayload | & $pythonExe -m formosalink.server.oauth --data-dir $dataRoot --lang $Language --stdin
+      $githubExitCode = $LASTEXITCODE
+    }
+    finally {
+      if ($githubBstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($githubBstr) }
+      $githubSecretPlain = $null
+      $githubPayload = $null
+      if ($githubSecureSecret) { $githubSecureSecret.Dispose() }
+    }
+    if ($githubExitCode -ne 0) {
+      if ($existing -and $existing.State -ne 'Running') { Start-ScheduledTask -TaskName $taskName }
+      throw 'GitHub OAuth configuration failed; existing backend preserved. Existing credentials are unchanged.'
+    }
+  }
+  finally { Pop-Location }
+}
 if ($existing) { Stop-ScheduledTask -TaskName $taskName; Start-Sleep -Seconds 2 }
 # A venv launcher may leave its child interpreter alive after a task stop.
 # Only terminate listeners whose command and executable identify this service.
@@ -108,10 +196,6 @@ try {
     Write-Output $text.initialize
     & $pythonExe -m formosalink.server.config --data-dir $dataRoot --origin $Origin --lang $Language
     if ($LASTEXITCODE -ne 0) { throw 'Owner initialization did not complete.' }
-  }
-  if ($ConfigureGitHub) {
-    & $pythonExe -m formosalink.server.oauth --data-dir $dataRoot --lang $Language
-    if ($LASTEXITCODE -ne 0) { throw 'GitHub OAuth configuration failed.' }
   }
   & $pythonExe -c "import sys; from formosalink.server.config import load; assert load(sys.argv[1])[1]['origin'] == sys.argv[2].rstrip('/')" $dataRoot $Origin
   if ($LASTEXITCODE -ne 0) { throw 'Existing server origin differs; refusing to replace credentials.' }

@@ -28,3 +28,5 @@ jobs:
       - run: node --test formosalink/tests/web.test.mjs
       - if: runner.os == 'Windows'
         run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File formosalink/tests/check_setup.ps1 -ScriptPath "${{ github.workspace }}/formosalink/deploy/setup-server.ps1"
+      - if: runner.os == 'Windows'
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File formosalink/tests/check_oauth_input.ps1 -Python (Get-Command python).Source

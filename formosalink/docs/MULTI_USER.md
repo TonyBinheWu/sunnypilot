@@ -10,10 +10,10 @@
 2. 在 IIS 主機以系統管理員開啟 PowerShell 執行：
 
    ```powershell
-   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs\FormosaPilot\App_Data\setup-server.ps1" -InstallPython -ConfigureGitHub
+   powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs\FormosaPilot\App_Data\setup-server.ps1" -InstallPython -ConfigureGitHub
    ```
 
-3. 在主機輸入 Client ID 與隱藏輸入的 Client Secret，請勿貼到聊天。資料存於私有 `C:\ProgramData\FormosaLink\github.json`，原密碼不重設。成功後 `/api/v1/auth/me` 的 `github_enabled` 為 true，health 有 `device-ownership` 及 `database_version: 2`。僅複製網站檔案不會更新執行中的私有後端。
+3. 在主機以 輸入 Client ID，並在 Windows 密碼視窗使用「貼上 Secret」按鈕輸入 Client Secret，請勿貼到聊天。資料存於私有 `C:\ProgramData\FormosaLink\github.json`，原密碼不重設。成功後 `/api/v1/auth/me` 的 `github_enabled` 為 true，health 有 `device-ownership` 及 `database_version: 2`。僅複製網站檔案不會更新執行中的私有後端。
 4. **先用原管理者密碼登入**，再按「將 GitHub 連結至現有管理者」，確認授權的 GitHub 帳號，便可沿用原裝置。一般 GitHub 登入會建立空白獨立帳號，不會自動合併。已屬於另一用戶的 GitHub 身分不能被管理者連結接管。
 5. 其他用戶以 GitHub 登入，再於裝置本機提出配對，填入配對碼與指紋。未提供裝置共用、轉移或遠端控制。
 

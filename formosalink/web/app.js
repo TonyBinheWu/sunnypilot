@@ -1,4 +1,4 @@
-import {translations} from './i18n.js';
+import {translations} from './i18n.js?v=0.2.0';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';
 try { language = localStorage.getItem('formosalink-language') || 'zh-TW'; } catch {}
