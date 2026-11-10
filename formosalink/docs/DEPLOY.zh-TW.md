@@ -1,5 +1,7 @@
 # FormosaLink：IIS / Python 自架部署
 
+GitHub OAuth / [MULTI_USER.md](MULTI_USER.md)
+
 目標：`https://formosapilot.dinglu-t.com`；網站實體目錄：`\\192.168.20.145\htdocs\FormosaPilot`。
 需建立獨立 IIS 網站，掛在網域根目錄；第一版不支援 `/FormosaPilot/` 子路徑。UNC 目錄只提供檔案存取，不等於遠端執行權限。以下伺服器命令需在 192.168.20.145 本機執行。
 

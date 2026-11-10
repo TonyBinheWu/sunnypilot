@@ -1,5 +1,16 @@
 # 驗證紀錄 / Validation / 検証記録
 
+## 2026-11-10 GitHub 帳號及權限隔離（0.2）
+
+- Python 3.14.10 本機後端套件：37 passed。包含真實本機 HTTP／WebSocket agent 回報、GitHub HTTP 交換契約（MockTransport）、OAuth state／PKCE／到期／重放／瀏覽器綁定、登出取消連結、禁止帳號接管、雙用戶裝置清單及撤銷隔離、禁止傳入 owner_id，以及 SQLite v1 既有 session／裝置金鑰備份遷移。
+- 前端三語完整性與安全顯示測試：2 passed。Windows PowerShell 5.1 安裝腳本語法檢查通過。
+- 兩分支各 C3X（tizi/BIG=1）與 C4（mici/BIG=0）：每組 4/4 原生 Linux 整合檢查通過，包含 UI 真實 frame、AGNOS manifest 與 agent 預設關閉。這是 PC profile 檢查，並非實機模擬器或實車驗證。這批沒有修改行車模組／agent 協定；先前閉迴路模擬的限制仍見 [模擬紀錄](SIMULATION_2026_11_09.md)，不能視為行車驗收通過。
+- 正式 GitHub 授權、原管理者連結，以及兩個真實不同 GitHub 帳號的外部隔離驗證，須等待 OAuth App 與 IIS 私有後端設定完成；本機 mock 測試不等於已通過正式 GitHub 登入。
+
+English: 37 backend tests and 2 frontend tests pass locally; GitHub requests are mocked except real local agent transport. Four native UI/profile checks pass for each branch/profile. No physical C3X/C4 or vehicle acceptance is claimed. Live GitHub authorization and two-real-account validation remain pending host OAuth setup.
+
+日本語：バックエンド 37 件・フロントエンド 2 件が成功し、両ブランチの C3X/C4 PC profile は各 4 件成功しました。実機・実車の検証ではありません。GitHub の本番認証と実アカウント 2 件での確認はホスト設定後に行います。
+
 ## 2026-11-10 正式部署完成驗證
 
 - 正式網址：`https://formosapilot.dinglu-t.com`。

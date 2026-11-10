@@ -1,4 +1,4 @@
-# FormosaPilot / FormosaLink 0.1
+# FormosaPilot / FormosaLink 0.2
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
@@ -13,15 +13,15 @@ FormosaPilot は保守対象の sunnypilot を基盤とするブランドです�
 - HTTPS origin: `https://formosapilot.dinglu-t.com`
 - IIS physical destination: `\\192.168.20.145\htdocs\FormosaPilot`
 - UI: 繁體中文 (default), English, 日本語. Buildless ES modules; no Node build or CDN required on IIS.
-- Single owner, single Python worker, local SQLite. Multiple devices. No OIDC or PostgreSQL required for this batch.
+- GitHub accounts with owner-scoped devices, single Python worker, local SQLite. Existing administrator credentials and pairing data migrate in place.
 - Dedicated Ed25519 device keys, expiring one-use pairing codes, fingerprint confirmation, signed/replay-protected connection authentication.
 - WebSocket is preferred; proxies with incompatible upgrade handling use per-request signed HTTPS telemetry, retaining TLS verification, replay protection and revocation checks.
 - Device state, temperatures, memory, storage, speed when valid, installed version/branch/commit. No location, driver-camera data, raw CAN, image streaming, remote commands or parameter reads.
 - Agent default: **disabled**. Local CLI configuration is required; first batch does not add a device-screen pairing panel.
 - Cloud outages do not gate the existing driving processes. Existing comma/sunnylink services are not redirected or silently disabled.
 - SQLite stores the latest snapshot only (not journey history); audit is bounded to 10,000 events. Online requires a live authenticated WebSocket or recent signed HTTPS telemetry within 20 seconds. Invalid or old samples are shown as stale.
-- First-batch backend auth uses one local owner password, PBKDF2-SHA256, HttpOnly/Secure/SameSite cookies and Origin checks. OIDC/multi-user sharing is deferred.
-- For other users: deploy independent private instances today; central GitHub login requires the owner-isolation work in [MULTI_USER.md](docs/MULTI_USER.md). Public signup remains disabled.
+- GitHub OAuth uses one-time browser-bound state and S256 PKCE. The local administrator password remains a fallback. Device operations enforce ownership on the server.
+- Setup, private OAuth configuration, explicit administrator linking and migration recovery: [MULTI_USER.md](docs/MULTI_USER.md). GitHub login remains disabled until the host has OAuth credentials.
 
 ## Source map
 
