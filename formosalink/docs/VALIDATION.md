@@ -1,5 +1,23 @@
 # 驗證紀錄 / Validation / 検証記録
 
+## 2026-11-10 正式部署完成驗證
+
+- 正式網址：`https://formosapilot.dinglu-t.com`。
+- 外部健康檢查：200，包含 `device-pairing` 與 `signed-https-telemetry` 功能旗標，確認新版已載入。
+- 使用者親自在正式網站登入並確認測試裝置配對；未向開發端提供管理者密碼。
+- 已配對的獨立測試身分傳送簽章 HTTPS 模擬資料：200，收到對應 sequence 的 ack。
+- 未登入讀取 `/api/v1/devices`：401。
+- 正式瀏覽器驗證：1 台已配對、1 台連線中；顯示「部署驗證・模擬裝置」、CPU 46°C、GPU 43°C、記憶體 31%、可用儲存 72%。這些是明確標記的模擬資料，沒有連接真實車輛。
+- Cloudflare／IIS 的 WebSocket 握手仍不相容；目前使用已驗證的簽章 HTTPS 備援，不停用 TLS 憑證驗證。既有簽章、nonce 防重放、資料白名單與撤銷規則皆保留。
+- 本次短時測試回報結束後，測試裝置會依 20 秒有效期顯示離線；真實裝置需在本機完成自己的配對並啟用 agent。
+- 部署腳本已建立開機排程與私有程式／資料目錄；本次未重啟整台 IIS 主機測試開機恢復。
+
+Production validation completed on 2026-11-10: health and signed telemetry returned 200; unauthenticated device reads returned 401. The owner logged in and paired the labelled demo device personally. The live dashboard showed one paired/online device and simulated metrics. Transport is signed HTTPS fallback; WebSocket proxy interoperability remains unresolved. No real vehicle or physical C3X/C4 was connected, and server reboot recovery was not exercised.
+
+2026-11-10 に本番サイトで正常性・署名付き HTTPS 送信の 200、未ログイン API の 401、所有者によるログインとペアリング、1 台の接続中表示を確認しました。数値は明示された模擬データです。WebSocket の代理接続問題は残るため署名付き HTTPS を使用し、TLS 検証は無効化していません。実車や実機、サーバー再起動の検証ではありません。
+
+## 初回実装の履歴 / Initial implementation record
+
 Date: 2026-11-09 (Asia/Taipei). First batch, FormosaLink 0.1.0 / protocol v1.
 
 This is the initial implementation record. Later service fixes have 29 passing backend tests on isolated Python 3.14.10 plus two passing UI tests. For the actual pre-push native UI/telemetry matrix, model failures and baseline comparison, see [SIMULATION_2026_11_09.md](SIMULATION_2026_11_09.md). Deployment state below reflects the initial publication, not the subsequent service startup.
