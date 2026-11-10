@@ -17,6 +17,8 @@ from openpilot.sunnypilot.formosalink.protocol import MAX_FRAME_BYTES, ONLINE_SE
 from formosalink.server.config import load, password_hash
 from formosalink.server.store import Store
 from formosalink.server import oauth
+from typing import Any
+from openpilot.sunnypilot.formosalink.management_protocol import MAX_MANAGEMENT_BYTES, validate_snapshot as validate_management
 
 COOKIE = "formosalink_session"
 
@@ -52,12 +54,20 @@ class Limit:
     bucket.append(now)
 
 
+class Setting(BaseModel):
+  model_config = ConfigDict(extra="forbid")
+  key: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9]{0,95}$")
+  value: Any
+  expected_revision: str = Field(pattern=r"^[a-f0-9]{64}$")
+  session: str = Field(min_length=36, max_length=36)
+
+
 def create_app(data_dir, web_dir=None):
   directory, config = load(data_dir)
   store = Store(directory / "formosalink.sqlite3")
   github = oauth.settings(directory)
   callback = config["origin"] + "/api/v1/auth/github/callback"
-  app = FastAPI(title="FormosaLink", version="0.2.1", docs_url=None, redoc_url=None, openapi_url=None)
+  app = FastAPI(title="FormosaLink", version="0.3.0", docs_url=None, redoc_url=None, openapi_url=None)
   app.state.store = store
   limiter = Limit()
   connections = {}
@@ -81,20 +91,21 @@ def create_app(data_dir, web_dir=None):
     if request.url.path.startswith("/api/"):
       if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
         return Response(status_code=400)
-      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status"):
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync"):
         if request.headers.get("origin") != config["origin"]:
           return Response(status_code=403)
       try:
         length = int(request.headers.get("content-length", "0"))
       except ValueError:
         return Response(status_code=400)
-      if length > MAX_FRAME_BYTES:
+      limit = MAX_MANAGEMENT_BYTES if request.url.path == "/api/v1/agent/sync" else MAX_FRAME_BYTES
+      if length > limit:
         return Response(status_code=413)
       # Bound streamed/chunked requests as well as declared Content-Length.
       body = bytearray()
       async for chunk in request.stream():
         body.extend(chunk)
-        if len(body) > MAX_FRAME_BYTES:
+        if len(body) > limit:
           return Response(status_code=413)
       request._body = bytes(body)
     response = await call_next(request)
@@ -108,7 +119,7 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing"], "database_version": 2}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings"], "database_version": 3}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):
@@ -231,6 +242,42 @@ def create_app(data_dir, web_dir=None):
       return store.enroll(verified["device_id"], public_key, fingerprint(public_key))
     except (ValueError, KeyError, TypeError, InvalidSignature) as exc:
       raise HTTPException(400, "invalid enrollment or unavailable identity") from exc
+
+  @app.get("/api/v1/devices/{device_id}/settings")
+  def settings(device_id: str, request: Request):
+    try:
+      return store.management(device_id, owner(request)["id"])
+    except LookupError as exc:
+      raise HTTPException(404, "device not found") from exc
+
+  @app.post("/api/v1/devices/{device_id}/settings")
+  def setting(device_id: str, body: Setting, request: Request):
+    user = owner(request)
+    rate(request,"setting",60)
+    try:
+      return store.queue_setting(device_id,user["id"],body.key,body.value,body.expected_revision,body.session)
+    except LookupError as exc:
+      raise HTTPException(404,"device not found") from exc
+    except (ValueError, KeyError, TypeError) as exc:
+      from openpilot.sunnypilot.formosalink.management_protocol import REASONS
+      reason = str(exc)
+      raise HTTPException(409,reason if reason in REASONS|{"device_offline","command_pending"} else "setting_unavailable") from exc
+
+  @app.post("/api/v1/agent/sync")
+  async def sync_settings(request: Request):
+    rate(request,"agent-sync",1800)
+    try:
+      envelope = await request.json()
+      row = store.get(envelope["device_id"])
+      if not row or row["state"]!="paired":
+        raise ValueError("device unavailable")
+      verified = verify(envelope,row["public_key"],"sync")
+      snapshot = validate_management(verified["payload"])
+      limiter.check("device-sync:"+row["id"],30)
+      store.consume_nonce(row["id"],verified["nonce"])
+      return store.sync_settings(row["id"],snapshot)
+    except (ValueError, KeyError, TypeError, AttributeError, OverflowError, InvalidSignature) as exc:
+      raise HTTPException(403,"invalid device settings") from exc
 
   @app.post("/api/v1/agent/telemetry")
   async def http_telemetry(request: Request):

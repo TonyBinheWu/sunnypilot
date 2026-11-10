@@ -36,6 +36,21 @@ def hook_changes(target):
     changes[path] = text.replace(anchor, anchor + KEY, 1)
   elif KEY.strip() not in text:
     raise ValueError("existing FormosaLink parameter differs; review manually")
+  text = changes.get(path,text)
+  for key,kind,default in (("FormosaLinkRemoteSettings","BOOL","0"),("FormosaLinkSettingsVersion","STRING","")):
+    if '"'+key+'"' not in text:
+      text = text.replace(KEY, KEY+'    {"'+key+'", {PERSISTENT, '+kind+', "'+default+'"}},\n',1)
+  if text != path.read_text(encoding="utf-8"):
+    changes[path] = text
+  path = target / "openpilot/selfdrive/ui/ui.py"
+  text = path.read_text(encoding="utf-8")
+  hook = "    from openpilot.sunnypilot.formosalink.ui_sync import tick as formosalink_ui_tick\n    formosalink_ui_tick()\n"
+  if hook not in text:
+    anchor = "    ui_state.update()\n"
+    if text.count(anchor)!=1:
+      raise ValueError("UI update anchor is ambiguous")
+    text = text.replace(anchor,anchor+hook,1)
+    changes[path] = text
   path = target / "openpilot/system/manager/process_config.py"
   text = path.read_text(encoding="utf-8")
   if "def formosalink_enabled(" not in text:

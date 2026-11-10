@@ -15,7 +15,7 @@
    powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs\FormosaPilot\App_Data\setup-server.ps1" -InstallPython -ConfigureGitHub
    ```
 
-3. 在主機以 輸入 Client ID，並在 Windows 密碼視窗使用「貼上 Secret」按鈕輸入 Client Secret，請勿貼到聊天。資料存於私有 `C:\ProgramData\FormosaLink\github.json`，原密碼不重設。成功後 `/api/v1/auth/me` 的 `github_enabled` 為 true，health 有 `device-ownership` 及 `database_version: 2`。僅複製網站檔案不會更新執行中的私有後端。
+3. 在主機以 輸入 Client ID，並在 Windows 密碼視窗使用「貼上 Secret」按鈕輸入 Client Secret，請勿貼到聊天。資料存於私有 `C:\ProgramData\FormosaLink\github.json`，原密碼不重設。成功後 `/api/v1/auth/me` 的 `github_enabled` 為 true，health 有 `device-ownership` 及 `database_version: 3`。僅複製網站檔案不會更新執行中的私有後端。
 4. 既有正式管理者已透過明確連結流程驗證 GitHub 身分，原裝置保留在同一管理者下。一般 GitHub 登入建立獨立帳號，不會自動合併。已屬於另一用戶的 GitHub 身分不能被管理者連結接管。
 5. 其他用戶在裝置產生 QR、用手機掃描，再以 GitHub 登入並確認即可。配對碼與指紋自動帶入，不需手動輸入。
 
@@ -50,3 +50,6 @@ v1 は `formosalink.sqlite3.before-v2.sqlite3` にバックアップ後、トラ
 OAuth はブラウザーに結び付けた一回限りの state、10 分の期限、S256 PKCE を使用します。管理者連携は開始時の有効な session が必要です。IIS の `cs-uri-query` を無効にし、CDN／プロキシもクエリーを記録しないよう設定してください。共通接続管理を実装するまでは単一ワーカーです。既存セッション・デバイス通信・パスワードログインは GitHub が停止しても利用できます。
 
 Reference: [GitHub OAuth web application flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps).
+
+
+0.3.0 新增設定通道與 v2→v3 備份遷移；詳見 [停車設定](OFFROAD_SETTINGS.md)。擁有者隔離也套用於裝置資訊、設定目錄、寫入排程與回執，管理者不會取得其他用戶裝置的權限。

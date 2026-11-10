@@ -5,14 +5,14 @@
   <meta name="theme-color" content="#0f1424"><meta name="description" content="FormosaLink — FormosaPilot device companion">
   <title>FormosaLink · FormosaPilot</title>
   <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/assets/formosapilot-logo.png">
-  <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css?v=0.2.1">
-  <script type="module" src="/app.js?v=0.2.1"></script>
+  <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css?v=0.3.0">
+  <script type="module" src="/app.js?v=0.3.0"></script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/" aria-label="FormosaLink"><img src="/assets/formosapilot-logo.png" alt=""><span>FormosaLink</span></a>
     <nav id="public-nav" class="public-nav" aria-label="FormosaLink"><a href="#features" data-i18n="navFeatures"></a><a href="#how-it-works" data-i18n="navHow"></a></nav>
-    <div class="header-actions"><label class="sr-only" for="language" data-i18n="language"></label><select id="language"><option value="zh-TW">繁體中文</option><option value="en">English</option><option value="ja">日本語</option></select><a id="nav-signin" class="nav-signin" href="#login-view" data-i18n="signinShort"></a><button id="logout" class="quiet" hidden data-i18n="logout"></button></div>
+    <div class="header-actions"><details class="language-menu" id="language-menu"><summary id="language" aria-label="Language">繁體中文</summary><div class="language-options"><button type="button" data-language="zh-TW">繁體中文</button><button type="button" data-language="en">English</button><button type="button" data-language="ja">日本語</button></div></details><a id="nav-signin" class="nav-signin" href="#login-view" data-i18n="signinShort"></a><button id="logout" class="quiet" hidden data-i18n="logout"></button></div>
   </header>
   <main>
     <div id="login-view">
@@ -62,6 +62,7 @@
     <p id="message" class="message" role="status" aria-live="polite" hidden></p>
   </main>
   <dialog id="pair-dialog"><form id="pair-form"><div class="dialog-heading"><span class="eyebrow" data-i18n="securePairing"></span><button id="close-pair" type="button" class="quiet" data-i18n="close"></button></div><h2 data-i18n="pairDevice"></h2><p class="caption" data-i18n="pairHelp"></p><div id="pair-scan-help" class="qr-help"><span class="qr-symbol" aria-hidden="true">▦</span><p data-i18n="qrScanHelp"></p></div><div id="pair-details" hidden><div class="qr-confirm-note"><span class="tiny-dot"></span><span data-i18n="qrReady"></span></div><label for="device-name" data-i18n="deviceName"></label><input id="device-name" required maxlength="60" value="FormosaPilot"><p class="caption" data-i18n="qrConfirmHelp"></p></div><button id="confirm-pair" type="submit" class="primary" hidden data-i18n="confirmPair"></button></form></dialog>
+  <dialog id="settings-dialog" class="settings-dialog"><div class="dialog-heading"><h2 id="settings-title"></h2><button type="button" id="close-settings" class="quiet" data-i18n="close"></button></div><div id="settings-body"></div></dialog>
   <footer><a class="footer-brand" href="/">FormosaLink<span>FORMOSAPILOT</span></a><span data-i18n="footer"></span><span class="footer-origin">TAIWAN · 23.5° N</span></footer>
 </body>
 </html>

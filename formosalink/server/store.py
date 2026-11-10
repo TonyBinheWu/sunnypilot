@@ -17,10 +17,16 @@ class Store:
     self.path = str(path)
     with self.connection() as db:
       version = db.execute("PRAGMA user_version").fetchone()[0]
-      if version not in (0, 1, 2):
+      if version not in (0, 1, 2, 3):
         raise ValueError("unsupported FormosaLink database version; explicit migration required")
       if version == 1:
         backup = Path(self.path + ".before-v2.sqlite3")
+        if backup.exists():
+          raise ValueError("migration backup already exists; inspect before retrying")
+        with sqlite3.connect(backup) as destination:
+          db.backup(destination)
+      if version == 2:
+        backup = Path(self.path + ".before-v3.sqlite3")
         if backup.exists():
           raise ValueError("migration backup already exists; inspect before retrying")
         with sqlite3.connect(backup) as destination:
@@ -45,6 +51,12 @@ class Store:
         db.execute("CREATE TABLE oauth_states (state_hash TEXT PRIMARY KEY, browser_hash TEXT NOT NULL, verifier TEXT NOT NULL, expires REAL NOT NULL, link_session TEXT)")
         db.execute("CREATE INDEX device_owner ON devices(owner_id)")
         db.execute("PRAGMA user_version=2")
+      db.executescript("""
+        CREATE TABLE IF NOT EXISTS device_management (device_id TEXT PRIMARY KEY REFERENCES devices(id), received_at REAL NOT NULL, snapshot TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS setting_commands (id TEXT PRIMARY KEY, device_id TEXT NOT NULL REFERENCES devices(id), created_at REAL NOT NULL, expires_at REAL NOT NULL, status TEXT NOT NULL, reason TEXT, command TEXT NOT NULL);
+        CREATE INDEX IF NOT EXISTS setting_device ON setting_commands(device_id,created_at);
+        PRAGMA user_version=3;
+      """)
 
   @contextmanager
   def connection(self):
@@ -110,7 +122,75 @@ class Store:
       result = db.execute("UPDATE devices SET state='revoked',snapshot=NULL,pair_hash=NULL WHERE id=? AND owner_id=? AND state='paired'", (device_id, user_id))
       if not result.rowcount:
         raise ValueError("device not found")
+      db.execute("DELETE FROM device_management WHERE device_id=?", (device_id,))
+      db.execute("UPDATE setting_commands SET status='cancelled' WHERE device_id=? AND status IN ('queued','delivered')", (device_id,))
       self.audit(db, "device_revoked", device_id)
+
+  def management(self, device_id, user_id):
+    with self.connection() as db:
+      if not db.execute("SELECT 1 FROM devices WHERE id=? AND owner_id=? AND state='paired'", (device_id,user_id)).fetchone():
+        raise LookupError("device not found")
+      db.execute("UPDATE setting_commands SET status='expired',reason='expired' WHERE device_id=? AND expires_at<? AND status IN ('queued','delivered')", (device_id,time.time()))
+      row = db.execute("SELECT * FROM device_management WHERE device_id=?", (device_id,)).fetchone()
+      commands = db.execute("SELECT id,status,reason,created_at FROM setting_commands WHERE device_id=? ORDER BY created_at DESC LIMIT 10", (device_id,)).fetchall()
+      return {"snapshot":json.loads(row["snapshot"]) if row else None,"received_at":row["received_at"] if row else None,
+              "fresh":bool(row and time.time()-row["received_at"]<=10),"commands":[dict(x) for x in commands]}
+
+  def queue_setting(self, device_id, user_id, key, value, expected_revision, session):
+    from openpilot.sunnypilot.formosalink.settings import validate_setting
+    with self.connection() as db:
+      db.execute("BEGIN IMMEDIATE")
+      if not db.execute("SELECT 1 FROM devices WHERE id=? AND owner_id=? AND state='paired'", (device_id,user_id)).fetchone():
+        raise LookupError("device not found")
+      row = db.execute("SELECT * FROM device_management WHERE device_id=?", (device_id,)).fetchone()
+      now = time.time()
+      if not row or now-row["received_at"]>10:
+        raise ValueError("device_offline")
+      snapshot = json.loads(row["snapshot"])
+      if not snapshot["offroad"] or not snapshot["remote_enabled"]:
+        raise ValueError("offroad_required" if not snapshot["offroad"] else "local_disabled")
+      if snapshot["revision"]!=expected_revision or snapshot["session"]!=session:
+        raise ValueError("conflict")
+      entry = next((x for x in snapshot["catalog"] if x["key"]==key), None)
+      if not entry:
+        raise ValueError("setting_unavailable")
+      value = validate_setting(entry,value)
+      db.execute("UPDATE setting_commands SET status='expired',reason='expired' WHERE expires_at<? AND status IN ('queued','delivered')", (now,))
+      if db.execute("SELECT 1 FROM setting_commands WHERE device_id=? AND status IN ('queued','delivered')", (device_id,)).fetchone():
+        raise ValueError("command_pending")
+      command = {"id":str(uuid.uuid4()),"device_id":device_id,"session":session,"expected_revision":expected_revision,
+                 "key":key,"value":value,"created_at":now,"expires_at":now+20}
+      db.execute("INSERT INTO setting_commands VALUES(?,?,?,?,?,?,?)", (command["id"],device_id,now,now+20,"queued",None,json.dumps(command,allow_nan=False)))
+      db.execute("DELETE FROM setting_commands WHERE device_id=? AND id NOT IN (SELECT id FROM setting_commands WHERE device_id=? ORDER BY created_at DESC LIMIT 100)", (device_id,device_id))
+      self.audit(db,"setting_queued",device_id)
+      return {"id":command["id"],"status":"queued"}
+
+  def sync_settings(self, device_id, snapshot):
+    with self.connection() as db:
+      db.execute("BEGIN IMMEDIATE")
+      if not db.execute("SELECT 1 FROM devices WHERE id=? AND state='paired'", (device_id,)).fetchone():
+        raise ValueError("device unavailable")
+      snapshot = dict(snapshot)
+      if snapshot["catalog"] is None:
+        old = db.execute("SELECT snapshot FROM device_management WHERE device_id=?", (device_id,)).fetchone()
+        old = json.loads(old["snapshot"]) if old else None
+        if not old or old["catalog_revision"]!=snapshot["catalog_revision"]:
+          return {"server_time":time.time(),"command":None,"acknowledged":[],"needs_catalog":True}
+        snapshot["catalog"] = old["catalog"]
+      now, acknowledged = time.time(), []
+      for receipt in snapshot["receipts"]:
+        result = db.execute("UPDATE setting_commands SET status=?,reason=? WHERE id=? AND device_id=? AND status IN ('delivered','expired')", (receipt["status"],receipt["reason"],receipt["id"],device_id))
+        if result.rowcount or db.execute("SELECT 1 FROM setting_commands WHERE id=? AND device_id=? AND status IN ('applied','rejected')", (receipt["id"],device_id)).fetchone():
+          acknowledged.append(receipt["id"])
+      snapshot["receipts"] = []
+      db.execute("INSERT INTO device_management VALUES(?,?,?) ON CONFLICT(device_id) DO UPDATE SET received_at=excluded.received_at,snapshot=excluded.snapshot", (device_id,now,json.dumps(snapshot,allow_nan=False)))
+      db.execute("UPDATE setting_commands SET status='expired',reason='expired' WHERE device_id=? AND expires_at<? AND status IN ('queued','delivered')", (device_id,now))
+      row = db.execute("SELECT * FROM setting_commands WHERE device_id=? AND status='queued' ORDER BY created_at LIMIT 1", (device_id,)).fetchone()
+      command = json.loads(row["command"]) if row else None
+      if row:
+        # Delivery is at most once. Lost replies expire; they cannot replay later.
+        db.execute("UPDATE setting_commands SET status='delivered' WHERE id=?", (row["id"],))
+      return {"server_time":now,"command":command,"acknowledged":acknowledged,"needs_catalog":False}
 
   def snapshot(self, device_id, snapshot):
     with self.connection() as db:

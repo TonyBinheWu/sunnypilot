@@ -1,14 +1,14 @@
-# FormosaPilot / FormosaLink 0.2.1
+# FormosaPilot / FormosaLink 0.3.0
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
 [QR 配對 / QR pairing / QR 登録](docs/QR_PAIRING.md)：裝置設定顯示短效 QR，手機以 GitHub 登入並確認；網頁不再顯示管理者密碼及手動配對輸入。
 
-FormosaPilot 是目前 sunnypilot 維護版本的品牌；FormosaLink 是可自架的獨立裝置管理平台。目前提供 GitHub 多用戶登入、帳號裝置隔離、車端 QR 配對、唯讀 agent 與三語手機儀表板。行車功能維持原分支行為。
+FormosaPilot 是目前 sunnypilot 維護版本的品牌；FormosaLink 是可自架的獨立裝置管理平台。目前提供 GitHub 多用戶登入、帳號裝置隔離、車端 QR 配對、監看、停車設定同步與三語手機儀表板。行車功能維持原分支行為。
 
-FormosaPilot brands the maintained sunnypilot distribution. FormosaLink is its self-hosted companion. It provides GitHub accounts, isolated device ownership, native QR pairing, read-only telemetry and a trilingual mobile dashboard. Existing driving behavior is preserved.
+FormosaPilot brands the maintained sunnypilot distribution. FormosaLink is its self-hosted companion. It provides GitHub accounts, isolated device ownership, native QR pairing, telemetry, parked settings sync and a trilingual mobile dashboard. Existing driving behavior is preserved.
 
-FormosaPilot は保守対象の sunnypilot を基盤とするブランドです。FormosaLink はセルフホスト型の連携サービスです。GitHub ログイン、所有者別のデバイス管理、本体の QR 登録、読み取り専用送信、3 言語のモバイル画面を提供します。既存の運転支援動作は維持します。
+FormosaPilot は保守対象の sunnypilot を基盤とするブランドです。FormosaLink はセルフホスト型の連携サービスです。GitHub ログイン、所有者別のデバイス管理、本体の QR 登録、状態送信、停車中の遠隔設定、3 言語のモバイル画面を提供します。既存の運転支援動作は維持します。
 
 ## Scope / 範圍 / 範囲
 
@@ -29,7 +29,7 @@ FormosaPilot は保守対象の sunnypilot を基盤とするブランドです�
 
 | Path | Responsibility |
 | --- | --- |
-| `openpilot/sunnypilot/formosalink/` | Shared v1 protocol, independent identity, local CLI and read-only agent |
+| `openpilot/sunnypilot/formosalink/` | Shared v1 protocol, independent identity, local CLI, telemetry and guarded parked settings |
 | `formosalink/server/` | Owner authentication, persistent device registry, pairing, WSS ingestion, latest-state API |
 | `formosalink/web/` | Taiwan-inspired mobile dashboard and generated FormosaPilot mark |
 | `formosalink/deploy/` | IIS reverse proxy, Python launcher, optional Linux Compose skeleton |
@@ -52,3 +52,6 @@ Both `hkg-enhanced` and `ccnc-port` use the same companion files and protocol. N
 Native pre-push checks and real-model simulator failures are recorded in [SIMULATION_2026_11_09.md](docs/SIMULATION_2026_11_09.md). All four PC UI/telemetry profiles passed; three model scenarios failed, including a failure reproduced on the pre-feature baseline. These are not physical-device driving acceptance results.
 
 Not yet verified by host tests: end-to-end IIS ARR/WebSocket forwarding to the Python service, C3X/C4 runtime/build, physical vehicle telemetry, power/thermal behavior. Do not equate host tests with device validation. See the [validation record](docs/VALIDATION.md). The current logo and prompt are recorded in [BRAND.md](docs/BRAND.md).
+
+
+[裝置資訊、停車設定與 IIS 升級 / Device settings / 停車中の設定](docs/OFFROAD_SETTINGS.md)
