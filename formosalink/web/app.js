@@ -1,5 +1,6 @@
-import {translations} from './i18n.js?v=0.2.1';
-import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.2.1';
+import {deviceSettings} from './device-settings.js?v=0.3.0';
+import {translations} from './i18n.js?v=0.3.0';
+import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.3.0';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';
 try { language = localStorage.getItem('formosalink-language') || 'zh-TW'; } catch {}
@@ -30,12 +31,14 @@ async function api(path, body) {
   catch { throw {key:'networkError'}; }
   if (!response.ok) {
     const key=response.status===429?'rateLimit':response.status===401?(path==='/login'?'invalidLogin':'expired'):path==='/pair'&&response.status===400?'invalidPair':[400,403].includes(response.status)?'transportError':'serverError';
-    throw {key,status:response.status};
+    let reason;try{reason=(await response.json()).detail;}catch{}
+    throw {key,status:response.status,reason:typeof reason==='string'?reason:undefined};
   }
   try {return await response.json();} catch {throw {key:'serverError'};}
 }
 function element(tag, text, className) { const node=document.createElement(tag); if(text!==undefined)node.textContent=text;if(className)node.className=className;return node; }
 function metric(container,key,value,unit) {const item=element('div',undefined,'metric');item.append(element('label',t(key)),element('strong',value===null||value===undefined?'—':String(Math.round(value))));if(unit)item.append(element('small',unit));container.append(item);}
+const settings=deviceSettings({api,t,language:()=>language,element,date,notify});
 function render() {
   $('device-count').textContent=String(devices.filter(d=>d.state==='paired').length);
   $('online-count').textContent=String(devices.filter(d=>d.online&&!networkFailed).length);
@@ -53,10 +56,10 @@ function render() {
     const details=element('dl',undefined,'device-details');
     for(const [key,value] of [['version',m.software_version],['branch',m.branch],['commit',m.commit?.slice(0,12)],['thermal',hidden?null:translations[language]['thermal_'+m.thermal_status]],['sampleTime',date(device.snapshot?.sampled_at)]]){details.append(element('dt',t(key)),element('dd',value||'—'));}card.append(details);
     const bottom=element('div',undefined,'card-bottom');bottom.append(element('span',`${t('received')} ${date(device.last_seen)}`));
-    if(device.state==='paired'){const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
+    if(device.state==='paired'){const detail=element('button',t('deviceSettings'),'secondary');detail.type='button';detail.addEventListener('click',()=>settings.open(device));bottom.append(detail);const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
   }
 }
-function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
+function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.close();devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
 async function refresh(){
   if(busy)return;
   busy=true;
@@ -70,7 +73,7 @@ async function refresh(){
       auth={user:{id:'local-admin',name:''},github_enabled:false};
     }
     if(epoch!==authEpoch)return;
-    if(account?.id!==auth.user?.id){devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
+    if(account?.id!==auth.user?.id){settings.close();devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
     account=auth.user;githubEnabled=auth.github_enabled;
     $('github-login').disabled=!githubEnabled;
     $('github-note').textContent=t(githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');
@@ -89,8 +92,10 @@ async function refresh(){
     else{networkFailed=true;render();notify(e.key||'serverError',true);}
   }finally{busy=false;if(epoch!==authEpoch)refresh();}
 }
-function applyLanguage(){document.documentElement.lang=language==='zh-TW'?'zh-Hant':language;$('language').value=language;document.querySelectorAll('[data-i18n]').forEach(node=>node.textContent=t(node.dataset.i18n));$('github-note').textContent=t(githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');if(account?.id==='local-admin'&&!account.github_login)$('account-name').textContent=t('adminAccount');if(signedIn)render();$('message').hidden=true;}
-$('language').addEventListener('change',()=>{language=$('language').value;try{localStorage.setItem('formosalink-language',language);}catch{}applyLanguage();});
+function applyLanguage(){document.documentElement.lang=language==='zh-TW'?'zh-Hant':language;$('language').setAttribute('aria-label',t('language'));$('language').textContent={'zh-TW':'繁體中文',en:'English',ja:'日本語'}[language];document.querySelectorAll('[data-language]').forEach(node=>node.setAttribute('aria-pressed',String(node.dataset.language===language)));settings.translate();document.querySelectorAll('[data-i18n]').forEach(node=>node.textContent=t(node.dataset.i18n));$('github-note').textContent=t(githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');if(account?.id==='local-admin'&&!account.github_login)$('account-name').textContent=t('adminAccount');if(signedIn)render();$('message').hidden=true;}
+document.querySelectorAll('[data-language]').forEach(button=>button.addEventListener('click',()=>{language=button.dataset.language;try{localStorage.setItem('formosalink-language',language);}catch{}$('language-menu').open=false;applyLanguage();}));
+document.addEventListener('click',event=>{if(!$('language-menu').contains(event.target))$('language-menu').open=false;});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')$('language-menu').open=false;});
 $('logout').addEventListener('click',async()=>{try{await api('/logout',{});authEpoch++;session(false);$('message').hidden=true;}catch(e){notify(e.key||'serverError',true);}});
 function openPair(){
   pendingPair=validatePairing(pendingPair);

@@ -20,8 +20,11 @@ class FakeParams:
   def __init__(self):
     self.enabled = False
 
-  def put_bool(self, key, value):
-    assert key == "FormosaLinkEnabled", "QR UI must not write driving parameters"
+  def get_bool(self, key):
+    return self.enabled if key == "FormosaLinkEnabled" else False
+
+  def put_bool(self, key, value, block=False):
+    assert key in ("FormosaLinkEnabled", "FormosaLinkRemoteSettings"), "QR UI must not write driving parameters"
     self.enabled = value
 
 

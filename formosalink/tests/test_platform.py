@@ -288,7 +288,7 @@ def test_future_database_schema_is_not_silently_opened(tmp_path):
   from formosalink.server.store import Store
   database = tmp_path / "future.sqlite3"
   with sqlite3.connect(database) as db:
-    db.execute("PRAGMA user_version=3")
+    db.execute("PRAGMA user_version=4")
   with pytest.raises(ValueError):
     Store(database)
 

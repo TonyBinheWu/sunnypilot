@@ -1,4 +1,4 @@
-"""Optional telemetry-only agent; intentionally accepts no remote commands."""
+"""Optional monitoring agent with a separate, device-guarded settings channel."""
 import json
 import logging
 import random
@@ -64,6 +64,12 @@ def connect_http(identity, private, sampler, stop=None, samples=60):
 
 
 def run(directory=None, demo=False, stop=None):
+  import threading
+  from openpilot.sunnypilot.formosalink.management import start_management
+  stop = stop or threading.Event()
+  directory = directory or default_directory()
+  if not demo:
+    start_management(directory,stop)
   from openpilot.sunnypilot.formosalink.telemetry import DemoSampler, OpenpilotSampler
   sampler = DemoSampler() if demo else OpenpilotSampler()
   failures = 0

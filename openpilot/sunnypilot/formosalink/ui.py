@@ -24,6 +24,12 @@ TEXT["zh-TW"]["compact_intro"] = "手機掃描 QR，登入 GitHub 後確認。\n
 TEXT["en"]["compact_intro"] = "Scan with your phone.\nSign in with GitHub and confirm.\nRead-only monitoring."
 TEXT["ja"]["compact_intro"] = "スマートフォンで QR を読み取り、\nGitHub でログインして確認。\n読み取り専用の監視です。"
 
+for locale, on, off in (("zh-TW", "停車遠端設定：開", "停車遠端設定：關"), ("en", "Parked settings: on", "Parked settings: off"), ("ja", "停車中の遠隔設定：オン", "停車中の遠隔設定：オフ")):
+  TEXT[locale].update(remote_on=on, remote_off=off)
+TEXT["zh-TW"].update(intro="掃描 QR 配對。可在此允許停車時從網頁修改設定。", compact_intro="掃描 QR 配對。\n遠端設定限停車時使用。", paired="已配對", disabled="監看已停用。")
+TEXT["en"].update(intro="Scan to pair. Enable parked settings below to edit from the web.", compact_intro="Scan to pair.\nRemote settings while parked.", paired="Paired", disabled="Monitoring disabled.")
+TEXT["ja"].update(intro="QR を読み取って登録します。停車中の遠隔設定を下で許可できます。", compact_intro="QR で登録。\n遠隔設定は停車中のみ。", paired="登録済み", disabled="監視を停止しました。")
+
 
 def language():
   code = multilang.language
@@ -77,6 +83,13 @@ class FormosaPairingDialog(Widget):
     self._disable = Button(lambda: text("disable"), self._disable_monitoring, font_size=36 if big else 12, text_padding=padding)
     self._start.set_enabled(lambda: not self._busy and ui_state.is_offroad())
     self._disable.set_enabled(ui_state.is_offroad)
+    self._remote = Button(lambda: text("remote_on" if ui_state.params.get_bool("FormosaLinkRemoteSettings") else "remote_off"), self._toggle_remote,
+                          font_size=34 if big else 11, text_padding=padding)
+    self._remote.set_enabled(ui_state.is_offroad)
+
+  def _toggle_remote(self):
+    if ui_state.is_offroad():
+      ui_state.params.put_bool("FormosaLinkRemoteSettings", not ui_state.params.get_bool("FormosaLinkRemoteSettings"), block=True)
 
   def _clear_qr(self):
     if self._qr_texture is not None:
@@ -121,6 +134,7 @@ class FormosaPairingDialog(Widget):
     self._state = "disabled"
     self._expires = 0
     ui_state.params.put_bool("FormosaLinkEnabled", False)
+    ui_state.params.put_bool("FormosaLinkRemoteSettings", False, block=True)
 
   def _update_state(self):
     if not ui_state.is_offroad():
@@ -188,6 +202,7 @@ class FormosaPairingDialog(Widget):
       state_lines = wrap_text(body_font, text(self._state), 42*scale, width)
       rl.draw_text_ex(body_font, "\n".join(state_lines), rl.Vector2(rect.x+margin,y), 42*scale, 0, rl.Color(172, 151, 255, 255))
     bottom = rect.y+rect.height-margin-button_height
+    self._remote.render(rl.Rectangle(rect.x+margin,bottom-button_height-20*scale,1000*scale,button_height))
     self._start.render(rl.Rectangle(rect.x+margin,bottom,660*scale,button_height))
     self._disable.render(rl.Rectangle(rect.x+margin+690*scale,bottom,420*scale,button_height))
     if self._qr_texture is not None:
