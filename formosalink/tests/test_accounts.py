@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import io
 from urllib.parse import parse_qs, urlparse
 
 import httpx
@@ -165,3 +166,33 @@ async def test_real_exchange_contract(monkeypatch):
     return httpx.Response(200, json={"id": 123, "login": "tester"})
   monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: original(transport=httpx.MockTransport(handler), **kwargs))
   assert await oauth.exchange({"client_id": "id", "client_secret": "secret"}, ORIGIN, "code", "verifier") == ("123", "tester")
+
+
+def test_configuration_retries_without_disclosing_secret(tmp_path, monkeypatch, capsys):
+  monkeypatch.setattr("sys.argv", ["oauth", "--data-dir", str(tmp_path)])
+  monkeypatch.setattr("builtins.input", lambda prompt: "test-client-id")
+  values = iter(["", "opaque-secret.with+symbols=" + "x"*20])
+  monkeypatch.setattr(oauth.getpass, "getpass", lambda prompt: next(values))
+  oauth.main()
+  config = oauth.settings(tmp_path)
+  assert config["client_secret"].startswith("opaque-secret.")
+  assert config["client_secret"] not in capsys.readouterr().out
+  before = (tmp_path / "github.json").read_bytes()
+  monkeypatch.setattr(oauth.getpass, "getpass", lambda prompt: "")
+  with pytest.raises(SystemExit):
+    oauth.main()
+  assert (tmp_path / "github.json").read_bytes() == before
+
+
+def test_private_stdin_configuration_rejects_incomplete_input(tmp_path, monkeypatch, capsys):
+  monkeypatch.setattr("sys.argv", ["oauth", "--data-dir", str(tmp_path), "--stdin"])
+  secret = "test-only-opaque+secret=" + "x"*20
+  monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"client_id": "test-client-id", "client_secret": secret})))
+  oauth.main()
+  assert oauth.settings(tmp_path)["client_secret"] == secret
+  assert secret not in capsys.readouterr().out
+  for invalid in ("", "\x16", "test-client-id", "x"*20+"\n"):
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"client_id": "test-client-id", "client_secret": invalid})))
+    with pytest.raises(SystemExit):
+      oauth.main()
+    assert oauth.settings(tmp_path)["client_secret"] == secret

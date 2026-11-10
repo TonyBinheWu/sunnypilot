@@ -5,10 +5,20 @@ import hashlib
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from urllib.parse import urlencode
 
 import httpx
+
+
+def valid_client_id(value):
+  return isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_.-]{10,128}", value) is not None
+
+
+def valid_client_secret(value):
+  # OAuth client secrets are opaque; do not assume GitHub's current prefix or alphabet.
+  return isinstance(value, str) and 20 <= len(value) <= 512 and all(33 <= ord(char) <= 126 for char in value)
 
 
 def settings(directory):
@@ -16,7 +26,7 @@ def settings(directory):
   if not path.exists():
     return None
   value = json.loads(path.read_text(encoding="utf-8"))
-  if not re.fullmatch(r"[A-Za-z0-9_.-]{10,128}", value["client_id"]) or not re.fullmatch(r"[A-Za-z0-9_\-]{20,256}", value["client_secret"]):
+  if not valid_client_id(value["client_id"]) or not valid_client_secret(value["client_secret"]):
     raise ValueError("invalid GitHub OAuth configuration")
   return value
 
@@ -51,14 +61,44 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("--data-dir", required=True)
   parser.add_argument("--lang", choices=("zh-TW", "en", "ja"), default="zh-TW")
+  parser.add_argument("--stdin", action="store_true", help="Read private configuration from standard input, never command-line arguments")
   args = parser.parse_args()
   prompts = {"zh-TW": ("GitHub Client ID：", "GitHub Client Secret（隱藏輸入）：", "OAuth 設定已儲存；請重新啟動後端。"),
              "en": ("GitHub Client ID: ", "GitHub Client Secret (hidden): ", "OAuth configuration saved; restart the backend."),
              "ja": ("GitHub Client ID：", "GitHub Client Secret（非表示）：", "OAuth 設定を保存しました。バックエンドを再起動してください。")}[args.lang]
-  value = {"client_id": input(prompts[0]).strip(), "client_secret": getpass.getpass(prompts[1]).strip()}
+  errors = {
+    "zh-TW": ("Client ID 格式不正確，請從 OAuth App 複製 Client ID。", "Secret 未完整輸入（需 20–512 個可列印英數符號）。請貼上完整 Client Secret，不是 App 名稱或 Client ID。", "輸入已取消；原設定不變。"),
+    "en": ("Invalid Client ID. Copy it from the OAuth App.", "Secret is incomplete (20–512 printable ASCII characters). Paste the full Client Secret, not the app name or Client ID.", "Cancelled; existing configuration is unchanged."),
+    "ja": ("Client ID が正しくありません。OAuth App からコピーしてください。", "Secret が不完全です（表示可能な ASCII 文字 20～512 文字）。アプリ名や Client ID ではなく、完全な Client Secret を貼り付けてください。", "キャンセルしました。既存設定は変更しません。")}[args.lang]
+  value = None
+  if args.stdin:
+    try:
+      value = json.loads(sys.stdin.read(4096))
+    except (ValueError, UnicodeError):
+      raise SystemExit(errors[2]) from None
+    if not isinstance(value, dict) or not valid_client_id(value.get("client_id")):
+      raise SystemExit(errors[0])
+    if not valid_client_secret(value.get("client_secret")) or value["client_secret"] == value["client_id"]:
+      raise SystemExit(errors[1])
+    value = {"client_id": value["client_id"], "client_secret": value["client_secret"]}
+  else:
+    try:
+      for _ in range(3):
+        client_id = input(prompts[0]).strip()
+        if not valid_client_id(client_id):
+          print(errors[0])
+          continue
+        secret = getpass.getpass(prompts[1]).strip()
+        if not valid_client_secret(secret) or secret == client_id:
+          print(errors[1])
+          continue
+        value = {"client_id": client_id, "client_secret": secret}
+        break
+    except (KeyboardInterrupt, EOFError):
+      pass
   # Validate before replacing any existing private configuration.
-  if not re.fullmatch(r"[A-Za-z0-9_.-]{10,128}", value["client_id"]) or not re.fullmatch(r"[A-Za-z0-9_\-]{20,256}", value["client_secret"]):
-    raise SystemExit("Invalid Client ID / Client Secret")
+  if value is None:
+    raise SystemExit(errors[2])
   path = Path(args.data_dir) / "github.json"
   temporary = path.with_suffix(".tmp")
   with temporary.open("w", encoding="utf-8") as output:
