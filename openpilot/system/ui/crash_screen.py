@@ -52,7 +52,7 @@ def main() -> None:
   font_size = 14 * scale
   margin = 12 * scale
   line_height = 19 * scale
-  rl.init_window(width, height, "sunnypilot diagnostic - photograph when parked")
+  rl.init_window(width, height, "FormosaPilot diagnostic - photograph when parked")
   rl.set_target_fps(5)
   rl.set_exit_key(0)
   default_font = rl.get_font_default()

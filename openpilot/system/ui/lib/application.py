@@ -23,6 +23,7 @@ from openpilot.system.ui.lib.multilang import FONT_FALLBACK_LANGUAGES, TRANSLATI
 from openpilot.common.realtime import Ratekeeper
 
 from openpilot.system.ui.sunnypilot.lib.application import GuiApplicationExt
+from openpilot.system.ui.lib.branding import display_text, display_asset
 
 _DEFAULT_FPS = int(os.getenv("FPS", {'tizi': 20}.get(HARDWARE.get_device_type(), 60)))
 FPS_LOG_INTERVAL = 5  # Seconds between logging FPS drops
@@ -487,6 +488,7 @@ class GuiApplication(GuiApplicationExt):
 
   def texture(self, asset_path: str, width: int | None = None, height: int | None = None,
               alpha_premultiply=False, keep_aspect_ratio=True, flip_x: bool = False) -> rl.Texture:
+    asset_path = display_asset(asset_path)
     if width is not None:
       width = round(width)
     if height is not None:
@@ -791,6 +793,7 @@ class GuiApplication(GuiApplicationExt):
       rl._orig_draw_text_ex = rl.draw_text_ex
 
     def _draw_text_ex_scaled(font, text, position, font_size, spacing, tint):
+      text = display_text(text)
       font = font_fallback(font, text)
       return rl._orig_draw_text_ex(font, text, position, font_size * text_size_scale(text), spacing, tint)
 
