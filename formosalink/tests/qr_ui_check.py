@@ -124,7 +124,7 @@ class TestQRScreen(unittest.TestCase):
             status = dialog._last_status_rect
             self.assertLessEqual(status.x+status.width, rect.x+rect.width)
             self.assertLessEqual(status.y+status.height, dialog._remote.rect.y-3*scale)
-            for button in (dialog._remote, dialog._start, dialog._disable, dialog._close):
+            for button in (dialog._remote, dialog._start, dialog._close):
               bounds = button.rect
               self.assertGreaterEqual(bounds.x, rect.x)
               self.assertGreaterEqual(bounds.y, rect.y)

@@ -1,4 +1,4 @@
-import {mediaViewer} from './media-view.js?v=0.6.0';
+import {mediaViewer} from './media-view.js?v=0.7.0';
 import {parseCoordinates} from './navigation-input.js?v=0.6.0';
 import {deviceHealth} from './health-ui.js?v=0.6.0';
 import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from './settings-edits.js?v=0.6.0';

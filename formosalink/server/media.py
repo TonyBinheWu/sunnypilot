@@ -8,6 +8,7 @@ from openpilot.sunnypilot.formosalink.media_protocol import MEDIA_TTL
 class MediaRelay:
   def __init__(self, capacity=32, clock=time.monotonic):
     self.frames = {}
+    self.leases = {}
     self.lock = threading.Lock()
     self.capacity, self.clock = capacity, clock
 
@@ -18,6 +19,7 @@ class MediaRelay:
   def put(self, device, frame):
     with self.lock:
       self._expire()
+      device = (device, frame["source"] if frame["source"] in ("wide-road", "driver") else "road-preview")
       previous = self.frames.get(device)
       if previous:
         old = previous[1]
@@ -28,15 +30,32 @@ class MediaRelay:
       remaining = max(0, MEDIA_TTL - max(0, time.time() - frame['sampled_at']))
       self.frames[device] = self.clock() + remaining, frame
 
-  def get(self, device, after):
+  def get(self, device, after, camera="road-preview"):
     with self.lock:
       self._expire()
-      item = self.frames.get(device)
+      item = self.frames.get((device, camera))
       if not item:
         return {'available':False, 'frame':None, 'transport':'https-jpeg-preview-v1'}
       frame = item[1]
       cursor = frame['stream'] + ':' + str(frame['sequence'])
       return {'available':True, 'frame':None if after == cursor else frame, 'cursor':cursor, 'transport':'https-jpeg-preview-v1'}
+
+
+  def watch(self, device, camera):
+    with self.lock:
+      now = self.clock()
+      self.leases = {key:expiry for key,expiry in self.leases.items() if expiry > now}
+      if (device,camera) not in self.leases and len(self.leases) >= 64:
+        raise ValueError("watch capacity")
+      self.leases[(device,camera)] = now+15
+
+  def requested(self, device):
+    with self.lock:
+      return sorted(camera for (owner,camera),expiry in self.leases.items() if owner == device and expiry > self.clock())
+
+  def remaining(self, device):
+    with self.lock:
+      return max(0, min(15, int(max((expiry-self.clock() for (owner,_),expiry in self.leases.items() if owner == device), default=0))))
 
 
 def register(app, store, owner, rate):
@@ -58,13 +77,15 @@ def register(app, store, owner, rate):
       verified = verify(envelope, row['public_key'], 'media')
       frame = validate_frame(verified['payload'])
       store.consume_nonce(row['id'], verified['nonce'])
+      if frame['source'] in ('wide-road','driver') and frame['source'] not in relay.requested(row['id']):
+        raise ValueError('viewer lease expired')
       relay.put(row['id'], frame)
       return {'accepted':True, 'sequence':frame['sequence']}
     except (ValueError, KeyError, TypeError, AttributeError, OverflowError, InvalidSignature) as exc:
       raise HTTPException(403,'invalid media frame') from exc
 
   @app.get('/api/v1/devices/{device_id}/media')
-  def preview(device_id: str, request: Request, after: str = ''):
+  def preview(device_id: str, request: Request, after: str = '', camera: str = 'road-preview'):
     user = owner(request)
     row = store.get(device_id)
     if not row or row['state'] != 'paired' or row['owner_id'] != user['id']:
@@ -72,4 +93,42 @@ def register(app, store, owner, rate):
     if len(after) > 80:
       raise HTTPException(400,'invalid media cursor')
     rate(request,'media-view',600)
-    return relay.get(device_id, after)
+    if camera not in ('road-preview','wide-road','driver'):
+      raise HTTPException(400,'invalid camera')
+    return relay.get(device_id, after, camera)
+
+  @app.post('/api/v1/devices/{device_id}/media/watch')
+  async def watch(device_id: str, request: Request):
+    user = owner(request)
+    row = store.get(device_id)
+    if not row or row['state'] != 'paired' or row['owner_id'] != user['id']:
+      raise HTTPException(404,'device not found')
+    rate(request,'camera-watch',120)
+    try:
+      value = await request.json()
+    except ValueError as exc:
+      raise HTTPException(400,"invalid camera request") from exc
+    if not isinstance(value,dict) or set(value) != {'camera'} or value['camera'] not in ('wide-road','driver'):
+      raise HTTPException(400,'invalid camera')
+    try:
+      relay.watch(device_id,value['camera'])
+    except ValueError as exc:
+      raise HTTPException(429,'watch capacity') from exc
+    return {'seconds':15}
+
+  @app.post('/api/v1/agent/media/watch')
+  async def requested(request: Request):
+    rate(request,'camera-demand',120)
+    try:
+      envelope = await request.json()
+      row = store.get(envelope['device_id'])
+      if not row or row['state'] != 'paired':
+        raise ValueError('device unavailable')
+      value = verify(envelope,row['public_key'],'media-watch')
+      if value['payload'] != {}:
+        raise ValueError('invalid camera demand')
+      store.consume_nonce(row['id'],value['nonce'])
+      seconds = relay.remaining(row['id'])
+      return {'cameras':relay.requested(row['id']) if seconds else [], 'seconds':seconds}
+    except (ValueError,KeyError,TypeError,AttributeError,InvalidSignature) as exc:
+      raise HTTPException(403,'invalid camera request') from exc

@@ -228,9 +228,9 @@ def test_sampler_marks_stale_sources_and_car_speed():
   assert not collect(sm, {}, 3)["metrics"]["sample_valid"]
 
 
-def test_disabled_by_default_and_readonly_integration():
+def test_background_default_and_readonly_integration():
   params = (ROOT / "openpilot/common/params_keys.h").read_text(encoding="utf-8")
-  assert '{"FormosaLinkEnabled", {PERSISTENT, BOOL, "0"}}' in params
+  assert '{"FormosaLinkEnabled", {PERSISTENT, BOOL, "1"}}' in params
   code = ast.parse((ROOT / "openpilot/system/manager/process_config.py").read_text(encoding="utf-8"))
   predicate = next(n for n in code.body if isinstance(n,ast.FunctionDef) and n.name=="formosalink_enabled")
   namespace = {"Params":object,"car":SimpleNamespace(CarParams=object)}

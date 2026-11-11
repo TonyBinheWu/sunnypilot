@@ -32,6 +32,11 @@ TEXT["en"].update(intro="Scan to pair. Enable parked settings below to edit from
 TEXT["ja"].update(intro="QR を読み取って登録します。停車中の遠隔設定を下で許可できます。", compact_intro="QR で登録。\n遠隔設定は停車中のみ。", paired="登録済み", disabled="監視を停止しました。")
 
 
+TEXT["zh-TW"].update(remote_on="遠端設定：開", remote_off="遠端設定：關", compact_intro="掃描 QR，登入 GitHub 配對。", pending="手機掃描 QR 配對。")
+TEXT["en"].update(remote_on="Settings: on", remote_off="Settings: off", compact_intro="Scan QR. Sign in with GitHub.", pending="Scan QR to pair.")
+TEXT["ja"].update(remote_on="遠隔設定：オン", remote_off="遠隔設定：オフ", compact_intro="QR と GitHub で登録。", pending="QR を読み取って登録。")
+
+
 def language():
   code = multilang.language
   return "zh-TW" if code in ("zh-CHT", "zh-TW", "zh-Hant") else "ja" if code == "ja" else "en"
@@ -101,9 +106,7 @@ class FormosaPairingDialog(Widget):
     padding = 20 if big else 8
     self._close = Button(lambda: text("close"), self._close_dialog, font_size=40 if big else 14, text_padding=padding, button_style=ButtonStyle.NORMAL)
     self._start = Button(lambda: text("start"), self._request, font_size=40 if big else 14, text_padding=padding, button_style=ButtonStyle.PRIMARY)
-    self._disable = Button(lambda: text("disable"), self._disable_monitoring, font_size=36 if big else 12, text_padding=padding)
     self._start.set_enabled(lambda: not self._busy and ui_state.is_offroad())
-    self._disable.set_enabled(ui_state.is_offroad)
     self._remote = Button(lambda: text("remote_on" if ui_state.params.get_bool("FormosaLinkRemoteSettings") else "remote_off"), self._toggle_remote,
                           font_size=34 if big else 11, text_padding=padding)
     self._remote.set_enabled(ui_state.is_offroad)
@@ -218,13 +221,13 @@ class FormosaPairingDialog(Widget):
     scale = min(rect.width / 536, rect.height / 240)
     margin, gap = 12*scale, 5*scale
     left_width = rect.width*.54 - 2*margin
-    button_height = 34*scale
+    button_height = 50*scale
     bottom = rect.y + rect.height - margin - button_height
     font = gui_app.font(FontWeight.BOLD)
     body_font = gui_app.font(FontWeight.NORMAL)
     message = text("compact_intro" if self._state == "intro" else self._state)
     if multilang.requires_font_fallback():
-      gui_app.fallback_font(message + text("close") + text("start") + text("disable") + text("remote_on") + text("remote_off"))
+      gui_app.fallback_font(message + text("close") + text("start") + text("remote_on") + text("remote_off"))
     rl.draw_rectangle_rec(rect, rl.Color(15, 20, 36, 255))
     rl.draw_text_ex(font, "FormosaLink", rl.Vector2(rect.x+margin, rect.y+12*scale), 27*scale, 0, rl.WHITE)
     self._close._label.set_font_size(17*scale)
@@ -232,7 +235,7 @@ class FormosaPairingDialog(Widget):
       self._close.render(rl.Rectangle(rect.x+rect.width-margin-80*scale, rect.y+8*scale, 80*scale, button_height))
 
     body_top = rect.y + 54*scale
-    body_bottom = bottom - 2*(button_height+gap) - 4*scale
+    body_bottom = bottom - (button_height+gap) - 6*scale
     text_width = left_width if self._qr_texture is not None else rect.width-2*margin
     body_size = 18*scale
     while True:
@@ -245,8 +248,8 @@ class FormosaPairingDialog(Widget):
     self._last_status_rect = rl.Rectangle(rect.x+margin, body_top, measured.x, measured.y)
     rl.draw_text_ex(body_font, content, rl.Vector2(rect.x+margin, body_top), body_size, 0,
                     rl.Color(165, 177, 202, 255) if self._state == "intro" else rl.Color(185, 170, 255, 255))
-    for index, button in enumerate((self._disable, self._start, self._remote)):
-      button._label.set_font_size(17*scale)
+    for index, button in enumerate((self._start, self._remote)):
+      button._label.set_font_size(24*scale)
       button.render(rl.Rectangle(rect.x+margin, bottom-index*(button_height+gap), left_width, button_height))
     self._last_qr_rect = None
     if self._qr_texture is not None:

@@ -906,3 +906,15 @@ export const translations = {
     "cellularState_unknown": "モデムの状態が不明または期限切れ"
   }
 };
+
+for(const [locale,labels] of Object.entries({
+ 'zh-TW':['鏡頭','超廣角鏡頭','車內鏡頭','道路／測試預覽','即時鏡頭預覽。觀看時由裝置背景傳送，停止觀看後自動停止傳送。','尚未提供的功能','完整行車疊圖、行程與定位仍在開發中。'],
+ en:['Camera','Ultra-wide camera','Cabin camera','Road / demo preview','Live camera previews. The background service uploads only while an owner is watching.','Upcoming features','Full driving overlays, trips and location are still in development.'],
+ ja:['カメラ','超広角カメラ','車内カメラ','道路／テストプレビュー','所有者が視聴中のみ、バックグラウンドで画像を送信します。','今後の機能','走行の詳細オーバーレイ・走行履歴・位置情報は開発中です。']
+})){
+ Object.assign(translations[locale],Object.fromEntries(['mediaCamera','mediaWide','mediaDriver','mediaLegacy','mediaPhase','mediaNextTitle','mediaNext'].map((key,index)=>[key,labels[index]])));
+}
+
+Object.assign(translations['zh-TW'],{mediaWaiting:'等待裝置鏡頭影像。請確認裝置已更新且在線。',mediaTitle:'遠端鏡頭'});
+Object.assign(translations.en,{mediaWaiting:'Waiting for the device camera. Check that the device is updated and online.',mediaTitle:'Remote cameras'});
+Object.assign(translations.ja,{mediaWaiting:'カメラ画像を待っています。デバイスの更新と接続を確認してください。',mediaTitle:'リモートカメラ'});

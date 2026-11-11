@@ -5,9 +5,9 @@
 網站只顯示 GitHub 登入。管理者密碼、手動配對碼及指紋輸入欄位已移除；原管理者身分、既有 GitHub 連結及配對資料保留。
 
 1. 裝置更新至對應的 `hkg-enhanced` 或 `ccnc-port` 後，停車並開啟 **設定 → 裝置 → FormosaLink**。C3X 是新增按鈕，C4 是新增卡片。
-2. 點「產生配對 QR」。此操作是本機對唯讀監看的明確啟用；裝置需可連線到 HTTPS 伺服器。第一次使用會建立獨立 Ed25519 身分，保存在 `/data/formosalink`，不使用 comma 或 sunnylink 的金鑰。
+2. 點「產生配對 QR」。背景監看預設啟用，配對確認後才能回報；裝置需可連線到 HTTPS 伺服器。第一次使用會建立獨立 Ed25519 身分，保存在 `/data/formosalink`，不使用 comma 或 sunnylink 的金鑰。
 3. 用手機相機掃描 QR。手機登入 GitHub 後會自動開啟確認畫面，只需確認裝置名稱並按「確認並配對」。不需輸入配對碼或指紋。
-4. 配對完成後 agent 開始回報；裝置畫面會顯示成功。關閉配對畫面不會停止已明確啟用的唯讀 agent。若要停用，於同一裝置畫面點「停用監看」。網頁撤銷則會立即阻止伺服器接受該裝置後續回報。
+4. 配對完成後 agent 開始回報；裝置畫面會顯示成功。關閉配對畫面不會停止背景 agent。監看預設在背景執行，不再提供裝置端監看開關。網頁撤銷則會立即阻止伺服器接受該裝置後續回報。
 
 QR 十分鐘有效、只能使用一次。重新產生會使舊 QR 失效；到期請在裝置重建並重新掃描。請勿分享 QR 或配對連結。已配對的裝置不會再顯示可供其他帳號認領的 QR；撤銷後須明確建立新身分才能重配。
 
@@ -33,7 +33,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs
 
 The website uses GitHub sign-in only. Password login and manual code/fingerprint inputs are removed from the page; existing identities, GitHub links and devices are retained.
 
-While parked, open **Settings → Device → FormosaLink** on the matching updated branch. Select **Show pairing QR**, an explicit local opt-in to read-only telemetry. Scan with your phone camera, sign in with GitHub and confirm the device name. Pairing credentials are filled automatically. Use **Disable monitoring** locally to stop the optional agent. Revocation on the website prevents further server ingestion.
+While parked, open **Settings → Device → FormosaLink** on the matching updated branch. Select **Show pairing QR**, to establish independent device ownership. Scan with your phone camera, sign in with GitHub and confirm the device name. Pairing credentials are filled automatically. The agent runs in the background by default; there is no device monitoring switch. Revocation on the website prevents further server ingestion.
 
 QR codes are single-use and expire in ten minutes. Generating a new code invalidates the previous one. Do not share QR codes or pairing links. Credentials stay in the URL fragment, are removed from the address bar immediately, and survive the OAuth round trip only in this tab's sessionStorage. They are cleared after pairing or expiry. If storage is blocked, sign in first and scan again. Backend fingerprint verification, device signatures and account ownership checks remain mandatory.
 
@@ -45,7 +45,7 @@ After copying the IIS runtime package, run the host command above **without `-Co
 
 Web ページは GitHub ログインのみです。パスワード、コード、フィンガープリントの手動入力欄は削除し、既存の管理者・GitHub 連携・デバイスは保持します。
 
-対応ブランチへ更新後、停車中に **設定 → デバイス → FormosaLink** を開き、「登録用 QR を表示」を選択してください。これは本体での読み取り専用監視の明示的な有効化です。スマートフォンで QR を読み取り、GitHub ログイン後にデバイス名を確認して登録します。情報は自動入力されます。停止する場合は本体で「監視を停止」を選択します。Web で登録解除した場合、サーバーは以降のデータを受け付けません。
+対応ブランチへ更新後、停車中に **設定 → デバイス → FormosaLink** を開き、「登録用 QR を表示」を選択してください。これは本体での読み取り専用監視の明示的な有効化です。スマートフォンで QR を読み取り、GitHub ログイン後にデバイス名を確認して登録します。情報は自動入力されます。監視は既定でバックグラウンド実行され、本体の監視スイッチはありません。Web で登録解除した場合、サーバーは以降のデータを受け付けません。
 
 QR は 10 分間有効で 1 回限りです。再発行すると古い QR は無効になります。QR や登録リンクを共有しないでください。情報は URL の fragment に格納し、読み込み後にアドレスから削除します。OAuth の往復では当該タブの sessionStorage のみ使用し、完了または期限切れ時に削除します。保存できない場合は先にログインしてから再度スキャンしてください。サーバーの署名、フィンガープリント、所有者確認は維持します。
 

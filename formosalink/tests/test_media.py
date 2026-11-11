@@ -45,7 +45,7 @@ def test_other_owner_and_revoked_device_cannot_view(client):
   assert client.post('/api/v1/agent/media',json=sign(private,device,'media',frame())).status_code==403
 
 
-@pytest.mark.parametrize('change',[{'sampled_at':0},{'width':1281},{'width':639},{'jpeg':'not base64'},{'hud':{'speed_kph':True,'engaged':False}},{'source':'driver'},{'sequence':True},{'hud':{'speed_kph':1,'engaged':False,'latitude':25}}])
+@pytest.mark.parametrize('change',[{'sampled_at':0},{'width':1281},{'width':639},{'jpeg':'not base64'},{'hud':{'speed_kph':True,'engaged':False}},{'source':'unknown-camera'},{'sequence':True},{'hud':{'speed_kph':1,'engaged':False,'latitude':25}}])
 def test_invalid_stale_oversized_or_private_media_is_rejected(change):
   data=frame();data.update(change)
   with pytest.raises((ValueError,TypeError)):validate_frame(data)
@@ -75,3 +75,34 @@ def test_real_publisher_uses_existing_identity_and_signed_http(client):
   publisher.once(client)
   data=client.get('/api/v1/devices/'+device+'/media').json()
   assert data['frame']['source']=='demo' and jpeg_size(JPEG)==(640,360)
+
+
+def test_native_cameras_require_owner_watch_and_are_separate(client):
+  device, private, _ = pair(client)
+  root = '/api/v1/devices/'+device+'/media'
+  for camera in ('wide-road','driver'):
+    data = frame();data['source'] = camera
+    assert client.post('/api/v1/agent/media',json=sign(private,device,'media',data)).status_code == 403
+    assert client.post(root+'/watch',json={'camera':camera}).status_code == 403
+    assert client.post(root+'/watch',json={'camera':camera},headers={'Origin':ORIGIN}).status_code == 200
+    assert client.post('/api/v1/agent/media',json=sign(private,device,'media',data)).status_code == 200
+    assert client.get(root,params={'camera':camera}).json()['frame']['source'] == camera
+  request = sign(private,device,'media-watch')
+  assert client.post('/api/v1/agent/media/watch',json=request).json()['cameras'] == ['driver','wide-road']
+  assert client.post('/api/v1/agent/media/watch',json=request).status_code == 403
+  with client.app.state.store.connection() as db:
+    db.execute("UPDATE devices SET owner_id='different-owner' WHERE id=?", (device,))
+  assert client.post(root+'/watch',json={'camera':'driver'},headers={'Origin':ORIGIN}).status_code == 404
+  assert client.get(root,params={'camera':'driver'}).status_code == 404
+
+
+def test_camera_watch_expires_without_history():
+  now=[100];relay=MediaRelay(clock=lambda:now[0])
+  relay.watch('device','driver')
+  assert relay.requested('device') == ['driver']
+  assert relay.remaining('device') == 15
+  now[0]=114
+  assert relay.remaining('device') == 1
+  now[0]=116
+  assert relay.requested('device') == []
+  assert relay.remaining('device') == 0
