@@ -108,13 +108,13 @@ class SettingsProvider:
       if current != state["values"][command["key"]]:
         raise ValueError("conflict")
       from openpilot.sunnypilot.formosalink.navigation import destination,encode
-      self.params.put(command["key"], destination(value) if command["key"]=="NavDestination" else value, block=True)
+      self.params.put(command["key"], destination(value) if command["key"]=="NavDestination" else value)
       readback=self.params.get(command["key"], return_default=True)
       if (encode(readback) if command["key"]=="NavDestination" else readback) != value:
         raise ValueError("write_failed")
       receipt.update(status="applied", reason="applied")
-      self.params.put("FormosaLinkSettingsVersion", str(uuid.uuid4()), block=True)
-      self.params.put("ParamsVersion", int(self.params.get("ParamsVersion") or 0)+1, block=True)
+      self.params.put("FormosaLinkSettingsVersion", str(uuid.uuid4()))
+      self.params.put("ParamsVersion", int(self.params.get("ParamsVersion") or 0)+1)
     except ValueError as exc:
       from openpilot.sunnypilot.formosalink.management_protocol import REASONS
       receipt["reason"] = str(exc) if str(exc) in REASONS else "setting_unavailable"

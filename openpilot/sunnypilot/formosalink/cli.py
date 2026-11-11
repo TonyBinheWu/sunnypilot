@@ -33,8 +33,8 @@ def main():
   if args.command == "disable":
     from openpilot.common.params import Params
     params = Params()
-    params.put_bool("FormosaLinkRemoteSettings", False, block=True)
-    params.put_bool("FormosaLinkEnabled", False, block=True)
+    params.put_bool("FormosaLinkRemoteSettings", False)
+    params.put_bool("FormosaLinkEnabled", False)
     print(t("disabled"))
     return
   if args.command == "run":

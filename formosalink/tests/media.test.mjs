@@ -1,6 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {recordingMime,validPreview,mediaCursor,clipLimit,streamUrl} from '../web/media-view.js';
+import {translations} from '../web/i18n.js';
+import {readFileSync} from 'node:fs';
+
+test('live camera waiting describes automatic native startup in all supported languages',()=>{
+ for(const language of ['zh-TW','en','ja'])assert.ok(translations[language].mediaWaiting);
+ assert.ok(translations['zh-TW'].mediaWaiting.includes('無須手動發送'));
+ assert.ok(!translations['zh-TW'].mediaWaiting.includes('需先在來源端'));
+ const index=readFileSync(new URL('../web/index.html',import.meta.url),'utf8');
+ const app=readFileSync(new URL('../web/app.js',import.meta.url),'utf8');
+ const workspace=readFileSync(new URL('../web/device-settings.js',import.meta.url),'utf8');
+ assert.ok(index.includes('/app.js?v=0.8.1'));
+ assert.ok(app.includes('./i18n.js?v=0.8.1'));
+ assert.ok(app.includes('./device-settings.js?v=0.8.1'));
+ assert.ok(workspace.includes('./media-view.js?v=0.8.1'));
+});
 test('stream uses same self-hosted HTTPS authority, LAN addresses and supported cameras only',()=>{
  assert.equal(streamUrl('https://formosapilot.dinglu-t.com','abc','driver'),'wss://formosapilot.dinglu-t.com/api/v1/devices/abc/media/stream?camera=driver');
  assert.equal(streamUrl('https://link.home','abc','wide-road'),'wss://link.home/api/v1/devices/abc/media/stream?camera=wide-road');

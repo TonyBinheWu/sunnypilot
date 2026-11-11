@@ -33,9 +33,9 @@ class TestSettingsProfile(unittest.TestCase):
     with tempfile.TemporaryDirectory() as directory:
       params=Params(directory)
       self.assertFalse(params.get_bool("FormosaLinkRemoteSettings"))
-      params.put_bool("FormosaLinkEnabled",True,block=True)
-      params.put_bool("FormosaLinkRemoteSettings",True,block=True)
-      params.put_bool("QuietMode",False,block=True)
+      params.put_bool("FormosaLinkEnabled",True)
+      params.put_bool("FormosaLinkRemoteSettings",True)
+      params.put_bool("QuietMode",False)
       native=NativeSettingsProvider()
       self.assertIn("version",native.info())
       source=SettingsProvider(params,native.schema,lambda:{},lambda:True,translate=native.translate)
@@ -53,7 +53,7 @@ class TestSettingsProfile(unittest.TestCase):
     with tempfile.TemporaryDirectory() as directory:
       params=Params(directory)
       for key in ("FormosaLinkEnabled","FormosaLinkRemoteSettings","NavigationEnabled"):
-        params.put_bool(key,True,block=True)
+        params.put_bool(key,True)
       source=SettingsProvider(params,{"panels":[]},lambda:{},lambda:True,navigation=True)
       cmd=command(source.capture(),"00000000-0000-0000-0000-000000000001")
       cmd.update(key="NavDestination",value=encode({"latitude":25.03,"longitude":121.56,"place_name":"DEMO"}))
@@ -105,10 +105,10 @@ class TestSettingsProfile(unittest.TestCase):
     from openpilot.system.ui.sunnypilot.widgets.list_view import MultipleButtonActionSP
     from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle
     with tempfile.TemporaryDirectory() as directory:
-      params=Params(directory);params.put_bool("QuietMode",False,block=True);params.put("CameraOffset",0.0,block=True);params.put("LongitudinalPersonality",1,block=True)
+      params=Params(directory);params.put_bool("QuietMode",False);params.put("CameraOffset",0.0);params.put("LongitudinalPersonality",1)
       with patch("openpilot.system.ui.sunnypilot.widgets.toggle.Params",return_value=params),patch("openpilot.system.ui.sunnypilot.widgets.option_control.Params",return_value=params),patch("openpilot.system.ui.sunnypilot.widgets.list_view.Params",return_value=params),patch("openpilot.selfdrive.ui.mici.widgets.button.Params",return_value=params):
         widgets=[ToggleSP(param="QuietMode",callback=lambda _:self.fail("must not call toggle callback")),OptionControlSP("CameraOffset",-35,35,use_float_scaling=True),MultipleButtonActionSP(["0","1","2"],100,param="LongitudinalPersonality"),BigParamControl("Quiet","QuietMode"),BigMultiParamToggle("Style","LongitudinalPersonality",["0","1","2"])]
-      params.put_bool("QuietMode",True,block=True);params.put("CameraOffset",.12,block=True);params.put("LongitudinalPersonality",2,block=True)
+      params.put_bool("QuietMode",True);params.put("CameraOffset",.12);params.put("LongitudinalPersonality",2)
       with patch.object(params,"put",side_effect=AssertionError("refresh must not write")),patch.object(params,"put_bool",side_effect=AssertionError("refresh must not write")):
         refresh_controls(widgets)
       self.assertTrue(widgets[0]._state)

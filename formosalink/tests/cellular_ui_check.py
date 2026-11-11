@@ -28,7 +28,7 @@ class TestCellularToggleLifecycle(unittest.TestCase):
     from openpilot.selfdrive.ui.ui_state import ui_state
     with tempfile.TemporaryDirectory() as directory:
       params = Params(directory)
-      params.put_bool("GsmDataEnabled", True, block=True)
+      params.put_bool("GsmDataEnabled", True)
       with patch("openpilot.common.params.Params", return_value=params), patch.object(ui_state, "is_offroad", return_value=True):
         panel = AdvancedNetworkSettings(Mock(ipv4_address="127.0.0.1"))
         panel._cellular_data_btn.set_parent_rect(rl.Rectangle(0, 0, 1500, 1000))
@@ -64,7 +64,7 @@ class TestCellularToggleLifecycle(unittest.TestCase):
                 (True, {"state":"SEARCHING", "registration":"denied"}, "denied"),
                 (True, {"state":"CONNECTED", "connected":True, "ip_address":"10.1.2.3", "seconds_since_boot":80}, "unknown"),
               ):
-                params.put_bool("GsmDataEnabled", enabled, block=True)
+                params.put_bool("GsmDataEnabled", enabled)
                 manager.modem_state = {"iccid":"DEMO0000", "seconds_since_boot":100, **fields}
                 for euicc in (False, True):
                   manager.is_euicc = euicc

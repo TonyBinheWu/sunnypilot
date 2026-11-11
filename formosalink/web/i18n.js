@@ -286,7 +286,7 @@ export const translations = {
     "mediaNextTitle": "後續整合",
     "mediaNext": "待完成：實車道路影像、完整道路疊圖、錄影庫、行程統計、位置與停車位置、對外直播。",
     "mediaPaused": "分頁在背景，暫停觀看。",
-    "mediaWaiting": "尚無新鮮影像。需先在來源端明確啟動發送。",
+    "mediaWaiting": "正在要求車機啟動鏡頭，等待即時影像。",
     "mediaDemo": "測試畫面・不是實車",
     "mediaRoad": "道路預覽",
     "mediaUpgrade": "影音後端尚未更新，或裝置無法存取。",
@@ -588,7 +588,7 @@ export const translations = {
     "mediaNextTitle": "Next stages",
     "mediaNext": "Pending: native road video, full driving overlays, recording library, trip statistics, live/parked location and outbound broadcasting.",
     "mediaPaused": "Background tab; viewing paused.",
-    "mediaWaiting": "No fresh image. Explicitly start the publisher on the source first.",
+    "mediaWaiting": "Requesting the device camera; waiting for live video.",
     "mediaDemo": "Test image · not a vehicle",
     "mediaRoad": "Road preview",
     "mediaUpgrade": "Media backend needs an update, or this device is unavailable.",
@@ -890,7 +890,7 @@ export const translations = {
     "mediaNextTitle": "今後の統合",
     "mediaNext": "未実装：実機の道路映像、道路オーバーレイ、録画ライブラリー、走行統計、現在地と駐車位置、外部配信。",
     "mediaPaused": "バックグラウンドのため視聴を一時停止しています。",
-    "mediaWaiting": "新しい画像がありません。送信元で明示的に送信を開始してください。",
+    "mediaWaiting": "本体のカメラを起動しています。映像を待っています。",
     "mediaDemo": "テスト画像・実車ではありません",
     "mediaRoad": "道路プレビュー",
     "mediaUpgrade": "メディアのバックエンド更新が必要か、このデバイスにアクセスできません。",
@@ -915,9 +915,9 @@ for(const [locale,labels] of Object.entries({
  Object.assign(translations[locale],Object.fromEntries(['mediaCamera','mediaWide','mediaDriver','mediaLegacy','mediaPhase','mediaNextTitle','mediaNext'].map((key,index)=>[key,labels[index]])));
 }
 
-Object.assign(translations['zh-TW'],{mediaWaiting:'等待裝置鏡頭影像。請確認裝置已更新且在線。',mediaTitle:'遠端鏡頭'});
-Object.assign(translations.en,{mediaWaiting:'Waiting for the device camera. Check that the device is updated and online.',mediaTitle:'Remote cameras'});
-Object.assign(translations.ja,{mediaWaiting:'カメラ画像を待っています。デバイスの更新と接続を確認してください。',mediaTitle:'リモートカメラ'});
+Object.assign(translations['zh-TW'],{mediaWaiting:'正在要求車機啟動鏡頭，無須手動發送。若持續沒有影像，請確認車機已更新 carrot-wip、重新啟動並保持 FormosaLink 連線；亦可切換另一個鏡頭確認。',mediaTitle:'遠端鏡頭'});
+Object.assign(translations.en,{mediaWaiting:'Requesting the device camera automatically. If no video arrives, update and restart the device, check its FormosaLink connection, and try the other camera.',mediaTitle:'Remote cameras'});
+Object.assign(translations.ja,{mediaWaiting:'本体のカメラを自動起動しています。映像が届かない場合は本体を更新・再起動し、FormosaLink の接続と別のカメラを確認してください。',mediaTitle:'リモートカメラ'});
 
 Object.assign(translations['zh-TW'],{mediaTitle:'即時影像',sectionDesc_live:'超廣角與車內鏡頭即時串流。',mediaPhase:'透過自架服務加密串流，目標每秒 8 格。只有裝置所有者觀看時才傳送。',mediaLive:'即時串流中',mediaStreamError:'串流中斷，正在重新連線。請確認裝置在線，且伺服器已啟用 WebSocket。'});
 Object.assign(translations.en,{mediaTitle:'Live video',sectionDesc_live:'Live ultra-wide and cabin camera streams.',mediaPhase:'Encrypted streaming through your self-hosted service, targeting 8 fps. Uploads run only while the owner watches.',mediaLive:'Live streaming',mediaStreamError:'Stream interrupted; reconnecting. Check that the device is online and the server supports WebSocket.'});

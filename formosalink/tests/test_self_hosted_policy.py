@@ -15,7 +15,7 @@ def test_disable_legacy_preserves_existing_formosa_pairing_and_consent():
   values = {"SunnylinkEnabled":True, "EnableSunnylinkUploader":True, "SunnylinkDongleId":"old-id",
             "FormosaLinkEnabled":True, "FormosaLinkRemoteSettings":True}
   before = dict(values)
-  params = SimpleNamespace(get_bool=lambda key:values.get(key, False), put_bool=lambda key,value,block:values.update({key:value}))
+  params = SimpleNamespace(get_bool=lambda key:values.get(key, False), put_bool=lambda key,value:values.update({key:value}))
   disable_legacy(params)
   assert values == {**before, "SunnylinkEnabled":False, "EnableSunnylinkUploader":False}
 

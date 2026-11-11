@@ -59,14 +59,14 @@ class TestNativeCamera(unittest.TestCase):
     from pathlib import Path
     with tempfile.TemporaryDirectory() as directory, patch.dict('os.environ', {'FORMOSALINK_CAMERA_LEASE':str(Path(directory)/'lease')}):
       params=Params(directory)
-      params.put_bool('FormosaLinkEnabled',True,block=True)
+      params.put_bool('FormosaLinkEnabled',True)
       self.assertFalse(formosalink_cameras(False,params,None))
       with patch('time.monotonic',return_value=100):
         save_lease(['driver'])
         self.assertTrue(formosalink_cameras(False,params,None))
-        params.put_bool('FormosaLinkEnabled',False,block=True)
+        params.put_bool('FormosaLinkEnabled',False)
         self.assertFalse(formosalink_cameras(False,params,None))
-      params.put_bool('FormosaLinkEnabled',True,block=True)
+      params.put_bool('FormosaLinkEnabled',True)
       with patch('time.monotonic',return_value=116):
         self.assertFalse(formosalink_cameras(False,params,None))
       self.assertFalse(params.get_bool('IsDriverViewEnabled'))
@@ -74,7 +74,7 @@ class TestNativeCamera(unittest.TestCase):
 
   def test_both_native_streams_encode_fresh_padded_nv12(self):
     from openpilot.sunnypilot.formosalink.stream_encoder import StreamEncoder
-    for camera,stream in (('wide-road',VisionStreamType.VISION_STREAM_WIDE_ROAD),('driver',VisionStreamType.VISION_STREAM_CABIN)):
+    for camera,stream in (('wide-road',VisionStreamType.VISION_STREAM_WIDE_ROAD),('driver',getattr(VisionStreamType, 'VISION_STREAM_DRIVER', None) or VisionStreamType.VISION_STREAM_CABIN)):
       name='formosa-test-'+uuid.uuid4().hex
       server=VisionIpcServer(name)
       width,height,stride,offset=64,48,80,4096
@@ -89,7 +89,8 @@ class TestNativeCamera(unittest.TestCase):
       raw=np.zeros(size,dtype=np.uint8);raw[:stride*height]=96;raw[offset:]=128
       def send():
         for index in range(100):
-          now=time.monotonic_ns()
+          from openpilot.sunnypilot.formosalink.cameras import camera_clock
+          now=int(camera_clock()*1e9)
           server.send(stream,raw,index,now,now)
           time.sleep(.01)
       worker=threading.Thread(target=send);worker.start()

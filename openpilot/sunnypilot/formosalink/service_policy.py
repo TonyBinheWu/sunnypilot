@@ -20,11 +20,11 @@ def self_hosted_origin(origin):
 def disable_legacy(params):
   # Background monitoring is enabled by default; pairing is still required.
   if not params.get_bool("FormosaLinkEnabled"):
-    params.put_bool("FormosaLinkEnabled", True, block=True)
+    params.put_bool("FormosaLinkEnabled", True)
   # Preserve old IDs, credentials and all independent FormosaLink state.
   for key in ("SunnylinkEnabled", "EnableSunnylinkUploader"):
     if params.get_bool(key):
-      params.put_bool(key, False, block=True)
+      params.put_bool(key, False)
 
 
 def stop_legacy_daemon(params, proc_root=Path("/proc")):

@@ -31,7 +31,7 @@ export function mediaViewer({api,t,el}){
   canvas=el('canvas');canvas.width=640;canvas.height=360;canvas.setAttribute('aria-label',t('mediaTitle'));ctx=canvas.getContext('2d',{alpha:false});clearPicture();root.append(canvas);
   const actions=el('div',undefined,'media-actions');root.append(actions);
   const button=(name,callback)=>{const node=translated('button',name);node.type='button';node.addEventListener('click',callback);actions.append(node);return node;};
-  button('mediaStart',()=>{if(active)return;active=true;const mine=++generation;say('waiting');poll(mine);});
+  button('mediaStart',()=>{if(active)return;active=true;const mine=++generation;say('mediaWaiting');poll(mine);});
   button('mediaStop',stop);
   recButton=button('mediaRecord',()=>{
    if(recording?.state==='recording'){stopRecording();return;}

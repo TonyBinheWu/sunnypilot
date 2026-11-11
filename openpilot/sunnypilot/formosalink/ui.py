@@ -132,7 +132,7 @@ class FormosaPairingDialog(Widget):
 
   def _toggle_remote(self):
     if ui_state.is_offroad():
-      ui_state.params.put_bool(REMOTE_KEY, not ui_state.params.get_bool(REMOTE_KEY), block=True)
+      ui_state.params.put_bool(REMOTE_KEY, not ui_state.params.get_bool(REMOTE_KEY))
 
   def _clear_qr(self):
     if self._qr_texture is not None:
@@ -177,7 +177,7 @@ class FormosaPairingDialog(Widget):
     self._state = "disabled"
     self._expires = 0
     ui_state.params.put_bool("FormosaLinkEnabled", False)
-    ui_state.params.put_bool(REMOTE_KEY, False, block=True)
+    ui_state.params.put_bool(REMOTE_KEY, False)
 
   def _update_state(self):
     if not ui_state.is_offroad():

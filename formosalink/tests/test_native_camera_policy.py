@@ -28,7 +28,7 @@ def test_slow_modem_serial_queries_do_not_falsify_fresh_kernel_link():
 def test_upgrade_enables_background_but_preserves_remote_setting_consent():
   from openpilot.sunnypilot.formosalink.service_policy import disable_legacy
   state={'FormosaLinkEnabled':False, 'FormosaLinkRemoteSettings':False}
-  params=SimpleNamespace(get_bool=lambda key:state.get(key,False),put_bool=lambda key,value,block:state.update({key:value}))
+  params=SimpleNamespace(get_bool=lambda key:state.get(key,False),put_bool=lambda key,value:state.update({key:value}))
   disable_legacy(params)
   assert state['FormosaLinkEnabled'] is True
   assert state['FormosaLinkRemoteSettings'] is False

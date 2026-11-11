@@ -16,6 +16,14 @@ from openpilot.sunnypilot.formosalink.protocol import sign
 CAMERAS = ("wide-road", "driver")
 
 
+def camera_clock():
+  # camerad's C++ nanos_since_boot() includes suspend time on Linux.
+  # Python monotonic() does not; comparing them rejects every post-resume frame.
+  if hasattr(time, "CLOCK_BOOTTIME"):
+    return time.clock_gettime(time.CLOCK_BOOTTIME)
+  return time.monotonic()
+
+
 def lease_path():
   return Path(os.environ.get("FORMOSALINK_CAMERA_LEASE", "/dev/shm/formosalink-camera.json"))
 
@@ -85,24 +93,26 @@ class NativeCamera:
       raise ValueError("camera unavailable")
     frame = self.client.recv(50)
     captured = self.client.timestamp_eof/1e9
-    age = time.monotonic()-captured
+    age = camera_clock()-captured
     if frame is None or not 0 <= age < 1:
       from msgq.visionipc import VisionIpcClient
       self.client = VisionIpcClient(*self._client_args)
       raise ValueError("camera frame unavailable")
     data = self.encoder(frame)
-    return data, time.time()-(time.monotonic()-captured), {"speed_kph":None, "engaged":None}
+    return data, time.time()-(camera_clock()-captured), {"speed_kph":None, "engaged":None}
 
 
 def stream_camera(identity, private, camera, stop):
   import websocket
   from openpilot.sunnypilot.formosalink.stream_encoder import StreamEncoder
   from openpilot.sunnypilot.formosalink.media_protocol import jpeg_size, validate_frame
-  source = NativeCamera(camera, encoder=StreamEncoder())
+  source, last_warning = None, None
   url = identity['origin'].replace('https://', 'wss://', 1).replace('http://', 'ws://', 1)+'/api/v1/agent/media/stream'
   try:
     while not stop.is_set():
       try:
+        if source is None:
+          source = NativeCamera(camera, encoder=StreamEncoder())
         # TLS certificate checks stay enabled. The signed handshake never enters a URL.
         with websocket.create_connection(url, timeout=2, suppress_origin=True) as socket:
           socket.send(json.dumps(sign(private, identity['device_id'], 'media-stream', {'camera':camera})))
@@ -123,11 +133,16 @@ def stream_camera(identity, private, camera, stop):
             sequence += 1
             stop.wait(max(0, .125-(time.monotonic()-started)))
       except Exception as exc:
-        logging.getLogger('formosalink-cameras').debug('Camera stream unavailable (%s)', type(exc).__name__)
-        source.close()
+        now = time.monotonic()
+        if last_warning is None or now-last_warning >= 30:
+          logging.getLogger('formosalink-cameras').warning('Camera %s stream unavailable (%s)', camera, type(exc).__name__)
+          last_warning = now
+        if source is not None:
+          source.close()
         stop.wait(2)
   finally:
-    source.close()
+    if source is not None:
+      source.close()
 
 
 def run(directory, stop):

@@ -36,7 +36,7 @@ class Params:
   def get_bool(self,key):
     return bool(self.get(key))
 
-  def put(self,key,value,block=True):
+  def put(self,key,value):
     self.values[key]=value
     self.writes.append((key,value))
 

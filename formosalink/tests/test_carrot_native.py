@@ -51,6 +51,56 @@ def test_carrot_driver_enum_and_nv12_padding(monkeypatch):
   assert nv12_bytes(frame)==bytes([1,2,3,4,5,6])
 
 
+@pytest.mark.parametrize('camera', ['wide-road', 'driver'])
+def test_native_camera_freshness_uses_camerad_boottime_after_suspend(monkeypatch, camera):
+  from openpilot.sunnypilot.formosalink.cameras import NativeCamera
+  frame = object()
+  client = SimpleNamespace(is_connected=lambda: True, recv=lambda timeout: frame, timestamp_eof=600_000_000_000)
+  monkeypatch.setitem(sys.modules, 'msgq.visionipc', SimpleNamespace(
+    VisionIpcClient=lambda *args: client,
+    VisionStreamType=SimpleNamespace(VISION_STREAM_WIDE_ROAD=1, VISION_STREAM_DRIVER=2)))
+  monkeypatch.setattr(time, 'monotonic', lambda: 100.)
+  monkeypatch.setattr(time, 'CLOCK_BOOTTIME', 12345, raising=False)
+  monkeypatch.setattr(time, 'clock_gettime', lambda clock: 600.05, raising=False)
+  monkeypatch.setattr(time, 'time', lambda: 1000.)
+  source = NativeCamera(camera, encoder=lambda value: b'jpeg')
+  data, sampled, _ = source()
+  assert data == b'jpeg'
+  assert sampled == pytest.approx(999.95)
+
+
+@pytest.mark.parametrize('age', [-.1, 1., 10.])
+def test_native_camera_still_rejects_future_and_stale_frames(monkeypatch, age):
+  import openpilot.sunnypilot.formosalink.cameras as cameras
+  client = SimpleNamespace(is_connected=lambda: True, recv=lambda timeout: object(), timestamp_eof=int((600.-age)*1e9))
+  monkeypatch.setitem(sys.modules, 'msgq.visionipc', SimpleNamespace(VisionIpcClient=lambda *args: client,
+    VisionStreamType=SimpleNamespace(VISION_STREAM_WIDE_ROAD=1, VISION_STREAM_DRIVER=2)))
+  monkeypatch.setattr(cameras, 'camera_clock', lambda: 600.)
+  with pytest.raises(ValueError, match='camera frame unavailable'):
+    cameras.NativeCamera('driver', encoder=lambda frame: b'jpeg')()
+
+
+def test_camera_initialization_failure_retries_instead_of_killing_worker(monkeypatch, caplog):
+  import openpilot.sunnypilot.formosalink.cameras as cameras
+  attempts, closed = [], []
+  def source(*args, **kwargs):
+    attempts.append(True)
+    if len(attempts) == 1:
+      raise RuntimeError('private material must not be logged')
+    return SimpleNamespace(close=lambda: closed.append(True))
+  class Stop:
+    waits = 0
+    def is_set(self): return self.waits >= 2
+    def wait(self, seconds): self.waits += 1
+  def unavailable(*args, **kwargs): raise OSError('unavailable')
+  monkeypatch.setattr(cameras, 'NativeCamera', source)
+  monkeypatch.setitem(sys.modules, 'websocket', SimpleNamespace(create_connection=unavailable))
+  cameras.stream_camera({'origin':'https://example.test', 'device_id':'test'}, None, 'driver', Stop())
+  assert len(attempts) == 2 and closed
+  assert 'Camera driver stream unavailable (RuntimeError)' in caplog.text
+  assert 'private material' not in caplog.text
+
+
 def test_carrot_health_uses_its_own_schema_without_sunnypilot_settings():
   provider=CarrotStatusProvider.__new__(CarrotStatusProvider)
   class State(dict):
