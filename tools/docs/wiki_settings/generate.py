@@ -448,7 +448,7 @@ def load_catalog(path: Path, locales: Iterable[str] = DEFAULT_LOCALES) -> tuple[
   for node in payload["menu"]:
     if not isinstance(node, dict):
       raise GenerationError("catalog menu entries must be objects")
-    _walk_menu(node, parent_ids=(), parent_labels={}, leaves=leaves, locales=tuple(locales))
+    _walk_menu(node, parent_ids=(), parent_labels={}, leaves=leaves, locales=requested_locales)
   leaf_ids = [leaf.id for leaf in leaves]
   if len(leaf_ids) != len(set(leaf_ids)):
     raise GenerationError("leaf menu ids must be globally unique for stable Wiki page names")

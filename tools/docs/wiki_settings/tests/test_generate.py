@@ -79,6 +79,11 @@ def write_catalog(root, payload):
 
 
 class WikiSettingsGeneratorTest(unittest.TestCase):
+  def test_locale_iterator_keeps_requested_menu_labels(self):
+    settings, leaves = GENERATOR.load_catalog(GENERATOR.DEFAULT_CATALOG, iter(("ko", "en")))
+    self.assertEqual(len(settings), 212)
+    self.assertTrue(all(set(leaf.labels) == {"ko", "en"} for leaf in leaves))
+
   def test_traditional_bundle_matches_current_catalog_and_preserves_manual(self):
     bundle = GENERATOR.REPO_ROOT / "openpilot/selfdrive/carrot/web/docs/settings"
     index = json.loads((bundle / "Settings-Catalog.json").read_text(encoding="utf-8"))
