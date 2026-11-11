@@ -24,23 +24,48 @@ final class PhoneVoice {
     void heardSetting(SpokenSetting setting);
     void heardCruise(SpokenCruise cruise, boolean needsConfirmation);
     void findSettings(String query);
+    void setupRequired(String reason);
   }
   private final Context context;
   private final Listener listener;
   private final Handler ui = new Handler(Looper.getMainLooper());
   private SpeechRecognizer engine;
   private int generation;
+  private boolean checking;
+  private long supportUntil;
+  private final SpeechProbe probe;
   private final Runnable timeout = () -> cancelWith(UiText.get("음성 듣기를 마쳤어요.", "Listening ended."));
 
-  PhoneVoice(Context context, Listener listener) { this.context = context; this.listener = listener; }
-  boolean listening() { return engine != null; }
+  PhoneVoice(Context context, Listener listener) { this.context = context; this.listener = listener; this.probe = new SpeechProbe(context); }
+  boolean listening() { return engine != null || checking; }
 
   void listen() {
     stop();
-    if (Build.VERSION.SDK_INT < 31 || !SpeechRecognizer.isOnDeviceRecognitionAvailable(context)) {
-      listener.status(UiText.get("기기 내 음성 인식을 사용할 수 없어요. 휴대폰의 음성 언어 팩을 확인하세요.", "On-device speech recognition is unavailable. Check the phone’s speech language pack."));
+    SpeechModelPolicy.State basic = SpeechModelPolicy.prerequisite(Build.VERSION.SDK_INT, SpeechProbe.microphone(context), SpeechProbe.service(context));
+    if (basic == SpeechModelPolicy.State.OLD_ANDROID || basic == SpeechModelPolicy.State.PERMISSION || basic == SpeechModelPolicy.State.NO_SERVICE) {
+      listener.setupRequired("無法開始手機直接語音，請檢查 Android 版本、麥克風權限與語音辨識服務。");
       return;
     }
+    if (Build.VERSION.SDK_INT >= 33 && ChineseVoice.traditional(Locale.getDefault()) && SystemClock.elapsedRealtime() >= supportUntil) {
+      final int checkToken = generation;
+      checking = true;
+      listener.status(UiText.get("중국어 음성 모델 확인 중", "Checking the Mandarin speech model"));
+      probe.check("zh-TW", (state, detail) -> {
+        if (checkToken != generation) return;
+        checking = false;
+        if (SpeechModelPolicy.mayTryListening(state)) {
+          // Reuse recent metadata in the same foreground conversation; permission is still checked each time.
+          supportUntil = SystemClock.elapsedRealtime() + (state == SpeechModelPolicy.State.INSTALLED ? 60000 : 30000);
+          begin();
+        }
+        else listener.setupRequired("中文語音模型尚未可用。請依下方狀態下載或完成設定。" + (detail.isEmpty() ? "" : "\n" + detail));
+      });
+      return;
+    }
+    begin();
+  }
+
+  private void begin() {
     final int token = generation;
     final long started = SystemClock.elapsedRealtime();
     try {
@@ -100,13 +125,17 @@ final class PhoneVoice {
         }
         public void onError(int error) {
           if (token != generation) return;
-          if (error == SpeechRecognizer.ERROR_NO_MATCH && speechStart != 0) {
+          if (error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) {
+            stop();
+            listener.setupRequired("語音服務回報麥克風權限問題。即使 App 權限已允許，也請檢查系統『麥克風存取』總開關，並確認語音服務的權限。");
+          } else if (error == SpeechRecognizer.ERROR_NO_MATCH && speechStart != 0) {
             stop();
             listener.missed(null, UiText.get("말소리는 들렸는데 문장을 인식하지 못했어요.", "Speech was detected but no words were recognized."));
           } else if (error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
             cancelWith(UiText.get("음성 대기 종료 · 마이크로 다시 시작", "Listening ended · tap the mic to start"));
           } else if (error == SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE || error == SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED) {
-            cancelWith(UiText.get("휴대폰의 기기 내 음성 인식 언어 팩을 확인하세요.", "Check the phone’s on-device speech language pack."));
+            stop();
+            listener.setupRequired("語音服務回報目前語言未安裝或不支援（代碼 " + error + "）。請檢查中文（台灣）模型與手機語言設定。");
           } else cancelWith(UiText.get("음성 인식을 시작하지 못했어요. 마이크 권한과 사용 상태를 확인하세요.", "Speech unavailable. Check microphone permission and availability."));
         }
       });
@@ -132,13 +161,15 @@ final class PhoneVoice {
       ui.postDelayed(timeout, 15000);
       engine.startListening(intent);
     } catch (RuntimeException e) {
-      cancelWith(UiText.get("휴대폰의 음성 인식을 사용할 수 없어요.", "Phone speech recognition is unavailable."));
+      stop();
+      listener.setupRequired("無法啟動手機的裝置端語音辨識。請依下方指引檢查麥克風權限、語音服務與中文模型。");
     }
   }
 
+  void resetSupport() { supportUntil = 0; }
   private void cancelWith(String message) { stop(); listener.status(message); }
   void stop() {
-    generation++;
+    generation++; checking = false; probe.cancel();
     ui.removeCallbacks(timeout);
     SpeechRecognizer previous = engine;
     engine = null;

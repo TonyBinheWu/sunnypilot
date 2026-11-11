@@ -124,6 +124,8 @@ public final class UiText {
     TRADITIONAL.put("Cruise target is %s km/h.", "巡航設定速度為每小時 %s 公里。");
     TRADITIONAL.put("Cruise request received; application is not yet verified.", "已收到巡航速度請求，尚未確認套用。");
     TRADITIONAL.put("Cruise request was not applied. Check active assistance and vehicle conditions.", "巡航請求未套用，請確認輔助啟用狀態與車輛條件。");
+    TRADITIONAL.put("Chinese speech model and microphone setup", "中文語音檢查與安裝");
+    TRADITIONAL.put("Checking the Mandarin speech model", "正在檢查國語語音模型");
   }
 
   public static String get(String korean, String english) {

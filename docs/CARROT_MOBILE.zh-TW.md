@@ -40,7 +40,7 @@ Carrot Web 適用於手機、平板與電腦瀏覽器；iPhone 可使用網頁�
 
 ## Android CarrotAssist
 
-本分支的 Android 原生介面新增繁中，依手機的 `zh-Hant`／臺灣／香港／澳門語系顯示，與網頁語言分開。已提供 [0.2.13 已簽章 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.13/CarrotAssist-TW-0.2.13.apk)。繁中版使用獨立套件，可與原版並存；新 App 的授權與設定分開保存。
+本分支的 Android 原生介面新增繁中，依手機的 `zh-Hant`／臺灣／香港／澳門語系顯示，與網頁語言分開。已提供 [0.2.14 已簽章 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/CarrotAssist-TW-0.2.14.apk)。繁中版使用獨立套件，可與原版並存；新 App 的授權與設定分開保存。
 
 App 可搜尋同網路裝置、手動輸入 IP、開啟 Carrot Web、檢查 App 更新、開啟手機預設助手與使用直接語音。App 更新、車機 Git 更新及中繼服務更新是各自獨立的流程。
 
@@ -74,6 +74,19 @@ App 可搜尋同網路裝置、手動輸入 IP、開啟 Carrot Web、檢查 App 
 若辨識器沒有提供巡航指令的可信度分數，App 會要求覆誦含相同動作與數值的「確認…」句子，例如「確認巡航速度設為100公里」。確認在提示播完後六秒內有效，不能只說「是」，換值、逾時、離開畫面或其他指令會使確認失效。問句、否定句、複合駕駛指令、候選結果衝突及過期結果不會送出駕駛請求。
 
 設定與巡航速度結果會回讀裝置；「已收到請求」與「已套用」分開回覆，巡航目標值不代表實際車速。未在本次進行車內辨識率或實車操控測試。語音服務需求可參考 [Android 語音辨識文件](https://developer.android.com/reference/android/speech/SpeechRecognizer)。
+
+### 中文語音模型與權限引導（0.2.14）
+
+點 App 上方裝置名稱，再選「中文語音檢查與安裝」。不需連車機；模型或麥克風權限錯誤也會自動開啟。
+
+1. 按「授予麥克風權限」，或「開啟 App 權限設定」手動允許。
+2. 權限已允許仍不能收音時，檢查快速設定／隱私設定的「麥克風存取」總開關及語音服務權限。
+3. Android 13 以上會區分已安裝、可下載、等待下載、不支援及無法確認；只有精確 zh-TW／zh-Hant-TW 模型會被標成已安裝，通用中文資訊不會被當成台灣模型已就緒。
+4. 顯示可下載時，按「下載中文語音模型」並處理系統確認。Android 14 以上及服務支援時才有進度回報；送出請求、排程下載或進度 100% 都不會當作安裝完成，完成回報後會重新查詢。
+5. Android 12 或不支援查詢／下載的服務，請按「開啟語音輸入設定」，尋找「中文（台灣）／國語／zh-TW」離線語音，選單依手機及服務不同。沒有適用服務時，先由手機官方商店更新辨識服務。
+6. 返回 App 會重新檢查。完成後關閉引導，再手動點麥克風；不會自動聆聽或重送原本指令。
+
+沿用相同簽章，可覆蓋更新並保留設定；未實機驗證各廠牌下載流程。參考 [Android SpeechRecognizer](https://developer.android.com/reference/android/speech/SpeechRecognizer)。
 
 ### 透過 ChatGPT 連線
 

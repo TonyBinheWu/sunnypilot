@@ -71,6 +71,7 @@ public final class MainActivity extends Activity {
   private long voiceVerifiedUntil;
   private VoiceWelcome welcome;
   private PhoneVoice phoneVoice;
+  private SpeechSetup speechSetup;
   private boolean phoneSession, waitingForPermission, resumePhoneVoice, permissionGreeting;
   private int phoneGeneration, permissionDevice;
   private String phoneSearchId;
@@ -99,7 +100,8 @@ public final class MainActivity extends Activity {
     super.onCreate(saved);
     preferences = getSharedPreferences("carrot-web", MODE_PRIVATE);
     initializeVoiceMode(preferences);
-    updater = new AppUpdater(this, preferences);
+    speechSetup = new SpeechSetup(this);
+    updater = new AppUpdater(this, preferences, () -> showSpeechSetup(""));
     welcome = new VoiceWelcome(this);
     phoneVoice = new PhoneVoice(this, new PhoneVoice.Listener() {
       public void status(String text) { title.setText(text); if (!phoneVoice.listening()) phoneSession = false; }
@@ -114,6 +116,7 @@ public final class MainActivity extends Activity {
       public void heardSetting(SpokenSetting setting) { handleSpokenSetting(setting); }
       public void heardCruise(SpokenCruise cruise, boolean needsConfirmation) { handleSpokenCruise(cruise, needsConfirmation); }
       public void findSettings(String query) { startSettingAction("findSettings", JSONObject.quote(query)); }
+      public void setupRequired(String reason) { showSpeechSetup(reason); }
     });
     root = column(); root.setBackgroundColor(background);
     if (android.os.Build.VERSION.SDK_INT >= 30) root.setOnApplyWindowInsetsListener((v,insets) -> {
@@ -388,7 +391,7 @@ public final class MainActivity extends Activity {
     if (focus && ui != null) scheduleAutoVoice();
   }
   private void maybeStartAutoVoice() {
-    if (!foregroundActivity || !hasWindowFocus() || !pageReady || recovering || waitingForPermission) return;
+    if (!foregroundActivity || !hasWindowFocus() || !pageReady || recovering || waitingForPermission || speechSetup != null && speechSetup.showing()) return;
     if (resumePhoneVoice) {
       resumePhoneVoice = false;
       if (permissionDevice == generation && phoneMode()) startVoice(permissionGreeting);
@@ -397,7 +400,7 @@ public final class MainActivity extends Activity {
     if (autoVoiceGeneration != generation && autoVoiceEnabled()) startVoice(true);
   }
   private void startVoice(boolean automatic) {
-    if (voiceStarting || !foregroundActivity) return;
+    if (voiceStarting || !foregroundActivity || speechSetup != null && speechSetup.showing()) return;
     autoVoiceGeneration = generation;
     voiceVerifiedUntil = 0;
     if (currentAddress == null) {
@@ -431,13 +434,21 @@ public final class MainActivity extends Activity {
   }
 
   private boolean localPage() {
-    return foregroundActivity && !isFinishing() && hasWindowFocus() && pageReady && web != null && web.getUrl() != null
+    return foregroundActivity && !isFinishing() && (speechSetup == null || !speechSetup.showing()) && hasWindowFocus() && pageReady && web != null && web.getUrl() != null
       && isCurrent(Uri.parse(web.getUrl())) && phoneMode();
   }
   private boolean currentSession(int token) { return phoneSession && token == phoneGeneration && localPage(); }
   private String onDevicePage(String expression) {
     return "(location.origin===" + JSONObject.quote("http://" + currentAddress + ":7000") +
       " && !document.hidden && (" + expression + "))";
+  }
+  private void showSpeechSetup(String reason) {
+    if (phoneVoice != null) phoneVoice.resetSupport();
+    stopPhoneVoice(); resumePhoneVoice = false; waitingForPermission = false;
+    autoVoiceGeneration = generation;
+    ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck();
+    if (welcome != null) welcome.cancel();
+    if (!isFinishing() && speechSetup != null) speechSetup.show(reason);
   }
   private void startPhoneVoice(boolean automatic) {
     if (!localPage() || phoneSession || waitingForPermission) return;
@@ -465,13 +476,14 @@ public final class MainActivity extends Activity {
 
   @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] grants) {
     super.onRequestPermissionsResult(request, permissions, grants);
+    if (request == SpeechSetup.PERMISSION_REQUEST) { if (speechSetup != null) speechSetup.permissionResult(); return; }
     if (request != PHONE_MIC) return;
     waitingForPermission = false;
     if (grants.length > 0 && grants[0] == android.content.pm.PackageManager.PERMISSION_GRANTED && permissionDevice == generation) {
       resumePhoneVoice = true; scheduleAutoVoice();
     } else {
       resumePhoneVoice = false;
-      title.setText(UiText.get("직접 음성 명령에는 마이크 권한이 필요해요.", "Microphone permission is required for direct voice commands."));
+      showSpeechSetup("尚未授予麥克風權限，不能聆聽指令。請在本頁授權，或開啟 App 權限設定。");
     }
   }
 
@@ -719,7 +731,7 @@ public final class MainActivity extends Activity {
   }
   private void notice(String message) { new AlertDialog.Builder(this).setMessage(message).setPositiveButton(UiText.get("확인", "OK"),null).show(); }
   @Override protected void onResume() {
-    super.onResume(); foregroundActivity = true; if (web!=null) web.onResume(); if (updater!=null) updater.resume();
+    super.onResume(); foregroundActivity = true; if (speechSetup!=null) speechSetup.resume(); if (web!=null) web.onResume(); if (updater!=null) updater.resume();
     if (checkAfterBackground && currentAddress!=null && !recovering) {
       final String address=currentAddress; final int token=generation;
       final DeviceProbe probe=new DeviceProbe(url -> (HttpURLConnection)url.openConnection()); resumeProbe=probe;
@@ -732,8 +744,8 @@ public final class MainActivity extends Activity {
     checkAfterBackground=false;
     scheduleAutoVoice();
   }
-  @Override protected void onPause() { foregroundActivity = false; stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
+  @Override protected void onPause() { foregroundActivity = false; if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
   @Override protected void onStop() { checkAfterBackground=true; if (scanning) { stopSearch(); if (status!=null) status.setText(UiText.get("검색이 중단됐어요. 다시 검색을 눌러 주세요.", "Search paused. Tap Search again.")); } super.onStop(); }
   @Override public void onBackPressed() { if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
-  @Override protected void onDestroy() { if (recovery!=null) recovery.cancel(); stopSearch(); ui.removeCallbacksAndMessages(null); if (updater!=null) updater.close(); if (web!=null) { web.destroy(); web=null; } super.onDestroy(); }
+  @Override protected void onDestroy() { if (speechSetup!=null) speechSetup.close(); if (recovery!=null) recovery.cancel(); stopSearch(); ui.removeCallbacksAndMessages(null); if (updater!=null) updater.close(); if (web!=null) { web.destroy(); web=null; } super.onDestroy(); }
 }

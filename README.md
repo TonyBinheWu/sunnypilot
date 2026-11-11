@@ -16,15 +16,15 @@
 
 ## 下載與安裝
 
-**[⬇ 下載 CarrotAssist 繁體中文版 0.2.13（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.13/CarrotAssist-TW-0.2.13.apk)**
+**[⬇ 下載 CarrotAssist 繁體中文版 0.2.14（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/CarrotAssist-TW-0.2.14.apk)**
 
 | 項目 | 說明 |
 |---|---|
-| 版本 | **0.2.13**（版本代碼 20） |
+| 版本 | **0.2.14**（版本代碼 21） |
 | 安裝需求 | Android 8.0 以上 |
 | 手機直接語音 | Android 12 以上、可用的裝置端語音辨識服務與國語語音模型 |
 | 套件名稱 | `me.shind0.carrotweb.tw`，手機顯示為 **CarrotAssist 繁中** |
-| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.13) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.13/SHA256SUMS.txt) |
+| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.14) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/SHA256SUMS.txt) |
 | 更新來源 | 本倉庫 `TonyBinheWu/sunnypilot` 的繁中發行頻道 |
 
 ### 安裝步驟
@@ -35,7 +35,7 @@
 4. 手機與 comma 連到相同 Wi-Fi／熱點，搜尋裝置或手動輸入 IP。
 5. 更新車機至本倉庫的 `carrot-wip`，停車後完整重新啟動，再於網頁「工具 → 語言 → 繁體中文」選擇網頁語言。
 
-**從繁中版 0.2.12 更新：** 使用相同套件與簽章，可直接覆蓋安裝並保留 App 設定，不需先解除安裝。中文語音的新功能需要 App 與車機程式一起更新。
+**從繁中版 0.2.12／0.2.13 更新：** 使用相同套件與簽章，可直接覆蓋安裝並保留 App 設定，不需先解除安裝。中文語音的新功能需要 App 與車機程式一起更新。
 
 **與上游原版並存：** 繁中版使用獨立套件及專用簽章，可與原版 CarrotAssist 並存，原版資料會保留。新 App 的設定與 ChatGPT 授權獨立，可能需要重新連線。
 
@@ -44,6 +44,24 @@ APK 經建置、測試與簽章驗證；尚未在實體手機或實車驗證。i
 ## 繁體中文語音指令
 
 0.2.13 新增國語直接語音，不需 ChatGPT 帳號或配對碼。手機為繁體中文語系時會要求 `zh-TW` 辨識，需有可用的裝置端國語語音模型；語音辨識能力依手機與辨識服務而定。
+
+### 中文語音模型檢查與安裝（0.2.14）
+
+點 App 上方的**裝置名稱 → 中文語音檢查與安裝**，不需先連接車機。缺少麥克風權限、語音模型或裝置端辨識服務時，也會自動顯示繁體中文引導。
+
+| 顯示狀態 | 下一步 |
+|---|---|
+| 麥克風未允許 | 按「授予麥克風權限」；若曾拒絕或系統不再詢問，按「開啟 App 權限設定」，將麥克風設為使用期間允許 |
+| 權限允許但不能收音 | 檢查快速設定／隱私設定的「麥克風存取」總開關，以及語音服務本身的權限 |
+| 模型可下載、尚未安裝 | Android 13 以上可按「下載中文語音模型」；系統可能另外要求確認下載 |
+| 等待下載／下載中 | 保持網路連線，等待服務處理後按「重新檢查」；Android 14 以上且服務支援時會顯示進度 |
+| zh-TW 模型已安裝 | 關閉引導，再手動點麥克風試用；此狀態不等於已完成實際辨識測試 |
+| 無法確認／服務未提供 zh-TW | 按「開啟語音輸入設定」，尋找「中文（台灣）／國語／zh-TW」的離線語音模型；選單依手機及服務不同 |
+| 沒有裝置端辨識服務 | 在系統啟用語音辨識服務，或由手機官方商店更新；服務仍未提供國語模型時，App 無法強制安裝 |
+
+Android 12 沒有模型清單查詢與下載 API，會顯示手動設定步驟；Android 13 的下載請求不會回報進度，所以「已送出下載請求」不會顯示成「安裝完成」。模型下載、權限授予及回到 App 都不會自動聆聽或執行先前指令。
+
+已有 0.2.13 對應車機程式時，模型檢查只需更新 App；首次使用中文語音仍須更新本倉庫車機 `carrot-wip`。技術依據：[Android 模型查詢與下載 API](https://developer.android.com/reference/android/speech/SpeechRecognizer#triggerModelDownload(android.content.Intent))。
 
 ### 開始使用
 

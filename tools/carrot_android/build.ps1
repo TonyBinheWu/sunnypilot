@@ -33,6 +33,10 @@ $coreSources = @((Join-Path $sourceRoot 'src\me\shind0\carrotweb\DiscoveryPolicy
 Assert-Exit 'Compile native language checks'
 & $javaExe -cp $testClasses UiTextTest
 Assert-Exit 'Native language checks'
+& $javacExe -encoding UTF-8 -d $testClasses (Join-Path $sourceRoot 'src/me/shind0/carrotweb/SpeechModelPolicy.java') (Join-Path $sourceRoot 'tests/SpeechModelPolicyTest.java')
+Assert-Exit 'Compile speech model checks'
+& $javaExe -cp $testClasses me.shind0.carrotweb.SpeechModelPolicyTest
+Assert-Exit 'Speech model checks'
 & $javacExe -encoding UTF-8 -d $testClasses @coreSources (Join-Path $sourceRoot 'tests\DiscoveryTest.java')
 Assert-Exit 'Compile discovery checks'
 & $javaExe -cp $testClasses DiscoveryTest

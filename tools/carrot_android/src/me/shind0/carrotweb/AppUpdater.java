@@ -29,11 +29,12 @@ import java.util.concurrent.Executors;
 public final class AppUpdater {
   private final Activity activity;
   private final SharedPreferences preferences;
+  private final Runnable openSpeechSetup;
   private final ExecutorService worker = Executors.newSingleThreadExecutor();
   private boolean busy, awaitingPermission, destroyed;
   private JSONObject available;
   private File pending;
-  public AppUpdater(Activity activity, SharedPreferences preferences) { this.activity=activity; this.preferences=preferences; }
+  public AppUpdater(Activity activity, SharedPreferences preferences, Runnable openSpeechSetup) { this.activity=activity; this.preferences=preferences; this.openSpeechSetup=openSpeechSetup; }
   private void toast(String message) { if (!destroyed) Toast.makeText(activity,message,Toast.LENGTH_LONG).show(); }
   private PackageInfo installed() throws Exception { return activity.getPackageManager().getPackageInfo(activity.getPackageName(), flags()); }
   private static int flags() { return Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES; }
@@ -55,11 +56,14 @@ public final class AppUpdater {
       .putBoolean("voice_auto_start", autoVoice.isChecked()).apply());
     android.widget.LinearLayout options = new android.widget.LinearLayout(activity);
     options.setOrientation(android.widget.LinearLayout.VERTICAL);
-    options.addView(autoVoice); options.addView(direct);
-    new AlertDialog.Builder(activity).setTitle(label).setView(options).setMessage(UiText.get("폰 직접 듣기는 차로변경과 깜박이 설정 열기를 처리합니다. 질문은 기본 음성비서에서 다시 말해 주세요. 직접 듣기를 끄면 미니창으로 시작합니다.\n\n업데이트 설치는 주차 후 진행하세요.", "Direct listening handles lane requests and turn signal settings. Repeat questions in the default assistant. Turn off direct listening to start in the assistant overlay.\n\nInstall updates while parked."))
+    android.widget.Button speech = new android.widget.Button(activity);
+    speech.setText(UiText.get("중국어 음성 확인 및 설치", "Chinese speech model and microphone setup")); speech.setAllCaps(false);
+    options.addView(speech); options.addView(autoVoice); options.addView(direct);
+    AlertDialog infoDialog = new AlertDialog.Builder(activity).setTitle(label).setView(options).setMessage(UiText.get("폰 직접 듣기는 차로변경과 깜박이 설정 열기를 처리합니다. 질문은 기본 음성비서에서 다시 말해 주세요. 직접 듣기를 끄면 미니창으로 시작합니다.\n\n업데이트 설치는 주차 후 진행하세요.", "Direct listening handles lane requests and turn signal settings. Repeat questions in the default assistant. Turn off direct listening to start in the assistant overlay.\n\nInstall updates while parked."))
       .setPositiveButton(available == null ? UiText.get("업데이트 확인", "Check for updates") : UiText.get("새 버전 설치", "Install update"), (d,w)->{ if (available==null) check(true); else offer(); })
       .setNeutralButton(UiText.get("ChatGPT 맞춤 지침 복사", "Copy ChatGPT instructions"), (d,w)->copyChatGPTInstructions())
       .setNegativeButton(UiText.get("닫기", "Close"),null).show();
+    speech.setOnClickListener(v -> { infoDialog.dismiss(); openSpeechSetup.run(); });
   }
   private void copyChatGPTInstructions() {
     String prompt = UiText.get(

@@ -1,11 +1,21 @@
 # CarrotAssist Android public beta — Traditional Chinese distribution
 
-This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.13 (code 20). It can coexist with the upstream app; data and authorizations are separate.
+This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.14 (code 21). It can coexist with the upstream app; data and authorizations are separate.
 
-[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.13/CarrotAssist-TW-0.2.13.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.13)
+[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/CarrotAssist-TW-0.2.14.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.14)
 
 Updates are restricted to this repository’s `carrot-assist-tw-updates` channel and `carrot-assist-tw-vX.Y.Z` release URLs. The `.github/workflows/carrot-assist-apk.yaml` workflow runs the build checks, signs using protected repository secrets, verifies the APK and prepares a draft release. Signing keys never belong in this repository. A published version is immutable; increment the version name and code for another APK.
 
+
+## Chinese speech setup (0.2.14)
+
+The device-name dialog opens **中文語音檢查與安裝**, without requiring a car connection. Missing permission/model errors also open the Traditional Chinese guide. It provides permission requests, app permission settings, voice-input settings and privacy settings.
+
+Android 13+ queries installed/pending/downloadable zh-TW models. Android 12, empty reports, generic Chinese tags and unsupported queries remain unverified instead of claiming installation. Chinese listening checks model metadata where available; unknown metadata still permits a real recognition attempt, and language errors open the guide.
+
+Downloads require a button press. API 33 submits a request without claiming completion. API 34 adds progress callbacks, and completion triggers a fresh query. App pause/dismiss invalidates UI callbacks; the platform controls whether downloads continue. Returning from settings refreshes metadata without resuming speech or replaying a command.
+
+Device permissions and command admission are unchanged. Vendor model installation and hardware microphones still need physical-phone testing.
 
 ## Traditional Chinese voice (0.2.13)
 
