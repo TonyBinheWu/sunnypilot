@@ -68,6 +68,7 @@ class TestQRScreen(unittest.TestCase):
           dialog.render(rect)
           rl.end_drawing()
         qr = dialog._last_qr_rect
+        self.assertGreaterEqual(qr.height, rect.height*.7)
         self.assertGreaterEqual(qr.x,0)
         self.assertGreaterEqual(qr.y,0)
         self.assertLessEqual(qr.x+qr.width,rect.width)
@@ -102,6 +103,39 @@ class TestQRScreen(unittest.TestCase):
       request.assert_not_called()
     self.assertFalse(self.params.enabled)
     self.assertEqual(dialog._state,"offroad")
+
+  def test_responsive_controls_and_status_fit(self):
+    # Include a nonzero origin, as when a host supplies a panel rather than the
+    # entire screen. Verify real font measurements, not just layout constants.
+    rect = rl.Rectangle(8, 4, gui_app.width-16, gui_app.height-8)
+    scale = min(rect.width/536, rect.height/240)
+    for code in ("zh-CHT", "en", "ja"):
+      with patch.object(ui.multilang, "_language", code):
+        dialog = ui.FormosaPairingDialog()
+        self.pending(dialog)
+        for state in ("pending", "paired", "error", "intro", "revoked", "expired", "disabled", "offroad", "loading"):
+          if state == "intro":
+            dialog._clear_qr()
+          dialog._state = state
+          rl.begin_drawing()
+          dialog.render(rect)
+          rl.end_drawing()
+          with self.subTest(language=code, state=state):
+            status = dialog._last_status_rect
+            self.assertLessEqual(status.x+status.width, rect.x+rect.width)
+            self.assertLessEqual(status.y+status.height, dialog._remote.rect.y-3*scale)
+            for button in (dialog._remote, dialog._start, dialog._disable, dialog._close):
+              bounds = button.rect
+              self.assertGreaterEqual(bounds.x, rect.x)
+              self.assertGreaterEqual(bounds.y, rect.y)
+              self.assertLessEqual(bounds.x+bounds.width, rect.x+rect.width)
+              self.assertLessEqual(bounds.y+bounds.height, rect.y+rect.height)
+              self.assertGreaterEqual(bounds.height, 33*scale)
+              self.assertGreaterEqual(button._label._font_size, 16*scale)
+            qr = dialog._last_qr_rect
+            if qr:
+              self.assertGreater(qr.x, dialog._start.rect.x+dialog._start.rect.width)
+        dialog.hide_event()
 
   def test_closed_dialog_ignores_late_pair_result(self):
     dialog = ui.FormosaPairingDialog()
