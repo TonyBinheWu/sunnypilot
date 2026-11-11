@@ -1351,7 +1351,7 @@ function initToolsPage() {
     try {
       const j = await runTool("send_tmux_log");
       if (j.file) {
-        window.location.href = j.file;
+        window.location.href = globalThis.FormosaCarrotRemote?.url(j.file) || j.file;
       }
     } catch (e) {
       showError("send_tmux_log", e);
@@ -1362,7 +1362,7 @@ function initToolsPage() {
     try {
       const j = await runTool("server_tmux_log");
       if (j.file) {
-        window.location.href = j.file;
+        window.location.href = globalThis.FormosaCarrotRemote?.url(j.file) || j.file;
       }
     } catch (e) {
       showError("server_tmux_log", e);
@@ -1399,7 +1399,7 @@ function initToolsPage() {
   bindOnce("btnBackupSettings", async () => {
     try {
       const j = await runTool("backup_settings");
-      if (j.file) window.location.href = j.file;
+      if (j.file) window.location.href = globalThis.FormosaCarrotRemote?.url(j.file) || j.file;
     } catch (e) {
       showError("backup_settings", e);
     }

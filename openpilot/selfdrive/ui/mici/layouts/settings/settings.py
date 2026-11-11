@@ -65,4 +65,7 @@ class SettingsLayout(NavScroller):
       developer_btn,
     ])
 
+    from openpilot.sunnypilot.formosalink.ui import add_mici_pair_button
+    add_mici_pair_button(self._scroller)
+
     self._font_medium = gui_app.font(FontWeight.MEDIUM)

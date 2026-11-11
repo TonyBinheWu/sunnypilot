@@ -524,3 +524,8 @@ Traditional Chinese direct speech in CarrotAssist TW 0.2.13 can search exact cat
 ## Traditional Chinese reference
 
 Selecting Traditional Chinese (`zh-tw`) loads the 212 per-setting reference pages bundled with this branch. These pages use the same verified index, page hashes and Markdown validation as the published Wiki. They remain available without an external Wiki connection; imported manual sections retain their review status. Other languages continue to use the published Wiki. Open Tools → 繁體中文完整操作說明 for the complete Traditional Chinese feature guide.
+
+
+## FormosaLink on carrot-wip
+
+Open Device → FormosaLink (C3X) or Settings → FormosaLink (C4) for independent QR pairing. `FormosaLinkEnabled` defaults on for the background agent; pairing remains required. `FormosaLinkRemoteWeb` is a separate, default-off local grant for the full native Carrot web, including its existing tools and terminal. It requires fresh parked/ignition-off state and closes when permission, ownership or state expires. `FormosaLinkRemoteSettings` does not grant full web access. The portal's Carrot adapter reports health; setting edits use Carrot's own web validation. The Live section provides owner-leased wide-road/driver MJPEG video. Update the device and IIS backend together; see [deployment and limits](../../../formosalink/docs/CARROT_REMOTE.md).

@@ -553,3 +553,8 @@ CarrotAssist TW 0.2.13의 번체 중국어 직접 음성은 카탈로그 이름 
 ## 번체 중국어 설명
 
 번체 중국어(`zh-tw`) 선택 시 이 브랜치에 포함된 설정별 설명 212개를 사용합니다. 기존 Wiki와 같은 인덱스·페이지 해시·Markdown 검증을 적용하며 외부 Wiki 연결 없이 열 수 있습니다. 가져온 수동 설명의 검토 상태는 유지합니다. 다른 언어는 기존 게시 Wiki를 사용합니다. 도구의「繁體中文完整操作說明」에서 전체 번체 중국어 기능 안내를 열 수 있습니다.
+
+
+## carrot-wip의 FormosaLink
+
+C3X는 장치 → FormosaLink, C4는 설정 → FormosaLink에서 독립 QR 등록을 합니다. `FormosaLinkEnabled`는 기본 켜짐이지만 등록이 필요합니다. `FormosaLinkRemoteWeb`은 전체 Carrot 웹(기존 도구·터미널 포함)에 대한 별도의 로컬 권한이며 기본 꺼짐입니다. 최신 정차·시동 꺼짐 상태가 필요하고 권한·소유권·상태가 유효하지 않으면 연결을 종료합니다. `FormosaLinkRemoteSettings`가 전체 웹 권한을 부여하지 않습니다. Carrot 어댑터는 상태를 보고하며 설정 변경은 Carrot 웹의 기존 검증을 사용합니다. Live에서는 소유자 임대가 유효한 동안 광각·실내 MJPEG 영상을 볼 수 있습니다. 장치와 IIS를 함께 업데이트하세요. [배포와 제한](../../../formosalink/docs/CARROT_REMOTE.md).

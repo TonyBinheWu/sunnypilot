@@ -18,6 +18,15 @@ CARROT_WEB_EXTERNAL = os.getenv("CARROT_WEB_EXTERNAL") == "1"
 def driverview(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started or params.get_bool("IsDriverViewEnabled")
 
+def formosalink_enabled(started: bool, params: Params, CP: car.CarParams) -> bool:
+  return params.get_bool("FormosaLinkEnabled")
+
+
+def formosalink_cameras(started: bool, params: Params, CP: car.CarParams) -> bool:
+  from openpilot.sunnypilot.formosalink.cameras import camera_requested
+  return params.get_bool("FormosaLinkEnabled") and camera_requested()
+
+
 def notcar(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and CP.notCar
 
@@ -113,6 +122,7 @@ def enable_cluster_hud(started, params, CP: car.CarParams) -> bool:
   return cluster_hud_active(params)
 
 procs = [
+  PythonProcess("formosalink", "openpilot.sunnypilot.formosalink.agent", formosalink_enabled),
   DaemonProcess("manage_athenad", "openpilot.system.athena.manage_athenad", "AthenadPid"),
 
   NativeProcess("loggerd", "openpilot/system/loggerd", ["./loggerd"], logging),
@@ -125,8 +135,8 @@ procs = [
   NativeProcess("carrot_vision_encoderd", "openpilot/system/loggerd", ["./encoderd", "--carrot-vision-road"], and_(iscar, enable_webrtc)),
   PythonProcess("logmessaged", "openpilot.system.logmessaged", always_run),
 
-  NativeProcess("camerad", "openpilot/system/camerad", ["./camerad"], driverview, enabled=not WEBCAM),
-  PythonProcess("webcamerad", "openpilot.tools.webcam.camerad", driverview, enabled=WEBCAM),
+  NativeProcess("camerad", "openpilot/system/camerad", ["./camerad"], or_(driverview, formosalink_cameras), enabled=not WEBCAM),
+  PythonProcess("webcamerad", "openpilot.tools.webcam.camerad", or_(driverview, formosalink_cameras), enabled=WEBCAM),
   PythonProcess("proclogd", "openpilot.system.proclogd", only_onroad, enabled=platform.system() != "Darwin"),
   PythonProcess("journald", "openpilot.system.journald", only_onroad, platform.system() != "Darwin"),
   PythonProcess("micd", "openpilot.system.micd", iscar),

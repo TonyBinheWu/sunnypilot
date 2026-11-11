@@ -122,6 +122,14 @@ C3X／C4 共用的文字排版已加入快取，滑動只改變位置時不再�
 
 網頁、設定及維護操作請先安全停車；語音操作保留既有權限、車輛條件與駕駛優先權限制。
 
+## FormosaLink 雲端操作與 LIVE
+
+本分支支援 [FormosaLink](https://formosapilot.dinglu-t.com)：配對裝置後，可選「遠端 Carrot 網頁」進入原生網頁操作設定，或選「雙鏡頭 LIVE」觀看前廣角／車內鏡頭。
+
+C3X 在「裝置 → FormosaLink」、C4 在「設定 → FormosaLink」掃描 QR 配對。完整網頁需在車機另開「遠端 Carrot 網頁」權限，且保持停車熄火與網路連線；開始行車或停用授權會中斷通道。LIVE 沿用所有者短效觀看租約，目標 8 fps、最大 640×360，不含音訊。
+
+車機與 IIS 後端都須更新。操作、限制、IIS 更新指令及實機待驗項目見 [FormosaLink 整合說明](formosalink/docs/CARROT_REMOTE.md)。原生 Carrot WebRTC 仍受 NAT／ICE 限制，雲端鏡頭監看請使用 FormosaLink LIVE。
+
 ## 專案簡介
 
 carrotpilot 是一個基於 [openpilot](https://github.com/commaai/openpilot) 的獨立駕駛輔助軟體專案，主要面向 Hyundai（現代）·Kia（起亞）·Genesis 車輛的相容性、縱向控制品質和真實駕駛體驗進行開發與改進。

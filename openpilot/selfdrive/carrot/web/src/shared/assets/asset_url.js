@@ -53,6 +53,9 @@ export function installAssetUrlFacade(documentRoot = document, target = globalTh
     throw new AssetManifestError("Asset manifest JSON is invalid", { cause: error });
   }
   const facade = createAssetUrlResolver(manifest);
-  target.CarrotAssetUrl = facade;
-  return facade;
+  const routed = target.FormosaCarrotRemote ? Object.freeze({
+    resolve: id => target.FormosaCarrotRemote.url(facade.resolve(id)),
+  }) : facade;
+  target.CarrotAssetUrl = routed;
+  return routed;
 }
