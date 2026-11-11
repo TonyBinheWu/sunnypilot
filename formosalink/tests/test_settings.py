@@ -67,6 +67,16 @@ def test_apply_reads_back_and_refresh_stamp():
   assert source.capture()["revision"]!=state["revision"]
 
 
+def test_write_without_matching_device_readback_is_not_applied():
+  source,params,_=provider()
+  cmd=command(source.capture())
+  params.put=lambda key,value,block=True: None
+  receipt=source.apply(cmd,cmd["device_id"],time.monotonic()+10)
+  assert receipt=={"id":cmd["id"],"status":"rejected","reason":"write_failed"}
+  assert params.values["QuietMode"] is False
+  assert params.values["ParamsVersion"]==0
+
+
 @pytest.mark.parametrize("failure",["onroad","disabled","revision","session","expired","wrong_device","range","type","secret"])
 def test_device_rejects_unsafe_or_conflicting_writes(failure):
   source,params,guard=provider();cmd=command(source.capture());device=cmd["device_id"];deadline=time.monotonic()+5

@@ -1,5 +1,6 @@
-import {parseCoordinates} from './navigation-input.js?v=0.4.1';
-import {deviceHealth} from './health-ui.js?v=0.4.1';
+import {parseCoordinates} from './navigation-input.js?v=0.5.0';
+import {deviceHealth} from './health-ui.js?v=0.5.0';
+import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from './settings-edits.js?v=0.5.0';
 // Full-page, owner-scoped device workspace. Only device receipts confirm writes.
 export const sections=['home','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer'];
 export function category(entry){const group=entry.group?.en?.toLowerCase();return sections.includes(group)?group:'device';}
@@ -15,6 +16,7 @@ function icon(name){const ns='http://www.w3.org/2000/svg',svg=document.createEle
 export function deviceSettings({api,t,language,element:el,date,notify,getDevices,getAccount,onPair}) {
   const workspace=document.getElementById('settings-workspace'),$=id=>document.getElementById(id),body=$('settings-body');
   let selected=null,state=null,timer=null,epoch=0,writing=false,section='device',query='',previousFocus=null;
+  const edits=new SettingsEdits();
   const label=value=>value?.[language()]||value?.en||'';
   const setRoute=()=>{const hash=routeFor(selected.id,section);if(location.hash!==hash)history.pushState(null,'',hash);};
   function close(updateRoute=true){selected=null;state=null;epoch++;clearTimeout(timer);body.replaceChildren();workspace.hidden=true;document.body.classList.remove('settings-open');workspace.classList.remove('menu-open');if(updateRoute&&parseRoute(location.hash))history.pushState(null,'','#dashboard');if(previousFocus?.isConnected)previousFocus.focus();}
@@ -44,15 +46,33 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     const entry=(snapshot.catalog||[]).find(x=>x.key==='NavDestination'&&x.widget==='navigation');
     const card=el('section',undefined,'workspace-card');card.append(el('h2',t('navDestination')),el('p',t('navHelp'),'workspace-muted'));body.append(card);
     if(!entry){card.append(el('p',t('navUpgrade'),'workspace-muted'));return;}
-    const form=el('form',undefined,'navigation-form');let current={};try{current=JSON.parse(snapshot.values.NavDestination||'{}');}catch{}
+    const deviceId=selected.id,key='NavDestination',draft=edits.get(deviceId,key);
+    const form=el('form',undefined,'navigation-form');let current={};try{current=JSON.parse((draft&&draft.status!=='applied'?draft.value:snapshot.values[key])||'{}');}catch{}
     const pasteLabel=el('label',t('navPaste')),paste=el('input'),importButton=el('button',t('navImport'),'workspace-save');paste.type='text';paste.placeholder='25.0330, 121.5654';paste.setAttribute('aria-label',t('navPaste'));importButton.type='button';pasteLabel.append(paste);form.append(pasteLabel,importButton);
     const inputs={};for(const [key,type] of [['place_name','text'],['latitude','number'],['longitude','number']]){const label=el('label',t('nav_'+key)),input=el('input');input.type=type;input.required=true;input.setAttribute('aria-label',t('nav_'+key));input.value=current[key]??'';if(type==='number'){input.min=key==='latitude'?'-90':'-180';input.max=key==='latitude'?'90':'180';input.step='any';}else input.maxLength=120;label.append(input);form.append(label);inputs[key]=input;}
-    importButton.addEventListener('click',()=>{const value=parseCoordinates(paste.value);if(!value){notify('navInvalidCoordinates',true);return;}inputs.latitude.value=value.latitude;inputs.longitude.value=value.longitude;});
-    const send=el('button',t('navSend'),'workspace-save');send.type='submit';const enabled=state.fresh&&snapshot.offroad&&snapshot.remote_enabled&&entry.enabled&&!writing&&!state.commands.some(c=>['queued','delivered'].includes(c.status));send.disabled=!enabled;Object.values(inputs).forEach(n=>n.disabled=!enabled);form.append(send);card.append(form);if(!entry.enabled)card.append(el('p',t('navEnable'),'workspace-muted'));
-    form.addEventListener('submit',async event=>{event.preventDefault();if(!enabled||writing)return;writing=true;send.disabled=true;const id=selected.id,requestEpoch=epoch;const value=JSON.stringify({place_name:inputs.place_name.value.trim(),latitude:Number(inputs.latitude.value),longitude:Number(inputs.longitude.value)});
-      try{await api('/devices/'+encodeURIComponent(id)+'/settings',{key:'NavDestination',value,expected_revision:snapshot.revision,session:snapshot.session});if(requestEpoch===epoch)notify('settingsQueued');}catch(e){if(requestEpoch===epoch)notify('reason_'+(e.reason||'write_failed'),true);}finally{writing=false;if(selected){draw();await poll();}}});
+    const send=el('button',t('navSend'),'workspace-save');send.type='submit';
+    const editable=state.fresh&&snapshot.offroad&&snapshot.remote_enabled&&entry.enabled;
+    const enabled=editable&&!pendingEdit(draft)&&draft?.status!=='conflict';
+    Object.entries(inputs).forEach(([name,n])=>{n.disabled=!enabled;n.dataset.field=name;});form.dataset.key=key;form.classList.add('setting-row');
+    paste.disabled=!enabled;importButton.disabled=!enabled;
+    const badge=el('span',undefined,'setting-sync');badge.setAttribute('role','status');card.append(badge);
+    function status(){const d=edits.get(deviceId,key);badge.hidden=!d;badge.dataset.state=d?.status||'';badge.textContent=d?t('edit_'+d.status)+(d.reason&&['failed','uncertain'].includes(d.status)?' · '+t('reason_'+d.reason):''):'';send.disabled=!enabled||writing||state.commands.some(c=>['queued','delivered'].includes(c.status))||!d||!['draft','failed'].includes(d.status)||sameSettingValue(key,d.value,d.base)||controlValue(entry,d.value)===undefined;}
+    function change(){edits.edit(deviceId,key,JSON.stringify({place_name:inputs.place_name.value,latitude:inputs.latitude.value===''?null:Number(inputs.latitude.value),longitude:inputs.longitude.value===''?null:Number(inputs.longitude.value)}),snapshot);status();}
+    Object.values(inputs).forEach(n=>n.addEventListener('input',change));
+    importButton.addEventListener('click',()=>{const value=parseCoordinates(paste.value);if(!value){notify('navInvalidCoordinates',true);return;}inputs.latitude.value=value.latitude;inputs.longitude.value=value.longitude;change();});
+    form.append(send);card.append(form);if(!entry.enabled)card.append(el('p',t('navEnable'),'workspace-muted'));
+    if(draft?.status==='conflict')card.append(conflictControls(deviceId,key,snapshot.values[key],draft,entry,editable));
+    else if(draft&&!pendingEdit(draft)&&draft.status!=='applied'){const discard=el('button',t('editDiscard'));discard.type='button';discard.addEventListener('click',()=>{edits.discard(deviceId,key);draw();});card.append(discard);}
+    card.append(el('p',t('editMemoryNote'),'settings-edit-note'));
+    form.addEventListener('submit',event=>{event.preventDefault();if(!send.disabled)saveEdit(deviceId,key);});status();
   }
   function draw(){
+    const active=document.activeElement, key=active?.closest('.setting-row')?.dataset.key, field=active?.dataset.field;
+    const selection=active?.type==='text'?[active.selectionStart,active.selectionEnd]:null;
+    renderBody();
+    if(key&&field){const row=[...body.querySelectorAll('.setting-row')].find(n=>n.dataset.key===key);const target=row?.querySelector(`[data-field="${field}"]`);if(target&&!target.disabled){target.focus({preventScroll:true});if(selection)target.setSelectionRange(...selection);}}
+  }
+  function renderBody(){
     if(!selected)return;body.replaceChildren();
     $('settings-title').textContent=query?t('searchResults'):t('section_'+section);
     $('settings-subtitle').textContent=query?`${t('searchSettings')} · ${query}`:t('sectionDesc_'+section);
@@ -64,44 +84,91 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     if(!query&&section==='home'){$('settings-banner-text').textContent=t('fleetHealthNote');$('settings-banner').classList.remove('is-ready');deviceHealth(body,{devices:getDevices(),t,el,date,onOpen:d=>open(d,'device')});return;}
     if(!snapshot){body.append(el('div',t('settingsWaiting'),'workspace-card workspace-empty'));return;}
     if(!query&&['device','home'].includes(section))info(snapshot);
-    if(state.commands.length){const latest=state.commands[0];const receipt=el('p',`${t('command_'+latest.status)}${latest.reason&&latest.reason!=='applied'?' · '+t('reason_'+latest.reason):''}`,'workspace-receipt');receipt.setAttribute('role','status');body.append(receipt);}
     if(!query&&['models'].includes(section)){const card=el('section',undefined,'workspace-card workspace-empty');card.append(icon(section),el('h2',t('section_'+section)),el('p',t('featureUnavailable'),'workspace-muted'));body.append(card);return;}
     if(!query&&section==='navigation'){navigation(snapshot);return;}
     const entries=filterEntries(snapshot.catalog||[],section,query);
     if(!entries.length){if(query||!['device','home'].includes(section))body.append(el('div',t(query?'noSearchResults':'noSectionSettings'),'workspace-card workspace-empty'));return;}
-    const editable=fresh&&snapshot.offroad&&snapshot.remote_enabled&&!writing&&!state.commands.some(c=>['queued','delivered'].includes(c.status));
+    const editable=fresh&&snapshot.offroad&&snapshot.remote_enabled;
     const list=el('section',undefined,'workspace-card settings-list');list.append(el('h2',t(query?'searchResults':'availableSettings')));body.append(list);
-    for(const entry of entries.filter(x=>x.widget!=='navigation')){
-      const row=el('form',undefined,'setting-row');row.dataset.key=entry.key;
-      const description=el('div',undefined,'setting-label');description.append(el('strong',label(entry.title)));
-      if(query)description.append(el('small',label(entry.group),'workspace-muted'));
-      if(label(entry.description))description.append(el('p',label(entry.description),'workspace-muted'));row.append(description);
-      const current=snapshot.values[entry.key];
-      if(entry.widget==='info'){row.append(el('span',String(current??'—')));list.append(row);continue;}
-      let input,read;
-      if(entry.type==='BOOL'){input=el('input');input.type='checkbox';input.checked=current===true;read=()=>input.checked;}
-      else if(entry.options){input=el('select');entry.options.forEach((option,index)=>{const node=el('option',label(option.label));node.value=String(index);node.disabled=!option.enabled;node.selected=option.value===current;input.append(node);});read=()=>entry.options[Number(input.value)].value;}
-      else {input=el('input');input.type=entry.type==='STRING'?'text':'number';input.value=String(current??'');input.required=true;for(const bound of ['min','max','step'])if(entry[bound]!==undefined)input[bound]=String(entry[bound]);read=()=>entry.type==='STRING'?input.value:Number(input.value);}
-      input.setAttribute('aria-label',label(entry.title));input.disabled=!editable||!entry.enabled;
-      const controls=el('div',undefined,'setting-controls'),save=el('button',t('save'),'workspace-save');save.type='submit';save.disabled=input.disabled;
-      controls.append(input);if(entry.unit)controls.append(el('small',entry.unit));controls.append(save);row.append(controls);
-      row.addEventListener('submit',async event=>{event.preventDefault();if(!editable||writing||!selected)return;const deviceId=selected.id,requestEpoch=epoch;writing=true;workspace.querySelectorAll('.setting-controls button,.setting-controls input,.setting-controls select').forEach(node=>node.disabled=true);
-        try{await api('/devices/'+encodeURIComponent(deviceId)+'/settings',{key:entry.key,value:read(),expected_revision:snapshot.revision,session:snapshot.session});if(requestEpoch===epoch)notify('settingsQueued');}
-        catch(e){if(requestEpoch===epoch)notify('reason_'+(e.reason||'write_failed'),true);}
-        finally{writing=false;if(selected){draw();await poll();}}
-      });list.append(row);
+    for(const entry of entries.filter(x=>x.widget!=='navigation'))list.append(settingRow(entry,snapshot,editable));
+    const note=el('p',t('editMemoryNote'),'settings-edit-note');body.append(note);
+  }
+  function settingRow(entry,snapshot,editable){
+    const deviceId=selected.id,key=entry.key,current=snapshot.values[key],draft=edits.get(deviceId,key);
+    const value=draft&&draft.status!=='applied'?draft.value:current;
+    const row=el('form',undefined,'setting-row');row.dataset.key=key;
+    const description=el('div',undefined,'setting-label');description.append(el('strong',label(entry.title)));
+    if(query)description.append(el('small',label(entry.group),'workspace-muted'));
+    if(label(entry.description)){const help=el('details',undefined,'setting-help');help.append(el('summary',t('settingDetails')),el('p',label(entry.description),'workspace-muted'));description.append(help);}
+    if(entry.widget==='info'){row.append(description,el('span',String(current??'—')));return row;}
+    const badge=el('span',undefined,'setting-sync');badge.setAttribute('role','status');description.append(badge);
+    if(!entry.enabled)description.append(el('p',t('settingDisabled'),'workspace-muted'));
+    const controls=el('div',undefined,'setting-controls'),editor=el('div',undefined,'setting-editor');
+    const save=el('button',t('save'),'workspace-save');save.type='submit';save.dataset.field='save';
+    const discard=el('button',t('editDiscard'),'setting-discard');discard.type='button';discard.dataset.field='discard';
+    const blocked=!editable||!entry.enabled||pendingEdit(draft)||draft?.status==='conflict';
+    const change=raw=>{const valid=controlValue(entry,raw);edits.edit(deviceId,key,valid===undefined?raw:valid,snapshot);refreshStatus();};
+    function refreshStatus(){
+      const d=edits.get(deviceId,key);badge.hidden=!d;badge.textContent=d?t('edit_'+d.status)+(d.reason&&['failed','uncertain'].includes(d.status)?' · '+t('reason_'+d.reason):''):'';badge.dataset.state=d?.status||'';
+      save.disabled=!editable||!entry.enabled||writing||state.commands.some(c=>['queued','delivered'].includes(c.status))||!d||!['draft','failed'].includes(d.status)||sameSettingValue(key,d.value,d.base)||controlValue(entry,d.value)===undefined;
+      discard.hidden=!d||d.status==='applied';discard.disabled=pendingEdit(d);
     }
+    if(entry.type==='BOOL'){
+      const input=el('input');input.type='checkbox';input.setAttribute('role','switch');input.checked=value===true;input.disabled=blocked;input.dataset.field='value';input.setAttribute('aria-label',label(entry.title));input.addEventListener('change',()=>change(input.checked));editor.append(input);
+    }else if(entry.options&&entry.widget==='multiple_button'&&entry.options.length<=5){
+      editor.classList.add('setting-segments');editor.setAttribute('role','group');editor.setAttribute('aria-label',label(entry.title));
+      entry.options.forEach((option,index)=>{const b=el('button',label(option.label));b.type='button';b.dataset.field='option-'+index;b.disabled=blocked||!option.enabled;b.setAttribute('aria-pressed',String(sameValue(value,option.value)));b.addEventListener('click',()=>{change(option.value);for(const [i,node] of [...editor.children].entries())node.setAttribute('aria-pressed',String(i===index));});editor.append(b);});
+    }else if(entry.options){
+      const input=el('select');input.dataset.field='value';input.disabled=blocked;input.setAttribute('aria-label',label(entry.title));
+      if(!entry.options.some(o=>sameValue(o.value,value))){const unknown=el('option',t('unknown'));unknown.value='';unknown.disabled=true;unknown.selected=true;input.append(unknown);}
+      entry.options.forEach((option,index)=>{const node=el('option',label(option.label));node.value=String(index);node.disabled=!option.enabled;node.selected=sameValue(option.value,value);input.append(node);});
+      input.addEventListener('change',()=>change(entry.options[Number(input.value)]?.value));editor.append(input);
+    }else{
+      const input=el('input');input.type=entry.type==='STRING'?'text':'number';input.value=String(value??'');input.required=true;input.disabled=blocked;input.dataset.field='value';input.setAttribute('aria-label',label(entry.title));
+      if(entry.type==='STRING')input.maxLength=256;
+      for(const bound of ['min','max','step'])if(entry[bound]!==undefined)input[bound]=String(entry[bound]);
+      input.addEventListener('input',()=>change(input.value));
+      if(entry.type!=='STRING'){
+        editor.classList.add('setting-stepper');
+        for(const [direction,text] of [[-1,'−'],[1,'+']]){const b=el('button',text);b.type='button';b.dataset.field=direction<0?'decrease':'increase';b.disabled=blocked;b.setAttribute('aria-label',t(direction<0?'settingDecrease':'settingIncrease')+' '+label(entry.title));b.addEventListener('click',()=>{const base=controlValue(entry,input.value);if(base===undefined)return;const next=Number(Math.min(entry.max,Math.max(entry.min,base+direction*entry.step)).toFixed(10));input.value=String(next);change(next);});editor.append(b);if(direction<0)editor.append(input);}
+        description.append(el('small',`${t('settingRange')} ${entry.min} – ${entry.max} · ${t('settingStep')} ${entry.step}${entry.unit?' '+entry.unit:''}`,'workspace-muted'));
+      }else editor.append(input);
+    }
+    if(entry.unit)editor.append(el('small',entry.unit));
+    controls.append(editor,save,discard);row.append(description,controls);
+    if(draft?.status==='conflict')row.append(conflictControls(deviceId,key,current,draft,entry,editable));
+    discard.addEventListener('click',()=>{edits.discard(deviceId,key);draw();});
+    row.addEventListener('submit',event=>{event.preventDefault();if(!save.disabled)saveEdit(deviceId,key);});
+    refreshStatus();return row;
+  }
+  function conflictControls(deviceId,key,current,draft,entry,editable){
+      const conflict=el('div',undefined,'setting-conflict');conflict.setAttribute('role','alert');
+      const format=v=>{const option=entry.options?.find(o=>sameValue(o.value,v));return option?label(option.label):typeof v==='boolean'?t(v?'settingOn':'settingOff'):String(v??'—');};
+      conflict.append(el('strong',t('editConflictTitle')),el('p',t('editDeviceValue')+' '+format(current)),el('p',t('editYourValue')+' '+format(draft.value)));
+      const use=el('button',t('editUseDevice'));use.type='button';use.addEventListener('click',()=>{edits.discard(deviceId,key);draw();});
+      const keep=el('button',t('editKeepMine'),'workspace-save');keep.type='button';keep.disabled=!editable||!entry.enabled;keep.addEventListener('click',()=>{edits.rebase(deviceId,key,state.snapshot);draw();});
+      conflict.append(use,keep,el('small',t('editKeepHelp')));return conflict;
+  }
+  async function saveEdit(deviceId,key){
+      if(writing||!selected||selected.id!==deviceId||!state?.fresh||!state.snapshot?.offroad||!state.snapshot?.remote_enabled||state.commands.some(c=>['queued','delivered'].includes(c.status)))return;
+      const owner=edits.owner;const command=edits.begin(deviceId,key,state.snapshot);
+      if(!command){draw();return;}const requestRow=edits.get(deviceId,key);writing=true;draw();
+      try{const result=await api('/devices/'+encodeURIComponent(deviceId)+'/settings',command);if(edits.owner===owner&&edits.get(deviceId,key)===requestRow)edits.queued(deviceId,key,result);}
+      catch(e){if(edits.owner===owner&&edits.get(deviceId,key)===requestRow)edits.failed(deviceId,key,e);}
+      finally{writing=false;if(selected){draw();await poll();}}
   }
   async function poll(){
     clearTimeout(timer);if(!selected||writing)return;const currentEpoch=epoch;
     try{const result=await api('/devices/'+encodeURIComponent(selected.id)+'/settings');if(currentEpoch!==epoch)return;
       const focused=body.contains(document.activeElement)&&['INPUT','SELECT'].includes(document.activeElement.tagName);
-      const changed=!state||result.fresh!==state.fresh||result.snapshot?.revision!==state.snapshot?.revision||result.snapshot?.offroad!==state.snapshot?.offroad||result.snapshot?.remote_enabled!==state.snapshot?.remote_enabled||JSON.stringify(result.commands)!==JSON.stringify(state.commands)||!focused&&JSON.stringify(result.snapshot?.info)!==JSON.stringify(state.snapshot?.info);state=result;
+      const before=JSON.stringify([...edits.rows(selected.id)]);edits.reconcile(selected.id,result);
+      const changed=before!==JSON.stringify([...edits.rows(selected.id)])||!state||result.fresh!==state.fresh||result.snapshot?.revision!==state.snapshot?.revision||result.snapshot?.session!==state.snapshot?.session||result.snapshot?.offroad!==state.snapshot?.offroad||result.snapshot?.remote_enabled!==state.snapshot?.remote_enabled||JSON.stringify(result.commands)!==JSON.stringify(state.commands)||!focused&&JSON.stringify(result.snapshot?.info)!==JSON.stringify(state.snapshot?.info);state=result;
       if(changed||!body.childElementCount)draw();else $('settings-last-seen').textContent=`${t('received')} ${date(state.received_at)}`;
-    }catch(e){if(currentEpoch!==epoch)return;if([401,404].includes(e.status)){close();notify('settingsServiceUnavailable',true);return;}if(state)state.fresh=false;draw();}
+    }catch(e){if(currentEpoch!==epoch)return;if([401,404].includes(e.status)){if(e.status===401)edits.reset();else edits.devices.delete(selected.id);close();notify('settingsServiceUnavailable',true);return;}if(state)state.fresh=false;draw();}
     if(selected)timer=setTimeout(poll,3000);
   }
   function open(device,next='device',updateRoute=true){
+    edits.scope(getAccount()?.id);
     if(!selected)previousFocus=document.activeElement;
     close(false);selected=device;section=sections.includes(next)?next:'device';query='';$('settings-search').value='';workspace.hidden=false;document.body.classList.add('settings-open');
     if(updateRoute)setRoute();nav();draw();poll();$('settings-title').focus();
@@ -115,5 +182,5 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   $('settings-back').addEventListener('click',()=>close());$('settings-retry').addEventListener('click',poll);
   document.addEventListener('keydown',event=>{if(!selected)return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();$('settings-search').focus();}if(event.key==='Escape'){workspace.classList.remove('menu-open');$('settings-device-picker').open=false;}});
   document.addEventListener('click',event=>{if(!$('settings-device-picker').contains(event.target))$('settings-device-picker').open=false;});
-  return {open,close,translate(){if(selected){nav();draw();}},route(){const route=parseRoute(location.hash);if(!route){if(selected)close(false);return;}const device=getDevices().find(d=>d.id===route.device&&d.state==='paired');if(!device){if(selected)close(false);return;}if(selected?.id!==device.id)open(device,route.section,false);else if(section!==route.section){section=route.section;query='';$('settings-search').value='';nav();draw();}},update(){if(selected){const device=getDevices().find(d=>d.id===selected.id&&d.state==='paired');if(!device)close();else{selected=device;$('settings-device-label').textContent=device.name;if(section==='home'&&!query)draw();}}}};
+  return {open,close,reset(updateRoute=true){edits.reset();close(updateRoute);},translate(){if(selected){nav();draw();}},route(){const route=parseRoute(location.hash);if(!route){if(selected)close(false);return;}const device=getDevices().find(d=>d.id===route.device&&d.state==='paired');if(!device){if(selected)close(false);return;}if(selected?.id!==device.id)open(device,route.section,false);else if(section!==route.section){section=route.section;query='';$('settings-search').value='';nav();draw();}},update(){edits.scope(getAccount()?.id);for(const id of edits.devices.keys())if(!getDevices().some(d=>d.id===id&&d.state==='paired'))edits.devices.delete(id);if(selected){const device=getDevices().find(d=>d.id===selected.id&&d.state==='paired');if(!device)close();else{selected=device;$('settings-device-label').textContent=device.name;if(section==='home'&&!query)draw();}}}};
 }
