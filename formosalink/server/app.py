@@ -18,6 +18,7 @@ from formosalink.server.config import load, password_hash
 from formosalink.server.store import Store
 from formosalink.server import oauth
 from typing import Any
+from openpilot.sunnypilot.formosalink.media_protocol import MAX_MEDIA_BYTES
 from openpilot.sunnypilot.formosalink.management_protocol import MAX_MANAGEMENT_BYTES, validate_snapshot as validate_management
 
 COOKIE = "formosalink_session"
@@ -67,7 +68,7 @@ def create_app(data_dir, web_dir=None):
   store = Store(directory / "formosalink.sqlite3")
   github = oauth.settings(directory)
   callback = config["origin"] + "/api/v1/auth/github/callback"
-  app = FastAPI(title="FormosaLink", version="0.4.0", docs_url=None, redoc_url=None, openapi_url=None)
+  app = FastAPI(title="FormosaLink", version="0.6.0", docs_url=None, redoc_url=None, openapi_url=None)
   app.state.store = store
   limiter = Limit()
   connections = {}
@@ -91,14 +92,14 @@ def create_app(data_dir, web_dir=None):
     if request.url.path.startswith("/api/"):
       if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
         return Response(status_code=400)
-      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync"):
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media"):
         if request.headers.get("origin") != config["origin"]:
           return Response(status_code=403)
       try:
         length = int(request.headers.get("content-length", "0"))
       except ValueError:
         return Response(status_code=400)
-      limit = MAX_MANAGEMENT_BYTES if request.url.path == "/api/v1/agent/sync" else MAX_FRAME_BYTES
+      limit = MAX_MEDIA_BYTES if request.url.path == "/api/v1/agent/media" else MAX_MANAGEMENT_BYTES if request.url.path == "/api/v1/agent/sync" else MAX_FRAME_BYTES
       if length > limit:
         return Response(status_code=413)
       # Bound streamed/chunked requests as well as declared Content-Length.
@@ -112,14 +113,14 @@ def create_app(data_dir, web_dir=None):
     response.headers["Cache-Control"] = "no-store" if request.url.path.startswith("/api/") else "no-cache"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "no-referrer"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
     if secure:
       response.headers["Strict-Transport-Security"] = "max-age=31536000"
     return response
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination"], "database_version": 3}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1"], "database_version": 3}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):
@@ -379,6 +380,8 @@ def create_app(data_dir, web_dir=None):
       if device_id and connections.get(device_id) is socket:
         connections.pop(device_id, None)
 
+  from formosalink.server.media import register as register_media
+  register_media(app, store, owner, rate)
   web = Path(web_dir) if web_dir else Path(__file__).resolve().parents[1] / "web"
   if web.is_dir():
     app.mount("/", StaticFiles(directory=web, html=True), name="web")

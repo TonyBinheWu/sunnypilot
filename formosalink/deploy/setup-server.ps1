@@ -210,7 +210,7 @@ $hostHeader = ([Uri]$Origin).Authority
 for ($attempt=0; $attempt -lt 20; $attempt++) {
   try {
     $health = Invoke-RestMethod -Uri 'http://127.0.0.1:8765/api/v1/health' -Headers @{Host=$hostHeader} -TimeoutSec 2
-    if ($health.service -eq 'FormosaLink' -and $health.features -contains 'navigation-destination' -and $health.database_version -eq 3) { Write-Output $text.ready; return }
+    if ($health.service -eq 'FormosaLink' -and $health.features -contains 'media-preview-v1' -and $health.database_version -eq 3) { Write-Output $text.ready; return }
   } catch { }
   Start-Sleep -Seconds 1
 }

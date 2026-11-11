@@ -1,4 +1,4 @@
-# FormosaPilot / FormosaLink 0.5.0
+# FormosaPilot / FormosaLink 0.6.0
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
@@ -18,7 +18,7 @@ FormosaPilot は保守対象の sunnypilot を基盤とするブランドです�
 - GitHub accounts with owner-scoped devices, single Python worker, local SQLite. Existing administrator credentials and pairing data migrate in place.
 - Dedicated Ed25519 device keys, expiring one-use pairing codes, fingerprint confirmation, signed/replay-protected connection authentication.
 - WebSocket is preferred; proxies with incompatible upgrade handling use per-request signed HTTPS telemetry, retaining TLS verification, replay protection and revocation checks.
-- Device state, temperatures, memory, storage, speed when valid, installed version/branch/commit. No location, driver-camera data, raw CAN, image streaming, remote commands or parameter reads.
+- Device state, temperatures, memory, storage, speed when valid, installed version/branch/commit. No live location, driver-camera data or raw CAN. Typed parked settings use an explicit allowlist. The separately launched media preview publisher can upload signed, bounded JPEG frames; native camera capture is not connected yet.
 - Agent default: **disabled**. Explicit offroad opt-in is available in Settings → Device → FormosaLink on both C3X and C4. Scan its QR with a phone to pair without typing codes or fingerprints.
 - Cloud outages do not gate the existing driving processes. Existing comma/sunnylink services are not redirected or silently disabled.
 - SQLite stores the latest snapshot only (not journey history); audit is bounded to 10,000 events. Online requires a live authenticated WebSocket or recent signed HTTPS telemetry within 20 seconds. Invalid or old samples are shown as stale.
@@ -62,3 +62,5 @@ Not yet verified by host tests: end-to-end IIS ARR/WebSocket forwarding to the P
 [Hyundai／Kia 自動辨識與 SOC 訊號審查 / SOC audit / SOC 検査](docs/HYUNDAI_SOC.md)
 
 [設定控制項、逐項同步與衝突處理 / Settings controls and conflicts / 設定と競合](docs/SETTINGS_UI.md)
+
+[影音整合階段、發送器與 IIS 更新 / Media integration / メディア統合](docs/MEDIA_INTEGRATION.md)

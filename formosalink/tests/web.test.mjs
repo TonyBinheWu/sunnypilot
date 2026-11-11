@@ -1,5 +1,6 @@
 import test from 'node:test';
 import './settings-edits.test.mjs';
+import './media.test.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {translations} from '../web/i18n.js';
