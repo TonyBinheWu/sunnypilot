@@ -4,6 +4,7 @@ Copyright (c) 2021-, Haibin Wen, sunnypilot, and a number of other contributors.
 This file is part of sunnypilot and is licensed under the MIT License.
 See the LICENSE.md file in the root directory for more details.
 """
+from openpilot.sunnypilot.formosalink.brand_ui import FormosaPilotPanel, LOGO_ASSET
 from openpilot.selfdrive.ui.mici.layouts.settings import settings as OP
 from openpilot.selfdrive.ui.mici.layouts.settings.settings import SettingsBigButton
 from openpilot.selfdrive.ui.mici.layouts.settings.device import DeviceLayoutMici
@@ -21,6 +22,11 @@ from openpilot.system.ui.widgets.scroller import NavScroller
 
 ICON_SIZE = 70
 BIG_ICON_SIZE = 110
+
+
+class FormosaBigButton(SettingsBigButton):
+  def _get_label_font_size(self):
+    return 36
 
 
 class SunnylinkBigButton(SettingsBigButton):
@@ -114,12 +120,17 @@ class SettingsLayoutSP(OP.SettingsLayout):
     self._disable_offroad_btn.set_click_callback(lambda: self._handle_always_offroad(False))
     self._disable_offroad_btn.set_visible(lambda: ui_state.always_offroad)
 
+    formosa_panel = FormosaPilotPanel()
+    formosa_btn = FormosaBigButton("FormosaPilot", "FormosaLink", gui_app.texture(LOGO_ASSET, 80, 80))
+    formosa_btn.set_click_callback(lambda: gui_app.push_widget(formosa_panel))
+
     items = self._scroller._items.copy()
 
     items.insert(1, models_btn)
     items.insert(2, visuals_btn)
     items.insert(3, steering_btn)
     items.insert(6, sunnylink_btn)
+    items.insert(0, formosa_btn)
 
     # front slots (only one ever visible at a time): exit-always-offroad, then enable-onroad
     items.insert(0, self._enable_offroad_btn_onroad)

@@ -590,6 +590,7 @@ class GuiApplication(GuiApplicationExt):
     for font in self._fallback_fonts.values():
       rl.unload_font(font)
     self._fallback_fonts = {}
+    self._fallback_codepoints = {}
 
     if self._render_texture is not None:
       rl.unload_render_texture(self._render_texture)

@@ -19,3 +19,5 @@ openpilot/selfdrive/assets/fonts/SourceHanSansTC-Regular.otf -filter -diff -merg
 
 openpilot/selfdrive/car/tests/test_models_segs.txt filter=lfs diff=lfs merge=lfs -text
 openpilot/common/hardware/comma/updater filter=lfs diff=lfs merge=lfs -text
+
+openpilot/sunnypilot/formosalink/assets/formosapilot-logo.png -filter -diff -merge -text
