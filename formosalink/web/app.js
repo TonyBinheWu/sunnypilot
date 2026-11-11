@@ -1,8 +1,8 @@
-import {initTheme} from './theme.js?v=0.5.0';
-import {healthValue} from './health-ui.js?v=0.5.0';
-import {deviceSettings} from './device-settings.js?v=0.5.0';
-import {translations} from './i18n.js?v=0.5.0';
-import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.5.0';
+import {initTheme} from './theme.js?v=0.6.0';
+import {healthValue} from './health-ui.js?v=0.6.0';
+import {deviceSettings} from './device-settings.js?v=0.6.0';
+import {translations} from './i18n.js?v=0.6.0';
+import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.6.0';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';
 try { language = localStorage.getItem('formosalink-language') || 'zh-TW'; } catch {}

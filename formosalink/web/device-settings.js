@@ -1,8 +1,9 @@
-import {parseCoordinates} from './navigation-input.js?v=0.5.0';
-import {deviceHealth} from './health-ui.js?v=0.5.0';
-import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from './settings-edits.js?v=0.5.0';
+import {mediaViewer} from './media-view.js?v=0.6.0';
+import {parseCoordinates} from './navigation-input.js?v=0.6.0';
+import {deviceHealth} from './health-ui.js?v=0.6.0';
+import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from './settings-edits.js?v=0.6.0';
 // Full-page, owner-scoped device workspace. Only device receipts confirm writes.
-export const sections=['home','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer'];
+export const sections=['home','live','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer'];
 export function category(entry){const group=entry.group?.en?.toLowerCase();return sections.includes(group)?group:'device';}
 export function routeFor(device,section){return '#device='+encodeURIComponent(device)+'&tab='+section;}
 export function parseRoute(hash){const p=new URLSearchParams(hash.replace(/^#/,''));if(p.get('tab')==='maps')p.set('tab','navigation');return p.has('device')?{device:p.get('device'),section:sections.includes(p.get('tab'))?p.get('tab'):'device'}:null;}
@@ -17,9 +18,10 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   const workspace=document.getElementById('settings-workspace'),$=id=>document.getElementById(id),body=$('settings-body');
   let selected=null,state=null,timer=null,epoch=0,writing=false,section='device',query='',previousFocus=null;
   const edits=new SettingsEdits();
+  const viewer=mediaViewer({api,t,el});
   const label=value=>value?.[language()]||value?.en||'';
   const setRoute=()=>{const hash=routeFor(selected.id,section);if(location.hash!==hash)history.pushState(null,'',hash);};
-  function close(updateRoute=true){selected=null;state=null;epoch++;clearTimeout(timer);body.replaceChildren();workspace.hidden=true;document.body.classList.remove('settings-open');workspace.classList.remove('menu-open');if(updateRoute&&parseRoute(location.hash))history.pushState(null,'','#dashboard');if(previousFocus?.isConnected)previousFocus.focus();}
+  function close(updateRoute=true){viewer.close();selected=null;state=null;epoch++;clearTimeout(timer);body.replaceChildren();workspace.hidden=true;document.body.classList.remove('settings-open');workspace.classList.remove('menu-open');if(updateRoute&&parseRoute(location.hash))history.pushState(null,'','#dashboard');if(previousFocus?.isConnected)previousFocus.focus();}
   function button(key,name,callback,className=''){const b=el('button',undefined,className);b.type='button';b.append(icon(name),el('span',t(key)));b.addEventListener('click',callback);return b;}
   function selectSection(next){section=next;query='';$('settings-search').value='';setRoute();nav();draw();workspace.classList.remove('menu-open');$('settings-title').focus();}
   function nav(){
@@ -73,7 +75,9 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     if(key&&field){const row=[...body.querySelectorAll('.setting-row')].find(n=>n.dataset.key===key);const target=row?.querySelector(`[data-field="${field}"]`);if(target&&!target.disabled){target.focus({preventScroll:true});if(selection)target.setSelectionRange(...selection);}}
   }
   function renderBody(){
-    if(!selected)return;body.replaceChildren();
+    if(!selected)return;
+    if(section==='live'&&!query){$('settings-title').textContent=t('section_live');$('settings-subtitle').textContent=t('sectionDesc_live');$('settings-banner-text').textContent=t('mediaPhase');$('settings-last-seen').textContent=t('received')+' '+date(state?.received_at);$('settings-retry-label').textContent=t('refresh');$('settings-connection').textContent=t(state?.fresh?'connected':'offline');viewer.open(body,selected.id);return;}
+    viewer.close();body.replaceChildren();
     $('settings-title').textContent=query?t('searchResults'):t('section_'+section);
     $('settings-subtitle').textContent=query?`${t('searchSettings')} · ${query}`:t('sectionDesc_'+section);
     const snapshot=state?.snapshot,fresh=state?.fresh===true;
@@ -182,5 +186,5 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   $('settings-back').addEventListener('click',()=>close());$('settings-retry').addEventListener('click',poll);
   document.addEventListener('keydown',event=>{if(!selected)return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();$('settings-search').focus();}if(event.key==='Escape'){workspace.classList.remove('menu-open');$('settings-device-picker').open=false;}});
   document.addEventListener('click',event=>{if(!$('settings-device-picker').contains(event.target))$('settings-device-picker').open=false;});
-  return {open,close,reset(updateRoute=true){edits.reset();close(updateRoute);},translate(){if(selected){nav();draw();}},route(){const route=parseRoute(location.hash);if(!route){if(selected)close(false);return;}const device=getDevices().find(d=>d.id===route.device&&d.state==='paired');if(!device){if(selected)close(false);return;}if(selected?.id!==device.id)open(device,route.section,false);else if(section!==route.section){section=route.section;query='';$('settings-search').value='';nav();draw();}},update(){edits.scope(getAccount()?.id);for(const id of edits.devices.keys())if(!getDevices().some(d=>d.id===id&&d.state==='paired'))edits.devices.delete(id);if(selected){const device=getDevices().find(d=>d.id===selected.id&&d.state==='paired');if(!device)close();else{selected=device;$('settings-device-label').textContent=device.name;if(section==='home'&&!query)draw();}}}};
+  return {open,close,reset(updateRoute=true){edits.reset();close(updateRoute);},translate(){if(selected){viewer.translate();nav();draw();}},route(){const route=parseRoute(location.hash);if(!route){if(selected)close(false);return;}const device=getDevices().find(d=>d.id===route.device&&d.state==='paired');if(!device){if(selected)close(false);return;}if(selected?.id!==device.id)open(device,route.section,false);else if(section!==route.section){section=route.section;query='';$('settings-search').value='';nav();draw();}},update(){edits.scope(getAccount()?.id);for(const id of edits.devices.keys())if(!getDevices().some(d=>d.id===id&&d.state==='paired'))edits.devices.delete(id);if(selected){const device=getDevices().find(d=>d.id===selected.id&&d.state==='paired');if(!device)close();else{selected=device;$('settings-device-label').textContent=device.name;if(section==='home'&&!query)draw();}}}};
 }
