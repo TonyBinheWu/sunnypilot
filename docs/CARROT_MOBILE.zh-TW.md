@@ -40,7 +40,7 @@ Carrot Web 適用於手機、平板與電腦瀏覽器；iPhone 可使用網頁�
 
 ## Android CarrotAssist
 
-本分支的 Android 原生介面新增繁中，依手機的 `zh-Hant`／臺灣／香港／澳門語系顯示，與網頁語言分開。需要重新建置 APK 才會生效；本次未發布或安裝新版 APK。
+本分支的 Android 原生介面新增繁中，依手機的 `zh-Hant`／臺灣／香港／澳門語系顯示，與網頁語言分開。已提供 [0.2.12 已簽章 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.12/CarrotAssist-TW-0.2.12.apk)。繁中版使用獨立套件，可與原版並存；新 App 的授權與設定分開保存。
 
 App 可搜尋同網路裝置、手動輸入 IP、開啟 Carrot Web、檢查 App 更新、開啟手機預設助手與使用直接語音。App 更新、車機 Git 更新及中繼服務更新是各自獨立的流程。
 
@@ -93,4 +93,4 @@ App 可搜尋同網路裝置、手動輸入 IP、開啟 Carrot Web、檢查 App 
 - [語音工具服務](../openpilot/selfdrive/carrot/server/services/assistant_tools.py)
 - [Android 原始碼及建置說明](../tools/carrot_android)
 
-本次只修改此分支的程式與文件，未操作實車、CAN、實際語音、模型下載、記錄刪除、裝置重新啟動或遠端服務部署。
+本次提供程式、文件及 APK 發行，未操作實車、CAN、實際語音、模型下載、記錄刪除、裝置重新啟動或遠端服務部署。

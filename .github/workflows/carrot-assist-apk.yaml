@@ -4,7 +4,11 @@ on:
   push:
     branches: [carrot-wip]
     paths:
-      - 'tools/carrot_android/**'
+      - 'tools/carrot_android/src/**'
+      - 'tools/carrot_android/res/**'
+      - 'tools/carrot_android/tests/**'
+      - 'tools/carrot_android/AndroidManifest.xml'
+      - 'tools/carrot_android/build.ps1'
       - '.github/workflows/carrot-assist-apk.yaml'
   workflow_dispatch:
 

@@ -1,4 +1,12 @@
-# CarrotAssist Android public beta
+# CarrotAssist Android public beta — Traditional Chinese distribution
+
+This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.12 (code 19). It can coexist with the upstream app; data and authorizations are separate.
+
+[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.12/CarrotAssist-TW-0.2.12.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.12)
+
+Updates are restricted to this repository’s `carrot-assist-tw-updates` channel and `carrot-assist-tw-vX.Y.Z` release URLs. The `.github/workflows/carrot-assist-apk.yaml` workflow runs the build checks, signs using protected repository secrets, verifies the APK and prepares a draft release. Signing keys never belong in this repository. A published version is immutable; increment the version name and code for another APK.
+
+The following sections describe the inherited app functionality.
 
 In 0.2.10, tap the top device name and **Copy ChatGPT instructions** to copy the localized prompt and see how to append it to your existing ChatGPT custom instructions.
 

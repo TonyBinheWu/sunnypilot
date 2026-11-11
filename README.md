@@ -6,11 +6,28 @@
 
 ![carrotpilot](https://github.com/user-attachments/assets/4d80d256-7e66-4473-a289-04a50733b7e0)
 
+## 下載 CarrotAssist 繁體中文版 APK
+
+**[⬇ 直接下載 CarrotAssist 繁體中文版 0.2.12（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.12/CarrotAssist-TW-0.2.12.apk)**
+
+[發行頁面與驗證資訊](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.12) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.12/SHA256SUMS.txt)
+
+1. 用 Android 手機開啟上述下載連結，下載完成後點選 APK。
+2. 若 Android 要求，允許目前的瀏覽器或檔案管理員「安裝未知應用程式」，再返回安裝。
+3. 開啟 **CarrotAssist 繁中**。手機系統語言設為繁體中文時，原生介面會顯示繁體中文。
+4. 手機與 comma 連到相同 Wi-Fi／熱點，搜尋裝置或手動輸入 IP。
+5. 車機使用本倉庫的 `carrot-wip`，在網頁「工具 → 語言 → 繁體中文」設定網頁語言。
+
+- 可安裝於 **Android 8.0 以上**；手機直接語音另需 **Android 12 以上**與可用的辨識服務及語言模型。
+- 這是獨立套件 `me.shind0.carrotweb.tw`，使用本倉庫專用簽章，可與原版 CarrotAssist 並存，原版資料會保留。新 App 的設定與 ChatGPT 授權獨立，可能需要重新連線。
+- App 更新來源為 `TonyBinheWu/sunnypilot` 的繁中發行頻道。APK 已完成建置、測試及簽章驗證，尚未在實體手機驗證。
+- 中文語音指令語法尚未新增；現有直接語音仍主要支援韓文與英文。iPhone 請使用 [Carrot Web](docs/CARROT_MOBILE.zh-TW.md)。
+
 ## 繁體中文介面
 
 - **裝置介面**：既有「中文（繁體）」（`zh-CHT`），本次補齊原翻譯檔中未完成的訊息。
 - **Carrot Web 手機網頁**：新增獨立「繁體中文」（`zh-tw`），涵蓋選單、對話框、操作狀態、首次使用引導，以及設定名稱、摘要、分類與選項。
-- **Android CarrotAssist**：原生介面新增繁中，依手機繁體語系顯示；需重新建置 APK 才會生效，本次未發布或安裝 APK。
+- **Android CarrotAssist**：原生介面新增繁中，依手機繁體語系顯示；可從上方連結下載已簽章的 APK。
 - **選擇方式**：手機網頁「工具 → 語言 → 繁體中文」。裝置介面語言需在裝置設定另行選擇，依提示重新啟動。
 - **自動偵測**：辨識 `zh-TW`、`zh-Hant`、`zh-HK`、`zh-MO` 與裝置繁中設定；已儲存語言優先，舊使用者請手動切換一次。
 - **外部內容**：上游 Wiki 詳細文章及第三方服務依其提供語言顯示。新增繁中介面不代表新增中文語音指令辨識或繁中提示音檔。
