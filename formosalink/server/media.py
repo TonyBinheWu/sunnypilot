@@ -92,7 +92,7 @@ def register(app, store, owner, rate):
       raise HTTPException(404,'device not found')
     if len(after) > 80:
       raise HTTPException(400,'invalid media cursor')
-    rate(request,'media-view',600)
+    rate(request,'media-view:'+device_id,600)
     if camera not in ('road-preview','wide-road','driver'):
       raise HTTPException(400,'invalid camera')
     return relay.get(device_id, after, camera)
@@ -103,7 +103,7 @@ def register(app, store, owner, rate):
     row = store.get(device_id)
     if not row or row['state'] != 'paired' or row['owner_id'] != user['id']:
       raise HTTPException(404,'device not found')
-    rate(request,'camera-watch',120)
+    rate(request,'camera-watch:'+device_id,120)
     try:
       value = await request.json()
     except ValueError as exc:
@@ -118,13 +118,14 @@ def register(app, store, owner, rate):
 
   @app.post('/api/v1/agent/media/watch')
   async def requested(request: Request):
-    rate(request,'camera-demand',120)
+    rate(request,'camera-demand',1200)
     try:
       envelope = await request.json()
       row = store.get(envelope['device_id'])
       if not row or row['state'] != 'paired':
         raise ValueError('device unavailable')
       value = verify(envelope,row['public_key'],'media-watch')
+      rate(request,'camera-demand:'+row['id'],60)
       if value['payload'] != {}:
         raise ValueError('invalid camera demand')
       store.consume_nonce(row['id'],value['nonce'])
