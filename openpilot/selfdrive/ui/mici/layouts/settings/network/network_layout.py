@@ -1,3 +1,4 @@
+import time
 from openpilot.selfdrive.ui.mici.layouts.settings.network import EsimNetworkButton, WifiNetworkButton
 from openpilot.selfdrive.ui.mici.layouts.settings.network.esim_ui import EsimUI
 from openpilot.selfdrive.ui.mici.layouts.settings.network.wifi_ui import WifiUIMici
@@ -6,7 +7,7 @@ from openpilot.selfdrive.ui.mici.widgets.dialog import BigInputDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.cellular_manager import CellularManager
-from openpilot.system.ui.lib.cellular_data import CellularDataPreference, label as cellular_label
+from openpilot.system.ui.lib.cellular_data import CellularDataPreference, connection_status, label as cellular_label
 from openpilot.system.ui.lib.wifi_manager import WifiManager, Network, MeteredType
 from openpilot.system.ui.widgets.scroller import NavScroller
 
@@ -113,6 +114,7 @@ class NetworkLayoutMici(NavScroller):
     super()._update_state()
     self._cellular_data_btn.set_checked(self._cellular_data.enabled)
     self._cellular_data_btn.set_text(cellular_label("title"))
+    self._cellular_data_btn.set_value(cellular_label(connection_status(self._cellular_data.enabled, self._cellular_manager.modem_state, time.monotonic())))
 
     show_cell_settings = not ui_state.prime_state.is_full_prime()
     self._wifi_manager.set_ipv4_forward(show_cell_settings)
