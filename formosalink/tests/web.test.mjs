@@ -45,3 +45,18 @@ test('QR parser rejects duplicate or forged fields, malformed input and unavaila
   assert.ok(js.includes("addEventListener('hashchange'"));
   assert.ok(!js.includes("localStorage.setItem('formosalink-pending"));
 });
+import {sections,category,filterEntries,parseRoute,routeFor} from '../web/device-settings.js';
+test('device workspace routes and category search preserve native identities',()=>{
+ const id='59bbc277-4ab4-4a1f-8fe0-4cb7b17d7947';
+ assert.deepEqual(parseRoute(routeFor(id,'models')),{device:id,section:'models'});
+ assert.equal(parseRoute('#dashboard'),null);
+ assert.deepEqual(parseRoute('#device='+id+'&tab=unknown'),{device:id,section:'device'});
+ const entries=[{key:'QuietMode',group:{en:'Display'},title:{'zh-TW':'安靜模式',en:'Quiet mode',ja:'静音モード'}},{key:'Mads',group:{en:'Steering'},title:{'zh-TW':'轉向輔助',en:'Steering assistance',ja:'操舵支援'}}];
+ assert.equal(category(entries[0]),'display');
+ assert.deepEqual(filterEntries(entries,'steering'),[entries[1]]);
+ assert.deepEqual(filterEntries(entries,'steering','安靜'),[entries[0]]);
+ assert.deepEqual(filterEntries(entries,'display','MADS'),[entries[1]]);
+ assert.deepEqual(filterEntries(entries,'display','静音'),[entries[0]]);
+ assert.deepEqual(filterEntries(entries,'display','unavailable'),[]);
+ for(const lang of ['zh-TW','en','ja'])for(const section of sections){assert.ok(translations[lang]['section_'+section]);assert.ok(translations[lang]['sectionDesc_'+section]);}
+});
