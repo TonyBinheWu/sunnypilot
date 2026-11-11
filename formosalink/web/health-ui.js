@@ -6,7 +6,7 @@ export function deviceHealth(container,{devices,t,el,date,onOpen}){
  const grid=el('div',undefined,'health-grid');container.append(grid);
  for(const d of devices.filter(x=>x.state==='paired')){
   const info=d.health||{},valid=d.health_fresh&&info.health_valid,card=el('article',undefined,'workspace-card health-card');
-  const heading=el('div',undefined,'health-card-heading'),name=el('h2',d.name),open=el('button',t('deviceSettings'),'workspace-save');open.type='button';open.addEventListener('click',()=>onOpen(d));heading.append(name,open);card.append(heading);
+  const heading=el('div',undefined,'health-card-heading'),name=el('h2',d.name),open=el('button',t('deviceSettings'),'workspace-save');open.type='button';open.addEventListener('click',()=>onOpen(d));const title=el('div');title.append(name,el('small',t(valid?'connected':d.health_fresh?'stale':'offline'),'workspace-muted'));heading.append(title,open);card.append(heading);
   card.append(el('p',[info.device_model||info.hardware||'FormosaPilot',info.vehicle_brand,info.vehicle_platform].filter(Boolean).join(' · '),'workspace-muted'));
   const dl=el('dl',undefined,'device-details');
   const field=(title,value)=>dl.append(el('dt',t(title)),el('dd',value));

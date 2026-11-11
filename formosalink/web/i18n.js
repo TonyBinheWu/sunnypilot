@@ -229,7 +229,8 @@ export const translations = {
     "info_egpu_memory_temp_c": "eGPU 記憶體溫度",
     "navPaste": "貼上座標或地圖連結",
     "navImport": "帶入座標",
-    "navInvalidCoordinates": "無法讀取座標。請貼上緯度,經度，或含座標的完整地圖網址；短網址請先自行開啟。"
+    "navInvalidCoordinates": "無法讀取座標。請貼上緯度,經度，或含座標的完整地圖網址；短網址請先自行開啟。",
+    "fleetHealthNote": "健康資料依各裝置回報更新；過期資料不作為即時讀值。"
   },
   "en": {
     "language": "Language",
@@ -461,7 +462,8 @@ export const translations = {
     "info_egpu_memory_temp_c": "eGPU memory temperature",
     "navPaste": "Paste coordinates or a map link",
     "navImport": "Use coordinates",
-    "navInvalidCoordinates": "Cannot read coordinates. Use latitude,longitude or a full map URL containing coordinates; expand short links yourself."
+    "navInvalidCoordinates": "Cannot read coordinates. Use latitude,longitude or a full map URL containing coordinates; expand short links yourself.",
+    "fleetHealthNote": "Health updates per device. Expired data is not a live reading."
   },
   "ja": {
     "language": "言語",
@@ -693,6 +695,7 @@ export const translations = {
     "info_egpu_memory_temp_c": "eGPU メモリ温度",
     "navPaste": "座標または地図リンクを貼付",
     "navImport": "座標を入力",
-    "navInvalidCoordinates": "座標を読み取れません。緯度,経度または座標を含む完全な地図 URL を入力してください。"
+    "navInvalidCoordinates": "座標を読み取れません。緯度,経度または座標を含む完全な地図 URL を入力してください。",
+    "fleetHealthNote": "本体ごとに状態を更新します。期限切れの値は現在値として表示しません。"
   }
 };
