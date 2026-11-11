@@ -20,6 +20,16 @@ from openpilot.sunnypilot.formosalink.cellular_link import sample_link
 
 
 class TestNativeCamera(unittest.TestCase):
+  def test_real_manager_camera_condition_all_modes(self):
+    import itertools
+    from openpilot.system.manager.process_config import managed_processes
+    predicate=managed_processes['camerad'].should_run
+    for started,driver,live,enabled,leased in itertools.product((False,True),repeat=5):
+      flags={'IsDriverViewEnabled':driver,'IsLiveStreaming':live,'FormosaLinkEnabled':enabled}
+      params=SimpleNamespace(get_bool=lambda key:flags.get(key,False))
+      with patch('openpilot.sunnypilot.formosalink.cameras.camera_requested',return_value=leased):
+        self.assertEqual(predicate(started,params,None),started or driver or live or enabled and leased)
+
   def test_persistent_encoder_reuses_process_for_both_camera_streams(self):
     from openpilot.sunnypilot.formosalink.stream_encoder import StreamEncoder
     width,height,stride,offset=64,48,80,4096
