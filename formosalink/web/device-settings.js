@@ -1,5 +1,5 @@
-import {parseCoordinates} from './navigation-input.js?v=0.4.0';
-import {deviceHealth} from './health-ui.js?v=0.4.0';
+import {parseCoordinates} from './navigation-input.js?v=0.4.1';
+import {deviceHealth} from './health-ui.js?v=0.4.1';
 // Full-page, owner-scoped device workspace. Only device receipts confirm writes.
 export const sections=['home','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer'];
 export function category(entry){const group=entry.group?.en?.toLowerCase();return sections.includes(group)?group:'device';}
@@ -37,7 +37,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   function info(snapshot){
     const card=el('section',undefined,'workspace-card information');card.append(el('h2',t('deviceInfo')));
     const dl=el('dl',undefined,'device-details');
-    for(const [key,value] of Object.entries(snapshot.info).filter(([k])=>!["health_valid","soc_status","egpu_status","thermal_names","thermal_values"].includes(k)))dl.append(el('dt',t('info_'+key)),el('dd',Array.isArray(value)?value.join(', '):String(value??'—')));
+    for(const [key,value] of Object.entries(snapshot.info).filter(([k])=>!["health_valid","soc_status","egpu_status","thermal_names","thermal_values","soc_detection","aux_soc_status"].includes(k)))dl.append(el('dt',t('info_'+key)),el('dd',Array.isArray(value)?value.join(', '):String(value??'—')));
     if(!dl.childElementCount)card.append(el('p',t('settingsWaiting'),'workspace-muted'));else card.append(dl);body.append(card);
   }
   function navigation(snapshot){

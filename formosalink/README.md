@@ -1,4 +1,4 @@
-# FormosaPilot / FormosaLink 0.4.0
+# FormosaPilot / FormosaLink 0.4.1
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
@@ -58,3 +58,5 @@ Not yet verified by host tests: end-to-end IIS ARR/WebSocket forwarding to the P
 
 
 [健康總覽、SOC、eGPU、主題與導航 / Health and navigation / 状態とナビ](docs/HEALTH_NAVIGATION.md)
+
+[Hyundai／Kia 自動辨識與 SOC 訊號審查 / SOC audit / SOC 検査](docs/HYUNDAI_SOC.md)

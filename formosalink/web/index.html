@@ -5,8 +5,8 @@
   <meta name="theme-color" content="#0f1424"><meta name="description" content="FormosaLink — FormosaPilot device companion">
   <title>FormosaLink · FormosaPilot</title>
   <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/assets/formosapilot-logo.png">
-  <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css?v=0.4.0">
-  <script type="module" src="/app.js?v=0.4.0"></script>
+  <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css?v=0.4.1">
+  <script type="module" src="/app.js?v=0.4.1"></script>
 </head>
 <body>
   <header class="topbar">
@@ -15,35 +15,12 @@
     <div class="header-actions"><button type="button" data-theme-toggle></button><details class="language-menu" id="language-menu"><summary id="language" aria-label="Language">繁體中文</summary><div class="language-options"><button type="button" data-language="zh-TW">繁體中文</button><button type="button" data-language="en">English</button><button type="button" data-language="ja">日本語</button></div></details><a id="nav-signin" class="nav-signin" href="#login-view" data-i18n="signinShort"></a><button id="logout" class="quiet" hidden data-i18n="logout"></button></div>
   </header>
   <main>
-    <div id="login-view">
-      <section class="hero">
-        <div class="hero-copy">
-          <span class="release-badge"><span class="tiny-dot"></span><span data-i18n="releaseBadge"></span></span>
-          <h1><span data-i18n="heroTitle"></span><span class="gradient-text" data-i18n="heroAccent"></span></h1>
-          <p class="hero-description" data-i18n="heroDescription"></p>
-          <div class="hero-actions"><button id="github-login" class="primary" type="button" disabled><span data-i18n="githubLogin"></span><span aria-hidden="true">↗</span></button><a class="secondary" href="#how-it-works"><span data-i18n="getStarted"></span><span aria-hidden="true">→</span></a></div>
-          <p id="github-note" class="caption" data-i18n="githubUnavailable"></p>
-
-          <div class="formosa-signature"><span class="island-mark" aria-hidden="true"></span><span>FORMOSA · 23.5° N</span><span class="signature-line"></span><span data-i18n="taiwanMade"></span></div>
-        </div>
-        <figure class="product-figure">
-          <div class="product-glow" aria-hidden="true"></div>
-          <div class="product-window" aria-hidden="true">
-            <div class="window-bar"><span class="window-dots"><i></i><i></i><i></i></span><span>formosapilot.dinglu-t.com</span><span class="window-lock">◇</span></div>
-            <div class="preview-app"><aside class="preview-sidebar"><img src="/assets/formosapilot-logo.png" alt=""><span class="preview-nav active">▦</span><span class="preview-nav">◈</span><span class="preview-sidebar-bottom">23.5°</span></aside>
-              <div class="preview-main"><div class="preview-heading"><span data-i18n="dashboard"></span><span class="preview-chip" data-i18n="previewLabel"></span></div><div class="preview-stats"><div><span data-i18n="devices"></span><b>1</b></div><div><span data-i18n="readonly"></span><b>◈</b></div></div><div class="preview-device"><div class="preview-device-name"><span class="device-symbol">▱</span><div><strong>FormosaPilot</strong><small data-i18n="previewLabel"></small></div><span class="preview-dot"></span></div><div class="preview-metrics"><div><small data-i18n="cpu"></small><b>46<span>°C</span></b><i></i></div><div><small data-i18n="memory"></small><b>31<span>%</span></b><i></i></div></div><div class="preview-device-footer"><span>hkg-enhanced / ccnc-port</span><span>HTTPS</span></div></div><div class="preview-lines"><i></i><i></i><i></i></div></div>
-            </div>
-          </div>
-          <figcaption><span class="tiny-dot"></span><span data-i18n="previewCaption"></span></figcaption>
-        </figure>
-      </section>
-      <section id="features" class="landing-section">
-        <div class="section-heading"><span class="eyebrow" data-i18n="navFeatures"></span><h2 data-i18n="featuresTitle"></h2><p data-i18n="featuresIntro"></p></div>
-        <div class="feature-grid"><article class="feature-card"><span class="feature-icon" aria-hidden="true">◈</span><h3 data-i18n="featurePairTitle"></h3><p data-i18n="featurePairText"></p></article><article class="feature-card"><span class="feature-icon" aria-hidden="true">⌁</span><h3 data-i18n="featureMonitorTitle"></h3><p data-i18n="featureMonitorText"></p></article><article class="feature-card"><span class="feature-icon" aria-hidden="true">◇</span><h3 data-i18n="featurePrivateTitle"></h3><p data-i18n="featurePrivateText"></p></article></div>
-      </section>
-      <section id="how-it-works" class="landing-section how-section">
-        <div class="section-heading"><span class="eyebrow" data-i18n="navHow"></span><h2 data-i18n="stepsTitle"></h2><p data-i18n="stepsIntro"></p></div>
-        <div class="steps-grid"><article><span class="step-number">01</span><h3 data-i18n="stepSignIn"></h3><p data-i18n="stepSignInText"></p></article><article><span class="step-number">02</span><h3 data-i18n="stepPair"></h3><p data-i18n="stepPairText"></p></article><article><span class="step-number">03</span><h3 data-i18n="stepMonitor"></h3><p data-i18n="stepMonitorText"></p></article></div>
+    <div id="login-view" class="login-screen">
+      <section class="login-panel">
+        <img class="login-logo" src="/assets/formosapilot-logo.png" alt="FormosaPilot">
+        <h1 data-i18n="signin"></h1><p data-i18n="dashboardIntro"></p>
+        <button id="github-login" class="primary" type="button" disabled data-i18n="githubLogin"></button>
+        <p id="github-note" class="caption" data-i18n="waiting"></p>
       </section>
     </div>
     <section id="dashboard" hidden>

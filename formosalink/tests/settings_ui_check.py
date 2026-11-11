@@ -1,4 +1,5 @@
 """Native Params and actual C3X/C4 control integration, explicitly invoked."""
+from pathlib import Path
 import tempfile
 import time
 import unittest
@@ -58,6 +59,45 @@ class TestSettingsProfile(unittest.TestCase):
       cmd.update(key="NavDestination",value=encode({"latitude":25.03,"longitude":121.56,"place_name":"DEMO"}))
       self.assertEqual(source.apply(cmd,cmd["device_id"],time.monotonic()+5)["status"],"applied")
       self.assertEqual(params.get("NavDestination")["latitude"],25.03)
+
+  def test_all_hyundai_kia_profiles_and_native_dbc(self):
+    import json,os
+    from opendbc.car import Bus
+    from opendbc.car.hyundai.values import CAR,DBC,HyundaiFlags
+    from opendbc.can.dbc import DBC as Database
+    from opendbc.can import CANPacker
+    from openpilot.sunnypilot.formosalink.hyundai_soc import SocTracker,profile,verify_aux_dbc
+    rows=[]
+    for model in CAR:
+      canfd=bool(model.config.flags&HyundaiFlags.CANFD)
+      verified=verify_aux_dbc(Database(DBC[model][Bus.pt])) if not canfd else False
+      detected=profile("hyundai",str(model),canfd,verified)
+      self.assertFalse(detected["traction_supported"])
+      self.assertFalse(canfd and detected["aux_supported"])
+      rows.append(detected)
+    self.assertGreater(len(rows),50)
+    output=Path(os.environ.get("FORMOSALINK_QR_OUTPUT","build/formosalink-soc"));output.mkdir(parents=True,exist_ok=True)
+    (output/"soc_profiles.json").write_text(json.dumps(rows,indent=2))
+    packer=CANPacker(DBC[CAR.HYUNDAI_SONATA][Bus.pt])
+    tracker=SocTracker();tracker.configure(profile("hyundai",str(CAR.HYUNDAI_SONATA),False,True))
+    for index in range(2):
+      frame=packer.make_can_msg("BAT11",0,{"BAT_SOC":72,"BAT_SNSR_V":12.6,"BAT_SNSR_State":1})
+      tracker.feed(frame[0],frame[2],frame[1],10+index*.1,10+index*.1)
+    self.assertEqual(tracker.snapshot(10.1)["aux_soc_percent"],72)
+    self.assertEqual(tracker.snapshot(10.1)["aux_battery_voltage"],12.6)
+
+  def test_native_vehicle_identity_selects_soc_without_user_choice(self):
+    from types import SimpleNamespace
+    from opendbc.car.structs import car
+    from opendbc.car.hyundai.values import CAR,HyundaiFlags
+    from openpilot.sunnypilot.formosalink.hyundai_soc import NativeSocObserver
+    cp=car.CarParams.new_message(brand="hyundai",carFingerprint=str(CAR.HYUNDAI_SONATA),flags=0)
+    raw=[cp.to_bytes()];params=SimpleNamespace(get=lambda key:raw[0])
+    observer=NativeSocObserver(params)
+    with patch("threading.Thread.start") as start:
+      state=observer.capture();self.assertEqual(state["aux_soc_status"],"waiting");start.assert_called_once()
+      cp=car.CarParams.new_message(brand="hyundai",carFingerprint=str(CAR.HYUNDAI_IONIQ_5),flags=int(HyundaiFlags.CANFD|HyundaiFlags.EV));raw[0]=cp.to_bytes()
+      state=observer.capture();self.assertEqual(state["aux_soc_status"],"unsupported");self.assertEqual(state["vehicle_powertrain"],"EV")
 
   def test_cached_native_controls_refresh_without_writing(self):
     from openpilot.system.ui.sunnypilot.widgets.toggle import ToggleSP

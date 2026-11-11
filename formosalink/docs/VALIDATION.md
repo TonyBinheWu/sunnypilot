@@ -104,3 +104,12 @@ C3X／C4 のビルド、実機の状態取得、負荷、クラウド切断時�
 
 
 0.4.0 正式更新後：使用者執行 IIS 更新，正式 health 已確認 device-health 與 navigation-destination，schema 3、原 GitHub session／裝置配對保留。以既有 DEMO 身分送簽章健康摘要，正式首頁顯示測試溫度、SOC 未提供與 eGPU 未安裝；主題淺色／暗色切換成功。在正式導航頁輸入 DEMO 名稱與公開測試座標，經記憶體 provider 寫入回讀及簽章 receipt 後顯示裝置已套用。未啟動實車導航，未向路線供應商查詢。測試後停止回報、關閉模擬遠端授權並使健康讀值失效；實體裝置、SOC、eGPU 與路線計算驗收仍須實機。
+
+
+## 2026-11-11 自動 SOC 辨識與統一入口（0.4.1）
+
+- hkg-enhanced／ccnc-port 各 88 項 Python、7 項前端測試通過。兩分支的 C3X／C4 原生 UI／Params／DBC profile 各 14 項，共 56 項通過。以各分支鎖定的 opendbc 檢查全部 79 個 Hyundai／Kia／Genesis 平台定義：60 個傳統 CAN 具有經核對的 BAT11；19 個 CAN-FD 不啟用 SOC 解碼。以原生 CANPacker 產生封包驗證位元解碼與實際 CarParams 自動選擇，不需使用者挑選車型。
+- BAT11 是 12V 輔助電池；高壓 SOC 尚未支援。本版沒有啟用 Kona 未確認候選訊號，也沒有主動診斷輪詢。測試涵蓋零值、非法值、長度、bus、重複、過期、平台切換與 DBC 變更停用；不代表所有實車都會發送 BAT11。
+- 原生行車解析器、控制器、safety 與 opendbc gitlink 維持原狀；獨立 FormosaLink subscriber 僅被動讀取 CAN。實車 CAN、上車資源負載與硬體驗收仍待完成。此矩陣是原生 PC profile 與合成封包檢查，未宣稱完成真車或閉環行車模擬驗收。
+- 公開入口改成與內頁相同的簡潔配色，登入且有配對裝置時直接開啟「所有裝置」。localhost DEMO 驗證公開入口、登入路由、淺色／暗色、390×844 單欄與明確區隔高壓／12V SOC。合成 72% 為測試資料。
+- 無後端 API／資料庫變更；原 0.4.0 IIS 不需重啟或重設帳密／OAuth。裝置需更新對應分支。完整訊號證據與限制見 HYUNDAI_SOC.md。
