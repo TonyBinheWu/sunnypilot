@@ -5,6 +5,8 @@ from pathlib import Path
 class DeviceInformation:
   def __init__(self, sm, params):
     self.sm, self.params = sm, params
+    from openpilot.sunnypilot.formosalink.hyundai_soc import NativeSocObserver
+    self.soc=NativeSocObserver(params)
 
   def capture(self):
     from openpilot.common.hardware import HARDWARE
@@ -33,6 +35,10 @@ class DeviceInformation:
       pass
     from openpilot.sunnypilot.formosalink.device_health import collect_health
     result.update(collect_health(self.sm,result.get("vehicle_brand")))
+    try:
+      result.update(self.soc.capture())
+    except Exception:
+      result.update(aux_soc_status="unknown",aux_soc_percent=None,aux_battery_voltage=None)
     try:
       result["uptime_seconds"] = int(float(Path("/proc/uptime").read_text().split()[0]))
     except (OSError,ValueError):

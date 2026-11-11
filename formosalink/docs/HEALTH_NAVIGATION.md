@@ -46,3 +46,11 @@ Run the IIS command above locally, then update the matching device branch. Crede
 ナビでは座標または座標を含む完全な地図 URL を貼り付け、本体のナビへ目的地を送信できます。短縮 URL は自動展開せず、リンクを外部へ取得しません。本体でナビと停車中の遠隔設定を許可し、状態・期限・revision を確認後、厳密な目的地を原生 JSON NavDestination に書き込み再読込します。「適用済み」は目的地の受信確認で、経路計算の成功を意味しません。本体の GPS と既存の経路サービスが必要です。自架の住所検索／経路エンジンは今回の対象外です。監視のみでは既存の目的地を送信せず、現在位置や映像も送信しません。
 
 IIS ホストで上記コマンドを実行後、対応ブランチの本体も更新してください。認証情報と登録を維持し、データベースは schema 3 のままです。実車での受入検証は別途必要です。
+
+## 0.4.1 SOC 更新 / update / 更新
+
+Hyundai／Kia 已加入獨立被動接收與原生車型自動辨識。傳統 CAN 的已確認 BAT11 僅顯示為 12V 輔助電池 SOC；CAN-FD 與高壓 SOC 仍未支援。詳見 [SOC audit](HYUNDAI_SOC.md)。
+
+The new observer automatically selects verified classic-CAN auxiliary 12V SOC. Traction SOC and CAN-FD remain unsupported. See the audit above.
+
+新しい受信処理で従来 CAN の 12V 補機 SOC を自動選択します。駆動用 SOC と CAN-FD は未対応です。詳細は上記の検査記録を参照してください。

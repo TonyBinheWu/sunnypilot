@@ -230,7 +230,20 @@ export const translations = {
     "navPaste": "貼上座標或地圖連結",
     "navImport": "帶入座標",
     "navInvalidCoordinates": "無法讀取座標。請貼上緯度,經度，或含座標的完整地圖網址；短網址請先自行開啟。",
-    "fleetHealthNote": "健康資料依各裝置回報更新；過期資料不作為即時讀值。"
+    "fleetHealthNote": "健康資料依各裝置回報更新；過期資料不作為即時讀值。",
+    "tractionSocUnverified": "尚無已驗證高壓 SOC 訊號",
+    "auxSoc": "12V 輔助電池 SOC",
+    "auxVoltage": "12V 電池電壓",
+    "aux_available": "可讀取",
+    "aux_waiting": "等待有效 CAN 訊號",
+    "aux_stale": "CAN 資料過期",
+    "aux_unsupported": "此車型尚無已驗證來源",
+    "aux_unknown": "無法確認",
+    "info_aux_soc_percent": "12V 電池 SOC（%）",
+    "info_aux_battery_voltage": "12V 電壓（V）",
+    "info_aux_soc_source": "12V SOC 來源",
+    "info_vehicle_powertrain": "動力型式",
+    "info_soc_vehicle_model": "辨識車型"
   },
   "en": {
     "language": "Language",
@@ -463,7 +476,20 @@ export const translations = {
     "navPaste": "Paste coordinates or a map link",
     "navImport": "Use coordinates",
     "navInvalidCoordinates": "Cannot read coordinates. Use latitude,longitude or a full map URL containing coordinates; expand short links yourself.",
-    "fleetHealthNote": "Health updates per device. Expired data is not a live reading."
+    "fleetHealthNote": "Health updates per device. Expired data is not a live reading.",
+    "tractionSocUnverified": "No verified traction-battery SOC signal",
+    "auxSoc": "12V auxiliary battery SOC",
+    "auxVoltage": "12V battery voltage",
+    "aux_available": "Available",
+    "aux_waiting": "Waiting for valid CAN data",
+    "aux_stale": "CAN data stale",
+    "aux_unsupported": "No verified source for this vehicle",
+    "aux_unknown": "Unknown",
+    "info_aux_soc_percent": "12V battery SOC (%)",
+    "info_aux_battery_voltage": "12V voltage (V)",
+    "info_aux_soc_source": "12V SOC source",
+    "info_vehicle_powertrain": "Powertrain",
+    "info_soc_vehicle_model": "Detected vehicle"
   },
   "ja": {
     "language": "言語",
@@ -696,6 +722,19 @@ export const translations = {
     "navPaste": "座標または地図リンクを貼付",
     "navImport": "座標を入力",
     "navInvalidCoordinates": "座標を読み取れません。緯度,経度または座標を含む完全な地図 URL を入力してください。",
-    "fleetHealthNote": "本体ごとに状態を更新します。期限切れの値は現在値として表示しません。"
+    "fleetHealthNote": "本体ごとに状態を更新します。期限切れの値は現在値として表示しません。",
+    "tractionSocUnverified": "駆動用 SOC の検証済み信号なし",
+    "auxSoc": "12V 補機バッテリー SOC",
+    "auxVoltage": "12V バッテリー電圧",
+    "aux_available": "取得可能",
+    "aux_waiting": "有効な CAN データを待機中",
+    "aux_stale": "CAN データ期限切れ",
+    "aux_unsupported": "この車種の検証済み信号なし",
+    "aux_unknown": "不明",
+    "info_aux_soc_percent": "12V SOC（%）",
+    "info_aux_battery_voltage": "12V 電圧（V）",
+    "info_aux_soc_source": "12V SOC の取得元",
+    "info_vehicle_powertrain": "パワートレイン",
+    "info_soc_vehicle_model": "検出した車種"
   }
 };
