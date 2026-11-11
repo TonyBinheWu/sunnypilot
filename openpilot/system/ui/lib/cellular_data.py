@@ -1,4 +1,6 @@
 """Local-only persistent SIM data preference, independent of Wi-Fi/RF power."""
+from ipaddress import IPv4Address, AddressValueError
+
 TEXT = {
   "zh-TW": {
     "title":"SIM 行動數據",
@@ -16,6 +18,36 @@ TEXT = {
     "on":"オン", "off":"オフ",
   },
 }
+
+for language, values in {
+  "zh-TW": ("行動數據已關閉", "正在停止行動數據", "尚未連線・正在撥號", "數據連線已建立", "尚未連線・搜尋網路", "網路拒絕註冊", "未連線", "數據機狀態無法確認"),
+  "en": ("Mobile data off", "Stopping mobile data", "Not connected · dialing", "Data link connected", "Not connected · searching", "Network registration denied", "Not connected", "Modem status unavailable"),
+  "ja": ("モバイル通信オフ", "モバイル通信を停止中", "未接続・接続試行中", "データ接続済み", "未接続・網を検索中", "網への登録が拒否されました", "未接続", "モデム状態を確認できません"),
+}.items():
+  TEXT[language].update(zip(("disabled", "stopping", "starting", "connected", "searching", "denied", "disconnected", "unknown"), values))
+
+
+def connection_status(enabled, modem, now):
+  """Fresh data bearer status, not SIM registration or an Internet reachability claim."""
+  stamp = modem.get("seconds_since_boot")
+  if type(stamp) not in (int, float) or not 0 <= now-stamp <= 10:
+    return "unknown"
+  state = modem.get("state")
+  if not enabled:
+    return "disabled" if state == "DATA_DISABLED" and modem.get("connected") is False else "stopping"
+  try:
+    ip = IPv4Address(modem.get("ip_address", ""))
+    if modem.get("connected") is True and not ip.is_unspecified:
+      return "connected"
+  except (AddressValueError, TypeError):
+    pass
+  if modem.get("registration") == "denied":
+    return "denied"
+  if state == "SEARCHING":
+    return "searching"
+  if state in ("INITIALIZING", "CONNECTING", "CONNECTED", "DATA_DISABLED"):
+    return "starting"
+  return "disconnected"
 
 
 def label(key, language=None):

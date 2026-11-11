@@ -100,3 +100,25 @@ def test_three_languages_and_no_rf_sim_or_gnss_power_command():
 def test_web_status_reports_fresh_effective_state_not_only_the_preference(enabled,state,expected):
   from openpilot.system.ui.lib.cellular_data import modem_data_state
   assert modem_data_state(enabled,state,101)==expected
+
+
+@pytest.mark.parametrize('enabled,fields,expected',[
+  (False,{'state':'DATA_DISABLED','connected':False},'disabled'),
+  (False,{'state':'CONNECTED','connected':True,'ip_address':'10.1.2.3'},'stopping'),
+  (True,{'state':'DATA_DISABLED','connected':False},'starting'),
+  (True,{'state':'CONNECTED','connected':False},'starting'),
+  (True,{'state':'CONNECTED','connected':False,'ip_address':'10.1.2.3'},'starting'),
+  (True,{'state':'CONNECTED','connected':True,'ip_address':''},'starting'),
+  (True,{'state':'CONNECTED','connected':True,'ip_address':'0.0.0.0'},'starting'),
+  (True,{'state':'CONNECTED','connected':True,'ip_address':'10.1.2.3'},'connected'),
+  (True,{'state':'SEARCHING','registration':'home'},'searching'),
+  (True,{'state':'SEARCHING','registration':'denied'},'denied'),
+  (True,{'state':'DISCONNECTING'},'disconnected'),
+])
+def test_native_connection_status_requires_data_link(enabled,fields,expected):
+  from openpilot.system.ui.lib.cellular_data import connection_status
+  fields['seconds_since_boot']=100
+  assert connection_status(enabled,fields,101)==expected
+  assert connection_status(enabled,fields,111)=='unknown'
+  for locale in TEXT:
+    assert label(expected,locale)

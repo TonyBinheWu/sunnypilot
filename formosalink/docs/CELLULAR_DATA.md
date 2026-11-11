@@ -39,3 +39,14 @@ C3X は設定 → ネットワーク → 詳細 → SIM モバイルデータ、
 オフは原生 PPP データ接続とその経路を停止し、データ用ポートを切断します。SIM/eSIM の削除、APN／Wi-Fi の変更、RF／GNSS 電源制御は行いません。機内モードではなく、網への登録は残る場合があります。PPP が残っていれば停止完了と表示しません。オンにすると既存の初期化と接続処理へ戻ります。
 
 ウェブは設定値と新鮮な実際の状態を区別して表示します。回復できるようスイッチは本体のみです。該当ブランチを更新して再起動してください。この機能のための IIS 移行は不要ですが、実機の通信・Wi-Fi・GNSS は別途検証が必要です。
+
+
+## SIM 開關與狀態修正 / Toggle and status fixes / スイッチと状態表示の修正
+
+修正 C3X 原生觸控事件與父畫面刷新之間的競爭：改由開關在收到點擊時立即提交布林值，避免下一幀以舊值覆蓋。C4 的 SIM/eSIM 卡片不再把缺少 IP 一律顯示為「連線中」；開關下方與卡片依數據機新鮮回報分別顯示已關閉、停止中、未連線／撥號、搜尋、拒絕註冊及數據連線已建立。過期資料顯示無法確認。eSIM 設定作業進行時，數據狀態仍每秒更新。
+
+「數據連線已建立」表示數據機回報已連線且持有有效 IPv4，不代表已驗證網際網路可達。更新後需重新啟動裝置；停車時關閉再開啟，並在沒有 Wi-Fi 的情況下確認實際上網。未連線時需依裝置回報檢查 SIM、訊號、APN 或漫遊設定，不能僅憑卡片文案判定原因。本次未更動撥號參數、射頻、GNSS 或行車功能。
+
+The C3X toggle now commits its boolean value during the touch callback, before a parent refresh can restore the old preference. The C4 SIM/eSIM card and toggle value distinguish disabled, stopping, not connected/dialing, searching, registration denied, a fresh established data link and unavailable/stale feedback. A busy eSIM operation no longer freezes modem feedback. An established data link means connected plus a valid IPv4; it does not verify Internet reachability. Restart after updating and test cellular access without Wi-Fi while parked. The physical modem, APN and carrier connection still need device acceptance. Dialing parameters, RF, GNSS and driving functions are unchanged.
+
+C3X のスイッチはタッチ直後に設定値を保存し、親画面の更新で以前の値へ戻る問題を修正しました。C4 の SIM/eSIM カードとスイッチの値は、オフ・停止中・未接続／接続試行中・検索中・登録拒否・データ接続済み・状態不明を区別します。eSIM 操作中もモデム状態を毎秒更新します。データ接続済みは有効な IPv4 と接続状態の確認であり、インターネット到達性の確認ではありません。更新後に再起動し、停車中に Wi-Fi なしで通信を確認してください。実機のモデム・APN・キャリアへの接続は別途確認が必要です。ダイヤル設定・RF・GNSS・走行機能は変更していません。
