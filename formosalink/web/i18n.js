@@ -289,7 +289,17 @@ export const translations = {
     "mediaWaiting": "尚無新鮮影像。需先在來源端明確啟動發送。",
     "mediaDemo": "測試畫面・不是實車",
     "mediaRoad": "道路預覽",
-    "mediaUpgrade": "影音後端尚未更新，或裝置無法存取。"
+    "mediaUpgrade": "影音後端尚未更新，或裝置無法存取。",
+    "info_cellular_data_enabled": "SIM 行動數據設定",
+    "info_cellular_data_state": "SIM 數據連線狀態",
+    "cellularOn": "開啟",
+    "cellularOff": "關閉",
+    "cellularState_disabled": "行動數據已停用",
+    "cellularState_connected": "行動數據已連線",
+    "cellularState_pending": "等候數據機關閉連線",
+    "cellularState_disconnected": "尚未連線",
+    "cellularLocalHelp": "請在裝置的網路設定切換 SIM 行動數據。關閉後若沒有 Wi-Fi，網頁會離線，需在裝置重新開啟。",
+    "cellularState_unknown": "數據機狀態未知或過期"
   },
   "en": {
     "language": "Language",
@@ -581,7 +591,17 @@ export const translations = {
     "mediaWaiting": "No fresh image. Explicitly start the publisher on the source first.",
     "mediaDemo": "Test image · not a vehicle",
     "mediaRoad": "Road preview",
-    "mediaUpgrade": "Media backend needs an update, or this device is unavailable."
+    "mediaUpgrade": "Media backend needs an update, or this device is unavailable.",
+    "info_cellular_data_enabled": "SIM mobile data preference",
+    "info_cellular_data_state": "SIM data connection state",
+    "cellularOn": "On",
+    "cellularOff": "Off",
+    "cellularState_disabled": "Mobile data disabled",
+    "cellularState_connected": "Mobile data connected",
+    "cellularState_pending": "Waiting for modem to disconnect",
+    "cellularState_disconnected": "Not connected",
+    "cellularLocalHelp": "Change SIM mobile data in the device network settings. Without Wi-Fi, disabling it takes the dashboard offline; turn it back on at the device.",
+    "cellularState_unknown": "Modem state unknown or stale"
   },
   "ja": {
     "language": "言語",
@@ -873,6 +893,16 @@ export const translations = {
     "mediaWaiting": "新しい画像がありません。送信元で明示的に送信を開始してください。",
     "mediaDemo": "テスト画像・実車ではありません",
     "mediaRoad": "道路プレビュー",
-    "mediaUpgrade": "メディアのバックエンド更新が必要か、このデバイスにアクセスできません。"
+    "mediaUpgrade": "メディアのバックエンド更新が必要か、このデバイスにアクセスできません。",
+    "info_cellular_data_enabled": "SIM データ通信の設定",
+    "info_cellular_data_state": "SIM データ接続状態",
+    "cellularOn": "オン",
+    "cellularOff": "オフ",
+    "cellularState_disabled": "データ通信は無効",
+    "cellularState_connected": "データ接続中",
+    "cellularState_pending": "モデムの切断待ち",
+    "cellularState_disconnected": "未接続",
+    "cellularLocalHelp": "本体のネットワーク設定で SIM データ通信を切り替えます。Wi-Fi がない場合はウェブがオフラインになるため、本体で再びオンにしてください。",
+    "cellularState_unknown": "モデムの状態が不明または期限切れ"
   }
 };

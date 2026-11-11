@@ -37,9 +37,10 @@ def hook_changes(target):
   elif KEY.strip() not in text:
     raise ValueError("existing FormosaLink parameter differs; review manually")
   text = changes.get(path,text)
-  for key,kind,default in (("FormosaLinkRemoteSettings","BOOL","0"),("FormosaLinkSettingsVersion","STRING","")):
+  for key,kind,default in (("FormosaLinkRemoteSettings","BOOL","0"),("FormosaLinkSettingsVersion","STRING",""),("GsmDataEnabled","BOOL","1")):
     if '"'+key+'"' not in text:
-      text = text.replace(KEY, KEY+'    {"'+key+'", {PERSISTENT, '+kind+', "'+default+'"}},\n',1)
+      flags = "PERSISTENT | BACKUP" if key == "GsmDataEnabled" else "PERSISTENT"
+      text = text.replace(KEY, KEY+'    {"'+key+'", {'+flags+', '+kind+', "'+default+'"}},\n',1)
   if text != path.read_text(encoding="utf-8"):
     changes[path] = text
   path = target / "openpilot/selfdrive/ui/ui.py"

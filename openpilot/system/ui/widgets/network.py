@@ -5,6 +5,7 @@ from typing import Any, cast
 import pyray as rl
 from openpilot.system.ui.lib.application import gui_app, TextAlignment
 from openpilot.system.ui.lib.multilang import tr
+from openpilot.system.ui.lib.cellular_data import CellularDataPreference, label as cellular_label
 from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
 from openpilot.system.ui.lib.wifi_manager import WifiManager, SecurityType, Network, MeteredType, normalize_ssid
 from openpilot.system.ui.widgets import DialogResult, Widget
@@ -119,6 +120,10 @@ class AdvancedNetworkSettings(Widget):
     self._wifi_manager = wifi_manager
     self._wifi_manager.add_callbacks(networks_updated=self._on_network_updated)
     self._params = Params()
+    self._cellular_data = CellularDataPreference(self._params, ui_state.is_offroad)
+    self._cellular_data_action = ToggleAction(initial_state=self._cellular_data.enabled)
+    self._cellular_data_btn = ListItem(lambda: cellular_label("title"), description=lambda: cellular_label("description"),
+                                       action_item=self._cellular_data_action, callback=self._toggle_cellular_data)
     self._prime_state = ui_state.prime_state
     self._cell_prime_types = (PrimeType.NONE, PrimeType.LITE)
 
@@ -157,6 +162,7 @@ class AdvancedNetworkSettings(Widget):
       tethering_btn,
       tethering_password_btn,
       text_item(lambda: tr("IP Address"), lambda: self._wifi_manager.ipv4_address),
+      self._cellular_data_btn,
       self._roaming_btn,
       self._apn_btn,
       self._cellular_metered_btn,
@@ -188,6 +194,10 @@ class AdvancedNetworkSettings(Widget):
 
   def _toggle_roaming(self):
     self._params.put_bool("GsmRoaming", self._roaming_action.get_state(), block=True)
+
+  def _toggle_cellular_data(self):
+    self._cellular_data.set_enabled(self._cellular_data_action.get_state())
+    self._cellular_data_action.set_state(self._cellular_data.enabled)
 
   def _edit_apn(self):
     def update_apn(result: DialogResult):
@@ -263,6 +273,8 @@ class AdvancedNetworkSettings(Widget):
 
   def _update_state(self):
     self._wifi_manager.process_callbacks()
+    self._cellular_data_action.set_enabled(self._cellular_data.offroad())
+    self._cellular_data_action.set_state(self._cellular_data.enabled)
 
     # If not using prime SIM, show GSM settings and enable IPv4 forwarding
     show_cell_settings = self._prime_state.get_type() in self._cell_prime_types

@@ -41,8 +41,8 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   function info(snapshot){
     const card=el('section',undefined,'workspace-card information');card.append(el('h2',t('deviceInfo')));
     const dl=el('dl',undefined,'device-details');
-    for(const [key,value] of Object.entries(snapshot.info).filter(([k])=>!["health_valid","soc_status","egpu_status","thermal_names","thermal_values","soc_detection","aux_soc_status"].includes(k)))dl.append(el('dt',t('info_'+key)),el('dd',Array.isArray(value)?value.join(', '):String(value??'—')));
-    if(!dl.childElementCount)card.append(el('p',t('settingsWaiting'),'workspace-muted'));else card.append(dl);body.append(card);
+    for(const [key,value] of Object.entries(snapshot.info).filter(([k])=>!["health_valid","soc_status","egpu_status","thermal_names","thermal_values","soc_detection","aux_soc_status"].includes(k)))dl.append(el('dt',t('info_'+key)),el('dd',Array.isArray(value)?value.join(', '):key==='cellular_data_enabled'?t(value?'cellularOn':'cellularOff'):key==='cellular_data_state'?t('cellularState_'+value):String(value??'—')));
+    if(!dl.childElementCount)card.append(el('p',t('settingsWaiting'),'workspace-muted'));else card.append(dl);if('cellular_data_enabled' in snapshot.info)card.append(el('p',t('cellularLocalHelp'),'workspace-muted'));body.append(card);
   }
   function navigation(snapshot){
     const entry=(snapshot.catalog||[]).find(x=>x.key==='NavDestination'&&x.widget==='navigation');
