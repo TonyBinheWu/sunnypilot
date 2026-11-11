@@ -44,3 +44,14 @@ Run the PowerShell command above locally on the existing IIS host after publishi
 署名付き HTTPS で 5 秒ごとに同期します。Web 側は所有者と 10 秒以内の状態を確認します。本体は書き込み直前に 2 秒以内の有効な停車状態、イグニッション、本体の許可、session、revision、期限を再確認します。1 回につき 1 項目、20 秒で期限切れとなり、オフラインの操作は蓄積しません。書込後の再読込で適用を確認し、永続化した受領記録で再実行を防ぎます。Params は走行状態との共通トランザクションを持たないため、状態遷移の実機検証は別途必要です。
 
 公開後、IIS ホスト本体の管理者 PowerShell で上記コマンドを実行してください。既存のパスワード、GitHub 設定、登録情報を維持し、v2 のバックアップ後に v3 へ移行します。health の `offroad-settings` と `database_version:3` を確認してください。SMB でのファイル配置だけではサービスは更新されません。復元時は必ずサービスを停止し、現データを保管したうえで v2 バックアップと対応する旧コードを戻してください。
+
+
+## 0.3.1 分類後台 / Categorized workspace / 分類画面
+
+「資訊與設定」現在開啟獨立淺色後台：左側分類導覽、上方跨分類搜尋（Ctrl／Cmd K）、自己的裝置切換、連線狀態與離線提示。網址保留裝置與分類，可重新整理或使用上一頁／下一頁。手機使用抽屜選單，底部語系選單可選繁中／英文／日文。模型與地圖頁面明確顯示目前未開放，不提供尚未支援的操作；原有停車檢查與簽章協定不變。
+
+Info and settings now opens a light full-page workspace with category navigation, cross-category search (Ctrl/Cmd K), owner-scoped device switching, connection state and stale-data notices. Device/category hash routes survive reload and browser history. Mobile navigation uses a drawer. Models/maps explicitly show their unavailable status. Existing offroad write guards are unchanged.
+
+情報と設定は、分類ナビゲーション・全分類検索・所有デバイスの切替・接続状態を備えた明るい専用画面になりました。URL の装置／分類を再読込や履歴でも保持します。スマートフォンはドロワー式メニューです。モデル／地図は未対応と明示し、停車時の書込制限は従来どおりです。
+
+今回の変更はフロントエンドのみです。IIS へ公開後、ブラウザーを再読込してください。後端の再起動や OAuth 設定の再入力は不要です。／本次僅更新前端，發布後重新整理即可，無須重跑後端安裝或輸入 OAuth Secret。／Frontend-only update: reload after publishing; no backend restart or OAuth reconfiguration is needed.

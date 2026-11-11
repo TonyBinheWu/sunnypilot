@@ -1,4 +1,4 @@
-# FormosaPilot / FormosaLink 0.3.0
+# FormosaPilot / FormosaLink 0.3.1
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 

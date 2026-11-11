@@ -1,6 +1,6 @@
-import {deviceSettings} from './device-settings.js?v=0.3.0';
-import {translations} from './i18n.js?v=0.3.0';
-import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.3.0';
+import {deviceSettings} from './device-settings.js?v=0.3.1';
+import {translations} from './i18n.js?v=0.3.1';
+import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.3.1';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';
 try { language = localStorage.getItem('formosalink-language') || 'zh-TW'; } catch {}
@@ -38,7 +38,7 @@ async function api(path, body) {
 }
 function element(tag, text, className) { const node=document.createElement(tag); if(text!==undefined)node.textContent=text;if(className)node.className=className;return node; }
 function metric(container,key,value,unit) {const item=element('div',undefined,'metric');item.append(element('label',t(key)),element('strong',value===null||value===undefined?'—':String(Math.round(value))));if(unit)item.append(element('small',unit));container.append(item);}
-const settings=deviceSettings({api,t,language:()=>language,element,date,notify});
+const settings=deviceSettings({api,t,language:()=>language,element,date,notify,getDevices:()=>devices,getAccount:()=>account,onPair:openPair});
 function render() {
   $('device-count').textContent=String(devices.filter(d=>d.state==='paired').length);
   $('online-count').textContent=String(devices.filter(d=>d.online&&!networkFailed).length);
@@ -59,7 +59,7 @@ function render() {
     if(device.state==='paired'){const detail=element('button',t('deviceSettings'),'secondary');detail.type='button';detail.addEventListener('click',()=>settings.open(device));bottom.append(detail);const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
   }
 }
-function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.close();devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
+function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.close(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
 async function refresh(){
   if(busy)return;
   busy=true;
@@ -73,7 +73,7 @@ async function refresh(){
       auth={user:{id:'local-admin',name:''},github_enabled:false};
     }
     if(epoch!==authEpoch)return;
-    if(account?.id!==auth.user?.id){settings.close();devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
+    if(account?.id!==auth.user?.id){settings.close(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
     account=auth.user;githubEnabled=auth.github_enabled;
     $('github-login').disabled=!githubEnabled;
     $('github-note').textContent=t(githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');
@@ -84,7 +84,7 @@ async function refresh(){
     if(epoch!==authEpoch)return;
     devices=data.devices;lastRefresh=data.server_time;networkFailed=false;session(true);
     if(['networkError','serverError','transportError','expired'].includes($('message').dataset.key))$('message').hidden=true;
-    render();
+    render();settings.update();settings.route();
     if(pendingPair&&!qrPresented){qrPresented=true;openPair();}
   }catch(e){
     if(epoch!==authEpoch)return;
@@ -92,7 +92,7 @@ async function refresh(){
     else{networkFailed=true;render();notify(e.key||'serverError',true);}
   }finally{busy=false;if(epoch!==authEpoch)refresh();}
 }
-function applyLanguage(){document.documentElement.lang=language==='zh-TW'?'zh-Hant':language;$('language').setAttribute('aria-label',t('language'));$('language').textContent={'zh-TW':'繁體中文',en:'English',ja:'日本語'}[language];document.querySelectorAll('[data-language]').forEach(node=>node.setAttribute('aria-pressed',String(node.dataset.language===language)));settings.translate();document.querySelectorAll('[data-i18n]').forEach(node=>node.textContent=t(node.dataset.i18n));$('github-note').textContent=t(githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');if(account?.id==='local-admin'&&!account.github_login)$('account-name').textContent=t('adminAccount');if(signedIn)render();$('message').hidden=true;}
+function applyLanguage(){document.documentElement.lang=language==='zh-TW'?'zh-Hant':language;$('language').setAttribute('aria-label',t('language'));$('language').textContent={'zh-TW':'繁體中文',en:'English',ja:'日本語'}[language];document.querySelectorAll('[data-language]').forEach(node=>node.setAttribute('aria-pressed',String(node.dataset.language===language)));settings.translate();document.querySelectorAll('[data-i18n]').forEach(node=>node.textContent=t(node.dataset.i18n));document.querySelectorAll('[data-i18n-aria]').forEach(node=>node.setAttribute('aria-label',t(node.dataset.i18nAria)));$('github-note').textContent=t(githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');if(account?.id==='local-admin'&&!account.github_login)$('account-name').textContent=t('adminAccount');if(signedIn)render();$('message').hidden=true;}
 document.querySelectorAll('[data-language]').forEach(button=>button.addEventListener('click',()=>{language=button.dataset.language;try{localStorage.setItem('formosalink-language',language);}catch{}$('language-menu').open=false;applyLanguage();}));
 document.addEventListener('click',event=>{if(!$('language-menu').contains(event.target))$('language-menu').open=false;});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')$('language-menu').open=false;});
@@ -113,6 +113,7 @@ function expirePairing(){if(pendingPair&&!validatePairing(pendingPair)){pendingP
 $('refresh').addEventListener('click',refresh);document.addEventListener('visibilitychange',()=>{if(!document.hidden){expirePairing();if(signedIn)refresh();}});
 $('github-login').addEventListener('click',()=>{location.assign('/api/v1/auth/github/start');});
 $('github-link').addEventListener('click',async()=>{if(!confirm(t('githubConfirm')))return;try{const result=await api('/auth/github/link',{});const target=new URL(result.url);if(target.origin!=='https://github.com')throw {};location.assign(target.href);}catch(e){notify(e.key||'serverError',true);}});
-window.addEventListener('hashchange',()=>{if(consumePairingHash()){applyLanguage();if(signedIn){qrPresented=true;openPair();}if(pairingNotice)notify(pairingNotice,true);}});
+window.addEventListener('popstate',()=>{if(signedIn)settings.route();});
+window.addEventListener('hashchange',()=>{if(signedIn)settings.route();if(consumePairingHash()){applyLanguage();if(signedIn){qrPresented=true;openPair();}if(pairingNotice)notify(pairingNotice,true);}});
 applyLanguage();if(pairingNotice)notify(pairingNotice,true);if(new URLSearchParams(location.search).has('auth')){notify('oauthFailed',true);history.replaceState(null,'','/');}refresh();setInterval(()=>{if(!document.hidden){expirePairing();if(signedIn)refresh();}},5000);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});

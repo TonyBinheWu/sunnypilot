@@ -5,8 +5,8 @@
   <meta name="theme-color" content="#0f1424"><meta name="description" content="FormosaLink — FormosaPilot device companion">
   <title>FormosaLink · FormosaPilot</title>
   <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/assets/formosapilot-logo.png">
-  <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css?v=0.3.0">
-  <script type="module" src="/app.js?v=0.3.0"></script>
+  <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css?v=0.3.1">
+  <script type="module" src="/app.js?v=0.3.1"></script>
 </head>
 <body>
   <header class="topbar">
@@ -59,10 +59,27 @@
         </div>
       </div>
     </section>
-    <p id="message" class="message" role="status" aria-live="polite" hidden></p>
+
   </main>
+    <p id="message" class="message" role="status" aria-live="polite" hidden></p>
   <dialog id="pair-dialog"><form id="pair-form"><div class="dialog-heading"><span class="eyebrow" data-i18n="securePairing"></span><button id="close-pair" type="button" class="quiet" data-i18n="close"></button></div><h2 data-i18n="pairDevice"></h2><p class="caption" data-i18n="pairHelp"></p><div id="pair-scan-help" class="qr-help"><span class="qr-symbol" aria-hidden="true">▦</span><p data-i18n="qrScanHelp"></p></div><div id="pair-details" hidden><div class="qr-confirm-note"><span class="tiny-dot"></span><span data-i18n="qrReady"></span></div><label for="device-name" data-i18n="deviceName"></label><input id="device-name" required maxlength="60" value="FormosaPilot"><p class="caption" data-i18n="qrConfirmHelp"></p></div><button id="confirm-pair" type="submit" class="primary" hidden data-i18n="confirmPair"></button></form></dialog>
-  <dialog id="settings-dialog" class="settings-dialog"><div class="dialog-heading"><h2 id="settings-title"></h2><button type="button" id="close-settings" class="quiet" data-i18n="close"></button></div><div id="settings-body"></div></dialog>
+  <section id="settings-workspace" class="settings-workspace" hidden aria-label="FormosaLink">
+    <button id="settings-scrim" class="workspace-scrim" type="button" data-i18n-aria="close"></button>
+    <aside class="workspace-sidebar">
+      <div class="workspace-brand"><a href="#dashboard" id="settings-back"><img src="/assets/formosapilot-logo.png" alt=""><span>FormosaLink</span></a><button id="settings-menu-close" type="button"></button></div>
+      <nav id="settings-nav" data-i18n-aria="deviceSettingsNav"></nav>
+      <div class="workspace-account"><span class="workspace-avatar">F</span><span id="settings-account"></span><details id="settings-languages"><summary id="settings-language"></summary><div id="settings-language-options"></div></details></div>
+    </aside>
+    <div class="workspace-main">
+      <header class="workspace-topbar"><button id="settings-menu" type="button"></button><label class="workspace-search"><span id="settings-search-icon"></span><input id="settings-search" type="search" autocomplete="off"><kbd>Ctrl K</kbd></label>
+        <details id="settings-device-picker"><summary><span id="settings-change-icon"></span><span><span id="settings-change-label"></span><small id="settings-device-label"></small></span></summary><div id="settings-device-options"></div></details><span id="settings-connection" class="workspace-connection"></span>
+      </header>
+      <main class="workspace-content"><div class="workspace-page-heading"><span id="settings-nav-title" class="sr-only"></span><h1 id="settings-title" tabindex="-1"></h1><p id="settings-subtitle"></p></div>
+        <div id="settings-banner" class="workspace-banner" role="status"><div><strong id="settings-banner-text"></strong><small id="settings-last-seen"></small></div><button id="settings-retry" type="button"><span id="settings-retry-label"></span></button></div>
+        <div id="settings-body"></div>
+      </main>
+    </div>
+  </section>
   <footer><a class="footer-brand" href="/">FormosaLink<span>FORMOSAPILOT</span></a><span data-i18n="footer"></span><span class="footer-origin">TAIWAN · 23.5° N</span></footer>
 </body>
 </html>
