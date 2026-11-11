@@ -4,6 +4,7 @@ Copyright (c) 2021-, Haibin Wen, sunnypilot, and a number of other contributors.
 This file is part of sunnypilot and is licensed under the MIT License.
 See the LICENSE.md file in the root directory for more details.
 """
+from openpilot.sunnypilot.formosalink.brand_ui import FormosaPilotPanel, LOGO_ASSET
 from dataclasses import dataclass
 from enum import IntEnum
 
@@ -20,7 +21,7 @@ from openpilot.selfdrive.ui.sunnypilot.layouts.settings.network import NetworkUI
 from openpilot.selfdrive.ui.sunnypilot.layouts.settings.osm import OSMLayout
 from openpilot.selfdrive.ui.sunnypilot.layouts.settings.software import SoftwareLayoutSP
 from openpilot.selfdrive.ui.sunnypilot.layouts.settings.steering import SteeringLayout
-from openpilot.selfdrive.ui.sunnypilot.layouts.settings.sunnylink import SunnylinkLayout
+from openpilot.sunnypilot.formosalink.ui import FormosaPairingDialog
 from openpilot.selfdrive.ui.sunnypilot.layouts.settings.trips import TripsLayout
 from openpilot.selfdrive.ui.sunnypilot.layouts.settings.vehicle import VehicleLayout
 from openpilot.selfdrive.ui.sunnypilot.layouts.settings.visuals import VisualsLayout
@@ -40,6 +41,7 @@ ICON_SIZE = 70
 OP.PanelType = IntEnum(  # type: ignore[assignment] # ty: ignore[invalid-assignment]
   "PanelType",
   [es.name for es in OP.PanelType] + [
+    "FORMOSAPILOT",
     "SUNNYLINK",
     "MODELS",
     "STEERING",
@@ -71,7 +73,8 @@ class NavButton(Widget):
     is_selected = self.panel_type == self.parent._current_panel
     text_color = OP.TEXT_SELECTED if is_selected else OP.TEXT_NORMAL
     content_x = rect.x + 90
-    text_size = measure_text_cached(self.parent._font_medium, self.panel_info.name, 65)
+    font_size = 40 if self.panel_info.name in ("FormosaPilot", "FormosaLink") else 55
+    text_size = measure_text_cached(self.parent._font_medium, self.panel_info.name, 40 if self.panel_info.name in ("FormosaPilot", "FormosaLink") else 65)
 
     # Draw background if selected
     if is_selected:
@@ -90,7 +93,7 @@ class NavButton(Widget):
       content_x,
       rect.y + (OP.NAV_BTN_HEIGHT - text_size.y) / 2
     )
-    rl.draw_text_ex(self.parent._font_medium, self.panel_info.name, text_pos, 55, 0, text_color)
+    rl.draw_text_ex(self.parent._font_medium, self.panel_info.name, text_pos, font_size, 0, text_color)
 
     # Store button rect for click detection
     self.panel_info.button_rect = rect
@@ -109,9 +112,10 @@ class SettingsLayoutSP(OP.SettingsLayout):
     wifi_manager.set_active(False)
 
     self._panels = {
+      OP.PanelType.FORMOSAPILOT: PanelInfo("FormosaPilot", FormosaPilotPanel(embedded=True), icon=LOGO_ASSET),
       OP.PanelType.DEVICE: PanelInfo(tr_noop("Device"), DeviceLayoutSP(), icon="../../sunnypilot/selfdrive/assets/offroad/icon_home.png"),
       OP.PanelType.NETWORK: PanelInfo(tr_noop("Network"), NetworkUISP(wifi_manager), icon="icons/network.png"),
-      OP.PanelType.SUNNYLINK: PanelInfo(tr_noop("sunnylink"), SunnylinkLayout(), icon="icons/wifi_strength_full.png"),
+      OP.PanelType.SUNNYLINK: PanelInfo("FormosaLink", FormosaPairingDialog(embedded=True), icon=LOGO_ASSET),
       OP.PanelType.TOGGLES: PanelInfo(tr_noop("Toggles"), TogglesLayout(), icon="../../sunnypilot/selfdrive/assets/offroad/icon_toggle.png"),
       OP.PanelType.SOFTWARE: PanelInfo(tr_noop("Software"), SoftwareLayoutSP(), icon="../../sunnypilot/selfdrive/assets/offroad/icon_software.png"),
       OP.PanelType.MODELS: PanelInfo(tr_noop("Models"), ModelsLayout(), icon="../../sunnypilot/selfdrive/assets/offroad/icon_models.png"),

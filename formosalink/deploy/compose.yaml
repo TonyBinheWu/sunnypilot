@@ -1,0 +1,17 @@
+# Optional Linux/Docker skeleton. IIS/Python is the primary deployment target.
+services:
+  formosalink:
+    build:
+      context: ../..
+      dockerfile: formosalink/deploy/Dockerfile
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - formosalink-state:/state
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  formosalink-state:

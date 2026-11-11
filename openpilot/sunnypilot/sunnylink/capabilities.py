@@ -26,6 +26,7 @@ PROTOCOL_VERSION = 1
 CAPABILITY_FIELDS = (
   "protocol_version",
   "has_longitudinal_control",
+  "formosa_cluster_supported",
   "has_icbm",
   "icbm_available",
   "torque_allowed",
@@ -49,6 +50,7 @@ CAPABILITY_FIELDS = (
 CAPABILITY_LABELS: dict[str, str] = {
   "protocol_version": "Capabilities protocol version",
   "has_longitudinal_control": "sunnypilot longitudinal control",
+  "formosa_cluster_supported": "FormosaPilot instrument display available",
   "has_icbm": "ICBM enabled",
   "icbm_available": "ICBM available",
   "torque_allowed": "torque steering (not available for angle steering vehicles)",
@@ -162,6 +164,8 @@ def generate_capabilities(params: Params | None = None) -> dict:
       if not caps["brand"] and CP.brand:
         caps["brand"] = str(CP.brand)
       caps["pcm_cruise"] = bool(CP.pcmCruise)
+      from opendbc.car.hyundai.formosa_cluster import supported as cluster_supported
+      caps["formosa_cluster_supported"] = bool(CP.brand == 'hyundai' and not CP.dashcamOnly and cluster_supported(CP))
       caps["enable_bsm"] = bool(CP.enableBsm)
       # Generic SnG fallback. Brand-specific opaque flags below override.
       caps["has_stop_and_go"] = bool(CP.openpilotLongitudinalControl)

@@ -112,7 +112,8 @@ class ModelCache:
     """Checks if the cache has expired"""
     current_time = int(time.monotonic() * 1e9)
     last_sync = self.params.get(self._LAST_SYNC_KEY) or 0
-    return bool(last_sync == 0) or (current_time - last_sync) >= self.cache_timeout
+    # monotonic time restarts at each boot; a stamp from a previous boot can be in the future.
+    return last_sync <= 0 or current_time < last_sync or (current_time - last_sync) >= self.cache_timeout
 
   def get(self) -> tuple[dict, bool]:
     """
@@ -138,8 +139,8 @@ class ModelCache:
 
 class ModelFetcher:
   """Handles fetching and caching of model data from remote source"""
-  MODEL_URL = "https://raw.githubusercontent.com/sunnypilot/sunnypilot-models/refs/heads/gh-pages/docs/driving_models_v23.json"
-  MODEL_URL_CHESTNUT = "https://raw.githubusercontent.com/sunnypilot/sunnypilot-models/refs/heads/gh-pages/docs/driving_models_chestnut_v27.json"
+  MODEL_URL = "https://raw.githubusercontent.com/sunnypilot/sunnypilot-models/refs/heads/gh-pages/docs/driving_models_v25.json"
+  MODEL_URL_CHESTNUT = "https://raw.githubusercontent.com/sunnypilot/sunnypilot-models/refs/heads/gh-pages/docs/driving_models_chestnut_v28.json"
 
   MODEL_SOURCES = {
     "qcom": (MODEL_URL, ""),
@@ -154,10 +155,14 @@ class ModelFetcher:
       for source, (_, suffix) in self.MODEL_SOURCES.items()
     }
     self._refetched: set[str] = set()
-    self.params.put("ModelManager_ActiveJson", {
-      "qcom": self.MODEL_URL,
-      "chestnut": self.MODEL_URL_CHESTNUT,
-    }, block=True)
+    urls = {"qcom": self.MODEL_URL, "chestnut": self.MODEL_URL_CHESTNUT}
+    previous_urls = self.params.get("ModelManager_ActiveJson")
+    if not isinstance(previous_urls, dict):
+      previous_urls = {}
+    for source, (url, suffix) in self.MODEL_SOURCES.items():
+      if previous_urls.get(source) != url:
+        self.params.put(f"ModelManager_LastSyncTime{suffix}", 0, block=True)
+    self.params.put("ModelManager_ActiveJson", urls, block=True)
 
   @staticmethod
   def active_source(chestnut_present: bool) -> str:

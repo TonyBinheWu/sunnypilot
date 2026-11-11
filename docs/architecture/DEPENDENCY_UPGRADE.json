@@ -1,0 +1,231 @@
+{
+  "date": "2026-11-01",
+  "upstream_reference": "commaai/openpilot@afedebcfd4213a76b99b1f11b5310ed05cee04df",
+  "python": ">=3.12.3,<3.13",
+  "policy": "Upgrade resolution while retaining fork msgq/ZeroMQ, submodule pins and pycapnp 2.1.0",
+  "updated": [
+    {
+      "name": "certifi",
+      "from": "2026.7.22",
+      "to": "2026.10.23"
+    },
+    {
+      "name": "charset-normalizer",
+      "from": "3.5.1",
+      "to": "3.5.2"
+    },
+    {
+      "name": "comma-deps-acados",
+      "from": "0.2.2.post103",
+      "to": "0.2.2.post104"
+    },
+    {
+      "name": "comma-deps-bootstrap-icons",
+      "from": "1.10.5.0.post103",
+      "to": "1.10.5.0.post104"
+    },
+    {
+      "name": "comma-deps-capnproto",
+      "from": "1.0.1.post103",
+      "to": "1.0.1.post104"
+    },
+    {
+      "name": "comma-deps-eigen",
+      "from": "3.4.0.post103",
+      "to": "3.4.0.post104"
+    },
+    {
+      "name": "comma-deps-ffmpeg",
+      "from": "7.1.0.post103",
+      "to": "7.1.0.post104"
+    },
+    {
+      "name": "comma-deps-gcc-arm-none-eabi",
+      "from": "13.2.1.post103",
+      "to": "13.2.1.post104"
+    },
+    {
+      "name": "comma-deps-git-lfs",
+      "from": "3.6.1.post103",
+      "to": "3.6.1.post104"
+    },
+    {
+      "name": "comma-deps-imgui",
+      "from": "1.92.7.post103",
+      "to": "1.92.7.post104"
+    },
+    {
+      "name": "comma-deps-json11",
+      "from": "20170411.0.post103",
+      "to": "20170411.0.post104"
+    },
+    {
+      "name": "comma-deps-libusb",
+      "from": "1.0.29.post103",
+      "to": "1.0.29.post104"
+    },
+    {
+      "name": "comma-deps-ncurses",
+      "from": "6.5.post103",
+      "to": "6.5.post104"
+    },
+    {
+      "name": "comma-deps-raylib",
+      "from": "6.0.0.1.post103",
+      "to": "6.0.0.1.post104"
+    },
+    {
+      "name": "comma-deps-zstd",
+      "from": "1.5.6.post103",
+      "to": "1.5.6.post104"
+    },
+    {
+      "name": "coverage",
+      "from": "7.16.0",
+      "to": "7.17.0"
+    },
+    {
+      "name": "cryptography",
+      "from": "50.0.1",
+      "to": "50.0.2"
+    },
+    {
+      "name": "deepmerge",
+      "from": "3.0.1",
+      "to": "4.0.0"
+    },
+    {
+      "name": "filelock",
+      "from": "3.32.7",
+      "to": "4.2.6"
+    },
+    {
+      "name": "fonttools",
+      "from": "4.65.0",
+      "to": "4.68.0"
+    },
+    {
+      "name": "fsspec",
+      "from": "2026.7.0",
+      "to": "2026.9.0"
+    },
+    {
+      "name": "hf-xet",
+      "from": "1.6.0",
+      "to": "1.8.0"
+    },
+    {
+      "name": "huggingface-hub",
+      "from": "1.31.0",
+      "to": "2.4.0"
+    },
+    {
+      "name": "idna",
+      "from": "3.19",
+      "to": "3.20"
+    },
+    {
+      "name": "libdatachannel-py",
+      "from": "2026.1.0.dev2",
+      "to": "2026.1.0"
+    },
+    {
+      "name": "markdown",
+      "from": "3.10.3",
+      "to": "3.11.2"
+    },
+    {
+      "name": "markupsafe",
+      "from": "3.0.3",
+      "to": "3.0.4"
+    },
+    {
+      "name": "numpy",
+      "from": "2.5.3",
+      "to": "2.5.4"
+    },
+    {
+      "name": "pillow",
+      "from": "12.3.0",
+      "to": "13.0.0"
+    },
+    {
+      "name": "pycparser",
+      "from": "3.0",
+      "to": "3.12"
+    },
+    {
+      "name": "pycryptodome",
+      "from": "3.23.0",
+      "to": "4.2.0"
+    },
+    {
+      "name": "pyjwt",
+      "from": "2.14.0",
+      "to": "2.15.1"
+    },
+    {
+      "name": "pymdown-extensions",
+      "from": "12.0.1",
+      "to": "12.3"
+    },
+    {
+      "name": "pyparsing",
+      "from": "3.3.2",
+      "to": "3.3.3"
+    },
+    {
+      "name": "python-dateutil",
+      "from": "2.9.0.post0",
+      "to": "3.0.0"
+    },
+    {
+      "name": "ruff",
+      "from": "0.16.7",
+      "to": "0.17.3"
+    },
+    {
+      "name": "setproctitle",
+      "from": "1.3.7",
+      "to": "1.3.8"
+    },
+    {
+      "name": "setuptools",
+      "from": "84.0.0",
+      "to": "84.2.1"
+    },
+    {
+      "name": "tomli",
+      "from": "2.4.1",
+      "to": "2.5.0"
+    },
+    {
+      "name": "ty",
+      "from": "0.0.80",
+      "to": "0.0.95"
+    },
+    {
+      "name": "urllib3",
+      "from": "2.7.0",
+      "to": "2.8.0"
+    },
+    {
+      "name": "zensical",
+      "from": "0.0.62",
+      "to": "0.0.74"
+    }
+  ],
+  "added": {
+    "httpcore2": "2.16.0",
+    "httpx2": "2.16.0",
+    "httpx2-jsfetch": "1.0",
+    "pathspec": "1.1.1",
+    "truststore": "0.10.5",
+    "tzdata": "2026.6",
+    "zensical-ui": "0.0.41"
+  },
+  "removed": {
+    "httpcore": "1.0.9",
+    "httpx": "0.28.1"
+  }
+}

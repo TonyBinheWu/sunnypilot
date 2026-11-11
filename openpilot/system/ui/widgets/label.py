@@ -1,3 +1,4 @@
+from openpilot.system.ui.lib.branding import display_text
 import math
 from enum import IntEnum
 from collections.abc import Callable
@@ -15,8 +16,8 @@ ICON_PADDING = 15
 # TODO: make this common
 def _resolve_value(value, default=""):
   if callable(value):
-    return value()
-  return value if value is not None else default
+    value = value()
+  return display_text(value if value is not None else default)
 
 
 class ScrollState(IntEnum):

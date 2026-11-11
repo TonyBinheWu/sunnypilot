@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f1424"><meta name="description" content="FormosaLink — FormosaPilot device companion">
+  <title>FormosaLink · FormosaPilot</title>
+  <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/assets/formosapilot-logo.png">
+  <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css?v=0.6.0"><link rel="stylesheet" href="/settings-ui.css?v=0.6.0">
+  <script type="module" src="/app.js?v=0.8.0"></script>
+  <link rel="stylesheet" href="/media.css?v=0.8.0">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="FormosaLink"><img src="/assets/formosapilot-logo.png" alt=""><span>FormosaLink</span></a>
+    <nav id="public-nav" class="public-nav" aria-label="FormosaLink"><a href="#features" data-i18n="navFeatures"></a><a href="#how-it-works" data-i18n="navHow"></a></nav>
+    <div class="header-actions"><button type="button" data-theme-toggle></button><details class="language-menu" id="language-menu"><summary id="language" aria-label="Language">繁體中文</summary><div class="language-options"><button type="button" data-language="zh-TW">繁體中文</button><button type="button" data-language="en">English</button><button type="button" data-language="ja">日本語</button></div></details><a id="nav-signin" class="nav-signin" href="#login-view" data-i18n="signinShort"></a><button id="logout" class="quiet" hidden data-i18n="logout"></button></div>
+  </header>
+  <main>
+    <div id="login-view" class="login-screen">
+      <section class="login-panel">
+        <img class="login-logo" src="/assets/formosapilot-logo.png" alt="FormosaPilot">
+        <h1 data-i18n="signin"></h1><p data-i18n="dashboardIntro"></p>
+        <button id="github-login" class="primary" type="button" disabled data-i18n="githubLogin"></button>
+        <p id="github-note" class="caption" data-i18n="waiting"></p>
+      </section>
+    </div>
+    <section id="dashboard" hidden>
+      <div class="dashboard-shell">
+        <aside class="dashboard-sidebar"><div class="sidebar-title">FORMOSALINK</div><a class="sidebar-item active" href="#dashboard"><span aria-hidden="true">▦</span><span data-i18n="dashboard"></span></a><button id="sidebar-pair" class="sidebar-item" type="button"><span aria-hidden="true">＋</span><span data-i18n="pairDevice"></span></button><div class="sidebar-bottom"><span class="tiny-dot"></span><span data-i18n="privateSpace"></span><small>FORMOSA · 23.5° N</small></div></aside>
+        <div class="dashboard-main">
+          <div class="page-heading"><div><span class="eyebrow" data-i18n="companion"></span><h1 data-i18n="dashboard"></h1><p class="lead" data-i18n="dashboardIntro"></p></div><button id="open-pair" class="primary"><span aria-hidden="true">＋</span><span data-i18n="pairDevice"></span></button></div>
+          <div class="account"><span class="account-avatar" aria-hidden="true">◈</span><span id="account-name"></span><button id="github-link" class="quiet" hidden data-i18n="githubLink"></button><span class="account-security" data-i18n="accountPrivate"></span></div>
+          <div class="overview"><div class="stat-card"><span class="stat-label" data-i18n="devices"></span><strong id="device-count">—</strong><span class="stat-icon" aria-hidden="true">▦</span></div><div class="stat-card"><span class="stat-label" data-i18n="online"></span><strong id="online-count">—</strong><span class="stat-icon online-icon" aria-hidden="true">⌁</span></div><div class="refresh-info"><span class="tiny-dot"></span><span id="refresh-label" data-i18n="waiting"></span><button id="refresh" class="quiet" data-i18n="refresh"></button></div></div>
+          <div id="empty" class="panel empty" hidden><img src="/assets/formosapilot-logo.png" alt=""><h2 data-i18n="noDevices"></h2><p data-i18n="emptyHelp"></p><button class="primary" id="empty-pair" data-i18n="pairDevice"></button></div>
+          <div id="device-grid" class="device-grid"></div>
+          <aside class="scope-note"><span class="scope-icon" aria-hidden="true">◇</span><div><strong data-i18n="readonly"></strong><p data-i18n="scope"></p></div></aside>
+        </div>
+      </div>
+    </section>
+
+  </main>
+    <p id="message" class="message" role="status" aria-live="polite" hidden></p>
+  <dialog id="pair-dialog"><form id="pair-form"><div class="dialog-heading"><span class="eyebrow" data-i18n="securePairing"></span><button id="close-pair" type="button" class="quiet" data-i18n="close"></button></div><h2 data-i18n="pairDevice"></h2><p class="caption" data-i18n="pairHelp"></p><div id="pair-scan-help" class="qr-help"><span class="qr-symbol" aria-hidden="true">▦</span><p data-i18n="qrScanHelp"></p></div><div id="pair-details" hidden><div class="qr-confirm-note"><span class="tiny-dot"></span><span data-i18n="qrReady"></span></div><label for="device-name" data-i18n="deviceName"></label><input id="device-name" required maxlength="60" value="FormosaPilot"><p class="caption" data-i18n="qrConfirmHelp"></p></div><button id="confirm-pair" type="submit" class="primary" hidden data-i18n="confirmPair"></button></form></dialog>
+  <section id="settings-workspace" class="settings-workspace" hidden aria-label="FormosaLink">
+    <button id="settings-scrim" class="workspace-scrim" type="button" data-i18n-aria="close"></button>
+    <aside class="workspace-sidebar">
+      <div class="workspace-brand"><a href="#dashboard" id="settings-back"><img src="/assets/formosapilot-logo.png" alt=""><span>FormosaLink</span></a><button id="settings-menu-close" type="button"></button></div>
+      <nav id="settings-nav" data-i18n-aria="deviceSettingsNav"></nav>
+      <div class="workspace-theme"><button type="button" data-theme-toggle></button></div><div class="workspace-account"><span class="workspace-avatar">F</span><span id="settings-account"></span><details id="settings-languages"><summary id="settings-language"></summary><div id="settings-language-options"></div></details></div>
+    </aside>
+    <div class="workspace-main">
+      <header class="workspace-topbar"><button id="settings-menu" type="button"></button><label class="workspace-search"><span id="settings-search-icon"></span><input id="settings-search" type="search" autocomplete="off"><kbd>Ctrl K</kbd></label>
+        <details id="settings-device-picker"><summary><span id="settings-change-icon"></span><span><span id="settings-change-label"></span><small id="settings-device-label"></small></span></summary><div id="settings-device-options"></div></details><span id="settings-connection" class="workspace-connection"></span>
+      </header>
+      <main class="workspace-content"><div class="workspace-page-heading"><span id="settings-nav-title" class="sr-only"></span><h1 id="settings-title" tabindex="-1"></h1><p id="settings-subtitle"></p></div>
+        <div id="settings-banner" class="workspace-banner" role="status"><div><strong id="settings-banner-text"></strong><small id="settings-last-seen"></small></div><button id="settings-retry" type="button"><span id="settings-retry-label"></span></button></div>
+        <div id="settings-body"></div>
+      </main>
+    </div>
+  </section>
+  <footer><a class="footer-brand" href="/">FormosaLink<span>FORMOSAPILOT</span></a><span data-i18n="footer"></span><span class="footer-origin">TAIWAN · 23.5° N</span></footer>
+</body>
+</html>

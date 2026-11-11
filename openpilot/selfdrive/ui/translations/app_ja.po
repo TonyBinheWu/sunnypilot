@@ -866,3 +866,8 @@ msgstr "✓ 登録済み"
 msgid "🔥 Firehose Mode 🔥"
 msgstr "🔥 Firehoseモード 🔥"
 
+msgid "FormosaPilot Instrument Display (Experimental)"
+msgstr "FormosaPilot メーター表示（実験）"
+
+msgid "Camera CAN-FD only. Restart required; keeps OEM warnings."
+msgstr "カメラ側 CAN-FD 専用。純正警告を保持。再起動が必要です。"

@@ -9,6 +9,7 @@ import subprocess
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.git import get_commit, get_origin, get_branch, get_short_branch, get_commit_date
+from openpilot.common.release_notes import read_release_notes
 
 RELEASE_SP_BRANCHES = ['release-c3', 'release', 'release-tizi', 'release-tici', 'release-tizi-staging', 'release-tici-staging']
 TESTED_SP_BRANCHES = ['staging-c3', 'staging-c3-new', 'staging']
@@ -49,14 +50,13 @@ sunnylink_consent_declined: str = "-1"
 
 
 def get_version(path: str = BASEDIR) -> str:
-  with open(os.path.join(path, "openpilot", "sunnypilot", "common", "version.h")) as _versionf:
+  with open(os.path.join(path, "openpilot", "sunnypilot", "common", "version.h"), encoding="utf-8") as _versionf:
     version = _versionf.read().split('"')[1]
   return version
 
 
 def get_release_notes(path: str = BASEDIR) -> str:
-  with open(os.path.join(path, "CHANGELOG.md")) as f:
-    return f.read().split('\n\n', 1)[0]
+  return read_release_notes(path)
 
 
 @cache

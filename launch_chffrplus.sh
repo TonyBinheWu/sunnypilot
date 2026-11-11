@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-source "$DIR/launch_env.sh"
+source "$DIR/launch_env.sh" || exit 1
 
 function agnos_init {
   # TODO: move this to agnos
@@ -20,7 +20,7 @@ function agnos_init {
   # Check if AGNOS update is required
   if [ "$(< /VERSION)" != "$AGNOS_VERSION" ]; then
     AGNOS_PY="$DIR/openpilot/common/hardware/comma/agnos.py"
-    MANIFEST="$DIR/openpilot/system/hardware/comma/agnos.json"
+    MANIFEST="$DIR/$AGNOS_MANIFEST"
     if "$AGNOS_PY" --verify "$MANIFEST"; then
       sudo reboot
     fi
@@ -58,7 +58,7 @@ function launch {
           cd "$DIR"
 
           echo "Restarting launch script ${LAUNCHER_LOCATION}"
-          unset AGNOS_VERSION
+          unset AGNOS_VERSION AGNOS_MANIFEST
           exec "${LAUNCHER_LOCATION}"
         else
           echo "openpilot backup found, not updating"

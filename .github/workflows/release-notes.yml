@@ -1,0 +1,23 @@
+name: Device release notes
+on:
+  pull_request:
+    branches: [hkg-enhanced, ccnc-port]
+  push:
+    branches: [hkg-enhanced, ccnc-port]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release-notes:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check version and device-facing Chinese notes
+        env:
+          RELEASE_BRANCH: ${{ github.base_ref || github.ref_name }}
+        run: python tools/release/check_release_notes.py
+      - name: Exercise release selection, UTF-8 and old updater compatibility
+        run: python -m unittest openpilot.common.tests.test_release_notes -v

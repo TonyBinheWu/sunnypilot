@@ -14,6 +14,7 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.locationd.helpers import PointBuckets, ParameterEstimator, PoseCalibrator, Pose
 from openpilot.sunnypilot.livedelay.helpers import get_lat_delay
 from openpilot.sunnypilot.selfdrive.locationd.torqued_ext import TorqueEstimatorExt
+from openpilot.sunnypilot.selfdrive.controls.lib.hkg_torque_scale import HkgTorqueScale
 
 HISTORY = 5  # secs
 POINTS_PER_BUCKET = 1500
@@ -58,6 +59,8 @@ class TorqueEstimator(ParameterEstimator, TorqueEstimatorExt):
     ParameterEstimator.__init__(self)
     TorqueEstimatorExt.__init__(self, CP)
     self.CP = CP
+    self.hkg_torque_scale = HkgTorqueScale(CP)
+    self.version = VERSION + (100 if self.hkg_torque_scale.enabled else 0)
     self.hist_len = int(HISTORY / DT_MDL)
     self.lag = 0.0
     self.track_all_points = track_all_points  # for offline analysis, without max lateral accel or max steer torque filters
@@ -113,7 +116,7 @@ class TorqueEstimator(ParameterEstimator, TorqueEstimatorExt):
           cache_ltp = log_evt.lateralTorqueParameters
         with car.CarParams.from_bytes(params_cache) as msg:
           cache_CP = msg
-        if self.get_restore_key(cache_CP, cache_ltp.version) == self.get_restore_key(CP, VERSION):
+        if self.get_restore_key(cache_CP, cache_ltp.version) == self.get_restore_key(CP, self.version):
           if cache_ltp.valid:
             initial_params = {
               'latAccelFactor': cache_ltp.latAccelFactorFiltered,
@@ -139,7 +142,7 @@ class TorqueEstimator(ParameterEstimator, TorqueEstimatorExt):
     if CP.lateralTuning.which() == 'torque':
       a = CP.lateralTuning.torque.friction
       b = CP.lateralTuning.torque.latAccelFactor
-    return (CP.carFingerprint, CP.lateralTuning.which(), a, b, version)
+    return (CP.carFingerprint, CP.lateralTuning.which(), a, b, version, HkgTorqueScale(CP).enabled)
 
   def reset(self):
     self.resets += 1.0
@@ -178,7 +181,7 @@ class TorqueEstimator(ParameterEstimator, TorqueEstimatorExt):
       self.raw_points["lat_active"].append(msg.latActive)
     elif which == "carOutput":
       self.raw_points["carOutput_t"].append(t + self.lag)
-      self.raw_points["steer_torque"].append(-msg.actuatorsOutput.torque)
+      self.raw_points["steer_torque"].append(-self.hkg_torque_scale.learning_torque(msg.actuatorsOutput))
     elif which == "carState":
       self.raw_points["carState_t"].append(t + self.lag)
       # TODO: check if high aEgo affects resulting lateral accel
@@ -218,7 +221,7 @@ class TorqueEstimator(ParameterEstimator, TorqueEstimatorExt):
     msg = messaging.new_message('lateralTorqueParameters')
     msg.valid = valid
     lateralTorqueParameters = msg.lateralTorqueParameters
-    lateralTorqueParameters.version = VERSION
+    lateralTorqueParameters.version = self.version
     lateralTorqueParameters.useParams = self.use_params
 
     # Calculate raw estimates when possible, only update filters when enough points are gathered

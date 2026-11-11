@@ -10,12 +10,18 @@ from openpilot.system.ui.lib.application import gui_app, FontWeight, TextAlignme
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.lib.multilang import tr, trn
 from openpilot.system.ui.widgets.label import gui_label
+from openpilot.system.ui.lib.branding import LOGO_ASSET
 
 BRAND_FONT_SIZE = 48
 BRAND_DESC_SPACING = 12
 
 
 class HomeLayoutSP(HomeLayout):
+  def __init__(self):
+    super().__init__()
+    from openpilot.sunnypilot.formosalink.ui import FormosaConnectionCard
+    self._prime_widget = FormosaConnectionCard()
+
   def _render_header(self):
     font = gui_app.font(FontWeight.MEDIUM)
 
@@ -51,18 +57,22 @@ class HomeLayoutSP(HomeLayout):
     version_right = self.header_rect.x + self.header_rect.width
     version_left = version_right - version_text_width
 
-    brand = "sunnypilot"
+    brand = "FormosaPilot"
     description = self.params.get("UpdaterCurrentDescription") or ""
 
+    logo_size = min(64, self.header_rect.height-12)
+    brand_size = measure_text_cached(gui_app.font(FontWeight.BOLD), brand, BRAND_FONT_SIZE)
+    max_desc_width = max(0, version_text_width-brand_size.x-logo_size-2*BRAND_DESC_SPACING)
     desc_width = 0
     if description:
       desc_size = measure_text_cached(gui_app.font(FontWeight.NORMAL), description, BRAND_FONT_SIZE)
-      desc_width = desc_size.x
+      desc_width = min(desc_size.x, max_desc_width)
       desc_rect = rl.Rectangle(version_right - desc_width, self.header_rect.y, desc_width, self.header_rect.height)
       gui_label(desc_rect, description, BRAND_FONT_SIZE, rl.WHITE, alignment=TextAlignment.RIGHT)
 
-    brand_size = measure_text_cached(gui_app.font(FontWeight.AUDIOWIDE), brand, BRAND_FONT_SIZE)
     spacing = BRAND_DESC_SPACING if description else 0
     brand_x = version_right - desc_width - spacing - brand_size.x
-    brand_rect = rl.Rectangle(max(version_left, brand_x), self.header_rect.y, brand_size.x, self.header_rect.height)
-    gui_label(brand_rect, brand, BRAND_FONT_SIZE, rl.WHITE, font_weight=FontWeight.AUDIOWIDE)
+    brand_rect = rl.Rectangle(max(version_left+logo_size+BRAND_DESC_SPACING, brand_x), self.header_rect.y, brand_size.x, self.header_rect.height)
+    gui_label(brand_rect, brand, BRAND_FONT_SIZE, rl.WHITE, font_weight=FontWeight.BOLD)
+    logo = gui_app.texture(LOGO_ASSET, logo_size, logo_size)
+    rl.draw_texture_ex(logo, rl.Vector2(brand_rect.x-logo_size-BRAND_DESC_SPACING, self.header_rect.y+(self.header_rect.height-logo_size)/2), 0, 1, rl.WHITE)

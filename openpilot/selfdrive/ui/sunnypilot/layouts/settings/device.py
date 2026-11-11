@@ -5,6 +5,7 @@ This file is part of sunnypilot and is licensed under the MIT License.
 See the LICENSE.md file in the root directory for more details.
 """
 from openpilot.selfdrive.ui.layouts.settings.device import DeviceLayout
+from openpilot.sunnypilot.formosalink.ui import formosalink_button
 from openpilot.selfdrive.ui.onroad.cabin_camera_dialog import CabinCameraDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.common.hardware import HARDWARE
@@ -113,7 +114,7 @@ class DeviceLayoutSP(DeviceLayout):
       LineSeparator(),
       text_item(lambda: tr("Serial"), self._params.get("HardwareSerial") or (lambda: tr("N/A"))),
       LineSeparator(),
-      self._pair_device_btn,
+      formosalink_button(),
       LineSeparator(),
       self._reset_calib_btn,
       LineSeparator(),

@@ -81,17 +81,17 @@ class ModelsLayoutMici(NavScroller):
     self._was_downloading = False
     self._selection_source: str | None = None
 
-    self.select_model_btn = BigButton(tr("select model"))
+    self.select_model_btn = BigButton("select model")
     self.select_model_btn.set_click_callback(self._show_folders)
 
-    self.refresh_btn = BigButton(tr("refresh models"))
+    self.refresh_btn = BigButton("refresh models")
     self.refresh_btn.set_click_callback(self._refresh_models)
     self._refresh_start: float | None = None
 
-    self.cancel_download_btn = BigButton(tr("cancel download"))
+    self.cancel_download_btn = BigButton("cancel download")
     self.cancel_download_btn.set_click_callback(lambda: ui_state.params.remove("ModelManager_DownloadRef"))
 
-    self.clear_cache_btn = BigButton(tr("clear cache"), value=f"{model_cache_size_mb():.1f} MB")
+    self.clear_cache_btn = BigButton("clear cache", value=f"{model_cache_size_mb():.1f} MB")
     self.clear_cache_btn.set_click_callback(self._confirm_clear_cache)
     self._cache_size_time = 0.0
 
