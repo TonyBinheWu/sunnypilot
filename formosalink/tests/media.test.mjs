@@ -1,8 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {recordingMime,validPreview,mediaCursor,clipLimit,streamUrl,cameraDiagnosticLines} from '../web/media-view.js';
+import {recordingMime,validPreview,mediaCursor,clipLimit,streamUrl,cameraDiagnosticLines,serverClockSample,freshServerFrame} from '../web/media-view.js';
 import {translations} from '../web/i18n.js';
 import {readFileSync} from 'node:fs';
+
+test('frame freshness follows the bounded server clock without the browser wall clock',()=>{
+ const clock=serverClockSample('Wed, 11 Nov 2026 17:30:00 GMT',100,200);
+ const server=Date.parse('2026-11-11T17:30:00Z');
+ assert.equal(clock.uncertainty,550);
+ assert.ok(freshServerFrame((server+700)/1000,clock,350));
+ assert.equal(freshServerFrame((server-10000)/1000,clock,350),false);
+ assert.equal(freshServerFrame((server+10000)/1000,clock,350),false);
+ assert.equal(freshServerFrame(NaN,clock,350),false);
+ assert.equal(freshServerFrame(server/1000,clock,100),false);
+ assert.throws(()=>serverClockSample(null,100,200));
+ assert.throws(()=>serverClockSample('invalid',100,200));
+ assert.throws(()=>serverClockSample('Wed, 11 Nov 2026 17:30:00 GMT',100,6000));
+ for(const locale of ['zh-TW','en','ja'])for(const code of ['clock_unavailable','invalid_message','invalid_frame','expired_frame','decode_failed','decode_timeout','draw_failed','connection_closed'])assert.ok(translations[locale]['mediaError_'+code]);
+});
 
 test('camera diagnostics distinguish stale health, old devices, pipeline failures and real acknowledgements',()=>{
  const t=key=>translations['zh-TW'][key]||key;
@@ -26,10 +41,10 @@ test('live camera waiting describes automatic native startup in all supported la
  const index=readFileSync(new URL('../web/index.html',import.meta.url),'utf8');
  const app=readFileSync(new URL('../web/app.js',import.meta.url),'utf8');
  const workspace=readFileSync(new URL('../web/device-settings.js',import.meta.url),'utf8');
- assert.ok(index.includes('/app.js?v=0.8.2'));
- assert.ok(app.includes('./i18n.js?v=0.8.2'));
- assert.ok(app.includes('./device-settings.js?v=0.8.2'));
- assert.ok(workspace.includes('./media-view.js?v=0.8.2'));
+ assert.ok(index.includes('/app.js?v=0.8.3'));
+ assert.ok(app.includes('./i18n.js?v=0.8.3'));
+ assert.ok(app.includes('./device-settings.js?v=0.8.3'));
+ assert.ok(workspace.includes('./media-view.js?v=0.8.3'));
 });
 test('stream uses same self-hosted HTTPS authority, LAN addresses and supported cameras only',()=>{
  assert.equal(streamUrl('https://formosapilot.dinglu-t.com','abc','driver'),'wss://formosapilot.dinglu-t.com/api/v1/devices/abc/media/stream?camera=driver');

@@ -9,6 +9,17 @@ export function recordingMime(recorder){
  return ['video/webm;codecs=vp8','video/webm','video/mp4'].find(type=>recorder?.isTypeSupported?.(type))||null;
 }
 export function mediaCursor(frame){return frame.stream+':'+frame.sequence;}
+export function serverClockSample(date,started,received){
+ const stamp=Date.parse(date),rtt=received-started;
+ if(!Number.isFinite(stamp)||!Number.isFinite(rtt)||rtt<0||rtt>5000)throw Error('clock_unavailable');
+ // HTTP Date has one-second precision. Bound that uncertainty and the round trip.
+ return {serverAtReceipt:stamp+500+rtt/2,received,uncertainty:500+rtt/2};
+}
+export function freshServerFrame(sampled,clock,now){
+ if(!Number.isFinite(sampled)||!clock||!Number.isFinite(now)||now<clock.received)return false;
+ const age=clock.serverAtReceipt+(now-clock.received)-sampled*1000;
+ return Math.abs(age)<=3000+clock.uncertainty;
+}
 export function cameraDiagnosticLines(info,fresh,camera,t){
  if(!fresh)return [t('mediaDiagStale')];
  if(info?.camera_diagnostics_version!==1)return [t('mediaDiagUpgrade')];
@@ -26,7 +37,9 @@ export function mediaViewer({api,t,el}){
  function say(key){if(status){status.dataset.mediaI18n=key;status.textContent=t(key);}}
  let camera="wide-road",socket=null;
  let diagnostics=null,diagnosticInfo=null,diagnosticFresh=false;
- function showDiagnostics(){if(diagnostics)diagnostics.textContent=cameraDiagnosticLines(diagnosticInfo,diagnosticFresh,camera,t).join(' · ');}
+ let receivedFrames=0,paintedFrames=0,clientError='',closeCode=null;
+ function showDiagnostics(){if(diagnostics)diagnostics.textContent=[...cameraDiagnosticLines(diagnosticInfo,diagnosticFresh,camera,t),t('mediaClientReceived')+': '+receivedFrames,t('mediaClientPainted')+': '+paintedFrames,...(clientError?[t('mediaClientError')+': '+t('mediaError_'+clientError)]:[]),...(closeCode!==null?[t('mediaClientClose')+': '+closeCode]:[])].join(' · ');}
+ function resetClient(){receivedFrames=0;paintedFrames=0;clientError='';closeCode=null;showDiagnostics();}
  let device=null,root=null,generation=0,timer=null,freshness=null,active=false,recording=null,recordStream=null,recordTimer=null,urls=[],pip=null,last=0,cursor='',canvas=null,ctx=null,status=null,recButton=null,clips=null;
  function clearPicture(){if(ctx){ctx.fillStyle='#10151d';ctx.fillRect(0,0,canvas.width,canvas.height);}}
  function stopRecording(){if(recording&&recording.state!=='inactive')recording.stop();clearTimeout(recordTimer);recordTimer=null;}
@@ -38,13 +51,13 @@ export function mediaViewer({api,t,el}){
   root.append(translated('h2','mediaTitle'),translated('p','mediaPhase','workspace-muted'));
   const choice=el('select',undefined,'settings-input');choice.setAttribute('aria-label',t('mediaCamera'));
   for(const [value,key] of [['wide-road','mediaWide'],['driver','mediaDriver']]){const option=translated('option',key);option.value=value;choice.append(option);}choice.value=camera;root.append(choice);
-  choice.addEventListener('change',()=>{const running=active;stop();camera=choice.value;showDiagnostics();if(running){active=true;poll(++generation);}});
+  choice.addEventListener('change',()=>{const running=active;stop();camera=choice.value;resetClient();if(running){active=true;poll(++generation);}});
   status=translated('p','mediaStopped','media-status');status.setAttribute('role','status');root.append(status);
   diagnostics=el('p',undefined,'workspace-muted');diagnostics.setAttribute('role','status');root.append(diagnostics);showDiagnostics();
   canvas=el('canvas');canvas.width=640;canvas.height=360;canvas.setAttribute('aria-label',t('mediaTitle'));ctx=canvas.getContext('2d',{alpha:false});clearPicture();root.append(canvas);
   const actions=el('div',undefined,'media-actions');root.append(actions);
   const button=(name,callback)=>{const node=translated('button',name);node.type='button';node.addEventListener('click',callback);actions.append(node);return node;};
-  button('mediaStart',()=>{if(active)return;active=true;const mine=++generation;say('mediaWaiting');poll(mine);});
+  button('mediaStart',()=>{if(active)return;resetClient();active=true;const mine=++generation;say('mediaWaiting');poll(mine);});
   button('mediaStop',stop);
   recButton=button('mediaRecord',()=>{
    if(recording?.state==='recording'){stopRecording();return;}
@@ -76,35 +89,60 @@ export function mediaViewer({api,t,el}){
   root.append(translated('h3','mediaNextTitle'),translated('p','mediaNext','workspace-muted'));
   freshness=setInterval(()=>{if(active&&last&&performance.now()-last>3000){last=0;clearPicture();stopRecording();say('stale');}},250);
  }
- function poll(mine){
+ async function poll(mine){
   if(!active||generation!==mine||!root?.isConnected)return;
   if(document.hidden){stopRecording();clearPicture();say('mediaPaused');timer=setTimeout(()=>poll(mine),1000);return;}
-  const ws=new WebSocket(streamUrl(location.origin,device,camera));socket=ws;
-  ws.onmessage=async event=>{
+  let clock;
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);
+  try{
+   const started=performance.now();
+   const response=await fetch('/api/v1/health',{cache:'no-store',credentials:'same-origin',signal:controller.signal});
+   if(!response.ok)throw Error('clock_unavailable');
+   clock=serverClockSample(response.headers.get('Date'),started,performance.now());
+  }catch{
    if(generation!==mine||!active)return;
+   clientError='clock_unavailable';showDiagnostics();say('mediaError_clock_unavailable');timer=setTimeout(()=>poll(mine),2000);return;
+  }finally{clearTimeout(timeout);}
+  if(generation!==mine||!active||!root?.isConnected)return;
+  const ws=new WebSocket(streamUrl(location.origin,device,camera));socket=ws;let failure='';
+  ws.onmessage=async event=>{
+   if(generation!==mine||!active||socket!==ws)return;
    if(document.hidden){ws.close();return;}
    try{
-    const data=JSON.parse(event.data);
+    let data;try{data=JSON.parse(event.data);}catch{throw Error('invalid_message');}
     if(data.type==='waiting'){if(!last)say('mediaWaiting');}
     else if(data.type==='frame'){
-     const frame=data.frame;if(!validPreview(frame)||frame.source!==camera||Math.abs(Date.now()/1000-frame.sampled_at)>3)throw Error();
+     const frame=data.frame;receivedFrames++;showDiagnostics();
+     if(!validPreview(frame)||frame.source!==camera)throw Error('invalid_frame');
+     if(!freshServerFrame(frame.sampled_at,clock,performance.now())){
+      clientError='expired_frame';showDiagnostics();last=0;clearPicture();stopRecording();say('mediaError_expired_frame');
+      if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'ack'}));return;
+     }
      const received=performance.now(),image=new Image();image.src='data:image/jpeg;base64,'+frame.jpeg;
-     await image.decode();if(generation!==mine||!active)return;
-     if(performance.now()-received>1000)throw Error();
+     try{await image.decode();}catch{throw Error('decode_failed');}
+     if(generation!==mine||!active||socket!==ws)return;
+     if(performance.now()-received>1000)throw Error('decode_timeout');
+     if(!ctx)throw Error('draw_failed');
      if(canvas.width!==frame.width||canvas.height!==frame.height){canvas.width=frame.width;canvas.height=frame.height;}
      ctx.drawImage(image,0,0);ctx.fillStyle='#000a';ctx.fillRect(0,0,canvas.width,48);ctx.font='20px sans-serif';ctx.fillStyle='#fff';
      ctx.fillText(t(frame.source==='wide-road'?'mediaWide':'mediaDriver')+' · LIVE',14,30);
-     last=performance.now();cursor=mediaCursor(frame);say('mediaLive');
-    }else throw Error();
+     last=performance.now();cursor=mediaCursor(frame);paintedFrames++;clientError='';closeCode=null;showDiagnostics();say('mediaLive');
+    }else throw Error('invalid_message');
     if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'ack'}));
-   }catch{clearPicture();stopRecording();ws.close();}
+   }catch(error){
+    if(generation!==mine||!active||socket!==ws)return;
+    const codes=['invalid_message','invalid_frame','decode_failed','decode_timeout','draw_failed'];
+    failure=codes.includes(error.message)?error.message:'draw_failed';clientError=failure;showDiagnostics();
+    clearPicture();stopRecording();say('mediaError_'+failure);ws.close();
+   }
   };
   ws.onerror=()=>{if(generation===mine&&active)say('mediaStreamError');};
   ws.onclose=event=>{
-   if(generation!==mine||!active)return;
+   if(generation!==mine||!active||socket!==ws)return;
+   closeCode=event.code;if(!failure)clientError='connection_closed';showDiagnostics();
    socket=null;last=0;clearPicture();stopRecording();
    if([1008,4003].includes(event.code)){stop();say('expired');return;}
-   say('mediaStreamError');timer=setTimeout(()=>poll(mine),2000);
+   say(failure?'mediaError_'+failure:'mediaStreamError');timer=setTimeout(()=>poll(mine),2000);
   };
  }
  return {open,close,updateDiagnostics(info,fresh){diagnosticInfo=info;diagnosticFresh=fresh;showDiagnostics();},translate(){showDiagnostics();root?.querySelectorAll('[data-media-i18n]').forEach(n=>n.textContent=t(n.dataset.mediaI18n));if(canvas)canvas.setAttribute('aria-label',t('mediaTitle'));root?.querySelector('select')?.setAttribute('aria-label',t('mediaCamera'));}};

@@ -1,7 +1,7 @@
 import {initTheme} from './theme.js?v=0.6.0';
 import {healthValue} from './health-ui.js?v=0.6.0';
-import {deviceSettings} from './device-settings.js?v=0.8.2';
-import {translations} from './i18n.js?v=0.8.2';
+import {deviceSettings} from './device-settings.js?v=0.8.3';
+import {translations} from './i18n.js?v=0.8.3';
 import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.6.0';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';

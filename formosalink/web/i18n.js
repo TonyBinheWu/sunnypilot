@@ -928,6 +928,15 @@ Object.assign(translations.en, {carrotRemote:'Remote Carrot web',carrotLive:'Liv
 Object.assign(translations.ja, {carrotRemote:'Carrot Web 遠隔操作',carrotLive:'カメラ LIVE',carrotHelp:'本体で Carrot Web の遠隔操作を許可し、停車して電源をオフにしてください。映像はカメラ LIVE で確認できます。'});
 
 for(const [locale,labels] of Object.entries({
+ 'zh-TW':['瀏覽器收到影格數','已顯示影格數','瀏覽器錯誤','連線關閉代碼','無法取得伺服器時間，正在重試。','影像通道收到無法辨識的訊息，正在重新連線。','影格格式或鏡頭來源不符，正在重新連線。','影格已過期，正在等待新影格。','瀏覽器無法解碼 JPEG 影格，正在重新連線。','瀏覽器解碼逾時，正在重新連線。','瀏覽器無法將影格畫到畫面，正在重新連線。','影像連線已關閉，正在重新連線。'],
+ en:['Frames received by browser','Frames displayed','Browser error','Connection close code','Cannot read server time; retrying.','Unrecognized video message; reconnecting.','Invalid frame format or camera source; reconnecting.','Frame expired; waiting for a fresh frame.','Browser could not decode the JPEG frame; reconnecting.','Browser image decoding timed out; reconnecting.','Browser could not draw the image; reconnecting.','Video connection closed; reconnecting.'],
+ ja:['ブラウザー受信フレーム数','表示済みフレーム数','ブラウザーエラー','接続終了コード','サーバー時刻を取得できません。再試行中です。','認識できない映像メッセージです。再接続中です。','画像形式またはカメラが一致しません。再接続中です。','画像が古いため、新しい画像を待っています。','JPEG 画像をデコードできません。再接続中です。','画像のデコードがタイムアウトしました。再接続中です。','画像を画面に描画できません。再接続中です。','映像接続が終了しました。再接続中です。']
+})){
+ const keys=['mediaClientReceived','mediaClientPainted','mediaClientError','mediaClientClose',...['clock_unavailable','invalid_message','invalid_frame','expired_frame','decode_failed','decode_timeout','draw_failed','connection_closed'].map(code=>'mediaError_'+code)];
+ Object.assign(translations[locale],Object.fromEntries(keys.map((key,index)=>[key,labels[index]])));
+}
+
+for(const [locale,labels] of Object.entries({
  'zh-TW':['鏡頭診斷資料尚未更新，無法判定目前狀態。','車機尚未提供鏡頭診斷，請更新至支援診斷的版本並重新啟動。','觀看請求','鏡頭流程','雲端已確認影格數','最後確認影格距今','未知','背景服務尚未回報','待命，沒有觀看請求','向雲端查詢觀看請求','已收到觀看請求','初始化相機','連接車機相機','等待相機影格','影像編碼中','連接雲端影像通道','傳送影格並等待確認','雲端已確認收到影格'],
  en:['Camera diagnostics are stale; current state is unknown.','Update and restart the device to enable camera diagnostics.','Viewer request','Camera pipeline','Cloud-acknowledged frames','Last acknowledgement age','Unknown','Background service has not reported','Idle, no viewer request','Checking viewer demand','Viewer request received','Initializing camera','Connecting to native camera','Waiting for a camera frame','Encoding image','Connecting to cloud video','Sending frame and waiting for acknowledgement','Cloud acknowledged a frame'],
  ja:['カメラ診断が古いため現在の状態は不明です。','カメラ診断に対応した本体ソフトへ更新・再起動してください。','視聴要求','カメラ処理','クラウド確認済みフレーム数','最終確認からの時間','不明','バックグラウンドから応答なし','待機中・視聴要求なし','視聴要求を確認中','視聴要求を受信','カメラ初期化中','本体カメラに接続中','カメラ画像待ち','画像エンコード中','クラウド映像へ接続中','画像を送信・確認待ち','クラウドが画像を確認']

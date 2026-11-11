@@ -9,6 +9,16 @@ on:
 permissions:
   contents: read
 jobs:
+  browser-live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r formosalink/requirements-test.txt 'playwright>=1.50,<2'
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m formosalink.tests.browser_live_check
   host-contracts:
     strategy:
       matrix:
