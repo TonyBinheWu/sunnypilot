@@ -14,10 +14,18 @@ final class SpokenSetting {
   private static final Pattern EN = Pattern.compile("(?:please )?(?:set|change) (.{1,100}?) to (-?[0-9]{1,9})");
   private static final Pattern FIND_KO = Pattern.compile("(.{1,80}?)(?:에\\s*(?:관련된|대한)|\\s*관련)?\\s*설정(?:들)?(?:을|좀)?\\s*(?:찾아|검색해|보여)(?:\\s*(?:줘|주세요|줘봐))?");
   private static final Pattern FIND_EN = Pattern.compile("(?:please )?(?:find|show|search for) (.{1,80}?) settings?");
+  private static final Pattern ZH = Pattern.compile("(?:請)?(?:幫我)?(?:把|將)?(.{1,100}?)(?:設定為|設為|調整為|調為|改為|改成|設定成|設成|設定到|調整到|調到)(" + ChineseVoice.NUMBER + ")");
+  private static final Pattern FIND_ZH = Pattern.compile("(?:請)?(?:幫我)?(?:尋找|搜尋|查找|顯示|找出|找)(?:一下)?(.{1,80}?)");
   static String search(String input) {
     if (input == null || input.length() > 130) return null;
     String text = Normalizer.normalize(input, Normalizer.Form.NFKC).trim().toLowerCase(Locale.ROOT)
       .replaceAll("\\s+", " ").replaceFirst("[.!。！]+$", "").trim();
+    String zh = ChineseVoice.text(input);
+    Matcher chinese = FIND_ZH.matcher(zh);
+    if (ChineseVoice.imperative(zh) && chinese.matches()) {
+      String query = chinese.group(1).replaceFirst("(?:的)?(?:設定|設置)$", "");
+      return query.isEmpty() ? null : query;
+    }
     Matcher match = FIND_KO.matcher(text);
     if (!match.matches()) {
       match = FIND_EN.matcher(text);
@@ -42,6 +50,11 @@ final class SpokenSetting {
     if (digits.matches()) return Integer.parseInt(digits.group(1));
     for (int i = 0; i < KOREAN_ORDINALS.length; i++)
       if (ko.equals(KOREAN_ORDINALS[i] + "번째") || en.equals(ENGLISH_ORDINALS[i])) return i + 1;
+    String zh = ChineseVoice.text(name).replaceFirst("(?:個)?(?:項目|結果|設定|設置)$", "");
+    if (zh.startsWith("第")) {
+      Integer n = ChineseVoice.integer(zh.substring(1).replaceFirst("個$", ""));
+      if (n != null && n >= 1 && n <= 20) return n;
+    }
     return 0;
   }
 
@@ -78,6 +91,15 @@ final class SpokenSetting {
     if (input == null || input.length() > 180) return null;
     String text = Normalizer.normalize(input, Normalizer.Form.NFKC).trim().toLowerCase(Locale.ROOT)
       .replaceAll("\\s+", " ").replaceFirst("[.!。！]+$", "").trim();
+    String zh = ChineseVoice.text(input);
+    Matcher chinese = ZH.matcher(zh);
+    if (ChineseVoice.imperative(zh) && chinese.matches()) {
+      String name = chinese.group(1);
+      if (name.matches("(?:巡航|定速)(?:目標)?(?:速度|車速)?")) return null;
+      Integer value = ChineseVoice.integer(chinese.group(2));
+      if (name.matches("第.*") && position(name) == 0) return null;
+      return value == null ? null : new SpokenSetting(name, value);
+    }
     Matcher match = KO.matcher(text);
     if (!match.matches()) {
       match = EN.matcher(text);

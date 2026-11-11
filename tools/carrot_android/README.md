@@ -1,10 +1,17 @@
 # CarrotAssist Android public beta — Traditional Chinese distribution
 
-This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.12 (code 19). It can coexist with the upstream app; data and authorizations are separate.
+This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.13 (code 20). It can coexist with the upstream app; data and authorizations are separate.
 
-[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.12/CarrotAssist-TW-0.2.12.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.12)
+[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.13/CarrotAssist-TW-0.2.13.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.13)
 
 Updates are restricted to this repository’s `carrot-assist-tw-updates` channel and `carrot-assist-tw-vX.Y.Z` release URLs. The `.github/workflows/carrot-assist-apk.yaml` workflow runs the build checks, signs using protected repository secrets, verifies the APK and prepares a draft release. Signing keys never belong in this repository. A published version is immutable; increment the version name and code for another APK.
+
+
+## Traditional Chinese voice (0.2.13)
+
+Update both the APK and this fork's device code. Mandarin commands use `zh-TW` recognition with a suitable on-device language model. Direct setting search/writes support exact Traditional titles, Simplified recognition alternatives and current numbered results. Lane commands retain the existing direction confirmation. Cruise commands use the existing speed service: `巡航速度設為100公里`, `巡航速度降低十公里`, and `巡航加速` (one existing RES/+ step). Missing confidence requires a short-lived, same-value `確認…` response. Speech never creates permissions or engages assistance.
+
+See the [Traditional Chinese mobile guide](../../docs/CARROT_MOBILE.zh-TW.md) for supported phrases, permissions and validation limits.
 
 The following sections describe the inherited app functionality.
 

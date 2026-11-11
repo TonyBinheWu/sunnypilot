@@ -10,7 +10,7 @@ public final class UiText {
   static {
     TRADITIONAL.put("Start the voice assistant when Carrot Web connects", "Carrot Web 連線後啟動語音助手");
     TRADITIONAL.put("Listen for commands on this phone first", "優先在此手機聆聽指令");
-    TRADITIONAL.put("Direct listening handles lane requests and turn signal settings. Repeat questions in the default assistant. Turn off direct listening to start in the assistant overlay.\n\nInstall updates while parked.", "直接聆聽可處理車道變換請求及方向燈設定。其他問題請向預設助手重述。關閉直接聆聽後，會啟動助手浮動視窗。\n\n請停車後安裝更新。");
+    TRADITIONAL.put("Direct listening handles lane requests and turn signal settings. Repeat questions in the default assistant. Turn off direct listening to start in the assistant overlay.\n\nInstall updates while parked.", "直接聆聽支援繁體中文搜尋與修改設定、變換車道及調整巡航速度。其他問題請向預設助手重述。關閉直接聆聽後，會啟動助手浮動視窗。\n\n請停車後安裝更新。");
     TRADITIONAL.put("Check for updates", "檢查更新");
     TRADITIONAL.put("Install update", "安裝更新");
     TRADITIONAL.put("Copy ChatGPT instructions", "複製 ChatGPT 自訂指示");
@@ -69,8 +69,8 @@ public final class UiText {
     TRADITIONAL.put("Please repeat the setting name and number.", "請重述設定名稱與數字。");
     TRADITIONAL.put("Search for settings first.", "請先搜尋設定。");
     TRADITIONAL.put("Update and restart the parked Carrot device.", "請停車後更新並重新啟動 Carrot 裝置。");
-    TRADITIONAL.put("Say confirm left if you mean left.", "若要向左，請說 confirm left。");
-    TRADITIONAL.put("Say confirm right if you mean right.", "若要向右，請說 confirm right。");
+    TRADITIONAL.put("Say confirm left if you mean left.", "若要向左，請說「確認向左」。");
+    TRADITIONAL.put("Say confirm right if you mean right.", "若要向右，請說「確認向右」。");
     TRADITIONAL.put("Opening the assistant. Please repeat your question there.", "正在開啟助手，請在助手中重述問題。");
     TRADITIONAL.put("Direction uncertain. No request sent.", "方向不明確，未送出請求。");
     TRADITIONAL.put("Command not recognized.", "無法辨識指令。");
@@ -118,6 +118,12 @@ public final class UiText {
     TRADITIONAL.put("%s is already %s.", "%s 已經是 %s。");
     TRADITIONAL.put("When we talk about driving or vehicle settings, Carrot means CarrotPilot (CarrotAssist). When I ask you to find or change a CarrotPilot setting, or give a driving command such as “change lanes left”, use the connected CarrotAssist tool. Briefly report the result returned by the tool.", "討論駕駛或車輛設定時，我說的 Carrot 是指 CarrotPilot（CarrotAssist）。當我要求尋找或修改 CarrotPilot 設定，或提出「向左變換車道」等駕駛指令時，請使用已連線的 CarrotAssist 工具，並簡短回報工具實際傳回的結果。");
     TRADITIONAL.put("1. Open the menu in ChatGPT and tap your profile.\n2. In Settings, scroll to Customize ChatGPT and open Personality. The Custom instructions field is below the style controls.\n3. Paste below any existing instructions and tap Save at the top right.\n\nTry “Find acceleration settings” in a new chat.", "1. 在 ChatGPT 開啟選單並點選個人資料。\n2. 在設定中找到「自訂 ChatGPT」並開啟「個性」，在風格設定下方找到「自訂指示」。\n3. 貼在既有指示下方，再點右上角「儲存」。\n\n在新對話中試說「尋找加速設定」。");
+    TRADITIONAL.put("Please repeat the cruise command.", "請重新說出巡航速度指令。");
+    TRADITIONAL.put("Cruise confirmation did not match or expired.", "巡航指令確認不符或已逾期，未送出請求。");
+    TRADITIONAL.put("Please repeat: %s", "請覆誦：「%s」。");
+    TRADITIONAL.put("Cruise target is %s km/h.", "巡航設定速度為每小時 %s 公里。");
+    TRADITIONAL.put("Cruise request received; application is not yet verified.", "已收到巡航速度請求，尚未確認套用。");
+    TRADITIONAL.put("Cruise request was not applied. Check active assistance and vehicle conditions.", "巡航請求未套用，請確認輔助啟用狀態與車輛條件。");
   }
 
   public static String get(String korean, String english) {
@@ -130,6 +136,13 @@ public final class UiText {
       if (translated != null) return translated;
     }
     return english;
+  }
+  public static String languageCode() {
+    Locale locale = Locale.getDefault();
+    if ("ko".equals(locale.getLanguage())) return "ko";
+    if ("zh".equals(locale.getLanguage()) && ("Hant".equals(locale.getScript()) || locale.getScript().isEmpty() &&
+        ("TW".equals(locale.getCountry()) || "HK".equals(locale.getCountry()) || "MO".equals(locale.getCountry())))) return "zh-tw";
+    return "en";
   }
   public static String format(String korean, String english, Object... values) {
     return String.format(Locale.getDefault(), get(korean, english), values);

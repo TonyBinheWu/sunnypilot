@@ -75,6 +75,7 @@ public final class MainActivity extends Activity {
   private int phoneGeneration, permissionDevice;
   private String phoneSearchId;
   private final LocalCommand.DirectionCheck directionCheck = new LocalCommand.DirectionCheck();
+  private final SpokenCruise.Check cruiseCheck = new SpokenCruise.Check();
   private static final int PHONE_MIC = 42;
 
   private String lastPhoneRequest = "", lastPhoneResult = "failed";
@@ -104,13 +105,14 @@ public final class MainActivity extends Activity {
       public void status(String text) { title.setText(text); if (!phoneVoice.listening()) phoneSession = false; }
       public void heard(LocalCommand command) { handlePhoneCommand(command); }
       public void missed(String heard, String reason) {
-        directionCheck.clear();
+        directionCheck.clear(); cruiseCheck.clear();
         String text = heard == null ? "" : heard.trim();
         if (text.length() > 48) text = text.substring(0, 48) + "…";
         String prefix = text.isEmpty() ? "" : UiText.format("“%s”로 들었어요. ", "I heard “%s”. ", text);
         replyAndListen(phoneGeneration, prefix + reason);
       }
       public void heardSetting(SpokenSetting setting) { handleSpokenSetting(setting); }
+      public void heardCruise(SpokenCruise cruise, boolean needsConfirmation) { handleSpokenCruise(cruise, needsConfirmation); }
       public void findSettings(String query) { startSettingAction("findSettings", JSONObject.quote(query)); }
     });
     root = column(); root.setBackgroundColor(background);
@@ -422,7 +424,7 @@ public final class MainActivity extends Activity {
   private boolean autoVoiceEnabled() { return preferences.getBoolean("voice_auto_start", phoneMode()); }
 
   private void stopPhoneVoice() {
-    phoneGeneration++; directionCheck.clear(); phoneSearchId = null;
+    phoneGeneration++; directionCheck.clear(); cruiseCheck.clear(); phoneSearchId = null;
     if (phoneVoice != null) phoneVoice.stop();
     if (phoneSession && welcome != null) welcome.cancel();
     phoneSession = false;
@@ -440,7 +442,7 @@ public final class MainActivity extends Activity {
   private void startPhoneVoice(boolean automatic) {
     if (!localPage() || phoneSession || waitingForPermission) return;
     final int token = ++phoneGeneration;
-    directionCheck.clear(); phoneSearchId = null; phoneSession = true;
+    directionCheck.clear(); cruiseCheck.clear(); phoneSearchId = null; phoneSession = true;
     web.evaluateJavascript(onDevicePage("typeof window.CarrotLocalVoice?.start === 'function'"), value -> {
       if (!currentSession(token)) return;
       if (!"true".equals(value)) {
@@ -475,7 +477,7 @@ public final class MainActivity extends Activity {
 
   private void handleSpokenSetting(SpokenSetting setting) {
     final int token = phoneGeneration;
-    directionCheck.clear();
+    directionCheck.clear(); cruiseCheck.clear();
     if (!currentSession(token)) { stopPhoneVoice(); return; }
     if (setting == null) {
       replyAndListen(token, UiText.get("설정 이름과 숫자를 다시 말해 주세요.", "Please repeat the setting name and number."));
@@ -487,12 +489,39 @@ public final class MainActivity extends Activity {
       replyAndListen(token, UiText.get("먼저 설정을 찾아 달라고 말해 주세요.", "Search for settings first."));
     } else {
       startSettingAction("setResultValue", JSONObject.quote(phoneSearchId) + "," + setting.position + "," +
-        setting.value + "," + JSONObject.quote(UiText.get("ko", "en")));
+        setting.value + "," + JSONObject.quote(UiText.languageCode()));
     }
+  }
+  private void handleSpokenCruise(SpokenCruise cruise, boolean needsConfirmation) {
+    final int token = phoneGeneration;
+    directionCheck.clear();
+    if (!currentSession(token)) { stopPhoneVoice(); return; }
+    if (cruise == null) {
+      cruiseCheck.clear();
+      replyAndListen(token, UiText.get("속도 명령을 다시 말해 주세요.", "Please repeat the cruise command."));
+      return;
+    }
+    if (cruise.confirmation) {
+      if (!cruiseCheck.resolve(cruise, SystemClock.elapsedRealtime())) {
+        replyAndListen(token, UiText.get("속도 확인이 일치하지 않거나 만료됐어요.", "Cruise confirmation did not match or expired."));
+        return;
+      }
+    } else {
+      cruiseCheck.clear();
+      if (needsConfirmation) {
+        String prompt = UiText.format("다음 문장을 말해 주세요: %s", "Please repeat: %s", cruise.confirmationPhrase());
+        title.setText(prompt);
+        welcome.say(prompt, () -> {
+          if (currentSession(token)) { cruiseCheck.ask(cruise, SystemClock.elapsedRealtime()); phoneVoice.listen(); }
+        });
+        return;
+      }
+    }
+    startSettingAction("cruise", JSONObject.quote(cruise.action) + "," + (cruise.value == null ? "null" : cruise.value));
   }
   private void startSettingAction(String method, String arguments) {
     final int token = phoneGeneration;
-    directionCheck.clear();
+    directionCheck.clear(); cruiseCheck.clear();
     if (!currentSession(token)) { stopPhoneVoice(); return; }
     String id = ConnectionPolicy.nonce();
     long expires = System.currentTimeMillis() + 5000;
@@ -511,6 +540,7 @@ public final class MainActivity extends Activity {
   private void handlePhoneCommand(LocalCommand command) {
     final int token = phoneGeneration;
     if (!currentSession(token)) { stopPhoneVoice(); return; }
+    cruiseCheck.clear();
     dispatchPhoneCommand(token, directionCheck.resolve(command, SystemClock.elapsedRealtime()));
   }
   private void dispatchPhoneCommand(int token, LocalCommand command) {
@@ -562,13 +592,14 @@ public final class MainActivity extends Activity {
           Object value = new org.json.JSONTokener(raw).nextValue();
           if (value instanceof JSONObject) {
             JSONObject result = (JSONObject)value;
+            if ("cruise".equals(result.optString("kind"))) { cruiseResult(token, result); return; }
             String name = result.optString("label");
             switch (result.optString("status")) {
               case "found":
                 int count = result.getInt("total");
                 phoneSearchId = count > 0 ? id : null;
                 replyAndListen(token, count == 0 ? UiText.get("관련 설정을 찾지 못했어요.", "No matching settings.")
-                  : UiText.format("%s개 찾았어요. 첫 번째는 %s예요.", "Found %s. First is %s.", count, UiText.get(result.optString("firstKo"), result.optString("firstEn"))));
+                  : UiText.format("%s개 찾았어요. 첫 번째는 %s예요.", "Found %s. First is %s.", count, ("zh-tw".equals(UiText.languageCode()) ? result.optString("firstTw", result.optString("firstEn")) : UiText.get(result.optString("firstKo"), result.optString("firstEn")))));
                 return;
               case "applied": replyAndListen(token, UiText.format("%s, %s으로 설정했어요.", "%s set to %s.", name, result.getInt("current"))); return;
               case "range": replyAndListen(token, UiText.format("허용 범위는 %s에서 %s까지예요.", "Allowed range is %s to %s.", result.getInt("min"), result.getInt("max"))); return;
@@ -582,6 +613,23 @@ public final class MainActivity extends Activity {
       }
       phoneResult(token, command, status);
     });
+  }
+  private void cruiseResult(int token, JSONObject result) {
+    String state = result.optString("status"), output;
+    double speed = result.optDouble("current", Double.NaN);
+    if ((state.equals("applied") || state.equals("unchanged")) && !Double.isNaN(speed) && !Double.isInfinite(speed) && speed >= 1 && speed <= 199) {
+      String value = speed == Math.rint(speed) ? Long.toString((long)speed) : Double.toString(speed);
+      output = UiText.format("설정 속도는 %s km/h입니다.", "Cruise target is %s km/h.", value);
+    } else if (state.equals("waiting") || state.equals("running")) {
+      output = UiText.get("속도 요청을 접수했지만 적용은 아직 확인되지 않았어요.", "Cruise request received; application is not yet verified.");
+    } else if (state.equals("permission")) {
+      output = UiText.get("정차 후 당근웹 도구에서 운전 명령을 허용해 주세요.", "While parked, allow driving commands in Carrot Web Tools.");
+    } else if (state.equals("duplicate")) {
+      output = UiText.get("직전 요청이 있어 다시 보내지 않았어요.", "Recent request. No repeat sent.");
+    } else if (state.equals("rejected") || state.equals("cancelled") || state.equals("expired") || state.equals("interrupted")) {
+      output = UiText.get("속도 요청이 실행되지 않았어요. 활성화 상태와 차량 조건을 확인하세요.", "Cruise request was not applied. Check active assistance and vehicle conditions.");
+    } else output = UiText.get("결과를 확인하지 못했어요.", "Result unavailable.");
+    replyAndListen(token, output);
   }
   private void phoneResult(int token, LocalCommand command, String status) {
     String output;

@@ -173,7 +173,7 @@ window.CarrotTranslations.register("zh-tw", {
     language_note: "重新啟動後生效",
     setting_doc_language_fallback: "繁體中文詳細指南尚未提供，目前顯示英文指南。",
 
-    assistant_voice_help: "手機直接語音支援韓語和英語，無需 ChatGPT 帳號或配對碼。在裝置名稱下啟用手機語音，然後輕點麥克風。可用英語說 “Find acceleration settings”。",
+    assistant_voice_help: "手機直接語音支援韓文、英文與國語。國語需要 CarrotAssist TW 0.2.13、對應車機程式及可用的 zh-TW 裝置端語音模型。無須 ChatGPT 帳號或配對碼；在裝置名稱下啟用手機聆聽，再點麥克風。",
     assistant_approval_refresh: "如果仍使用舊的重複確認說明，請在 CarrotAssist 外掛設定中重新整理工具並開始新對話。操作審批不需要重新生成連線碼。",
     assistant_approval_open: "開啟 ChatGPT 外掛許可權設定",
     assistant_approval_help: "Carrot 裝置許可權與 ChatGPT 操作審批相互獨立。如不希望每次詢問，請在 ChatGPT 外掛設定 → CarrotAssist → 許可權中選擇允許所有操作。這適用於此外掛已獲授權的全部操作，而非單個設定。每位使用者須在自己的帳號中選擇；CarrotAssist 無法自動啟用或讀取該選擇，也不會因此新增裝置許可權。",

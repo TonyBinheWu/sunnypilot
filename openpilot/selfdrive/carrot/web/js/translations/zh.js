@@ -5,7 +5,7 @@ window.CarrotTranslations.register("zh", {
   nativeName: "简体中文",
   shortName: "ZH",
   strings: {
-    assistant_voice_help: "手机直接语音支持韩语和英语，无需 ChatGPT 帐号或配对码。在设备名称下启用手机语音，然后轻点麦克风。可用英语说 “Find acceleration settings”。",
+    assistant_voice_help: "手机直接语音支持韩语、英语和普通话。普通话需要 CarrotAssist TW 0.2.13、匹配的设备代码及可用的 zh-TW 设备端语音模型。无需 ChatGPT 账户或配对码。在设备名称下启用手机语音，再点麦克风。",
     assistant_approval_refresh: "如果仍使用旧的重复确认说明，请在 CarrotAssist 插件设置中刷新工具并开始新对话。操作审批不需要重新生成连接码。",
     assistant_approval_open: "打开 ChatGPT 插件权限设置",
     assistant_approval_help: "Carrot 设备权限与 ChatGPT 操作审批相互独立。如不希望每次询问，请在 ChatGPT 插件设置 → CarrotAssist → 权限中选择允许所有操作。这适用于此插件已获授权的全部操作，而非单个设置。每位用户须在自己的账号中选择；CarrotAssist 无法自动启用或读取该选择，也不会因此新增设备权限。",

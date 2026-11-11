@@ -20,6 +20,17 @@ public enum LocalCommand {
     String text = Normalizer.normalize(input, Normalizer.Form.NFKC).trim().toLowerCase(Locale.ROOT)
       .replaceAll("[\\s]+", " ").replaceFirst("[.!。！]+$", "").trim();
     String ko = text.replace(" ", "");
+    String zh = ChineseVoice.text(input);
+    if (ChineseVoice.imperative(zh)) {
+      if (zh.matches("(?:請)?(?:幫我)?(?:向|往)?(?:左|左邊|左側)(?:變換|切換|更換|換|變)(?:一個|一條)?(?:車道|車線|道)")) return LEFT;
+      if (zh.matches("(?:請)?(?:幫我)?(?:向|往)?(?:右|右邊|右側)(?:變換|切換|更換|換|變)(?:一個|一條)?(?:車道|車線|道)")) return RIGHT;
+      if (zh.matches("確認(?:向)?(?:左|左邊|左側)|(?:左|左邊|左側)確認")) return CONFIRM_LEFT;
+      if (zh.matches("確認(?:向)?(?:右|右邊|右側)|(?:右|右邊|右側)確認")) return CONFIRM_RIGHT;
+      if (zh.matches("(?:請)?(?:開啟|打開|顯示)(?:方向燈|轉向燈)(?:設定|設置)")) return BLINKER_SETTINGS;
+      if (zh.matches("停止聆聽|結束聆聽|停止語音|結束語音")) return STOP;
+    }
+    if (zh.matches(".*[?？嗎呢]$") || zh.matches("^(?:為什麼|怎麼|如何|什麼).*") || zh.matches("(?:請)?(?:開啟|打開)chatgpt")) return QUESTION;
+
     if (LEFT_KO.matcher(ko).matches() || text.matches("(?:please )?change lanes? (?:to the )?left")) return LEFT;
     if (RIGHT_KO.matcher(ko).matches() || text.matches("(?:please )?change lanes? (?:to the )?right")) return RIGHT;
     if (ko.matches("왼쪽확인|좌측확인") || text.equals("confirm left")) return CONFIRM_LEFT;

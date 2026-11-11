@@ -1733,7 +1733,7 @@ async function findPhoneSettings(query, id) {
   phoneSearchResults = { id, query, names };
   const item = entries.find(entry => entry.item.name === names[0])?.item;
   const spokenTitle = title => (title || item?.name || "").split(/[:：]/, 1)[0].trim();
-  return { status: "found", total, firstKo: spokenTitle(item?.title), firstEn: spokenTitle(item?.etitle) };
+  return { status: "found", total, firstKo: spokenTitle(item?.title), firstEn: spokenTitle(item?.etitle), firstTw: spokenTitle(item?.ttitle) };
 }
 
 // The paired assistant may navigate only to an actual setting available in this

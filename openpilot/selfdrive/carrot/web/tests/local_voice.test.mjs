@@ -45,3 +45,64 @@ test('late callbacks and competing commands do not replace an in-flight request'
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(voice.result('a'.repeat(43)),'unverified');
 });
+
+test('cruise uses one granted execution and status-only readback, sharing the maneuver cooldown', async () => {
+  globalThis.document = { hidden: false };
+  const calls = [];
+  const id = 'c'.repeat(43);
+  const voice = createLocalVoice(null, () => true, async command => {
+    calls.push(command);
+    return { result: { id, status: command.operation === 'execute' ? 'waiting' : 'applied', current: 100 } };
+  }, () => 1000, null, async () => {});
+  assert.ok(voice.cruise('speed_set', 100, id, 4000));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(voice.result(id), { kind: 'cruise', status: 'applied', current: 100 });
+  assert.deepEqual(calls.map(c => c.operation), ['execute', 'status']);
+  assert.equal(calls[0].value, 100);
+  assert.equal(calls[1].value, undefined);
+  assert.ok(voice.cruise('speed_set', 100, id, 4000));
+  assert.equal(calls.length, 2);
+  assert.ok(voice.start('lane_left', 'd'.repeat(43), 4000));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(voice.result('d'.repeat(43)), 'duplicate');
+});
+
+test('invalid cruise values, hidden pages, absent permission and revoked grants never execute anew', async () => {
+  globalThis.document = { hidden: false };
+  let granted = false, executions = 0;
+  const id = 'a'.repeat(43);
+  const voice = createLocalVoice(null, () => granted, async command => {
+    executions++;
+    return { result: { id: command.id, status: 'waiting' } };
+  }, () => 1000, null, async () => { granted = false; });
+  for (const [action, value] of [['speed_set', 0], ['speed_set', 200], ['speed_set', 2.5], ['speed_down', -1], ['speed_up', 10], ['speed_set', null], ['lane_left', 10]]) {
+    assert.equal(voice.cruise(action, value, id, 4000), false);
+  }
+  assert.ok(voice.cruise('speed_set', 100, id, 4000));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(voice.result(id).status, 'permission');
+  assert.equal(executions, 0);
+  granted = true;
+  assert.ok(voice.cruise('speed_up', null, 'b'.repeat(43), 4000));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(voice.result('b'.repeat(43)).status, 'unverified');
+  assert.equal(executions, 1);
+  document.hidden = true;
+  assert.equal(voice.cruise('speed_down', 10, 'x'.repeat(43), 4000), false);
+  document.hidden = false;
+  assert.equal(voice.cruise('speed_down', 10, 'x'.repeat(43), 999), false);
+});
+
+test('cruise never reports success for mismatched identities or invalid/missing device readback', async () => {
+  globalThis.document = { hidden: false };
+  const id = 'a'.repeat(43);
+  for (const result of [
+    { id: 'b'.repeat(43), status: 'applied', current: 100 },
+    { id, status: 'applied' }, { id, status: 'unchanged', current: 0 }, { id, status: 'applied', current: NaN },
+  ]) {
+    const voice = createLocalVoice(null, () => true, async () => ({ result }), () => 1000);
+    assert.ok(voice.cruise('speed_set', 100, id, 4000));
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(voice.result(id).status, 'unverified');
+  }
+});

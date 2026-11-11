@@ -1,6 +1,8 @@
 import { executeLocalSetting, settingAccessToken, updateDisplayedSetting } from './assistant_settings.js';
 
-const key = text => text.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, '');
+const chineseAliases = {设:'設',为:'為',调:'調',变:'變',换:'換',车:'車',请:'請',认:'認',寻:'尋',显:'顯',开:'開',减:'減',两:'兩',负:'負'};
+const key = text => text.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, '')
+  .replace(/[设为调变换车请认寻显开减两负]/g, c => chineseAliases[c]).replace(/設置/g, '設定');
 const shortTitle = title => title.split(/[:：]/, 1)[0].replace(/\s*\([^()]*\)\s*$/, '').trim();
 
 export function resolveSpokenSetting(items, spoken) {
@@ -8,13 +10,14 @@ export function resolveSpokenSetting(items, spoken) {
   const matches = new Map();
   for (const item of items) {
     if (!item?.name) continue;
-    const names = [item.name, item.title, item.etitle].filter(Boolean);
+    const names = [item.name, item.title, item.etitle, item.ttitle, item.ctitle].filter(Boolean);
     const aliases = names.flatMap(name => [name, shortTitle(name)]);
     const accel = /^CruiseMaxVals(\d+)$/.exec(item.name);
     if (accel) {
-      aliases.push('acceleration setting ' + accel[1]);
+      aliases.push('acceleration setting ' + accel[1], '加速度設定' + accel[1], '加速度設定' + '零一二三四五六'[Number(accel[1])]);
       if (accel[1] === '0') aliases.push('가속도 설정 영', '가속도 설정 공', '가속도 설정 제로', 'acceleration setting zero');
     }
+    if (item.name === 'ShowCustomBrightness') aliases.push('螢幕亮度', '屏幕亮度');
     if (aliases.some(name => key(name) === needle)) matches.set(item.name, item);
   }
   return matches.size === 1 ? matches.values().next().value : null;
@@ -45,7 +48,7 @@ export async function assignSpokenSetting(spoken, value, id, expires, deps = {})
   if (!item) return { status: 'unknown' };
   if (!Number.isSafeInteger(value)) return { status: 'unverified' };
   const { name, min, max } = item;
-  const label = deps.selected ? shortTitle((deps.language === 'ko' ? item.title : item.etitle) || name) : spoken;
+  const label = deps.selected ? shortTitle((deps.language === 'zh-tw' ? item.ttitle : deps.language === 'ko' ? item.title : item.etitle) || name) : spoken;
   if (value < min || value > max) return { status: 'range', min, max };
   const command = (operation, fields, identity = requestId()) =>
     send({ operation, id: identity, expires_at: expires, ...fields }, token);

@@ -48,7 +48,7 @@ window.CarrotTranslations.register("en", {
     assistant_account_connected: "Account connected · reusable in new voice chats",
     assistant_help: "Connect once for setting search, explanations and screen navigation. Reading and changing values additionally requires permission here and in the ChatGPT connection.",
     assistant_install: "Install ChatGPT · Google Play",
-    assistant_voice_help: "Phone voice works without a ChatGPT account or pairing code. Under the device name in CarrotAssist, enable “Listen for commands on this phone first” and tap the microphone. Say “Find acceleration settings.” With setting access enabled below, say “Set acceleration setting zero to 240.”",
+    assistant_voice_help: "Direct phone voice supports Korean, English and Mandarin commands. Mandarin requires CarrotAssist TW 0.2.13, matching device code and an available zh-TW on-device speech model. No ChatGPT account or pairing code is needed. Enable phone listening under the device name, then tap the microphone.",
     assistant_disconnect: "Disconnect",
     assistant_connected: "Connected · screen navigation only",
     assistant_waiting: "Waiting for ChatGPT to pair",

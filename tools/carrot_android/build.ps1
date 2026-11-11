@@ -49,10 +49,14 @@ Assert-Exit 'Connection policy checks'
 Assert-Exit 'Compile legacy origin checks'
 & $javaExe -cp $testClasses LegacyOriginHintsTest
 Assert-Exit 'Legacy origin checks'
-& $javacExe -encoding UTF-8 -d $testClasses (Join-Path $sourceRoot 'src/me/shind0/carrotweb/LocalCommand.java') (Join-Path $sourceRoot 'src/me/shind0/carrotweb/SpokenSetting.java') (Join-Path $sourceRoot 'tests/LocalCommandTest.java')
+& $javacExe -encoding UTF-8 -d $testClasses (Join-Path $sourceRoot 'src/me/shind0/carrotweb/ChineseVoice.java') (Join-Path $sourceRoot 'src/me/shind0/carrotweb/SpokenCruise.java') (Join-Path $sourceRoot 'src/me/shind0/carrotweb/LocalCommand.java') (Join-Path $sourceRoot 'src/me/shind0/carrotweb/SpokenSetting.java') (Join-Path $sourceRoot 'tests/LocalCommandTest.java')
 Assert-Exit 'Compile local voice checks'
 & $javaExe -cp $testClasses me.shind0.carrotweb.LocalCommandTest
 Assert-Exit 'Local voice checks'
+& $javacExe -encoding UTF-8 -cp $testClasses -d $testClasses (Join-Path $sourceRoot 'tests/ChineseVoiceTest.java')
+Assert-Exit 'Compile Chinese voice checks'
+& $javaExe -cp $testClasses me.shind0.carrotweb.ChineseVoiceTest
+Assert-Exit 'Chinese voice checks'
 
 $sources = @(Get-ChildItem -LiteralPath (Join-Path $sourceRoot 'src') -Filter '*.java' -Recurse | ForEach-Object FullName)
 & $javacExe -source 8 -target 8 -encoding UTF-8 -bootclasspath "$platformJar;$(Join-Path $bin 'core-lambda-stubs.jar')" -d $classes @sources

@@ -22,6 +22,7 @@ final class PhoneVoice {
     void heard(LocalCommand command);
     void missed(String heard, String reason);
     void heardSetting(SpokenSetting setting);
+    void heardCruise(SpokenCruise cruise, boolean needsConfirmation);
     void findSettings(String query);
   }
   private final Context context;
@@ -67,6 +68,12 @@ final class PhoneVoice {
           float[] scores = results == null ? null : results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES);
           SpokenSetting setting = alternatives == null || alternatives.isEmpty() ? null : SpokenSetting.parse(alternatives.get(0));
           boolean stale = LocalCommand.stale(started, speechStart, ended, now);
+          SpokenCruise cruise = alternatives == null || alternatives.isEmpty() ? null : SpokenCruise.parse(alternatives.get(0));
+          if (cruise != null) {
+            stop();
+            listener.heardCruise(!stale && cruise.agreed(alternatives, scores) ? cruise : null, SpokenCruise.missingScore(scores));
+            return;
+          }
           if (setting != null) {
             stop();
             listener.heardSetting(!stale && setting.agreed(alternatives, scores) ? setting : null);
@@ -105,7 +112,7 @@ final class PhoneVoice {
       });
       Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-      Locale language = Locale.getDefault();
+      Locale language = ChineseVoice.recognitionLocale(Locale.getDefault());
       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, language.toLanguageTag());
       if (Build.VERSION.SDK_INT >= 33) {
         List<String> hints = "ko".equals(language.getLanguage())
@@ -113,6 +120,10 @@ final class PhoneVoice {
                           "가속도 설정을 찾아줘", "깜박이 설정 열어줘", "챗GPT 열어줘")
           : Arrays.asList("change lanes left", "change lanes right", "confirm left", "confirm right",
                           "find acceleration settings", "open turn signal settings", "ChatGPT");
+        if ("zh".equals(language.getLanguage())) {
+          hints = Arrays.asList("向左變換車道", "向右變換車道", "確認向左", "確認向右", "搜尋加速度設定",
+            "把螢幕亮度設為八十", "把第一個設為二百四十", "巡航速度設為一百公里", "巡航速度降低十公里", "巡航加速", "停止聆聽");
+        }
         intent.putStringArrayListExtra(RecognizerIntent.EXTRA_BIASING_STRINGS, new ArrayList<>(hints));
       }
       intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);

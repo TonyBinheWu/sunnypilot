@@ -225,3 +225,11 @@ AI conversations use each user's own ChatGPT account and its usage limits. The r
 The microphone invokes Android's default assistant. Gemini can be an invocation target, but Carrot MCP integration is not advertised as supported. Google's current custom-MCP documentation specifies US, English and personal accounts; custom MCP tools in Gemini Live remain unverified. Legacy Google Assistant App Actions require a separate integration and are not implemented here.
 
 Official references: [ChatGPT custom MCP](https://developers.openai.com/plugins/deploy/connect-chatgpt), [Gemini custom apps](https://support.google.com/gemini/answer/17209137), [Gemini Live connected apps](https://support.google.com/gemini/answer/15274899).
+
+## Traditional Chinese direct commands (TW 0.2.13)
+
+The standalone TW app requests Mandarin `zh-TW` recognition on phones configured for Traditional Chinese. Android 12+, an available on-device recognizer and a supported Mandarin language model are required. Update both the APK and this fork's `carrot-wip` device code, then restart the parked device. No ChatGPT registration is required for direct commands.
+
+Examples: `搜尋加速度設定` (search), `把螢幕亮度設為八十` (set a value), `把第一個設為二百四十` (use the current numbered result), `向左變換車道` / `向右換道` (one lane), `巡航速度設為一百公里` (absolute km/h target), `巡航速度降低十公里` (decrease by 10 km/h), `巡航加速` (one existing RES/+ increment), and `停止聆聽`. An explicitly sized increase is not inferred; use an absolute target instead.
+
+Setting writes still require one exact catalog match or a still-visible numbered result, local setting access, bounds validation and verified device readback. Unclear numbers such as `一百二` are rejected; say `一百二十` or `一百零二`. Cruise and lane requests share the existing driving grant, freshness, duplicate and vehicle-condition checks. Missing cruise confidence requires repeating the displayed `確認…` phrase with the same operation and value within six seconds. A bare yes, changed value, expired confirmation, conflicting alternatives, a negation or a question does not authorize movement. Reported cruise targets are setpoints, not measured speed.

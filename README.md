@@ -1,40 +1,93 @@
-# carrotpilot — 繁體中文
+# carrotpilot ｜繁體中文
 
-本分支保留在 **[TonyBinheWu/sunnypilot:carrot-wip](https://github.com/TonyBinheWu/sunnypilot/tree/carrot-wip)**，來源為 [ajouatom/openpilot:carrot-wip](https://github.com/ajouatom/openpilot/tree/carrot-wip)，與 `hkg-enhanced` 分開維護。
+以 openpilot 為基礎的駕駛輔助軟體，搭配 Carrot Web 與 Android CarrotAssist 使用。
 
-[繁體中文手機操作指南](docs/CARROT_MOBILE.zh-TW.md) · [上游使用手冊](https://g4iwnl.gitbook.io/carrotpilot) · [上游 Wiki](https://github.com/ajouatom/openpilot/wiki)
+| 倉庫／來源 | 位置 |
+|---|---|
+| 本分支 | [TonyBinheWu/sunnypilot · carrot-wip](https://github.com/TonyBinheWu/sunnypilot/tree/carrot-wip) |
+| 上游來源 | [ajouatom/openpilot · carrot-wip](https://github.com/ajouatom/openpilot/tree/carrot-wip) |
+| 工作分支 | `carrot-wip` 與本倉庫的 `hkg-enhanced` 分開維護 |
 
-![carrotpilot](https://github.com/user-attachments/assets/4d80d256-7e66-4473-a289-04a50733b7e0)
+[下載與安裝](#下載與安裝) · [中文語音](#繁體中文語音指令) · [介面語言](#繁體中文介面) · [手機功能](#手機操作功能) · [車機安裝](#安裝與發行策略) · [Jetson](#jetson-連接與安裝) · [車輛支援](#車輛支援範圍) · [法律聲明](#法律聲明)
 
-## 下載 CarrotAssist 繁體中文版 APK
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/4d80d256-7e66-4473-a289-04a50733b7e0" alt="carrotpilot" width="640">
+</p>
 
-**[⬇ 直接下載 CarrotAssist 繁體中文版 0.2.12（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.12/CarrotAssist-TW-0.2.12.apk)**
+## 下載與安裝
 
-[發行頁面與驗證資訊](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.12) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.12/SHA256SUMS.txt)
+**[⬇ 下載 CarrotAssist 繁體中文版 0.2.13（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.13/CarrotAssist-TW-0.2.13.apk)**
 
-1. 用 Android 手機開啟上述下載連結，下載完成後點選 APK。
+| 項目 | 說明 |
+|---|---|
+| 版本 | **0.2.13**（版本代碼 20） |
+| 安裝需求 | Android 8.0 以上 |
+| 手機直接語音 | Android 12 以上、可用的裝置端語音辨識服務與國語語音模型 |
+| 套件名稱 | `me.shind0.carrotweb.tw`，手機顯示為 **CarrotAssist 繁中** |
+| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.13) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.13/SHA256SUMS.txt) |
+| 更新來源 | 本倉庫 `TonyBinheWu/sunnypilot` 的繁中發行頻道 |
+
+### 安裝步驟
+
+1. 使用 Android 手機下載上方 APK，完成後點選檔案。
 2. 若 Android 要求，允許目前的瀏覽器或檔案管理員「安裝未知應用程式」，再返回安裝。
 3. 開啟 **CarrotAssist 繁中**。手機系統語言設為繁體中文時，原生介面會顯示繁體中文。
 4. 手機與 comma 連到相同 Wi-Fi／熱點，搜尋裝置或手動輸入 IP。
-5. 車機使用本倉庫的 `carrot-wip`，在網頁「工具 → 語言 → 繁體中文」設定網頁語言。
+5. 更新車機至本倉庫的 `carrot-wip`，停車後完整重新啟動，再於網頁「工具 → 語言 → 繁體中文」選擇網頁語言。
 
-- 可安裝於 **Android 8.0 以上**；手機直接語音另需 **Android 12 以上**與可用的辨識服務及語言模型。
-- 這是獨立套件 `me.shind0.carrotweb.tw`，使用本倉庫專用簽章，可與原版 CarrotAssist 並存，原版資料會保留。新 App 的設定與 ChatGPT 授權獨立，可能需要重新連線。
-- App 更新來源為 `TonyBinheWu/sunnypilot` 的繁中發行頻道。APK 已完成建置、測試及簽章驗證，尚未在實體手機驗證。
-- 中文語音指令語法尚未新增；現有直接語音仍主要支援韓文與英文。iPhone 請使用 [Carrot Web](docs/CARROT_MOBILE.zh-TW.md)。
+**從繁中版 0.2.12 更新：** 使用相同套件與簽章，可直接覆蓋安裝並保留 App 設定，不需先解除安裝。中文語音的新功能需要 App 與車機程式一起更新。
+
+**與上游原版並存：** 繁中版使用獨立套件及專用簽章，可與原版 CarrotAssist 並存，原版資料會保留。新 App 的設定與 ChatGPT 授權獨立，可能需要重新連線。
+
+APK 經建置、測試與簽章驗證；尚未在實體手機或實車驗證。iPhone 請使用 [Carrot Web](docs/CARROT_MOBILE.zh-TW.md)。
+
+## 繁體中文語音指令
+
+0.2.13 新增國語直接語音，不需 ChatGPT 帳號或配對碼。手機為繁體中文語系時會要求 `zh-TW` 辨識，需有可用的裝置端國語語音模型；語音辨識能力依手機與辨識服務而定。
+
+### 開始使用
+
+1. 在 App 上方裝置名稱的選項中啟用「優先在此手機聆聽指令」，並授予麥克風權限。
+2. 修改設定前，在 Carrot Web「工具 → ChatGPT 助手」允許讀取與修改設定值。
+3. 變換車道或調整巡航前，另行允許語音變換車道與設定車速。首次授權須停車並退出駕駛輔助。
+4. 保持 Carrot Web 顯示於前景，點麥克風說出指令。
+
+| 操作 | 語音範例 | 行為 |
+|---|---|---|
+| 搜尋設定 | 「搜尋加速度設定」、「搜尋螢幕亮度」 | 開啟並顯示符合的設定 |
+| 修改設定 | 「把螢幕亮度設為八十」 | 驗證設定名稱、範圍及權限後修改，並回讀結果 |
+| 修改搜尋結果 | 「把第一個設為二百四十」 | 操作目前畫面上的第 1 個結果，回覆實際設定名稱 |
+| 變換車道 | 「向左變換車道」、「請往右換一個車道」 | 請求變換一個車道，保留既有車輛條件檢查 |
+| 指定巡航速度 | 「巡航速度設為一百公里」、「把定速速度調到100」 | 設定巡航目標，單位為 km/h |
+| 降低巡航速度 | 「巡航速度降低十公里」、「定速減速」 | 前者減少 10 km/h；未指定數字時沿用減少 10 km/h |
+| 提高巡航速度 | 「巡航加速」 | 相當於既有 RES/+ 一次；若要指定增幅，請改說絕對目標速度 |
+| 停止聆聽 | 「停止聆聽」 | 結束本次手機聆聽 |
+
+### 辨識與執行條件
+
+- 支援阿拉伯數字、全形數字、國語數字與逐字讀數。`一百二` 有歧義，請說 `一百二十` 或 `一百零二`。
+- 設定修改限裝置允許的整數值，仍受範圍、生效時機、受限設定及權限檢查約束；模糊名稱不會被猜成某個參數。
+- 缺少巡航指令的可信度分數時，App 會要求覆誦同動作、同數值的「確認…」句子，例如「確認巡航速度設為100公里」。提示播完後六秒內有效，不能只說「是」。
+- 否定句、問句、複合駕駛指令、候選衝突、過期或不相符的確認不會送出駕駛請求；離開畫面或其他指令會使待確認狀態失效。
+- 車道變換仍受輔助狀態、車速、車道、盲點、轉向扭矩及駕駛優先權限制。車速操作要求已啟用且受支援的 openpilot 縱向控制，不會自行啟用輔助。
+- 巡航回覆是**設定速度**，不是實際車速；「已收到請求」與「已套用」分開回覆。不確定結果不會自動重試執行。
+- 語音有辨識與處理延遲，不能當作緊急控制介面。既有韓文、英文的設定與車道指令保留；新增巡航句型列於上表。
+
+詳細限制見 [繁體中文手機操作指南](docs/CARROT_MOBILE.zh-TW.md)；語音服務需求見 [Android 官方文件](https://developer.android.com/reference/android/speech/SpeechRecognizer)。
 
 ## 繁體中文介面
 
-- **裝置介面**：既有「中文（繁體）」（`zh-CHT`），本次補齊原翻譯檔中未完成的訊息。
-- **Carrot Web 手機網頁**：新增獨立「繁體中文」（`zh-tw`），涵蓋選單、對話框、操作狀態、首次使用引導，以及設定名稱、摘要、分類與選項。
-- **Android CarrotAssist**：原生介面新增繁中，依手機繁體語系顯示；可從上方連結下載已簽章的 APK。
-- **選擇方式**：手機網頁「工具 → 語言 → 繁體中文」。裝置介面語言需在裝置設定另行選擇，依提示重新啟動。
-- **自動偵測**：辨識 `zh-TW`、`zh-Hant`、`zh-HK`、`zh-MO` 與裝置繁中設定；已儲存語言優先，舊使用者請手動切換一次。
-- **外部內容**：上游 Wiki 詳細文章及第三方服務依其提供語言顯示。新增繁中介面不代表新增中文語音指令辨識或繁中提示音檔。
+| 介面 | 支援內容與選擇方式 |
+|---|---|
+| 裝置主介面 | 既有「中文（繁體）」（`zh-CHT`），已補齊原翻譯檔中未完成的訊息；在裝置設定選擇，依提示重新啟動 |
+| Carrot Web | 獨立「繁體中文」（`zh-tw`），涵蓋選單、對話框、操作狀態、首次引導、設定名稱、摘要、分類與選項；選「工具 → 語言 → 繁體中文」 |
+| Android CarrotAssist | 原生繁中介面，依手機繁體語系顯示；APK 從本頁下載 |
+| 自動偵測 | 辨識 `zh-TW`、`zh-Hant`、`zh-HK`、`zh-MO` 及裝置繁中設定；已儲存語言優先，舊使用者請手動切換一次 |
+| 外部內容 | 上游 Wiki 詳細文章及第三方服務依其提供語言顯示；車機提示音檔不因介面翻譯而新增繁中版本 |
 
-## 手機操作
+## 手機操作功能
 
-將手機與 comma 連至相同 Wi-Fi／熱點，掃描裝置白色胡蘿蔔圖示的 QR Code，或開啟 `http://裝置IP:7000`。
+手機與 comma 連至相同 Wi-Fi／熱點，掃描裝置白色胡蘿蔔圖示的 QR Code，或開啟 `http://裝置IP:7000`。
 
 | 類別 | 可操作內容 |
 |---|---|
@@ -45,16 +98,15 @@
 | 維護 | 終端機、診斷記錄、遠端支援、eGPU／Jetson 與外部模型狀態 |
 | Android CarrotAssist | 尋找裝置、手機直接語音、另行授權的 ChatGPT 設定與駕駛指令 |
 
-完整操作項目與限制見 [手機操作指南](docs/CARROT_MOBILE.zh-TW.md)。網頁、設定及維護操作請先安全停車。語音駕駛指令保留既有權限、車輛條件與駕駛優先權限制。
+完整操作項目與限制見 [手機操作指南](docs/CARROT_MOBILE.zh-TW.md)。網頁、設定及維護操作請先安全停車；語音操作保留既有權限、車輛條件與駕駛優先權限制。
 
-## 專案與原始說明
+## 專案簡介
 
-
-carrotpilot 是一個基於 [openpilot](https://github.com/commaai/openpilot) 的獨立駕駛輔助軟體專案，主要面向Hyundai（現代）·Kia（起亞）·Genesis 車輛的相容性、縱向控制品質和真實駕駛體驗進行開發與改進。
+carrotpilot 是一個基於 [openpilot](https://github.com/commaai/openpilot) 的獨立駕駛輔助軟體專案，主要面向 Hyundai（現代）·Kia（起亞）·Genesis 車輛的相容性、縱向控制品質和真實駕駛體驗進行開發與改進。
 
 carrotpilot 不是由 comma.ai 開發、審查、批准或正式支援的 openpilot 發行版。它包含與上游 openpilot 不同的車輛控制、安全策略和 Driver Monitoring 邏輯，因此不能假設這兩個專案在行為和支援要求上完全相同。
 
-### 安裝與發行策略
+## 安裝與發行策略
 
 在重置裝置後，在安裝地址輸入框中使用以下地址：
 
@@ -68,8 +120,7 @@ i.carrotpilot.app/carrot-wip
 
 公開的預構建 `carrot` 分支也存在，但沒有積極維護，因此當前推薦的釋出分支是 `carrot-wip`。
 
-
-### Jetson 連接與安裝
+## Jetson 連接與安裝
 
 原始韓文說明記載：2026-09-27 整合後，`carrot-wip` 已包含 Jetson 推論連線、USB 導航影像與儀表、Wi-Fi 資訊傳遞、IP／溫度／錯誤顯示及簽章更新，不需另裝 `carrot-jetlink` 分支。既有 eGPU 的 Cinque v3 與 Jetson 的獨立 Cinque v2 各自保留。
 
@@ -77,25 +128,25 @@ i.carrotpilot.app/carrot-wip
 
 M.2 NVMe SSD 提供相同映像加 **03 共用修補**的實驗路徑，見 [microSD／NVMe 共用修補說明](https://github.com/ajouatom/carrot-jetson/blob/main/docs/jetson_sd_nvme_patch.md)。原始文件註明修補媒體實際開機及 PC 離線修補卡首次實機啟動仍待驗證，見 [整合與驗證範圍](docs/jetson_wip_integration_20260927.md)。
 
-### 支援裝置
+## 支援裝置
 
 - comma three (C3)
 - comma 3X (C3X)
 - comma four (C4)
 
-部分非原廠或克隆裝置也提供有限相容性，但其硬體配置和品質並不一致。特別是部分裝置沒有可用的駕駛前向攝影機，或者其攝影機支援不正常。這些配置不推薦使用，也不保證裝置相容性或 Driver Monitoring 行為。
+部分非原廠或克隆裝置也提供有限相容性，但其硬體配置和品質並不一致。特別是部分裝置沒有可用的朝向駕駛的攝影機，或者其攝影機支援不正常。這些配置不推薦使用，也不保證裝置相容性或 Driver Monitoring 行為。
 
 “實驗性”或“有限相容”標籤僅用於描述技術成熟度和驗證範圍，並不免除法律要求、安全標準或使用者責任。
 
-### 車輛支援範圍
+## 車輛支援範圍
 
-carrotpilot 的開發和真實反饋主要聚焦Hyundai（現代）·Kia（起亞）·Genesis（HKG）車輛。
+carrotpilot 的開發和實際回饋主要聚焦 Hyundai（現代）·Kia（起亞）·Genesis（HKG）車輛。
 
-倉庫中也包含從 upstream openpilot 繼承來的其他製造商車輛程式碼和支援列表，但這並不意味著這些車輛都已被 carrotpilot 單獨驗證或被積極支援。沒有使用者反饋的製造商和車型無法保證其可用性和品質。
+倉庫中也包含從 upstream openpilot 繼承來的其他製造商車輛程式碼和支援列表，但這並不意味著這些車輛都已被 carrotpilot 單獨驗證或被積極支援。沒有使用者回饋的製造商和車型無法保證其可用性和品質。
 
 在安裝前，請先查閱 [使用說明書](https://g4iwnl.gitbook.io/carrotpilot) 和 [Wiki](https://github.com/ajouatom/openpilot/wiki)，確認車輛相容性、所需線束和已知限制。
 
-### Hyundai（現代）·Kia（起亞）·Genesis 線束與縱向控制
+## Hyundai（現代）·Kia（起亞）·Genesis 線束與縱向控制
 
 | 車輛配置 | 常見連線與控制方式 |
 |---|---|
@@ -107,27 +158,27 @@ carrotpilot 的開發和真實反饋主要聚焦Hyundai（現代）·Kia（起�
 
 並非所有車輛和車型年都受支援。即使車名相同，線束、連線位置和縱向控制相容性也可能因平臺、ECU、攝影機和 ADAS 配置而不同，因此請務必確認車輛具體支援資訊。
 
-### 與 upstream openpilot 的差異
+## 與 upstream openpilot 的差異
 
-#### Vehicle safety 與 CAN 策略
+### 車輛安全與 CAN 策略
 
 carrotpilot 會在部分安全策略和 CAN 接受條件上與 upstream openpilot 不同。這些調整考慮了受支援車輛上已確認的 CAN 訊息週期、計數器、控制方式以及車輛故障案例。倉庫中包含針對特定訊息或時序條件進行調優的程式碼，旨在避免干擾車輛正常控制流程。
 
 這意味著 carrotpilot 與 comma.ai 官方 safety model 並不完全一致，也不能保證它在所有車輛和場景下都更安全，或滿足特定的功能安全標準。安全相關修改應基於記錄、可重現案例和本倉庫中的測試來評估。
 
-#### Driver Monitoring
+### 駕駛監控（Driver Monitoring）
 
 carrotpilot 會調整 Driver Monitoring 行為，以減少當駕駛確實在看前方時仍反覆觸發告警的問題。
 
-Driver Monitoring 預設開啟。但在一些無法使用駕駛前向攝影機的硬體上（包括部分非原廠裝置），也提供關閉選項。關閉後，將無法使用基於攝影機的駕駛狀態檢測，以及相關的告警和減速功能，因此不推薦使用此配置。無論 Driver Monitoring 是否啟用，駕駛都應始終注視道路，並準備好隨時接管車輛控制。
+Driver Monitoring 預設開啟。但在一些無法使用朝向駕駛的攝影機的硬體上（包括部分非原廠裝置），也提供關閉選項。關閉後，將無法使用基於攝影機的駕駛狀態檢測，以及相關的告警和減速功能，因此不推薦使用此配置。無論 Driver Monitoring 是否啟用，駕駛都應始終注視道路，並準備好隨時接管車輛控制。
 
-### 開發與驗證範圍
+## 開發與驗證範圍
 
 本倉庫包含從 openpilot 繼承來的測試，以及 carrotpilot 自有的車輛控制、設定和安全相關測試。但這並不等同於 comma.ai 的官方釋出驗證或內部 HIL（硬體迴路測試）體系，也不意味著所有車輛、線束和裝置組合都已完成驗證。
 
 `carrot-wip` 會根據實際使用回饋持續更新。對於文件中未說明的配置或沒有回饋的車輛，應視為未驗證狀態。
 
-### 法律聲明
+## 法律聲明
 
 在車輛中安裝或修改軟體，可能會受到司法管轄區和車輛配置相關法律、汽車安全要求、檢查規定及保險條款的約束。
 
@@ -135,14 +186,14 @@ Driver Monitoring 預設開啟。但在一些無法使用駕駛前向攝影機�
 
 carrotpilot 是一個正在開發中的駕駛輔助軟體，而不是經認證的車輛零件或自動駕駛產品。本倉庫不對特定場景下的車輛適配性、法律合規性或安全性做出擔保。使用者應自行確認適用法律法規，並對自身裝置、安裝、設定和使用承擔責任。本聲明不構成法律意見。
 
-### 文件
+## 文件
 
 - [CarrotPilot 使用說明書](https://g4iwnl.gitbook.io/carrotpilot)
 - [CarrotPilot Wiki](https://github.com/ajouatom/openpilot/wiki)
 
 carrotpilot 的官方公開說明主要以上述使用說明書和 Wiki 為主。請先查閱這些文件，確認車輛要求和設定說明。
 
-### 署名與授權條款
+## 署名與授權條款
 
 carrotpilot 基於 comma.ai 和 openpilot 貢獻者開發的 [openpilot](https://github.com/commaai/openpilot)。openpilot 以 MIT License 釋出，部分元件可能適用其他授權條款。詳細資訊請檢視 [LICENSE](LICENSE) 和各元件的授權條款聲明。
 

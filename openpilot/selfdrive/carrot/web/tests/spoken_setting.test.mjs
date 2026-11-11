@@ -18,6 +18,26 @@ test('spoken writes require one exact catalog match', () => {
   assert.equal(resolveSpokenSetting([{ name: 'A', title: '밝기' }, { name: 'B', title: '밝기' }], '밝기'), null);
 });
 
+test('Traditional and recognition-produced Simplified names resolve exactly and retain ambiguity checks', () => {
+  for (const name of ['加速度設定零', '加速度設定0', '加速度设置0'])
+    assert.equal(resolveSpokenSetting(params, name)?.name, target);
+  assert.equal(resolveSpokenSetting(params, '螢幕亮度')?.name, 'ShowCustomBrightness');
+  assert.equal(resolveSpokenSetting(params, '加速度設定'), null);
+  assert.equal(resolveSpokenSetting([{ name: 'A', ttitle: '亮度' }, { name: 'B', ttitle: '亮度' }], '亮度'), null);
+});
+
+test('Chinese named and ordinal writes retain prepare/commit checks and speak the Traditional title', async () => {
+  const h = fixture();
+  const result = await assignSpokenSetting('加速度設定零', 240, id, Date.now() + 5000, h.deps);
+  assert.equal(result.status, 'applied');
+  assert.equal(h.calls[0].name, target);
+  const ordinal = fixture();
+  const selected = await assignSpokenSetting(target, 240, id, Date.now() + 5000,
+    { ...ordinal.deps, language: 'zh-tw', selected: () => target });
+  assert.equal(selected.label, '加速度設定 0');
+  assert.equal(selected.current, 240);
+});
+
 function fixture(mode) {
   let token = 'local', shown = null;
   const calls = [];

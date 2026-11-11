@@ -48,7 +48,7 @@ window.CarrotTranslations.register("ko", {
     assistant_account_connected: "계정 연결됨 · 새 음성 대화에서도 사용 가능",
     assistant_help: "계정 연결 후 설정 검색·설명·화면 열기를 사용할 수 있습니다. 설정값 조회·변경은 아래 기기 허용과 ChatGPT 연결 승인을 추가해야 합니다.",
     assistant_install: "ChatGPT 앱 설치 · Google Play",
-    assistant_voice_help: "폰 직접 음성은 ChatGPT 가입이나 연결 코드 없이 사용할 수 있습니다. CarrotAssist 상단 기기 이름에서 ‘폰에서 음성 명령 먼저 듣기’를 켜고 마이크를 누르세요. “가속도 설정을 찾아줘”로 검색하고, 아래 설정 권한을 허용하면 “가속도 설정 0을 240으로 바꿔줘”로 변경할 수 있습니다.",
+    assistant_voice_help: "휴대폰 직접 음성은 한국어, 영어와 중국어 명령을 지원합니다. 중국어는 CarrotAssist TW 0.2.13, 해당 장치 코드와 사용 가능한 zh-TW 기기 내 음성 모델이 필요합니다. ChatGPT 계정이나 연결 코드 없이 기기 이름 아래에서 폰 직접 듣기를 켜고 마이크를 누르세요.",
     assistant_disconnect: "연결 해제",
     assistant_connected: "연결됨 · 설정 화면 열기만 허용",
     assistant_waiting: "ChatGPT 연결 대기 중",
