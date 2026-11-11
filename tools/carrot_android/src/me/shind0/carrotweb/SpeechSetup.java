@@ -52,7 +52,11 @@ final class SpeechSetup {
     permission = button(box, "授予麥克風權限", () -> {
       if (!showing() || paused || activity.isFinishing()) return;
       cancelWork();
-      activity.requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST);
+      try { activity.requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSION_REQUEST); }
+      catch (RuntimeException error) {
+        state = SpeechModelPolicy.State.PERMISSION;
+        detail = "系統無法顯示權限請求，請使用『開啟 App 權限設定』，或手動開啟手機設定。"; render();
+      }
     });
     button(box, "開啟 App 權限設定", () -> settings(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + activity.getPackageName()))));
     button(box, "開啟語音輸入設定", () -> settings(new Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)));
@@ -141,7 +145,12 @@ final class SpeechSetup {
     try { activity.startActivity(intent); }
     catch (ActivityNotFoundException | SecurityException error) {
       try { activity.startActivity(new Intent(Settings.ACTION_SETTINGS)); }
-      catch (ActivityNotFoundException | SecurityException unavailable) { Toast.makeText(activity, "此手機未提供設定入口，請手動開啟系統設定。", Toast.LENGTH_LONG).show(); }
+      catch (ActivityNotFoundException | SecurityException unavailable) {
+        state = SpeechModelPolicy.State.UNKNOWN;
+        detail = "此手機無法從 App 開啟設定入口，請手動開啟手機設定並依下方步驟操作。";
+        render();
+        Toast.makeText(activity, detail, Toast.LENGTH_LONG).show();
+      }
     }
   }
   void permissionResult() { if (showing()) check(); }
