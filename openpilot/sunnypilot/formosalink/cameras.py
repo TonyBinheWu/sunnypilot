@@ -1,4 +1,5 @@
-"""Owner-requested, low-rate previews from existing camera IPC; no control writes."""
+"""Owner-requested live streams from existing camera IPC; no control writes."""
+import base64
 import json
 import logging
 import os
@@ -7,6 +8,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import uuid
 
 from openpilot.sunnypilot.formosalink.identity import read
 from openpilot.sunnypilot.formosalink.protocol import sign
@@ -62,12 +64,17 @@ def encode_nv12(frame):
 
 
 class NativeCamera:
-  def __init__(self, camera, name="camerad"):
+  def __init__(self, camera, name="camerad", encoder=encode_nv12):
     from msgq.visionipc import VisionIpcClient
     from openpilot.cereal.visionipc import VisionStreamType
     stream = VisionStreamType.VISION_STREAM_WIDE_ROAD if camera == "wide-road" else VisionStreamType.VISION_STREAM_CABIN
     self._client_args = (name, stream, True)
     self.client = VisionIpcClient(*self._client_args)
+    self.encoder = encoder
+
+  def close(self):
+    if hasattr(self.encoder, 'close'):
+      self.encoder.close()
 
   def __call__(self):
     if not self.client.is_connected() and not self.client.connect(False):
@@ -79,15 +86,55 @@ class NativeCamera:
       from msgq.visionipc import VisionIpcClient
       self.client = VisionIpcClient(*self._client_args)
       raise ValueError("camera frame unavailable")
-    data = encode_nv12(frame)
+    data = self.encoder(frame)
     return data, time.time()-(time.monotonic()-captured), {"speed_kph":None, "engaged":None}
+
+
+def stream_camera(identity, private, camera, stop):
+  import websocket
+  from openpilot.sunnypilot.formosalink.stream_encoder import StreamEncoder
+  from openpilot.sunnypilot.formosalink.media_protocol import jpeg_size, validate_frame
+  source = NativeCamera(camera, encoder=StreamEncoder())
+  url = identity['origin'].replace('https://', 'wss://', 1).replace('http://', 'ws://', 1)+'/api/v1/agent/media/stream'
+  try:
+    while not stop.is_set():
+      try:
+        # TLS certificate checks stay enabled. The signed handshake never enters a URL.
+        with websocket.create_connection(url, timeout=2, suppress_origin=True) as socket:
+          socket.send(json.dumps(sign(private, identity['device_id'], 'media-stream', {'camera':camera})))
+          ready = json.loads(socket.recv())
+          if ready != {'type':'ready', 'fps':8, 'transport':'wss-mjpeg-v1'}:
+            raise ValueError('invalid stream acknowledgement')
+          stream, sequence = str(uuid.uuid4()), 0
+          while not stop.is_set():
+            started = time.monotonic()
+            data, sampled, hud = source()
+            width, height = jpeg_size(data)
+            frame = validate_frame({'version':1, 'stream':stream, 'sequence':sequence, 'sampled_at':sampled,
+              'source':camera, 'width':width, 'height':height, 'jpeg':base64.b64encode(data).decode('ascii'), 'hud':hud})
+            socket.send(json.dumps(frame, separators=(',', ':')))
+            reply = socket.recv()
+            if len(reply) > 2048 or json.loads(reply) != {'type':'ack', 'sequence':sequence}:
+              raise ValueError('invalid frame acknowledgement')
+            sequence += 1
+            stop.wait(max(0, .125-(time.monotonic()-started)))
+      except Exception as exc:
+        logging.getLogger('formosalink-cameras').debug('Camera stream unavailable (%s)', type(exc).__name__)
+        source.close()
+        stop.wait(2)
+  finally:
+    source.close()
 
 
 def run(directory, stop):
   import requests
-  from openpilot.sunnypilot.formosalink.media_agent import PreviewPublisher
-  publishers, current_id = {}, None
-  log = logging.getLogger("formosalink-cameras")
+  workers, current_id = {}, None
+
+  def retire(camera):
+    event, thread = workers.pop(camera)
+    event.set()
+    thread.join(timeout=5)
+
   with requests.Session() as session:
     while not stop.is_set():
       try:
@@ -102,25 +149,32 @@ def run(directory, stop):
           raise ValueError("invalid camera request")
         save_lease(demand["cameras"], demand["seconds"])
         if current_id != identity["device_id"]:
-          publishers.clear()
+          for camera in list(workers):
+            retire(camera)
           current_id = identity["device_id"]
-        publishers = {key:value for key,value in publishers.items() if key in demand["cameras"]}
+        for camera in set(workers)-set(demand['cameras']):
+          retire(camera)
         for camera in demand["cameras"]:
           if stop.is_set():
             break
-          try:
-            if camera not in publishers:
-              publishers[camera] = PreviewPublisher(identity,private,NativeCamera(camera),camera=camera)
-            publishers[camera].once(session)
-          except Exception as exc:
-            log.debug("Camera preview unavailable (%s)", type(exc).__name__)
+          if camera in workers and not workers[camera][1].is_alive():
+            retire(camera)
+          if camera not in workers:
+            event = threading.Event()
+            thread = threading.Thread(target=stream_camera, args=(identity, private, camera, event), daemon=True,
+                                      name='formosalink-stream-'+camera)
+            workers[camera] = event, thread
+            thread.start()
       except Exception:
-        publishers.clear()
+        for camera in list(workers):
+          retire(camera)
         try:
           save_lease([])
         except OSError:
           pass
       stop.wait(2)
+    for camera in list(workers):
+      retire(camera)
     save_lease([])
 
 

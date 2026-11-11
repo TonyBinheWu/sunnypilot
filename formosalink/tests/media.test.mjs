@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {recordingMime,validPreview,mediaCursor,clipLimit} from '../web/media-view.js';
+import {recordingMime,validPreview,mediaCursor,clipLimit,streamUrl} from '../web/media-view.js';
+test('stream uses same self-hosted HTTPS authority, LAN addresses and supported cameras only',()=>{
+ assert.equal(streamUrl('https://formosapilot.dinglu-t.com','abc','driver'),'wss://formosapilot.dinglu-t.com/api/v1/devices/abc/media/stream?camera=driver');
+ assert.equal(streamUrl('https://link.home','abc','wide-road'),'wss://link.home/api/v1/devices/abc/media/stream?camera=wide-road');
+ assert.throws(()=>streamUrl('https://link.home','abc','other'));
+});
 test('media chooses only browser-supported recording types',()=>{
  assert.equal(recordingMime(undefined),null);
  assert.equal(recordingMime({isTypeSupported:type=>type==='video/mp4'}),'video/mp4');

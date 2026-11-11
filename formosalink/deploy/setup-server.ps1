@@ -64,6 +64,23 @@ if ($LASTEXITCODE -ne 0 -or [version]$version -lt [version]'3.12' -or [version]$
 if ($CheckOnly) { [pscustomobject]@{ Host=$env:COMPUTERNAME; Python=$basePython; Version=$version; Source=$source; State=$dataRoot; Origin=$Origin }; return }
 $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw $text.admin }
+# WebSocket upgrades share the existing HTTPS/443 ARR route; no public Python port.
+# Install before stopping the current task so a missing Windows feature cannot cause downtime.
+if (Get-Command Get-WindowsFeature -ErrorAction SilentlyContinue) {
+  $webSocketFeature = Get-WindowsFeature -Name Web-WebSockets
+  if (-not $webSocketFeature.Installed) {
+    $featureResult = Install-WindowsFeature -Name Web-WebSockets
+    if (-not $featureResult.Success) { throw 'IIS WebSocket installation failed; existing backend was not stopped.' }
+    if ($featureResult.RestartNeeded -eq 'Yes') { throw 'IIS WebSocket requires a host restart. Restart Windows, then rerun this script; existing backend was not stopped.' }
+  }
+}
+else {
+  $webSocketFeature = Get-WindowsOptionalFeature -Online -FeatureName IIS-WebSockets
+  if ($webSocketFeature.State -ne 'Enabled') {
+    $featureResult = Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebSockets -All -NoRestart
+    if ($featureResult.RestartNeeded) { throw 'IIS WebSocket requires a host restart. Restart Windows, then rerun this script; existing backend was not stopped.' }
+  }
+}
 $taskName = 'FormosaLink'
 $description = 'FormosaLink managed Python backend'
 $existing = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
@@ -210,7 +227,7 @@ $hostHeader = ([Uri]$Origin).Authority
 for ($attempt=0; $attempt -lt 20; $attempt++) {
   try {
     $health = Invoke-RestMethod -Uri 'http://127.0.0.1:8765/api/v1/health' -Headers @{Host=$hostHeader} -TimeoutSec 2
-    if ($health.service -eq 'FormosaLink' -and $health.features -contains 'native-camera-preview-v1' -and $health.database_version -eq 3) { Write-Output $text.ready; return }
+    if ($health.service -eq 'FormosaLink' -and $health.features -contains 'live-camera-stream-v1' -and $health.database_version -eq 3) { Write-Output $text.ready; return }
   } catch { }
   Start-Sleep -Seconds 1
 }

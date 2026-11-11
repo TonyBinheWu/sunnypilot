@@ -68,7 +68,7 @@ def create_app(data_dir, web_dir=None):
   store = Store(directory / "formosalink.sqlite3")
   github = oauth.settings(directory)
   callback = config["origin"] + "/api/v1/auth/github/callback"
-  app = FastAPI(title="FormosaLink", version="0.7.0", docs_url=None, redoc_url=None, openapi_url=None)
+  app = FastAPI(title="FormosaLink", version="0.8.0", docs_url=None, redoc_url=None, openapi_url=None)
   app.state.store = store
   limiter = Limit()
   connections = {}
@@ -113,14 +113,14 @@ def create_app(data_dir, web_dir=None):
     response.headers["Cache-Control"] = "no-store" if request.url.path.startswith("/api/") else "no-cache"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "no-referrer"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    response.headers["Content-Security-Policy"] = f"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' {config['origin'].replace('https://', 'wss://').replace('http://', 'ws://')}; img-src 'self' data:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
     if secure:
       response.headers["Strict-Transport-Security"] = "max-age=31536000"
     return response
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1"], "database_version": 3}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1", "live-camera-stream-v1"], "database_version": 3}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):
@@ -382,6 +382,8 @@ def create_app(data_dir, web_dir=None):
 
   from formosalink.server.media import register as register_media
   register_media(app, store, owner, rate)
+  from formosalink.server.streaming import register as register_streaming
+  register_streaming(app, store, owner, rate, config['origin'], app.state.media)
   web = Path(web_dir) if web_dir else Path(__file__).resolve().parents[1] / "web"
   if web.is_dir():
     app.mount("/", StaticFiles(directory=web, html=True), name="web")

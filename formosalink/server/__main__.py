@@ -25,7 +25,8 @@ def main():
       if logger.get("handlers"):
         logger["handlers"] = ["file"]
   uvicorn.run(create_app(args.data_dir), host="127.0.0.1", port=args.port, workers=1,
-              access_log=False, proxy_headers=False, ws_max_size=16384, ws_max_queue=4, log_config=log_config)
+              access_log=False, proxy_headers=False, ws_max_size=262144, ws_max_queue=1,
+              ws_per_message_deflate=False, log_config=log_config)
 
 
 if __name__ == "__main__":
