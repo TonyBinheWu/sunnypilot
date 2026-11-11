@@ -9,9 +9,10 @@ from openpilot.sunnypilot.formosalink.settings import LOCAL_ONLY, catalog, nativ
 
 class SettingsProvider:
   """Injected I/O permits testing the same apply path without native device access."""
-  def __init__(self, params, schema, capabilities, guard, info=lambda: {}, translate=None):
+  def __init__(self, params, schema, capabilities, guard, info=lambda: {}, translate=None, navigation=False):
     self.params, self.schema, self.capabilities, self.guard, self.info = params, schema, capabilities, guard, info
     self.translate = translate
+    self.navigation = navigation
     self.session = str(uuid.uuid4())
     self._offroad = False
 
@@ -53,6 +54,10 @@ class SettingsProvider:
         raise
     entries = catalog(self.schema, values, types, self.capabilities(), offroad,
                       **({"translate":self.translate} if self.translate else {}))
+    if self.navigation:
+      from openpilot.sunnypilot.formosalink.navigation import entry,encode
+      values["NavDestination"]=encode(self.params.get("NavDestination")) if self.allowed() else ""
+      entries.append(entry(bool(offroad and self.allowed() and self.params.get_bool("NavigationEnabled"))))
     published = {item["key"]:values[item["key"]] for item in entries}
     catalog_hash = revision(entries)
     return {"version":1,"session":self.session,"sampled_at":time.time(),"offroad":offroad,
@@ -95,12 +100,17 @@ class SettingsProvider:
       if time.monotonic() >= deadline:
         raise ValueError("expired")
       current = self.params.get(command["key"], return_default=True)
+      if command["key"]=="NavDestination":
+        from openpilot.sunnypilot.formosalink.navigation import encode
+        current=encode(current)
       if current is None:
         current = {"BOOL":False,"INT":0,"FLOAT":0.0,"STRING":""}[entry["type"]]
       if current != state["values"][command["key"]]:
         raise ValueError("conflict")
-      self.params.put(command["key"], value, block=True)
-      if self.params.get(command["key"], return_default=True) != value:
+      from openpilot.sunnypilot.formosalink.navigation import destination,encode
+      self.params.put(command["key"], destination(value) if command["key"]=="NavDestination" else value, block=True)
+      readback=self.params.get(command["key"], return_default=True)
+      if (encode(readback) if command["key"]=="NavDestination" else readback) != value:
         raise ValueError("write_failed")
       receipt.update(status="applied", reason="applied")
       self.params.put("FormosaLinkSettingsVersion", str(uuid.uuid4()), block=True)
@@ -124,11 +134,11 @@ class NativeSettingsProvider(SettingsProvider):
     from openpilot.sunnypilot.sunnylink.capabilities import generate_capabilities
     from openpilot.sunnypilot.sunnylink.tools.generate_settings_schema import generate_schema
     from openpilot.sunnypilot.formosalink.device_info import DeviceInformation, NativeTranslations
-    self.sm = messaging.SubMaster(["deviceState", "pandaStates"])
+    self.sm = messaging.SubMaster(["deviceState", "pandaStates", "carState", "chestnutGpuState"])
     params = Params()
     information = DeviceInformation(self.sm, params)
     super().__init__(params, generate_schema(), lambda: generate_capabilities(params), self.parked,
-                     information.capture, NativeTranslations())
+                     information.capture, NativeTranslations(), navigation=True)
 
   def parked(self):
     from openpilot.sunnypilot.formosalink.telemetry import source_valid

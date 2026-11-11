@@ -118,6 +118,9 @@ def catalog(schema, values, types, capabilities, offroad, translate=lambda text:
 def validate_setting(entry, value):
   if not entry.get("enabled") or entry.get("key") in LOCAL_ONLY:
     raise ValueError("setting_unavailable")
+  if entry.get("key")=="NavDestination":
+    from openpilot.sunnypilot.formosalink.navigation import destination,encode
+    return encode(destination(value))
   kind = entry["type"]
   if kind == "BOOL":
     if type(value) is not bool:

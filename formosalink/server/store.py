@@ -200,8 +200,15 @@ class Store:
 
   def devices(self, user_id="local-admin"):
     with self.connection() as db:
-      rows = db.execute("SELECT id,name,fingerprint,state,last_seen,snapshot FROM devices WHERE state!='pending' AND owner_id=? ORDER BY created_at", (user_id,)).fetchall()
-      return [{**dict(row), "snapshot": json.loads(row["snapshot"]) if row["snapshot"] else None} for row in rows]
+      rows = db.execute("SELECT d.id,d.name,d.fingerprint,d.state,d.last_seen,d.snapshot,m.received_at AS health_received_at,m.snapshot AS management FROM devices d LEFT JOIN device_management m ON m.device_id=d.id WHERE d.state!='pending' AND d.owner_id=? ORDER BY d.created_at", (user_id,)).fetchall()
+      result=[]
+      for row in rows:
+        value=dict(row);management=json.loads(value.pop("management")) if row["management"] else None
+        value["snapshot"]=json.loads(row["snapshot"]) if row["snapshot"] else None
+        value["health"]=management["info"] if management else None
+        value["health_fresh"]=bool(row["health_received_at"] and time.time()-row["health_received_at"]<=10)
+        result.append(value)
+      return result
 
   def session(self, user_id="local-admin"):
     token = secrets.token_urlsafe(32)

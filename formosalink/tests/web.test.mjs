@@ -60,3 +60,17 @@ test('device workspace routes and category search preserve native identities',()
  assert.deepEqual(filterEntries(entries,'display','unavailable'),[]);
  for(const lang of ['zh-TW','en','ja'])for(const section of sections){assert.ok(translations[lang]['section_'+section]);assert.ok(translations[lang]['sectionDesc_'+section]);}
 });
+import {healthValue} from '../web/health-ui.js';
+import {themePreference} from '../web/theme.js';
+test('health and theme keep unknown readings distinct from real zero',()=>{
+ assert.equal(healthValue(0,' %'),'0 %');assert.equal(healthValue(null,' %'),'—');assert.equal(healthValue(NaN),'—');
+ assert.equal(themePreference({getItem:()=> 'dark'}),'dark');assert.equal(themePreference({getItem:()=> 'invalid'}),'system');assert.equal(themePreference({getItem:()=>{throw Error();}}),'system');
+ assert.equal(parseRoute('#device=a&tab=maps').section,'navigation');
+});
+import {parseCoordinates} from '../web/navigation-input.js';
+test('navigation accepts explicit coordinates without opening external URLs',()=>{
+ assert.deepEqual(parseCoordinates('25.03,121.56'),{latitude:25.03,longitude:121.56});
+ assert.deepEqual(parseCoordinates('https://www.google.com/maps/@25.03,121.56,15z'),{latitude:25.03,longitude:121.56});
+ assert.deepEqual(parseCoordinates('https://www.openstreetmap.org/#map=16/25.03/121.56'),{latitude:25.03,longitude:121.56});
+ assert.equal(parseCoordinates('https://maps.app.goo.gl/short'),null);assert.equal(parseCoordinates('91,181'),null);assert.equal(parseCoordinates('javascript:alert(1)'),null);
+});

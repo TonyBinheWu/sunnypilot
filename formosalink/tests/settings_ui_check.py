@@ -47,6 +47,18 @@ class TestSettingsProfile(unittest.TestCase):
       self.assertTrue(params.get_bool("QuietMode"))
       self.assertTrue(params.get("FormosaLinkSettingsVersion"))
 
+  def test_navigation_native_json_readback(self):
+    from openpilot.sunnypilot.formosalink.navigation import encode
+    with tempfile.TemporaryDirectory() as directory:
+      params=Params(directory)
+      for key in ("FormosaLinkEnabled","FormosaLinkRemoteSettings","NavigationEnabled"):
+        params.put_bool(key,True,block=True)
+      source=SettingsProvider(params,{"panels":[]},lambda:{},lambda:True,navigation=True)
+      cmd=command(source.capture(),"00000000-0000-0000-0000-000000000001")
+      cmd.update(key="NavDestination",value=encode({"latitude":25.03,"longitude":121.56,"place_name":"DEMO"}))
+      self.assertEqual(source.apply(cmd,cmd["device_id"],time.monotonic()+5)["status"],"applied")
+      self.assertEqual(params.get("NavDestination")["latitude"],25.03)
+
   def test_cached_native_controls_refresh_without_writing(self):
     from openpilot.system.ui.sunnypilot.widgets.toggle import ToggleSP
     from openpilot.system.ui.sunnypilot.widgets.option_control import OptionControlSP
