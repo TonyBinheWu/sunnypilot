@@ -6,7 +6,7 @@
 
 ### 連線與自架
 
-- 拓樸：裝置 camerad → 唯讀 VisionIPC → 單執行緒、nice 10 的持續 FFmpeg → WSS/443 → IIS ARR → 本機 Python 影音 relay → 同一網站的登入手機。服務與影像均自架，不使用外部 STUN/TURN、影音雲端、CDN 或公有直播網址。單一 Python worker 為必要條件；不能直接加 workers 做負載平衡。
+- 拓樸：裝置 camerad → 唯讀 VisionIPC → 單執行緒、nice 10 的持續 FFmpeg → WSS/443 → IIS ARR → 本機 Python 影音 relay → 同一網站的登入手機。服務與影像均自架，不新增外部 STUN/TURN、影音雲端、影音 CDN 或公有直播網址。目前公開網域既有的 Cloudflare HTTPS 代理仍會轉送 WSS 流量；自架的是影音服務，不代表封包不經第三方網頁代理。若需直接連到自己的主機，須另行調整 DNS／路由與有效憑證，並一致配置 origin、OAuth 及裝置網址。單一 Python worker 為必要條件；不能直接加 workers 做負載平衡。
 - 網際網路沿用 `https://formosapilot.dinglu-t.com` 與現有有效憑證、路由器 TCP 443。區網使用相同網址：路由器須支援 NAT loopback，或在內部 DNS 將這個名稱解析到 `192.168.20.145`。沿用相同網址才能保留 OAuth callback、cookie、裝置 origin 及 TLS 驗證。沒有額外公開 Python 8765、相機或 UDP 通訊埠；也不是裝置 IP 直連。
 - 若使用另一個自架網域，需一致更新伺服器 origin、IIS 靜態 `web.config` 的 `connect-src` WSS 網域、OAuth callback、憑證與裝置配對設定。不要關閉 TLS 驗證。
 - IIS 需 ARR、URL Rewrite 及 WebSocket Protocol。更新腳本會在停止既有後端前啟用 Windows 的 WebSocket 功能；若 Windows 要求重啟，腳本會保留原服務並明確要求重新啟動主機後重跑。若管理者曾另外停用本站 `system.webServer/webSocket`，請在本站設定啟用。反向代理必須保留 Host、Origin、Cookie 與 Upgrade/Connection headers。
@@ -53,7 +53,7 @@ node --test formosalink/tests/*.test.mjs
 
 0.8.0 replaces the two-second previews with continuous WebSocket MJPEG video: target 8 fps, up to 640×360 per camera, original aspect ratio, ultra-wide and cabin. Persistent single-threaded nice-10 FFmpeg encoders read existing VisionIPC without changing camera buffers or driving controls. There is no audio or H.264/WebRTC. Actual frame rate and latency depend on the device and network.
 
-All video stays on your self-hosted IIS/ARR + one-worker Python relay over HTTPS/WSS 443. No hosted media service, STUN/TURN, public device port or cloud recording is needed. LAN uses the same authenticated domain and valid certificate through split DNS (`192.168.20.145`) or NAT loopback; Internet uses the existing public HTTPS endpoint. For a custom domain, align server origin, device pairing, OAuth, TLS and the static IIS CSP WSS authority.
+All video stays on your self-hosted IIS/ARR + one-worker Python relay over HTTPS/WSS 443. No hosted media service, STUN/TURN, public device port or cloud recording is needed. The public domain currently uses the existing Cloudflare HTTPS proxy, which also forwards WSS; self-hosting the media backend does not bypass that proxy. Direct hosting requires corresponding DNS/routing, valid TLS and consistent origin/OAuth/device configuration. LAN uses the same authenticated domain and valid certificate through split DNS (`192.168.20.145`) or NAT loopback; Internet uses the existing public HTTPS endpoint. For a custom domain, align server origin, device pairing, OAuth, TLS and the static IIS CSP WSS authority.
 
 Run the host setup command above. It installs the Windows WebSocket feature before stopping the existing backend and reports any required host reboot. Existing accounts, credentials, OAuth, pairings and database schema 3 remain intact. Health must advertise `live-camera-stream-v1`; the public `/api/v1/media/probe` WebSocket verifies the real proxy upgrade without exposing media. Update/reboot both device branches and refresh the phone. Old 0.7 camera uploads cannot feed the new stream viewer.
 
@@ -65,7 +65,7 @@ Tests cover authorization/revocation, real loopback WebSocket flows, browser lif
 
 0.8.0 では約2秒ごとの静止画を、継続する WebSocket MJPEG 映像に変更します。超広角・車内の両方に対応し、目標毎秒8フレーム、最大640×360、元の縦横比を保持します。単一スレッド・nice 10 の FFmpeg を継続利用し、既存 VisionIPC を読み取り専用で取得します。音声や H.264/WebRTC は含みません。実際の速度と遅延は本体と通信環境によります。
 
-IIS/ARR と単一 worker の Python 中継を自前で運用し、HTTPS/WSS 443 を使用します。外部映像サービス・STUN/TURN・本体への公開ポートは不要です。LAN でも同じドメインと有効な証明書を使用し、内部 DNS を `192.168.20.145` に向けるか NAT loopback を利用します。別ドメインの場合は origin・OAuth・本体登録・証明書・IIS CSP の WSS 設定を統一してください。
+IIS/ARR と単一 worker の Python 中継を自前で運用し、HTTPS/WSS 443 を使用します。外部映像サービス・STUN/TURN・本体への公開ポートは不要です。現在の公開ドメインでは既存の Cloudflare HTTPS プロキシが WSS も転送します。自前の映像サーバーでもこのプロキシは経由します。直接接続に変更する場合は DNS・経路・有効な TLS 証明書・origin・OAuth・本体設定を合わせて変更する必要があります。LAN でも同じドメインと有効な証明書を使用し、内部 DNS を `192.168.20.145` に向けるか NAT loopback を利用します。別ドメインの場合は origin・OAuth・本体登録・証明書・IIS CSP の WSS 設定を統一してください。
 
 上記の PowerShell コマンドで更新します。既存サービスを停止する前に Windows WebSocket 機能を導入し、再起動が必要なら案内します。アカウント・OAuth・登録・データベース（schema 3）は保持します。health の `live-camera-stream-v1` と公開 WebSocket `/api/v1/media/probe` を確認し、本体の対応ブランチ更新・再起動とスマートフォンの再読み込みを行います。旧0.7のアップロードでは新しい配信画面を利用できません。
 
