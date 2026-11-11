@@ -25,3 +25,12 @@ Native asset: `openpilot/sunnypilot/formosalink/assets/formosapilot-logo.png`, b
 Both Device → FormosaLink and FormosaPilot → Scan QR use the same full-screen pairing page. Text and three stacked touch targets scale to C3X/C4, while QR modules stay at integer pixel sizes. Status wrapping is measured against the available area. Existing pairing and parked-only guards are unchanged.
 
 「デバイス → FormosaLink」と「FormosaPilot → QR 登録」は共通の全画面ページです。文字・縦に並ぶ操作ボタン・QR を C3X/C4 に合わせて配置します。QR は整数ピクセルで拡大し、状態文はボタンに重ならないよう折り返します。登録の処理と停車中のみの制限は維持します。
+
+
+## 完整裝置品牌 / Native product branding / デバイスのブランド
+
+首頁、啟動 Logo、螢幕保護程式與一般設定／警示的產品名稱改用 FormosaPilot。C3X/C4 首頁都使用原創 F 標誌。品牌轉換只發生於翻譯後的顯示文字、排版測量與圖片載入，不修改翻譯鍵、參數、Git 來源、API、車型或行車邏輯。原始作者／授權、官方贊助／法律及第三方服務引用保留正確來源；網址與內部模組路徑不會被替換。FormosaLink 網站已使用同一原創 Logo。
+
+Home, boot, screensaver and general product settings/alerts display FormosaPilot. Both home profiles use the original F symbol. Mapping applies only after translation and consistently before wrapping, measurement and drawing; asset aliases load the bundled logo without overwriting upstream originals. Translation keys, Params, repository origins, API endpoints and driving behavior remain unchanged. Attribution, licenses, actual third-party sponsorship/legal references, URLs and internal module paths retain their real identities. Shared UI edits must be ported as narrow changes, preserving each branch's font scaling. The synchronization tool includes the two independent branding modules.
+
+ホーム・起動画面・スクリーンセーバー・一般設定と警告の製品名は FormosaPilot に統一し、両デバイスのホームに独自の F ロゴを表示します。翻訳後の表示・文字計測・折り返し・描画・画像読み込みのみを変更します。翻訳キー・設定・Git 参照・API・走行処理は維持し、著作権・ライセンス・実際の第三者サービス／スポンサー・法律上の参照・URL は正しい名称を保持します。

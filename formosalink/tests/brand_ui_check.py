@@ -67,3 +67,42 @@ class TestNativeBrand(unittest.TestCase):
         self.assertTrue(rl.export_image(image, str(output / "settings-brand.png")))
       finally:
         rl.unload_image(image)
+
+  def test_product_wordmark_spinner_and_translated_text(self):
+    from types import SimpleNamespace
+    from openpilot.system.ui.lib.branding import LOGO_ASSET, display_text
+    from openpilot.system.ui.lib.multilang import multilang, tr
+    from openpilot.system.ui.lib.text_measure import measure_text_cached
+    from openpilot.system.ui.widgets.label import UnifiedLabel
+    from openpilot.system.ui.spinner import Spinner, TEXTURE_SIZE
+    from openpilot.system.ui.sunnypilot.widgets.screen_saver import ScreenSaverSP
+    from openpilot.system.ui.lib.application import FontWeight
+    self.assertEqual(Spinner()._comma_texture.id, gui_app.texture(LOGO_ASSET, TEXTURE_SIZE, TEXTURE_SIZE).id)
+    font = gui_app.font(FontWeight.NORMAL)
+    for locale in ("zh-CHT", "en", "ja"):
+      with patch.object(multilang, "_language", locale):
+        self.assertNotIn("sunnypilot", tr("Enable sunnypilot").lower())
+        self.assertEqual(UnifiedLabel("sunnypilot").text, "FormosaPilot")
+        self.assertEqual(measure_text_cached(font, "sunnypilot", 30).x, measure_text_cached(font, "FormosaPilot", 30).x)
+    saver = ScreenSaverSP()
+    self.assertEqual(saver.text, "FormosaPilot")
+    rl.begin_drawing()
+    rl.clear_background(rl.BLACK)
+    if gui_app.big_ui():
+      from openpilot.selfdrive.ui.sunnypilot.layouts.home import HomeLayoutSP
+      header = SimpleNamespace(header_rect=rl.Rectangle(20, 20, gui_app.width-40, 120), update_available=False,
+                               alert_count=0, params=SimpleNamespace(get=lambda _:"hkg-enhanced / DEMO"))
+      HomeLayoutSP._render_header(header)
+    else:
+      from openpilot.selfdrive.ui.sunnypilot.mici.layouts.home import MiciHomeLayoutSP
+      from openpilot.system.ui.widgets.branding import FormosaWordmark
+      home = MiciHomeLayoutSP()
+      self.assertIsInstance(home._openpilot_label, FormosaWordmark)
+      home._openpilot_label.render(rl.Rectangle(16, 10, 480, 80))
+    rl.end_drawing()
+    output = Path(os.environ.get("FORMOSALINK_QR_OUTPUT", "build/native-brand"))
+    image = rl.load_image_from_screen()
+    try:
+      self.assertTrue(rl.export_image(image, str(output / "home-wordmark.png")))
+    finally:
+      rl.unload_image(image)

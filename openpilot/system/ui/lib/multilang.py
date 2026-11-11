@@ -1,3 +1,4 @@
+from openpilot.system.ui.lib.branding import display_text
 from importlib.resources import files
 import json
 import os
@@ -209,15 +210,15 @@ class Multilang:
     self.setup()
 
   def tr(self, text: str) -> str:
-    return self._translations.get(text, text) or text
+    return display_text(self._translations.get(text, text) or text)
 
   def trn(self, singular: str, plural: str, n: int) -> str:
     if singular in self._plurals:
       idx = self._plural_selector(n)
       forms = self._plurals[singular]
       if idx < len(forms) and forms[idx]:
-        return forms[idx]
-    return singular if n == 1 else plural
+        return display_text(forms[idx])
+    return display_text(singular if n == 1 else plural)
 
   def _load_languages(self):
     with LANGUAGES_FILE.open(encoding='utf-8') as f:

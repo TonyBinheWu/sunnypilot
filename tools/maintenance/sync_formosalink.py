@@ -7,7 +7,7 @@ import shutil
 
 ROOT = Path(__file__).resolve().parents[2]
 OWNED_TREES = ("formosalink", "openpilot/sunnypilot/formosalink")
-OWNED_FILES = (".github/workflows/formosalink.yml", "tools/deploy/publish_formosalink_iis.ps1", "tools/maintenance/sync_formosalink.py")
+OWNED_FILES = (".github/workflows/formosalink.yml", "tools/deploy/publish_formosalink_iis.ps1", "tools/maintenance/sync_formosalink.py", "openpilot/system/ui/lib/branding.py", "openpilot/system/ui/widgets/branding.py")
 KEY = '    {"FormosaLinkEnabled", {PERSISTENT, BOOL, "0"}},\n'
 PREDICATE = '\n\ndef formosalink_enabled(started: bool, params: Params, CP: car.CarParams) -> bool:\n  return params.get_bool("FormosaLinkEnabled")\n'
 PROCESS = '  # Optional FormosaPilot companion; telemetry only, independent of sunnylink.\n  PythonProcess("formosalink", "openpilot.sunnypilot.formosalink.agent", formosalink_enabled),\n\n'
