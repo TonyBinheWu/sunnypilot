@@ -31,16 +31,21 @@ class DeviceInformation:
           result["vehicle_"+key] = bundle[key][:160]
     except Exception:
       pass
+    from openpilot.sunnypilot.formosalink.device_health import collect_health
+    result.update(collect_health(self.sm,result.get("vehicle_brand")))
     try:
       result["uptime_seconds"] = int(float(Path("/proc/uptime").read_text().split()[0]))
+    except (OSError,ValueError):
+      pass
+    try:
+      if not result["health_valid"]:
+        return result
       state = self.sm["deviceState"]
       for key, field in (("network_type", "networkType"), ("network_strength", "networkStrength"),
                          ("thermal_status", "thermalStatus"), ("memory_percent", "memoryUsagePercent"),
                          ("free_space_percent", "freeSpacePercent"), ("power_watts", "powerDrawW"),
                          ("fan_percent", "fanSpeedPercentDesired"), ("screen_brightness", "screenBrightnessPercent")):
         result[key] = str(getattr(state, field))[:160]
-      result["cpu_temperatures"] = [round(float(v), 1) for v in state.cpuTempC][:32]
-      result["gpu_temperatures"] = [round(float(v), 1) for v in state.gpuTempC][:32]
     except Exception:
       pass
     return result

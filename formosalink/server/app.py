@@ -67,7 +67,7 @@ def create_app(data_dir, web_dir=None):
   store = Store(directory / "formosalink.sqlite3")
   github = oauth.settings(directory)
   callback = config["origin"] + "/api/v1/auth/github/callback"
-  app = FastAPI(title="FormosaLink", version="0.3.0", docs_url=None, redoc_url=None, openapi_url=None)
+  app = FastAPI(title="FormosaLink", version="0.4.0", docs_url=None, redoc_url=None, openapi_url=None)
   app.state.store = store
   limiter = Limit()
   connections = {}
@@ -119,7 +119,7 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings"], "database_version": 3}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination"], "database_version": 3}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):

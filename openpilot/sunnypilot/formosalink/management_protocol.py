@@ -44,7 +44,7 @@ def validate_snapshot(data):
     for item in catalog:
       if not isinstance(item, dict) or not isinstance(item.get("key"), str) or item["key"] not in data["values"]:
         raise ValueError("invalid catalog key")
-      if item.get("type") not in ("BOOL", "INT", "FLOAT", "STRING") or item.get("widget") not in ("toggle", "option", "multiple_button", "info") or type(item.get("enabled")) is not bool:
+      if item.get("type") not in ("BOOL", "INT", "FLOAT", "STRING") or item.get("widget") not in ("toggle", "option", "multiple_button", "info", "navigation") or type(item.get("enabled")) is not bool:
         raise ValueError("invalid catalog type")
       for name in ("title", "description", "group"):
         labels = item.get(name)

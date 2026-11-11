@@ -1,4 +1,4 @@
-# FormosaPilot / FormosaLink 0.3.1
+# FormosaPilot / FormosaLink 0.4.0
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
@@ -55,3 +55,6 @@ Not yet verified by host tests: end-to-end IIS ARR/WebSocket forwarding to the P
 
 
 [裝置資訊、停車設定與 IIS 升級 / Device settings / 停車中の設定](docs/OFFROAD_SETTINGS.md)
+
+
+[健康總覽、SOC、eGPU、主題與導航 / Health and navigation / 状態とナビ](docs/HEALTH_NAVIGATION.md)
