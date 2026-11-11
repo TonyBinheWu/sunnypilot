@@ -22,9 +22,10 @@ class CarrotStatusProvider:
     self.sm.update(0)
     parked = bool(source_valid(self.sm, "deviceState", 2) and self.params.get_bool("IsOffroad") and not self.sm["deviceState"].started)
     catalog_hash = revision([])
+    from openpilot.sunnypilot.formosalink.camera_status import snapshot as camera_snapshot
     return {"version": 1, "session": self.session, "sampled_at": time.time(), "offroad": parked, "remote_enabled": False,
             "catalog_revision": catalog_hash, "revision": revision({"catalog": catalog_hash, "values": {}}),
-            "catalog": [], "values": {}, "info": collect_health(self.sm, "unknown"), "receipts": []}
+            "catalog": [], "values": {}, "info": {**collect_health(self.sm, "unknown"), **camera_snapshot()}, "receipts": []}
 
   def apply(self, command, device_id, deadline):
     return {"id": command["id"], "status": "rejected", "reason": "permission_disabled"}

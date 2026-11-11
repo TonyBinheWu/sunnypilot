@@ -51,6 +51,23 @@ def test_carrot_driver_enum_and_nv12_padding(monkeypatch):
   assert nv12_bytes(frame)==bytes([1,2,3,4,5,6])
 
 
+def test_native_camera_keeps_connection_through_short_initial_frame_gap(monkeypatch):
+  import openpilot.sunnypilot.formosalink.cameras as cameras
+  frame = object()
+  received = iter([None, None, frame])
+  created = []
+  client = SimpleNamespace(is_connected=lambda: True, recv=lambda timeout: next(received), timestamp_eof=600_000_000_000)
+  def create(*args):
+    created.append(True)
+    return client
+  monkeypatch.setitem(sys.modules, 'msgq.visionipc', SimpleNamespace(VisionIpcClient=create,
+    VisionStreamType=SimpleNamespace(VISION_STREAM_WIDE_ROAD=1, VISION_STREAM_DRIVER=2)))
+  monkeypatch.setattr(cameras, 'camera_clock', lambda: 600.05)
+  source = cameras.NativeCamera('driver', encoder=lambda value: b'jpeg')
+  assert source()[0] == b'jpeg'
+  assert len(created) == 1
+
+
 @pytest.mark.parametrize('camera', ['wide-road', 'driver'])
 def test_native_camera_freshness_uses_camerad_boottime_after_suspend(monkeypatch, camera):
   from openpilot.sunnypilot.formosalink.cameras import NativeCamera
@@ -113,3 +130,4 @@ def test_carrot_health_uses_its_own_schema_without_sunnypilot_settings():
   snapshot=validate_snapshot(provider.capture())
   assert snapshot['offroad'] and not snapshot['remote_enabled']
   assert snapshot['catalog']==[] and snapshot['info']['device_model']=='tizi'
+  assert snapshot['info']['camera_diagnostics_version']==1

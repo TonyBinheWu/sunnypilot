@@ -1,8 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {recordingMime,validPreview,mediaCursor,clipLimit,streamUrl} from '../web/media-view.js';
+import {recordingMime,validPreview,mediaCursor,clipLimit,streamUrl,cameraDiagnosticLines} from '../web/media-view.js';
 import {translations} from '../web/i18n.js';
 import {readFileSync} from 'node:fs';
+
+test('camera diagnostics distinguish stale health, old devices, pipeline failures and real acknowledgements',()=>{
+ const t=key=>translations['zh-TW'][key]||key;
+ assert.ok(cameraDiagnosticLines({},false,'driver',t)[0].includes('無法判定'));
+ assert.ok(cameraDiagnosticLines({},true,'driver',t)[0].includes('重新啟動'));
+ const info={camera_diagnostics_version:1,camera_watch_state:'requested',camera_driver_state:'encoding',camera_driver_error:'TimeoutError',camera_driver_frames:0,camera_driver_frame_age_s:null};
+ const failed=cameraDiagnosticLines(info,true,'driver',t).join(' ');
+ assert.ok(failed.includes('已收到觀看請求'));
+ assert.ok(failed.includes('影像編碼中 (TimeoutError)'));
+ assert.ok(failed.includes('影格數: 0'));
+ info.camera_driver_state='streaming';info.camera_driver_frames=8;info.camera_driver_error=null;info.camera_driver_frame_age_s=.2;
+ assert.ok(cameraDiagnosticLines(info,true,'driver',t).join(' ').includes('雲端已確認收到影格'));
+ assert.ok(!cameraDiagnosticLines(info,false,'driver',t).join(' ').includes('雲端已確認收到影格'));
+ for(const locale of ['zh-TW','en','ja'])assert.ok(translations[locale].mediaStage_connecting_camera);
+});
 
 test('live camera waiting describes automatic native startup in all supported languages',()=>{
  for(const language of ['zh-TW','en','ja'])assert.ok(translations[language].mediaWaiting);
@@ -11,10 +26,10 @@ test('live camera waiting describes automatic native startup in all supported la
  const index=readFileSync(new URL('../web/index.html',import.meta.url),'utf8');
  const app=readFileSync(new URL('../web/app.js',import.meta.url),'utf8');
  const workspace=readFileSync(new URL('../web/device-settings.js',import.meta.url),'utf8');
- assert.ok(index.includes('/app.js?v=0.8.1'));
- assert.ok(app.includes('./i18n.js?v=0.8.1'));
- assert.ok(app.includes('./device-settings.js?v=0.8.1'));
- assert.ok(workspace.includes('./media-view.js?v=0.8.1'));
+ assert.ok(index.includes('/app.js?v=0.8.2'));
+ assert.ok(app.includes('./i18n.js?v=0.8.2'));
+ assert.ok(app.includes('./device-settings.js?v=0.8.2'));
+ assert.ok(workspace.includes('./media-view.js?v=0.8.2'));
 });
 test('stream uses same self-hosted HTTPS authority, LAN addresses and supported cameras only',()=>{
  assert.equal(streamUrl('https://formosapilot.dinglu-t.com','abc','driver'),'wss://formosapilot.dinglu-t.com/api/v1/devices/abc/media/stream?camera=driver');

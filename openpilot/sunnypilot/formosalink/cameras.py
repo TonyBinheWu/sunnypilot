@@ -12,6 +12,7 @@ import uuid
 
 from openpilot.sunnypilot.formosalink.identity import read
 from openpilot.sunnypilot.formosalink.protocol import sign
+from openpilot.sunnypilot.formosalink.camera_status import update as camera_status
 
 CAMERAS = ("wide-road", "driver")
 
@@ -73,6 +74,7 @@ def encode_nv12(frame):
 
 class NativeCamera:
   def __init__(self, camera, name="camerad", encoder=encode_nv12):
+    self.camera = camera
     from msgq.visionipc import VisionIpcClient
     try:
       from msgq.visionipc import VisionStreamType
@@ -89,15 +91,23 @@ class NativeCamera:
       self.encoder.close()
 
   def __call__(self):
+    camera_status(self.camera, 'connecting_camera')
     if not self.client.is_connected() and not self.client.connect(False):
       raise ValueError("camera unavailable")
-    frame = self.client.recv(50)
+    # Match the native camera receiver's bounded startup grace. A single 50ms
+    # timeout at 20fps does not prove the connection is broken.
+    camera_status(self.camera, 'waiting_frame')
+    deadline = time.monotonic()+1
+    frame = None
+    while frame is None and time.monotonic() < deadline:
+      frame = self.client.recv(50)
     captured = self.client.timestamp_eof/1e9
     age = camera_clock()-captured
     if frame is None or not 0 <= age < 1:
       from msgq.visionipc import VisionIpcClient
       self.client = VisionIpcClient(*self._client_args)
       raise ValueError("camera frame unavailable")
+    camera_status(self.camera, 'encoding')
     data = self.encoder(frame)
     return data, time.time()-(camera_clock()-captured), {"speed_kph":None, "engaged":None}
 
@@ -112,8 +122,10 @@ def stream_camera(identity, private, camera, stop):
     while not stop.is_set():
       try:
         if source is None:
+          camera_status(camera, 'initializing')
           source = NativeCamera(camera, encoder=StreamEncoder())
         # TLS certificate checks stay enabled. The signed handshake never enters a URL.
+        camera_status(camera, 'connecting_cloud')
         with websocket.create_connection(url, timeout=2, suppress_origin=True) as socket:
           socket.send(json.dumps(sign(private, identity['device_id'], 'media-stream', {'camera':camera})))
           ready = json.loads(socket.recv())
@@ -126,13 +138,16 @@ def stream_camera(identity, private, camera, stop):
             width, height = jpeg_size(data)
             frame = validate_frame({'version':1, 'stream':stream, 'sequence':sequence, 'sampled_at':sampled,
               'source':camera, 'width':width, 'height':height, 'jpeg':base64.b64encode(data).decode('ascii'), 'hud':hud})
+            camera_status(camera, 'sending')
             socket.send(json.dumps(frame, separators=(',', ':')))
             reply = socket.recv()
             if len(reply) > 2048 or json.loads(reply) != {'type':'ack', 'sequence':sequence}:
               raise ValueError('invalid frame acknowledgement')
             sequence += 1
+            camera_status(camera, 'streaming', sent=True)
             stop.wait(max(0, .125-(time.monotonic()-started)))
       except Exception as exc:
+        camera_status(camera, None, error=exc)
         now = time.monotonic()
         if last_warning is None or now-last_warning >= 30:
           logging.getLogger('formosalink-cameras').warning('Camera %s stream unavailable (%s)', camera, type(exc).__name__)
@@ -141,6 +156,7 @@ def stream_camera(identity, private, camera, stop):
           source.close()
         stop.wait(2)
   finally:
+    camera_status(camera, 'idle')
     if source is not None:
       source.close()
 
@@ -157,6 +173,7 @@ def run(directory, stop):
   with requests.Session() as session:
     while not stop.is_set():
       try:
+        camera_status('watch', 'polling')
         identity, private, _ = read(directory)
         response = session.post(identity["origin"]+"/api/v1/agent/media/watch",
                                 json=sign(private,identity["device_id"],"media-watch"), timeout=3)
@@ -167,6 +184,7 @@ def run(directory, stop):
         if set(demand) != {"cameras", "seconds"} or not isinstance(demand["cameras"],list):
           raise ValueError("invalid camera request")
         save_lease(demand["cameras"], demand["seconds"])
+        camera_status('watch', 'requested' if demand['cameras'] else 'idle')
         if current_id != identity["device_id"]:
           for camera in list(workers):
             retire(camera)
@@ -184,7 +202,8 @@ def run(directory, stop):
                                       name='formosalink-stream-'+camera)
             workers[camera] = event, thread
             thread.start()
-      except Exception:
+      except Exception as exc:
+        camera_status('watch', None, error=exc)
         for camera in list(workers):
           retire(camera)
         try:

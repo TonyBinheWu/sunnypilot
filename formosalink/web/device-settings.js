@@ -1,4 +1,4 @@
-import {mediaViewer} from './media-view.js?v=0.8.1';
+import {mediaViewer} from './media-view.js?v=0.8.2';
 import {parseCoordinates} from './navigation-input.js?v=0.6.0';
 import {deviceHealth} from './health-ui.js?v=0.6.0';
 import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from './settings-edits.js?v=0.6.0';
@@ -41,7 +41,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   function info(snapshot){
     const card=el('section',undefined,'workspace-card information');card.append(el('h2',t('deviceInfo')));
     const dl=el('dl',undefined,'device-details');
-    for(const [key,value] of Object.entries(snapshot.info).filter(([k])=>!["health_valid","soc_status","egpu_status","thermal_names","thermal_values","soc_detection","aux_soc_status"].includes(k)))dl.append(el('dt',t('info_'+key)),el('dd',Array.isArray(value)?value.join(', '):key==='cellular_data_enabled'?t(value?'cellularOn':'cellularOff'):key==='cellular_data_state'?t('cellularState_'+value):String(value??'—')));
+    for(const [key,value] of Object.entries(snapshot.info).filter(([k])=>!k.startsWith('camera_')&&!["health_valid","soc_status","egpu_status","thermal_names","thermal_values","soc_detection","aux_soc_status"].includes(k)))dl.append(el('dt',t('info_'+key)),el('dd',Array.isArray(value)?value.join(', '):key==='cellular_data_enabled'?t(value?'cellularOn':'cellularOff'):key==='cellular_data_state'?t('cellularState_'+value):String(value??'—')));
     if(!dl.childElementCount)card.append(el('p',t('settingsWaiting'),'workspace-muted'));else card.append(dl);if('cellular_data_enabled' in snapshot.info)card.append(el('p',t('cellularLocalHelp'),'workspace-muted'));body.append(card);
   }
   function navigation(snapshot){
@@ -76,7 +76,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   }
   function renderBody(){
     if(!selected)return;
-    if(section==='live'&&!query){$('settings-title').textContent=t('section_live');$('settings-subtitle').textContent=t('sectionDesc_live');$('settings-banner-text').textContent=t('mediaPhase');$('settings-last-seen').textContent=t('received')+' '+date(state?.received_at);$('settings-retry-label').textContent=t('refresh');$('settings-connection').textContent=t(state?.fresh?'connected':'offline');viewer.open(body,selected.id);return;}
+    if(section==='live'&&!query){$('settings-title').textContent=t('section_live');$('settings-subtitle').textContent=t('sectionDesc_live');$('settings-banner-text').textContent=t('mediaPhase');$('settings-last-seen').textContent=t('received')+' '+date(state?.received_at);$('settings-retry-label').textContent=t('refresh');$('settings-connection').textContent=t(state?.fresh?'connected':'offline');viewer.open(body,selected.id);viewer.updateDiagnostics(state?.snapshot?.info,state?.fresh===true);return;}
     viewer.close();body.replaceChildren();
     $('settings-title').textContent=query?t('searchResults'):t('section_'+section);
     $('settings-subtitle').textContent=query?`${t('searchSettings')} · ${query}`:t('sectionDesc_'+section);
@@ -166,7 +166,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     try{const result=await api('/devices/'+encodeURIComponent(selected.id)+'/settings');if(currentEpoch!==epoch)return;
       const focused=body.contains(document.activeElement)&&['INPUT','SELECT'].includes(document.activeElement.tagName);
       const before=JSON.stringify([...edits.rows(selected.id)]);edits.reconcile(selected.id,result);
-      const changed=before!==JSON.stringify([...edits.rows(selected.id)])||!state||result.fresh!==state.fresh||result.snapshot?.revision!==state.snapshot?.revision||result.snapshot?.session!==state.snapshot?.session||result.snapshot?.offroad!==state.snapshot?.offroad||result.snapshot?.remote_enabled!==state.snapshot?.remote_enabled||JSON.stringify(result.commands)!==JSON.stringify(state.commands)||!focused&&JSON.stringify(result.snapshot?.info)!==JSON.stringify(state.snapshot?.info);state=result;
+      const changed=before!==JSON.stringify([...edits.rows(selected.id)])||!state||result.fresh!==state.fresh||result.snapshot?.revision!==state.snapshot?.revision||result.snapshot?.session!==state.snapshot?.session||result.snapshot?.offroad!==state.snapshot?.offroad||result.snapshot?.remote_enabled!==state.snapshot?.remote_enabled||JSON.stringify(result.commands)!==JSON.stringify(state.commands)||!focused&&JSON.stringify(result.snapshot?.info)!==JSON.stringify(state.snapshot?.info);state=result;viewer.updateDiagnostics(result.snapshot?.info,result.fresh===true);
       if(changed||!body.childElementCount)draw();else $('settings-last-seen').textContent=`${t('received')} ${date(state.received_at)}`;
     }catch(e){if(currentEpoch!==epoch)return;if([401,404].includes(e.status)){if(e.status===401)edits.reset();else edits.devices.delete(selected.id);close();notify('settingsServiceUnavailable',true);return;}if(state)state.fresh=false;draw();}
     if(selected)timer=setTimeout(poll,3000);

@@ -926,3 +926,12 @@ Object.assign(translations.ja,{mediaTitle:'ライブ映像',sectionDesc_live:'�
 Object.assign(translations['zh-TW'], {carrotRemote:'遠端 Carrot 網頁',carrotLive:'雙鏡頭 LIVE',carrotHelp:'在車機 FormosaLink 開啟遠端 Carrot 網頁並停車熄火後，可從此操作原生 Carrot 網頁；鏡頭監看可使用雙鏡頭 LIVE。'});
 Object.assign(translations.en, {carrotRemote:'Remote Carrot web',carrotLive:'Live cameras',carrotHelp:'Enable remote Carrot web on the device while parked with ignition off. Use Live cameras for remote video.'});
 Object.assign(translations.ja, {carrotRemote:'Carrot Web 遠隔操作',carrotLive:'カメラ LIVE',carrotHelp:'本体で Carrot Web の遠隔操作を許可し、停車して電源をオフにしてください。映像はカメラ LIVE で確認できます。'});
+
+for(const [locale,labels] of Object.entries({
+ 'zh-TW':['鏡頭診斷資料尚未更新，無法判定目前狀態。','車機尚未提供鏡頭診斷，請更新至支援診斷的版本並重新啟動。','觀看請求','鏡頭流程','雲端已確認影格數','最後確認影格距今','未知','背景服務尚未回報','待命，沒有觀看請求','向雲端查詢觀看請求','已收到觀看請求','初始化相機','連接車機相機','等待相機影格','影像編碼中','連接雲端影像通道','傳送影格並等待確認','雲端已確認收到影格'],
+ en:['Camera diagnostics are stale; current state is unknown.','Update and restart the device to enable camera diagnostics.','Viewer request','Camera pipeline','Cloud-acknowledged frames','Last acknowledgement age','Unknown','Background service has not reported','Idle, no viewer request','Checking viewer demand','Viewer request received','Initializing camera','Connecting to native camera','Waiting for a camera frame','Encoding image','Connecting to cloud video','Sending frame and waiting for acknowledgement','Cloud acknowledged a frame'],
+ ja:['カメラ診断が古いため現在の状態は不明です。','カメラ診断に対応した本体ソフトへ更新・再起動してください。','視聴要求','カメラ処理','クラウド確認済みフレーム数','最終確認からの時間','不明','バックグラウンドから応答なし','待機中・視聴要求なし','視聴要求を確認中','視聴要求を受信','カメラ初期化中','本体カメラに接続中','カメラ画像待ち','画像エンコード中','クラウド映像へ接続中','画像を送信・確認待ち','クラウドが画像を確認']
+})){
+ const keys=['mediaDiagStale','mediaDiagUpgrade','mediaDiagDemand','mediaDiagCamera','mediaDiagFrames','mediaDiagAge',...['unknown','unavailable','idle','polling','requested','initializing','connecting_camera','waiting_frame','encoding','connecting_cloud','sending','streaming'].map(stage=>'mediaStage_'+stage)];
+ Object.assign(translations[locale],Object.fromEntries(keys.map((key,index)=>[key,labels[index]])));
+}
