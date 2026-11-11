@@ -16,3 +16,12 @@ C3X and C4: Settings → FormosaPilot. Shows the original logo, companion versio
 C3X・C4：設定 → FormosaPilot。ロゴ、独立したバージョン、インストール済みブランチとコミット、FormosaLink の QR 登録を表示します。モバイル通信はネットワーク設定にあります。対応ブランチを更新して再起動してください。sunnypilot のバージョンと sunnylink サービスは維持します。
 
 Native asset: `openpilot/sunnypilot/formosalink/assets/formosapilot-logo.png`, byte-identical to the web original and stored without Git LFS. This page changes only offroad UI; driving, vehicle identification, controllers and safety code are untouched. The companion version is independent of upstream's release version. Native rendering and top-level navigation are tested on both C3X and C4 PC profiles in all three languages; physical device rendering still needs confirmation.
+
+
+### 配對畫面 / Pairing screen / 登録画面
+
+「裝置 → FormosaLink」與「FormosaPilot → 掃描 QR 配對」共用全螢幕配對頁。文字、三個直列操作按鈕及 QR Code 依 C3X／C4 畫面等比例配置；QR 使用整數模組縮放，狀態文字會換行並避開按鈕。保持停車操作限制及原有配對流程。
+
+Both Device → FormosaLink and FormosaPilot → Scan QR use the same full-screen pairing page. Text and three stacked touch targets scale to C3X/C4, while QR modules stay at integer pixel sizes. Status wrapping is measured against the available area. Existing pairing and parked-only guards are unchanged.
+
+「デバイス → FormosaLink」と「FormosaPilot → QR 登録」は共通の全画面ページです。文字・縦に並ぶ操作ボタン・QR を C3X/C4 に合わせて配置します。QR は整数ピクセルで拡大し、状態文はボタンに重ならないよう折り返します。登録の処理と停車中のみの制限は維持します。

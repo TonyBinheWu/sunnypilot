@@ -12,6 +12,7 @@ from openpilot.sunnypilot.formosalink.pairing import request_pairing, pairing_st
 from openpilot.system.ui.lib.application import FontWeight, gui_app
 from openpilot.system.ui.lib.multilang import multilang
 from openpilot.system.ui.lib.wrap_text import wrap_text
+from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.button import Button, ButtonStyle
 
@@ -183,34 +184,49 @@ class FormosaPairingDialog(Widget):
       self._worker("status")
 
   def _render(self, rect):
-    rl.draw_rectangle_rec(rect, rl.Color(15, 20, 36, 255))
-    scale = min(rect.width/2160, rect.height/1080)
-    margin = 60*scale
-    close_width, button_height = 290*scale, 120*scale
-    self._close.render(rl.Rectangle(rect.x+rect.width-close_width-margin, rect.y+margin, close_width, button_height))
+    # Use the native compact screen as the reference, rather than shrinking the
+    # desktop-sized layout (including its fonts) onto C4. Both entry points push
+    # this same full-screen widget; all geometry also respects nonzero origins.
+    scale = min(rect.width / 536, rect.height / 240)
+    margin, gap = 12*scale, 5*scale
+    left_width = rect.width*.54 - 2*margin
+    button_height = 34*scale
+    bottom = rect.y + rect.height - margin - button_height
     font = gui_app.font(FontWeight.BOLD)
     body_font = gui_app.font(FontWeight.NORMAL)
-    rl.draw_text_ex(font, "FormosaLink", rl.Vector2(rect.x+margin,rect.y+margin+25*scale), 75*scale, 0, rl.WHITE)
-    width = int(rect.width*.53-margin)
-    y = rect.y+margin+180*scale
-    body_size = 44 if gui_app.big_ui() else 60
-    line_height = 52 if gui_app.big_ui() else 70
-    lines = wrap_text(body_font, text("intro" if gui_app.big_ui() else "compact_intro"), body_size*scale, width)
-    rl.draw_text_ex(body_font, "\n".join(lines), rl.Vector2(rect.x+margin,y), body_size*scale, 0, rl.Color(165, 177, 202, 255))
-    y += len(lines)*line_height*scale+50*scale
-    if self._state != "intro":
-      state_lines = wrap_text(body_font, text(self._state), 42*scale, width)
-      rl.draw_text_ex(body_font, "\n".join(state_lines), rl.Vector2(rect.x+margin,y), 42*scale, 0, rl.Color(172, 151, 255, 255))
-    bottom = rect.y+rect.height-margin-button_height
-    self._remote.render(rl.Rectangle(rect.x+margin,bottom-button_height-20*scale,1000*scale,button_height))
-    self._start.render(rl.Rectangle(rect.x+margin,bottom,660*scale,button_height))
-    self._disable.render(rl.Rectangle(rect.x+margin+690*scale,bottom,420*scale,button_height))
+    message = text("compact_intro" if self._state == "intro" else self._state)
+    if multilang.requires_font_fallback():
+      gui_app.fallback_font(message + text("close") + text("start") + text("disable") + text("remote_on") + text("remote_off"))
+    rl.draw_rectangle_rec(rect, rl.Color(15, 20, 36, 255))
+    rl.draw_text_ex(font, "FormosaLink", rl.Vector2(rect.x+margin, rect.y+12*scale), 27*scale, 0, rl.WHITE)
+    self._close._label.set_font_size(17*scale)
+    self._close.render(rl.Rectangle(rect.x+rect.width-margin-80*scale, rect.y+8*scale, 80*scale, button_height))
+
+    body_top = rect.y + 54*scale
+    body_bottom = bottom - 2*(button_height+gap) - 4*scale
+    text_width = left_width if self._qr_texture is not None else rect.width-2*margin
+    body_size = 18*scale
+    while True:
+      lines = wrap_text(body_font, message, body_size, int(text_width))
+      content = "\n".join(lines)
+      measured = measure_text_cached(body_font, content, body_size)
+      if measured.y <= body_bottom-body_top or body_size <= 14*scale:
+        break
+      body_size -= scale
+    self._last_status_rect = rl.Rectangle(rect.x+margin, body_top, measured.x, measured.y)
+    rl.draw_text_ex(body_font, content, rl.Vector2(rect.x+margin, body_top), body_size, 0,
+                    rl.Color(165, 177, 202, 255) if self._state == "intro" else rl.Color(185, 170, 255, 255))
+    for index, button in enumerate((self._disable, self._start, self._remote)):
+      button._label.set_font_size(17*scale)
+      button.render(rl.Rectangle(rect.x+margin, bottom-index*(button_height+gap), left_width, button_height))
+    self._last_qr_rect = None
     if self._qr_texture is not None:
-      available = min(rect.width*.4,rect.height-2*margin-button_height-50*scale)
-      # Integral module scaling keeps the QR sharp on the 536x240 C4 profile.
-      modules = self._qr_texture.width//10  # common.qrcode renders each module at 10 px
+      available = min(rect.width*.44-margin, rect.height-60*scale)
+      # Use whole QR modules, including the quiet zone, on either screen profile.
+      modules = self._qr_texture.width//10
       qr_size = max(modules, int(available/modules)*modules)
-      target = rl.Rectangle(rect.x+rect.width-margin-qr_size,rect.y+margin+button_height+25*scale,qr_size,qr_size)
+      target = rl.Rectangle(rect.x+rect.width-margin-qr_size,
+                            rect.y+48*scale+(rect.height-60*scale-qr_size)/2, qr_size, qr_size)
       self._last_qr_rect = target
-      rl.draw_texture_pro(self._qr_texture,rl.Rectangle(0,0,self._qr_texture.width,self._qr_texture.height),target,rl.Vector2(0,0),0,rl.WHITE)
+      rl.draw_texture_pro(self._qr_texture, rl.Rectangle(0,0,self._qr_texture.width,self._qr_texture.height), target, rl.Vector2(0,0), 0, rl.WHITE)
     return -1
