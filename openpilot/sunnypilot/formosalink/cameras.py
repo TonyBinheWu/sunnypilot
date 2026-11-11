@@ -1,5 +1,6 @@
 """Owner-requested live streams from existing camera IPC; no control writes."""
 import base64
+from contextlib import closing
 import json
 import logging
 import os
@@ -126,7 +127,7 @@ def stream_camera(identity, private, camera, stop):
           source = NativeCamera(camera, encoder=StreamEncoder())
         # TLS certificate checks stay enabled. The signed handshake never enters a URL.
         camera_status(camera, 'connecting_cloud')
-        with websocket.create_connection(url, timeout=2, suppress_origin=True) as socket:
+        with closing(websocket.create_connection(url, timeout=2, suppress_origin=True)) as socket:
           socket.send(json.dumps(sign(private, identity['device_id'], 'media-stream', {'camera':camera})))
           ready = json.loads(socket.recv())
           if ready != {'type':'ready', 'fps':8, 'transport':'wss-mjpeg-v1'}:
