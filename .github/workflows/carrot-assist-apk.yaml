@@ -1,0 +1,113 @@
+name: CarrotAssist Traditional Chinese APK
+
+on:
+  push:
+    branches: [carrot-wip]
+    paths:
+      - 'tools/carrot_android/**'
+      - '.github/workflows/carrot-assist-apk.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: carrot-assist-tw-release
+  cancel-in-progress: false
+
+jobs:
+  apk:
+    if: github.repository == 'TonyBinheWu/sunnypilot'
+    runs-on: windows-2022
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare Android SDK
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sdk = $env:ANDROID_HOME
+          if (!$sdk) { $sdk = $env:ANDROID_SDK_ROOT }
+          if (!$sdk) { throw 'Android SDK is unavailable' }
+          & "$sdk/cmdline-tools/latest/bin/sdkmanager.bat" 'platforms;android-36' 'build-tools;35.0.0'
+          if ($LASTEXITCODE -ne 0) { throw 'Android SDK setup failed' }
+          "CARROT_ANDROID_SDK=$sdk" >> $env:GITHUB_ENV
+      - name: Build and verify signed APK
+        env:
+          CARROT_ASSIST_TW_KEYSTORE: ${{ secrets.CARROT_ASSIST_TW_KEYSTORE }}
+          CARROT_ASSIST_TW_PASSWORD: ${{ secrets.CARROT_ASSIST_TW_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (!$env:CARROT_ASSIST_TW_KEYSTORE -or !$env:CARROT_ASSIST_TW_PASSWORD) { throw 'Release signing secrets are missing' }
+          [xml]$manifest = Get-Content tools/carrot_android/AndroidManifest.xml
+          $ns = 'http://schemas.android.com/apk/res/android'
+          $version = $manifest.manifest.GetAttribute('versionName', $ns)
+          $code = [int]$manifest.manifest.GetAttribute('versionCode', $ns)
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid release version' }
+          $package = $manifest.manifest.package
+          if ($package -ne 'me.shind0.carrotweb.tw') { throw 'Unexpected package identity' }
+          $tag = "carrot-assist-tw-v$version"
+          $name = "CarrotAssist-TW-$version.apk"
+          New-Item -ItemType Directory -Force dist | Out-Null
+          $key = Join-Path $env:RUNNER_TEMP 'carrotassist-tw.jks'
+          try {
+            [IO.File]::WriteAllBytes($key, [Convert]::FromBase64String($env:CARROT_ASSIST_TW_KEYSTORE))
+            ./tools/carrot_android/build.ps1 -Sdk $env:CARROT_ANDROID_SDK -Jdk $env:JAVA_HOME -OutputApk "$PWD/dist/$name" -SigningKeystore $key -SigningAlias carrotassist-tw -SigningPasswordEnv CARROT_ASSIST_TW_PASSWORD
+            if ($LASTEXITCODE -ne 0) { throw 'APK build failed' }
+            & "$env:CARROT_ANDROID_SDK/build-tools/35.0.0/apksigner.bat" verify --verbose --print-certs "dist/$name" | Tee-Object -FilePath dist/signing-certificate.txt
+            if ($LASTEXITCODE -ne 0) { throw 'APK signature verification failed' }
+            & "$env:CARROT_ANDROID_SDK/build-tools/35.0.0/aapt2.exe" dump badging "dist/$name" | Tee-Object -FilePath dist/apk-metadata.txt
+            if ($LASTEXITCODE -ne 0) { throw 'APK metadata verification failed' }
+            $hash = (Get-FileHash "dist/$name" -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $name" | Set-Content dist/SHA256SUMS.txt -Encoding utf8
+            @{
+              package = $package
+              version = $version
+              version_code = $code
+              apk_url = "https://github.com/TonyBinheWu/sunnypilot/releases/download/$tag/$name"
+              sha256 = $hash
+              source_commit = $env:GITHUB_SHA
+            } | ConvertTo-Json | Set-Content dist/update.json -Encoding utf8
+            "CARROT_APK_TAG=$tag" >> $env:GITHUB_ENV
+            "CARROT_APK_VERSION=$version" >> $env:GITHUB_ENV
+          } finally {
+            if (Test-Path -LiteralPath $key) { Remove-Item -LiteralPath $key -Force }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CarrotAssist-TW
+          path: dist/*
+          if-no-files-found: error
+      - name: Prepare downloadable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $existing = & gh release view $env:CARROT_APK_TAG --json isDraft --jq .isDraft 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            if ($existing -ne 'true') { throw 'Published versions are immutable; increase the APK version first' }
+          } else {
+            @'
+          CarrotAssist 繁體中文版，使用獨立套件名稱，可與原版並存。
+
+          下載 APK 後以 Android 安裝程式安裝。手機設定為繁體中文時，App 會顯示繁體中文。
+          Android 8.0 以上可安裝；手機直接語音另需 Android 12 以上與可用語音服務，現有指令語法仍為韓文／英文。
+          手機與 comma 必須在相同 Wi-Fi／熱點。車機網頁需使用本倉庫 carrot-wip 才有繁中選項。
+
+          此版本採用 TonyBinheWu/sunnypilot 專用簽章及更新來源。新 App 的連線資料與原版分開，可能需要重新授權 ChatGPT。
+          建置完成並驗證 APK 簽章；尚未在實體手機驗證。
+          '@ | Set-Content dist/release-notes.md -Encoding utf8
+            & gh release create $env:CARROT_APK_TAG --target $env:GITHUB_SHA --title "CarrotAssist 繁體中文版 $env:CARROT_APK_VERSION" --draft --prerelease --latest=false --notes-file dist/release-notes.md
+            if ($LASTEXITCODE -ne 0) { throw 'Draft release creation failed' }
+          }
+          $assets = @(Get-ChildItem dist -File | Where-Object Name -ne 'release-notes.md' | ForEach-Object FullName)
+          & gh release upload $env:CARROT_APK_TAG @assets --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }

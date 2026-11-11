@@ -18,7 +18,7 @@ $manifest=@'
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="me.shind0.carrotweb.recoverytest">
 <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36" />
 <application android:label="CarrotAssist recovery test" />
-<instrumentation android:name="me.shind0.carrotweb.RecoveryInstrumentation" android:targetPackage="me.shind0.carrotweb" />
+<instrumentation android:name="me.shind0.carrotweb.RecoveryInstrumentation" android:targetPackage="me.shind0.carrotweb.tw" />
 </manifest>
 '@
 [IO.File]::WriteAllText("$build/AndroidManifest.xml",$manifest)
