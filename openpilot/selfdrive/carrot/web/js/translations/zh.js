@@ -1,8 +1,8 @@
 "use strict";
 
 window.CarrotTranslations.register("zh", {
-  name: "Chinese",
-  nativeName: "中文",
+  name: "Simplified Chinese",
+  nativeName: "简体中文",
   shortName: "ZH",
   strings: {
     assistant_voice_help: "手机直接语音支持韩语和英语，无需 ChatGPT 帐号或配对码。在设备名称下启用手机语音，然后轻点麦克风。可用英语说 “Find acceleration settings”。",

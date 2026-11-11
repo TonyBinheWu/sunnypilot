@@ -65,7 +65,7 @@ globalThis.CarrotIntroShell = (() => {
     const col = document.createElement("div");
     col.className = "intro-col";
     /* 중국어는 word-break 규칙이 달라 lang 을 심는다 (intro.css 참조) */
-    if (CarrotIntro.ctx.lang === "zh") col.setAttribute("lang", "zh");
+    if (CarrotIntro.ctx.lang.startsWith("zh")) col.setAttribute("lang", "zh");
     p.appendChild(col);
 
     const back = document.createElement("button");

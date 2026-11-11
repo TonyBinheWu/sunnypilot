@@ -513,3 +513,7 @@ After confirmed turn entry, the TBT indicator ends its hold as the wheel returns
 
 
 The ATC right lane-change distance uses 0m for off and 50m steps up to 500m. The former ON setting migrates to 250m at restart.
+
+## Interface language
+
+Carrot Web supports Korean, English, Simplified Chinese and Traditional Chinese. Choose **Tools > Language > 繁體中文** for Traditional Chinese. Device UI language is a separate setting and may require a reboot. Translated setting names, summaries and choices retain the same numeric values, bounds and activation timing. When no Traditional Chinese detailed Wiki article is published, the detail view reports its English fallback.

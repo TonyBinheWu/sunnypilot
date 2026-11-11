@@ -14,6 +14,7 @@ export const SETTING_DERIVED_IDS = Object.freeze({
 
 export function localizedSettingNodeLabel(node, language = "en") {
   if (!node) return "";
+  if (language === "zh-tw") return node["zh-tw"] || node.en || node.ko || "";
   if (language === "zh") return node.zh || node.en || node.ko || "";
   if (language === "ko") return node.ko || node.en || node.zh || "";
   return node.en || node.ko || node.zh || "";
@@ -21,6 +22,7 @@ export function localizedSettingNodeLabel(node, language = "en") {
 
 export function localizedSettingItemText(item, keyKo, keyEn, fallback = "", language = "en") {
   if (!item) return fallback;
+  if (language === "zh-tw") return item[`t${keyEn.slice(1)}`] || item[keyEn] || item[keyKo] || fallback;
   if (language === "zh") return item[`c${keyEn.slice(1)}`] || item[keyEn] || item[keyKo] || fallback;
   if (language === "ko") return item[keyKo] || item[keyEn] || fallback;
   return item[keyEn] || item[keyKo] || fallback;
@@ -130,6 +132,7 @@ export function createSettingsDerivedModel(options = {}) {
             ko: group.ko,
             en: group.en,
             zh: group.zh,
+            ...(group["zh-tw"] ? { "zh-tw": group["zh-tw"] } : {}),
             count: group.count,
             category: category.id,
           });
@@ -204,6 +207,7 @@ export function createSettingsDerivedModel(options = {}) {
     const meta = getGroupMeta(group);
     if (!meta) return group;
     if (meta.ko || meta.en || meta.zh) return localizedSettingNodeLabel(meta, language);
+    if (language === "zh-tw") return meta.tgroup || meta.egroup || meta.group;
     if (language === "zh") return meta.cgroup || meta.egroup || meta.group;
     if (language === "ko") return meta.group || meta.egroup || group;
     return meta.egroup || meta.group || group;
@@ -227,7 +231,7 @@ export function createSettingsDerivedModel(options = {}) {
     if (!keywords.length) return { entries: [], total: 0 };
     if (!inlineSearchIndex) {
       const text = (node) => node
-        ? [node.name, node.title, node.etitle, node.ctitle, node.descr, node.edescr, node.cdescr]
+        ? [node.name, node.title, node.etitle, node.ctitle, node.ttitle, node.descr, node.edescr, node.cdescr, node.tdescr]
         : [];
       const seen = new Set();
       const ordered = groups.flatMap(({ group }) => (itemsByGroup[group] || []).map((item) => ({ group, item })))
@@ -240,12 +244,12 @@ export function createSettingsDerivedModel(options = {}) {
         const { group, item } = entry;
         const parent = itemIndex.get(item.detail_parent)?.item;
         const meta = getGroupMeta(group);
-        const haystack = [group, meta?.egroup, meta?.ko, meta?.en, meta?.zh,
+        const haystack = [group, meta?.egroup, meta?.ko, meta?.en, meta?.zh, meta?.["zh-tw"],
           getItemContextLabel(group, item), ...text(item), ...text(parent)]
           .filter(Boolean).join("\n").normalize("NFC").toLowerCase();
         return {
           entry,
-          title: [item.title, item.etitle, item.ctitle].filter(Boolean).join("\n").normalize("NFC").toLowerCase(),
+          title: [item.title, item.etitle, item.ctitle, item.ttitle].filter(Boolean).join("\n").normalize("NFC").toLowerCase(),
           haystack,
           // Precomputed Korean initial-consonant projection (초성 검색).
           chosung: extractSettingChosung(haystack),

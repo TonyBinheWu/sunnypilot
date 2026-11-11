@@ -598,7 +598,9 @@ export function createPublishedSettingDocumentationClient(options = {}) {
 
   function load(name, language, loadOptions = {}) {
     const param = String(name || "").trim();
-    const requestedLanguage = normalizedLanguage(language);
+    // The published index has no Traditional pages; retain the request so
+    // English fallback is reported to the user without relaxing index validation.
+    const requestedLanguage = String(language).toLowerCase() === "zh-tw" ? "zh-tw" : normalizedLanguage(language);
     if (!PARAM_RE.test(param)) {
       return Promise.resolve(Object.freeze({ available: false, name: param, language_requested: requestedLanguage }));
     }

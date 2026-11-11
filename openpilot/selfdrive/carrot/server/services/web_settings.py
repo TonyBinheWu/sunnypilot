@@ -13,7 +13,7 @@ from .web_capabilities import is_known_web_capability
 
 
 WEB_PRIMARY_PAGES = {"last", "carrot", "setting", "tools", "logs", "terminal"}
-WEB_LANGUAGES = {"", "en", "ko", "zh"}
+WEB_LANGUAGES = {"", "en", "ko", "zh", "zh-tw"}
 WEB_REPLAY_INSIGHTS_TABS = {"events", "graphs", "sensors", "advanced"}
 WEB_DRIVE_LAYOUT_MODES = {"split", "area_1", "area_2"}
 WEB_AUTO_UPDATE_REBOOT_MODES = {"off", "park", "disengaged"}
@@ -313,11 +313,14 @@ def _normalize_language(value: Any) -> str:
     "main_ko": "ko",
     "main_en": "en",
     "main_zh-chs": "zh",
-    "main_zh-cht": "zh",
+    "main_zh-cht": "zh-tw",
   }
   lang = aliases.get(lang, lang)
   if lang.startswith("ko"):
     return "ko"
+  parts = lang.replace("_", "-").split("-")
+  if parts[0] == "zh" and len(parts) > 1 and parts[1] in {"tw", "hk", "mo", "hant", "cht"}:
+    return "zh-tw"
   if lang.startswith("zh"):
     return "zh"
   if lang.startswith("en"):

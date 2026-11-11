@@ -1,12 +1,12 @@
 "use strict";
 
-// Translation registry — loaded by translations/registry.js + ko/en/zh.js
-const TRANSLATION_REGISTRY = window.CarrotTranslations || { packs: {}, order: ["en", "ko", "zh"] };
+// Translation registry — loaded by translations/registry.js + ko/en/zh/zh-tw.js
+const TRANSLATION_REGISTRY = window.CarrotTranslations || { packs: {}, order: ["en", "ko", "zh", "zh-tw"] };
 const UI_STRINGS = TRANSLATION_REGISTRY.strings || {};
 const ACTION_LABELS = TRANSLATION_REGISTRY.actionLabels || {};
 const ERROR_MESSAGES = TRANSLATION_REGISTRY.errorMessages || {};
 const DRIVE_MODES = TRANSLATION_REGISTRY.driveModes || {};
-const CARROT_WEB_LANGUAGE_CODES = Object.freeze(["en", "ko", "zh"]);
+const CARROT_WEB_LANGUAGE_CODES = Object.freeze(["en", "ko", "zh", "zh-tw"]);
 window.CARROT_WEB_LANGUAGE_CODES = CARROT_WEB_LANGUAGE_CODES;
 
 // Device language options — loaded from the server bootstrap (languages.json).
@@ -32,12 +32,13 @@ function normalizeLangCode(raw) {
     main_ko: "ko",
     main_en: "en",
     "main_zh-chs": "zh",
-    "main_zh-cht": "zh",
+    "main_zh-cht": "zh-tw",
   };
   if (deviceAliases[value]) return deviceAliases[value];
   const withoutMainPrefix = value.replace(/^main[_-]/, "");
   if (packs[withoutMainPrefix]) return withoutMainPrefix;
   if (value.startsWith("ko")) return "ko";
+  if (/^zh[-_](?:tw|hk|mo|hant|cht)(?:[-_]|$)/.test(withoutMainPrefix)) return "zh-tw";
   if (value.startsWith("zh")) return "zh";
   if (value.startsWith("en")) return "en";
   return "";

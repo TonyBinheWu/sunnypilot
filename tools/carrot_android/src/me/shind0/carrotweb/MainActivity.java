@@ -107,7 +107,7 @@ public final class MainActivity extends Activity {
         directionCheck.clear();
         String text = heard == null ? "" : heard.trim();
         if (text.length() > 48) text = text.substring(0, 48) + "…";
-        String prefix = text.isEmpty() ? "" : UiText.get("“" + text + "”로 들었어요. ", "I heard “" + text + "”. ");
+        String prefix = text.isEmpty() ? "" : UiText.format("“%s”로 들었어요. ", "I heard “%s”. ", text);
         replyAndListen(phoneGeneration, prefix + reason);
       }
       public void heardSetting(SpokenSetting setting) { handleSpokenSetting(setting); }
@@ -568,11 +568,11 @@ public final class MainActivity extends Activity {
                 int count = result.getInt("total");
                 phoneSearchId = count > 0 ? id : null;
                 replyAndListen(token, count == 0 ? UiText.get("관련 설정을 찾지 못했어요.", "No matching settings.")
-                  : UiText.get(count + "개 찾았어요. 첫 번째는 " + result.optString("firstKo") + "예요.", "Found " + count + ". First is " + result.optString("firstEn") + "."));
+                  : UiText.format("%s개 찾았어요. 첫 번째는 %s예요.", "Found %s. First is %s.", count, UiText.get(result.optString("firstKo"), result.optString("firstEn"))));
                 return;
-              case "applied": replyAndListen(token, UiText.get(name + ", " + result.getInt("current") + "으로 설정했어요.", name + " set to " + result.getInt("current") + ".")); return;
-              case "range": replyAndListen(token, UiText.get("허용 범위는 " + result.getInt("min") + "에서 " + result.getInt("max") + "까지예요.", "Allowed range is " + result.getInt("min") + " to " + result.getInt("max") + ".")); return;
-              case "unchanged": replyAndListen(token, UiText.get(name + ", 이미 " + result.getInt("current") + "이에요.", name + " is already " + result.getInt("current") + ".")); return;
+              case "applied": replyAndListen(token, UiText.format("%s, %s으로 설정했어요.", "%s set to %s.", name, result.getInt("current"))); return;
+              case "range": replyAndListen(token, UiText.format("허용 범위는 %s에서 %s까지예요.", "Allowed range is %s to %s.", result.getInt("min"), result.getInt("max"))); return;
+              case "unchanged": replyAndListen(token, UiText.format("%s, 이미 %s이에요.", "%s is already %s.", name, result.getInt("current"))); return;
               case "permission": replyAndListen(token, UiText.get("정차 후 당근웹 도구에서 설정값 조회·변경을 허용해 주세요.", "While parked, allow setting reads and changes in Carrot Web Tools.")); return;
               case "no_result": replyAndListen(token, UiText.get("지금 검색 목록에 그 항목이 없어요.", "That item is not in the current search results.")); return;
               case "unknown": replyAndListen(token, UiText.get("설정 하나를 찾을 수 없어요. 설정 이름을 다시 말해 주세요.", "Please say the name of one setting.")); return;

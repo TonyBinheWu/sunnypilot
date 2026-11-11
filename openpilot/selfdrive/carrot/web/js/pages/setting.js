@@ -845,7 +845,7 @@ function getDeclaredSettingOptionLabel(name, value) {
   const options = item?.options;
   if (!options) return null;
 
-  const language = LANG === "zh" ? "zh" : (LANG === "ko" ? "ko" : "en");
+  const language = ["zh", "zh-tw", "ko"].includes(LANG) ? LANG : "en";
   const labels = options[language] || options.en || options.ko;
   if (!Array.isArray(labels)) return null;
 

@@ -29,6 +29,10 @@ $bin = Join-Path $Sdk "build-tools\$BuildTools"
 New-Item -ItemType Directory -Force $classes,$dex,$testClasses | Out-Null
 function Assert-Exit([string]$step) { if ($LASTEXITCODE -ne 0) { throw "$step failed: $LASTEXITCODE" } }
 $coreSources = @((Join-Path $sourceRoot 'src\me\shind0\carrotweb\DiscoveryPolicy.java'), (Join-Path $sourceRoot 'src\me\shind0\carrotweb\DeviceProbe.java'))
+& $javacExe -encoding UTF-8 -d $testClasses (Join-Path $sourceRoot 'src\me\shind0\carrotweb\UiText.java') (Join-Path $sourceRoot 'tests\UiTextTest.java')
+Assert-Exit 'Compile native language checks'
+& $javaExe -cp $testClasses UiTextTest
+Assert-Exit 'Native language checks'
 & $javacExe -encoding UTF-8 -d $testClasses @coreSources (Join-Path $sourceRoot 'tests\DiscoveryTest.java')
 Assert-Exit 'Compile discovery checks'
 & $javaExe -cp $testClasses DiscoveryTest

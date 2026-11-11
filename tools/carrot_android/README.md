@@ -114,7 +114,7 @@ Future discovery does not depend on legacy-file hints. The owner's physical phon
 recovered its previous hotspot connection to the office IP and completed an MCP
 screen-open request without reauthorization or a device update. No live driving
 command or setting write was performed. Native UI follows the phone language
-(Korean or English fallback); the Carrot Web language remains independent. Run `test-recovery.ps1` on a disposable emulator
+(Korean, Traditional Chinese for zh-Hant/TW/HK/MO, or English fallback); the Carrot Web language remains independent. Run `test-recovery.ps1` on a disposable emulator
 with `-Serial emulator-N -Apk ... -DebugKeystore ...`; it overwrites only test
 WebView storage and rejects physical-device serials. No live vehicle commands
 are executed by this harness.

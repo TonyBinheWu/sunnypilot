@@ -3,7 +3,7 @@ import {
   PUBLISHED_SETTINGS_INDEX_URL,
 } from "./published_documentation.js";
 
-const DOC_LANGUAGES = new Set(["ko", "en", "zh"]);
+const DOC_LANGUAGES = new Set(["ko", "en", "zh", "zh-tw"]);
 export const SETTING_DOCUMENTATION_INDEX_URL = PUBLISHED_SETTINGS_INDEX_URL;
 
 export function normalizeSettingDocLanguage(value) {

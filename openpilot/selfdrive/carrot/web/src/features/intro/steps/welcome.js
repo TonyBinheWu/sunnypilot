@@ -23,7 +23,7 @@ CarrotIntro.register({
 
       <div class="intro-cycler" aria-hidden="true">
         ${CarrotIntroLangs.map(([code, , greeting]) =>
-          `<div class="intro-cyc"${code === "zh" ? ' lang="zh"' : ""}>${greeting}</div>`).join("")}
+          `<div class="intro-cyc"${code.startsWith("zh") ? ' lang="zh"' : ""}>${greeting}</div>`).join("")}
       </div>
 
       <div class="intro-opts intro-opts--inline">

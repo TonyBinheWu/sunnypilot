@@ -398,7 +398,7 @@ let toolsMetaInfoDialogText = "";
 
 function getAvailableWebLanguages() {
   const registry = window.CarrotTranslations || {};
-  const allowed = window.CARROT_WEB_LANGUAGE_CODES || ["ko", "en", "zh"];
+  const allowed = window.CARROT_WEB_LANGUAGE_CODES || ["ko", "en", "zh", "zh-tw"];
   const rawOrder = Array.isArray(registry.order) ? registry.order : allowed;
   const order = [...new Set([...rawOrder, ...allowed])].filter((lang) => allowed.includes(lang));
   return order
@@ -673,7 +673,7 @@ function syncToolsMetaStatusLocale() {
   const current = String(toolsMetaStatusText || "").trim();
   if (!current) return;
 
-  const langOrder = window.CarrotTranslations?.order || ["ko", "en", "zh"];
+  const langOrder = window.CarrotTranslations?.order || ["ko", "en", "zh", "zh-tw"];
   const readyVariants = langOrder
     .map((langKey) => UI_STRINGS[langKey]?.ready || "Ready")
     .filter(Boolean);
@@ -707,7 +707,7 @@ function rerenderPageLangUi() {
     ["terminal_offline", "terminal offline"],
   ];
 
-  const langOrder = window.CarrotTranslations?.order || ["ko", "en", "zh"];
+  const langOrder = window.CarrotTranslations?.order || ["ko", "en", "zh", "zh-tw"];
   for (const [key, fallback] of terminalStates) {
     const variants = langOrder
       .map((langKey) => UI_STRINGS[langKey]?.[key] || fallback)
@@ -757,15 +757,12 @@ async function syncDeviceLanguageOnce() {
     const values = await bulkGet(["LanguageSetting"]);
     const currentLang = String(values["LanguageSetting"] || "").trim();
 
-    // Map browser language → web language code (ko/en/zh only)
+    // Map browser language → web language code (ko/en/zh/zh-tw)
     const browserLang = (navigator.language || navigator.userLanguage || "en").toLowerCase();
-    const webLang = normalizeLangCode(browserLang); // returns "ko" | "en" | "zh" | ""
+    const webLang = normalizeLangCode(browserLang); // returns "ko" | "en" | "zh" | "zh-tw" | ""
 
     // Map web language → device language code
-    const WEB_TO_DEVICE = { ko: "main_ko", en: "main_en", zh: "main_zh-CHS" };
-    if (browserLang.startsWith("zh") && (browserLang.includes("tw") || browserLang.includes("hk"))) {
-      WEB_TO_DEVICE.zh = "main_zh-CHT";
-    }
+    const WEB_TO_DEVICE = { ko: "main_ko", en: "main_en", zh: "main_zh-CHS", "zh-tw": "main_zh-CHT" };
 
     // Only sync if browser language has BOTH a web pack AND a device translation
     const deviceCodes = (window.CarrotDeviceLanguageOptions || []).map((o) => o.code);

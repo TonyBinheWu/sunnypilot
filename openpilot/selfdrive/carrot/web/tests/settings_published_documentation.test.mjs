@@ -167,6 +167,18 @@ function descriptorFor(index, param) {
   };
 }
 
+test("Traditional requests explicitly report English Wiki fallback", async () => {
+  const data = fixture();
+  const client = createPublishedSettingDocumentationClient({
+    fetchImpl: async (url) => response(fixtureBodyForUrl(data, url)),
+    storage: new MemoryStorage(),
+  });
+  const result = await client.load("ParamA", "zh-tw");
+  assert.equal(result.language_requested, "zh-tw");
+  assert.equal(result.language_resolved, "en");
+  assert.equal(result.fallback, true);
+});
+
 test("SHA-256 and canonical JSON match stable vectors", () => {
   assert.equal(
     sha256Hex("abc"),

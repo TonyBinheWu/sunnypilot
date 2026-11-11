@@ -17,6 +17,7 @@ export function normalizeSettingsCatalog(catalog) {
         ko: group.ko,
         en: group.en,
         zh: group.zh,
+        ...(group["zh-tw"] ? { "zh-tw": group["zh-tw"] } : {}),
         count: group.count,
         category: category.id,
       });
@@ -28,6 +29,7 @@ export function normalizeSettingsCatalog(catalog) {
           ko: section.ko,
           en: section.en,
           zh: section.zh,
+          ...(section["zh-tw"] ? { "zh-tw": section["zh-tw"] } : {}),
         };
         (section.items || []).forEach((name) => {
           const item = itemIndex.get(name);

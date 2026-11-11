@@ -3,7 +3,7 @@
 (function initCarrotTranslations(global) {
   const api = global.CarrotTranslations || {};
   const packs = api.packs || {};
-  const order = api.order || ["en", "ko", "zh"];
+  const order = api.order || ["en", "ko", "zh", "zh-tw"];
   const strings = api.strings || {};
   const actionLabels = api.actionLabels || {};
   const errorMessages = api.errorMessages || {};

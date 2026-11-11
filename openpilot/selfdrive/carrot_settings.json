@@ -27,7 +27,8 @@
                 "TeslaModelPathSignals",
                 "AutoEngage",
                 "DisableMinSteerSpeed"
-              ]
+              ],
+              "zh-tw": "起步動作"
             },
             {
               "id": "BASIC_AUTOCRUISE",
@@ -41,9 +42,11 @@
                 "AutoGasCancelSpeed",
                 "AutoGasSyncSpeed",
                 "CruiseOnDist"
-              ]
+              ],
+              "zh-tw": "自動巡航"
             }
-          ]
+          ],
+          "zh-tw": "啟動·自動"
         },
         {
           "id": "BUTTON_PRESET",
@@ -61,7 +64,8 @@
                 "CancelButtonMode",
                 "LfaButtonMode",
                 "PaddleMode"
-              ]
+              ],
+              "zh-tw": "按鈕模式"
             },
             {
               "id": "BUTTON_UNIT",
@@ -72,7 +76,8 @@
                 "CruiseSpeedUnit",
                 "CruiseSpeedUnitBasic",
                 "CruiseButtonLongDelay"
-              ]
+              ],
+              "zh-tw": "速度單位"
             },
             {
               "id": "BUTTON_TEST",
@@ -83,7 +88,8 @@
                 "CruiseButtonTest1",
                 "CruiseButtonTest2",
                 "CruiseButtonTest3"
-              ]
+              ],
+              "zh-tw": "按鈕測試"
             },
             {
               "id": "BASIC_SPEEDTABLE",
@@ -96,9 +102,11 @@
                 "CruiseSpeed3",
                 "CruiseSpeed4",
                 "CruiseSpeed5"
-              ]
+              ],
+              "zh-tw": "速度預設"
             }
-          ]
+          ],
+          "zh-tw": "按鈕·預設"
         },
         {
           "id": "STEER",
@@ -119,7 +127,8 @@
                 "OnnxBsdThreshold",
                 "OnnxBsdSmoothingMs",
                 "OnnxBsdIntervalMs"
-              ]
+              ],
+              "zh-tw": "ONNX 車道與盲點"
             },
             {
               "id": "STEER_CENTER",
@@ -129,7 +138,8 @@
               "params": [
                 "PathOffset",
                 "CameraYawTrimDeg"
-              ]
+              ],
+              "zh-tw": "居中校正"
             },
             {
               "id": "STEER_FEEL",
@@ -143,7 +153,8 @@
                 "LatSuspendAngleDeg",
                 "CustomSR",
                 "SteerRatioRate"
-              ]
+              ],
+              "zh-tw": "轉向手感"
             },
             {
               "id": "STEER_LANECHANGE",
@@ -167,7 +178,8 @@
                 "AutoTurnControlSpeedTurn",
                 "AutoTurnControlTurnEnd",
                 "AutoTurnMapChange"
-              ]
+              ],
+              "zh-tw": "變道 (自動轉向)"
             },
             {
               "id": "STEER_LANEMODE",
@@ -184,7 +196,8 @@
                 "UseLaneLineSpeed",
                 "UseLaneLineCurveSpeed",
                 "AdjustLaneOffset"
-              ]
+              ],
+              "zh-tw": "車道模式"
             },
             {
               "id": "STEER_TORQUE",
@@ -206,7 +219,8 @@
                     "LateralTorqueKiV",
                     "LateralTorqueKf",
                     "LateralTorqueKd"
-                  ]
+                  ],
+                  "zh-tw": "扭矩係數"
                 },
                 {
                   "id": "STEER_TORQUE_LIMIT",
@@ -219,11 +233,14 @@
                     "CustomSteerDeltaDown",
                     "CustomSteerDeltaUpLC",
                     "CustomSteerDeltaDownLC"
-                  ]
+                  ],
+                  "zh-tw": "轉向限制"
                 }
-              ]
+              ],
+              "zh-tw": "高階扭矩"
             }
-          ]
+          ],
+          "zh-tw": "轉向"
         },
         {
           "id": "SPEED",
@@ -254,7 +271,8 @@
                 "AutoNaviSpeedDecelRate",
                 "AutoNaviSpeedSafetyFactor",
                 "AutoNaviCountDownMode"
-              ]
+              ],
+              "zh-tw": "測速攝影機"
             },
             {
               "id": "SPEED_LIMIT",
@@ -265,7 +283,8 @@
                 "AutoRoadSpeedLimitOffset",
                 "AutoRoadSpeedAdjust",
                 "AutoSpeedUptoRoadSpeedLimit"
-              ]
+              ],
+              "zh-tw": "限速"
             },
             {
               "id": "SPEED_BUMP",
@@ -276,7 +295,8 @@
                 "AutoNaviSpeedBumpTime",
                 "AutoNaviSpeedBumpSpeed",
                 "AutoNaviSpeedBumpEndDistance"
-              ]
+              ],
+              "zh-tw": "減速帶"
             },
             {
               "id": "SPEED_CURVE",
@@ -289,7 +309,8 @@
                 "TurnSpeedControlMode",
                 "MapTurnSpeedFactor",
                 "ApplyModelSpeed"
-              ]
+              ],
+              "zh-tw": "彎道與轉彎"
             },
             {
               "id": "SPEED_TRAFFIC",
@@ -301,9 +322,11 @@
                 "SignalAssistMode",
                 "LeadBrakeLights",
                 "TrafficStopDistanceAdjust"
-              ]
+              ],
+              "zh-tw": "訊號燈"
             }
-          ]
+          ],
+          "zh-tw": "速度與減速"
         },
         {
           "id": "CRUISE",
@@ -325,7 +348,8 @@
                   "params": [
                     "MyDrivingMode",
                     "MyDrivingModeAuto"
-                  ]
+                  ],
+                  "zh-tw": "駕駛模式"
                 },
                 {
                   "id": "CRUISE_ACCEL_TABLE",
@@ -340,9 +364,11 @@
                     "CruiseMaxVals4",
                     "CruiseMaxVals5",
                     "CruiseMaxVals6"
-                  ]
+                  ],
+                  "zh-tw": "速度加速表"
                 }
-              ]
+              ],
+              "zh-tw": "加速特性"
             },
             {
               "id": "CRUISE_STOPGO",
@@ -354,7 +380,8 @@
                 "StoppingAccel",
                 "VEgoStopping",
                 "AChangeCostStarting"
-              ]
+              ],
+              "zh-tw": "停車與再起步"
             },
             {
               "id": "CRUISE_LONGTUNE",
@@ -366,7 +393,8 @@
                 "LongTuningKiV",
                 "LongTuningKf",
                 "LongActuatorDelay"
-              ]
+              ],
+              "zh-tw": "加減速調校"
             },
             {
               "id": "CRUISE_GAP",
@@ -387,7 +415,8 @@
                 "DynamicTFollowLC",
                 "SpeedTFFactor",
                 "TFollowDecelBoost"
-              ]
+              ],
+              "zh-tw": "車距"
             },
             {
               "id": "CRUISE_CARROT",
@@ -399,11 +428,14 @@
                 "CruiseCoastingPercent",
                 "CarrotCruiseDecel",
                 "CarrotCruiseAtcDecel"
-              ]
+              ],
+              "zh-tw": "Carrot巡航"
             }
-          ]
+          ],
+          "zh-tw": "巡航與車距"
         }
-      ]
+      ],
+      "zh-tw": "駕駛控制"
     },
     {
       "id": "VEHICLE",
@@ -420,7 +452,8 @@
             "HyundaiCameraSCC",
             "IsLdwsCar",
             "HapticFeedbackWhenSpeedCamera"
-          ]
+          ],
+          "zh-tw": "現代·起亞"
         },
         {
           "id": "VEH_CANFD",
@@ -434,7 +467,8 @@
             "CanfdBlinkerTest",
             "CanfdDebug",
             "HDPuse"
-          ]
+          ],
+          "zh-tw": "CANFD·HDA"
         },
         {
           "id": "VEH_RADAR",
@@ -445,7 +479,8 @@
             "EnableRadarTracks",
             "RadarTrackFlip",
             "EnableCornerRadar"
-          ]
+          ],
+          "zh-tw": "雷達"
         },
         {
           "id": "VEH_DM",
@@ -458,7 +493,8 @@
             "CarrotVisionEnabled",
             "MuteDoor",
             "MuteSeatbelt"
-          ]
+          ],
+          "zh-tw": "駕駛員監控"
         },
         {
           "id": "VEH_AUX",
@@ -468,7 +504,8 @@
           "params": [
             "MaxAngleFrames",
             "SpeedFromPCM"
-          ]
+          ],
+          "zh-tw": "車輛輔助"
         },
         {
           "id": "VEH_DEVICE",
@@ -478,9 +515,11 @@
           "params": [
             "CommaPedalEnabled",
             "HardwareC3xLite"
-          ]
+          ],
+          "zh-tw": "裝置硬體"
         }
-      ]
+      ],
+      "zh-tw": "車輛與硬體"
     },
     {
       "id": "DISPLAY",
@@ -503,7 +542,8 @@
             "ShowRadarInfo",
             "ShowRouteInfo",
             "ShowPlotMode"
-          ]
+          ],
+          "zh-tw": "資訊顯示"
         },
         {
           "id": "DISP_PATH",
@@ -517,7 +557,8 @@
             "ShowPathColorCruiseOff",
             "ShowPathModeLane",
             "ShowPathColorLane"
-          ]
+          ],
+          "zh-tw": "路徑顯示"
         },
         {
           "id": "DISP_BRIGHT",
@@ -528,7 +569,8 @@
             "ShowCustomBrightness",
             "ShowModelView",
             "ShowCameraWithCluster"
-          ]
+          ],
+          "zh-tw": "亮度與檢視"
         },
         {
           "id": "DISP_HUD",
@@ -550,7 +592,8 @@
                 "ClusterNaviMapTheme",
                 "ClusterNaviMapType",
                 "ClusterNaviMapFps"
-              ]
+              ],
+              "zh-tw": "基本"
             },
             {
               "id": "HUD_SCREEN",
@@ -562,7 +605,8 @@
                 "ClusterHudScreenMode",
                 "ClusterHudPanelLayout",
                 "ClusterHudCameraViewMode"
-              ]
+              ],
+              "zh-tw": "畫面·攝影機"
             },
             {
               "id": "HUD_RADAR",
@@ -573,7 +617,8 @@
                 "ClusterHudRadarInfo",
                 "ClusterHudRadarDisplay",
                 "ClusterHudRadarSourceColor"
-              ]
+              ],
+              "zh-tw": "雷達顯示"
             },
             {
               "id": "HUD_PERF",
@@ -582,11 +627,14 @@
               "zh": "性能·调试",
               "params": [
                 "ClusterHudDebug"
-              ]
+              ],
+              "zh-tw": "效能·除錯"
             }
-          ]
+          ],
+          "zh-tw": "外部HUD"
         }
-      ]
+      ],
+      "zh-tw": "顯示"
     },
     {
       "id": "SYSTEM",
@@ -608,9 +656,11 @@
               "params": [
                 "RecordRoadCam",
                 "MaxTimeOffroadMin"
-              ]
+              ],
+              "zh-tw": "錄製與電源"
             }
-          ]
+          ],
+          "zh-tw": "錄製與電源"
         },
         {
           "id": "SYS_CAMERA",
@@ -619,7 +669,8 @@
           "zh": "摄像头",
           "params": [
             "UseWideCamera"
-          ]
+          ],
+          "zh-tw": "攝影機"
         },
         {
           "id": "SYS_NET",
@@ -629,7 +680,8 @@
           "params": [
             "HotspotOnBoot",
             "MapboxStyle"
-          ]
+          ],
+          "zh-tw": "網路與地圖"
         },
         {
           "id": "SYS_SOUND",
@@ -640,7 +692,8 @@
             "SoundLanguageSetting",
             "SoundVolumeAdjust",
             "SoundVolumeAdjustEngage"
-          ]
+          ],
+          "zh-tw": "聲音"
         },
         {
           "id": "SYS_SW",
@@ -649,9 +702,11 @@
           "zh": "软件",
           "params": [
             "SoftwareMenu"
-          ]
+          ],
+          "zh-tw": "軟體"
         }
-      ]
+      ],
+      "zh-tw": "系統"
     }
   ],
   "params": [
@@ -670,7 +725,10 @@
       "max": 150,
       "default": 0,
       "unit": 1,
-      "display_unit": "distanceCm"
+      "display_unit": "distanceCm",
+      "tgroup": "轉向",
+      "ttitle": "車道偏移左右修正(0)",
+      "tdescr": "僅限車道模式 — (-)左側 / (+)右側"
     },
     {
       "group": "조향일반",
@@ -686,7 +744,10 @@
       "min": -200,
       "max": 200,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "攝影機YAW校正(0)",
+      "tdescr": "微調攝影機左右(YAW)值(+: right)"
     },
     {
       "group": "조향토크",
@@ -705,7 +766,10 @@
       "unit": 1,
       "control": "toggle",
       "risk": "high",
-      "search_only": true
+      "search_only": true,
+      "tgroup": "轉向",
+      "ttitle": "NNFF 扭矩控制",
+      "tdescr": "用於扭矩轉向的神經網路前饋選項。開啟後，非轉角控制車輛使用扭矩控制調校，並在有匹配模型時應用 NNFF。支援 comma 自有 NNFF 的車型仍優先使用原有路徑。關閉僅停用此 NNFF 選項，不改變 NNFFLite。預設關閉，僅在 Carrot Web 搜尋中顯示。更改在下次進入行車模式或裝置重新啟動後生效。不適用於轉角控制車輛。"
     },
     {
       "group": "조향토크",
@@ -721,7 +785,10 @@
       "min": 0,
       "max": 1,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "自定義轉向力矩(0)",
+      "tdescr": "使用自定義力矩 (TorqueAccelFactor, FrictionFactor)"
     },
     {
       "group": "조향토크",
@@ -737,7 +804,10 @@
       "min": 1000,
       "max": 6000,
       "default": 2500,
-      "unit": 100
+      "unit": 100,
+      "tgroup": "轉向",
+      "ttitle": "轉向力矩加速係數*0.001(2500)",
+      "tdescr": "隨著值減小，力矩會增強到某一點然後變弱 — 請使用力矩最強點的值。"
     },
     {
       "group": "조향토크",
@@ -753,7 +823,10 @@
       "min": 0,
       "max": 1000,
       "default": 100,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "轉向",
+      "ttitle": "轉向力矩摩擦係數*0.001(100)",
+      "tdescr": "值越高微操越多 — 推薦 0-50"
     },
     {
       "group": "조향토크",
@@ -769,7 +842,10 @@
       "min": 0,
       "max": 200,
       "default": 100,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "轉向力矩 Kp*0.01(100)",
+      "tdescr": "轉向響應速度 (瞬時反應) — 推薦 140"
     },
     {
       "group": "조향토크",
@@ -785,7 +861,10 @@
       "min": 0,
       "max": 200,
       "default": 10,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "轉向力矩 Ki*0.01(10)",
+      "tdescr": "轉向累積誤差修正 — 推薦 20"
     },
     {
       "group": "조향토크",
@@ -801,7 +880,10 @@
       "min": 0,
       "max": 200,
       "default": 100,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "轉向力矩 Kf*0.001(100)",
+      "tdescr": "轉向前饋修正 — 推薦 85"
     },
     {
       "group": "조향토크",
@@ -817,7 +899,10 @@
       "min": 0,
       "max": 10000,
       "default": 0,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "轉向",
+      "ttitle": "轉向力矩 Kd*0.01(0)",
+      "tdescr": "轉向微分增益，推薦 0"
     },
     {
       "group": "레인모드",
@@ -833,7 +918,10 @@
       "min": 0,
       "max": 500,
       "default": 200,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "轉向",
+      "ttitle": "橫向MPC路徑代價(200)",
+      "tdescr": "(車道模式) 路徑跟隨權重 — 值越高越優先考慮路徑"
     },
     {
       "group": "레인모드",
@@ -849,7 +937,10 @@
       "min": 0,
       "max": 500,
       "default": 7,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "橫向MPC運動代價(7)",
+      "tdescr": "(車道模式) 航向權重"
     },
     {
       "group": "레인모드",
@@ -865,7 +956,10 @@
       "min": 0,
       "max": 500,
       "default": 100,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "轉向",
+      "ttitle": "橫向MPC加速代價(120)",
+      "tdescr": "(車道模式) 側向加速度限制 — 值越低靈活性越高但穩定性降低"
     },
     {
       "group": "레인모드",
@@ -881,7 +975,10 @@
       "min": 0,
       "max": 200,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "橫向MPC衝擊代價(4)",
+      "tdescr": "(車道模式) 值越低允許越快的轉向 — 會降低平滑度"
     },
     {
       "group": "레인모드",
@@ -897,7 +994,10 @@
       "min": 0,
       "max": 1000,
       "default": 7,
-      "unit": 100
+      "unit": 100,
+      "tgroup": "轉向",
+      "ttitle": "橫向MPC轉向速率代價(7)",
+      "tdescr": "(車道模式) 轉向速率限制 — 值越低轉向越激進"
     },
     {
       "group": "레인모드",
@@ -913,7 +1013,10 @@
       "min": 0,
       "max": 20,
       "default": 4,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "橫向MPC輸入偏移(4)",
+      "tdescr": "(車道模式) MPC 輸入補償 — 值越高進入彎道越早"
     },
     {
       "group": "조향토크",
@@ -929,7 +1032,10 @@
       "min": 0,
       "max": 30000,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "自定義最大轉向力矩(0)",
+      "tdescr": "最大轉向力矩 — 在 270/384/409 中選擇不報錯的最大值"
     },
     {
       "group": "조향토크",
@@ -945,7 +1051,10 @@
       "min": 0,
       "max": 50,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "自定義轉向增大斜率(0)",
+      "tdescr": "力矩控制車輛 — 值越高方向盤轉動速度越快"
     },
     {
       "group": "조향토크",
@@ -961,7 +1070,10 @@
       "min": 0,
       "max": 50,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "自定義轉向減小斜率(0)",
+      "tdescr": "力矩控制車輛 — 值越高方向盤回正速度越快"
     },
     {
       "group": "조향토크",
@@ -977,7 +1089,10 @@
       "min": 0,
       "max": 50,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "變道自定義轉向增大斜率(0)",
+      "tdescr": "力矩控制車輛 — 變道期間臨時應用轉向增大斜率"
     },
     {
       "group": "조향토크",
@@ -993,7 +1108,10 @@
       "min": 0,
       "max": 50,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "變道自定義轉向減小斜率(0)",
+      "tdescr": "力矩控制車輛 — 變道期間臨時應用轉向減小斜率"
     },
     {
       "group": "조향튜닝",
@@ -1009,7 +1127,10 @@
       "min": 0,
       "max": 300,
       "default": 30,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "轉向執行器延遲(30)",
+      "tdescr": "轉向響應延遲補償：30=0.30秒，0=LiveDelay。數值越大，提前補償越多。\n重心比例也會影響入彎，比較時保持SAD和SR不變。"
     },
     {
       "group": "조향튜닝",
@@ -1032,8 +1153,12 @@
       "zero_label": {
         "ko": "0 · 차량 기본",
         "en": "0 · Vehicle default",
-        "zh": "0 · 车型默认"
-      }
+        "zh": "0 · 车型默认",
+        "zh-tw": "0 · 車型預設"
+      },
+      "tgroup": "轉向",
+      "ttitle": "重心位置比例",
+      "tdescr": "0=車型預設值，其他值31~69%=軸距×比例。儲存後平滑生效，無需重新啟動。\n預設：現代/起亞/捷尼賽思40%，豐田/雷克薩斯44%，馬自達41%，大眾45%，本田因車型而異。\n入彎偏晚可小幅增加，入彎切向內側可小幅減小；效果因車道模式和車輛而異。\n保持SAD和SR不變，一次只調一項。變差時恢復原值或0。"
     },
     {
       "group": "조향튜닝",
@@ -1049,7 +1174,10 @@
       "min": 1,
       "max": 30,
       "default": 13,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "轉向平滑時間(30)",
+      "tdescr": "轉向平滑值 — 值越高越平滑"
     },
     {
       "group": "조향튜닝",
@@ -1065,7 +1193,10 @@
       "min": 45,
       "max": 300,
       "default": 300,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "轉向",
+      "ttitle": "AutoSteering Suspend Angle(300)",
+      "tdescr": "Auto steering pauses at large steering angles and resumes when it returns within 15."
     },
     {
       "group": "크루즈",
@@ -1082,7 +1213,10 @@
       "max": 2500,
       "default": 0,
       "unit": 50,
-      "display_unit": "distanceCm"
+      "display_unit": "distanceCm",
+      "tgroup": "巡航設定",
+      "ttitle": "巡航開啟距離(0cm)",
+      "tdescr": "鬆開油門且前車靠近時開啟巡航"
     },
     {
       "group": "크루즈",
@@ -1099,7 +1233,10 @@
       "max": 10,
       "default": 2,
       "unit": 1,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "巡航設定",
+      "ttitle": "巡航節能控制(2km/h)",
+      "tdescr": "為提高燃油效率臨時提高目標速度"
     },
     {
       "group": "크루즈",
@@ -1116,7 +1253,10 @@
       "max": 10,
       "default": 0,
       "unit": 1,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "巡航設定",
+      "ttitle": "巡航滑行餘量",
+      "tdescr": "0%保持原有控制。在超過設定速度時減弱巡航減速，接近餘量上限時恢復減速。不提高設定速度，也不關閉SCC。僅在無前車、停車或外部速度控制介入的普通巡航中生效。"
     },
     {
       "group": "크루즈",
@@ -1132,7 +1272,10 @@
       "min": -1,
       "max": 200,
       "default": -1,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "巡航設定",
+      "ttitle": "胡蘿蔔巡航減速度(-1)",
+      "tdescr": "胡蘿蔔巡航減速度設定，-1: 巡航關閉"
     },
     {
       "group": "크루즈",
@@ -1148,7 +1291,10 @@
       "min": -1,
       "max": 200,
       "default": -1,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "巡航設定",
+      "ttitle": "胡蘿蔔巡航 ATC 減速度(-1)",
+      "tdescr": "胡蘿蔔巡航 ATC 減速度設定，-1: 不改變"
     },
     {
       "group": "조향튜닝",
@@ -1164,7 +1310,10 @@
       "min": 0,
       "max": 300,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "自定義轉向比x0.1(0)",
+      "tdescr": "轉向比 (參考車輛引數)，0: 使用實時轉向比"
     },
     {
       "group": "조향튜닝",
@@ -1181,7 +1330,10 @@
       "max": 200,
       "default": 100,
       "unit": 1,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "轉向",
+      "ttitle": "自定義轉向比率x0.01(100)",
+      "tdescr": "實時轉向比應用比例 (需要 CustomSR 設定為 0)"
     },
     {
       "group": "가속설정",
@@ -1197,7 +1349,10 @@
       "min": 1,
       "max": 250,
       "default": 160,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "加速設定",
+      "ttitle": "加速度設定 0: 0km/h(160)",
+      "tdescr": "0 km/h 到 10 km/h 的加速度"
     },
     {
       "group": "가속설정",
@@ -1213,7 +1368,10 @@
       "min": 1,
       "max": 250,
       "default": 160,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "加速設定",
+      "ttitle": "加速度設定 1: 10km/h(160)",
+      "tdescr": "10 km/h 到 40 km/h 的加速度"
     },
     {
       "group": "가속설정",
@@ -1229,7 +1387,10 @@
       "min": 1,
       "max": 250,
       "default": 120,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "加速設定",
+      "ttitle": "加速度設定 2: 40km/h(120)",
+      "tdescr": "40 km/h 到 60 km/h 的加速度"
     },
     {
       "group": "가속설정",
@@ -1245,7 +1406,10 @@
       "min": 1,
       "max": 250,
       "default": 100,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "加速設定",
+      "ttitle": "加速度設定 3: 60km/h(100)",
+      "tdescr": "60 km/h 到 80 km/h 的加速度"
     },
     {
       "group": "가속설정",
@@ -1261,7 +1425,10 @@
       "min": 1,
       "max": 250,
       "default": 80,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "加速設定",
+      "ttitle": "加速度設定 4: 80km/h(80)",
+      "tdescr": "80 km/h 到 110 km/h 的加速度"
     },
     {
       "group": "가속설정",
@@ -1277,7 +1444,10 @@
       "min": 1,
       "max": 250,
       "default": 70,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "加速設定",
+      "ttitle": "加速度設定 5: 110km/h(70)",
+      "tdescr": "110 km/h 到 140 km/h 的加速度"
     },
     {
       "group": "가속설정",
@@ -1293,7 +1463,10 @@
       "min": 1,
       "max": 250,
       "default": 60,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "加速設定",
+      "ttitle": "加速度設定 6: 140km/h(60)",
+      "tdescr": "140 km/h 以上的加速度"
     },
     {
       "group": "주행튜닝",
@@ -1310,7 +1483,10 @@
       "max": 1000,
       "default": 600,
       "unit": 10,
-      "display_unit": "distanceCm"
+      "display_unit": "distanceCm",
+      "tgroup": "縱向控制",
+      "ttitle": "停止距離(600)cm",
+      "tdescr": "停止距離 * 0.8"
     },
     {
       "group": "주행튜닝",
@@ -1326,7 +1502,10 @@
       "min": 0,
       "max": 200,
       "default": 10,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "縱向控制",
+      "ttitle": "啟動加速度限制",
+      "tdescr": "啟動加速代價，0: 快速啟動"
     },
     {
       "group": "주행튜닝",
@@ -1343,7 +1522,10 @@
       "max": 600,
       "default": -150,
       "unit": 100,
-      "display_unit": "distanceCm"
+      "display_unit": "distanceCm",
+      "tgroup": "縱向控制",
+      "ttitle": "交通訊號停止距離調整",
+      "tdescr": ""
     },
     {
       "group": "주행튜닝",
@@ -1363,7 +1545,10 @@
       "min": 0,
       "max": 200,
       "default": 100,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "縱向控制",
+      "ttitle": "縱向 KpV(100)x0.01",
+      "tdescr": "縱向控制比例增益。現代、起亞和捷尼賽思的一般縱向控制固定為 Kp 1.0，因此不會顯示或應用此設定。 豐田/雷克薩斯的通用 Kp=0 固定，以避免與專用控制器重複補償；此設定隱藏且不應用儲存值。 已識別為 Ray EV Comma Pedal 控制時顯示此設定，並在約一秒內將儲存值應用於速度 PID。"
     },
     {
       "group": "주행튜닝",
@@ -1383,7 +1568,10 @@
       "min": 0,
       "max": 200,
       "default": 100,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "縱向控制",
+      "ttitle": "縱向 Kf(100)x0.01",
+      "tdescr": "在加速和制動方向預先應用目標加速度。現代、起亞和捷尼賽思的一般縱向控制固定為 Kf 1.0，因此不會顯示或應用此設定。 豐田/雷克薩斯的通用 Kf=1 固定，以避免與專用控制器重複補償；此設定隱藏且不應用儲存值。 已識別為 Ray EV Comma Pedal 控制時顯示此設定，並在約一秒內將儲存值應用於速度 PID。"
     },
     {
       "group": "주행튜닝",
@@ -1403,7 +1591,10 @@
       "min": 0,
       "max": 2000,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "縱向控制",
+      "ttitle": "縱向 KiV(0)x0.001",
+      "tdescr": "縱向控制積分增益。現代、起亞和捷尼賽思的一般縱向控制固定為 Ki 0，因此不會顯示或應用此設定。 豐田/雷克薩斯的通用 Ki=0 固定，以避免與專用控制器重複補償；此設定隱藏且不應用儲存值。 已識別為 Ray EV Comma Pedal 控制時顯示此設定，並在約一秒內將儲存值應用於速度 PID。 實際 Ki 為儲存值乘以 0.001。"
     },
     {
       "group": "주행튜닝",
@@ -1419,7 +1610,10 @@
       "min": 0,
       "max": 200,
       "default": 20,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "縱向控制",
+      "ttitle": "縱向執行器延遲(20)x0.01",
+      "tdescr": "縱向延遲值 (值越高越早開始加減速) — HKG: 推薦 20"
     },
     {
       "group": "주행튜닝",
@@ -1435,7 +1629,10 @@
       "min": 10,
       "max": 100,
       "default": 50,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "縱向控制",
+      "ttitle": "停止/啟動靈敏度(50)x0.01",
+      "tdescr": "根據規劃速度判斷停車與起步。降低數值會推遲停車判斷，並可能更早解除停車狀態。最低值為10（0.10m/s），此前儲存的小於10的值也會自動提高到10。"
     },
     {
       "group": "감속제어",
@@ -1452,7 +1649,10 @@
       "max": 300,
       "default": 100,
       "unit": 5,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "減速控制",
+      "ttitle": "彎道速度調節比例(100%)",
+      "tdescr": "數值越高，允許的橫向加速度和彎道目標速度越低。根據距彎道的距離提前減速。"
     },
     {
       "group": "조향일반",
@@ -1468,7 +1668,10 @@
       "min": 0,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向設定",
+      "ttitle": "ATC: 自動轉向控制",
+      "tdescr": "0: 關閉，1: 變道/轉彎，2: 變道/轉彎+速度，3: 速度。右轉前自動變道距離在詳細設定中調整，0米關閉，僅在模式1或2下工作。"
     },
     {
       "group": "조향일반",
@@ -1486,7 +1689,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "轉向設定",
+      "ttitle": "手動變道轉向燈（試驗）",
+      "tdescr": "車速至少5km/h，確認同方向轉向0.15秒後，鬆手或短暫反向施力但仍接近邊界時最多保留意圖1.5秒；停止接近超過0.3秒、回退超過0.15米或單次跟蹤超過4秒則取消。左側透過新鮮的原車白線分類排除中央線，黃色、未知或過期分類阻止觸發。右側僅要求當前及前方的目標車道線至道路邊緣距離至少2.5米；不使用外側車道線機率、相鄰車道寬度或道路邊緣標準差。寬路肩也可能滿足距離條件。 獨立於ATC及右轉距離選項，不請求自動轉向。預設關閉，僅支援Ioniq 5 PE、Jetson USB2CAN及自動轉向燈模式1或2。再次請求須間隔3秒且連續熄燈1秒，自動轉向反饋隔離至少12秒。不能保證真實車道或安全間距，修改後仍需實車驗證。 開始接近時確認目標線置信度至少10%，連續接近最多跟蹤4秒。請求後跟蹤完成、返回或輸入失效，最長12秒；不能保證原車輕觸閃燈立即熄滅。 根據測得的車道邊界接近速度預測0.3秒後的位置，提前請求轉向燈。車體中心至邊界的距離閾值從0.9米最多提前至1.2米，仍要求至少0.15米實際接近、駕駛員意圖及兩側邊界一致移動。"
     },
     {
       "group": "조향일반",
@@ -1504,7 +1710,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "轉向設定",
+      "ttitle": "手動轉彎轉向燈（試驗）",
+      "tdescr": "結合駕駛員轉向力、方向盤轉動及車輛實際旋轉識別左右轉彎，獨立於ATC，支援車道線不清晰的路口。起始速度5–60km/h，同向轉向力持續0.15秒，轉角至少42度且增加22度，並確認同向車身旋轉。方向盤回到±15度且旋轉穩定、駕駛員反向轉向或持續30秒後結束。預設關閉，適用於Ioniq 5 PE、支援的轉向燈裝置及自動轉向燈模式1或2。停車場轉彎也可能觸發，彎道及避讓動作可能誤觸發，實車燈光驗證待完成。"
     },
     {
       "group": "조향일반",
@@ -1522,7 +1731,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "轉向設定",
+      "ttitle": "模型意圖轉向燈（試驗）",
+      "tdescr": "重複確認模型轉彎或變道機率至少50%，且優於直行和反方向時顯示轉向燈。轉彎至少10km/h，變道至少30km/h，並要求橫向控制啟用；不新增自動轉向請求。 預設關閉，僅支援Ioniq 5 PE、Jetson USB2CAN及自動轉向燈模式1或2；實車驗證另行進行。 在30 km/h及以上，若模型最近兩個預測時點對同一方向變道的機率均不低於65%，且測得的兩側車道線位置都顯示車輛正在向該側靠近，也可請求轉向燈。僅有預測不會觸發，也不請求轉向。 預測觸發後，若分叉處車道變寬，但模型意圖與實際移動仍一致，則保持同一請求。意圖減弱或反向時結束分叉保持；巡航 CANCEL 會立即解除保持請求。"
     },
     {
       "group": "조향일반",
@@ -1540,7 +1752,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "轉向設定",
+      "ttitle": "模型路徑轉向燈（試驗）",
+      "tdescr": "車速至少30km/h，模型未來1至3秒路徑持續越過彎曲車道邊界，且控制曲率方向一致時顯示轉向燈。要求目標線置信度至少10%、連續邊界及重複觀測。排除左側中央線及右側道路邊緣，不新增自動轉向請求。 預設關閉，僅支援Ioniq 5 PE、Jetson USB2CAN及自動轉向燈模式1或2；實車驗證另行進行。"
     },
     {
       "group": "조향일반",
@@ -1559,7 +1774,10 @@
       "unit": 50,
       "control": "slider",
       "risk": "high",
-      "detail_parent": "AutoTurnControl"
+      "detail_parent": "AutoTurnControl",
+      "tgroup": "轉向設定",
+      "ttitle": "右轉前自動變道距離(米)",
+      "tdescr": "0米關閉，在設定距離內檢查條件。250米對應原有範圍，也可選擇300–400米。原開啟設定在啟動時轉換為250米。附加於ATC模式1或2。車速至少10km/h時，距TBT右轉或右側分岔設定距離以內且尚未開始轉彎時請求右轉向燈。需要Ioniq 5 PE USB2CAN、AutoBlinkerControl=2及LaneChangeNeedTorque=0。後方僅檢查有效原車BSD警告，不使用角雷達距離。右側目標車道的前方車輛當前距離及按相對速度預測3秒後的距離均須至少5米。前雷達故障或資料過期時不啟動。請求前轉向會重新確認條件，請求後駕駛員干預會取消。 低於30km/h開始的訊號始終僅作顯示；至少30km/h開始時才進入既有變道流程。右側車道線到道路邊緣須至少2.5米。"
     },
     {
       "group": "조향일반",
@@ -1576,7 +1794,10 @@
       "max": 100,
       "default": 20,
       "unit": 5,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "轉向設定",
+      "ttitle": "ATC: 轉向速度(20)",
+      "tdescr": "(APN) 0: 不使用, 轉向速度"
     },
     {
       "group": "조향일반",
@@ -1592,7 +1813,10 @@
       "min": 0,
       "max": 30,
       "default": 6,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向設定",
+      "ttitle": "ATC: 速度控制剩餘時間(3)",
+      "tdescr": "(APN) NOO 完成時間距離 (速度 × 時間)"
     },
     {
       "group": "조향일반",
@@ -1608,7 +1832,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向設定",
+      "ttitle": "ATC 輔助地圖顯示(0)",
+      "tdescr": "(APN) ATC 啟用時開啟地圖"
     },
     {
       "group": "버튼설정",
@@ -1624,7 +1851,10 @@
       "min": 0,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航按鈕模式(0)",
+      "tdescr": "0: 常規, 1: 使用者1, 2: 使用者2, 3: 使用者3 (使用速度表)"
     },
     {
       "group": "버튼설정",
@@ -1640,7 +1870,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "按鍵設定",
+      "ttitle": "取消按鈕模式(0)",
+      "tdescr": "0: 縱向控制, 1: 縱向 + 橫向"
     },
     {
       "group": "버튼설정",
@@ -1656,7 +1889,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "按鍵設定",
+      "ttitle": "LFA 按鈕模式(0)",
+      "tdescr": "0: 常規, 1: 減速並停止/前車就緒, 2: 胡蘿蔔巡航"
     },
     {
       "group": "버튼설정",
@@ -1672,7 +1908,10 @@
       "min": 1,
       "max": 20,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航按鈕連發1(8)",
+      "tdescr": "僅限非縱向控制車輛，速度按鈕訊號傳送限制時間"
     },
     {
       "group": "버튼설정",
@@ -1688,7 +1927,10 @@
       "min": 1,
       "max": 200,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航按鈕連發2(30)",
+      "tdescr": "僅限非縱向控制車輛 — 速度按鈕訊號傳送暫停時間"
     },
     {
       "group": "버튼설정",
@@ -1704,7 +1946,10 @@
       "min": 1,
       "max": 20,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航按鈕連發3(1)",
+      "tdescr": "僅限非縱向控制車輛 — 連續速度按鈕訊號計數"
     },
     {
       "group": "버튼설정",
@@ -1721,7 +1966,10 @@
       "max": 100,
       "default": 10,
       "unit": 1,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航速度單位擴充套件(10)",
+      "tdescr": "SET/DECEL 加減速單位 (模式 1,2,3, GasTok)"
     },
     {
       "group": "버튼설정",
@@ -1737,7 +1985,10 @@
       "min": 30,
       "max": 100,
       "default": 40,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航按鍵長按延遲(40)",
+      "tdescr": "長按按鈕後，功能觸發前的延遲時間。"
     },
     {
       "group": "버튼설정",
@@ -1754,7 +2005,10 @@
       "max": 100,
       "default": 10,
       "unit": 1,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航速度單位基礎(10)",
+      "tdescr": "SET/DECEL 加減速單位 (基礎單位)"
     },
     {
       "group": "버튼설정",
@@ -1771,7 +2025,10 @@
       "max": 160,
       "default": 10,
       "unit": 10,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航速度1(30)",
+      "tdescr": "按鈕模式使用者 3, 分段速度, 0: 道路限速 + 自動加速偏移"
     },
     {
       "group": "버튼설정",
@@ -1788,7 +2045,10 @@
       "max": 160,
       "default": 10,
       "unit": 10,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航速度2(50)",
+      "tdescr": "按鈕模式使用者 3, 第二段速度"
     },
     {
       "group": "버튼설정",
@@ -1805,7 +2065,10 @@
       "max": 160,
       "default": 10,
       "unit": 10,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航速度3(80)",
+      "tdescr": "按鈕模式使用者 3, 第三段速度"
     },
     {
       "group": "버튼설정",
@@ -1822,7 +2085,10 @@
       "max": 160,
       "default": 10,
       "unit": 10,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航速度4(110)",
+      "tdescr": "按鈕模式使用者 3, 第四段速度"
     },
     {
       "group": "버튼설정",
@@ -1839,7 +2105,10 @@
       "max": 160,
       "default": 10,
       "unit": 10,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "按鍵設定",
+      "ttitle": "巡航速度5(130)",
+      "tdescr": "按鈕模式使用者 3, 第五段速度"
     },
     {
       "group": "버튼설정",
@@ -1855,7 +2124,10 @@
       "min": 0,
       "max": 3,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "按鍵設定",
+      "ttitle": "換擋撥片模式(0)",
+      "tdescr": "動能回收撥片後, 0: 巡航開啟, 1: 巡航就緒, 2: 減速並巡航就緒, 3: 胡蘿蔔巡航"
     },
     {
       "group": "오토크루즈",
@@ -1871,7 +2143,10 @@
       "min": 0,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "自動巡航",
+      "ttitle": "自動巡航控制 (僅限現代/起亞)",
+      "tdescr": "1: 軟駐車 + 自動巡航, 2: 如果軟駐車報錯"
     },
     {
       "group": "오토크루즈",
@@ -1887,7 +2162,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "自動巡航",
+      "ttitle": "取消後允許軟駐車(0)",
+      "tdescr": "0:巡航取消狀態下禁用軟駐車\n1:巡航取消狀態下停車後允許軟駐車"
     },
     {
       "group": "오토크루즈",
@@ -1904,7 +2182,10 @@
       "max": 200,
       "default": 0,
       "unit": 5,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "自動巡航",
+      "ttitle": "自動巡航: 踩油門起步速度",
+      "tdescr": "僅在設定速度以上執行 — GasTab: 踩油門 0.6 秒"
     },
     {
       "group": "오토크루즈",
@@ -1921,7 +2202,10 @@
       "max": 200,
       "default": 30,
       "unit": 5,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "自動巡航",
+      "ttitle": "自動巡航: 鬆開油門取消速度",
+      "tdescr": "鬆開油門踏板時，當前速度低於設定值則取消巡航。"
     },
     {
       "group": "오토크루즈",
@@ -1937,7 +2221,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "自動巡航",
+      "ttitle": "上路自動啟用",
+      "tdescr": "1: 僅轉向, 2: 轉向開啟 + 巡航待機"
     },
     {
       "group": "시작",
@@ -1953,7 +2240,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "全時橫向控制",
+      "tdescr": "即使巡航未啟用，也允許橫向控制。\n系統啟動後，首次確認所需輸入就緒前不執行轉向。一旦透過，此啟動檢查不再阻斷；現有行駛中安全處理保持不變。\nTesla 在實際靜止時可以轉向；低速移動時仍遵守最低轉向速度限制。\n有車輛 CAN 擴充套件的 Tesla，每次獨立三指觸屏立即切換此設定，不再切換實驗模式。關閉不等於解除已啟用巡航中的轉向控制。\n確認持續的 CAN 控制器錯誤或反覆出現的 Casper 前方安全系統故障時，會發出警報並停止全時轉向；故障解除前不能重新啟用。\n0: 關閉, 1: 開啟"
     },
     {
       "group": "시작",
@@ -1969,7 +2259,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "特斯拉自動轉向燈",
+      "tdescr": "僅適用於車輛 CAN 與真實撥杆有效的 Model 3/Y。不再導航提前打轉彎燈，用實測航向和回正判定完成；僅已確認點亮的轉彎可在新鮮許可權下停車等待，保留變道準備亮燈。駕駛員優先，不增加轉向或起步許可權。預設關閉，修改後需重新啟動。未經封閉場地實車驗證，不應用於公共道路。"
     },
     {
       "group": "시작",
@@ -1986,7 +2279,10 @@
       "max": 1,
       "default": 0,
       "unit": 1,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "特斯拉 CAN 紅燈停車",
+      "tdescr": "預設關閉，修改後重新啟動。僅 Tesla Model 3/Y 且 openpilot 縱向已啟用時，使用新鮮 APP_trafficControl 紅燈及小於126米的停止線補充停車約束。僅支援8位元組、米制、視覺來源協議，拒絕6位元組 DAS_road。綠燈只解除本約束，不覆蓋其他障礙和人工停車。近距離變紅可能超出制動能力；訊號丟失或距離不一致會提示接管並請求既有軟退出。需核對實車協議和距離參考點，並在封閉場地驗證，不代表已透過道路驗收。"
     },
     {
       "group": "시작",
@@ -2003,7 +2299,10 @@
       "max": 1,
       "default": 0,
       "unit": 1,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "特斯拉手動變道燈",
+      "tdescr": "需開啟特斯拉自動轉向燈和資料共享。30km/h 以上結合駕駛員轉向意圖、持續接近車道線、連續 ONNX 虛線分類與相鄰車道幾何，僅請求左右燈，巡航未啟用也可使用。實線、未知或過期結果禁止新自動請求，不限制真實撥杆。不能證明車道線顏色或同向車流，不增加轉向許可權。預設關閉，修改後重新啟動，需封閉場地實車驗證。"
     },
     {
       "group": "시작",
@@ -2020,7 +2319,10 @@
       "max": 1,
       "default": 0,
       "unit": 1,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "特斯拉模型意圖燈",
+      "tdescr": "獨立且預設關閉的變道預測燈：需特斯拉自動轉向燈、資料共享、橫向控制啟用、30km/h 以上、連續模型變道機率及新鮮 ONNX 虛線和相鄰車道證據。可能提前或錯誤亮燈，不使用導航轉彎預告，不實現掉頭，也不增加轉向許可權。修改後重新啟動，需封閉場地驗證。"
     },
     {
       "group": "시작",
@@ -2037,7 +2339,10 @@
       "max": 1,
       "default": 0,
       "unit": 1,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "特斯拉模型路徑燈",
+      "tdescr": "獨立且預設關閉的路徑預測燈：需特斯拉自動轉向燈、資料共享、橫向控制啟用、30km/h 以上、相對車道曲率連續預測越線及新鮮 ONNX 虛線和相鄰車道證據。可能提前或錯誤亮燈；不恢復導航轉彎提前亮燈，不增加掉頭邏輯或轉向許可權。修改後重新啟動，需封閉場地驗證。"
     },
     {
       "group": "시작",
@@ -2054,7 +2359,10 @@
       "max": 18,
       "default": 0,
       "unit": 1,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "Parked SPAS indicator test",
+      "tdescr": "With SPAS enabled after reboot: 1/2 acknowledged continuous left/right, 3/4 acknowledged short-plus-hold. Parked coexistence comparisons on Ioniq5PE only: 5/6 continuous, 7/8 0.2-second pulse plus existing hold, 9/10 pulse only. 11/12 one packet per new stock receipt, ending 0.1s after lamp confirmation and at most 0.5s, then existing confirmed hold for a 10-second total. 13/14 repeat only SPAS after fresh stock reception for up to 10 seconds, without the existing hold. Coexistence tests send no ECU diagnostics. P, zero speed and inactive controls required throughout; 7/8/11/12/13/14 last 10 seconds total, others at most 3 seconds; coexistence cooldown is 30 seconds from start. Select 0 to cancel or before repeating. Resets at startup. 15/16: supplied-patch left/right parked comparison: APRK 1003, then 288301 after five controller frames, SPAS on even frames without waiting for replies. Uses actual controller frame/native packer, at most 10 seconds, 1001 restore on end or CAN/vehicle guard failure. 17/18: parked left/right 0x3C1 lever replay at 20Hz, max 10s; no APRK/SPAS, cancel on driver/input/CAN change."
     },
     {
       "group": "시작",
@@ -2071,7 +2379,10 @@
       "max": 1,
       "default": 0,
       "unit": 1,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "CAN-FD SPAS indicators (trial)",
+      "tdescr": "Use comma SPAS indicators on Hyundai/Kia/Genesis CAN-FD vehicles with matching ECAN SPAS1/2 and valid driver input. Default OFF; reboot required. Disables the Jetson USB2CAN blinker path. The parking ECU is temporarily paused only during a requested signal and restored afterwards. Existing AutoBlinkerControl modes apply. Vehicle acceptance is required."
     },
     {
       "group": "시작",
@@ -2087,7 +2398,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "記錄路面攝影機",
+      "tdescr": "1: 標準攝影機, 2: 標準攝影機 + 廣角攝影機"
     },
     {
       "group": "시작",
@@ -2103,7 +2417,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "使用 HDP (CCNC)",
+      "tdescr": "1: 使用 APN 時, 2: 始終"
     },
     {
       "group": "시작",
@@ -2119,7 +2436,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "Mapbox 樣式",
+      "tdescr": "0: 預設背景, 1: 深色背景, 2: 衛星地圖"
     },
     {
       "group": "시작",
@@ -2135,7 +2455,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "解除最小轉向速度限制",
+      "tdescr": "配備 smdps: 1"
     },
     {
       "group": "시작",
@@ -2151,7 +2474,10 @@
       "min": 0,
       "max": 3,
       "default": 2,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "來自 PCM 的速度 (原廠 SCC)",
+      "tdescr": "PCM 車輛速度控制。0: 彎道/攝影機減速 + 縱向控制，1: 使用原廠設定速度且不連續傳送按鈕，2: 彎道/攝影機減速，3: 本田/豐田（豐田/雷克薩斯使用原廠設定速度，不切換縱向控制模式）"
     },
     {
       "group": "시작",
@@ -2168,7 +2494,10 @@
       "max": 3000,
       "default": 60,
       "unit": 10,
-      "display_unit": "timeMin"
+      "display_unit": "timeMin",
+      "tgroup": "啟動設定",
+      "ttitle": "關機時間 (分鐘)",
+      "tdescr": "發動機熄火且經過指定時間後，comma 裝置將關機。"
     },
     {
       "group": "시스템",
@@ -2186,7 +2515,10 @@
       "default": 1,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "系統",
+      "ttitle": "使用廣角前置攝影機",
+      "tdescr": "預設開啟。僅在廣角前置攝影機故障的裝置上關閉。關閉後，camerad 會將廣角攝影機排除在同步之外，modeld 會將普通前置攝影機畫面複用於兩個模型輸入。攝像範圍和模型效能可能會變化。更改後請重新啟動裝置。"
     },
     {
       "group": "시작",
@@ -2205,7 +2537,10 @@
       "unit": 1,
       "control": "toggle",
       "risk": "high",
-      "search_only": true
+      "search_only": true,
+      "tgroup": "啟動設定",
+      "ttitle": "啟用駕駛員監控（例外設定）",
+      "tdescr": "預設開啟，建議保持開啟。此例外選項僅供未安裝 DM 攝影機，或 DM 攝影機故障而無法正常進行駕駛員監控的裝置使用。關閉後，正常行駛時的 DM 模型與警告、監控觸發的強制減速及鎖定都會停用。未啟用駕駛員監控時駕駛，可能違反所在地法律、車輛要求或使用條件；請僅在確認適用要求並承擔安全責任後關閉。"
     },
     {
       "group": "시작",
@@ -2235,9 +2570,16 @@
         "zh": [
           "标准",
           "实验（仅供测试）"
+        ],
+        "zh-tw": [
+          "標準",
+          "實驗（僅供測試）"
         ]
       },
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "駕駛員監控模式",
+      "tdescr": "0：標準；1：實驗。實驗模式可能違反法規，僅限受控測試。無攝影機時基礎警告為15/30/45秒；實驗模式在確認的空曠直道上為30/60/90秒。周圍從無移動車輛變為首次確認有移動車輛時，才啟用20秒標準監測。持續觀測或新增車輛不會延長，之後恢復實驗監測。此期間停止攝影機操作寬限、特殊前方注視重置和檢測放寬，並結束此前寬限。有攝影機的0模式保留comma行為；1模式為10/16/26秒，空曠道路為20/32/52秒，頭部姿態容差增加20%。駕駛員或藍芽按鍵操作重置計時，推遲攝影機警告45或90秒後開始攝影機監控；這也會延遲睏倦、閉眼和手機警告。連續2秒明確注視前方可重置攝影機計時。操作不能解除最高警告或鎖定。攝影機故障自動切換為操作監控。標準模式不保證合法認證。模式更改無需重新啟動，約每0.5秒實時應用。切換保留累計監控時間、警告次數和鎖定，並結束此前的操作寬限及連續前方注視判定。 現代/起亞/捷尼賽思CAN-FD中不按車型名稱限制、透過格式、校驗和、計數器及新鮮度驗證的原始STEER_TOUCH_2AF觸控在攝影機不可用時持續重置操作計時；攝影機正常的1模式僅將新接觸視為操作，0模式保持原樣。 共同例外：無論攝影機是否可用，兩種模式均在有效訊號持續確認P擋、完全靜止及輔助駕駛解除1秒後重置累計警告和鎖定。僅零速或關閉再開啟不能解除，必須手動重新啟用。"
     },
     {
       "group": "시작",
@@ -2267,8 +2609,15 @@
         "zh": [
           "关闭",
           "开启"
+        ],
+        "zh-tw": [
+          "關閉",
+          "開啟"
         ]
-      }
+      },
+      "tgroup": "啟動設定",
+      "ttitle": "啟用 Carrot Vision",
+      "tdescr": "獨立於駕駛員監控啟用網頁道路影片，可與外部HUD同時使用。同時使用影片可能增加裝置負載。"
     },
     {
       "group": "시작",
@@ -2284,7 +2633,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "遮蔽車門感應",
+      "tdescr": ""
     },
     {
       "group": "시작",
@@ -2300,7 +2652,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "遮蔽安全帶感應",
+      "tdescr": ""
     },
     {
       "group": "크루즈",
@@ -2317,7 +2672,10 @@
       "max": 200,
       "default": 0,
       "unit": 10,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "巡航設定",
+      "ttitle": "自動加速至: (100)%",
+      "tdescr": "當前方有車時自動加速，最高至 (道路限速 x 比例)"
     },
     {
       "group": "감속제어",
@@ -2334,7 +2692,10 @@
       "max": 100,
       "default": 0,
       "unit": 10,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "巡航設定",
+      "ttitle": "自動道路限速調整 (50)%",
+      "tdescr": "-1: 設定道路限速, 100: 新道路速度, 50: 中值, 0: 不改變"
     },
     {
       "group": "크루즈",
@@ -2350,7 +2711,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "巡航設定",
+      "ttitle": "自動更新巡航速度",
+      "tdescr": "如果踩下油門且速度超過設定速度，則更新設定速度"
     },
     {
       "group": "크루즈",
@@ -2368,7 +2732,10 @@
       "default": 0,
       "unit": 1,
       "display_unit": "percent",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "巡航設定",
+      "ttitle": "模型車速應用比例",
+      "tdescr": "按設定比例應用模型計算的行駛速度。"
     },
     {
       "group": "화면",
@@ -2384,7 +2751,10 @@
       "min": 0,
       "max": 2,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "顯示除錯資訊",
+      "tdescr": ""
     },
     {
       "group": "화면",
@@ -2400,7 +2770,10 @@
       "min": 0,
       "max": 3,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "顯示胎壓 (TPMS) 資訊",
+      "tdescr": "0: 無, 1: 上方, 2: 下方, 3: 兩側\n※ 不適用於 C4 (MICI)"
     },
     {
       "group": "화면",
@@ -2416,7 +2789,10 @@
       "min": 0,
       "max": 3,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "顯示時間資訊",
+      "tdescr": "0: 無, 1: 時間/日期, 2: 時間, 3: 日期"
     },
     {
       "group": "화면",
@@ -2432,7 +2808,10 @@
       "min": 0,
       "max": 1,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "顯示路徑終點",
+      "tdescr": ""
     },
     {
       "group": "화면",
@@ -2448,7 +2827,10 @@
       "min": 0,
       "max": 1,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "顯示裝置資訊",
+      "tdescr": ""
     },
     {
       "group": "화면",
@@ -2464,7 +2846,10 @@
       "min": -1,
       "max": 2,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "顯示車道資訊",
+      "tdescr": "-1: 無, 0: 路徑, 1: 路徑+車道, 2: 路徑+車道+路緣"
     },
     {
       "group": "화면",
@@ -2480,7 +2865,10 @@
       "min": 0,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "顯示雷達資訊",
+      "tdescr": "0: 無, 1: 顯示, 2: + 相對位置, 3: 停止的障礙物"
     },
     {
       "group": "화면",
@@ -2496,7 +2884,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "顯示路線資訊",
+      "tdescr": "僅在連線 APN 時執行。0: 關閉, 1: 開啟"
     },
     {
       "group": "화면패스",
@@ -2512,7 +2903,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示設定",
+      "ttitle": "輪胎軌跡",
+      "tdescr": "在預測路徑上以漸變色(綠→紅)顯示車道偏離程度, 並在底部顯示偏移量(L/R/C, m)。\n0:關, 1:開"
     },
     {
       "group": "화면패스",
@@ -2529,7 +2923,10 @@
       "max": 15,
       "default": 9,
       "unit": 1,
-      "control": "select"
+      "control": "select",
+      "tgroup": "顯示設定",
+      "ttitle": "顯示路徑模式: 無車道 (9)",
+      "tdescr": "0: 原廠, 1,2: 矩形, 3,4: ^^, 5,6: 矩形, 7,8: ^^, 9,10,11: 平滑^^, 12: 平滑2^^, 13: 3線, 14: 2線, 15: 1線"
     },
     {
       "group": "화면패스",
@@ -2546,7 +2943,10 @@
       "max": 20,
       "default": 12,
       "unit": 1,
-      "control": "select"
+      "control": "select",
+      "tgroup": "顯示設定",
+      "ttitle": "顯示路徑顏色: 無車道 (12)",
+      "tdescr": "(+10: 描邊) 0(紅), 1(橙), 2(黃), 3(藍), 5(深藍), 6(紫), 7(黑), 8(白), 9(藍), 20: 自動"
     },
     {
       "group": "화면패스",
@@ -2563,7 +2963,10 @@
       "max": 19,
       "default": 1,
       "unit": 1,
-      "control": "select"
+      "control": "select",
+      "tgroup": "顯示設定",
+      "ttitle": "顯示路徑顏色: 巡航關閉 (1)",
+      "tdescr": "(+10:stroke)0(R),1(O),2(Y),3(B),5(N),6(V),7(K),8(W),9(B)"
     },
     {
       "group": "화면패스",
@@ -2580,7 +2983,10 @@
       "max": 15,
       "default": 11,
       "unit": 1,
-      "control": "select"
+      "control": "select",
+      "tgroup": "顯示設定",
+      "ttitle": "顯示路徑模式: 車道模式 (11)",
+      "tdescr": "0: 原廠, 1,2: 矩形, 3,4: ^^, 5,6: 矩形, 7,8: ^^, 9,10,11: 平滑^^, 12: 平滑2^^, 13: 3線, 14: 2線, 15: 1線"
     },
     {
       "group": "화면패스",
@@ -2597,7 +3003,10 @@
       "max": 20,
       "default": 3,
       "unit": 1,
-      "control": "select"
+      "control": "select",
+      "tgroup": "顯示設定",
+      "ttitle": "顯示路徑顏色: 車道模式 (3)",
+      "tdescr": "(+10: 描邊) 0(紅), 1(橙), 2(黃), 3(藍), 5(深藍), 6(紫), 7(黑), 8(白), 9(藍), 20: 自動"
     },
     {
       "group": "화면",
@@ -2614,7 +3023,10 @@
       "max": 8,
       "default": 0,
       "unit": 1,
-      "control": "select"
+      "control": "select",
+      "tgroup": "顯示設定",
+      "ttitle": "顯示除錯圖表 (0)",
+      "tdescr": "0:關, 1:加速度, 2:速度+加速度, 3:模型, 4:前車加速度/相對速度, 5:前車加速度/加加速度, 6:轉向, 7:轉角, 8:曲率"
     },
     {
       "group": "레인모드",
@@ -2631,7 +3043,10 @@
       "max": 200,
       "default": 0,
       "unit": 1,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "轉向",
+      "ttitle": "車道線: 速度 (0)",
+      "tdescr": "超過設定速度時使用車道模式。模型速度軌跡的起點低於實測車速的70%，或終點低於起點的70%時，暫時切換為無車道線模式；正常條件持續約1秒後才可恢復。"
     },
     {
       "group": "레인모드",
@@ -2648,7 +3063,10 @@
       "max": 200,
       "default": 0,
       "unit": 10,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "轉向",
+      "ttitle": "車道線: 彎道速度 (0)",
+      "tdescr": "低於設定速度時不使用車道模式"
     },
     {
       "group": "레인모드",
@@ -2665,7 +3083,10 @@
       "max": 500,
       "default": 0,
       "unit": 10,
-      "display_unit": "distanceCm"
+      "display_unit": "distanceCm",
+      "tgroup": "轉向",
+      "ttitle": "車道線: 車道偏移調整 (0)cm",
+      "tdescr": "向路緣/彎道內側修正"
     },
     {
       "group": "조향일반",
@@ -2681,7 +3102,10 @@
       "min": -1,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "變道使用轉向力矩",
+      "tdescr": "0: 立即變道, 1: 需要力矩 (輕撥), -1: 自動變道關閉"
     },
     {
       "group": "조향일반",
@@ -2698,7 +3122,10 @@
       "max": 2,
       "default": 0,
       "unit": 1,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "轉向",
+      "ttitle": "自動轉向燈",
+      "tdescr": "0：關閉（保留藍芽輕觸）。1：低於5km/h藍芽保持至轉彎結束，從ATC audioTurn提示開始保持，路口停車時不熄滅，實際轉彎後方向盤回正時解除。2：另含實際開始的ATC變道，等待時不亮。同方向取消保持，反方向切換。原車撥杆優先。需要支援的Jetson USB-CAN/B1車輛。 ATC在確認傳送完成但未亮燈時最多重試一次。有效TBT座標與車輛GPS確認直行透過後自動取消；位置不可靠時不使用該位置取消判斷。 TBT按audioTurn距離及行駛距離跟蹤至轉彎點後30米。確認對應方向轉角超過30度且車身方向變化至少20度後，車速至少1km/h時方向盤回到±15度以內立即結束保持。進入轉彎前的訊號燈停車仍保持。新的下一轉彎提示在當前轉彎結束後接續；對應方向轉角達到30度後，駕駛員反向施力使轉角越過零點進入反方向時取消。已確認傳送及亮燈的TBT保持不因接收端driver_override狀態單獨解除。不能保證原車燈立即熄滅。 按巡航 CANCEL 會停止自動轉向燈請求並解除自動保持。泊車轉動方向盤不會重新觸發；用 SET/RES 或 +/− 解除巡航取消狀態後，新動作才可觸發。原車撥杆和藍芽轉向燈按鈕仍可手動使用。"
     },
     {
       "group": "조향일반",
@@ -2716,7 +3143,10 @@
       "default": 0,
       "unit": 5,
       "display_unit": "speedKph",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "轉向",
+      "ttitle": "轉向燈撥杆區分轉彎/變道 (km/h, 0=關)",
+      "tdescr": "僅限現代 CAN-FD（0x3C1 撥杆訊號）。0 為關閉。設定速度及以下時，先半撥（單觸），轉向燈亮-滅-亮之後再撥到底（鎖定）為左/右轉彎；直接鎖定或僅單觸為變道；撥杆仍在單觸位置時不開始變道（鎖定前也會經過該位置約 0.1 秒）。超過設定速度時，即使鎖定撥杆也只變道。"
     },
     {
       "group": "조향일반",
@@ -2733,7 +3163,10 @@
       "max": 1,
       "default": 0,
       "unit": 1,
-      "control": "toggle"
+      "control": "toggle",
+      "tgroup": "轉向",
+      "ttitle": "單觸變道請求等待 5 次閃爍",
+      "tdescr": "僅限現代 CAN-FD（0x3C1 撥杆訊號）。單觸撥杆後若變道未立即獲批（BSD、側方車輛、車道線等原有判斷），從撥杆起保持轉向燈並等待 5 次閃爍（約 4 秒）。期間解除則變道，否則放棄請求，剩餘閃爍不會再觸發。鎖定撥杆時照舊持續等待。"
     },
     {
       "group": "조향일반",
@@ -2749,7 +3182,10 @@
       "min": 0,
       "max": 100,
       "default": 0,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "轉向",
+      "ttitle": "變道延遲 x0.1s(0)",
+      "tdescr": "開啟轉向燈後在設定時間後變道"
     },
     {
       "group": "조향일반",
@@ -2765,7 +3201,10 @@
       "min": -1,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "變道盲點監測 (BSD)",
+      "tdescr": "0: BSD 檢測 (允許轉向力矩), 1: 阻止轉向力矩, -1: 忽略 BSD"
     },
     {
       "group": "조향일반",
@@ -2783,7 +3222,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "轉向",
+      "ttitle": "ONNX 車道與盲點識別",
+      "tdescr": "開啟後在 comma 裝置上識別車道型別。僅在單獨開啟 OnnxBsdEnabled 後執行攝影機 BSD；該開關預設關閉，並在已配置且模型估算寬度至少 2m 的左右區域間輪流檢查。關閉本設定會停止視覺服務並保留車輛原有 BSD。即使已開啟，也會等待 onroad 初始化及模型、CAN、Panda 就緒並穩定 0.5 秒後啟動，無需啟用巡航。Offroad 時停止，下次 onroad 重新等待。"
     },
     {
       "group": "조향일반",
@@ -2803,7 +3245,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "轉向",
+      "ttitle": "ONNX 攝影機盲點識別",
+      "tdescr": "開啟廣角攝影機的 ONNX 車輛側方盲點識別。它與車道識別獨立，預設關閉，不影響車輛自身提供的盲點資訊。"
     },
     {
       "group": "조향일반",
@@ -2823,7 +3268,10 @@
       "default": 25,
       "unit": 1,
       "display_unit": "percent",
-      "risk": "medium"
+      "risk": "medium",
+      "tgroup": "轉向",
+      "ttitle": "車道置信度閾值",
+      "tdescr": "將實線或虛線候選判定為有效車道所需的最低置信度。"
     },
     {
       "group": "조향일반",
@@ -2843,7 +3291,10 @@
       "default": 400,
       "unit": 50,
       "display_unit": "timeMs",
-      "risk": "medium"
+      "risk": "medium",
+      "tgroup": "轉向",
+      "ttitle": "車道計算間隔",
+      "tdescr": "從道路攝影機再次執行 ONNX 車道推理的最短間隔。"
     },
     {
       "group": "조향일반",
@@ -2863,7 +3314,10 @@
       "default": 94,
       "unit": 1,
       "display_unit": "percent",
-      "risk": "medium"
+      "risk": "medium",
+      "tgroup": "轉向",
+      "ttitle": "盲區置信度閾值",
+      "tdescr": "將在檢測區域內的車輛判定為攝影機盲區警告所需的最低置信度。"
     },
     {
       "group": "조향일반",
@@ -2883,7 +3337,10 @@
       "default": 200,
       "unit": 100,
       "display_unit": "timeMs",
-      "risk": "medium"
+      "risk": "medium",
+      "tgroup": "轉向",
+      "ttitle": "盲區保持時間",
+      "tdescr": "平滑盲區置信度；警告啟用後會在低於啟動閾值15個百分點時解除。"
     },
     {
       "group": "조향일반",
@@ -2903,7 +3360,10 @@
       "default": 250,
       "unit": 50,
       "display_unit": "timeMs",
-      "risk": "medium"
+      "risk": "medium",
+      "tgroup": "轉向",
+      "ttitle": "盲區計算間隔",
+      "tdescr": "從廣角攝影機再次執行 BSD ONNX 推理的基本間隔。"
     },
     {
       "group": "조향일반",
@@ -2919,7 +3379,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "變道車道判斷",
+      "tdescr": "0: 顏色+型別(黃線阻止), 1: 僅型別(虛線/實線), 2: 僅型別+實線扭矩override"
     },
     {
       "group": "시작",
@@ -2935,7 +3398,10 @@
       "min": 0,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "超速照相觸感反饋 (0)",
+      "tdescr": "0: 禁用, 1: 振動, 2: 儀表盤, 3: HUD 顯示"
     },
     {
       "group": "시작",
@@ -2951,7 +3417,10 @@
       "min": 80,
       "max": 100,
       "default": 89,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "最大角度幀數 (89)",
+      "tdescr": "推薦 89"
     },
     {
       "group": "시작",
@@ -2967,7 +3436,10 @@
       "min": 0,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "現代: 攝影機 SCC (0)",
+      "tdescr": "1: 縱向控制車輛, 2: 巡航狀態同步 (CAN-FD 車輛), 3: 原廠巡航 (CANFD 縱向線束)\n關閉時，若在攝影機匯流排上檢測到 SCC，發生 CAN 錯誤時會提示啟用此設定。已配置攝影機 SCC 的車型除外。\nCAN-FD CameraSCC 使用 openpilot 縱向控制並啟用角雷達時，在 CAN 有效、D 擋、鬆開制動且車速超過 10.8 km/h 的條件下，會週期性請求開啟原廠 SCC MAIN。此功能獨立於 AutoEngage 和 Carrot 巡航啟用狀態，MAIN 開啟後停止該請求。SET 和停車後恢復請求仍要求 Carrot 巡航處於啟用狀態。\nCAN-FD CameraSCC 使用 openpilot 縱向控制時，用於儀表顯示的原廠 SCC MAIN 狀態與 Carrot 啟用意圖分別處理。轉向啟用遵循 AutoEngage 初始設定及現有駕駛員按鍵設定。"
     },
     {
       "group": "시작",
@@ -2983,7 +3455,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "現代: 僅配備 LDWS 的車輛 (0)",
+      "tdescr": "僅配備 LDWS 的車輛"
     },
     {
       "group": "시작",
@@ -3001,7 +3476,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "Comma Pedal縱向控制",
+      "tdescr": "允許在未配備ACC的車輛上透過Comma Pedal裝置進行縱向控制。僅適用於CC_ONLY_CAR車輛，且車輛的Cruise ready必須關閉。Cruise ready開啟時原廠巡航優先，無法使用Comma Pedal控制。"
     },
     {
       "group": "시작",
@@ -3019,7 +3497,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "C3X Lite 硬體",
+      "tdescr": "僅在 C3X Lite 上啟用。使用 GPIO 蜂鳴器代替揚聲器/功放，並停用音訊和記錄記錄程序。更改後請重新啟動裝置。"
     },
     {
       "group": "시작",
@@ -3035,7 +3516,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "CANFD HDA2 (0)",
+      "tdescr": "0: HDA1, 1: HDA2"
     },
     {
       "group": "시작",
@@ -3053,7 +3537,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "啟動設定",
+      "ttitle": "儀表 CAN 直接傳送",
+      "tdescr": "現代、起亞、捷尼賽思 CAN-FD CameraSCC 車輛出現間歇性儀表警告時，可開啟此項以對比原有的儀表訊息直接傳送方式。所有車輛預設關閉。更改後須重新啟動裝置。"
     },
     {
       "group": "시작",
@@ -3069,7 +3556,10 @@
       "min": -1,
       "max": 128,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "CANFD 除錯 (0)",
+      "tdescr": ""
     },
     {
       "group": "레이더설정",
@@ -3085,7 +3575,10 @@
       "min": -2,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "雷達設定",
+      "ttitle": "開啟雷達軌跡 (0)",
+      "tdescr": "-2: VOACC 純視覺測試\n-1: 無視覺匹配始終使用 SCC；無 SCC 時使用視覺\n0: 始終使用 SCC 縱向距離和相對速度；無 SCC 時使用視覺\n1: 僅前雷達與視覺匹配；失敗時使用視覺\n2: 前雷達 + 低速 SCC 與視覺匹配；失敗時使用視覺\n3: 前雷達視覺匹配失敗後始終使用 SCC；無 SCC 時使用視覺\n新視覺目標要求 prob >= 0.40；所有 SCC 匹配均忽略橫向位置\n自動支援傳統 Mando 32/64 槽位版本"
     },
     {
       "group": "레이더설정",
@@ -3115,9 +3608,16 @@
         "zh": [
           "正常",
           "左右反转"
+        ],
+        "zh-tw": [
+          "正常",
+          "左右反轉"
         ]
       },
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "雷達設定",
+      "ttitle": "雷達左右反轉",
+      "tdescr": "校正前雷達軌跡的左右方向。\n0：正常（預設）\n1：反轉橫向位置和橫向速度\n不適用於 SCC、角雷達或視覺。同時影響前車選擇和雷達顯示。不按車型自動反轉；僅在確認左右不一致後選擇。更改後請重新啟動車輛或裝置。"
     },
     {
       "group": "레이더설정",
@@ -3133,7 +3633,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "雷達設定",
+      "ttitle": "開啟角雷達 (0)",
+      "tdescr": "1: 開啟角雷達, 2: CCNC 車輛的切入檢測"
     },
     {
       "group": "시작",
@@ -3149,7 +3652,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "開啟熱點 (0)",
+      "tdescr": "在 COMMA 中插入 USIM 卡時自動開啟熱點的功能"
     },
     {
       "group": "시작",
@@ -3165,7 +3671,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "啟動設定",
+      "ttitle": "開啟軟體選單",
+      "tdescr": "記憶體錯誤時關閉"
     },
     {
       "group": "시작",
@@ -3179,7 +3688,10 @@
       "ctitle": "声音语言",
       "cdescr": "选择提示音使用的语言。自动会跟随设备语言设置。",
       "default": "auto",
-      "control": "select"
+      "control": "select",
+      "tgroup": "啟動設定",
+      "ttitle": "聲音語言",
+      "tdescr": "選擇提示音使用的語言。自動會跟隨裝置語言設定。"
     },
     {
       "group": "시작",
@@ -3196,7 +3708,10 @@
       "max": 200,
       "default": 0,
       "unit": 5,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "啟動設定",
+      "ttitle": "音量調節 (100%)",
+      "tdescr": "調節一般提示音的音量。DM 首次聲音警告的增益至少為 70%，最終警告始終為 100%，不會因音量設定或環境噪聲調節而降低。"
     },
     {
       "group": "시작",
@@ -3213,7 +3728,10 @@
       "max": 200,
       "default": 0,
       "unit": 5,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "啟動設定",
+      "ttitle": "音量調節，啟用音量 (10%)",
+      "tdescr": ""
     },
     {
       "group": "차량간격",
@@ -3246,8 +3764,16 @@
           "2级",
           "3级",
           "4级"
+        ],
+        "zh-tw": [
+          "2級",
+          "3級",
+          "4級"
         ]
-      }
+      },
+      "tgroup": "跟車距離",
+      "ttitle": "車距迴圈級數",
+      "tdescr": "車距按鈕迴圈的級數，可選2級至車輛支援的最大級數，預設使用車輛最大級數。2使用TF1和TF2，3使用TF1至TF3。下次按車距按鈕時生效，保留未使用的TF和跟車響應性設定。僅在openpilot控制加減速時應用，不改變原廠ACC的級數。"
     },
     {
       "group": "차량간격",
@@ -3263,7 +3789,10 @@
       "min": 40,
       "max": 300,
       "default": 110,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "跟車距離",
+      "ttitle": "跟車時間(1): TimeFollow1x0.01s(110)",
+      "tdescr": "巡航車距1級的基本跟車時間。50=0.50秒。應用速度TF倍率及駕駛、減速修正。"
     },
     {
       "group": "차량간격",
@@ -3279,7 +3808,10 @@
       "min": 40,
       "max": 300,
       "default": 120,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "跟車距離",
+      "ttitle": "跟車時間(2): TimeFollow2x0.01s(120)",
+      "tdescr": "巡航車距2級的基本跟車時間。50=0.50秒。應用速度TF倍率及駕駛、減速修正。"
     },
     {
       "group": "차량간격",
@@ -3295,7 +3827,10 @@
       "min": 40,
       "max": 300,
       "default": 140,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "跟車距離",
+      "ttitle": "跟車時間(3): TimeFollow3x0.01s(140)",
+      "tdescr": "巡航車距3級的基本跟車時間。50=0.50秒。應用速度TF倍率及駕駛、減速修正。"
     },
     {
       "group": "차량간격",
@@ -3311,7 +3846,10 @@
       "min": 40,
       "max": 300,
       "default": 160,
-      "unit": 5
+      "unit": 5,
+      "tgroup": "跟車距離",
+      "ttitle": "跟車時間(4): TimeFollow4x0.01s(160)",
+      "tdescr": "巡航車距4級的基本跟車時間。50=0.50秒。應用速度TF倍率及駕駛、減速修正。"
     },
     {
       "group": "차량간격",
@@ -3353,8 +3891,19 @@
           "3 均衡跟随",
           "4 快速跟随",
           "5 最大跟随（测试）"
+        ],
+        "zh-tw": [
+          "0 從容跟隨",
+          "1 最柔和",
+          "2 平緩跟隨",
+          "3 均衡跟隨",
+          "4 快速跟隨",
+          "5 最大跟隨（測試）"
         ]
-      }
+      },
+      "tgroup": "跟車距離",
+      "ttitle": "跟車響應性 · 通用",
+      "tdescr": "車距級別選擇使用通用值時應用。級別越低越從容，越高響應越快。0關閉加速增強，5為最大響應。所有響應級別均應用速度TF。 先確定通用值或車距專用值，再應用模式限制：節能最高2，安全最高3，普通和高速保留所選值。較低值和0不會提高，也不會改寫儲存的設定。 額外餘量保持條件在TF距離（車速×TF＋停車距離）的1.2倍以內適用，在1.2至1.5倍之間逐步解除，達到1.5倍後無論前車速度如何都會回收餘量。 不單獨記憶制動開始時的車距，也不在停車後保持該距離。"
     },
     {
       "group": "차량간격",
@@ -3399,8 +3948,20 @@
           "3 均衡跟随",
           "4 快速跟随",
           "5 最大跟随（测试）"
+        ],
+        "zh-tw": [
+          "使用通用值",
+          "0 從容跟隨",
+          "1 最柔和",
+          "2 平緩跟隨",
+          "3 均衡跟隨",
+          "4 快速跟隨",
+          "5 最大跟隨（測試）"
         ]
-      }
+      },
+      "tgroup": "跟車距離",
+      "ttitle": "TF1 跟車響應性",
+      "tdescr": "巡航車距1級的跟車響應性。-1使用通用值，0～5僅應用於此車距級別。可設定相同的基本TF和不同的響應。 先確定通用值或車距專用值，再應用模式限制：節能最高2，安全最高3，普通和高速保留所選值。較低值和0不會提高，也不會改寫儲存的設定。 額外餘量保持條件在TF距離（車速×TF＋停車距離）的1.2倍以內適用，在1.2至1.5倍之間逐步解除，達到1.5倍後無論前車速度如何都會回收餘量。 不單獨記憶制動開始時的車距，也不在停車後保持該距離。"
     },
     {
       "group": "차량간격",
@@ -3445,8 +4006,20 @@
           "3 均衡跟随",
           "4 快速跟随",
           "5 最大跟随（测试）"
+        ],
+        "zh-tw": [
+          "使用通用值",
+          "0 從容跟隨",
+          "1 最柔和",
+          "2 平緩跟隨",
+          "3 均衡跟隨",
+          "4 快速跟隨",
+          "5 最大跟隨（測試）"
         ]
-      }
+      },
+      "tgroup": "跟車距離",
+      "ttitle": "TF2 跟車響應性",
+      "tdescr": "巡航車距2級的跟車響應性。-1使用通用值，0～5僅應用於此車距級別。可設定相同的基本TF和不同的響應。 先確定通用值或車距專用值，再應用模式限制：節能最高2，安全最高3，普通和高速保留所選值。較低值和0不會提高，也不會改寫儲存的設定。 額外餘量保持條件在TF距離（車速×TF＋停車距離）的1.2倍以內適用，在1.2至1.5倍之間逐步解除，達到1.5倍後無論前車速度如何都會回收餘量。 不單獨記憶制動開始時的車距，也不在停車後保持該距離。"
     },
     {
       "group": "차량간격",
@@ -3491,8 +4064,20 @@
           "3 均衡跟随",
           "4 快速跟随",
           "5 最大跟随（测试）"
+        ],
+        "zh-tw": [
+          "使用通用值",
+          "0 從容跟隨",
+          "1 最柔和",
+          "2 平緩跟隨",
+          "3 均衡跟隨",
+          "4 快速跟隨",
+          "5 最大跟隨（測試）"
         ]
-      }
+      },
+      "tgroup": "跟車距離",
+      "ttitle": "TF3 跟車響應性",
+      "tdescr": "巡航車距3級的跟車響應性。-1使用通用值，0～5僅應用於此車距級別。可設定相同的基本TF和不同的響應。 先確定通用值或車距專用值，再應用模式限制：節能最高2，安全最高3，普通和高速保留所選值。較低值和0不會提高，也不會改寫儲存的設定。 額外餘量保持條件在TF距離（車速×TF＋停車距離）的1.2倍以內適用，在1.2至1.5倍之間逐步解除，達到1.5倍後無論前車速度如何都會回收餘量。 不單獨記憶制動開始時的車距，也不在停車後保持該距離。"
     },
     {
       "group": "차량간격",
@@ -3537,8 +4122,20 @@
           "3 均衡跟随",
           "4 快速跟随",
           "5 最大跟随（测试）"
+        ],
+        "zh-tw": [
+          "使用通用值",
+          "0 從容跟隨",
+          "1 最柔和",
+          "2 平緩跟隨",
+          "3 均衡跟隨",
+          "4 快速跟隨",
+          "5 最大跟隨（測試）"
         ]
-      }
+      },
+      "tgroup": "跟車距離",
+      "ttitle": "TF4 跟車響應性",
+      "tdescr": "巡航車距4級的跟車響應性。-1使用通用值，0～5僅應用於此車距級別。可設定相同的基本TF和不同的響應。 先確定通用值或車距專用值，再應用模式限制：節能最高2，安全最高3，普通和高速保留所選值。較低值和0不會提高，也不會改寫儲存的設定。 額外餘量保持條件在TF距離（車速×TF＋停車距離）的1.2倍以內適用，在1.2至1.5倍之間逐步解除，達到1.5倍後無論前車速度如何都會回收餘量。 不單獨記憶制動開始時的車距，也不在停車後保持該距離。"
     },
     {
       "group": "차량간격",
@@ -3624,8 +4221,34 @@
           "2.8×",
           "2.9×",
           "3.0×"
+        ],
+        "zh-tw": [
+          "1.0×",
+          "1.1×",
+          "1.2×",
+          "1.3×",
+          "1.4×",
+          "1.5×",
+          "1.6×",
+          "1.7×",
+          "1.8×",
+          "1.9×",
+          "2.0×",
+          "2.1×",
+          "2.2×",
+          "2.3×",
+          "2.4×",
+          "2.5×",
+          "2.6×",
+          "2.7×",
+          "2.8×",
+          "2.9×",
+          "3.0×"
         ]
-      }
+      },
+      "tgroup": "跟車距離",
+      "ttitle": "速度 TF 倍率",
+      "tdescr": "100km/h 時的 TF 倍率：10=1.0倍（不變），20=2.0倍。停車時為1.0倍，隨車速線性增加。不改變跟車響應性。"
     },
     {
       "group": "차량간격",
@@ -3642,7 +4265,10 @@
       "max": 100,
       "default": 100,
       "unit": 5,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "跟車距離",
+      "ttitle": "變道響應 (100%)",
+      "tdescr": "保持基礎 TF，僅在正常選出的前車已確認錯開且間距充足時有限放寬。以變道開始時正常選出的 leadOne/leadTwo 為基準。任一前車變化或消失後，本次變道不再額外放寬。制動只使用當前正常選出的前車，不將側方雷達候選點或開始時的歷史車輛新增為額外製動障礙物。100 不額外放寬，數值越低放寬越多，80 及以下上限相同，最多 0.25 秒且不超過 4 米。"
     },
     {
       "group": "차량간격",
@@ -3659,7 +4285,10 @@
       "max": 100,
       "default": 0,
       "unit": 10,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "跟車距離",
+      "ttitle": "減速時車距餘量 (0%)",
+      "tdescr": "根據減速強度在基礎目標車距上只增加一次餘量，持續減速時不會重複累加。數值越高餘量越大，減速減弱時逐漸釋放。0%關閉額外餘量，已施加的餘量會逐漸解除。減速時仍保留基礎車距縮短暫停功能。"
     },
     {
       "group": "감속제어",
@@ -3676,7 +4305,10 @@
       "max": 200,
       "default": 30,
       "unit": 10,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "跟車距離",
+      "ttitle": "彎道自動減速下限 (30)",
+      "tdescr": "彎道最低速度設定"
     },
     {
       "group": "주행튜닝",
@@ -3692,7 +4324,10 @@
       "min": -100,
       "max": -50,
       "default": -50,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "縱向控制",
+      "ttitle": "停止起步加速度 x0.01(-50)",
+      "tdescr": "調整停止控制的加速度進入閾值和減速目標。僅可設定-100至-50；-50代表-0.50m/s²。數值越負，減速目標越強。已有更強的制動請求保持不變，軟保持使用車型的停車保持加速度。修改約一秒內生效，行駛中也適用。 現代/起亞 CANFD 的 openpilot 縱向控制從 StopReq 首幀起將 aReqRaw 和 aReqValue 置零，因此保持 StopReq 時本設定不改變傳送的加速度。已移除自動釋放和重試。"
     },
     {
       "group": "가속설정",
@@ -3708,7 +4343,10 @@
       "min": 1,
       "max": 4,
       "default": 3,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "加速設定",
+      "ttitle": "駕駛模式: 初始 (3)",
+      "tdescr": "1: 節能 - 最大加速度×0.9，時間車距×1.1，前車響應最高2。\n2: 安全 - 最大加速度×0.8，時間車距×1.2，前車響應最高3，並保留提前平緩減速的餘量。\n3: 普通 - 基本加速和車距，使用所選響應。\n4: 高速 - 最大加速度×1.2，保留所選響應，禁用紅綠燈停車。\n不再疊加模式專用的加加速度調整，模式車距餘量逐漸釋放。較低響應值和0不會提高。"
     },
     {
       "group": "가속설정",
@@ -3724,7 +4362,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "加速設定",
+      "ttitle": "駕駛模式: 自動",
+      "tdescr": "0:手動，1:普通↔安全，2:節能↔安全。接近停止前車時迅速進入安全模式，持續低速跟車也會進入。不滿足停車接近條件時，前車加速度超過1.0m/s²並持續約0.5秒即可返回。否則需確認交通持續恢復3秒或行駛中前方持續無車。不會自動選擇高速模式。"
     },
     {
       "group": "감속제어",
@@ -3740,7 +4381,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "速度控制",
+      "ttitle": "前車制動燈觀察（試驗）",
+      "tdescr": "預設關閉。開啟後僅在訊號輔助模式1/2中顯示並記錄前車中央制動燈候選，不參與減速或起步控制。未檢測到不代表燈已關閉。模式0關閉所有輔助處理。"
     },
     {
       "group": "감속제어",
@@ -3757,7 +4401,10 @@
       "max": 2,
       "default": 0,
       "unit": 1,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "速度控制",
+      "ttitle": "訊號輔助模式（試驗）",
+      "tdescr": "0:關閉識別、顯示及控制。1:行駛中持續顯示識別結果，提供提醒及停車時紅燈起步限制。2:在1的基礎上增加行駛中減速準備；確認有效紅燈且50米以內沒有前車時逐漸請求約-0.5m/s²。任一跟蹤前車進入50米以內則取消輔助減速，保留原有跟車。停車後與模式1相同，輔助減速不直接要求停車。停車紅燈起步限制僅在5km/h及以下保留，超過該速度後清除此前的停車記憶。夜間需要兩個紅燈及道路方向支援；紅燈證據消失或綠燈衝突時取消準備。顯示與控制介入獨立，舊結果最多暗顯2秒後轉為未知。與主模型獨立，試驗功能仍可能誤檢或漏檢。"
     },
     {
       "group": "감속제어",
@@ -3773,7 +4420,10 @@
       "min": 0,
       "max": 2,
       "default": 2,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "速度控制",
+      "ttitle": "紅綠燈檢測模式",
+      "tdescr": "0: 無, 1: 僅停止, 2: 停止和起步"
     },
     {
       "group": "감속제어",
@@ -3790,7 +4440,10 @@
       "max": 300,
       "default": 100,
       "unit": 10,
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "速度控制",
+      "ttitle": "後向攝影機透過後保持距離(m)",
+      "tdescr": "外部導航報告後向測速或後向闖紅燈及測速攝影機（TMAP 75/76）時，透過攝影機後繼續在此距離內保持目標速度上限。在最後50米記錄位置，即使提示消失或切換到下一專案，仍按行駛距離跟蹤。單位為米；0關閉額外保持。增大數值會保持更遠，停車不消耗距離。斷開連線、偏離路線或導航會話變化時清除。原車CAN無法識別後向型別，因此此距離不適用於原車警告。倒計時結束不代表保持結束。"
     },
     {
       "group": "감속제어",
@@ -3807,7 +4460,10 @@
       "max": 20,
       "default": 6,
       "unit": 1,
-      "display_unit": "timeSec"
+      "display_unit": "timeSec",
+      "tgroup": "速度控制",
+      "ttitle": "導航減速結束點 (6秒)",
+      "tdescr": "基於 速度 x 時間 的減速完成時間"
     },
     {
       "group": "감속제어",
@@ -3823,7 +4479,10 @@
       "min": 0,
       "max": 3,
       "default": 2,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "速度控制",
+      "ttitle": "導航減速模式 (2)",
+      "tdescr": "0: 不使用, 1: 限速攝影機, 2: 攝影機 + 減速帶, 3: 攝影機 + 減速帶 + APN 限速攝影機\n原車導航 CAN（VehicleNaviCanControl）的移動測速區間（導航藍色圓圈）也遵循此值：3 時減速，2 及以下忽略移動區間警告。同一警告中若同時存在固定、闖紅燈或後向攝影機，則始終減速。"
     },
     {
       "group": "감속제어",
@@ -3859,9 +4518,18 @@
           "摄像头和减速带始终应用",
           "摄像头始终、减速带按路径",
           "摄像头和减速带按路径"
+        ],
+        "zh-tw": [
+          "禁用",
+          "攝影機和減速帶始終應用",
+          "攝影機始終、減速帶按路徑",
+          "攝影機和減速帶按路徑"
         ]
       },
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "速度控制",
+      "ttitle": "車輛導航 CAN 減速應用模式",
+      "tdescr": "僅在外部導航未連線時應用。外部導航連線期間，即使沒有當前引導專案也不使用原車導航。 選擇何時使用原車導航 CAN 的攝影機和減速帶實際距離進行減速。路徑匹配是指 vNAVI 的未來事件與當前計算路線及路徑一致。\n0：禁用\n1：攝影機和減速帶始終應用\n2：攝影機始終應用，減速帶僅在路徑匹配時應用\n3：攝影機和減速帶僅在路徑匹配時應用\n路徑資料超過兩秒未更新時按無路徑處理。車輛直接確認的當前攝影機狀態由 VehicleSpeedCameraControlMode 單獨控制。PV5 直接確認的區間測速狀態在模式 1～3 中保持有效。此為實驗功能，請僅在已驗證車輛上使用。 當前攝影機警告僅關聯限速相同且距離較近的候選；若只有同限速的遠處攝影機，則使用當前警告自身的虛擬距離。"
     },
     {
       "group": "감속제어",
@@ -3879,7 +4547,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "速度控制",
+      "ttitle": "原車導航 30 km/h 區域限速",
+      "tdescr": "僅在外部導航未連線時應用。外部導航連線期間，即使沒有當前引導專案也不使用原車導航。 收到已確認的原車導航 30 km/h 限速區域進入訊號後，將目標車速限制在 30 km/h，直到收到離開訊號。此實驗功能也可能適用於非學校區域的 30 km/h 限速路段，目前尚不支援 PV5。"
     },
     {
       "group": "감속제어",
@@ -3897,7 +4568,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "速度控制",
+      "ttitle": "原車導航減速中止請求",
+      "tdescr": "僅在外部導航未連線時應用（原車導航 CAN）。啟用後，在 openpilot 啟用（約 18km/h 以上）且下方已啟用的型別正在減速時，按一次巡航 + 鍵或輕踩油門（踩下不足 0.4 秒後鬆開）即中止該處減速。此輸入不會提高設定速度（+1 和輕踩油門 +10 均不生效）。中止只適用於該攝影機或減速帶，下一個仍會減速。闖紅燈、後向攝影機和區間測速不能中止；固定攝影機僅在其詳細項單獨開啟時可中止。在詳細項中按型別（箱式攝影機、移動區間、減速帶、固定攝影機）分別開關。"
     },
     {
       "group": "감속제어",
@@ -3917,7 +4591,10 @@
       "control": "toggle",
       "risk": "high",
       "detail_parent": "VehicleNaviDecelCancel",
-      "detail_section": "camera"
+      "detail_section": "camera",
+      "tgroup": "速度控制",
+      "ttitle": "減速中止：箱式攝影機",
+      "tdescr": "減速中止請求開啟時，允許用巡航 + 鍵或輕踩油門中止箱式（移動攝影機箱，預告型別 2）攝影機的減速。"
     },
     {
       "group": "감속제어",
@@ -3937,7 +4614,10 @@
       "control": "toggle",
       "risk": "high",
       "detail_parent": "VehicleNaviDecelCancel",
-      "detail_section": "camera"
+      "detail_section": "camera",
+      "tgroup": "速度控制",
+      "ttitle": "減速中止：移動測速區間",
+      "tdescr": "減速中止請求開啟時，允許用巡航 + 鍵或輕踩油門中止移動測速區間（導航藍色圓圈）的減速。導航減速模式（AutoNaviSpeedCtrlMode）為 3 時移動區間才會減速，模式 2 及以下不生效。"
     },
     {
       "group": "감속제어",
@@ -3957,7 +4637,10 @@
       "control": "toggle",
       "risk": "high",
       "detail_parent": "VehicleNaviDecelCancel",
-      "detail_section": "bump"
+      "detail_section": "bump",
+      "tgroup": "速度控制",
+      "ttitle": "減速中止：減速帶",
+      "tdescr": "減速中止請求開啟時，允許用巡航 + 鍵或輕踩油門中止原車導航減速帶減速。僅在減速帶目標速度（由 AutoNaviSpeedBumpSpeed、AutoNaviSpeedBumpTime、AutoNaviSpeedDecelRate 計算）低於設定速度、即實際減速時才使用該輸入。中止只適用於最近的一個減速帶。"
     },
     {
       "group": "감속제어",
@@ -3977,7 +4660,10 @@
       "control": "toggle",
       "risk": "high",
       "detail_parent": "VehicleNaviDecelCancel",
-      "detail_section": "camera"
+      "detail_section": "camera",
+      "tgroup": "速度控制",
+      "ttitle": "減速中止：未識別型別的測速攝影機 [實驗]",
+      "tdescr": "減速中止請求開啟時，允許用巡航 + 鍵或輕踩油門中止原車導航測速警告中未收到或無法解析攝影機型別預告（CAN 未接收/未處理）的警告的減速（實驗功能）。由於型別未知，可能包含無預告的闖紅燈或測速攝影機，因此預設關閉，即使開啟上級也需單獨開啟。30km/h 及以下的警告（兒童·老人保護區等）和區間測速中不適用。中止後若匹配到闖紅燈、後向或固定預告，則遵循該型別的規則。"
     },
     {
       "group": "감속제어",
@@ -3997,7 +4683,10 @@
       "control": "toggle",
       "risk": "high",
       "detail_parent": "VehicleNaviDecelCancel",
-      "detail_section": "camera"
+      "detail_section": "camera",
+      "tgroup": "速度控制",
+      "ttitle": "減速中止：提前警告修正 [實驗]",
+      "tdescr": "實驗功能，僅在減速中止請求開啟時有效。原車導航測速警告通常在攝影機前約 6.1m×限速（60km/h 約 366m）開始，但在部分地區或車輛上會更早開始（60km/h 約 460m），導致箱式、固定、移動區間預告無法匹配而被視為未識別型別。開啟後將匹配視窗的遠端最多擴大至 1.35 倍，使這類警告也能識別型別。⚠ 風險：視窗擴大後，附近的移動攝影機（移動測速區間）預告可能被錯誤匹配到其他警告。此時若開啟了“減速中止：移動測速區間”或導航減速模式（AutoNaviSpeedCtrlMode）為 2 及以下（忽略移動區間），則有較低機率跳過實際測速攝影機的減速。開啟後務必在實際駕駛中確認其行為。"
     },
     {
       "group": "감속제어",
@@ -4015,7 +4704,10 @@
       "default": 0,
       "unit": 1,
       "control": "toggle",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "速度控制",
+      "ttitle": "原車導航區間測速平均速度控制",
+      "tdescr": "僅在外部導航未連線時應用。原車導航 CAN 區間測速期間照常固定在區間限速（× 安全係數）。openpilot 啟用且巡航設定速度高於該上限時，按一次巡航 + 鍵或輕踩油門即解除該區間的固定，僅在進入區間後的平均速度保持在區間限速以下的範圍內允許達到設定速度。只能使用因擁堵等積累的餘量；沒有餘量時與原限制相同。此輸入不會提高設定速度。長按巡航 - 鍵重新固定且不改變設定速度（短按仍照常降低設定速度），離開區間時復位。終點攝影機約提前 2km 預告後按點位減速。區間起點取平均速度訊號出現的時刻，為實驗功能。"
     },
     {
       "group": "감속제어",
@@ -4051,8 +4743,17 @@
           "始终应用",
           "加速踏板忽略减速",
           "加速时暂停"
+        ],
+        "zh-tw": [
+          "禁用",
+          "始終應用",
+          "加速踏板忽略減速",
+          "加速時暫停"
         ]
-      }
+      },
+      "tgroup": "速度控制",
+      "ttitle": "車輛接收測速攝影機減速（始終應用）",
+      "tdescr": "僅在外部導航未連線時應用。外部導航連線期間，即使沒有當前引導專案也不使用原車導航。 選擇如何將透過車輛 CAN 接收的測速攝影機執法速度用於自動減速。此設定不影響從 Carrot Navi 接收的測速攝影機資訊。\n0：禁用\n1：無論加速踏板輸入如何都始終應用\n2：車輛接收的攝影機減速開始後，新踩下加速踏板會忽略當前事件，並將覆蓋期間達到的最高車速保持為減速下限\n3：踩下加速踏板期間暫停車輛接收的測速攝影機減速"
     },
     {
       "group": "감속제어",
@@ -4068,7 +4769,10 @@
       "min": 10,
       "max": 200,
       "default": 60,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "速度控制",
+      "ttitle": "車輛測速攝影機虛擬距離時間（6.0秒）",
+      "tdescr": "僅在外部導航未連線時應用。外部導航連線期間，即使沒有當前引導專案也不使用原車導航。 當車輛僅傳送測速攝影機執法速度而沒有距離時，建立虛擬減速距離。儲存值以0.1秒為單位：60表示6.0秒，62表示6.2秒。虛擬距離（米）= 執法速度（km/h）× 設定時間（秒），因此在50 km/h時，62會生成310米。設定值越小，虛擬距離越短，因此可能會更早或更強地開始減速。更改後的值會在行駛中約1秒內生效。 支援的CAN-FD車輛在沒有與當前警告匹配的近處距離時也適用。新警告或限速變化會重新開始計算；距離耗盡後，只要警告仍有效就保持限速，不會反覆延長虛擬距離。"
     },
     {
       "group": "감속제어",
@@ -4085,7 +4789,10 @@
       "max": 100,
       "default": -1,
       "unit": 1,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "速度控制",
+      "ttitle": "道路限速偏移 (-1)",
+      "tdescr": "道路限速 + 設定值, -1: 不使用"
     },
     {
       "group": "감속제어",
@@ -4102,7 +4809,10 @@
       "max": 50,
       "default": 1,
       "unit": 1,
-      "display_unit": "timeSec"
+      "display_unit": "timeSec",
+      "tgroup": "速度控制",
+      "ttitle": "減速帶結束點 (1秒)",
+      "tdescr": ""
     },
     {
       "group": "감속제어",
@@ -4119,7 +4829,10 @@
       "max": 100,
       "default": 35,
       "unit": 5,
-      "display_unit": "speedKph"
+      "display_unit": "speedKph",
+      "tgroup": "速度控制",
+      "ttitle": "減速帶速度 (35km/h)",
+      "tdescr": ""
     },
     {
       "group": "감속제어",
@@ -4137,7 +4850,10 @@
       "default": 200,
       "unit": 10,
       "display_unit": "distanceCm",
-      "risk": "high"
+      "risk": "high",
+      "tgroup": "速度控制",
+      "ttitle": "減速帶減速提前解除距離（200釐米）",
+      "tdescr": "外部導航連線期間僅按其剩餘距離解除減速，否則使用原車導航距離。 當原車導航或 Carrot Navi 提供的減速帶剩餘距離小於或等於此值時，提前解除減速限制。儲存值和顯示單位為釐米；0 表示保持控制直到接收的位置。此設定可補償地圖中的減速帶位置晚於實際位置而導致透過後恢復速度過慢的問題。設定過大可能會在實際減速帶前開始加速。"
     },
     {
       "group": "감속제어",
@@ -4153,7 +4869,10 @@
       "min": 50,
       "max": 300,
       "default": 120,
-      "unit": 10
+      "unit": 10,
+      "tgroup": "速度控制",
+      "ttitle": "導航減速效率 0.01m/s^2x(120)",
+      "tdescr": "用於計算接近攝影機和減速帶時的減速曲線。儲存值乘以 0.01 m/s²，120 表示 1.2 m/s²。數值越低，開始減速的距離越遠；數值越高，開始減速的距離越近。軟體更新不會更改已儲存的設定。"
     },
     {
       "group": "감속제어",
@@ -4169,7 +4888,10 @@
       "min": 0,
       "max": 2,
       "default": 2,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "速度控制",
+      "ttitle": "導航倒計時模式",
+      "tdescr": "外部導航連線期間僅使用外部導航距離，否則使用原車導航距離。連線狀態變化時重置之前的倒計時。\n0: 不使用, 1: 轉向點 + 速度, 2: 轉向點 + 速度 + 減速帶"
     },
     {
       "group": "감속제어",
@@ -4185,7 +4907,10 @@
       "min": 0,
       "max": 3,
       "default": 1,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "速度控制",
+      "ttitle": "轉向速度控制模式",
+      "tdescr": "0: 不使用, 1: 視覺, 2: 視覺 + 路線, 3: 路線 (始終)"
     },
     {
       "group": "감속제어",
@@ -4202,7 +4927,10 @@
       "max": 300,
       "default": 100,
       "unit": 10,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "速度控制",
+      "ttitle": "地圖轉向速度因子",
+      "tdescr": "值越小，沿路線減速越多。"
     },
     {
       "group": "감속제어",
@@ -4219,7 +4947,10 @@
       "max": 120,
       "default": 105,
       "unit": 1,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "速度控制",
+      "ttitle": "導航限速比例 (105)%",
+      "tdescr": "在限速攝影機處將速度降至 道路限速 * 設定值"
     },
     {
       "group": "화면",
@@ -4236,7 +4967,10 @@
       "max": 100,
       "default": 100,
       "unit": 5,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "顯示",
+      "ttitle": "行車中螢幕亮度(100%)",
+      "tdescr": "行車開始約10秒後的螢幕亮度比例\n0: 根據環境亮度自動調節\n100: 始終最大亮度"
     },
     {
       "group": "화면",
@@ -4272,8 +5006,17 @@
           "1 仅摄像头",
           "2 仅车道线/路径",
           "3 隐藏两者"
+        ],
+        "zh-tw": [
+          "0 攝影機 + 車道線/路徑",
+          "1 僅攝影機",
+          "2 僅車道線/路徑",
+          "3 隱藏兩者"
         ]
-      }
+      },
+      "tgroup": "顯示",
+      "ttitle": "行車畫面佈局(C4)",
+      "tdescr": "選擇 C4 行車畫面的攝影機影片和車道線/行駛路徑圖形。車道線/路徑圖形包含前車標記。\n不受亮度設定影響，行車中更改後約 5 秒內生效。\n即使隱藏兩者，速度和警告仍會顯示。連線外部 HUD 時，優先遵循“外部 HUD 連線時本機攝影機”設定。"
     },
     {
       "group": "화면",
@@ -4289,7 +5032,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "顯示",
+      "ttitle": "外部 HUD 連線時本機攝影機(0)",
+      "tdescr": "0: 不顯示攝影機（預設）\n1: 顯示攝影機畫面"
     },
     {
       "group": "외부 HUD",
@@ -4305,7 +5051,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 顯示(0)",
+      "tdescr": "0: 關閉\n1: TURZX 9.2 英寸\n適用於直接連線本機的 USB HUD。連線到 Jetson USB 的 HUD 自動執行，不受此設定影響。熄火後關閉螢幕；HUD 除錯設定控制常亮。支援的 Jetson 執行時在推理期間透過 USB 接收 HUD、導航和訊號燈資訊；舊接收器更新前保留 Wi-Fi。Jetson 目標輸出為 10 FPS。"
     },
     {
       "group": "외부 HUD",
@@ -4321,7 +5070,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 映象模式(0)",
+      "tdescr": "0: 預設\n1: 左右映象"
     },
     {
       "group": "외부 HUD",
@@ -4337,7 +5089,10 @@
       "min": 0,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "外部 HUD",
+      "ttitle": "External HUD Debug(0)",
+      "tdescr": "0: Onroad only\n1: Always\n2: Always + UI\n3: Always + Navi"
     },
     {
       "group": "외부 HUD",
@@ -4354,7 +5109,10 @@
       "max": 100,
       "default": 0,
       "unit": 1,
-      "display_unit": "percent"
+      "display_unit": "percent",
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 亮度(0)",
+      "tdescr": "0: 自動\n1-100: 亮度"
     },
     {
       "group": "외부 HUD",
@@ -4390,8 +5148,17 @@
           "不支持",
           "180 度",
           "不支持"
+        ],
+        "zh-tw": [
+          "0 度",
+          "不支援",
+          "180 度",
+          "不支援"
         ]
-      }
+      },
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 螢幕旋轉(0)",
+      "tdescr": "更改後立即應用到 TURZX 螢幕。\n0: 0 度\n1: 不支援\n2: 180 度\n3: 不支援"
     },
     {
       "group": "외부 HUD",
@@ -4407,7 +5174,10 @@
       "min": 0,
       "max": 3,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 編碼器(0)",
+      "tdescr": "0: Auto (Hardware H264 -> Software H264 -> JPEG)\n1: JPEG\n2: Hardware H264\n3: Software H264 (ffmpeg/libx264)"
     },
     {
       "group": "외부 HUD",
@@ -4423,7 +5193,10 @@
       "min": 0,
       "max": 2,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 主題(0)",
+      "tdescr": "0: 自動\n1: 深色\n2: 淺色"
     },
     {
       "group": "외부 HUD",
@@ -4456,8 +5229,16 @@
           "自动",
           "深色",
           "浅色"
+        ],
+        "zh-tw": [
+          "自動",
+          "深色",
+          "淺色"
         ]
-      }
+      },
+      "tgroup": "外部 HUD",
+      "ttitle": "叢集導航地圖主題(1)",
+      "tdescr": "0: 自動\n1: 深色\n2: 淺色\n更改後外部導航應用會自動重新連線。"
     },
     {
       "group": "외부 HUD",
@@ -4487,8 +5268,15 @@
         "zh": [
           "普通地图",
           "卫星地图"
+        ],
+        "zh-tw": [
+          "普通地圖",
+          "衛星地圖"
         ]
-      }
+      },
+      "tgroup": "外部 HUD",
+      "ttitle": "叢集導航地圖型別(0)",
+      "tdescr": "0: 普通地圖\n1: 衛星地圖\n更改後外部導航應用會自動重新連線。"
     },
     {
       "group": "외부 HUD",
@@ -4523,8 +5311,17 @@
           "10 FPS",
           "20 FPS",
           "30 FPS"
+        ],
+        "zh-tw": [
+          "5 FPS",
+          "10 FPS",
+          "20 FPS",
+          "30 FPS"
         ]
-      }
+      },
+      "tgroup": "外部 HUD",
+      "ttitle": "叢集導航地圖 FPS(1)",
+      "tdescr": "0: 5 FPS\n1: 10 FPS（預設）\n2: 20 FPS\n3: 30 FPS\n此設定獨立於 HUD FPS，地圖位元率自動設定。\n更改後外部導航應用會自動重新連線。"
     },
     {
       "group": "외부 HUD",
@@ -4541,7 +5338,10 @@
       "max": 7,
       "default": 0,
       "unit": 1,
-      "control": "select"
+      "control": "select",
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 畫面模式(0)",
+      "tdescr": "-1: 3D全屏\n0: 預設(導航/駕駛報告)\n1: 除錯\n2: 除錯(系統)\n3: 除錯(圖表1)\n4: 除錯(圖表2)\n5: 駕駛報告\n6: 外部導航全屏\n7: 駕駛畫面 + 右側Nav地圖\nOnroad 狀態下，P 擋優先顯示駐車畫面，R 擋顯示基於 EV6 尺寸的倒車參考圖。其他擋位或 offroad 恢復原畫面模式。"
     },
     {
       "group": "외부 HUD",
@@ -4571,8 +5371,15 @@
         "zh": [
           "Driving left / info right",
           "Info left / driving right"
+        ],
+        "zh-tw": [
+          "Driving left / info right",
+          "Info left / driving right"
         ]
-      }
+      },
+      "tgroup": "外部 HUD",
+      "ttitle": "External HUD Panel Layout(0)",
+      "tdescr": "0: Driving view left / information panel right\n1: Information panel left / driving view right\nChanges apply automatically while the HUD is running."
     },
     {
       "group": "외부 HUD",
@@ -4589,7 +5396,10 @@
       "max": 4,
       "default": 4,
       "unit": 1,
-      "control": "select"
+      "control": "select",
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 雷達資訊(4)",
+      "tdescr": "0: 關閉\n1: 速度(僅車輛)\n2: 速度,距離(僅車輛)\n3: 速度(全部)\n4: 速度,距離(全部)"
     },
     {
       "group": "외부 HUD",
@@ -4605,7 +5415,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 雷達顯示選項(0)",
+      "tdescr": "0: 預設(合併相近雷達點)\n1: 詳細(不合並雷達點)"
     },
     {
       "group": "외부 HUD",
@@ -4621,7 +5434,10 @@
       "min": 0,
       "max": 1,
       "default": 0,
-      "unit": 1
+      "unit": 1,
+      "tgroup": "外部 HUD",
+      "ttitle": "外部 HUD 雷達來源顏色(0)",
+      "tdescr": "0: 預設(所有車輛灰色)\n1: 開啟(SCC=R, HDA=B, RADAR=O)"
     },
     {
       "group": "외부 HUD",
@@ -4660,8 +5476,18 @@
           "Narrow camera",
           "Wide camera",
           "Speed automatic"
+        ],
+        "zh-tw": [
+          "Default",
+          "Bottom view",
+          "Narrow camera",
+          "Wide camera",
+          "Speed automatic"
         ]
-      }
+      },
+      "tgroup": "外部 HUD",
+      "ttitle": "External HUD Camera View Mode(0)",
+      "tdescr": "0: Default\n1: Mode 1 (bottom view)\n2: Narrow road camera\n3: Wide road camera\n4: Automatic narrow/wide camera by speed"
     }
   ]
 }

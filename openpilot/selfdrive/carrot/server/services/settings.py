@@ -88,17 +88,21 @@ def group_index(settings: Dict[str, Any]) -> Tuple[Dict[str, list], Dict[str, Di
   for g, items in groups.items():
     egroup = None
     cgroup = None
+    tgroup = None
     for it in items:
       if not egroup and it.get("egroup"):
         egroup = it.get("egroup")
       if not cgroup and it.get("cgroup"):
         cgroup = it.get("cgroup")
-      if egroup and cgroup:
+      if not tgroup and it.get("tgroup"):
+        tgroup = it.get("tgroup")
+      if egroup and cgroup and tgroup:
         break
     groups_list.append({
       "group": g,
       "egroup": egroup,
       "cgroup": cgroup,
+      **({"tgroup": tgroup} if tgroup else {}),
       "count": sum(1 for item in items if not item.get("detail_parent") and not item.get("search_only")),
     })
 
@@ -106,7 +110,7 @@ def group_index(settings: Dict[str, Any]) -> Tuple[Dict[str, list], Dict[str, Di
 
 
 def _label(node: Dict[str, Any]) -> Dict[str, Any]:
-  return {"ko": node.get("ko"), "en": node.get("en"), "zh": node.get("zh")}
+  return {key: node.get(key) for key in ("ko", "en", "zh", "zh-tw")}
 
 
 def build_menu_categories(data: Dict[str, Any], by_name: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]] | None:
@@ -150,6 +154,7 @@ def build_menu_categories(data: Dict[str, Any], by_name: Dict[str, Dict[str, Any
         "ko": join_labels(path, "ko"),
         "en": join_labels(path, "en"),
         "zh": join_labels(path, "zh"),
+        "zh-tw": join_labels(path, "zh-tw"),
         "items": items,
       })
     return sections
@@ -162,7 +167,7 @@ def build_menu_categories(data: Dict[str, Any], by_name: Dict[str, Dict[str, Any
         sections = sections_from(grp["groups"])
       else:
         # params directly under the 중-group → single label-less section
-        sections = [{"id": grp.get("id"), "ko": None, "en": None, "zh": None,
+        sections = [{"id": grp.get("id"), "ko": None, "en": None, "zh": None, "zh-tw": None,
                      "items": [n for n in grp.get("params", []) if n in by_name]}]
       count = sum(
         1

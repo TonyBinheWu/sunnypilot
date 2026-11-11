@@ -133,7 +133,7 @@ notice for physical validation limits of each installation path.
 
 - `Car Select`: choose the vehicle maker and model.
 - For the 2026 electric Staria, select `Hyundai Staria EV 2026`. Its accelerator and gear decoding differs from `Hyundai Staria 2023`; an existing selection is not migrated automatically. Reboot after selecting it, then check gear/pedal indications and CAN errors while parked.
-- `Language`: change the Carrot Web language.
+- `Language`: choose English, Korean, Simplified Chinese or Traditional Chinese (`繁體中文`) for Carrot Web. Device UI language is separate.
 - `Web Settings`: configure the Drive layout, video, HUD, AR, and other web-only display options.
 - `Info`: view and copy the device type, branch, commit, identifiers, and network information.
 

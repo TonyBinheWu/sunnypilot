@@ -2,7 +2,7 @@
 
 /* 인트로 문구
  *
- * 웹 UI 언어는 ko/en/zh 3종 (web_settings.py: WEB_LANGUAGES).
+ * 웹 UI 언어는 ko/en/zh/zh-tw 4종 (web_settings.py: WEB_LANGUAGES).
  * 줄바꿈(\n)은 언어마다 자연스러운 지점에 직접 넣는다.
  * 한 문장을 3개 언어에 기계적으로 맞추지 않는다.
  *
@@ -166,19 +166,67 @@ globalThis.CarrotIntroI18n = {
     rsFiled: "params_backup.json",
     rsDone: "设置已导入。",
   },
+  "zh-tw": {
+    restore: "匯入已有設定",
+    back: "返回",
+    preview: "預覽 · 不儲存",
+    previewClose: "關閉",
+
+    carTitle: "請選擇車輛",
+    carBackToList: "返回列表",
+    carEmpty: "無法載入支援的車輛列表。",
+
+    hdaTitle: "HDA 代次",
+    hda1: "HDA1",
+    hda1d: "多數 CAN 車型",
+    hda2: "HDA2",
+    hda2d: "CAN-FD 車型",
+
+    ctrlTitle: "駕駛控制方式",
+    ctrlSub: "線束連線在哪裡？",
+
+    p1: "ADAS · 雷達縱向",
+    p1d: "接至 ADAS 或雷達 · 含角雷達",
+
+    p2: "攝影機縱向",
+    p2d: "僅接至攝影機 · 當根領航負責加減速",
+
+    p3: "原廠",
+    p3d: "加減速交給原廠 SCC · 僅轉向",
+
+    legalTitle: "法律宣告",
+    legalBody: [
+      "根據大韓民國《汽車管理法》修正案，將本軟體安裝於實際車輛或用於行駛可能違反法律。",
+      "本倉庫中的所有軟體僅供研究、實驗與模擬用途。",
+      "開發者對因實際使用本軟體而產生的一切法律責任概不負責。",
+    ],
+    legalAck: "我已知悉",
+
+    outTitle: "準備就緒",
+    outSub: "有任何疑問\n歡迎在當根伺服器提問。",
+    start: "開始",
+    previewDone: "關閉預覽",
+
+    rsTitle: "匯入設定",
+    rsSub: "直接從舊裝置的備份匯入。",
+    rsFile: "選擇備份檔案",
+    rsFiled: "params_backup.json",
+    rsDone: "設定已匯入。",
+  },
 };
 
 /* 0단계에서 순환하며 보여주고, 그대로 선택지가 되는 목록 */
 globalThis.CarrotIntroLangs = [
   ["en", "English", "Welcome!"],
   ["ko", "한국어",  "오셨군요!"],
-  ["zh", "中文",    "欢迎!"],
+  ["zh", "简体中文", "欢迎!"],
+  ["zh-tw", "繁體中文", "歡迎！"],
 ];
 
 /* 브라우저 언어 감지 → 기본값. 못 알아보면 영어.
  * navigator.languages 를 순서대로 훑어 처음 맞는 것을 쓴다.
  *   ko, ko-KR        → ko
- *   zh, zh-CN, zh-TW → zh
+ *   zh, zh-CN → zh; zh-TW, zh-Hant → zh-tw
  *   그 외             → en  */
 globalThis.detectCarrotIntroLang = function detectCarrotIntroLang() {
   const supported = new Set(CarrotIntroLangs.map(([code]) => code));
@@ -187,7 +235,9 @@ globalThis.detectCarrotIntroLang = function detectCarrotIntroLang() {
     navigator.language || "",
   ];
   for (const tag of tags) {
-    const base = String(tag).toLowerCase().split("-")[0];
+    const normalized = String(tag).toLowerCase().replaceAll("_", "-");
+    if (/^zh-(?:tw|hk|mo|hant|cht)(?:-|$)/.test(normalized)) return "zh-tw";
+    const base = normalized.split("-")[0];
     if (supported.has(base)) return base;
   }
   return "en";

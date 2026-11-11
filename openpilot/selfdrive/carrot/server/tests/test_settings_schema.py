@@ -673,7 +673,7 @@ def test_declared_options_cover_every_value_in_range(params):
   for name, p in declared.items():
     span = p["max"] - p["min"] + 1
     for language, labels in p["options"].items():
-      assert language in {"ko", "en", "zh"}, f"{name}: unexpected language {language}"
+      assert language in {"ko", "en", "zh", "zh-tw"}, f"{name}: unexpected language {language}"
       assert isinstance(labels, list), f"{name}.{language} must be a list"
       assert len(labels) == span, f"{name}.{language} has {len(labels)} labels for {span} values"
       assert all(isinstance(label, str) and label for label in labels), f"{name}.{language} has an empty label"
@@ -681,7 +681,7 @@ def test_declared_options_cover_every_value_in_range(params):
 
 def test_option_labels_exist_in_every_supported_language(params):
   for p in (p for p in params if "options" in p):
-    assert set(p["options"]) == {"ko", "en", "zh"}, p["name"]
+    assert set(p["options"]) == {"ko", "en", "zh", "zh-tw"}, p["name"]
 
 
 def test_every_declared_risk_is_one_the_ui_knows(params):
@@ -727,7 +727,7 @@ def test_live_geometry_has_zero_default_and_no_enable_switch(settings, params):
   assert clamp_numeric(1, by_name['SteerActuatorDelay']) == 1
   assert '재시작 없이' in ratio['descr']
   assert 'without restarting' in ratio['edescr']
-  assert set(ratio['zero_label']) == {'ko', 'en', 'zh'}
+  assert set(ratio['zero_label']) == {'ko', 'en', 'zh', 'zh-tw'}
 
 
 def test_declared_nonzero_min_and_zero_labels_are_well_formed(params):
@@ -735,4 +735,4 @@ def test_declared_nonzero_min_and_zero_labels_are_well_formed(params):
     if 'nonzero_min' in item:
       assert item['min'] == item['default'] == 0
       assert 0 < item['nonzero_min'] <= item['max']
-      assert set(item['zero_label']) == {'ko', 'en', 'zh'}
+      assert set(item['zero_label']) == {'ko', 'en', 'zh', 'zh-tw'}
