@@ -392,6 +392,7 @@ public final class MainActivity extends Activity {
   }
   private void maybeStartAutoVoice() {
     if (!foregroundActivity || !hasWindowFocus() || !pageReady || recovering || waitingForPermission || speechSetup != null && speechSetup.showing()) return;
+    if (preferences.getBoolean("voice_setup_manual_restart", false)) return;
     if (resumePhoneVoice) {
       resumePhoneVoice = false;
       if (permissionDevice == generation && phoneMode()) startVoice(permissionGreeting);
@@ -401,6 +402,7 @@ public final class MainActivity extends Activity {
   }
   private void startVoice(boolean automatic) {
     if (voiceStarting || !foregroundActivity || speechSetup != null && speechSetup.showing()) return;
+    if (automatic && preferences.getBoolean("voice_setup_manual_restart", false)) return;
     autoVoiceGeneration = generation;
     voiceVerifiedUntil = 0;
     if (currentAddress == null) {
@@ -415,6 +417,7 @@ public final class MainActivity extends Activity {
       if (!automatic) voiceProblem(UiText.get("당근웹이 아직 열리지 않았어요.", "Carrot Web has not opened yet."));
       return;
     }
+    if (!automatic) preferences.edit().putBoolean("voice_setup_manual_restart", false).apply();
     if (phoneMode()) { startPhoneVoice(automatic); return; }
     voiceStarting = true;
     voiceFromAuto = automatic;
@@ -443,6 +446,7 @@ public final class MainActivity extends Activity {
       " && !document.hidden && (" + expression + "))";
   }
   private void showSpeechSetup(String reason) {
+    preferences.edit().putBoolean("voice_setup_manual_restart", true).apply();
     if (phoneVoice != null) phoneVoice.resetSupport();
     stopPhoneVoice(); resumePhoneVoice = false; waitingForPermission = false;
     autoVoiceGeneration = generation;
