@@ -65,10 +65,30 @@ def add_mici_pair_button(scroller):
   scroller.add_widget(button)
 
 
+class FormosaConnectionCard(Widget):
+  """The offroad home card opens only independent FormosaLink pairing."""
+  def __init__(self):
+    super().__init__()
+    self._logo = gui_app.texture("../../sunnypilot/formosalink/assets/formosapilot-logo.png", 100, 100)
+    self._pair = Button(lambda: text("scan"), open_pairing, font_size=48, button_style=ButtonStyle.PRIMARY)
+    self._pair.set_enabled(ui_state.is_offroad)
+
+  def _render(self, rect):
+    scale = min(rect.width/600, rect.height/400)
+    margin = 30*scale
+    rl.draw_rectangle_rounded(rect, .08, 8, rl.Color(15, 20, 36, 255))
+    rl.draw_texture_ex(self._logo, rl.Vector2(rect.x+margin, rect.y+margin), 0, scale, rl.WHITE)
+    rl.draw_text_ex(gui_app.font(FontWeight.BOLD), "FormosaLink", rl.Vector2(rect.x+margin, rect.y+150*scale), 52*scale, 0, rl.WHITE)
+    rl.draw_text_ex(gui_app.font(FontWeight.NORMAL), "formosapilot.dinglu-t.com", rl.Vector2(rect.x+margin, rect.y+230*scale), 28*scale, 0, rl.Color(165, 177, 202, 255))
+    self._pair._label.set_font_size(38*scale)
+    self._pair.render(rl.Rectangle(rect.x+margin, rect.y+rect.height-margin-70*scale, rect.width-2*margin, 70*scale))
+
+
 class FormosaPairingDialog(Widget):
-  def __init__(self, directory=None):
+  def __init__(self, directory=None, embedded=False):
     super().__init__()
     self.directory = directory or default_directory()
+    self.embedded = embedded
     self._events = queue.SimpleQueue()
     self._generation = 0
     self._active = True
@@ -87,6 +107,14 @@ class FormosaPairingDialog(Widget):
     self._remote = Button(lambda: text("remote_on" if ui_state.params.get_bool("FormosaLinkRemoteSettings") else "remote_off"), self._toggle_remote,
                           font_size=34 if big else 11, text_padding=padding)
     self._remote.set_enabled(ui_state.is_offroad)
+
+  def show_event(self):
+    super().show_event()
+    self._active = True
+    self._busy = False
+    self._generation += 1
+    self._state = "intro"
+    self._expires = 0
 
   def _toggle_remote(self):
     if ui_state.is_offroad():
@@ -200,7 +228,8 @@ class FormosaPairingDialog(Widget):
     rl.draw_rectangle_rec(rect, rl.Color(15, 20, 36, 255))
     rl.draw_text_ex(font, "FormosaLink", rl.Vector2(rect.x+margin, rect.y+12*scale), 27*scale, 0, rl.WHITE)
     self._close._label.set_font_size(17*scale)
-    self._close.render(rl.Rectangle(rect.x+rect.width-margin-80*scale, rect.y+8*scale, 80*scale, button_height))
+    if not self.embedded:
+      self._close.render(rl.Rectangle(rect.x+rect.width-margin-80*scale, rect.y+8*scale, 80*scale, button_height))
 
     body_top = rect.y + 54*scale
     body_bottom = bottom - 2*(button_height+gap) - 4*scale

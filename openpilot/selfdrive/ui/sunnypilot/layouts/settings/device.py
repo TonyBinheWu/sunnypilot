@@ -114,8 +114,6 @@ class DeviceLayoutSP(DeviceLayout):
       LineSeparator(),
       text_item(lambda: tr("Serial"), self._params.get("HardwareSerial") or (lambda: tr("N/A"))),
       LineSeparator(),
-      self._pair_device_btn,
-      LineSeparator(),
       formosalink_button(),
       LineSeparator(),
       self._reset_calib_btn,

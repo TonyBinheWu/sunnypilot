@@ -92,7 +92,7 @@ def catalog(schema, values, types, capabilities, offroad, translate=lambda text:
   translate = lambda text: localize(text,native_translate)
   for item, group, conditions, remote in native_items(schema):
     key = item["key"]
-    if key not in types or key in LOCAL_ONLY:
+    if key not in types or key in LOCAL_ONLY or "sunnylink" in key.lower():
       continue
     widget = item["widget"]
     entry = {"key":key, "group":translate(group), "title":translate(item.get("title", key)),
@@ -117,7 +117,7 @@ def catalog(schema, values, types, capabilities, offroad, translate=lambda text:
 
 
 def validate_setting(entry, value):
-  if not entry.get("enabled") or entry.get("key") in LOCAL_ONLY:
+  if not entry.get("enabled") or entry.get("key") in LOCAL_ONLY or "sunnylink" in entry.get("key", "").lower():
     raise ValueError("setting_unavailable")
   if entry.get("key")=="NavDestination":
     from openpilot.sunnypilot.formosalink.navigation import destination,encode

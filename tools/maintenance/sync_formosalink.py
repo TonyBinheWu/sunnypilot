@@ -73,8 +73,22 @@ def hook_changes(target):
     text = text.replace(anchor, PROCESS + anchor, 1)
   elif PROCESS.strip() not in text:
     raise ValueError("existing FormosaLink process differs; review manually")
+  policy = 'from openpilot.sunnypilot.formosalink.service_policy import LEGACY_PROCESSES\nfor process in procs:\n  if process.name in LEGACY_PROCESSES:\n    process.enabled = False\n\n'
+  if policy not in text:
+    anchor = 'managed_processes = {p.name: p for p in procs}'
+    if text.count(anchor) != 1:
+      raise ValueError("process policy anchor is ambiguous")
+    text = text.replace(anchor, policy+anchor, 1)
   if text != path.read_text(encoding="utf-8"):
     changes[path] = text
+  path = target / "openpilot/system/manager/manager.py"
+  text = path.read_text(encoding="utf-8")
+  policy = '  from openpilot.sunnypilot.formosalink.service_policy import disable_legacy, stop_legacy_daemon\n  disable_legacy(params)\n  stop_legacy_daemon(params)\n\n'
+  if policy not in text:
+    anchor = '  # Create folders needed for msgq'
+    if text.count(anchor) != 1:
+      raise ValueError("manager service retirement anchor is ambiguous")
+    changes[path] = text.replace(anchor, policy+anchor, 1)
   # Keep independent QR pairing next to the native device pairing entries.
   path = target / "openpilot/selfdrive/ui/sunnypilot/layouts/settings/device.py"
   text = path.read_text(encoding="utf-8")
@@ -121,7 +135,7 @@ def hook_changes(target):
   text = insert_once(text, '    "SUNNYLINK",\n', '    "FORMOSAPILOT",\n')
   text = insert_once(text, '      OP.PanelType.DEVICE: PanelInfo(',
                      '      OP.PanelType.FORMOSAPILOT: PanelInfo("FormosaPilot", FormosaPilotPanel(embedded=True), icon=LOGO_ASSET),\n')
-  if 'font_size = 40 if self.panel_info.name == "FormosaPilot"' not in text:
+  if 'font_size = 40 if self.panel_info.name' not in text:
     anchor = "    text_size = measure_text_cached(self.parent._font_medium, self.panel_info.name, 65)"
     if text.count(anchor) != 1:
       raise ValueError("C3X brand navigation text anchor is ambiguous")

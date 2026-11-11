@@ -17,6 +17,11 @@ BRAND_DESC_SPACING = 12
 
 
 class HomeLayoutSP(HomeLayout):
+  def __init__(self):
+    super().__init__()
+    from openpilot.sunnypilot.formosalink.ui import FormosaConnectionCard
+    self._prime_widget = FormosaConnectionCard()
+
   def _render_header(self):
     font = gui_app.font(FontWeight.MEDIUM)
 

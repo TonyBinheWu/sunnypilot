@@ -7,7 +7,8 @@ from pathlib import Path
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from openpilot.sunnypilot.formosalink.protocol import public_key_text, validate_origin
+from openpilot.sunnypilot.formosalink.protocol import public_key_text
+from openpilot.sunnypilot.formosalink.service_policy import self_hosted_origin as validate_origin
 
 
 def default_directory():
