@@ -106,6 +106,7 @@ class State(Enum):
   CONNECTING = "CONNECTING"
   CONNECTED = "CONNECTED"
   DISCONNECTING = "DISCONNECTING"
+  DATA_DISABLED = "DATA_DISABLED"
 
 
 STATE_WAIT = 1.0  # seconds to wait after each state handler returns
@@ -143,6 +144,9 @@ class PPPSession:
 
   def has_exited(self) -> bool:
     return self._proc is not None and self._proc.poll() is not None
+
+  def data_session_active(self) -> bool:
+    return (self._proc is not None and self._proc.poll() is None) or os.path.exists("/sys/class/net/ppp0")
 
   def reset_fail_counter(self):
     self._fails = 0
@@ -571,6 +575,24 @@ class Modem:
     if s:
       self._publish_state(**s)
 
+  def _step(self, state, handlers):
+    # Missing preference preserves existing connectivity on first upgrade.
+    # Stop only PPP: never switch RF/SIM/GNSS power or erase a SIM profile.
+    if self._read_param("GsmDataEnabled") == "0":
+      if state != State.DATA_DISABLED:
+        self._ppp.kill()
+        self._ppp.cleanup_routes()
+        self._ppp.reset_data_port()
+        if self._ppp.data_session_active():
+          raise RuntimeError("PPP session has not stopped")
+      self._publish_state(data_enabled=False, connected=False, ip_address="")
+      return State.DATA_DISABLED
+    if state == State.DATA_DISABLED:
+      self._publish_state(data_enabled=True)
+      return State.INITIALIZING
+    self._check_iccid(state)
+    return handlers[state]()
+
   def run(self):
     logging.info("starting")
     self._publish_state(state=State.INITIALIZING.value)
@@ -591,9 +613,8 @@ class Modem:
 
     while self.running:
       try:
-        self._check_iccid(state)
         prev = state
-        state = handlers[state]()
+        state = self._step(state, handlers)
         if state != prev:
           self._publish_state(state=state.value)
           logging.info(f"{prev.value} -> {state.value}")

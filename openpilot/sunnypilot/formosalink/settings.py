@@ -6,6 +6,7 @@ from openpilot.sunnypilot.formosalink.protocol import canonical
 from openpilot.sunnypilot.formosalink.setting_labels import localize
 
 LOCAL_ONLY = {
+  "GsmDataEnabled",
   "AdbEnabled", "SshEnabled", "GithubUsername", "GithubSshKeys", "EnableGithubRunner", "EnableCopyparty",
   "JoystickDebugMode", "LateralManeuverMode", "LongitudinalManeuverMode", "OffroadMode", "DeviceBootMode",
   "SunnylinkUpdateNow", "SunnylinkInstallUpdate", "FormosaLinkEnabled", "FormosaLinkRemoteSettings",

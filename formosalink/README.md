@@ -1,4 +1,4 @@
-# FormosaPilot / FormosaLink 0.6.0
+# FormosaPilot / FormosaLink 0.6.1
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
@@ -64,3 +64,5 @@ Not yet verified by host tests: end-to-end IIS ARR/WebSocket forwarding to the P
 [設定控制項、逐項同步與衝突處理 / Settings controls and conflicts / 設定と競合](docs/SETTINGS_UI.md)
 
 [影音整合階段、發送器與 IIS 更新 / Media integration / メディア統合](docs/MEDIA_INTEGRATION.md)
+
+[SIM 行動數據開關 / SIM mobile data / SIM モバイルデータ](docs/CELLULAR_DATA.md)

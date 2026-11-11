@@ -1,5 +1,6 @@
 """Explicit device information allowlist; never export arbitrary Params."""
 from pathlib import Path
+import time
 
 
 class DeviceInformation:
@@ -14,6 +15,14 @@ class DeviceInformation:
     from openpilot.common.version import get_version
     from openpilot.common.git import get_branch, get_commit
     result.update(version=get_version(),branch=get_branch(),commit=get_commit())
+    if HARDWARE.get_device_type() in ("tici", "tizi", "mici"):
+      result["cellular_data_enabled"] = self.params.get("GsmDataEnabled", return_default=True) is not False
+      result["cellular_data_state"] = "unknown"
+      try:
+        from openpilot.system.ui.lib.cellular_data import modem_data_state
+        result["cellular_data_state"] = modem_data_state(result["cellular_data_enabled"], HARDWARE.get_modem_state(), time.monotonic())
+      except (OSError, ValueError, TypeError, AttributeError):
+        pass
     for key, method in (("serial", "get_serial"), ("os_version", "get_os_version"), ("hardware", "get_device_type")):
       try:
         result[key] = str(getattr(HARDWARE, method)())[:160]
