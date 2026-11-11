@@ -76,3 +76,14 @@ Deployment: files copied to `\\192.168.20.145\htdocs\FormosaPilot`, with SHA-256
 C3X/C4 native builds, physical-device telemetry, runtime resource use and cloud-offline driving verification remain outstanding. Vehicle controllers, safety, models and AGNOS are outside this change. Changes in both branches remain uncommitted and unpushed.
 
 C3X／C4 のビルド、実機の状態取得、負荷、クラウド切断時の運転支援動作は未検証です。車両制御、safety、モデル、AGNOS は変更していません。両ブランチともコミット・プッシュは行っていません。
+
+
+## 2026-11-11 正式 IIS 更新後驗證
+
+使用者在 IIS 主機完成 setup-server.ps1 後，正式 HTTPS health 已回傳 qr-pairing、offroad-settings 與 database_version 3。瀏覽器既有 GitHub session 仍可登入 TonyBinheWu，原「部署驗證・模擬裝置」配對保留。使用相同裝置身分的 Ed25519 簽章回報與獨立 HTTPS 設定同步均成功。
+
+在正式網站提交模擬裝置 QuietMode 變更，經伺服器配送、記憶體 fixture 套用與回讀、簽章 receipt 回傳後，網站顯示「裝置已套用」且勾選值更新。此測試只操作明確標示 DEMO 的既有模擬裝置，未呼叫原生 Params、未改實車設定。驗證後停止 agent，並以簽章同步關閉模擬裝置的遠端設定授權；資料過期後自動禁止編輯。實車仍需更新對應分支並由本機明確開啟停車遠端設定後另行驗證。
+
+功能提交的 Windows/Linux × Python 3.12/3.14 CI 兩分支共 8 組全部通過：
+- hkg-enhanced 52b7310：https://github.com/TonyBinheWu/sunnypilot/actions/runs/42927015209
+- ccnc-port 86380f3：https://github.com/TonyBinheWu/sunnypilot/actions/runs/42927025343
