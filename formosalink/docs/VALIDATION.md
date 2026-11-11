@@ -101,3 +101,6 @@ C3X／C4 のビルド、実機の状態取得、負荷、クラウド切断時�
 - 瀏覽器貼入完整地圖 URL，帶入座標後傳送 DEMO 目的地，經真實 HTTPS 簽章 agent → API → 記憶體 provider → 回讀 → receipt，顯示裝置已套用；未呼叫外部地圖網址或寫實車。本機原生 profile 另測實際 Params JSON NavDestination 寫入回讀。
 - 兩分支各 77 項 Python、7 項前端測試；C3X／C4 各 12 項原生 profile（共 48）。涵蓋 SOC 0／未提供、eGPU 缺失與過期、目的地嚴格型別／座標範圍／額外欄位拒絕、停車與本機導航啟用檢查、監看模式不外傳原生目的地，以及跨用戶健康資訊隔離。
 - 無行車／CAN 解碼／原生 navd 修改；目的地接收不代表路線成功，實際 SOC 支援、硬體溫度／eGPU 及實車導航仍需對應硬體驗收。正式 IIS 需更新執行中後端至 device-health／navigation-destination，原資料庫維持 schema 3，既有帳號與配對保留。
+
+
+0.4.0 正式更新後：使用者執行 IIS 更新，正式 health 已確認 device-health 與 navigation-destination，schema 3、原 GitHub session／裝置配對保留。以既有 DEMO 身分送簽章健康摘要，正式首頁顯示測試溫度、SOC 未提供與 eGPU 未安裝；主題淺色／暗色切換成功。在正式導航頁輸入 DEMO 名稱與公開測試座標，經記憶體 provider 寫入回讀及簽章 receipt 後顯示裝置已套用。未啟動實車導航，未向路線供應商查詢。測試後停止回報、關閉模擬遠端授權並使健康讀值失效；實體裝置、SOC、eGPU 與路線計算驗收仍須實機。

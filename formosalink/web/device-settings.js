@@ -61,7 +61,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     const status=!snapshot?'settingsWaiting':!fresh?'settingsOffline':!snapshot.offroad?'settingsDriving':!snapshot.remote_enabled?'settingsLocalDisabled':'settingsReady';
     $('settings-banner').classList.toggle('is-ready',fresh&&snapshot?.offroad&&snapshot?.remote_enabled);
     $('settings-banner-text').textContent=t(status);$('settings-last-seen').textContent=`${t('received')} ${date(state?.received_at)}`;$('settings-retry-label').textContent=t('refresh');
-    if(!query&&section==='home'){deviceHealth(body,{devices:getDevices(),t,el,date,onOpen:d=>open(d,'device')});return;}
+    if(!query&&section==='home'){$('settings-banner-text').textContent=t('fleetHealthNote');$('settings-banner').classList.remove('is-ready');deviceHealth(body,{devices:getDevices(),t,el,date,onOpen:d=>open(d,'device')});return;}
     if(!snapshot){body.append(el('div',t('settingsWaiting'),'workspace-card workspace-empty'));return;}
     if(!query&&['device','home'].includes(section))info(snapshot);
     if(state.commands.length){const latest=state.commands[0];const receipt=el('p',`${t('command_'+latest.status)}${latest.reason&&latest.reason!=='applied'?' · '+t('reason_'+latest.reason):''}`,'workspace-receipt');receipt.setAttribute('role','status');body.append(receipt);}
