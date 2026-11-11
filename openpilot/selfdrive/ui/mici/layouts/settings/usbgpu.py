@@ -1,3 +1,5 @@
+from openpilot.selfdrive.ui.lib.hardware_status import localize_hardware_status
+from openpilot.system.ui.lib.multilang import tr
 import threading
 from pathlib import Path
 
@@ -20,21 +22,21 @@ class UsbGpuInfoLayout(Widget):
     super().__init__()
     self.set_rect(rl.Rectangle(0, 0, 360, 180))
     sub_color = rl.Color(255, 255, 255, int(255 * 0.9 * 0.65))
-    self._status = UnifiedLabel("status", 48, max_width=340, font_weight=FontWeight.DISPLAY, wrap_text=False)
+    self._status = UnifiedLabel(tr("status"), 48, max_width=340, font_weight=FontWeight.DISPLAY, wrap_text=False)
     self._status_value = UnifiedLabel("", 32, max_width=340, text_color=sub_color, font_weight=FontWeight.ROMAN, wrap_text=False)
-    self._link = UnifiedLabel("USB link", 48, max_width=340, font_weight=FontWeight.DISPLAY, wrap_text=False)
+    self._link = UnifiedLabel(tr("USB link"), 48, max_width=340, font_weight=FontWeight.DISPLAY, wrap_text=False)
     self._link_value = UnifiedLabel("", 32, max_width=340, text_color=sub_color, font_weight=FontWeight.ROMAN, wrap_text=False)
 
   def _update_state(self):
-    self._status_value.set_text(usbgpu_status(ui_state.usbgpu_compiled, ui_state.usbgpu_loading, ui_state.usbgpu_active,
+    self._status_value.set_text(localize_hardware_status(usbgpu_status(ui_state.usbgpu_compiled, ui_state.usbgpu_loading, ui_state.usbgpu_active,
                                               ui_state.usbgpu_startup_failed,
-                                              compile_pending=ui_state.usbgpu_compile_pending))
+                                              compile_pending=ui_state.usbgpu_compile_pending)))
     recovery = getattr(ui_state, 'usbgpu_recovery_badge', None)
     if recovery and not ui_state.usbgpu_active:
       self._status_value.set_text(recovery[0])
     device = get_usbgpu_device()
     if device is None:
-      value = "not connected"
+      value = tr("not connected")
     elif device.speed_mbps >= 1000 and device.speed_mbps % 1000 == 0:
       value = f"{device.speed_mbps // 1000} Gbps"
     else:
@@ -50,7 +52,7 @@ class UsbGpuInfoLayout(Widget):
 
 class CheckUsbGpuButton(BigButton):
   def __init__(self):
-    super().__init__("check connection", "", gui_app.texture("icons_mici/settings/network/wifi_strength_full.png", 76, 56))
+    super().__init__(tr("check connection"), "", gui_app.texture("icons_mici/settings/network/wifi_strength_full.png", 76, 56))
     self._running = False
     self._result: str | None = None
 
@@ -60,7 +62,7 @@ class CheckUsbGpuButton(BigButton):
       return
     self._running = True
     self._result = None
-    self.set_value("checking...")
+    self.set_value(tr("checking..."))
     self.set_rotate_icon(True)
 
     def run():
@@ -73,16 +75,16 @@ class CheckUsbGpuButton(BigButton):
 
   def _update_state(self):
     super()._update_state()
-    if not self._running and self.get_value() == "checking...":
+    if not self._running and self.get_value() == tr("checking..."):
       self.set_rotate_icon(False)
-      self.set_value("no errors" if self._result is None else self._result)
+      self.set_value(tr("no errors") if self._result is None else localize_hardware_status(self._result))
     self.set_enabled(not ui_state.started and not self._running)
 
 
 class UsbGpuLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
-    compile_button = BigButton("compile model", "keep ignition on",
+    compile_button = BigButton(tr("compile model"), tr("keep ignition on"),
                                gui_app.texture("icons_mici/settings/device/reboot.png", 64, 70))
     compile_button.set_visible(lambda: not ui_state.usbgpu_compiled)
     compile_button.set_enabled(lambda: not ui_state.started)
@@ -98,4 +100,4 @@ class UsbGpuLayoutMici(NavScroller):
       ui_state.params.put_bool("DoReboot", True, block=True)
 
     icon = gui_app.texture("icons_mici/settings/device/reboot.png", 64, 70)
-    gui_app.push_widget(BigConfirmationDialog("slide to reboot and compile", icon, reboot, exit_on_confirm=False))
+    gui_app.push_widget(BigConfirmationDialog(tr("slide to reboot and compile"), icon, reboot, exit_on_confirm=False))

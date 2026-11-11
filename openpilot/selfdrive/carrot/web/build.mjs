@@ -1,3 +1,4 @@
+import { Marked } from "marked";
 import { build } from "esbuild";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
@@ -281,6 +282,25 @@ async function writeAssetManifest(outputRoot) {
   }
 }
 
+async function buildTraditionalGuide(outputRoot) {
+  const source = await readFile(resolve(webRoot, "../../../../docs/CARROT_MOBILE.zh-TW.md"), "utf8");
+  const markdown = new Marked({ walkTokens(token) {
+    if (token.type === "link" && !/^(?:https?:|#)/.test(token.href)) {
+      token.href = new URL(token.href, "https://github.com/TonyBinheWu/sunnypilot/blob/carrot-wip/docs/").href;
+    }
+  }});
+  const content = markdown.parse(source);
+  const html = `<!doctype html><html lang="zh-Hant"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carrot Web 繁體中文操作說明</title>
+<style>:root{color-scheme:dark}body{font-family:system-ui,sans-serif;line-height:1.8;max-width:960px;margin:auto;padding:20px;color:#e5e7eb;background:#111827}a{color:#93c5fd}h1,h2,h3{line-height:1.4;scroll-margin-top:20px}h2{margin-top:2em}table{display:block;overflow-x:auto;border-collapse:collapse}th,td{padding:10px;border:1px solid #4b5563;min-width:120px}code{overflow-wrap:anywhere}nav{display:flex;gap:20px;flex-wrap:wrap}li{margin:.5em 0}</style>
+<nav><a href="/?page=tools">返回 Carrot Web 工具</a><a href="#details">各頁面詳細操作</a></nav>
+<main>${content.replace('<h2>各頁面詳細操作</h2>', '<h2 id="details">各頁面詳細操作</h2>')}</main></html>
+`;
+  await mkdir(outputRoot, { recursive: true });
+  await writeFile(resolve(outputRoot, "guide.zh-TW.html"), html, "utf8");
+}
+
 export async function buildWeb({ outputRoot } = {}) {
   const requestedOutputRoot = outputRoot ?? process.env.CARROT_WEB_TEST_OUTDIR;
   const buildOutputRoot = requestedOutputRoot ? resolve(requestedOutputRoot) : webRoot;
@@ -321,6 +341,7 @@ export async function buildWeb({ outputRoot } = {}) {
     });
     await normalizeGeneratedText(resolve(buildOutputRoot, workerOutput(definition)));
   }
+  await buildTraditionalGuide(buildOutputRoot);
   await writeAssetManifest(buildOutputRoot);
 }
 

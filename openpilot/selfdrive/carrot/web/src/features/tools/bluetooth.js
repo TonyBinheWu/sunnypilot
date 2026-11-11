@@ -1,6 +1,8 @@
+import { BLUETOOTH_ZH_TW } from "./bluetooth_zh_tw.js";
 import { mappingButtons, gestureToken, splitGesture, learnEvents, REMOTE_ACTIONS, gestureOptions } from "./bluetooth_mapping.js";
 
 const WORDS = {
+  "zh-tw": BLUETOOTH_ZH_TW,
   ko: {
     fwCurrent: "펌웨어 최신", fwUpdating: "펌웨어 업데이트 중", fwVerify: "업데이트 확인 대기",
     b1Register: "B1 자동 연결 등록", b1Forget: "B1 자동 연결 해제",
@@ -71,7 +73,7 @@ const WORDS = {
 const DEFAULTS = { up: "accelCruise", down: "decelCruise", left: "laneLeft", right: "laneRight", center: "paddleDecel", "1": "gapAdjustCruise", "2": "none" };
 const ACTIONS = REMOTE_ACTIONS;
 let dialog, state, selected, draft, timer, devicesSignature, busy = false, promptId, dirty = false;
-const t = (key) => WORDS[typeof LANG !== "undefined" && LANG === "ko" ? "ko" : "en"][key] || key;
+const t = (key) => (WORDS[typeof LANG !== "undefined" ? LANG : "en"] || WORDS.en)[key] || key;
 const actionLabel = (action) => t(action === "cancel" ? "cancelCruise" : action);
 const tokenLabel = (token) => { const [base, gesture] = splitGesture(token); return `${t(base)} · ${t(gesture)}`; };
 let seenEvents = new Set();

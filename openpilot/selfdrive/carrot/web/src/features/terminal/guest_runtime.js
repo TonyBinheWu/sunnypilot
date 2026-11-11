@@ -56,11 +56,26 @@
       consoleWarningTitle: "警告", consoleWarningBody: "此页面禁止使用控制台。",
       hostActor: "主机", typing: "正在输入",
     },
+    "zh-tw": {
+      title: "Carrot 遠端終端", pin: "需要 PIN", connect: "連線", connecting: "正在連線...",
+      connected: "已連線", disconnected: "已斷開", unavailable: "會話不可用",
+      approveEach: "逐條核准 · {seconds}秒", allowAll: "完全控制", viewOnly: "僅檢視", hostAway: "擁有者未檢視終端",
+      waiting: "等待擁有者核准", approved: "已核准 · 正在傳送", running: "已傳送到終端",
+      rejected: "指令已拒絕", expired: "指令核准已過期", failed: "指令傳送失敗",
+      disconnect: "斷開連線", closed: "遠端連線已關閉", inputDenied: "需要擁有者核准",
+      expires: "已連線 · {time}", unlimited: "無限",
+      consoleBlocked: "檢測到開發者工具 - 請重新輸入 PIN",
+      consoleWarningTitle: "警告", consoleWarningBody: "此頁面禁止使用控制檯。",
+      hostActor: "主端", typing: "正在輸入",
+    },
   };
 
-  // The remote support guest page is only ever used by the (Korean) admin, so
-  // force Korean here. The multi-locale strings map is kept intact for reuse.
-  const language = "ko";
+  let preferred = navigator.language || "en";
+  try { preferred = localStorage.getItem("language") || preferred; } catch (_) { /* storage may be disabled */ }
+  const locale = preferred.toLowerCase().replaceAll("_", "-");
+  const language = /zh-(tw|hk|mo|hant|cht)/.test(locale) ? "zh-tw"
+    : locale.startsWith("zh") ? "zh" : locale.startsWith("ko") ? "ko" : "en";
+  document.documentElement.lang = language === "zh-tw" ? "zh-Hant" : language;
   const t = (key, vars = null) => {
     let value = strings[language][key] || strings.en[key] || key;
     if (vars) Object.entries(vars).forEach(([name, replacement]) => { value = value.replaceAll(`{${name}}`, String(replacement)); });

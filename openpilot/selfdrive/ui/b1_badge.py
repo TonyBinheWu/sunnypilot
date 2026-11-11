@@ -1,4 +1,5 @@
 """Persistent B1 link indicator on the C3 and C4 home and driving screens."""
+from openpilot.system.ui.lib.multilang import tr_noop
 import json
 from pathlib import Path
 import time
@@ -6,15 +7,15 @@ import time
 ENROLLED = Path('/data/carrot/b1-monitor.json')
 STATUS = Path('/dev/shm/carrot-b1-link.json')
 LABELS = {
-  'updating': ('S3 · 업데이트', (96, 218, 243)),
-  'offline': ('S3 · 연결 대기', (170, 178, 188)),
-  'auth': ('S3 · 인증 중', (255, 197, 89)),
-  'missing': ('S3 · CAN 대기', (202, 147, 255)),
-  'ready': ('S3 · CAN 연결', (96, 232, 162)),
-  'waiting': ('S3 · CAN 연결', (96, 232, 162)),
-  'sending': ('S3 · 송신', (96, 218, 243)),
-  'driver_override': ('S3 · 레버 우선', (255, 197, 89)),
-  'error': ('S3 · CAN 오류', (252, 128, 110)),
+  'updating': (tr_noop('S3 · Updating'), (96, 218, 243)),
+  'offline': (tr_noop('S3 · Waiting for connection'), (170, 178, 188)),
+  'auth': (tr_noop('S3 · Authenticating'), (255, 197, 89)),
+  'missing': (tr_noop('S3 · Waiting for CAN'), (202, 147, 255)),
+  'ready': (tr_noop('S3 · CAN connected'), (96, 232, 162)),
+  'waiting': (tr_noop('S3 · CAN connected'), (96, 232, 162)),
+  'sending': (tr_noop('S3 · Sending'), (96, 218, 243)),
+  'driver_override': (tr_noop('S3 · Stock lever priority'), (255, 197, 89)),
+  'error': (tr_noop('S3 · CAN error'), (252, 128, 110)),
 }
 
 
@@ -43,6 +44,7 @@ def draw(rect, *, top=None, right_margin=None):
     _next = now + .35
   if _state is None:
     return
+  from openpilot.system.ui.lib.multilang import tr
   import pyray as rl
   from openpilot.system.ui.lib.application import FontWeight, gui_app
   label, rgb = LABELS[_state]
@@ -55,4 +57,4 @@ def draw(rect, *, top=None, right_margin=None):
     x = rect.x + rect.width - right_margin - width
   rl.draw_rectangle_rounded(rl.Rectangle(x, y, width, size*1.55), .7, 8, rl.Color(10, 18, 25, 220))
   rl.draw_circle(int(x+size*.62), int(y+size*.77), size*.19, rl.Color(*rgb, 255))
-  rl.draw_text_ex(gui_app.font(FontWeight.DISPLAY), label, rl.Vector2(x+size*1.05, y+size*.24), size, 0, rl.WHITE)
+  rl.draw_text_ex(gui_app.font(FontWeight.DISPLAY), tr(label), rl.Vector2(x+size*1.05, y+size*.24), size, 0, rl.WHITE)

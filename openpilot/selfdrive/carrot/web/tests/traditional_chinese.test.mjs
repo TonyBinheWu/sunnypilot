@@ -73,3 +73,35 @@ test("first-run wizard offers and detects Traditional Chinese separately", () =>
   assert.ok(ctx.CarrotIntroLangs.some(([code, name]) => code === "zh-tw" && name === "繁體中文"));
   assert.ok(ctx.CarrotIntroI18n["zh-tw"]);
 });
+
+
+test("all bundled Traditional setting pages load locally with verified hashes and no fallback", async () => {
+  const { createSettingDocumentationClient } = await import("../src/features/settings/documentation.js");
+  const root = new URL("../docs/settings/", import.meta.url);
+  const index = JSON.parse(readFileSync(new URL("Settings-Catalog.json", root), "utf8"));
+  const calls = [];
+  const client = createSettingDocumentationClient({ storage: null, fetchImpl: async (url) => {
+    calls.push(url);
+    assert.ok(url.startsWith("/docs/settings/"), url);
+    const name = decodeURIComponent(url.split("?")[0].split("/").pop());
+    return new Response(readFileSync(new URL(name, root), "utf8"));
+  }});
+  const catalog = JSON.parse(read("../../../carrot_settings.json"));
+  assert.equal(Object.keys(index.settings).length, catalog.params.length);
+  for (const setting of catalog.params) {
+    const page = await client.load(setting.name, "zh-tw");
+    assert.equal(page.available, true, setting.name);
+    assert.equal(page.language_resolved, "zh-tw", setting.name);
+    assert.equal(page.fallback, false, setting.name);
+  }
+  assert.ok(calls.length > catalog.params.length);
+});
+
+test("Bluetooth Traditional text covers every English control and preserves timing limits", async () => {
+  const { BLUETOOTH_ZH_TW } = await import("../src/features/tools/bluetooth_zh_tw.js");
+  const source = read("../src/features/tools/bluetooth.js");
+  const english = source.slice(source.indexOf("  en: {"), source.indexOf("\n};"));
+  const keys = [...english.matchAll(/(?:^|[,\n])\s*(\w+|"[12]"):\s*"/g)].map(m => m[1].replaceAll('"', ''));
+  for (const key of keys) assert.ok(BLUETOOTH_ZH_TW[key], key);
+  for (const limit of ["350", "700", "500", "10"]) assert.ok(BLUETOOTH_ZH_TW.gestures.includes(limit));
+});

@@ -7,7 +7,7 @@ from openpilot.selfdrive.ui.onroad.exp_button import ExpButton
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.hardware.usbgpu import usbgpu_badge_state
 from openpilot.system.ui.lib.application import gui_app, FontWeight
-from openpilot.system.ui.lib.multilang import tr
+from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.lib.text_draw import draw_text_ui_style
 from openpilot.system.ui.widgets import Widget
@@ -22,7 +22,7 @@ CRUISE_SPEED_ANIMATION_MAX = 100
 CRUISE_SPEED_ANIMATION_STEP = 12
 CRUISE_SPEED_ANIMATION_START_SIZE = 300
 HUD_PARAM_REFRESH_INTERVAL = 1.0
-WEEKDAYS_KO = ("일", "월", "화", "수", "목", "금", "토")
+WEEKDAYS_KO = (tr_noop("Sun"), tr_noop("Mon"), tr_noop("Tue"), tr_noop("Wed"), tr_noop("Thu"), tr_noop("Fri"), tr_noop("Sat"))
 
 
 @dataclass(frozen=True)
@@ -337,7 +337,7 @@ class HudRenderer(Widget):
     state = usbgpu_badge_state(ui_state.usbgpu_compiled, ui_state.usbgpu_loading,
                                ui_state.usbgpu_active, ui_state.usbgpu_startup_failed,
                                ui_state.usbgpu_compile_pending)
-    text = "eGPU REBOOT" if state == "compile_pending" else "eGPU ERROR" if state == "error" else "eGPU"
+    text = tr("eGPU REBOOT") if state == "compile_pending" else tr("eGPU ERROR") if state == "error" else tr("eGPU")
     if (getattr(ui_state, "usbgpu_delivery_badge", None) and
         not (ui_state.usbgpu_active or ui_state.usbgpu_loading or ui_state.usbgpu_startup_failed)):
       text, state = ui_state.usbgpu_delivery_badge
@@ -1077,7 +1077,7 @@ class HudRenderer(Widget):
     if minute_key == self._date_time_minute_key:
       return
 
-    weekday = WEEKDAYS_KO[(now.tm_wday + 1) % 7]
+    weekday = tr(WEEKDAYS_KO[(now.tm_wday + 1) % 7])
     self._date_time_text = time.strftime("%H:%M", now)
     self._date_text = f"{time.strftime('%m-%d', now)}({weekday})"
     self._date_time_minute_key = minute_key
@@ -1229,7 +1229,7 @@ class HudRenderer(Widget):
     # Arrival time is wall-clock based; monotonic time cannot be converted to local time.
     eta_tm = time.localtime(time.time() + remain_sec)  # noqa: TID251
     remain_min = remain_sec / 60.0
-    return f"도착: {remain_min:.1f}분({eta_tm.tm_hour:02d}:{eta_tm.tm_min:02d})"
+    return tr("Arrival: {minutes:.1f} min ({hour:02d}:{minute:02d})").format(minutes=remain_min, hour=eta_tm.tm_hour, minute=eta_tm.tm_min)
 
   def _format_go_pos_distance_text(self, dist_m: int) -> str:
     if dist_m <= 0:
@@ -1273,7 +1273,7 @@ class HudRenderer(Widget):
       )
     elif turn_info == 8:
       draw_text_ui_style(
-        "목적지", bx, by + 20, 35, rl.WHITE,
+        tr("Destination"), bx, by + 20, 35, rl.WHITE,
         font=self._font_display,
         border_width=2.0,
         shadow_offset=4.0,
@@ -1281,7 +1281,7 @@ class HudRenderer(Widget):
       )
     else:
       draw_text_ui_style(
-        f"감속:{turn_info}", bx, by + 20, 35, rl.WHITE,
+        tr("Deceleration: {info}").format(info=turn_info), bx, by + 20, 35, rl.WHITE,
         font=self._font_display,
         border_width=2.0,
         shadow_offset=4.0,

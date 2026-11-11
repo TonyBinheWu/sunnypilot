@@ -1,7 +1,8 @@
+#
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
 "Language: zh-CHT\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
@@ -483,7 +484,9 @@ msgid "Enable openpilot"
 msgstr "啟用 openpilot"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode."
+msgid ""
+"Enable the openpilot longitudinal control (alpha) toggle to allow "
+"Experimental mode."
 msgstr "啟用 openpilot 縱向控制（alpha）切換，以使用實驗模式。"
 
 #: openpilot/selfdrive/selfdrived/events.py
@@ -527,7 +530,9 @@ msgid "Experimental Mode"
 msgstr "實驗模式"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control."
+msgid ""
+"Experimental mode is currently unavailable on this car since the car's stock"
+" ACC is used for longitudinal control."
 msgstr "此車款目前無法使用實驗模式，因為縱向控制使用的是原廠 ACC。"
 
 #: openpilot/system/ui/widgets/network.py
@@ -668,7 +673,8 @@ msgid "MAX"
 msgstr "最大"
 
 #: openpilot/selfdrive/ui/widgets/setup.py
-msgid "Maximize your training data uploads to improve openpilot's driving models."
+msgid ""
+"Maximize your training data uploads to improve openpilot's driving models."
 msgstr "最大化上傳訓練資料，以改進 openpilot 的駕駛模型。"
 
 #: openpilot/selfdrive/selfdrived/events.py
@@ -755,7 +761,9 @@ msgstr "將裝置配對至您的 comma 帳號"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
 #: openpilot/selfdrive/ui/widgets/setup.py
-msgid "Pair your device with comma connect (connect.comma.ai) and claim your comma prime offer."
+msgid ""
+"Pair your device with comma connect (connect.comma.ai) and claim your comma "
+"prime offer."
 msgstr "將裝置與 comma connect（connect.comma.ai）配對，領取您的 comma prime 優惠。"
 
 #: openpilot/selfdrive/selfdrived/events.py
@@ -811,7 +819,9 @@ msgid "Prevent large data uploads when on a metered cellular connection"
 msgstr "在計量制行動網路時避免大量上傳"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
-msgid "Preview the driver facing camera to ensure that driver monitoring has good visibility. (vehicle must be off)"
+msgid ""
+"Preview the driver facing camera to ensure that driver monitoring has good "
+"visibility. (vehicle must be off)"
 msgstr "預覽車內鏡頭以確保駕駛監控視野良好。（車輛須熄火）"
 
 #: openpilot/selfdrive/selfdrived/events.py
@@ -871,7 +881,9 @@ msgid "Record and Upload Microphone Audio"
 msgstr "錄製並上傳麥克風音訊"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."
+msgid ""
+"Record and store microphone audio while driving. The audio will be included "
+"in the dashcam video in comma connect."
 msgstr "行車時錄製並儲存麥克風音訊。音訊將包含在 comma connect 的行車紀錄影片中。"
 
 #: openpilot/selfdrive/selfdrived/events.py
@@ -930,7 +942,9 @@ msgstr "倒擋"
 msgid ""
 "Reverse\n"
 "Gear"
-msgstr "倒車\n檔"
+msgstr ""
+"倒車\n"
+"檔"
 
 #: openpilot/selfdrive/selfdrived/events.py
 msgid "Reverse Gear"
@@ -1186,7 +1200,9 @@ msgid "Upgrade Now"
 msgstr "立即升級"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Upload data from the driver facing camera and help improve the driver monitoring algorithm."
+msgid ""
+"Upload data from the driver facing camera and help improve the driver "
+"monitoring algorithm."
 msgstr "上傳車內鏡頭資料，協助改善駕駛監控演算法。"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
@@ -1246,7 +1262,9 @@ msgid "You must accept the Terms and Conditions in order to use openpilot."
 msgstr "您必須接受條款與細則才能使用 openpilot。"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms and Conditions to use openpilot. Read the latest terms at https://comma.ai/terms before continuing."
+msgid ""
+"You must accept the Terms and Conditions to use openpilot. Read the latest "
+"terms at https://comma.ai/terms before continuing."
 msgstr "您必須接受條款與細則才能使用 openpilot。繼續前請閱讀 https://comma.ai/terms 上的最新條款。"
 
 #: openpilot/selfdrive/ui/onroad/driver_camera_dialog.py
@@ -1255,7 +1273,7 @@ msgstr "相機啟動中"
 
 #: openpilot/selfdrive/ui/layouts/settings/software.py
 msgid "checking..."
-msgstr "檢查中..."
+msgstr "檢查中…"
 
 #: openpilot/selfdrive/ui/widgets/prime.py
 msgid "comma prime"
@@ -1355,7 +1373,9 @@ msgid "openpilot longitudinal control may come in a future update."
 msgstr "openpilot 縱向控制可能於未來更新提供。"
 
 #: openpilot/selfdrive/ui/layouts/settings/device.py
-msgid "openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down."
+msgid ""
+"openpilot requires the device to be mounted within 4° left or right and "
+"within 5° up or 9° down."
 msgstr "openpilot 要求裝置安裝在左右 4°、上 5° 或下 9° 以內。"
 
 #: openpilot/selfdrive/selfdrived/events.py
@@ -1473,3 +1493,680 @@ msgstr "訊號燈已變化"
 msgid "🔥 Firehose Mode 🔥"
 msgstr "🔥 Firehose 模式 🔥"
 
+msgid "Impact suspected"
+msgstr "偵測到疑似碰撞"
+
+msgid "Touch anywhere to cancel"
+msgstr "輕觸任意位置以取消"
+
+msgid "Dashcam mode: reboot in {seconds}s"
+msgstr "行車記錄器模式：{seconds} 秒後重新啟動"
+
+msgid "Rebooting into Dashcam Mode"
+msgstr "正在重新啟動並進入行車記錄器模式"
+
+msgid "openpilot disabled"
+msgstr "openpilot 已停用"
+
+msgid "Offline"
+msgstr "離線"
+
+msgid "no alerts"
+msgstr "沒有警示"
+
+msgid "allow data uploading"
+msgstr "允許上傳資料"
+
+msgid "no, don't upload"
+msgstr "不要上傳"
+
+msgid ""
+"accept\n"
+"terms"
+msgstr ""
+"接受\n"
+"條款"
+
+msgid ""
+"decline &\n"
+"uninstall"
+msgstr ""
+"拒絕並\n"
+"解除安裝"
+
+msgid ""
+"terms and\n"
+"conditions"
+msgstr ""
+"服務條款\n"
+"與條件"
+
+msgid "scroll to continue"
+msgstr "滑動以繼續"
+
+msgid "You must accept the Terms & Conditions to use openpilot."
+msgstr "您必須接受服務條款與條件，才能使用 openpilot。"
+
+msgid ""
+"driver monitoring\n"
+"check"
+msgstr ""
+"駕駛監控\n"
+"檢查"
+
+msgid "Next, we'll check if comma four can detect the driver properly."
+msgstr "接下來將檢查 comma four 是否能正確偵測駕駛。"
+
+msgid "openpilot uses the cabin camera to check if the driver is distracted."
+msgstr "openpilot 使用車內攝影機檢查駕駛是否分心。"
+
+msgid ""
+"If it does not have a clear view of the driver, unplug and remount before "
+"continuing."
+msgstr "若無法清楚看見駕駛，請先拔除電源並重新安裝裝置，再繼續操作。"
+
+msgid "looking for driver"
+msgstr "正在偵測駕駛"
+
+msgid ""
+"make sure comma\n"
+"four can see your face"
+msgstr ""
+"請確認 comma four\n"
+"能看見您的臉部"
+
+msgid ""
+"Remount if your face is blocked, or driver monitoring has difficulty "
+"tracking your face."
+msgstr "若臉部遭遮擋，或駕駛監控難以追蹤您的臉部，請重新安裝裝置。"
+
+msgid "driver camera data"
+msgstr "駕駛攝影機資料"
+
+msgid "do you want to share video data for training?"
+msgstr "是否分享影片資料以供模型訓練？"
+
+msgid "Sharing your data with comma helps improve openpilot for everyone."
+msgstr "與 comma 分享資料，有助於改善所有使用者的 openpilot 體驗。"
+
+msgid "what is openpilot?"
+msgstr "什麼是 openpilot？"
+
+msgid "1. openpilot is a driver assistance system."
+msgstr "1. openpilot 是駕駛輔助系統。"
+
+msgid "2. You must pay attention at all times."
+msgstr "2. 您必須隨時專注於駕駛。"
+
+msgid "3. You must be ready to take over at any time."
+msgstr "3. 您必須隨時準備接手操作。"
+
+msgid "4. You are fully responsible for driving the car."
+msgstr "4. 您須對車輛駕駛負完全責任。"
+
+msgid "swipe for QR code"
+msgstr "滑動以顯示 QR 碼"
+
+msgid "or go to https://comma.ai/terms"
+msgstr "或前往 https://comma.ai/terms"
+
+msgid ""
+"start the car to\n"
+"use openpilot"
+msgstr ""
+"啟動車輛以\n"
+"使用 openpilot"
+
+msgid "system booting"
+msgstr "系統啟動中"
+
+msgid ""
+"openpilot can't start\n"
+"check alerts"
+msgstr ""
+"openpilot 無法啟動\n"
+"請查看警示"
+
+msgid "brake hold"
+msgstr "煞車保持"
+
+msgid "soft hold"
+msgstr "柔和停車保持"
+
+msgid "carrot"
+msgstr "Carrot"
+
+msgid "ON"
+msgstr "開啟"
+
+msgid "WAIT"
+msgstr "等待"
+
+msgid "STALE"
+msgstr "資料已過期"
+
+msgid "DETECTED"
+msgstr "已偵測到"
+
+msgid "NO DETECTION"
+msgstr "未偵測到"
+
+msgid "STANDBY"
+msgstr "待命"
+
+msgid "pair with comma connect"
+msgstr "與 comma connect 配對"
+
+msgid "SSH keys"
+msgstr "SSH 金鑰"
+
+msgid "joystick debug mode"
+msgstr "搖桿除錯模式"
+
+msgid "longitudinal maneuver mode"
+msgstr "縱向操作測試模式"
+
+msgid "alpha longitudinal"
+msgstr "實驗性縱向控制"
+
+msgid "ui debug mode"
+msgstr "介面除錯模式"
+
+msgid "enter GitHub username..."
+msgstr "輸入 GitHub 使用者名稱…"
+
+msgid "Not set"
+msgstr "尚未設定"
+
+msgid "Loading..."
+msgstr "載入中…"
+
+msgid "Please connect to Wi-Fi to fetch your key."
+msgstr "請連線至 Wi-Fi 以下載您的金鑰。"
+
+msgid "device ID"
+msgstr "裝置 ID"
+
+msgid "serial"
+msgstr "序號"
+
+msgid "pair"
+msgstr "配對"
+
+msgid "update openpilot"
+msgstr "更新 openpilot"
+
+msgid "reset calibration"
+msgstr "重設校正"
+
+msgid "uninstall openpilot"
+msgstr "解除安裝 openpilot"
+
+msgid "reboot"
+msgstr "重新啟動"
+
+msgid "power off"
+msgstr "關機"
+
+msgid "regulatory info"
+msgstr "法規資訊"
+
+msgid ""
+"driver\n"
+"camera preview"
+msgstr ""
+"駕駛攝影機\n"
+"預覽"
+
+msgid ""
+"review\n"
+"training guide"
+msgstr ""
+"重新查看\n"
+"操作指南"
+
+msgid ""
+"terms &\n"
+"conditions"
+msgstr ""
+"服務條款\n"
+"與條件"
+
+msgid "paired"
+msgstr "已配對"
+
+msgid "Please connect to Wi-Fi to complete initial pairing."
+msgstr "請連線至 Wi-Fi 以完成首次配對。"
+
+msgid "Please connect to Wi-Fi to update."
+msgstr "請連線至 Wi-Fi 以進行更新。"
+
+msgid "Device must be registered with the comma.ai backend to pair."
+msgstr "裝置必須先向 comma.ai 後端註冊，才能配對。"
+
+msgid "Frequently Asked Questions"
+msgstr "常見問題"
+
+msgid "Does it matter how or where I drive?"
+msgstr "我的駕駛方式或地點有影響嗎？"
+
+msgid "Nope, just drive as you normally would."
+msgstr "沒有影響，請依平常的方式駕駛即可。"
+
+msgid "Do all of my segments get pulled in Firehose Mode?"
+msgstr "Firehose 模式會收集我的所有行車片段嗎？"
+
+msgid "No, we selectively pull a subset of your segments."
+msgstr "不會，我們只會選取部分行車片段。"
+
+msgid "What's a good USB-C adapter?"
+msgstr "應使用哪種 USB-C 電源供應器？"
+
+msgid "Any fast phone or laptop charger should be fine."
+msgstr "一般支援快速充電的手機或筆記型電腦充電器即可。"
+
+msgid "Does it matter which software I run?"
+msgstr "使用的軟體版本有影響嗎？"
+
+msgid ""
+"Yes, only upstream openpilot (and particular forks) are able to be used for "
+"training."
+msgstr "有影響，僅上游 openpilot 與特定衍生版本的資料可用於訓練。"
+
+msgid "ACTIVE"
+msgstr "已啟用"
+
+msgid "INACTIVE: connect to an unmetered network"
+msgstr "未啟用：請連線至不限流量的網路"
+
+msgid "toggles"
+msgstr "功能開關"
+
+msgid "network"
+msgstr "網路"
+
+msgid "device"
+msgstr "裝置"
+
+msgid "developer"
+msgstr "開發者"
+
+msgid "firehose"
+msgstr "Firehose 資料分享"
+
+msgid "driving personality"
+msgstr "駕駛風格"
+
+msgid "experimental mode"
+msgstr "實驗模式"
+
+msgid "use metric units"
+msgstr "使用公制單位"
+
+msgid "lane departure warnings"
+msgstr "車道偏離警示"
+
+msgid "always-on driver monitor"
+msgstr "持續啟用駕駛監控"
+
+msgid "record & upload driver camera"
+msgstr "錄製並上傳駕駛攝影機影像"
+
+msgid "record & upload mic audio"
+msgstr "錄製並上傳麥克風音訊"
+
+msgid "enable openpilot"
+msgstr "啟用 openpilot"
+
+msgid "aggressive"
+msgstr "積極"
+
+msgid "standard"
+msgstr "標準"
+
+msgid "relaxed"
+msgstr "舒適"
+
+msgid "status"
+msgstr "狀態"
+
+msgid "USB link"
+msgstr "USB 連線"
+
+msgid "check connection"
+msgstr "檢查連線"
+
+msgid "compile model"
+msgstr "編譯模型"
+
+msgid "keep ignition on"
+msgstr "請保持車輛電源開啟"
+
+msgid "slide to reboot and compile"
+msgstr "滑動以重新啟動並編譯"
+
+msgid "no errors"
+msgstr "未發現錯誤"
+
+msgid "enable tethering"
+msgstr "啟用網路熱點"
+
+msgid "tethering password"
+msgstr "熱點密碼"
+
+msgid "enable roaming"
+msgstr "啟用漫遊"
+
+msgid "apn settings"
+msgstr "APN 設定"
+
+msgid "edit"
+msgstr "編輯"
+
+msgid "cellular metered"
+msgstr "行動網路按流量計費"
+
+msgid "enter APN..."
+msgstr "輸入 APN…"
+
+msgid "enter password..."
+msgstr "輸入密碼…"
+
+msgid "slide to forget"
+msgstr "滑動以移除網路"
+
+msgid "searching for networks"
+msgstr "正在搜尋網路"
+
+msgid "forgetting..."
+msgstr "正在移除…"
+
+msgid "wrong password"
+msgstr "密碼錯誤"
+
+msgid "connect"
+msgstr "連線"
+
+msgid "starting..."
+msgstr "啟動中…"
+
+msgid "connecting..."
+msgstr "連線中…"
+
+msgid "tethering"
+msgstr "網路熱點"
+
+msgid "connected"
+msgstr "已連線"
+
+msgid "not in range"
+msgstr "不在連線範圍內"
+
+msgid "unsupported"
+msgstr "不支援"
+
+msgid "wi-fi"
+msgstr "Wi-Fi"
+
+msgid "not connected"
+msgstr "尚未連線"
+
+msgid "starting"
+msgstr "啟動中"
+
+msgid "eGPU"
+msgstr "外接 GPU"
+
+msgid "eGPU Status"
+msgstr "外接 GPU 狀態"
+
+msgid "USB Link"
+msgstr "USB 連線"
+
+msgid "Connection Check"
+msgstr "連線檢查"
+
+msgid "Check eGPU"
+msgstr "檢查外接 GPU"
+
+msgid "Checks USB 5 Gbps, firmware, 12V/PCIe, and GPU execution."
+msgstr "檢查 USB 5 Gbps、韌體、12V／PCIe 與 GPU 執行狀態。"
+
+msgid ""
+"slide to\n"
+"{action}"
+msgstr ""
+"滑動以\n"
+"{action}"
+
+msgid "Disengage to {action}"
+msgstr "請先解除輔助駕駛，再{action}"
+
+msgid "subscribed"
+msgstr "已訂閱"
+
+msgid "upgrade to prime"
+msgstr "升級至 Prime"
+
+msgid "obtaining IP..."
+msgstr "正在取得 IP…"
+
+msgid "update now"
+msgstr "立即更新"
+
+msgid ""
+"updater failed\n"
+"to respond"
+msgstr ""
+"更新服務\n"
+"沒有回應"
+
+msgid "failed to update"
+msgstr "更新失敗"
+
+msgid "download update"
+msgstr "下載更新"
+
+msgid "up to date"
+msgstr "已是最新版本"
+
+msgid "checking"
+msgstr "檢查中"
+
+msgid "idle"
+msgstr "閒置"
+
+msgid "downloading"
+msgstr "下載中"
+
+msgid "finalizing"
+msgstr "正在完成更新"
+
+msgid "fetching"
+msgstr "正在取得更新"
+
+msgid "S3 · Updating"
+msgstr "S3・更新中"
+
+msgid "S3 · Waiting for connection"
+msgstr "S3・等待連線"
+
+msgid "S3 · Authenticating"
+msgstr "S3・驗證中"
+
+msgid "S3 · Waiting for CAN"
+msgstr "S3・等待 CAN"
+
+msgid "S3 · CAN connected"
+msgstr "S3・CAN 已連線"
+
+msgid "S3 · Sending"
+msgstr "S3・傳送中"
+
+msgid "S3 · Stock lever priority"
+msgstr "S3・撥桿優先"
+
+msgid "S3 · CAN error"
+msgstr "S3・CAN 錯誤"
+
+msgid "E2E driving"
+msgstr "E2E 行駛中"
+
+msgid "Preparing signal deceleration"
+msgstr "準備依號誌減速"
+
+msgid "Destination"
+msgstr "目的地"
+
+msgid "Deceleration:"
+msgstr "減速："
+
+msgid "Sun"
+msgstr "日"
+
+msgid "Mon"
+msgstr "一"
+
+msgid "Tue"
+msgstr "二"
+
+msgid "Wed"
+msgstr "三"
+
+msgid "Thu"
+msgstr "四"
+
+msgid "Fri"
+msgstr "五"
+
+msgid "Sat"
+msgstr "六"
+
+msgid "Deceleration: {info}"
+msgstr "減速：{info}"
+
+msgid "Arrival: {minutes:.1f} min ({hour:02d}:{minute:02d})"
+msgstr "抵達：{minutes:.1f} 分（{hour:02d}:{minute:02d}）"
+
+msgid "reset"
+msgstr "重設"
+
+msgid "uninstall"
+msgstr "解除安裝"
+
+msgid "network usage"
+msgstr "網路計費方式"
+
+msgid "not detected"
+msgstr "未偵測到"
+
+msgid "multiple devices"
+msgstr "偵測到多個裝置"
+
+msgid "firmware mismatch"
+msgstr "韌體版本不符"
+
+msgid "startup failed"
+msgstr "啟動失敗"
+
+msgid "loading"
+msgstr "載入中"
+
+msgid "reboot to compile"
+msgstr "重新啟動以編譯"
+
+msgid "active"
+msgstr "運作中"
+
+msgid "model not compiled"
+msgstr "模型尚未編譯"
+
+msgid "ready"
+msgstr "就緒"
+
+msgid "USB not connected"
+msgstr "USB 尚未連線"
+
+msgid "GPU check timed out"
+msgstr "GPU 檢查逾時"
+
+msgid "12V / PCIe not ready"
+msgstr "12V／PCIe 尚未就緒"
+
+msgid "GPU incompatible"
+msgstr "GPU 不相容"
+
+msgid "USB disconnected during GPU check"
+msgstr "GPU 檢查期間 USB 連線中斷"
+
+msgid "USB link errors"
+msgstr "USB 連線錯誤"
+
+msgid "not checked"
+msgstr "尚未檢查"
+
+msgid "Slow USB ({speed} Mbps)"
+msgstr "USB 速度過低（{speed} Mbps）"
+
+msgid "USB link {speed} Mbps"
+msgstr "USB 連線速度 {speed} Mbps"
+
+msgid "eGPU REBOOT"
+msgstr "外接 GPU 須重啟"
+
+msgid "eGPU ERROR"
+msgstr "外接 GPU 錯誤"
+
+msgid "CAN Error: Enable CameraSCC"
+msgstr "CAN 錯誤：請啟用 CameraSCC"
+
+msgid "SCC detected on camera bus"
+msgstr "在攝影機匯流排偵測到 SCC"
+
+msgid "Auto Hold Active"
+msgstr "自動駐車已啟用"
+
+msgid "BRAKE! Tesla CAN Red Light"
+msgstr "請煞車！Tesla CAN 偵測到紅燈"
+
+msgid "Stopping Distance May Be Insufficient"
+msgstr "停車距離可能不足"
+
+msgid "Tesla CAN Traffic Signal Lost or Inconsistent"
+msgstr "Tesla CAN 號誌資料遺失或不一致"
+
+msgid "CAN Controller Fault"
+msgstr "CAN 控制器故障"
+
+msgid "CAN Controller Fault: Check Connections"
+msgstr "CAN 控制器故障：請檢查連線"
+
+msgid "Front Safety System Fault"
+msgstr "前方安全系統故障"
+
+msgid "Front Safety System Fault: Check Vehicle"
+msgstr "前方安全系統故障：請檢查車輛"
+
+msgid "전방 물체 주의"
+msgstr "注意前方物體"
+
+msgid "전방을 확인하고 감속을 준비하세요"
+msgstr "請注意前方並準備減速"
+
+msgid "Reboot to Apply Update"
+msgstr "重新啟動以套用更新"
+
+msgid "Park safely before rebooting your device"
+msgstr "請先安全停車，再重新啟動裝置"
+
+msgid "Selected"
+msgstr "已選取"
+
+msgid "Language saved"
+msgstr "語言已儲存"
+
+msgid "Restart your device from Device settings to apply the language."
+msgstr "請在「裝置」設定中重新啟動，以套用語言。"
+
+msgid "Language"
+msgstr "語言"

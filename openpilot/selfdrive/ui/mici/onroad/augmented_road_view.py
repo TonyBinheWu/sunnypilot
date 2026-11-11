@@ -1,3 +1,4 @@
+from openpilot.system.ui.lib.multilang import tr
 import time
 import numpy as np
 import pyray as rl
@@ -173,7 +174,7 @@ class AugmentedRoadView(CameraView):
     self._driver_state_renderer = DriverPreview(compact=True)
     self._confidence_ball = ConfidenceBall()
     self._traffic_light = TrafficLight()
-    self._offroad_label = UnifiedLabel("start the car to\nuse openpilot", 54, FontWeight.DISPLAY,
+    self._offroad_label = UnifiedLabel(tr("start the car to\nuse openpilot"), 54, FontWeight.DISPLAY,
                                        text_color=rl.Color(255, 255, 255, int(255 * 0.9)),
                                        alignment=TextAlignment.CENTER,
                                        alignment_vertical=TextAlignmentVertical.MIDDLE)
@@ -208,11 +209,11 @@ class AugmentedRoadView(CameraView):
 
     # update offroad label
     if ui_state.panda_type == log.PandaState.PandaType.unknown:
-      self._offroad_label.set_text("system booting")
+      self._offroad_label.set_text(tr("system booting"))
     elif ui_state.ignition and not ui_state.started:
-      self._offroad_label.set_text("openpilot can't start\ncheck alerts")
+      self._offroad_label.set_text(tr("openpilot can't start\ncheck alerts"))
     else:
-      self._offroad_label.set_text("start the car to\nuse openpilot")
+      self._offroad_label.set_text(tr("start the car to\nuse openpilot"))
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
     # Don't trigger click callback if bookmark was triggered

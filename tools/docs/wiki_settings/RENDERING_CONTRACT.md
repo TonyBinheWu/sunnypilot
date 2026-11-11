@@ -102,3 +102,9 @@ reference.example / technical
 3. 차단된 문법이 정보 손실 없이 안전한 표현으로 낮아진다.
 4. 언어별 자리표시자와 선택지 코드가 같다.
 5. 좁은 화면에서도 핵심 정보가 생략되지 않는다.
+
+## Traditional Chinese distribution in this fork
+
+`zh-tw` uses the checked-in `/docs/settings/Settings-Catalog.json` and pages built by `build_traditional_bundle.py`. AUTO facts come from this branch’s catalog; only the upstream Chinese MANUAL regions are translated. Source Wiki commit and review status remain in the index. The same hash, size, marker, locale, AST and URL validation applies. The bundle and source code ship together on `carrot-wip`; other locales retain the remote publication path.
+
+Rebuild with `python -m tools.docs.wiki_settings.build_traditional_bundle --source-wiki <checkout>` (requires `opencc-python-reimplemented`). Review translated MANUAL content when refreshing the source. `zh-tw` titles, descriptions and options come from `ttitle`, `tdescr` and `zh-tw` in the catalog.

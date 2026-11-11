@@ -3,6 +3,8 @@ import {
   PUBLISHED_SETTINGS_INDEX_URL,
 } from "./published_documentation.js";
 
+export const TRADITIONAL_SETTINGS_INDEX_URL = "/docs/settings/Settings-Catalog.json";
+
 const DOC_LANGUAGES = new Set(["ko", "en", "zh", "zh-tw"]);
 export const SETTING_DOCUMENTATION_INDEX_URL = PUBLISHED_SETTINGS_INDEX_URL;
 
@@ -31,19 +33,32 @@ export function createSettingDocumentationClient(options = {}) {
     clock: options.clock,
   });
 
-  function load(...args) {
-    return client.load(...args);
+  const traditionalClient = options.indexUrl ? client : createPublishedSettingDocumentationClient({
+    ...options,
+    indexUrl: TRADITIONAL_SETTINGS_INDEX_URL,
+    storageKey: "carrot.settings.traditional-docs.v1",
+  });
+
+  let activeClient = client;
+  let activeIndexUrl = indexUrl;
+
+  function load(name, language, ...args) {
+    const selected = normalizeSettingDocLanguage(language) === "zh-tw" ? traditionalClient : client;
+    activeClient = selected;
+    activeIndexUrl = selected === client ? indexUrl : TRADITIONAL_SETTINGS_INDEX_URL;
+    return selected.load(name, language, ...args);
   }
 
   function clear() {
     client.clear();
+    if (traditionalClient !== client) traditionalClient.clear();
   }
 
   function diagnostics() {
     return {
-      ...client.diagnostics(),
+      ...activeClient.diagnostics(),
       channel: "wiki",
-      indexUrl,
+      indexUrl: activeIndexUrl,
     };
   }
 

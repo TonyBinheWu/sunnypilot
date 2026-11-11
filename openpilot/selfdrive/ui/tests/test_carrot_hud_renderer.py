@@ -102,7 +102,7 @@ def hud_module(monkeypatch):
       gui_app=gui_app,
       FontWeight=SimpleNamespace(SEMI_BOLD=1, BOLD=2, MEDIUM=3, DISPLAY=4),
     ),
-    "openpilot.system.ui.lib.multilang": SimpleNamespace(tr=lambda text: text),
+    "openpilot.system.ui.lib.multilang": SimpleNamespace(tr=lambda text: text, tr_noop=lambda text: text),
     "openpilot.system.ui.lib.text_measure": SimpleNamespace(
       measure_text_cached=lambda font, text, size: Vector2(len(text) * size, size),
     ),

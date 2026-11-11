@@ -1,0 +1,20 @@
+"use strict";
+globalThis.CarrotNavigationZhTw = Object.freeze({
+  "Carrot Navigation": "Carrot 導航",
+  "Find a destination": "搜尋目的地", "Search": "搜尋", "Clear Mapbox destination": "清除 Mapbox 目的地",
+  "After saving your Public key, search for and select a destination. The selected place is used only for the current drive and is cleared when the drive ends or the device restarts. The route map needs the driving screen, a current position and route guidance. External navigation takes priority; the current drive's Mapbox destination resumes after it disconnects.": "儲存公開金鑰後，搜尋並選取目的地。選取的位置只用於本次行程，行程結束或裝置重新啟動後即清除。路線地圖需要行車畫面、目前位置與路線導引。外部導航優先，外部連線結束後會恢復本次行程的 Mapbox 目的地。",
+  "No current destination": "目前沒有目的地", "Searching…": "搜尋中…",
+  "Destination set for this drive. Waiting for GPS and map data.": "已設定本次行程目的地，正在等待 GPS 與地圖資料。",
+  "Select a destination.": "請選擇目的地。", "No results.": "沒有搜尋結果。",
+  "Checking position and destination.": "正在確認位置與目的地。",
+  "Nav model map · Live route": "導航模型地圖・即時路線",
+  "Map data unavailable. Check your Mapbox key and network.": "無法取得地圖資料，請檢查 Mapbox 金鑰與網路。",
+  "Search for and select a destination below, or start external navigation guidance. Saving keys alone does not display a route map.": "請在下方搜尋並選擇目的地，或啟動外部導航。只儲存金鑰不會顯示路線地圖。",
+  "The route map is available when the vehicle's driving screen is active. Select a destination below first.": "裝置顯示行車畫面時才會提供路線地圖，請先在下方選擇目的地。",
+  "Waiting for the map service. Check your destination and current position.": "正在等待地圖服務，請確認目的地與目前位置。",
+  "Waiting for a current GPS position.": "正在等待目前的 GPS 位置。",
+  "Waiting for current route instructions.": "正在等待目前路線的導航指示。",
+  "Current position is away from the route.": "目前位置已偏離導航路線。",
+  "Loading map data. Please wait.": "地圖資料載入中，請稍候。",
+  "Unable to read map status. Check your connection to the vehicle.": "無法讀取地圖狀態，請檢查與車輛的連線。",
+});

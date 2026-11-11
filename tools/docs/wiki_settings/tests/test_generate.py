@@ -79,6 +79,17 @@ def write_catalog(root, payload):
 
 
 class WikiSettingsGeneratorTest(unittest.TestCase):
+  def test_traditional_bundle_matches_current_catalog_and_preserves_manual(self):
+    bundle = GENERATOR.REPO_ROOT / "openpilot/selfdrive/carrot/web/docs/settings"
+    index = json.loads((bundle / "Settings-Catalog.json").read_text(encoding="utf-8"))
+    result = GENERATOR.generate(
+      GENERATOR.DEFAULT_CATALOG, wiki_dir=bundle, locales=index["locales"],
+      catalog_commit=index["catalogCommit"], wiki_commit=index["wikiCommit"], generated_at=index["generatedAt"],
+    )
+    self.assertIn("zh-tw", result.index["locales"])
+    for name, text in result.pages.items():
+      self.assertEqual((bundle / name).read_bytes(), text.encode("utf-8"), name)
+
   def test_current_catalog_generates_all_settings_and_valid_markdown(self):
     result = GENERATOR.generate(
       GENERATOR.DEFAULT_CATALOG,

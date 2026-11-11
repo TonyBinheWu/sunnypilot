@@ -341,6 +341,7 @@ window.CarrotReplayInsights = window.CarrotReplayInsights || (() => {
   function localeName() {
     const language = String(document.documentElement?.lang || navigator.language || "en").toLowerCase();
     if (language.startsWith("ko")) return "ko-KR";
+    if (language === "zh-tw") return "zh-TW";
     if (language.startsWith("zh")) return "zh-CN";
     return "en-US";
   }

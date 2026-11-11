@@ -1,0 +1,3 @@
+# Page hashes cover the exact UTF-8 bytes served to the browser.
+*.md text eol=lf
+*.json text eol=lf

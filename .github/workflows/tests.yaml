@@ -21,6 +21,33 @@ env:
   CI: 1
 
 jobs:
+  traditional_ui:
+    name: Traditional Chinese and scroll layout
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: python -m pip install pytest numpy
+      - name: Device strings, update tokens and text layout
+        run: >-
+          python -m pytest -c /dev/null --rootdir=. --noconftest -q
+          openpilot/system/ui/lib/tests/test_raylib_text.py
+          openpilot/selfdrive/ui/tests/test_traditional_chinese.py
+          openpilot/selfdrive/ui/tests/test_carrot_hud_renderer.py
+          tools/docs/wiki_settings/tests
+      - name: Web build and localized feature coverage
+        working-directory: openpilot/selfdrive/carrot/web
+        run: |
+          npm ci
+          npm run build
+          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs
+          git diff --exit-code -- js/generated generated guide.zh-TW.html
+
   egpu_startup:
     name: eGPU selected-model startup
     runs-on: ubuntu-24.04

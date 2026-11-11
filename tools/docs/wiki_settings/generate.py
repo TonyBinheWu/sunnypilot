@@ -31,13 +31,13 @@ AUTHORING_GUIDE_URL = (
 
 PARAM_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 COMMIT_RE = re.compile(r"^[a-f0-9]{7,40}$")
-GENERATED_PAGE_RE = re.compile(r'^(?:KO|EN|ZH)-[^\x00-\x1f<>:"/\\|?*#%[\]{}]+\.md$')
+GENERATED_PAGE_RE = re.compile(r'^(?:KO|EN|ZH|ZH-TW)-[^\x00-\x1f<>:"/\\|?*#%[\]{}]+\.md$')
 LEGACY_LOCALE_GENERATED_PAGE_RE = re.compile(
   r"^[A-Z]{2,3}-Settings-[A-Za-z0-9_-]+\.md$"
 )
 LEGACY_GENERATED_PAGE_RE = re.compile(r"^Settings-(?!Catalog(?:\.|$))[A-Za-z0-9-]+\.md$")
 GENERATED_HEADER_RE = re.compile(
-  r'^<!-- CARROT:GENERATED schema="\d+" locale="(?P<locale>[a-z]{2,3})" '
+  r'^<!-- CARROT:GENERATED schema="\d+" locale="(?P<locale>[a-z]{2,3}(?:-[a-z]{2,8})?)" '
   r'group="[A-Za-z][A-Za-z0-9_]*"(?: param="[A-Za-z][A-Za-z0-9_]*")? -->$',
   re.MULTILINE,
 )
@@ -85,6 +85,7 @@ LOCALE_FIELDS = {
   "ko": ("title", "descr", "ko"),
   "en": ("etitle", "edescr", "en"),
   "zh": ("ctitle", "cdescr", "zh"),
+  "zh-tw": ("ttitle", "tdescr", "zh-tw"),
 }
 LABELS = {
   "ko": {
@@ -145,6 +146,26 @@ LABELS = {
       "select": "选择",
       "slider": "数值",
       "text": "文本",
+    },
+  },
+  "zh-tw": {
+    "catalog_title": "設定目錄",
+    "catalog_intro": "根據當前設定目錄自動生成的各項設定頁面。",
+    "page_suffix": "設定",
+    "menu": "選單",
+    "shortcuts": "快速連結",
+    "type": "型別",
+    "default": "預設值",
+    "range": "範圍",
+    "step": "步長",
+    "unit": "顯示單位",
+    "options": "選項",
+    "types": {
+      "toggle": "開關",
+      "segmented": "分段選擇",
+      "select": "選擇",
+      "slider": "數值",
+      "text": "文字",
     },
   },
 }
@@ -308,13 +329,15 @@ def _walk_menu(
   parent_ids: tuple[str, ...],
   parent_labels: dict[str, tuple[str, ...]],
   leaves: list[MenuLeaf],
+  locales: tuple[str, ...] = DEFAULT_LOCALES,
 ) -> None:
   node_id = node.get("id")
   if not isinstance(node_id, str) or not node_id:
     raise GenerationError("every menu node must have a non-empty id")
   ids = parent_ids + (node_id,)
   labels: dict[str, tuple[str, ...]] = {}
-  for locale, (_, _, node_field) in LOCALE_FIELDS.items():
+  for locale in locales:
+    _, _, node_field = LOCALE_FIELDS[locale]
     label = node.get(node_field)
     if not isinstance(label, str) or not label.strip():
       raise GenerationError(f"menu node {node_id} is missing its {locale} label")
@@ -330,7 +353,7 @@ def _walk_menu(
     for child in children:
       if not isinstance(child, dict):
         raise GenerationError(f"menu node {node_id} contains a non-object child")
-      _walk_menu(child, parent_ids=ids, parent_labels=labels, leaves=leaves)
+      _walk_menu(child, parent_ids=ids, parent_labels=labels, leaves=leaves, locales=locales)
     return
   if not isinstance(params, list) or not params:
     raise GenerationError(f"menu leaf {node_id} must contain a non-empty params array")
@@ -425,7 +448,7 @@ def load_catalog(path: Path, locales: Iterable[str] = DEFAULT_LOCALES) -> tuple[
   for node in payload["menu"]:
     if not isinstance(node, dict):
       raise GenerationError("catalog menu entries must be objects")
-    _walk_menu(node, parent_ids=(), parent_labels={}, leaves=leaves)
+    _walk_menu(node, parent_ids=(), parent_labels={}, leaves=leaves, locales=tuple(locales))
   leaf_ids = [leaf.id for leaf in leaves]
   if len(leaf_ids) != len(set(leaf_ids)):
     raise GenerationError("leaf menu ids must be globally unique for stable Wiki page names")

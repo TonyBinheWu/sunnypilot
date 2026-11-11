@@ -1,3 +1,4 @@
+from openpilot.system.ui.lib.multilang import tr
 import math
 import pyray as rl
 from typing import Union
@@ -309,6 +310,10 @@ class BigMultiToggle(BigToggle):
     self._select_callback = select_callback
 
     self.set_value(self._options[0])
+
+  def set_value(self, value: str):
+    super().set_value(value)
+    self._sub_label.set_text(tr(value))
 
   def _width_hint(self) -> int:
     return int(self._rect.width - self.LABEL_HORIZONTAL_PADDING * 2 - self._txt_enabled_toggle.width)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from itertools import chain
 import os
 from openpilot.common.basedir import BASEDIR
 from openpilot.system.ui.lib.multilang import SYSTEM_UI_DIR, UI_DIR, TRANSLATIONS_DIR, multilang
@@ -26,13 +25,12 @@ ALERT_TRANSLATION_CALL_ARGS = {
 
 def update_translations():
   files = []
-  for root, _, filenames in chain(os.walk(SYSTEM_UI_DIR),
-                                  os.walk(os.path.join(UI_DIR, "widgets")),
-                                  os.walk(os.path.join(UI_DIR, "layouts")),
-                                  os.walk(os.path.join(UI_DIR, "onroad"))):
-    for filename in filenames:
-      if filename.endswith(".py"):
-        files.append(os.path.relpath(os.path.join(root, filename), BASEDIR))
+  for directory in (SYSTEM_UI_DIR, str(UI_DIR)):
+    for root, directories, filenames in os.walk(directory):
+      directories[:] = [name for name in directories if name not in ("tests", "translations", "__pycache__")]
+      for filename in filenames:
+        if filename.endswith(".py"):
+          files.append(os.path.relpath(os.path.join(root, filename), BASEDIR))
   # Extract translatable strings and generate .pot template
   entries_by_msgid = {entry.msgid: entry for entry in extract_strings(files, BASEDIR)}
   for entry in extract_strings([ALERTS_FILE], BASEDIR, ALERT_TRANSLATION_CALL_ARGS):

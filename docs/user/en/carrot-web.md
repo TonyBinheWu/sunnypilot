@@ -252,3 +252,8 @@ are cleaned up automatically while offroad. A running retired model remains prot
 until the next boot selects the default and delivery switches the installed active model.
 Jetson cleanup waits for an offroad connection and preserves an ONNX used by any available
 model. Only the selected model is loaded into GPU memory.
+
+
+## Traditional Chinese reference
+
+Selecting Traditional Chinese (`zh-tw`) loads the 212 per-setting reference pages bundled with this branch. These pages use the same verified index, page hashes and Markdown validation as the published Wiki. They remain available without an external Wiki connection; imported manual sections retain their review status. Other languages continue to use the published Wiki. Open Tools → 繁體中文完整操作說明 for the complete Traditional Chinese feature guide.

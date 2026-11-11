@@ -135,12 +135,21 @@ class Label(Widget):
     self._update_text(self._text)
 
   def _update_text(self, text):
+    text = _resolve_value(text)
+    font = font_fallback(gui_app.font(self._font_weight), text)
+    # Position changes during scrolling do not change text geometry. Resolve
+    # callables every frame, but rebuild only when content/font/layout changes.
+    key = (font.texture.id, getattr(font, "baseSize", 0), getattr(font, "glyphCount", 0),
+           getattr(font, "glyphPadding", 0), text, self._font_size, self._rect.width,
+           self._text_padding, self._icon.width if self._icon else 0, self._elide_right)
+    if getattr(self, "_text_layout_key", None) == key:
+      return
+    self._text_layout_key = key
     self._emojis = []
     self._text_size = []
-    text = _resolve_value(text)
     # Resolve once for the whole label so ASCII fragments, ellipses and emoji
     # splits use the same font as wrapping and measurement.
-    self._font = font_fallback(gui_app.font(self._font_weight), text)
+    self._font = font
 
     if self._elide_right:
       display_text = text
@@ -173,7 +182,6 @@ class Label(Widget):
 
   def _render(self, _):
     # Text can be a callable
-    # TODO: cache until text changed
     self._update_text(self._text)
 
     text_size = self._text_size[0] if self._text_size else rl.Vector2(0.0, 0.0)
@@ -397,7 +405,7 @@ class UnifiedLabel(Widget):
     # Check if cache is still valid
     if (self._font == font and self._cached_text == text and
         self._cached_width == available_width and
-        self._cached_wrapped_lines):
+        self._cached_text is not None):
       return
 
     self._font = font

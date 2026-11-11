@@ -1,3 +1,4 @@
+from openpilot.selfdrive.ui.lib.hardware_status import localize_hardware_status
 import threading
 
 from openpilot.selfdrive.ui.ui_state import ui_state
@@ -16,7 +17,7 @@ class UsbGpuLayout(Widget):
     self._scroller = Scroller([
       text_item(lambda: tr("eGPU Status"), self._status),
       text_item(lambda: tr("USB Link"), self._link),
-      text_item(lambda: tr("Connection Check"), lambda: self._check_result),
+      text_item(lambda: tr("Connection Check"), lambda: localize_hardware_status(self._check_result)),
       button_item(lambda: tr("Check eGPU"), lambda: tr("CHECK"),
                   lambda: tr("Checks USB 5 Gbps, firmware, 12V/PCIe, and GPU execution."),
                   callback=self._start_check, enabled=ui_state.is_offroad),
@@ -27,14 +28,14 @@ class UsbGpuLayout(Widget):
     recovery = getattr(ui_state, 'usbgpu_recovery_badge', None)
     if recovery and not ui_state.usbgpu_active:
       return recovery[0]
-    return usbgpu_status(ui_state.usbgpu_compiled, ui_state.usbgpu_loading, ui_state.usbgpu_active,
-                         ui_state.usbgpu_startup_failed, compile_pending=ui_state.usbgpu_compile_pending)
+    return localize_hardware_status(usbgpu_status(ui_state.usbgpu_compiled, ui_state.usbgpu_loading, ui_state.usbgpu_active,
+                         ui_state.usbgpu_startup_failed, compile_pending=ui_state.usbgpu_compile_pending))
 
   @staticmethod
   def _link() -> str:
     device = get_usbgpu_device()
     if device is None:
-      return "not connected"
+      return tr("not connected")
     return f"{device.speed_mbps // 1000} Gbps" if device.speed_mbps >= 1000 and device.speed_mbps % 1000 == 0 \
       else f"{device.speed_mbps} Mbps"
 

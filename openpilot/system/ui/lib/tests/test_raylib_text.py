@@ -53,7 +53,7 @@ def renderer():
     "DEFAULT_TEXT_SIZE": 20, "DEFAULT_TEXT_COLOR": object(), "FONT_SCALE": 1, "ICON_PADDING": 15,
     "gui_app": SimpleNamespace(font=lambda weight: font), "font_fallback": lambda font, text=None: font,
     "measure_text_cached": lambda font, text, size, spacing=0: vector(len(text) * 10, size),
-    "find_emoji": lambda text: [], "_cache": {},
+    "find_emoji": lambda text: [], "_cache": OrderedDict(), "_MAX_ENTRIES": 1024,
   }
   load_definitions(UI_DIR / "lib/application.py", namespace, {"TextAlignment", "TextAlignmentVertical"})
   load_definitions(UI_DIR / "lib/wrap_text.py", namespace)
@@ -239,3 +239,40 @@ def test_generated_and_source_fonts_cover_jamo_and_common_symbols(korean_rendere
     assert jamo | common <= set(source(None, weight))
   assert common <= set(source(None, r.FontWeight.NORMAL))
   assert not jamo & set(source(None, r.FontWeight.NORMAL))
+
+
+def test_scrolling_label_reuses_geometry_but_updates_position_and_content(renderer):
+  r = renderer
+  measured = []
+  original = r.namespace["measure_text_cached"]
+  r.namespace["measure_text_cached"] = lambda *args: (measured.append(args), original(*args))[1]
+  value = ["繁體中文設定說明"]
+  label = r.Label(lambda: value[0], font_size=20)
+  label.render(r.rl.Rectangle(10, 0, 300, 100))
+  count = len(measured)
+  for y in range(1, 121):
+    label.render(r.rl.Rectangle(10, y, 300, 100))
+  assert len(measured) == count
+  assert r.rl.draw_calls[-1][2].y == 160
+  value[0] = "已變更內容"
+  label.render(r.rl.Rectangle(10, 120, 300, 100))
+  assert len(measured) > count
+  assert r.rl.draw_calls[-1][1] == value[0]
+  count = len(measured)
+  label.render(r.rl.Rectangle(10, 120, 30, 100))
+  assert len(measured) > count
+  count = len(measured)
+  label.set_font_size(30)
+  assert len(measured) > count
+
+
+def test_wrap_cache_is_bounded_and_keeps_recent_entries(renderer):
+  r = renderer
+  font = r.gui_app.font(0)
+  for i in range(1024):
+    r.wrap_text(font, f"text {i}", 20, 200)
+  recent = r.wrap_text(font, "text 0", 20, 200)
+  r.wrap_text(font, "new entry", 20, 200)
+  assert len(r.namespace["_cache"]) == 1024
+  assert r.wrap_text(font, "text 0", 20, 200) is recent
+  assert not any(key[4] == "text 1" for key in r.namespace["_cache"])

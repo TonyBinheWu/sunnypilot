@@ -20,21 +20,21 @@
       "kind": "bundle",
       "source": "src/entries/replay.js",
       "path": "js/generated/replay.js",
-      "hash": "bd6a91b7222e5ea5dda9fa826e94542d976d14b4bcc815b79fa71b7dd3e12d20"
+      "hash": "061c527d2a500ba97d7a747e64535b12435f88748e054a3238ca76bf47f65de9"
     },
     {
       "id": "settings.store",
       "kind": "bundle",
       "source": "src/entries/settings.js",
       "path": "js/generated/settings.js",
-      "hash": "26a97e8b27c621e8b9010283022305a1a8f8dbc603bc759cbfa2431080ce0ea4"
+      "hash": "18c7b4e880d1632575bf7fb8b6fa64351faa3eea125159c050604c63d0b9c1bf"
     },
     {
       "id": "tools.runtime",
       "kind": "bundle",
       "source": "src/entries/tools.js",
       "path": "js/generated/tools.js",
-      "hash": "bbf9a04fe28ca72860600cbb32a4e0cbd6aa4b10ae32a4474b802194ac0aee7f"
+      "hash": "b2e4b4abe5f1a57c23492c06aac9d0a477ac0fa4d282daca3ee500447b5c5f39"
     },
     {
       "id": "logs.runtime",
@@ -69,7 +69,7 @@
       "kind": "bundle",
       "source": "src/entries/terminal_guest.js",
       "path": "js/generated/terminal-guest.js",
-      "hash": "d2601c53cb5fb40122cd1e794ab8aadb9c45579e6b19404dffe6b443e64a2bfb"
+      "hash": "adbf22cbfadc41190d7584868d24a08159d3d330206daff0e2710e916c59ad8a"
     },
     {
       "id": "intro.runtime",

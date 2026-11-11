@@ -1,8 +1,12 @@
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
-  const ko = (localStorage.getItem("language") || navigator.language || "ko").startsWith("ko");
-  const tr = (k, e) => ko ? k : e;
+  let preferred = navigator.language || "en";
+  try { preferred = localStorage.getItem("language") || preferred; } catch (_) { /* private browsing */ }
+  const language = preferred.toLowerCase().replaceAll("_", "-");
+  const traditional = /^zh-(tw|hk|mo|hant|cht)(-|$)/.test(language);
+  const tr = (k, e) => traditional ? (globalThis.CarrotNavigationZhTw[e] || e) : language.startsWith("ko") ? k : e;
+  document.documentElement.lang = traditional ? "zh-Hant" : language.startsWith("ko") ? "ko" : "en";
   $("title").textContent = tr("Carrot 내비게이션", "Carrot Navigation");
   $("searchTitle").textContent = tr("목적지 검색", "Find a destination");
   $("search").textContent = tr("검색", "Search");

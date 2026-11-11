@@ -1,3 +1,4 @@
+from openpilot.system.ui.lib.multilang import tr
 from openpilot.cereal import log
 
 from openpilot.system.ui.widgets.scroller import NavScroller
@@ -13,14 +14,15 @@ class TogglesLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
 
-    self._personality_toggle = BigMultiParamToggle("driving personality", "LongitudinalPersonality", ["aggressive", "standard", "relaxed", "moreRelaxed"])
-    self._experimental_btn = BigParamControl("experimental mode", "ExperimentalMode")
-    is_metric_toggle = BigParamControl("use metric units", "IsMetric")
-    ldw_toggle = BigParamControl("lane departure warnings", "IsLdwEnabled")
-    always_on_dm_toggle = BigParamControl("always-on driver monitor", "AlwaysOnDM")
-    record_front = BigParamControl("record & upload driver camera", "RecordFront", toggle_callback=restart_needed_callback)
-    record_mic = BigParamControl("record & upload mic audio", "RecordAudio", toggle_callback=restart_needed_callback)
-    enable_openpilot = BigParamControl("enable openpilot", "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
+    self._personality_toggle = BigMultiParamToggle(tr("driving personality"), "LongitudinalPersonality",
+                                                 [tr("aggressive"), tr("standard"), tr("relaxed"), tr("moreRelaxed")])
+    self._experimental_btn = BigParamControl(tr("experimental mode"), "ExperimentalMode")
+    is_metric_toggle = BigParamControl(tr("use metric units"), "IsMetric")
+    ldw_toggle = BigParamControl(tr("lane departure warnings"), "IsLdwEnabled")
+    always_on_dm_toggle = BigParamControl(tr("always-on driver monitor"), "AlwaysOnDM")
+    record_front = BigParamControl(tr("record & upload driver camera"), "RecordFront", toggle_callback=restart_needed_callback)
+    record_mic = BigParamControl(tr("record & upload mic audio"), "RecordAudio", toggle_callback=restart_needed_callback)
+    enable_openpilot = BigParamControl(tr("enable openpilot"), "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
 
     self._scroller.add_widgets([
       self._personality_toggle,

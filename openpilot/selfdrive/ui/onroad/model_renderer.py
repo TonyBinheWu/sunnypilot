@@ -1,3 +1,4 @@
+from openpilot.system.ui.lib.multilang import tr
 import math
 import colorsys
 import time
@@ -827,9 +828,9 @@ class ModelRenderer(Widget):
           else:
             draw_text_ui_style("Signal slowing", x, disp_y, 50, rl.Color(255, 255, 255, 255), align="center", y_offset=0.0)
         elif self._carrot_x_state == 4:
-          draw_text_ui_style("E2E주행중", x, disp_y, 50, rl.Color(255, 255, 255, 255), align="center", y_offset=0.0)
+          draw_text_ui_style(tr("E2E driving"), x, disp_y, 50, rl.Color(255, 255, 255, 255), align="center", y_offset=0.0)
         elif self._carrot_x_state == 6:
-          draw_text_ui_style("신호 감속 준비", x, disp_y, 50, rl.Color(255, 190, 80, 255), align="center", y_offset=0.0)
+          draw_text_ui_style(tr("Preparing signal deceleration"), x, disp_y, 50, rl.Color(255, 190, 80, 255), align="center", y_offset=0.0)
         elif self._carrot_x_state in (0, 1, 2):
           draw_dist = True
       else:

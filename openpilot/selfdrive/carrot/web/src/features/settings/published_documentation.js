@@ -4,11 +4,11 @@ import { canonicalJson, sha256Hex, utf8Bytes } from "./documentation_hash.js";
 export const PUBLISHED_SETTINGS_INDEX_URL =
   "https://raw.githubusercontent.com/wiki/ajouatom/openpilot/Settings-Catalog.json";
 
-const SUPPORTED_LANGUAGES = new Set(["ko", "en", "zh"]);
+const SUPPORTED_LANGUAGES = new Set(["ko", "en", "zh", "zh-tw"]);
 const PARAM_RE = /^[A-Za-z][A-Za-z0-9_]*$/;
 const HASH_RE = /^[a-f0-9]{64}$/;
 const COMMIT_RE = /^[a-f0-9]{7,40}$/;
-const PAGE_RE = /^(?:KO|EN|ZH)-[^\u0000-\u001f<>:"/\\|?*#%]+\.md$/u;
+const PAGE_RE = /^(?:KO|EN|ZH|ZH-TW)-[^\u0000-\u001f<>:"/\\|?*#%]+\.md$/u;
 const REVIEW_STATES = new Set(["current", "needs_review"]);
 const INDEX_KEYS = new Set([
   "schemaVersion", "catalogCommit", "wikiCommit", "generatedAt",
@@ -64,7 +64,7 @@ export function validatePublishedSettingsIndex(value) {
   if (!Number.isFinite(Date.parse(value.generatedAt || ""))) fail("settings index generatedAt is invalid");
   if (!HASH_RE.test(value.contentHash || "")) fail("settings index contentHash is invalid");
 
-  if (!Array.isArray(value.locales) || value.locales.length < 2 || value.locales.length > 3) {
+  if (!Array.isArray(value.locales) || value.locales.length < 2 || value.locales.length > 4) {
     fail("settings index locales are invalid");
   }
   const locales = value.locales.map(normalizedLanguage);
@@ -150,7 +150,7 @@ export function extractPublishedSettingMarkdown(pageText, descriptor) {
   const source = String(pageText || "").replaceAll("\r\n", "\n");
   const lines = source.split("\n");
   const header =
-    /^<!-- CARROT:GENERATED schema="1" locale="(ko|en|zh)" group="([A-Za-z][A-Za-z0-9_]*)" param="([A-Za-z][A-Za-z0-9_]*)" -->$/
+    /^<!-- CARROT:GENERATED schema="1" locale="(ko|en|zh|zh-tw)" group="([A-Za-z][A-Za-z0-9_]*)" param="([A-Za-z][A-Za-z0-9_]*)" -->$/
       .exec(lines[0] || "");
   if (!header) fail("published page header is invalid");
   if (
@@ -598,9 +598,7 @@ export function createPublishedSettingDocumentationClient(options = {}) {
 
   function load(name, language, loadOptions = {}) {
     const param = String(name || "").trim();
-    // The published index has no Traditional pages; retain the request so
-    // English fallback is reported to the user without relaxing index validation.
-    const requestedLanguage = String(language).toLowerCase() === "zh-tw" ? "zh-tw" : normalizedLanguage(language);
+    const requestedLanguage = normalizedLanguage(language);
     if (!PARAM_RE.test(param)) {
       return Promise.resolve(Object.freeze({ available: false, name: param, language_requested: requestedLanguage }));
     }

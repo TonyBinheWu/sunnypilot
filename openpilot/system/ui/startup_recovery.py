@@ -34,6 +34,30 @@ REBUILD_KO = '리빌드 · 재부팅'
 ERROR_KO = '시작 오류 · 누르면 다음 내용'
 
 
+def configure_language(language=None):
+  """Read the language without importing Params or the regular UI dependency graph."""
+  global LABELS, AUTO_KO, BUTTON_KO, REBUILD_KO, ERROR_KO
+  if language is None:
+    try:
+      language = Path('/data/params/d/LanguageSetting').read_text().strip()
+    except OSError:
+      language = ''
+  traditional = language in ('zh-CHT', 'main_zh-CHT', 'zh-TW', 'zh-tw')
+  if traditional:
+    labels = {
+      'idle': '啟動失敗・等待更新', 'waiting': '正在等待修正版本',
+      'updating': '更新中・請保持電源連接', 'failed': '復原失敗・輕觸以重試',
+      'rebooting': '更新完成・重新啟動中', 'cleaning': '清理建置中・請保持電源連接',
+      'rebuild_rebooting': '重新啟動後將再次建置',
+    }
+    LABELS = {state: (labels[state], pair[1]) for state, pair in LABELS.items()}
+    AUTO_KO = '每 30 秒檢查修正版本・重新啟動後需數分鐘重建'
+    BUTTON_KO = 'Git 更新並重新啟動'
+    REBUILD_KO = '重建並重新啟動'
+    ERROR_KO = '啟動錯誤・輕觸以查看下一頁'
+  return traditional
+
+
 def device_size():
   try:
     model = Path('/sys/firmware/devicetree/base/model').read_text().strip('\x00\n').lower()
@@ -185,10 +209,11 @@ def main():
   rl.init_window(width, height, 'Startup recovery')
   rl.set_target_fps(20)
   rl.set_exit_key(0)
+  traditional = configure_language()
   characters = ''.join(ko + en for ko, en in LABELS.values()) + AUTO_KO + BUTTON_KO + REBUILD_KO + ERROR_KO + reason + error
   codepoints = sorted(set(range(32, 127)) | {ord(c) for c in characters if ord(c) >= 32})
   glyph_buffer = rl.ffi.new('int[]', codepoints)
-  font = rl.load_font_ex(str(ROOT / 'openpilot/selfdrive/assets/fonts/Pretendard-Medium.ttf'),
+  font = rl.load_font_ex(str(ROOT / 'openpilot/selfdrive/assets/fonts' / ('unifont.otf' if traditional else 'Pretendard-Medium.ttf')),
                          round(28 * min(width / 536, height / 240)), rl.ffi.cast('int *', glyph_buffer), len(codepoints))
   rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
   pages = error_pages(font, error, min(width / 536, height / 240))

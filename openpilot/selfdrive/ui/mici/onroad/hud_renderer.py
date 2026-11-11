@@ -333,7 +333,7 @@ class HudRenderer(Widget):
     state = usbgpu_badge_state(ui_state.usbgpu_compiled, ui_state.usbgpu_loading,
                                ui_state.usbgpu_active, ui_state.usbgpu_startup_failed,
                                ui_state.usbgpu_compile_pending)
-    text = "eGPU REBOOT" if state == "compile_pending" else "eGPU ERROR" if state == "error" else "eGPU"
+    text = tr("eGPU REBOOT") if state == "compile_pending" else tr("eGPU ERROR") if state == "error" else tr("eGPU")
     if (getattr(ui_state, "usbgpu_delivery_badge", None) and
         not (ui_state.usbgpu_active or ui_state.usbgpu_loading or ui_state.usbgpu_startup_failed)):
       text, state = ui_state.usbgpu_delivery_badge
@@ -534,7 +534,7 @@ class HudRenderer(Widget):
     time_block_right = time_x
 
     if show_date_time != 0:
-      weekdays_ko = ["일", "월", "화", "수", "목", "금", "토"]
+      weekdays_ko = [tr("Sun"), tr("Mon"), tr("Tue"), tr("Wed"), tr("Thu"), tr("Fri"), tr("Sat")]
       # Python weekday(): 월=0 ... 일=6 이라서 C tm_wday 스타일로 변환
       weekday = weekdays_ko[(now.weekday() + 1) % 7]
 

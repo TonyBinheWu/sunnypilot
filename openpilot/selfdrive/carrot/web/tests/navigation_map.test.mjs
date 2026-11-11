@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 
 const source = await readFile(new URL("../js/pages/navigation_map.js", import.meta.url), "utf8");
+const traditionalSource = await readFile(new URL("../js/pages/navigation_zh_tw.js", import.meta.url), "utf8");
 const settle = () => new Promise((resolve) => setImmediate(resolve));
 
 async function page(responses, language = "en") {
@@ -16,8 +17,8 @@ async function page(responses, language = "en") {
     });
     return elements.get(id);
   };
-  vm.runInNewContext(source, {
-    document: { hidden: false, getElementById: element },
+  vm.runInNewContext(traditionalSource + "\n" + source, {
+    document: { documentElement: {}, hidden: false, getElementById: element },
     localStorage: { getItem: () => language }, navigator: {},
     URL: { createObjectURL: () => `blob:${++blobs}`, revokeObjectURL: (url) => revoked.push(url) },
     setTimeout: (callback) => timers.push(callback),
@@ -67,4 +68,13 @@ test("network failure displays a localized connection message", async () => {
   assert.equal(p.element("map").hidden, true);
   assert.equal(p.element("mapStatus").hidden, false);
   assert.match(p.element("mapStatus").textContent, /차량과의 연결/);
+});
+
+
+test("Traditional navigation explains route and network problems", async () => {
+  const p = await page([{ status: 200, reason: "route" }, new Error("offline")], "zh-Hant-TW");
+  assert.equal(p.element("title").textContent, "Carrot 導航");
+  assert.match(p.element("mapStatus").textContent, /搜尋並選擇目的地/);
+  await p.next();
+  assert.match(p.element("mapStatus").textContent, /檢查與車輛的連線/);
 });
