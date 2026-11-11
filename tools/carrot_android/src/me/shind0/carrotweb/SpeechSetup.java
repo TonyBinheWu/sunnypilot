@@ -92,7 +92,7 @@ final class SpeechSetup {
       case UNSUPPORTED: status = "目前語音服務的模型清單未包含 zh-TW。請開啟語音輸入設定確認支援的語言；本 App 無法強制安裝服務未提供的模型。"; break;
       case REQUESTED: status = "已送出中文模型下載請求，尚未確認安裝完成。請處理系統可能顯示的確認畫面，稍後按重新檢查。"; break;
       case DOWNLOADING: status = "中文語音模型下載中，尚未確認安裝完成。"; break;
-      case ERROR: status = "模型下載沒有完成。請確認網路、儲存空間及語音服務設定，之後重新檢查。"; break;
+      case ERROR: status = "尚無法確認模型下載完成。請確認網路、儲存空間及語音服務設定，之後重新檢查。"; break;
       default: status = "目前無法確認中文模型是否安裝。請使用下方設定引導，或重新檢查。";
     }
     report.setText("檢查語言：中文（台灣）／國語，zh-TW\n手機語言：" + Locale.getDefault().toLanguageTag() + "\n麥克風權限：" + (SpeechProbe.microphone(activity) ? "已允許" : "未允許") + "\n\n" + status + (detail.isEmpty() ? "" : "\n\n" + detail) + "\n");
@@ -119,7 +119,14 @@ final class SpeechSetup {
           }
           public void onError(int error) {
             if (!active(token)) return;
-            state = SpeechModelPolicy.State.ERROR; detail = "語音服務回報代碼 " + error + "。若此服務不支援下載回報，請改用語音輸入設定並重新檢查。"; render();
+            if (error == SpeechRecognizer.ERROR_CANNOT_LISTEN_TO_DOWNLOAD_EVENTS) {
+              state = SpeechModelPolicy.State.UNKNOWN;
+              detail = "此服務不提供下載事件回報，無法據此判斷下載成功或失敗。請按『重新檢查』或改用語音輸入設定。";
+            } else {
+              state = SpeechModelPolicy.State.ERROR;
+              detail = "語音服務回報代碼 " + error + "。請確認網路與語音輸入設定後重新檢查。";
+            }
+            render();
           }
         });
       } else downloader.triggerModelDownload(SpeechProbe.intent("zh-TW"));
