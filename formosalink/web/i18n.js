@@ -918,3 +918,7 @@ for(const [locale,labels] of Object.entries({
 Object.assign(translations['zh-TW'],{mediaWaiting:'等待裝置鏡頭影像。請確認裝置已更新且在線。',mediaTitle:'遠端鏡頭'});
 Object.assign(translations.en,{mediaWaiting:'Waiting for the device camera. Check that the device is updated and online.',mediaTitle:'Remote cameras'});
 Object.assign(translations.ja,{mediaWaiting:'カメラ画像を待っています。デバイスの更新と接続を確認してください。',mediaTitle:'リモートカメラ'});
+
+Object.assign(translations['zh-TW'],{mediaTitle:'即時影像',sectionDesc_live:'超廣角與車內鏡頭即時串流。',mediaPhase:'透過自架服務加密串流，目標每秒 8 格。只有裝置所有者觀看時才傳送。',mediaLive:'即時串流中',mediaStreamError:'串流中斷，正在重新連線。請確認裝置在線，且伺服器已啟用 WebSocket。'});
+Object.assign(translations.en,{mediaTitle:'Live video',sectionDesc_live:'Live ultra-wide and cabin camera streams.',mediaPhase:'Encrypted streaming through your self-hosted service, targeting 8 fps. Uploads run only while the owner watches.',mediaLive:'Live streaming',mediaStreamError:'Stream interrupted; reconnecting. Check that the device is online and the server supports WebSocket.'});
+Object.assign(translations.ja,{mediaTitle:'ライブ映像',sectionDesc_live:'超広角・車内カメラのライブ配信。',mediaPhase:'自前サーバー経由の暗号化配信。目標は毎秒8フレームで、所有者の視聴中のみ送信します。',mediaLive:'ライブ配信中',mediaStreamError:'配信が中断しました。再接続中です。本体の接続とサーバーの WebSocket 設定を確認してください。'});

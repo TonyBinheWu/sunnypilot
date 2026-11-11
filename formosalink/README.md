@@ -1,4 +1,4 @@
-# FormosaPilot / FormosaLink 0.7.0
+# FormosaPilot / FormosaLink 0.8.0
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
@@ -18,7 +18,7 @@ FormosaPilot は保守対象の sunnypilot を基盤とするブランドです�
 - GitHub accounts with owner-scoped devices, single Python worker, local SQLite. Existing administrator credentials and pairing data migrate in place.
 - Dedicated Ed25519 device keys, expiring one-use pairing codes, fingerprint confirmation, signed/replay-protected connection authentication.
 - WebSocket is preferred; proxies with incompatible upgrade handling use per-request signed HTTPS telemetry, retaining TLS verification, replay protection and revocation checks.
-- Device health and typed parked settings, plus owner-requested ultra-wide/cabin camera previews from native IPC. JPEG previews are bounded, low-rate and ephemeral; no audio, live location or raw CAN. See [camera deployment and validation](docs/CAMERAS_V1.md).
+- Device health and typed parked settings, plus owner-only live ultra-wide/cabin MJPEG over WebSocket from native IPC (target 8 fps, up to 640×360). Persistent encoders and latest-only relay queues; no audio, live location or raw CAN. LAN and Internet use the self-hosted HTTPS/WSS relay. See [live streaming deployment and validation](docs/LIVE_STREAMING.md).
 - Agent default: **background enabled**. Independent QR/GitHub pairing is still required; parked remote-setting consent remains separate. There is no device monitoring switch. Cameras upload only during a short owner viewing lease.
 - Cloud outages do not gate driving. Legacy Sunnylink services are explicitly retired; core openpilot/comma behavior and upstream metadata remain intact.
 - SQLite stores the latest snapshot only (not journey history); audit is bounded to 10,000 events. Online requires a live authenticated WebSocket or recent signed HTTPS telemetry within 20 seconds. Invalid or old samples are shown as stale.

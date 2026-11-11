@@ -1,5 +1,7 @@
 # FormosaLink 0.7.0：背景服務與雙鏡頭 / Background cameras / バックグラウンドカメラ
 
+> 0.8.0 已改為持續即時串流；此頁保留 0.7.0 歷史。Current live streaming / 現行のライブ配信: [LIVE_STREAMING.md](LIVE_STREAMING.md).
+
 ## 繁體中文
 
 - C3X 使用原生大型設定列表，C4 使用原生大型滑動卡片。裝置端只保留配對及停車遠端設定許可，不再顯示監看開關。背景 agent 預設啟用，仍須獨立 QR/GitHub 配對；既有配對與金鑰保留。
