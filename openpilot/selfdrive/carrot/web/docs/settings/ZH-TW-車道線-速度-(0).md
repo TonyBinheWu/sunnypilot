@@ -29,6 +29,29 @@
 
 <!-- CARROT:MANUAL:BEGIN UseLaneLineSpeed -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+速度超過設定值時切換至 LaneMode。
+
+- **調高：** 提高適用的速度或速度門檻。
+- **調低：** 降低速度或門檻。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> `0` 會停用依速度自動切換；由按鍵選定的車道模式狀態仍可另行維持。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END UseLaneLineSpeed -->
 
 <!-- CARROT:SETTING:END UseLaneLineSpeed -->

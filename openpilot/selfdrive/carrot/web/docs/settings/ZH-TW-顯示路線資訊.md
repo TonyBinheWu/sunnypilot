@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowRouteInfo -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+目前 `carrot-wip` 執行程式沒有使用此參數，因此變更不會影響行車畫面。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+目前執行程式未使用此設定，因此行車時沒有可調整或驗證的效果。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowRouteInfo -->
 
 <!-- CARROT:SETTING:END ShowRouteInfo -->

@@ -28,6 +28,31 @@
 
 <!-- CARROT:MANUAL:BEGIN CruiseButtonTest3 -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+僅供未由系統控制縱向的車輛使用：連續速度按鈕訊號數量。
+
+- **調高：** 增加連續按鍵訊息的數量。
+- **調低：** 減少連續次數。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+僅在使用原廠 SCC 按鈕訊息、且未由系統控制縱向的車輛上調整；每次變更一項，檢查是否漏送或過量輸入。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 此設定會直接影響非 openpilot 縱向控制車輛的原廠 SCC 按鍵訊息。請先記錄預設值，並僅在已驗證的車輛上調整。
+<!-- CARROT:NOTICE:END -->
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END CruiseButtonTest3 -->
 
 <!-- CARROT:SETTING:END CruiseButtonTest3 -->

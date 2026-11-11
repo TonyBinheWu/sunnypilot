@@ -29,6 +29,20 @@
 
 <!-- CARROT:MANUAL:BEGIN MaxTimeOffroadMin -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+引擎關閉並經過指定時間後，comma 裝置會關機。
+
+- **調高：** 增加適用的時間或延遲。
+- **調低：** 減少時間或延遲。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查儲存空間及電源條件，並於下次錄影或轉為停車狀態時確認結果。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END MaxTimeOffroadMin -->
 
 <!-- CARROT:SETTING:END MaxTimeOffroadMin -->

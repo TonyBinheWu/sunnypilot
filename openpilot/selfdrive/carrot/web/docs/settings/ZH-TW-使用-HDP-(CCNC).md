@@ -28,6 +28,28 @@
 
 <!-- CARROT:MANUAL:BEGIN HDPuse -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- `0` — 停用 HDP 訊息行為。
+- `1` — 僅在 APN 啟用時使用 HDP 行為。
+- `2` — 持續使用 HDP 行為。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+確認車輛的 HDA 及 CAN FD 配置，停妥後設定，並於下次行車檢查相關功能及故障訊息。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="WARNING" -->
+> [!WARNING]
+> 未經驗證的 CAN FD 配置，可能造成車輛警告或 CAN 故障。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END HDPuse -->
 
 <!-- CARROT:SETTING:END HDPuse -->

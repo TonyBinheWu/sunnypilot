@@ -27,6 +27,18 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowPathEnd -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 在預測路徑末端顯示路徑狀態文字。
+- **關閉：** 隱藏該文字。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查行車畫面的配置及可讀性，只啟用需要的資訊。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowPathEnd -->
 
 <!-- CARROT:SETTING:END ShowPathEnd -->

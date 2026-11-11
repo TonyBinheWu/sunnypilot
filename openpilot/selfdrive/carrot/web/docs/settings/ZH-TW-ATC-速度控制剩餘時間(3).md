@@ -28,6 +28,20 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoTurnControlTurnEnd -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+（APN）NOO 完成時間對應的距離（速度 × 時間）。
+
+- **調高：** 增加適用的時間或延遲。
+- **調低：** 減少時間或延遲。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END AutoTurnControlTurnEnd -->
 
 <!-- CARROT:SETTING:END AutoTurnControlTurnEnd -->

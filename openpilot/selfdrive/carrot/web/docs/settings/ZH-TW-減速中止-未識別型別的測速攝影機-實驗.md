@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelUnknown -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+取消減速總開關啟用時，啟用此項可用 + 或輕踩油門取消缺少或無法辨識類型預告的執法警示減速；停用則不允許取消此類減速。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+未知類型可能包含真正的執法攝影機。此實驗性選項排除 30 km/h 以下的警示及區間測速。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END VehicleNaviDecelCancelUnknown -->
 
 <!-- CARROT:SETTING:END VehicleNaviDecelCancelUnknown -->

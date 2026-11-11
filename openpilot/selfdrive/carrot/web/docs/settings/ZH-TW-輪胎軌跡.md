@@ -27,6 +27,20 @@
 
 <!-- CARROT:MANUAL:BEGIN CarrotTireTrajectory -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 關閉
+- `1` — 開啟
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END CarrotTireTrajectory -->
 
 <!-- CARROT:SETTING:END CarrotTireTrajectory -->

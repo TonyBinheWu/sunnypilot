@@ -27,6 +27,18 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoGasSyncSpeed -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 操作油門使車速高於巡航設定速度後，將設定速度提高至目前車速。
+- **關閉：** 操作油門後仍保留既有巡航設定速度。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同起步、油門及前車條件下，每次調整一項，比較巡航啟用時機及設定速度。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END AutoGasSyncSpeed -->
 
 <!-- CARROT:SETTING:END AutoGasSyncSpeed -->

@@ -29,6 +29,28 @@ SET/DECEL 加減速單位 (模式 1,2,3, GasTok)
 
 <!-- CARROT:MANUAL:BEGIN CruiseSpeedUnit -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+SET／DECEL 增減速度單位（模式 1、2、3、GasTok）。
+
+- **調高：** 增加自訂按鍵模式及輕點油門操作每次調整設定速度的幅度。
+- **調低：** 減少每次調整的幅度。
+
+Volkswagen 此單位適用於獨立 +／- 調速，不適用於 SET 選取目前速度或 RES 恢復先前速度。長按與第二段滑動的 10 km/h 增量不受此設定影響。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+分別確認單次按壓及長按的設定速度變化量與時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END CruiseSpeedUnit -->
 
 <!-- CARROT:SETTING:END CruiseSpeedUnit -->

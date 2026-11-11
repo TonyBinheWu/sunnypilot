@@ -28,6 +28,23 @@
 
 <!-- CARROT:MANUAL:BEGIN ClusterHudRadarInfo -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 關閉
+- `1` — 速度（僅車輛）
+- `2` — 速度、距離（僅車輛）
+- `3` — 速度（全部）
+- `4` — 速度、距離（全部）
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在外接 HUD 觀察相同前車及周圍物體，確認顯示目標、距離及來源區分。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ClusterHudRadarInfo -->
 
 <!-- CARROT:SETTING:END ClusterHudRadarInfo -->

@@ -29,6 +29,28 @@
 
 <!-- CARROT:MANUAL:BEGIN TrafficStopDistanceAdjust -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+車輛行進時，為虛擬號誌停車障礙物加入距離修正。
+
+- **正值：** 將停車目標沿道路往前移。
+- **負值：** 將停車目標往本車方向拉近。
+
+停車時，目前程式另使用 `-2 m` 修正。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在同一個視野清楚的路口，確認偵測、停車、重新起步時機及停車位置。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END TrafficStopDistanceAdjust -->
 
 <!-- CARROT:SETTING:END TrafficStopDistanceAdjust -->

@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelBump -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+取消減速總開關啟用時，啟用此項可用 + 或輕踩油門取消最近減速丘的減速；停用則不允許取消此類減速。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+只有計算出的減速丘目標低於設定速度，且正實際降低目標速度時，才會使用此輸入。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END VehicleNaviDecelCancelBump -->
 
 <!-- CARROT:SETTING:END VehicleNaviDecelCancelBump -->

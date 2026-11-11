@@ -29,6 +29,31 @@
 
 <!-- CARROT:MANUAL:BEGIN MapTurnSpeedFactor -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+數值越小，沿路線降低的速度越多。
+
+- **調高：** 減少導航轉彎時的減速。
+- **調低：** 增加依導航路線進行的減速。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同彎道與路線導引條件下，每次調整一項，比較入彎前的目標及過彎速度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> 此設定僅在已連接依路線提供的轉彎資訊時生效。
+<!-- CARROT:NOTICE:END -->
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END MapTurnSpeedFactor -->
 
 <!-- CARROT:SETTING:END MapTurnSpeedFactor -->

@@ -1,0 +1,566 @@
+{
+  "schema": 1,
+  "sourceWikiCommit": "b508296266c19191d679d0f4b4c8d0407d563748",
+  "settings": {
+    "AChangeCostStarting": {
+      "englishHash": "dd066ffc1a7245e3e8b9808f6e287b3df9a66749d7a4bf4bb4510051c0422503",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AChangeCostStarting -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n調整起步時加速度變化的懲罰權重。\n\n- **調高：** 起步時對加速度變化施加較大的抑制。\n- **調低：** 允許起步加速更快。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同前車走走停停的條件下，每次調整一項，檢查最終停車位置及重新起步反應。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AChangeCostStarting -->"
+    },
+    "AdjustLaneOffset": {
+      "englishHash": "bec3f3b6a0fede4c6670ea1cde1b85d7de50be4f416be918bf3d35640031318a",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AdjustLaneOffset -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n朝道路邊緣／彎道內側修正。\n\n- **調高：** 將修正值往正方向調整。\n- **調低：** 將其往負方向調整。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AdjustLaneOffset -->"
+    },
+    "ApplyModelSpeed": {
+      "englishHash": "ecaa2d69d27bd49a8c782392b6836df4b6eac12d8915677c3856f05a65bd8ead",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ApplyModelSpeed -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 不將模型預測速度套用至巡航設定速度。\n- **正值：** 縮放後的模型預測速度高於目前設定速度時，提高設定速度，最高以道路速限的 110% 為上限。\n- **負值：** 直接套用縮放後的模型目標，因此設定速度可能明顯下降。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同彎道與路線導引條件下，每次調整一項，比較入彎前的目標及過彎速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> `0` 不會將模型駕駛速度混入目標。正值與負值會以相反方向套用模型速度混合。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END ApplyModelSpeed -->"
+    },
+    "AutoCruiseControl": {
+      "englishHash": "c9080b727891f090e2e96ce94aaa5a92dd2a62adc0c14914f3404f211464b6d5",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoCruiseControl -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n符合條件時，此設定會自動啟用巡航加速與煞車；不會直接啟用橫向控制或限制轉向扭矩。\n\n- `0` — 停用自動巡航與柔和停車保持；手動巡航與常駐橫向控制仍可使用。\n- `1` — 啟用自動巡航，使用標準柔和停車保持行為。\n- `2` — 啟用自動巡航；柔和停車保持行為適用於使用標準模式會回報錯誤的車輛。\n- `3` — 目前控制路徑使用與 `2` 相同的自動巡航與柔和停車保持行為。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n不需要自動巡航時使用 `0`，一般自動巡航使用 `1`。僅當車輛在 `1` 時回報 soft-hold 錯誤，才使用 `2`，並在相同起步、油門及前車條件下比較啟用時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> `AlwaysLateral=1` 時，只要橫向控制已啟用，自動巡航關閉後仍會持續輔助轉向。`AlwaysLateral=0` 時，轉向與巡航共用啟用狀態，因此轉向看起來可能隨自動巡航一起切換。\n<!-- CARROT:NOTICE:END -->\n\n此設定適用於 Hyundai 及 Kia 車輛；實際可用性取決於車輛的縱向控制配置。\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoCruiseControl -->"
+    },
+    "AutoEngage": {
+      "englishHash": "b8619a64e6259b22bf5fc457fb9157c67c6ffdbe78ce60cd08abfe5ad53d9ecd",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoEngage -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n此設定選擇開始行車時的初始橫向控制及巡航待命狀態，本身不會立即開始轉向、加速或煞車。\n\n- `0` — 不自動啟用橫向控制或巡航待命。\n- `1` — 僅啟用橫向控制。\n- `2` — 啟用橫向控制，並在支援車輛上啟用巡航待命。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n安全停妥後變更，並於下次行車確認結果。\n\n| 預期行為 | 搭配使用的設定 |\n|---|---|\n| 開始行車即轉向，僅手動啟用巡航 | `AutoEngage=1`, `AlwaysLateral=1`, `AutoCruiseControl=0` |\n| 開始行車即轉向，條件允許時自動巡航 | `AutoEngage=2`, `AlwaysLateral=1`, `AutoCruiseControl=1` |\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"IMPORTANT\" -->\n> [!IMPORTANT]\n> `AlwaysLateral=0` 時，即使選擇 `1` 或 `2`，巡航未啟用時仍不會提供實際輔助轉向。若需要轉向獨立於巡航保持可用，請使用 `AlwaysLateral=1`。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoEngage -->"
+    },
+    "AutoGasCancelSpeed": {
+      "englishHash": "6d43b410583788707e7a8a66c592beea50db0574f4896ab78af38e6a4d2a83b9",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoGasCancelSpeed -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n放開油門踏板時，低於此速度會取消巡航。\n\n- **調高：** 提高適用的速度或速度門檻。\n- **調低：** 降低速度或門檻。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同起步、油門及前車條件下，每次調整一項，比較巡航啟用時機及設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END AutoGasCancelSpeed -->"
+    },
+    "AutoGasSyncSpeed": {
+      "englishHash": "23ade01bdb703b464b192df398b974f0fe3334a843e69a3528b351f92d1517bd",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoGasSyncSpeed -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 操作油門使車速高於巡航設定速度後，將設定速度提高至目前車速。\n- **關閉：** 操作油門後仍保留既有巡航設定速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同起步、油門及前車條件下，每次調整一項，比較巡航啟用時機及設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END AutoGasSyncSpeed -->"
+    },
+    "AutoGasTokSpeed": {
+      "englishHash": "a214916d71693de159fef7f03d68052a06e109c0312238b97888f795b570c906",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoGasTokSpeed -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n僅在高於設定速度時運作；GasTab：輕踩油門踏板 0.6 秒。\n\n- **調高：** 提高適用的速度或速度門檻。\n- **調低：** 降低速度或門檻。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同起步、油門及前車條件下，每次調整一項，比較巡航啟用時機及設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END AutoGasTokSpeed -->"
+    },
+    "AutoNaviSpeedBumpSpeed": {
+      "englishHash": "6881d1bff19a7a2823a994d3c09d5bf63ed0049c6fb84de65723d663376eb2dc",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoNaviSpeedBumpSpeed -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定減速丘減速使用的目標速度。\n\n- **調高：** 提高通過時的目標速度。\n- **調低：** 降低通過時的目標速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同減速丘路段確認減速完成位置及通過速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoNaviSpeedBumpSpeed -->"
+    },
+    "AutoNaviSpeedBumpTime": {
+      "englishHash": "16c61a0602d6e108d90adc89b3b50d289118da5e5efaf9a12da81d022908893b",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoNaviSpeedBumpTime -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n使用剩餘距離及目前速度，計算減速丘減速完成位置。\n\n- **調高：** 使用減速丘前方距離較遠的減速完成點。\n- **調低：** 使用較接近減速丘的目標點。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同減速丘路段確認減速完成位置及通過速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoNaviSpeedBumpTime -->"
+    },
+    "AutoNaviSpeedCtrlEnd": {
+      "englishHash": "20fdfafe60953e8f29100289029e1d5cd4171209c69bce92eaa9588a885ae72a",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoNaviSpeedCtrlEnd -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定在測速照相或速限位置之前達到目標速度的時間基準。\n\n- **調高：** 在目標點前更遠處達到目標速度，較早完成減速。\n- **調低：** 在更接近目標點的位置達到目標速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同速限及測速照相類型下，每次調整一項，比較減速起點、完成位置及通過速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoNaviSpeedCtrlEnd -->"
+    },
+    "AutoNaviSpeedCtrlMode": {
+      "englishHash": "f481327868f726e68073c3c51dfd65c81e78783a6fb4113c74ab69c6436d48f3",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoNaviSpeedCtrlMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 不使用\n- `1` — 測速攝影機\n- `2` — 測速攝影機＋減速丘\n- `3` — 測速攝影機＋減速丘＋APN 測速攝影機\n支援的原廠導航 CAN 移動式測速區域也遵循此設定：模式 3 減速，2 或以下忽略移動式測速區域警示。若同時有固定式、號誌或後方執法，仍保留減速。\n\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同速限及測速照相類型下，每次調整一項，比較減速起點、完成位置及通過速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"IMPORTANT\" -->\n> [!IMPORTANT]\n> 導航資料必須提供所選事件類型的距離與速限資訊，自動減速才會作用。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoNaviSpeedCtrlMode -->"
+    },
+    "AutoNaviSpeedDecelRate": {
+      "englishHash": "3a6f9325e62a1c17c1579d1a71773e57f1c7af85586b45f5a6b426cebedf4b41",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoNaviSpeedDecelRate -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n數值越低，越早開始減速。\n\n- **調高：** 在較短距離內使用較強的減速。\n- **調低：** 從較遠處開始，使用較溫和的減速。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同速限及測速照相類型下，每次調整一項，比較減速起點、完成位置及通過速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoNaviSpeedDecelRate -->"
+    },
+    "AutoNaviSpeedSafetyFactor": {
+      "englishHash": "f0c3c52799506b5976f3b4bde113b718aa291601fc537acfa2be2e3e26694fe3",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoNaviSpeedSafetyFactor -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定套用至測速照相及道路速限的目標速度比例。\n\n- **調高：** 提高相對於道路速限的目標速度。\n- **調低：** 降低相對於道路速限的目標速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同速限及測速照相類型下，每次調整一項，比較減速起點、完成位置及通過速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoNaviSpeedSafetyFactor -->"
+    },
+    "AutoRoadSpeedAdjust": {
+      "englishHash": "142ab9b35e6dc73ce26b3e09ca83ec140b80978b66d2adbf642093f73ccc2687",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoRoadSpeedAdjust -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `-1` — 道路速限改變時，立即採用新的道路速限目標速度。\n- `0` — 保留既有巡航設定速度。\n- `1`–`99` — 將既有設定速度與降低後的新道路速限混合計算；數值越高，越接近新速限。\n- `100` — 直接套用降低後的新道路速限。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在同一個道路速限變更路段，確認新的目標速度及切換時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoRoadSpeedAdjust -->"
+    },
+    "AutoRoadSpeedLimitOffset": {
+      "englishHash": "6fb3b7cadc60c7a093160e2264bbc6dd671b29855f367f6c7f2cdb9cfc44d42b",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoRoadSpeedLimitOffset -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n道路速限加上設定值。\n\n- **調高：** 將修正值往正方向調整。\n- **調低：** 將其往負方向調整。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在同一個道路速限變更路段，確認新的目標速度及切換時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> `-1` 會停用依道路速限計算的目標速度。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoRoadSpeedLimitOffset -->"
+    },
+    "AutoSpeedUptoRoadSpeedLimit": {
+      "englishHash": "a96ba80288b986caaf63d8f2ab2da95061bdbe2a6c1c24bd86119e6dbdfdaf08",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoSpeedUptoRoadSpeedLimit -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 停用依前車狀態自動提高設定速度。\n- **正值：** 60 m 內的前車速度接近目前設定速度時，以每次 5 km/h 提高設定速度，最高為道路速限乘以此倍率。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在同一個道路速限變更路段，確認新的目標速度及切換時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoSpeedUptoRoadSpeedLimit -->"
+    },
+    "AutoTurnControlSpeedTurn": {
+      "englishHash": "810f793b1b393a806525d35de07e36180e569c0fb8a35659f4b8e6986eebc3c5",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoTurnControlSpeedTurn -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n（APN）0：不使用；轉彎速度。\n\n- **調高：** 提高適用的速度或速度門檻。\n- **調低：** 降低速度或門檻。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> `0` 會停用 ATC 轉彎目標速度。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoTurnControlSpeedTurn -->"
+    },
+    "AutoTurnControlTurnEnd": {
+      "englishHash": "e50a954f65143ebc571bc1a131f129ca2fe61a91f0d09147d79b368f5fec8c37",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoTurnControlTurnEnd -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n（APN）NOO 完成時間對應的距離（速度 × 時間）。\n\n- **調高：** 增加適用的時間或延遲。\n- **調低：** 減少時間或延遲。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END AutoTurnControlTurnEnd -->"
+    },
+    "AutoTurnMapChange": {
+      "englishHash": "6baecbb7fade379e2bcf627491f11ed19d7bf0ab5fa14e8d23000d050d417bd4",
+      "manual": "<!-- CARROT:MANUAL:BEGIN AutoTurnMapChange -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** ATC 轉彎控制啟動時，將連接的顯示器切換至地圖模式；該路段結束後恢復道路畫面。\n- **關閉：** ATC 不會傳送畫面切換指令。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> 此輔助功能會在 ATC 啟用期間，切換至已連接的外部導航地圖。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END AutoTurnMapChange -->"
+    },
+    "BlinkerLatchedTurn": {
+      "englishHash": "10f4680549b065d47649114e89ef62e2aaa1da2e29a8078fc5416b3d9e927ce7",
+      "manual": "<!-- CARROT:MANUAL:BEGIN BlinkerLatchedTurn -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n車速低於或等於設定值時，輕撥後待方向燈亮兩次，再將撥桿定位，即提出轉彎請求。一般定位或輕撥會提出變換車道請求；提高此值會擴大轉彎手勢的適用速度範圍。設為零則保留既有分類方式。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n需要支援的 Hyundai CAN-FD 撥桿訊號。高於選定速度時，相同手勢會提出變換車道請求。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END BlinkerLatchedTurn -->"
+    },
+    "CameraYawTrimDeg": {
+      "englishHash": "18b15fac21c7c871f6bbbbae3d55c7a19f55f64b6d949ebdd7192bbb59514671",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CameraYawTrimDeg -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n微調攝影機偏航對準角度（+：向右）。\n\n- **負值：** 將攝影機偏航角往左微調。\n- **正值：** 往右微調。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在平坦直路以穩定速度評估，逐步調整，比較向左／向右偏移是否減少。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END CameraYawTrimDeg -->"
+    },
+    "CancelButtonMode": {
+      "englishHash": "24b3252cfd9a217a5c6917b7afa7b9c22ee910e23e08e71d5e7cc021d2801730",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CancelButtonMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 縱向控制\n- `1` — 縱向＋橫向控制\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停妥後選擇模式，分別確認短按、長按及取消行為。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CancelButtonMode -->"
+    },
+    "CanfdDebug": {
+      "englishHash": "ec3bacdd56edf28835fb4a1b2627d9e0293c0feffa85da04b96c1adcc9d27390",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CanfdDebug -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n將此值作為診斷模式傳給 Hyundai／Kia CCNC CAN FD 訊息產生器。這不是一般使用者功能，各數值對應行為不屬於穩定的使用者介面規格。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n確認車輛的 HDA 及 CAN FD 配置，停妥後設定，並於下次行車檢查相關功能及故障訊息。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 這是直接傳入車輛 CAN 訊息產生程序的開發除錯值。除非正在診斷該路徑，否則請保留預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CanfdDebug -->"
+    },
+    "CanfdHDA2": {
+      "englishHash": "8ba5a273e010d2eef75a1ba8171489b7f620eddac62f43f03b1ebd2e1ffad5d0",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CanfdHDA2 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 將 Hyundai／Kia CAN FD 車輛視為 HDA1 配置。\n- `1` — 使用 HDA2 CAN 匯流排配置。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n確認車輛的 HDA 及 CAN FD 配置，停妥後設定，並於下次行車檢查相關功能及故障訊息。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"WARNING\" -->\n> [!WARNING]\n> 未經驗證的 CAN FD 配置，可能造成車輛警告或 CAN 故障。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CanfdHDA2 -->"
+    },
+    "CarrotCruiseAtcDecel": {
+      "englishHash": "54522678605f76453fdac02a37d25194e1e69d777a9aa643d6c94c3fa4563e6f",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CarrotCruiseAtcDecel -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\nCarrot 巡航 ATC 減速度設定。\n\n- **正值調高：** 增加 ATC 期間 Carrot Cruise 可請求的最大減速度。\n- **正值調低：** 降低 ATC 的減速度上限。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援車輛及適用行車模式下，每次調整一項，檢查目標速度及實際加速／減速請求。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 目前實作只適用於受支援 Hyundai／Kia 控制器的 ATC 減速。`-1` 會維持既有減速請求。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CarrotCruiseAtcDecel -->"
+    },
+    "CarrotCruiseDecel": {
+      "englishHash": "40de0193a9ab2af46d114ef238f3ddd46e618caf22805ad70b613245d1cbf6a6",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CarrotCruiseDecel -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\nCarrot 巡航減速度設定。\n\n- **正值調高：** 增加 Carrot Cruise 可請求的最大減速度。\n- **正值調低：** 降低允許請求的減速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援車輛及適用行車模式下，每次調整一項，檢查目標速度及實際加速／減速請求。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 目前實作只適用於受支援的 Hyundai／Kia 控制器。`-1` 會解除巡航，而非提出 Carrot Cruise 減速請求。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CarrotCruiseDecel -->"
+    },
+    "CarrotTireTrajectory": {
+      "englishHash": "937e7cd580ad28f6a251085d243d330fabe8a247c1f266b74bbb95f0667d1ccc",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CarrotTireTrajectory -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 關閉\n- `1` — 開啟\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END CarrotTireTrajectory -->"
+    },
+    "ClusterHudBrightness": {
+      "englishHash": "48a9d85531affb7eb85d67ffa4afe85113e1f95e5bb02841d5dada35bca16ce3",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterHudBrightness -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 使用自動亮度；無法取得連接主螢幕的亮度時，使用外接 HUD 的預設值。\n- `1`–`100` — 將外接 HUD 亮度固定為該百分比。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n連接外接 HUD 後變更，確認方向、亮度及地圖連線。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ClusterHudBrightness -->"
+    },
+    "ClusterHudCameraViewMode": {
+      "englishHash": "0e19b5958e4d28dac49ac1e0ce7c6eec5c2aeea90e970138b4a3013f2bfaff98",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterHudCameraViewMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 預設\n- `1` — 模式 1（底部畫面）\n- `2` — 道路攝影機背景\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n選擇模式時，檢查外接 HUD 的顯示延遲、清晰度及 CPU 使用量。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ClusterHudCameraViewMode -->"
+    },
+    "ClusterHudDebug": {
+      "englishHash": "3cff0c6d67efd5414661167b74b382f280fe59a931a5a43bc9e514c79cdebecd",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterHudDebug -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 僅行車時\n- `1` — 持續啟用\n- `2` — 持續啟用＋介面\n- `3` — 持續啟用＋導航\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n僅供診斷，每次調整一項，確認外接 HUD 的影格穩定性及系統負載。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ClusterHudDebug -->"
+    },
+    "ClusterHudMirror": {
+      "englishHash": "2ca275115345b6b3b4b56d3d6e01f5797e8fdb1b27761e85100ca0297692c0ae",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterHudMirror -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 一般\n- `1` — 水平\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n連接外接 HUD 後變更，確認方向、亮度及地圖連線。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ClusterHudMirror -->"
+    },
+    "ClusterHudRadarDisplay": {
+      "englishHash": "04c2f983b5214c00bcafe3999ec438dca1d58cc3969b4532240b18e123123cfc",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterHudRadarDisplay -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 預設（合併鄰近雷達點）\n- `1` — 詳細（原始雷達點）\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在外接 HUD 觀察相同前車及周圍物體，確認顯示目標、距離及來源區分。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ClusterHudRadarDisplay -->"
+    },
+    "ClusterHudRadarInfo": {
+      "englishHash": "29f4f2be235dd568d4f73af8c8cb7acf89a777446d057b43dd0e453d3ef87f70",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterHudRadarInfo -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 關閉\n- `1` — 速度（僅車輛）\n- `2` — 速度、距離（僅車輛）\n- `3` — 速度（全部）\n- `4` — 速度、距離（全部）\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在外接 HUD 觀察相同前車及周圍物體，確認顯示目標、距離及來源區分。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ClusterHudRadarInfo -->"
+    },
+    "ClusterHudRadarSourceColor": {
+      "englishHash": "92426242db858a449e019052b98061c6149165a2d800e9a037be016f2e8999e5",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterHudRadarSourceColor -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 預設（所有車輛為灰色）\n- `1` — 開啟（SCC＝紅色、HDA＝藍色、RADAR＝橘色）\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在外接 HUD 觀察相同前車及周圍物體，確認顯示目標、距離及來源區分。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ClusterHudRadarSourceColor -->"
+    },
+    "ClusterHudTheme": {
+      "englishHash": "39441fd558007f269c5db64a2f94ca2fb72c01a786b42942da25a10b0b7dc60e",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterHudTheme -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 自動\n- `1` — 深色\n- `2` — 淺色\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n連接外接 HUD 後變更，確認方向、亮度及地圖連線。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ClusterHudTheme -->"
+    },
+    "ClusterNaviMapFps": {
+      "englishHash": "23ce9204c115271be8da42651d7a0ada867a3336586a435f822b60f547969a20",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterNaviMapFps -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 5 FPS\n- `1` — 10 FPS（預設）\n- `2` — 20 FPS\n- `3` — 30 FPS／此設定獨立於 HUD FPS，並會自動選擇地圖位元率。／變更時會自動重新連接外部導航 App\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n連接外接 HUD 後變更，確認方向、亮度及地圖連線。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> 地圖 FPS 獨立於主 HUD FPS，地圖位元率會依選定幀率自動調整。變更此設定會重新連接外部導航。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END ClusterNaviMapFps -->"
+    },
+    "ClusterNaviMapTheme": {
+      "englishHash": "4d67b42fe224cc2bcc6aefd846bfcf7dba68448bdef4c4549be412ec9a6594d7",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterNaviMapTheme -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 自動\n- `1` — 深色\n- `2` — 淺色／變更時會自動重新連接外部導航 App\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n連接外接 HUD 後變更，確認方向、亮度及地圖連線。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> 變更此設定會自動重新連接外部導航來源。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END ClusterNaviMapTheme -->"
+    },
+    "ClusterNaviMapType": {
+      "englishHash": "9eb5a1fdb4991feb643e671adf2f1e521fca5bef4d2d6eb5849f77161d710859",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ClusterNaviMapType -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 一般地圖\n- `1` — 衛星地圖／變更時會自動重新連接外部導航 App\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n連接外接 HUD 後變更，確認方向、亮度及地圖連線。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> 變更此設定會自動重新連接外部導航來源。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END ClusterNaviMapType -->"
+    },
+    "CruiseButtonLongDelay": {
+      "englishHash": "731c3828f01f493d3dac15a9f7e2e55286e7d7515202f25263faf04b14fdc60a",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseButtonLongDelay -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n觸發長按操作前的等待時間。\n\n- **調高：** 增加適用的時間或延遲。\n- **調低：** 減少時間或延遲。\n\nVolkswagen 的此延遲適用於獨立 +／- 按鈕。獨立 SET／RES 不論按住多久，均只在放開時作用一次，不會重複調速。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n分別確認單次按壓及長按的設定速度變化量與時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseButtonLongDelay -->"
+    },
+    "CruiseButtonMode": {
+      "englishHash": "2502a63631adf93601b0f048118082f013ab747e17a3da31b77d0964aedf01d6",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseButtonMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 一般\n- `1` — 自訂 1\n- `2` — 自訂 2\n- `3` — 自訂 3（使用速度表）\n\nVolkswagen 的獨立 SET 會設定目前儀表速度；RES 恢復煞車前儲存的速度，否則保留既有設定速度，尚未初始化時則使用目前速度。此模式適用於獨立 +／- 按鈕。手動啟用仍由實體 SET／RES 按鈕放開時觸發。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停妥後選擇模式，分別確認短按、長按及取消行為。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseButtonMode -->"
+    },
+    "CruiseButtonTest1": {
+      "englishHash": "937615928905bac5d0fe95e088d7652ed8134845926dee2d6162f6049ccc6f73",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseButtonTest1 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n僅供未由系統控制縱向的車輛使用：速度按鈕訊號傳送限制時間。\n\n- **調高：** 延長每個按鍵訊息的傳送週期。\n- **調低：** 縮短傳送週期。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n僅在使用原廠 SCC 按鈕訊息、且未由系統控制縱向的車輛上調整；每次變更一項，檢查是否漏送或過量輸入。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 此設定會直接影響非 openpilot 縱向控制車輛的原廠 SCC 按鍵訊息。請先記錄預設值，並僅在已驗證的車輛上調整。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseButtonTest1 -->"
+    },
+    "CruiseButtonTest2": {
+      "englishHash": "aa2a9468a8f3f93f4480342e61a2418448215bb48556982c78a47a1a263452f9",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseButtonTest2 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n僅供未由系統控制縱向的車輛使用：速度按鈕訊號傳送暫停時間。\n\n- **調高：** 增加每批按鍵訊息之間的暫停時間。\n- **調低：** 縮短暫停時間。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n僅在使用原廠 SCC 按鈕訊息、且未由系統控制縱向的車輛上調整；每次變更一項，檢查是否漏送或過量輸入。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 此設定會直接影響非 openpilot 縱向控制車輛的原廠 SCC 按鍵訊息。請先記錄預設值，並僅在已驗證的車輛上調整。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseButtonTest2 -->"
+    },
+    "CruiseButtonTest3": {
+      "englishHash": "9a9dbe9621fe4224c83cbca649c831ea35618bf1f5827a96eb3631a558e36b48",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseButtonTest3 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n僅供未由系統控制縱向的車輛使用：連續速度按鈕訊號數量。\n\n- **調高：** 增加連續按鍵訊息的數量。\n- **調低：** 減少連續次數。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n僅在使用原廠 SCC 按鈕訊息、且未由系統控制縱向的車輛上調整；每次變更一項，檢查是否漏送或過量輸入。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 此設定會直接影響非 openpilot 縱向控制車輛的原廠 SCC 按鍵訊息。請先記錄預設值，並僅在已驗證的車輛上調整。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseButtonTest3 -->"
+    },
+    "CruiseEcoControl": {
+      "englishHash": "792af74b65478d2e6f23f2f65d4fe3bc7f8e8b7953ff04ad4ad28ecf12bdd5e9",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseEcoControl -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n暫時提高目標速度以改善燃油效率。\n\n- **調高：** 節能控制可暫時提高目標速度的幅度較大。\n- **調低：** 減少該增加幅度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援車輛及適用行車模式下，每次調整一項，檢查目標速度及實際加速／減速請求。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseEcoControl -->"
+    },
+    "CruiseMaxVals0": {
+      "englishHash": "0af2b9181ec04b029c88b138b62550cbda4743fe427e8fd46a056c1d54e45cef",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseMaxVals0 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n從 0 km/h 到 10 km/h 的加速度。\n\n- **調高：** 允許此速度範圍使用較大的最大加速度。\n- **調低：** 讓此速度範圍內的加速較溫和。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在適用速度範圍內逐步調整，確認加速至目標速度的表現及乘坐舒適度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseMaxVals0 -->"
+    },
+    "CruiseMaxVals1": {
+      "englishHash": "54b205f87a088a8cb1d08cfebeff7eb600b1ac663c106472d411ac36c016b080",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseMaxVals1 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n從 10 km/h 到 40 km/h 的加速度。\n\n- **調高：** 允許此速度範圍使用較大的最大加速度。\n- **調低：** 讓此速度範圍內的加速較溫和。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在適用速度範圍內逐步調整，確認加速至目標速度的表現及乘坐舒適度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseMaxVals1 -->"
+    },
+    "CruiseMaxVals2": {
+      "englishHash": "aabcf942e80a3ac19f115de3b68030548286446bbedb9e893f56d921e376244b",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseMaxVals2 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n從 40 km/h 到 60 km/h 的加速度。\n\n- **調高：** 允許此速度範圍使用較大的最大加速度。\n- **調低：** 讓此速度範圍內的加速較溫和。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在適用速度範圍內逐步調整，確認加速至目標速度的表現及乘坐舒適度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseMaxVals2 -->"
+    },
+    "CruiseMaxVals3": {
+      "englishHash": "a482ed6f5dfb57e65c9cd71474e9bdad25dc7abc7e123c1ff1d94183d298e2a7",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseMaxVals3 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n從 60 km/h 到 80 km/h 的加速度。\n\n- **調高：** 允許此速度範圍使用較大的最大加速度。\n- **調低：** 讓此速度範圍內的加速較溫和。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在適用速度範圍內逐步調整，確認加速至目標速度的表現及乘坐舒適度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseMaxVals3 -->"
+    },
+    "CruiseMaxVals4": {
+      "englishHash": "498f6866fbe1a92936482ca10307097a91f0a08aa39269fc962d84198fa4a714",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseMaxVals4 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n從 80 km/h 到 110 km/h 的加速度。\n\n- **調高：** 允許此速度範圍使用較大的最大加速度。\n- **調低：** 讓此速度範圍內的加速較溫和。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在適用速度範圍內逐步調整，確認加速至目標速度的表現及乘坐舒適度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseMaxVals4 -->"
+    },
+    "CruiseMaxVals5": {
+      "englishHash": "0ab777de324b490c0ac94fe28ea89c18a043d2ad20f833ea15d230947f00ea00",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseMaxVals5 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n從 110 km/h 到 140 km/h 的加速度。\n\n- **調高：** 允許此速度範圍使用較大的最大加速度。\n- **調低：** 讓此速度範圍內的加速較溫和。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在適用速度範圍內逐步調整，確認加速至目標速度的表現及乘坐舒適度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseMaxVals5 -->"
+    },
+    "CruiseMaxVals6": {
+      "englishHash": "48551d4bacb56e6328ee6766235651a324763a46460f0abacf761294a0551391",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseMaxVals6 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n140 km/h 以上的加速度。\n\n- **調高：** 允許此速度範圍使用較大的最大加速度。\n- **調低：** 讓此速度範圍內的加速較溫和。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在適用速度範圍內逐步調整，確認加速至目標速度的表現及乘坐舒適度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseMaxVals6 -->"
+    },
+    "CruiseOnDist": {
+      "englishHash": "865de49f0e32d7cd37c2c56d2f1867a2ea9cf0893789989cf57c04c76152f6d9",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseOnDist -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n放開踏板且接近前車時啟用巡航。\n\n- **調高：** 增加適用的距離或跟車間距。\n- **調低：** 減少距離或跟車間距。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同起步、油門及前車條件下，每次調整一項，比較巡航啟用時機及設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END CruiseOnDist -->"
+    },
+    "CruiseSpeed1": {
+      "englishHash": "7b84aa46e8d0efb84a0bf708b1480370694e31591ba6071c27ebfbe84b1286c7",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseSpeed1 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n按鈕模式「使用者 3」的分段速度。\n\n- **調高：** 提高此段的設定速度。\n- **調低：** 降低此段的設定速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n將按鈕模式設為「使用者 3」，確認分段順序及各段設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseSpeed1 -->"
+    },
+    "CruiseSpeed2": {
+      "englishHash": "e48a2ce3c95449ac9d7354482d0c907335ca3f965dbba1dcfd1df6c291b15834",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseSpeed2 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n按鈕模式「使用者 3」的第二段速度。\n\n- **調高：** 提高此段的設定速度。\n- **調低：** 降低此段的設定速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n將按鈕模式設為「使用者 3」，確認分段順序及各段設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseSpeed2 -->"
+    },
+    "CruiseSpeed3": {
+      "englishHash": "325e13d3546e1d831f24c4589e6035e4e0cbadb0e2c1078f2549df745f278576",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseSpeed3 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n按鈕模式「使用者 3」的第三段速度。\n\n- **調高：** 提高此段的設定速度。\n- **調低：** 降低此段的設定速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n將按鈕模式設為「使用者 3」，確認分段順序及各段設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseSpeed3 -->"
+    },
+    "CruiseSpeed4": {
+      "englishHash": "0ab2f0be7820802caf6a7a3720c4b6021f02b6e02672f79c36164608faac2c74",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseSpeed4 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n按鈕模式「使用者 3」的第四段速度。\n\n- **調高：** 提高此段的設定速度。\n- **調低：** 降低此段的設定速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n將按鈕模式設為「使用者 3」，確認分段順序及各段設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseSpeed4 -->"
+    },
+    "CruiseSpeed5": {
+      "englishHash": "e3e80e6454e7b722e1bdaf9ad3be2fdec45e5a8339580c514dac065594ac7072",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseSpeed5 -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n按鈕模式「使用者 3」的第五段速度。\n\n- **調高：** 提高此段的設定速度。\n- **調低：** 降低此段的設定速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n將按鈕模式設為「使用者 3」，確認分段順序及各段設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseSpeed5 -->"
+    },
+    "CruiseSpeedUnit": {
+      "englishHash": "bdbca9f26af95681ed9f8ee56529c4af3835ccd220e160c4d508f978aadae556",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseSpeedUnit -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\nSET／DECEL 增減速度單位（模式 1、2、3、GasTok）。\n\n- **調高：** 增加自訂按鍵模式及輕點油門操作每次調整設定速度的幅度。\n- **調低：** 減少每次調整的幅度。\n\nVolkswagen 此單位適用於獨立 +／- 調速，不適用於 SET 選取目前速度或 RES 恢復先前速度。長按與第二段滑動的 10 km/h 增量不受此設定影響。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n分別確認單次按壓及長按的設定速度變化量與時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseSpeedUnit -->"
+    },
+    "CruiseSpeedUnitBasic": {
+      "englishHash": "5978b6106826dae483619aec452bb14343e2b3d6b442b5ab9ab2fc860b83e75e",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CruiseSpeedUnitBasic -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\nSET／DECEL 增減速度單位（基本單位）。\n\n- **調高：** 增加基本按鍵模式每次調整設定速度的幅度。\n- **調低：** 減少基本調整幅度。\n\nVolkswagen 一般模式下，此增量適用於獨立 +／- 按鈕的短按。SET 選取目前速度，RES 恢復先前設定速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n分別確認單次按壓及長按的設定速度變化量與時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CruiseSpeedUnitBasic -->"
+    },
+    "CustomSR": {
+      "englishHash": "69e96b10acb77316c1b2be34b6d41b73c61401f4b69c7eaf01f71dbe31f373af",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CustomSR -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n轉向比（請參照車輛規格）。\n\n- **調高：** 使用較大的固定轉向比，改變相同曲率下計算出的轉向角度。\n- **調低：** 使用較小的固定轉向比。\n\n此設定也適用於 VW MEB（含 ID.4），控制迴圈會重新讀取變更。儲存值乘以 0.1 後大於 1.0 時，使用手動轉向比；否則使用學習所得轉向比及 `SteerRatioRate`。選用手動轉向比不會停止 SR 學習。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同直路及平緩彎道，每次小幅調整一項，檢查延遲、振盪及駕駛介入後的恢復。\n\n先前被忽略的 ID.4 設定值會在更新後生效。使用 `CustomSR=0` 及 `SteerRatioRate=100%` 可保留原本學習所得的轉向比。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"IMPORTANT\" -->\n> [!IMPORTANT]\n> `0` 使用學習所得的轉向比。直接指定的自訂值會優先於 `SteerRatioRate` 倍率。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CustomSR -->"
+    },
+    "CustomSteerDeltaDown": {
+      "englishHash": "158219baafa7473e1062161314bd43cf903534f611955a32d5d5d943059fcc05",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CustomSteerDeltaDown -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n扭矩控制車輛：數值越高，方向盤回放速度越快。\n\n- **調高：** 增加適用的轉向扭矩限制或變化速率。\n- **調低：** 降低限制或變化速率。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援扭矩控制的車輛上，每次調整一項，確認一般行車及變換車道時的轉向扭矩增加與減少速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CustomSteerDeltaDown -->"
+    },
+    "CustomSteerDeltaDownLC": {
+      "englishHash": "578d41250390e4a25bcd837ed9369b3ec5c3345d7d69d03db62f70c8642afdec",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CustomSteerDeltaDownLC -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n扭矩控制車輛：變換車道時暫時套用 SteerDeltaDown。\n\n- **調高：** 增加適用的轉向扭矩限制或變化速率。\n- **調低：** 降低限制或變化速率。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援扭矩控制的車輛上，每次調整一項，確認一般行車及變換車道時的轉向扭矩增加與減少速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CustomSteerDeltaDownLC -->"
+    },
+    "CustomSteerDeltaUp": {
+      "englishHash": "0a80e79c9efd6c7174bb610e27a23f887e0a8c3869adbf150fe3aa450122004a",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CustomSteerDeltaUp -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n扭矩控制車輛：數值越高，方向盤轉動速度越快。\n\n- **調高：** 增加適用的轉向扭矩限制或變化速率。\n- **調低：** 降低限制或變化速率。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援扭矩控制的車輛上，每次調整一項，確認一般行車及變換車道時的轉向扭矩增加與減少速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CustomSteerDeltaUp -->"
+    },
+    "CustomSteerDeltaUpLC": {
+      "englishHash": "ed62aab449a89a6dd915f2d00cbd9d2657cbe736fcfa30d799c99add1c88eca1",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CustomSteerDeltaUpLC -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n扭矩控制車輛：變換車道時暫時套用 SteerDeltaUp。\n\n- **調高：** 增加適用的轉向扭矩限制或變化速率。\n- **調低：** 降低限制或變化速率。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援扭矩控制的車輛上，每次調整一項，確認一般行車及變換車道時的轉向扭矩增加與減少速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CustomSteerDeltaUpLC -->"
+    },
+    "CustomSteerMax": {
+      "englishHash": "afd60cbab43db12aced619badba7703a93b94a672bcdc11fff4254ebd39aa2be",
+      "manual": "<!-- CARROT:MANUAL:BEGIN CustomSteerMax -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n調整支援的 Hyundai／Kia 扭矩控制器之最大轉向扭矩限制。\n\n- **調高：** 增加適用的轉向扭矩限制或變化速率。\n- **調低：** 降低限制或變化速率。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援扭矩控制的車輛上，每次調整一項，確認一般行車及變換車道時的轉向扭矩增加與減少速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END CustomSteerMax -->"
+    },
+    "DisableMinSteerSpeed": {
+      "englishHash": "3ccb41f0796cf2d60e44cc13c1db2615204704632bb661104a3107d3a503366a",
+      "manual": "<!-- CARROT:MANUAL:BEGIN DisableMinSteerSpeed -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 將車輛介面的最低輔助轉向速度改為 `0`。\n- **關閉：** 保留該車型的最低輔助轉向速度。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n安全停妥後變更，並於下次開始行車時確認轉向及巡航狀態是否依預期切換。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 僅限實際支援低速轉向的車輛使用，例如受支援的 SMDPS 配置。此設定不會移除車輛本身的物理或安全限制。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END DisableMinSteerSpeed -->"
+    },
+    "EnableCornerRadar": {
+      "englishHash": "7349988bc27f9e02d1db54138e1434a0181dc3c8919bf67f72c9a40bfe2e4bc8",
+      "manual": "<!-- CARROT:MANUAL:BEGIN EnableCornerRadar -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 不使用角雷達。\n- `1` — 使用支援的角雷達追蹤資料。\n- `2` — 使用角雷達追蹤資料與切入偵測。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援的雷達配置上，每次調整一項，並在相同前車及切入條件下確認偵測與追蹤。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"WARNING\" -->\n> [!WARNING]\n> 車上有實體雷達，不代表已受支援。請在相同車輛配置下確認訊息接收與追蹤。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/radar.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END EnableCornerRadar -->"
+    },
+    "EnableRadarTracks": {
+      "englishHash": "7b36a736ca0d293369205f9722094b6bb14f8984857007834e8f8d21b19dce6e",
+      "manual": "<!-- CARROT:MANUAL:BEGIN EnableRadarTracks -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值決定 L1 雷達來源及視覺匹配策略。\n\n- `-2` — 測試純視覺控制。\n- `-1` — 使用 SCC，不進行視覺匹配；沒有 SCC 時使用視覺。\n- `0` — 固定使用 SCC 距離與相對速度；沒有 SCC 時使用視覺。\n- `1` — 將不含 SCC 的前方雷達與視覺匹配；匹配失敗時使用視覺。\n- `2` — 將前方雷達與低速 SCC 對應至視覺；匹配失敗時使用視覺。\n- `3` — 前方雷達／視覺匹配失敗後使用 SCC；前方／角雷達證據顯示該物體位於行車路徑旁時除外。SCC 不存在或遭拒絕時使用視覺。\n\n新的靜止前方雷達物體，須由相應視覺或吻合的角雷達物體確認後，才會成為 L1。僅有長距離觀測時間及高追蹤品質不足以核准；角雷達確認必須持續符合距離、橫向位置及速度。\n\n若另一個被量測的移動目標與視覺位置及速度吻合，該視覺就不能核准或保留不同的靜止反射。附近高品質的靜止回波若與該移動車輛速度矛盾，必須有自身吻合的角雷達證據。角雷達確認僅屬於選定物體本身。只有前方雷達的回波，若距離及速度都偏離視覺，即使更近也會被釋放。\n\n未經確認且缺少相應角雷達佐證的靜止前方目標，若失去視覺支持超過允許的 0.10 秒寬限，會同時重設待確認身分及確認起始時間。重新偵測後須再次完成三個支持影格及新的 0.25 秒確認；不沿用中斷前累積的時間。\n\n對已選定的移動前車，距離防護會使用模型的距離不確定性，而非僅因雷達比視覺遠超過 8 m 就捨棄雷達。雷達與視覺都必須顯示物體以超過 4 m/s 移動，並位於模型路徑中央。同一前方目標必須持續被量測且物理狀態連續，觀測中斷不得超過 0.15 秒。比視覺位置更遠的允許差距為 `max(8 m, min(15 m, 15% of vision distance, 1.5 × xStd))`。新 ID、匹配遺失、無效路徑、位置或速度突變，以及較精確的近方視覺估計，都不會繼承此寬限。這不會增加確認延遲，也不會阻止吻合度更高的較近前車成為 L1。保留的前車使用雷達距離及速度，不會與視覺估計取平均。\n\n平緩彎道上的遠方靜止車輛，在模型速度仍不準確時，可透過反覆的視覺位置吻合取得確認。在 60 m 以外，量測中的前方目標須維持位置與速度連續至少 0.50 秒，並符合 `trackState >= 2`、`|vLead| <= 2 m/s`、`|dPath| <= 1.25 m` 及 `|yawRate| < 0.10 rad/s`。至少兩個視覺機率達 0.40 的影格，須在距離差 5 m 及原始橫向位置差 1.25 m 內吻合；這項近期位置證據會在 0.50 秒後失效。只有同時具備這項證據及足夠的視覺速度不確定性，才允許 `min(24 m/s, 4 × vStd)` 內的速度差；精確的移動速度估計仍會拒絕靜止反射。新目標仍須符合目前距離差在 15 m 內、三個支持影格及 0.25 秒確認時間。雷達 ID 存續時間或單純存在角雷達點，都不足以通過確認。另行確認的移動前方／SCC 目標仍可立即否決。若要否定這個具備位置歷史的前方目標，同一角雷達目標須在連續移動至少 0.15 秒時，同時與視覺位置及速度吻合。實際吻合的前方／角雷達配對，仍保有其獨立佐證。\n\n已確認的靜止前方目標，在仍持續被量測且物理狀態連續時，可容忍短暫的視覺距離雜訊；目標須符合 `|dPath| <= 1.5 m`，且與視覺橫向位置相差不超過 2 m。其比視覺位置更遠的允許差距為 `max(8 m, min(25 m, 25% of vision distance, 2 × xStd))`。距離在 8 m 內吻合或反覆完成位置確認後，此寬限最多持續 0.50 秒。超過 0.15 秒的觀測中斷，以及位置／速度突變，都會重設該歷史。尚未確認的新物體或較精確的近方視覺估計，不會取得此寬限。前車資料仍會發布目前雷達距離與速度。這些規則不保證在所有道路上都能於 100 m 偵測到目標，也不保證完全沒有誤判。\n在 `EnableRadarTracks=1`–`3` 模式，當雷達顯示目標向外移動，且視覺也切換至更遠車輛時，已確認正在離開的前車可在 ACC 中取得有限度的未來跟車時距放寬。請參閱[預測前車切出行為（英文）](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/radar.md)。\n\n模式 3 可銜接最多一秒的橫向支持缺失。距離／速度不連續、SCC 或路徑遺失，以及離開此模式，都會重設先前的拒絕紀錄；僅重複使用 ID 不會將紀錄轉移給另一輛車。\n\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在支援的雷達配置上，每次調整一項，並在相同前車及切入條件下確認偵測與追蹤。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"WARNING\" -->\n> [!WARNING]\n> 車上有實體雷達，不代表已受支援。請在相同車輛配置下確認訊息接收與追蹤。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/radar.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END EnableRadarTracks -->"
+    },
+    "HDPuse": {
+      "englishHash": "d91edc813960948abf7f68a6f5a513607d2ceea591878c7d5fd850669c789c2f",
+      "manual": "<!-- CARROT:MANUAL:BEGIN HDPuse -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 停用 HDP 訊息行為。\n- `1` — 僅在 APN 啟用時使用 HDP 行為。\n- `2` — 持續使用 HDP 行為。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n確認車輛的 HDA 及 CAN FD 配置，停妥後設定，並於下次行車檢查相關功能及故障訊息。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"WARNING\" -->\n> [!WARNING]\n> 未經驗證的 CAN FD 配置，可能造成車輛警告或 CAN 故障。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END HDPuse -->"
+    },
+    "HapticFeedbackWhenSpeedCamera": {
+      "englishHash": "69ac16be53b2980f7f95f898c3c48bfdf1190d7b64e1f8d007eb12adb3c5d69e",
+      "manual": "<!-- CARROT:MANUAL:BEGIN HapticFeedbackWhenSpeedCamera -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 停用\n- `1` — 震動\n- `2` — 儀表板\n- `3` — HUD 顯示\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n確認車輛規格及線組配置，停妥後設定，並於下次行車確認 SCC 及車道警示行為。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"WARNING\" -->\n> [!WARNING]\n> 車型、年式、HDA 世代或線組位置不符，可能導致 SCC 或縱向控制行為錯誤。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END HapticFeedbackWhenSpeedCamera -->"
+    },
+    "HardwareC3xLite": {
+      "englishHash": "b08236ee49a3766f9bfdbee625ccc7064c07032cf3cb56b80b29f007a236b5d6",
+      "manual": "<!-- CARROT:MANUAL:BEGIN HardwareC3xLite -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 僅限 C3X Lite 使用。以 GPIO 蜂鳴器取代喇叭／擴大機，並停用音訊與記錄程序。變更後須重新啟動裝置。\n- **關閉：** 不套用此功能，維持既有行為。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n僅在裝置硬體完全符合時變更，接著重新啟動並確認音效、記錄及程序狀態。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"IMPORTANT\" -->\n> [!IMPORTANT]\n> 在標準裝置上啟用此設定，可能停用音訊與記錄程序。變更後須重新啟動裝置。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END HardwareC3xLite -->"
+    },
+    "HotspotOnBoot": {
+      "englishHash": "3a4d75cf67c778f007ebfa0014af57fe0c1f239fd5498d9a83da588cf40ca755",
+      "manual": "<!-- CARROT:MANUAL:BEGIN HotspotOnBoot -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 有可用行動網路連線時，請求在開機後自動啟動熱點。\n- **關閉：** 開機時不自動啟用熱點。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n有網路連線時變更，並於下次連線或開啟地圖時確認。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> 自動啟動熱點需要裝置具備可用的 USIM 與行動網路。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END HotspotOnBoot -->"
+    },
+    "HyundaiCameraSCC": {
+      "englishHash": "fcbfc4485d6b91e12769c585bd0efc7c23e27a3e95edcaf6de6a1867689ffd55",
+      "manual": "<!-- CARROT:MANUAL:BEGIN HyundaiCameraSCC -->\n<!-- CARROT:REVIEW reviewed-for=\"287a1e4a7254a0c59acf4e381efa7c629c34796276cbd8584241a52c4a779f28\" reviewed-at=\"2026-11-04T12:00:00+09:00\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 不透過此設定強制啟用攝影機 SCC；車型預設與其他縱向控制設定仍會生效。\n- `1` — 使用攝影機 SCC 配置，並啟用 openpilot 縱向控制。\n- `2` — 標示為巡航狀態同步；目前車輛介面的實作與 `1` 相同，會啟用攝影機 SCC 與縱向控制。\n- `3` — 使用攝影機 SCC 線組，縱向控制仍交由原廠巡航。\n\n若此設定關閉且尚未套用攝影機 SCC，在本次行車期間從攝影機匯流排（bus2 或多 Panda 的對應匯流排）收到 `SCC_CONTROL`（CAN-FD）或 `SCC12`（傳統 CAN），會在 CAN 錯誤警示加入 **Enable CameraSCC**。系統絕不會自動變更此設定，原有解除控制及禁止啟用機制仍有效。\n啟用 CAN-FD CameraSCC、openpilot 縱向控制及角雷達時，若 CAN 有效、排入 D 檔、煞車已放開且車速高於 10.8 km/h，系統可定期請求開啟原廠 SCC MAIN。此行為獨立於 AutoEngage 及 Carrot 巡航啟用狀態，MAIN 開啟後即停止請求。SET 及靜止恢復請求仍須符合既有 Carrot 巡航啟用條件。\n\n使用 CAN-FD CameraSCC 及 openpilot 縱向控制時，儀表顯示使用的原廠 SCC MAIN 狀態，會與 Carrot 啟用意圖分開追蹤。轉向啟用遵循 AutoEngage 初始化及既有駕駛按鈕設定。\n\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n確認車輛規格及線組配置，停妥後設定，並於下次行車確認 SCC 及車道警示行為。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"WARNING\" -->\n> [!WARNING]\n> 車型、年式、HDA 世代或線組位置不符，可能導致 SCC 或縱向控制行為錯誤。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END HyundaiCameraSCC -->"
+    },
+    "IsLdwsCar": {
+      "englishHash": "2282f2fdf22be83f911c86417e75cf4f1d2aee287f76b7ef6793bd47ac3d538b",
+      "manual": "<!-- CARROT:MANUAL:BEGIN IsLdwsCar -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 在舊款 Hyundai／Kia 的 `LKAS11` 訊息中，使用僅 LDWS 的儀表選項。\n- **關閉：** 保留該車型預設的儀表 LKAS／LFA 選項。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n確認車輛規格及線組配置，停妥後設定，並於下次行車確認 SCC 及車道警示行為。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"WARNING\" -->\n> [!WARNING]\n> 車型、年式、HDA 世代或線組位置不符，可能導致 SCC 或縱向控制行為錯誤。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END IsLdwsCar -->"
+    },
+    "LaneChangeBsd": {
+      "englishHash": "f900ac65a7c4df0b8286355509ee2fb80cd3c56afc6c5ac71cac3c1594d967b6",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LaneChangeBsd -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 偵測 BSD（允許駕駛施加轉向扭矩）\n- `1` — 阻擋駕駛施加轉向扭矩\n- `-1` — 忽略 BSD\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\nBSD 無法取代駕駛對盲點及後方車流的檢查。請參閱[變換車道說明（英文）](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/lane-change.md)。\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LaneChangeBsd -->"
+    },
+    "LaneChangeDelay": {
+      "englishHash": "aa3092158f67e562c1c1fb847773a7e016377fdca2d4cc7d15ed99e445e1d79a",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LaneChangeDelay -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n啟用方向燈後，等待設定時間再變換車道。\n\n- **調高：** 增加適用的時間或延遲。\n- **調低：** 減少時間或延遲。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n此設定改變進入車道前的等待時間，不會改變已開始變換車道時的速度。請參閱[變換車道說明（英文）](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/lane-change.md)。\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LaneChangeDelay -->"
+    },
+    "LaneChangeLeverWait": {
+      "englishHash": "ae05a3c9f6a5d22adfd07df83533c2985de39bd113f6d48dd13518e54a9b17f8",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LaneChangeLeverWait -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n啟用後，若輕撥變換車道請求被 BSD 或車道檢查阻擋，會保持方向燈及請求約四秒，再加上設定的進入延遲，之後到期。停用時沿用既有依方向燈狀態等待的方式。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n保持撥桿定位的請求會依既有檢查繼續等待。限時請求到期後，請重新提出請求。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END LaneChangeLeverWait -->"
+    },
+    "LaneChangeNeedTorque": {
+      "englishHash": "d45bfa33979ae5d889cce953d594f9497038a87dd6fddd77c63b540ca38cb248",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LaneChangeNeedTorque -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 立即\n- `1` — 需要施加轉向扭矩（輕推方向盤）\n- `-1` — 關閉自動變換車道\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n關於路徑由誰決定及駕駛的安全責任，請參閱[變換車道說明（英文）](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/lane-change.md)。\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LaneChangeNeedTorque -->"
+    },
+    "LaneLineCheck": {
+      "englishHash": "dc0238b29f3e358e75c26744694bf6394995677a928da4ce5a5e4b42da808f27",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LaneLineCheck -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 顏色＋類型（阻擋時顯示黃色）\n- `1` — 僅類型\n- `2` — 類型＋駕駛施加扭矩時顯示實線\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n攝影機或車輛可能誤判標線，允許越過實線也不代表跨越實線安全或合法。請參閱[變換車道說明（英文）](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/lane-change.md)。\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LaneLineCheck -->"
+    },
+    "LatMpcAccelCost": {
+      "englishHash": "d1a02c5050e651d9427983efdf1352991ba9c65115440727f89c4cbd32af6849",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LatMpcAccelCost -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n（LaneMode）橫向加速度限制：調低可提高靈活度，但會降低穩定性。\n\n- **調高：** 增加此項目的 MPC 代價與抑制權重。\n- **調低：** 更容易允許該項動作。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LatMpcAccelCost -->"
+    },
+    "LatMpcInputOffset": {
+      "englishHash": "3999d53330876e174adf53871142c025b40e326ee43196f9a140fde0d2db3654",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LatMpcInputOffset -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n（LaneMode）MPC 輸入補償：調高會較早進入彎道。\n\n- **調高：** 提前 MPC 輸入，較早回應彎道。\n- **調低：** 延後對彎道的回應。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LatMpcInputOffset -->"
+    },
+    "LatMpcJerkCost": {
+      "englishHash": "a5eb72c3af559dab2e8a2a7f7a4946c4f6ce5253b854fdc3cf8470e5209ea3fd",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LatMpcJerkCost -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n（LaneMode）調低可讓轉向更快，但平順性會降低。\n\n- **調高：** 增加此項目的 MPC 代價與抑制權重。\n- **調低：** 更容易允許該項動作。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LatMpcJerkCost -->"
+    },
+    "LatMpcMotionCost": {
+      "englishHash": "4e3b187828f5a22d7996392aa97e546aa43f8c4cc70b34c950c4b0727c5384d8",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LatMpcMotionCost -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n（LaneMode）航向權重。\n\n- **調高：** 增加此項目的 MPC 代價與抑制權重。\n- **調低：** 更容易允許該項動作。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LatMpcMotionCost -->"
+    },
+    "LatMpcPathCost": {
+      "englishHash": "40b957217953303b7885a627f45408eb6488f6f64cbc790e3bd19d6801e09d46",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LatMpcPathCost -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n（LaneMode）路徑追蹤權重：調高會更優先遵循路徑。\n\n- **調高：** 增加此項目的 MPC 代價與抑制權重。\n- **調低：** 更容易允許該項動作。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LatMpcPathCost -->"
+    },
+    "LatMpcSteeringRateCost": {
+      "englishHash": "9554d8ee4b9b92e110664f1ba490e6f1cec5af9fca0a8bfeefefae333bc4d5a7",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LatMpcSteeringRateCost -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n（LaneMode）轉向速率限制：調低會讓轉向更積極。\n\n- **調高：** 增加此項目的 MPC 代價與抑制權重。\n- **調低：** 更容易允許該項動作。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LatMpcSteeringRateCost -->"
+    },
+    "LatSmoothSec": {
+      "englishHash": "17c3f329ed56950e7acfef27dd5d78f6f3145a7fb86ecf353e0b5fa762121f0d",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LatSmoothSec -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n橫向平滑值：數值越高越平順。\n\n- **調高：** 讓轉向變化更平順、較緩慢。\n- **調低：** 回應更快，但平順性可能較差。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同直路及平緩彎道，每次小幅調整一項，檢查延遲、振盪及駕駛介入後的恢復。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LatSmoothSec -->"
+    },
+    "LatSuspendAngleDeg": {
+      "englishHash": "bf489f760e7992f7ac5267474a253975e4b52fdaaba8087941773553bf078fd8",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LatSuspendAngleDeg -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n大轉向角時暫停自動轉向，回到 15 以內後恢復。\n\n- **調高：** 駕駛介入轉向時，達到較大的轉向角度才會暫停輔助轉向。\n- **調低：** 在較小的轉向角度就會較早暫停輔助轉向。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同直路及平緩彎道，每次小幅調整一項，檢查延遲、振盪及駕駛介入後的恢復。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LatSuspendAngleDeg -->"
+    },
+    "LateralTorqueAccelFactor": {
+      "englishHash": "a97997388bf4aa4588c95ded693e5b577689580bd179ea232902d8b5e742c0ae",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LateralTorqueAccelFactor -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定將請求橫向加速度換算為轉向扭矩的係數。\n\n此係數為非線性：降低數值會增強扭矩直到某個點，之後扭矩反而減弱。請在實際車輛上小幅調整，找出最強且可用的設定點。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LateralTorqueAccelFactor -->"
+    },
+    "LateralTorqueCustom": {
+      "englishHash": "73494ae71472383a416f09ec33e45f28160af68bf15ac3ca2c763f4f8c29c10d",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LateralTorqueCustom -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 使用自訂的加速度、摩擦與 PID 係數進行扭矩控制。\n- **關閉：** 使用車輛介面與即時學習提供的預設扭矩係數。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"IMPORTANT\" -->\n> [!IMPORTANT]\n> 自訂扭矩係數只適用於扭矩控制車輛；須啟用此設定，才會使用自訂加速度與摩擦係數。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LateralTorqueCustom -->"
+    },
+    "LateralTorqueFriction": {
+      "englishHash": "7d3bfec64c0e746af4fffb7dbf324a010645eb549ca2047fe98f85df27f2df06",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LateralTorqueFriction -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定轉向系統摩擦補償係數。\n\n- **調高：** 增加摩擦補償與細微轉向扭矩。\n- **調低：** 減少摩擦補償與細微轉向扭矩。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LateralTorqueFriction -->"
+    },
+    "LateralTorqueKd": {
+      "englishHash": "6c517fa872d60bd84259a3a000eca6d5df3960e478c74dd1f6b3b7531a1bf9e9",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LateralTorqueKd -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定回應轉向誤差快速變化的微分項。\n\n- **調高：** 增加此扭矩控制項的作用比重。\n- **調低：** 降低該項的作用比重。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LateralTorqueKd -->"
+    },
+    "LateralTorqueKf": {
+      "englishHash": "f62e2efb6e725f2be4e3266f6393e5d5939be3dcef373db27882831e383d8cf3",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LateralTorqueKf -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定套用至預測轉向扭矩的前饋係數。\n\n- **調高：** 增加此扭矩控制項的作用比重。\n- **調低：** 降低該項的作用比重。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LateralTorqueKf -->"
+    },
+    "LateralTorqueKiV": {
+      "englishHash": "2bd80f8b85148afe66f84d846f99cec82e61a104258de2bcf3ad7d40896628b7",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LateralTorqueKiV -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定修正累積轉向誤差的積分項。\n\n- **調高：** 增加此扭矩控制項的作用比重。\n- **調低：** 降低該項的作用比重。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LateralTorqueKiV -->"
+    },
+    "LateralTorqueKpV": {
+      "englishHash": "0861b7e218379891b5919b2fbf7bf04bef4a78637592480e3b166a8f1d7a35f5",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LateralTorqueKpV -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定立即回應轉向誤差的比例項。\n\n- **調高：** 增加此扭矩控制項的作用比重。\n- **調低：** 降低該項的作用比重。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LateralTorqueKpV -->"
+    },
+    "LfaButtonMode": {
+      "englishHash": "e263936cb1af5108f6c24556bda916c17bd040547fa653549c4b22f9a8f9f577",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LfaButtonMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 一般\n- `1` — 減速與停車、前車就緒\n- `2` — CarrotCruise\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停妥後選擇模式，分別確認短按、長按及取消行為。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LfaButtonMode -->"
+    },
+    "LongActuatorDelay": {
+      "englishHash": "61f915c9c215866e56ca7c6d731a6fc5bc3f9516d6528e2ea2f32938f171fd88",
+      "manual": "<!-- CARROT:MANUAL:BEGIN LongActuatorDelay -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n補償加速或煞車請求與車輛反應之間的延遲。\n\n- **調高：** 假設縱向控制延遲較大，較早請求目標變更。\n- **調低：** 減少縱向控制的提前補償。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同目標速度切換條件下，每次小幅調整一項，比較超調、振盪及反應延遲。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END LongActuatorDelay -->"
+    },
+    "MapTurnSpeedFactor": {
+      "englishHash": "e1c6254ce6495de6209adacfe986650ab10b0f167d2330b1128bfe255b3faf1c",
+      "manual": "<!-- CARROT:MANUAL:BEGIN MapTurnSpeedFactor -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n數值越小，沿路線降低的速度越多。\n\n- **調高：** 減少導航轉彎時的減速。\n- **調低：** 增加依導航路線進行的減速。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同彎道與路線導引條件下，每次調整一項，比較入彎前的目標及過彎速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> 此設定僅在已連接依路線提供的轉彎資訊時生效。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END MapTurnSpeedFactor -->"
+    },
+    "MapboxStyle": {
+      "englishHash": "b13fe2d6bc014a27e05e6a7ce379caff353525397e0d437a28cb667c0c2a9050",
+      "manual": "<!-- CARROT:MANUAL:BEGIN MapboxStyle -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 預設背景\n- `1` — 深色背景\n- `2` — 衛星地圖\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n有網路連線時變更，並於下次連線或開啟地圖時確認。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END MapboxStyle -->"
+    },
+    "MaxAngleFrames": {
+      "englishHash": "f98637bb01cceb22e4ccecc0c2eca160f4543a67642ed2fa37afc56bdce0af05",
+      "manual": "<!-- CARROT:MANUAL:BEGIN MaxAngleFrames -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n調整大轉向角時允許連續送出的轉向請求影格數。\n\n- **調高：** 允許在大轉向角度下維持轉向請求的週期數更多。\n- **調低：** 較早停止請求，以避免 EPS 故障。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n僅在支援車輛上，每次調整一項，並於下次行車時確認轉向或原廠 SCC 行為。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 與車輛控制配置不符的數值，可能改變轉向或原廠 SCC 行為。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END MaxAngleFrames -->"
+    },
+    "MaxTimeOffroadMin": {
+      "englishHash": "d9d0ae15f1300295237aaba2d9274352bf0df72061bf0971e878197cf44ebe58",
+      "manual": "<!-- CARROT:MANUAL:BEGIN MaxTimeOffroadMin -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n引擎關閉並經過指定時間後，comma 裝置會關機。\n\n- **調高：** 增加適用的時間或延遲。\n- **調低：** 減少時間或延遲。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查儲存空間及電源條件，並於下次錄影或轉為停車狀態時確認結果。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END MaxTimeOffroadMin -->"
+    },
+    "MuteDoor": {
+      "englishHash": "6ce3103378a24359612a905a0e4411f7c63085f78f5974e9a63d3249b92e5b16",
+      "manual": "<!-- CARROT:MANUAL:BEGIN MuteDoor -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 不將車門開啟狀態列為阻擋駕駛輔助運作的事件。\n- **關閉：** 車門開啟時產生車門開啟事件。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停妥後變更，並於下次行車確認駕駛監控及車輛警示狀態。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 啟用後，車門開啟狀態不會列為阻擋駕駛輔助運作的事件。起步前請自行確認所有車門已關妥。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END MuteDoor -->"
+    },
+    "MuteSeatbelt": {
+      "englishHash": "2ab8ca0718264abb3ef4e26148cc6f964f2f372e3a8d53fd971939bc7e10580d",
+      "manual": "<!-- CARROT:MANUAL:BEGIN MuteSeatbelt -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 不將安全帶未扣狀態列為阻擋駕駛輔助運作的事件。\n- **關閉：** 安全帶未扣妥時產生安全帶未扣事件。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停妥後變更，並於下次行車確認駕駛監控及車輛警示狀態。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 啟用後，安全帶未扣狀態不會列為阻擋駕駛輔助運作的事件。請自行確認所有乘員都已繫妥安全帶。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END MuteSeatbelt -->"
+    },
+    "PaddleMode": {
+      "englishHash": "4fb69cbcf15782a5e2455ed5bf06a25398cae46b943e3f1eeb05e7e4e7cd6a92",
+      "manual": "<!-- CARROT:MANUAL:BEGIN PaddleMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 巡航開啟\n- `1` — 巡航待命\n- `2` — 減速與巡航待命\n- `3` — CarrotCruise\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停妥後選擇模式，分別確認短按、長按及取消行為。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END PaddleMode -->"
+    },
+    "PathOffset": {
+      "englishHash": "d1209fce26ce2a318773f63c368f9abbd572ba073218b116fbb58f6ed2eaf01d",
+      "manual": "<!-- CARROT:MANUAL:BEGIN PathOffset -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n僅適用於 LaneMode：負值向左，正值向右。\n\n- **負值：** 將目標路徑往左移。\n- **正值：** 將目標路徑往右移。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在平坦直路以穩定速度評估，逐步調整，比較向左／向右偏移是否減少。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END PathOffset -->"
+    },
+    "RecordRoadCam": {
+      "englishHash": "103f20415170eec7655652e3faf958c9ace76d88c265535f1a3370f9ecc8b8b8",
+      "manual": "<!-- CARROT:MANUAL:BEGIN RecordRoadCam -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `1` — 標準攝影機\n- `2` — 標準攝影機＋廣角攝影機\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查儲存空間及電源條件，並於下次錄影或轉為停車狀態時確認結果。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"IMPORTANT\" -->\n> [!IMPORTANT]\n> 錄製廣角攝影機也會增加儲存空間與記憶體頻寬用量。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END RecordRoadCam -->"
+    },
+    "ShowCustomBrightness": {
+      "englishHash": "4088c9e00abc93326430fcbb95e87e687f12017466bbc2cf8ed656ae22a31599",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowCustomBrightness -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 依環境亮度自動調整\n- `100` — 固定使用最高亮度\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n行車亮度穩定後，檢查攝影機／模型顯示的可見度及眩光。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowCustomBrightness -->"
+    },
+    "ShowDateTime": {
+      "englishHash": "de827a6764ae1d588b56c20f962cfdc26d81fc62ebd5a5f34f3b6c34de517031",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowDateTime -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 無\n- `1` — 時間／日期\n- `2` — 時間\n- `3` — 日期\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查行車畫面的配置及可讀性，只啟用需要的資訊。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowDateTime -->"
+    },
+    "ShowDebugUI": {
+      "englishHash": "e11c35420e75e4b5fb70ac7dd70cc787a7a8594b63b909e7267507782d339fe4",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowDebugUI -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 隱藏除錯資訊。\n- `1`、`2` — 目前實作中，兩者都會在行車畫面顯示除錯資訊。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查行車畫面的配置及可讀性，只啟用需要的資訊。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowDebugUI -->"
+    },
+    "ShowDeviceState": {
+      "englishHash": "10fd6e392189d90b2976a2cfa42a2a740aa7b01584654e27ecd2e9c30c2d274c",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowDeviceState -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 在行車 HUD 顯示裝置狀態，例如 CPU 溫度與記憶體用量。\n- **關閉：** 隱藏裝置狀態，使用較小的 HUD 資訊框。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查行車畫面的配置及可讀性，只啟用需要的資訊。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowDeviceState -->"
+    },
+    "ShowLaneInfo": {
+      "englishHash": "824b0a60096843d5f5202c6d8d73daffe4e876d67c98456f104768c513884d5f",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowLaneInfo -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `-1` — 無\n- `0` — 路徑\n- `1` — 路徑＋車道線\n- `2` — 路徑＋車道線＋道路邊緣\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查行車畫面的配置及可讀性，只啟用需要的資訊。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowLaneInfo -->"
+    },
+    "ShowPathColor": {
+      "englishHash": "9cd90d354e8c49d184d7a232a2ddc9e4853446825e648eaef4e97b588ed8d475",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowPathColor -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n`0`–`9` 依序選擇紅、橙、黃、綠、藍、深藍、紫、棕、白、黑色。`10`–`19` 在對應顏色加上強調外框，`20` 依行車狀態自動選色。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowPathColor -->"
+    },
+    "ShowPathColorCruiseOff": {
+      "englishHash": "fe882753071d1ac978d78c968c1ea0fa921cd5790dbb7061ffdfcebae6daa88c",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowPathColorCruiseOff -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n`0`–`9` 依序為巡航關閉路徑選擇紅、橙、黃、綠、藍、深藍、紫、棕、白、黑色。`10`–`19` 在對應顏色加上強調外框。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowPathColorCruiseOff -->"
+    },
+    "ShowPathColorLane": {
+      "englishHash": "207604670df2fc3349eb2d6719ce997472a6fa45ff6ec4f692919d364ba7d900",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowPathColorLane -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n`0`–`9` 依序為車道模式路徑選擇紅、橙、黃、綠、藍、深藍、紫、棕、白、黑色。`10`–`19` 加上強調外框，`20` 依行車狀態自動選色。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowPathColorLane -->"
+    },
+    "ShowPathEnd": {
+      "englishHash": "72cd428e5b558280f7099c23551f19c15bdc7ce8b4021e5e901cf1f6bf7b8b69",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowPathEnd -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 在預測路徑末端顯示路徑狀態文字。\n- **關閉：** 隱藏該文字。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查行車畫面的配置及可讀性，只啟用需要的資訊。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowPathEnd -->"
+    },
+    "ShowPathMode": {
+      "englishHash": "09b4beabaa316f7641a1be6e7277896ac327d7158784d7fb671297cdc6425650",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowPathMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 使用原廠路徑形狀。\n- `1`–`8` — 使用矩形及箭頭樣式的動畫路徑。\n- `9`–`12` — 使用平滑箭頭樣式的路徑。\n- `13`、`14`、`15` — 分別使用三條、兩條及一條線的路徑。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowPathMode -->"
+    },
+    "ShowPathModeLane": {
+      "englishHash": "4fca0fd5bce4937680f0dcb8bcbec8533d6db706a2ef2934654c629f098cc8ee",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowPathModeLane -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- `0` — 使用原廠路徑形狀。\n- `1`–`8` — 使用矩形及箭頭樣式的動畫路徑。\n- `9`–`12` — 使用平滑箭頭樣式的路徑。\n- `13`、`14`、`15` — 分別使用三條、兩條及一條線的路徑。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowPathModeLane -->"
+    },
+    "ShowPlotMode": {
+      "englishHash": "e072cf0ea51fe0b4a4548c0f2176707d00c294a4d015c61c92002e6cd47bbf21",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowPlotMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 關閉\n- `1` — 加速\n- `2` — 速度＋加速度\n- `3` — 模型\n- `4` — 前車\n- `5` — 前車 2\n- `6` — 轉向\n- `7` — 轉向 A\n- `8` — 曲率\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查行車畫面的配置及可讀性，只啟用需要的資訊。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowPlotMode -->"
+    },
+    "ShowRadarInfo": {
+      "englishHash": "9d03e665344e3559ee994ee8322435360056a08b360f6ef6c4a9a9e0fddf8601",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowRadarInfo -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 無\n- `1` — 顯示\n- `2` — 加上相對位置\n- `3` — 靜止障礙物\n\n在使用 ARS 顯示串流的 RAV4 2022 標準裝置行車畫面中，`3` 也會將相鄰車道物體與控制用前車分開顯示。移動物體顯示速度，慢速或靜止物體顯示星號；看得見的物體不一定是煞車目標。\n\n仍保留 CRC、物體資料時效、速度有效性及距離條件。過期、無效或空白輸入會清除顯示。模式 `1`、`2`、其他接收端及網頁／mici 畫面沿用既有流程。此功能不會新增 Toyota 側角雷達支援。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查行車畫面的配置及可讀性，只啟用需要的資訊。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowRadarInfo -->"
+    },
+    "ShowRouteInfo": {
+      "englishHash": "8dd21c8d26579b7f0301c95f4711671e7159d71d29952c3e4b9309061d4777d6",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowRouteInfo -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n目前 `carrot-wip` 執行程式沒有使用此參數，因此變更不會影響行車畫面。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n目前執行程式未使用此設定，因此行車時沒有可調整或驗證的效果。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowRouteInfo -->"
+    },
+    "ShowTpms": {
+      "englishHash": "f9504d345cec728d4711797dd1ccc7a252345eaec4d2b81dc6ed785833826a24",
+      "manual": "<!-- CARROT:MANUAL:BEGIN ShowTpms -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 無\n- `1` — 上方\n- `2` — 下方\n- `3` — 兩者皆使用\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n檢查行車畫面的配置及可讀性，只啟用需要的資訊。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END ShowTpms -->"
+    },
+    "SignalAssistMode": {
+      "englishHash": "5233158228d344f165efe79e0beb730401e2b9bd20d89843743b66c0bfe3f581",
+      "manual": "<!-- CARROT:MANUAL:BEGIN SignalAssistMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n紅燈停車否決會在停車及緩行時保留記憶，超過 5km/h 後清除。起步後失去前車不會重新啟用舊停車目標；一般模型與前車控制，以及駕駛明確要求的保持停車仍有效。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n<!-- CARROT:MANUAL:END SignalAssistMode -->"
+    },
+    "SoftwareMenu": {
+      "englishHash": "348cf82b88c01c5853e3b29a4e96d6fc638981624c28674cd3a41152df81df8c",
+      "manual": "<!-- CARROT:MANUAL:BEGIN SoftwareMenu -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n- **開啟：** 停車狀態下執行軟體更新程序，並在 Carrot Web 顯示「軟體」分類。\n- **關閉：** 不執行更新程序，並隱藏該分類。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停車狀態下變更，重新開啟 Carrot Web，確認「軟體」群組是否顯示及更新程序狀態。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"IMPORTANT\" -->\n> [!IMPORTANT]\n> 這是用於診斷記憶體問題的程序配置設定。一般使用請保留預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END SoftwareMenu -->"
+    },
+    "SoundLanguageSetting": {
+      "englishHash": "7179074fc786b4f04eaff38bdb8cded51809771e250f4e621b698023d34d53e0",
+      "manual": "<!-- CARROT:MANUAL:BEGIN SoundLanguageSetting -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選擇語音提示使用的語言。「自動」會跟隨裝置語言。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停妥後播放提示，分別確認語言、一般音量及啟用／解除音量。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END SoundLanguageSetting -->"
+    },
+    "SoundVolumeAdjustEngage": {
+      "englishHash": "c127be52c2fb7e0879b5e24fa6ffbeeda18a766558a84455f7983ae1ef15360a",
+      "manual": "<!-- CARROT:MANUAL:BEGIN SoundVolumeAdjustEngage -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n控制啟用、解除及倒車提示的音量倍率。\n\n- **調高：** 提高這些狀態提示的音量。\n- **調低：** 降低這些狀態提示的音量。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停妥後播放提示，分別確認語言、一般音量及啟用／解除音量。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END SoundVolumeAdjustEngage -->"
+    },
+    "SteerActuatorDelay": {
+      "englishHash": "c6b9e5cfe165a3a71ce267d5045fea70f8fcbc6c91311fd31f1b74a689911b78",
+      "manual": "<!-- CARROT:MANUAL:BEGIN SteerActuatorDelay -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n轉向延遲值：數值越高越早轉向。0 表示使用即時延遲。\n\n- **調高：** 假設轉向延遲較大，較早請求轉向。\n- **調低：** 減少轉向控制的提前補償。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同直路及平緩彎道，每次小幅調整一項，檢查延遲、振盪及駕駛介入後的恢復。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> `0` 使用即時估計的轉向延遲，而非固定值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END SteerActuatorDelay -->"
+    },
+    "SteerRatioRate": {
+      "englishHash": "f9286ea86bd6f2bc2bf1d09830a4b6834081610329dc1171cdd3c26bf0bb7833",
+      "manual": "<!-- CARROT:MANUAL:BEGIN SteerRatioRate -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\nLiveSteerRatio 套用比例（CustomSR 須設為 0）。\n\n- **調高：** 增加套用至學習所得轉向比的倍率。\n- **調低：** 降低該倍率。\n\n此設定也適用於 VW MEB（含 ID.4）；選定有效的手動轉向比會略過此倍率。儲存倍率超出允許範圍時，回復使用未縮放的學習轉向比。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同直路及平緩彎道，每次小幅調整一項，檢查延遲、振盪及駕駛介入後的恢復。\n\n先前被忽略的 ID.4 設定值會在更新後生效。使用 `CustomSR=0` 及 `SteerRatioRate=100%` 可保留原本學習所得的轉向比。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"IMPORTANT\" -->\n> [!IMPORTANT]\n> 只有 `CustomSR` 為 `0` 時，此倍率才會套用至學習所得的轉向比。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END SteerRatioRate -->"
+    },
+    "StopDistanceCarrot": {
+      "englishHash": "7dca1bcefecd846481d7fb24f13e27675b9894bafb2c4c28cfd6ccf153cfec42",
+      "manual": "<!-- CARROT:MANUAL:BEGIN StopDistanceCarrot -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n設定縱向 MPC 對前車及停車障礙物使用的基本停車緩衝距離。\n\n- **調高：** 增加目標停車與跟車的預留距離。\n- **調低：** 減少目標預留距離。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同前車走走停停的條件下，每次調整一項，檢查最終停車位置及重新起步反應。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END StopDistanceCarrot -->"
+    },
+    "TrafficLightDetectMode": {
+      "englishHash": "9488043b1de060386201b9e9f213d4fd366947df5505efb6212f8fad0ca19683",
+      "manual": "<!-- CARROT:MANUAL:BEGIN TrafficLightDetectMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 無\n- `1` — 僅停車時\n- `2` — 走停跟車\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在同一個視野清楚的路口，確認偵測、停車、重新起步時機及停車位置。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 紅綠燈偵測是輔助功能；駕駛仍須確認實際號誌與交通狀況。\n<!-- CARROT:NOTICE:END -->\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END TrafficLightDetectMode -->"
+    },
+    "TrafficStopDistanceAdjust": {
+      "englishHash": "9db91f57d544181f503b4e2bfd23b4c80546a8d3ec249cb1af4580a11fc31c6c",
+      "manual": "<!-- CARROT:MANUAL:BEGIN TrafficStopDistanceAdjust -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n車輛行進時，為虛擬號誌停車障礙物加入距離修正。\n\n- **正值：** 將停車目標沿道路往前移。\n- **負值：** 將停車目標往本車方向拉近。\n\n停車時，目前程式另使用 `-2 m` 修正。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在同一個視野清楚的路口，確認偵測、停車、重新起步時機及停車位置。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END TrafficStopDistanceAdjust -->"
+    },
+    "TurnSpeedControlMode": {
+      "englishHash": "982c301031dbc74efa6ca52c7994e5a6997476bf499dff39d6d4d943009995e0",
+      "manual": "<!-- CARROT:MANUAL:BEGIN TurnSpeedControlMode -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n選定值會依下列方式改變行為。\n\n- `0` — 不使用\n- `1` — 視覺\n- `2` — 視覺＋導航路線\n- `3` — 導航路線（持續使用）\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同彎道與路線導引條件下，每次調整一項，比較入彎前的目標及過彎速度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END TurnSpeedControlMode -->"
+    },
+    "UseLaneLineCurveSpeed": {
+      "englishHash": "2c8900418bbf5316d22a15ebc0c378cb0bd80b20e4c32bdfb47c9ffcbafba4da",
+      "manual": "<!-- CARROT:MANUAL:BEGIN UseLaneLineCurveSpeed -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n低於設定速度時不使用 LaneMode。\n\n- **調高：** 提高適用的速度或速度門檻。\n- **調低：** 降低速度或門檻。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"CAUTION\" -->\n> [!CAUTION]\n> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END UseLaneLineCurveSpeed -->"
+    },
+    "UseLaneLineSpeed": {
+      "englishHash": "7919ce31fc951524f749cf3f0e2e9e0be457c9d601e004e861dc33c503223d0b",
+      "manual": "<!-- CARROT:MANUAL:BEGIN UseLaneLineSpeed -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n速度超過設定值時切換至 LaneMode。\n\n- **調高：** 提高適用的速度或速度門檻。\n- **調低：** 降低速度或門檻。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在相同車道及彎道重複測試，每次調整一項，同時比較路徑追蹤、轉向反應及平順度。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n<!-- CARROT:NOTICE level=\"NOTE\" -->\n> [!NOTE]\n> `0` 會停用依速度自動切換；由按鍵選定的車道模式狀態仍可另行維持。\n<!-- CARROT:NOTICE:END -->\n<!-- CARROT:SECTION:END REFERENCE -->\n<!-- CARROT:MANUAL:END UseLaneLineSpeed -->"
+    },
+    "VehicleNaviDecelCancel": {
+      "englishHash": "51da4a25104126b36dd874167c95be1ee9e21af7274fd4c56cc755282cf26ceb",
+      "manual": "<!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancel -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n啟用後，巡航 + 或輕踩油門可取消指定類型的支援原廠導航減速；停用時不使用此取消輸入。固定式、號誌及後方執法仍排除在外。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在子設定中選擇適用類型。若輸入已用於取消減速，就不會同時增加設定速度。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END VehicleNaviDecelCancel -->"
+    },
+    "VehicleNaviDecelCancelBox": {
+      "englishHash": "6299355ddf55d3ceb9bf459a724167b08d02642b6bfe2da7a8f47456d180d3a4",
+      "manual": "<!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelBox -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n取消減速總開關啟用時，啟用此項可用 + 或輕踩油門取消箱式測速照相減速；停用則不允許取消此類減速。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n若同時存在固定式、號誌或後方執法預告，仍會保留該執法項目的減速。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END VehicleNaviDecelCancelBox -->"
+    },
+    "VehicleNaviDecelCancelBump": {
+      "englishHash": "ceb4481622ca3d9e5b08a8c7781d28c82fc571272f62b18232ca7415342df447",
+      "manual": "<!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelBump -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n取消減速總開關啟用時，啟用此項可用 + 或輕踩油門取消最近減速丘的減速；停用則不允許取消此類減速。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n只有計算出的減速丘目標低於設定速度，且正實際降低目標速度時，才會使用此輸入。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END VehicleNaviDecelCancelBump -->"
+    },
+    "VehicleNaviDecelCancelEarlyWarning": {
+      "englishHash": "bd92c343d758aafd731fa74eed3ce1c9709dbc024d145860e2dbf776a2146570",
+      "manual": "<!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelEarlyWarning -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n取消減速總開關啟用時，此項會放寬異常提早出現的執法警示之預告匹配範圍；停用則使用既有匹配範圍。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n實驗性功能。附近移動式測速區域若錯誤匹配，可能略過實際執法減速；請在受影響車輛比較啟用與停用時的匹配情形。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END VehicleNaviDecelCancelEarlyWarning -->"
+    },
+    "VehicleNaviDecelCancelMobileZone": {
+      "englishHash": "5ded0e190261db898587797abfff7c31d7e21aa513f5336eaefccd2888bf1a34",
+      "manual": "<!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelMobileZone -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n取消減速總開關啟用時，啟用此項可用 + 或輕踩油門取消移動式測速區域減速；停用則不允許取消此類減速。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n移動式測速區域減速本身只在導航減速模式 3 運作。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END VehicleNaviDecelCancelMobileZone -->"
+    },
+    "VehicleNaviDecelCancelUnknown": {
+      "englishHash": "ea347357a2ef9eed716651529d89bffca09c4c0e7c06646c03554a6c9db05308",
+      "manual": "<!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelUnknown -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n取消減速總開關啟用時，啟用此項可用 + 或輕踩油門取消缺少或無法辨識類型預告的執法警示減速；停用則不允許取消此類減速。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n未知類型可能包含真正的執法攝影機。此實驗性選項排除 30 km/h 以下的警示及區間測速。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END VehicleNaviDecelCancelUnknown -->"
+    },
+    "VehicleNaviSectionAvgControl": {
+      "englishHash": "76a90c3aac60786c04e0f28d02ca8ca6daf39a58f33c85007c7e7088a59cc79a",
+      "manual": "<!-- CARROT:MANUAL:BEGIN VehicleNaviSectionAvgControl -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n啟用後，進入區間時仍保留既有速限上限。巡航啟用且設定速度較高時，按 + 或輕踩油門可利用較慢行駛累積的時間，將速度解鎖至設定速度。停用則保留既有區間上限。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n不需外部導航也可使用。長按 - 可重新鎖定；離開區間後重設。此實驗性估算取決於入口訊號及已行駛距離，出口測速照相的定點減速仍有效。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END VehicleNaviSectionAvgControl -->"
+    }
+  }
+}

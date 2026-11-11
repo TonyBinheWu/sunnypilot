@@ -29,6 +29,24 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoSpeedUptoRoadSpeedLimit -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- `0` — 停用依前車狀態自動提高設定速度。
+- **正值：** 60 m 內的前車速度接近目前設定速度時，以每次 5 km/h 提高設定速度，最高為道路速限乘以此倍率。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在同一個道路速限變更路段，確認新的目標速度及切換時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoSpeedUptoRoadSpeedLimit -->
 
 <!-- CARROT:SETTING:END AutoSpeedUptoRoadSpeedLimit -->

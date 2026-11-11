@@ -28,6 +28,31 @@
 
 <!-- CARROT:MANUAL:BEGIN HapticFeedbackWhenSpeedCamera -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 停用
+- `1` — 震動
+- `2` — 儀表板
+- `3` — HUD 顯示
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+確認車輛規格及線組配置，停妥後設定，並於下次行車確認 SCC 及車道警示行為。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="WARNING" -->
+> [!WARNING]
+> 車型、年式、HDA 世代或線組位置不符，可能導致 SCC 或縱向控制行為錯誤。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END HapticFeedbackWhenSpeedCamera -->
 
 <!-- CARROT:SETTING:END HapticFeedbackWhenSpeedCamera -->

@@ -27,6 +27,27 @@
 
 <!-- CARROT:MANUAL:BEGIN HardwareC3xLite -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 僅限 C3X Lite 使用。以 GPIO 蜂鳴器取代喇叭／擴大機，並停用音訊與記錄程序。變更後須重新啟動裝置。
+- **關閉：** 不套用此功能，維持既有行為。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+僅在裝置硬體完全符合時變更，接著重新啟動並確認音效、記錄及程序狀態。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="IMPORTANT" -->
+> [!IMPORTANT]
+> 在標準裝置上啟用此設定，可能停用音訊與記錄程序。變更後須重新啟動裝置。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END HardwareC3xLite -->
 
 <!-- CARROT:SETTING:END HardwareC3xLite -->

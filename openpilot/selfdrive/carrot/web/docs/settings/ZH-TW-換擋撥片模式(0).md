@@ -28,6 +28,28 @@
 
 <!-- CARROT:MANUAL:BEGIN PaddleMode -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 巡航開啟
+- `1` — 巡航待命
+- `2` — 減速與巡航待命
+- `3` — CarrotCruise
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+停妥後選擇模式，分別確認短按、長按及取消行為。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END PaddleMode -->
 
 <!-- CARROT:SETTING:END PaddleMode -->

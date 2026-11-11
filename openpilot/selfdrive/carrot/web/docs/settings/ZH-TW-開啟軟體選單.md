@@ -27,6 +27,27 @@
 
 <!-- CARROT:MANUAL:BEGIN SoftwareMenu -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 停車狀態下執行軟體更新程序，並在 Carrot Web 顯示「軟體」分類。
+- **關閉：** 不執行更新程序，並隱藏該分類。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+停車狀態下變更，重新開啟 Carrot Web，確認「軟體」群組是否顯示及更新程序狀態。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="IMPORTANT" -->
+> [!IMPORTANT]
+> 這是用於診斷記憶體問題的程序配置設定。一般使用請保留預設值。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END SoftwareMenu -->
 
 <!-- CARROT:SETTING:END SoftwareMenu -->

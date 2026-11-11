@@ -76,23 +76,32 @@ test("first-run wizard offers and detects Traditional Chinese separately", () =>
 
 
 test("all bundled Traditional setting pages load locally with verified hashes and no fallback", async () => {
-  const { createSettingDocumentationClient } = await import("../src/features/settings/documentation.js");
+  const { installSettingsRuntimeFacade } = await import("../src/features/settings/index.js");
   const root = new URL("../docs/settings/", import.meta.url);
   const index = JSON.parse(readFileSync(new URL("Settings-Catalog.json", root), "utf8"));
   const calls = [];
-  const client = createSettingDocumentationClient({ storage: null, fetchImpl: async (url) => {
+  const target = new EventTarget();
+  target.fetch = async (url) => {
     calls.push(url);
     assert.ok(url.startsWith("/docs/settings/"), url);
     const name = decodeURIComponent(url.split("?")[0].split("/").pop());
     return new Response(readFileSync(new URL(name, root), "utf8"));
-  }});
+  };
+  const { runtime } = installSettingsRuntimeFacade(target, { preload: false });
   const catalog = JSON.parse(read("../../../carrot_settings.json"));
   assert.equal(Object.keys(index.settings).length, catalog.params.length);
   for (const setting of catalog.params) {
-    const page = await client.load(setting.name, "zh-tw");
+    const page = await runtime.docs.load(setting.name, "zh-tw");
     assert.equal(page.available, true, setting.name);
     assert.equal(page.language_resolved, "zh-tw", setting.name);
     assert.equal(page.fallback, false, setting.name);
+    const english = readFileSync(new URL(index.settings[setting.name].locales.en.page, root), "utf8");
+    if (english.includes("<!-- CARROT:SECTION:BEGIN BEHAVIOR -->")) {
+      assert.ok(page.sections.some(section => section.kind === "behavior"), `${setting.name}: detailed behavior`);
+    }
+    if (setting.name === "PathOffset") {
+      assert.ok(page.sections.find(section => section.kind === "usage").markdown.includes("平坦直路"));
+    }
   }
   assert.ok(calls.length > catalog.params.length);
 });

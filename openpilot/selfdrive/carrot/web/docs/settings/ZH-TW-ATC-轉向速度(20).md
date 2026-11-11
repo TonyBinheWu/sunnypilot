@@ -29,6 +29,29 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoTurnControlSpeedTurn -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+（APN）0：不使用；轉彎速度。
+
+- **調高：** 提高適用的速度或速度門檻。
+- **調低：** 降低速度或門檻。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> `0` 會停用 ATC 轉彎目標速度。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoTurnControlSpeedTurn -->
 
 <!-- CARROT:SETTING:END AutoTurnControlSpeedTurn -->

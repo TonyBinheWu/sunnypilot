@@ -29,6 +29,18 @@
 
 <!-- CARROT:MANUAL:BEGIN ClusterHudBrightness -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- `0` — 使用自動亮度；無法取得連接主螢幕的亮度時，使用外接 HUD 的預設值。
+- `1`–`100` — 將外接 HUD 亮度固定為該百分比。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+連接外接 HUD 後變更，確認方向、亮度及地圖連線。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ClusterHudBrightness -->
 
 <!-- CARROT:SETTING:END ClusterHudBrightness -->

@@ -28,6 +28,11 @@
 
 <!-- CARROT:MANUAL:BEGIN SignalAssistMode -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+紅燈停車否決會在停車及緩行時保留記憶，超過 5km/h 後清除。起步後失去前車不會重新啟用舊停車目標；一般模型與前車控制，以及駕駛明確要求的保持停車仍有效。
+<!-- CARROT:SECTION:END BEHAVIOR -->
 <!-- CARROT:MANUAL:END SignalAssistMode -->
 
 <!-- CARROT:SETTING:END SignalAssistMode -->

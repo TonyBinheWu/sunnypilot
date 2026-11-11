@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelEarlyWarning -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+取消減速總開關啟用時，此項會放寬異常提早出現的執法警示之預告匹配範圍；停用則使用既有匹配範圍。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+實驗性功能。附近移動式測速區域若錯誤匹配，可能略過實際執法減速；請在受影響車輛比較啟用與停用時的匹配情形。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END VehicleNaviDecelCancelEarlyWarning -->
 
 <!-- CARROT:SETTING:END VehicleNaviDecelCancelEarlyWarning -->

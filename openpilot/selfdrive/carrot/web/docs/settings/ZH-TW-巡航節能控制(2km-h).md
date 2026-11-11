@@ -29,6 +29,26 @@
 
 <!-- CARROT:MANUAL:BEGIN CruiseEcoControl -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+暫時提高目標速度以改善燃油效率。
+
+- **調高：** 節能控制可暫時提高目標速度的幅度較大。
+- **調低：** 減少該增加幅度。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在支援車輛及適用行車模式下，每次調整一項，檢查目標速度及實際加速／減速請求。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END CruiseEcoControl -->
 
 <!-- CARROT:SETTING:END CruiseEcoControl -->

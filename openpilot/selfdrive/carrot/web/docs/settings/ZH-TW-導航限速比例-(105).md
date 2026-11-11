@@ -29,6 +29,26 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoNaviSpeedSafetyFactor -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+設定套用至測速照相及道路速限的目標速度比例。
+
+- **調高：** 提高相對於道路速限的目標速度。
+- **調低：** 降低相對於道路速限的目標速度。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同速限及測速照相類型下，每次調整一項，比較減速起點、完成位置及通過速度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoNaviSpeedSafetyFactor -->
 
 <!-- CARROT:SETTING:END AutoNaviSpeedSafetyFactor -->

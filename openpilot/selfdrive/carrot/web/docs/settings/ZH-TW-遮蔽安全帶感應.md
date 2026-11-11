@@ -27,6 +27,27 @@
 
 <!-- CARROT:MANUAL:BEGIN MuteSeatbelt -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 不將安全帶未扣狀態列為阻擋駕駛輔助運作的事件。
+- **關閉：** 安全帶未扣妥時產生安全帶未扣事件。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+停妥後變更，並於下次行車確認駕駛監控及車輛警示狀態。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 啟用後，安全帶未扣狀態不會列為阻擋駕駛輔助運作的事件。請自行確認所有乘員都已繫妥安全帶。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END MuteSeatbelt -->
 
 <!-- CARROT:SETTING:END MuteSeatbelt -->

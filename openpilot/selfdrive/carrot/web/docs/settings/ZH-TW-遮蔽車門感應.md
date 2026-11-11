@@ -27,6 +27,27 @@
 
 <!-- CARROT:MANUAL:BEGIN MuteDoor -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 不將車門開啟狀態列為阻擋駕駛輔助運作的事件。
+- **關閉：** 車門開啟時產生車門開啟事件。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+停妥後變更，並於下次行車確認駕駛監控及車輛警示狀態。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 啟用後，車門開啟狀態不會列為阻擋駕駛輔助運作的事件。起步前請自行確認所有車門已關妥。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END MuteDoor -->
 
 <!-- CARROT:SETTING:END MuteDoor -->

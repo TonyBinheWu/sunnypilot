@@ -12,7 +12,6 @@ import { createSettingsEntryController } from "./entry_controller.js";
 import {
   createSettingDocumentationClient,
   normalizeSettingDocLanguage,
-  resolveSettingDocumentationIndexUrl,
 } from "./documentation.js";
 import {
   createSettingContextPanel,
@@ -89,7 +88,6 @@ export function installSettingsRuntimeFacade(target = globalThis, options = {}) 
   registerOnnxVisionSettingsExtension(extensions);
   const documentation = createSettingDocumentationClient({
     fetchImpl: typeof normalizedTarget.fetch === "function" ? normalizedTarget.fetch.bind(normalizedTarget) : null,
-    indexUrl: resolveSettingDocumentationIndexUrl(),
   });
   const derivedModelMemo = createSettingsDerivedModelMemo();
   store.subscribe((state) => {

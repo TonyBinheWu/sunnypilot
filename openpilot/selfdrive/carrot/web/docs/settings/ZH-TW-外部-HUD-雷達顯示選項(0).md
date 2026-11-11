@@ -27,6 +27,20 @@
 
 <!-- CARROT:MANUAL:BEGIN ClusterHudRadarDisplay -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 預設（合併鄰近雷達點）
+- `1` — 詳細（原始雷達點）
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在外接 HUD 觀察相同前車及周圍物體，確認顯示目標、距離及來源區分。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ClusterHudRadarDisplay -->
 
 <!-- CARROT:SETTING:END ClusterHudRadarDisplay -->

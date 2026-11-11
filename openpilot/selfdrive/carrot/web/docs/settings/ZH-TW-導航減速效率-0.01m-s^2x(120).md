@@ -28,6 +28,26 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoNaviSpeedDecelRate -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+數值越低，越早開始減速。
+
+- **調高：** 在較短距離內使用較強的減速。
+- **調低：** 從較遠處開始，使用較溫和的減速。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同速限及測速照相類型下，每次調整一項，比較減速起點、完成位置及通過速度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoNaviSpeedDecelRate -->
 
 <!-- CARROT:SETTING:END AutoNaviSpeedDecelRate -->

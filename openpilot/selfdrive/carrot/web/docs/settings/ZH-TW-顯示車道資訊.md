@@ -28,6 +28,22 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowLaneInfo -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `-1` — 無
+- `0` — 路徑
+- `1` — 路徑＋車道線
+- `2` — 路徑＋車道線＋道路邊緣
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查行車畫面的配置及可讀性，只啟用需要的資訊。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowLaneInfo -->
 
 <!-- CARROT:SETTING:END ShowLaneInfo -->

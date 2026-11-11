@@ -28,6 +28,29 @@
 
 <!-- CARROT:MANUAL:BEGIN MaxAngleFrames -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+調整大轉向角時允許連續送出的轉向請求影格數。
+
+- **調高：** 允許在大轉向角度下維持轉向請求的週期數更多。
+- **調低：** 較早停止請求，以避免 EPS 故障。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+僅在支援車輛上，每次調整一項，並於下次行車時確認轉向或原廠 SCC 行為。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 與車輛控制配置不符的數值，可能改變轉向或原廠 SCC 行為。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END MaxAngleFrames -->
 
 <!-- CARROT:SETTING:END MaxAngleFrames -->

@@ -28,6 +28,18 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowDebugUI -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- `0` — 隱藏除錯資訊。
+- `1`、`2` — 目前實作中，兩者都會在行車畫面顯示除錯資訊。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查行車畫面的配置及可讀性，只啟用需要的資訊。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowDebugUI -->
 
 <!-- CARROT:SETTING:END ShowDebugUI -->

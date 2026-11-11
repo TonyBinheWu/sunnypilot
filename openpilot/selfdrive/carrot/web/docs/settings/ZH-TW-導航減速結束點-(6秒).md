@@ -29,6 +29,26 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoNaviSpeedCtrlEnd -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+設定在測速照相或速限位置之前達到目標速度的時間基準。
+
+- **調高：** 在目標點前更遠處達到目標速度，較早完成減速。
+- **調低：** 在更接近目標點的位置達到目標速度。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同速限及測速照相類型下，每次調整一項，比較減速起點、完成位置及通過速度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoNaviSpeedCtrlEnd -->
 
 <!-- CARROT:SETTING:END AutoNaviSpeedCtrlEnd -->

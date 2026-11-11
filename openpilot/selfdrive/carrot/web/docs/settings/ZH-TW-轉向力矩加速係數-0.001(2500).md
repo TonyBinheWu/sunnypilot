@@ -28,6 +28,28 @@
 
 <!-- CARROT:MANUAL:BEGIN LateralTorqueAccelFactor -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+設定將請求橫向加速度換算為轉向扭矩的係數。
+
+此係數為非線性：降低數值會增強扭矩直到某個點，之後扭矩反而減弱。請在實際車輛上小幅調整，找出最強且可用的設定點。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END LateralTorqueAccelFactor -->
 
 <!-- CARROT:SETTING:END LateralTorqueAccelFactor -->

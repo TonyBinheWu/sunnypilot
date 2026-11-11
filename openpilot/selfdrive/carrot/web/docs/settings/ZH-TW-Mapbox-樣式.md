@@ -28,6 +28,21 @@
 
 <!-- CARROT:MANUAL:BEGIN MapboxStyle -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 預設背景
+- `1` — 深色背景
+- `2` — 衛星地圖
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+有網路連線時變更，並於下次連線或開啟地圖時確認。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END MapboxStyle -->
 
 <!-- CARROT:SETTING:END MapboxStyle -->

@@ -29,6 +29,20 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowCustomBrightness -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 依環境亮度自動調整
+- `100` — 固定使用最高亮度
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+行車亮度穩定後，檢查攝影機／模型顯示的可見度及眩光。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowCustomBrightness -->
 
 <!-- CARROT:SETTING:END ShowCustomBrightness -->

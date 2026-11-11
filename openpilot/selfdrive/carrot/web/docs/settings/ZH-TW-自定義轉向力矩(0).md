@@ -27,6 +27,27 @@
 
 <!-- CARROT:MANUAL:BEGIN LateralTorqueCustom -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 使用自訂的加速度、摩擦與 PID 係數進行扭矩控制。
+- **關閉：** 使用車輛介面與即時學習提供的預設扭矩係數。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在扭矩控制車輛上，每次小幅調整一個係數，比較直路回正、平緩彎道及駕駛介入時的扭矩。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="IMPORTANT" -->
+> [!IMPORTANT]
+> 自訂扭矩係數只適用於扭矩控制車輛；須啟用此設定，才會使用自訂加速度與摩擦係數。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END LateralTorqueCustom -->
 
 <!-- CARROT:SETTING:END LateralTorqueCustom -->

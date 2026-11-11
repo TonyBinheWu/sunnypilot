@@ -28,6 +28,29 @@
 
 <!-- CARROT:MANUAL:BEGIN RecordRoadCam -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `1` — 標準攝影機
+- `2` — 標準攝影機＋廣角攝影機
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查儲存空間及電源條件，並於下次錄影或轉為停車狀態時確認結果。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="IMPORTANT" -->
+> [!IMPORTANT]
+> 錄製廣角攝影機也會增加儲存空間與記憶體頻寬用量。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END RecordRoadCam -->
 
 <!-- CARROT:SETTING:END RecordRoadCam -->

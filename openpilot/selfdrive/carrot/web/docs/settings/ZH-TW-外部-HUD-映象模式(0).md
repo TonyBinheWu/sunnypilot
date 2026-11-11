@@ -27,6 +27,20 @@
 
 <!-- CARROT:MANUAL:BEGIN ClusterHudMirror -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 一般
+- `1` — 水平
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+連接外接 HUD 後變更，確認方向、亮度及地圖連線。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ClusterHudMirror -->
 
 <!-- CARROT:SETTING:END ClusterHudMirror -->

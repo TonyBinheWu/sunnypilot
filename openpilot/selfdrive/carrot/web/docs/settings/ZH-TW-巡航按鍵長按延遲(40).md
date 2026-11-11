@@ -28,6 +28,28 @@
 
 <!-- CARROT:MANUAL:BEGIN CruiseButtonLongDelay -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+觸發長按操作前的等待時間。
+
+- **調高：** 增加適用的時間或延遲。
+- **調低：** 減少時間或延遲。
+
+Volkswagen 的此延遲適用於獨立 +／- 按鈕。獨立 SET／RES 不論按住多久，均只在放開時作用一次，不會重複調速。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+分別確認單次按壓及長按的設定速度變化量與時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END CruiseButtonLongDelay -->
 
 <!-- CARROT:SETTING:END CruiseButtonLongDelay -->

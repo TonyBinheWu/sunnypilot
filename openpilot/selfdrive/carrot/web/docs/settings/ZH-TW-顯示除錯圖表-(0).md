@@ -28,6 +28,27 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowPlotMode -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 關閉
+- `1` — 加速
+- `2` — 速度＋加速度
+- `3` — 模型
+- `4` — 前車
+- `5` — 前車 2
+- `6` — 轉向
+- `7` — 轉向 A
+- `8` — 曲率
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查行車畫面的配置及可讀性，只啟用需要的資訊。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowPlotMode -->
 
 <!-- CARROT:SETTING:END ShowPlotMode -->

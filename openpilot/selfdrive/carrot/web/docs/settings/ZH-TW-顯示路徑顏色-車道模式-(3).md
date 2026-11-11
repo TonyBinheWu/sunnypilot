@@ -28,6 +28,17 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowPathColorLane -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+`0`–`9` 依序為車道模式路徑選擇紅、橙、黃、綠、藍、深藍、紫、棕、白、黑色。`10`–`19` 加上強調外框，`20` 依行車狀態自動選色。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowPathColorLane -->
 
 <!-- CARROT:SETTING:END ShowPathColorLane -->

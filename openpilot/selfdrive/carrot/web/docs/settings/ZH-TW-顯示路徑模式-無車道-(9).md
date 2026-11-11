@@ -28,6 +28,20 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowPathMode -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- `0` — 使用原廠路徑形狀。
+- `1`–`8` — 使用矩形及箭頭樣式的動畫路徑。
+- `9`–`12` — 使用平滑箭頭樣式的路徑。
+- `13`、`14`、`15` — 分別使用三條、兩條及一條線的路徑。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在行車畫面切換巡航及車道模式狀態，確認路徑形狀與顏色依預期改變。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowPathMode -->
 
 <!-- CARROT:SETTING:END ShowPathMode -->

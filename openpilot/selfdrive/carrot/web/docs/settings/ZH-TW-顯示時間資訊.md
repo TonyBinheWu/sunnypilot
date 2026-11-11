@@ -28,6 +28,22 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowDateTime -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 無
+- `1` — 時間／日期
+- `2` — 時間
+- `3` — 日期
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查行車畫面的配置及可讀性，只啟用需要的資訊。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowDateTime -->
 
 <!-- CARROT:SETTING:END ShowDateTime -->

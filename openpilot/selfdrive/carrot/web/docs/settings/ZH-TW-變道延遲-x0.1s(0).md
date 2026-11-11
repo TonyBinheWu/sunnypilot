@@ -28,6 +28,26 @@
 
 <!-- CARROT:MANUAL:BEGIN LaneChangeDelay -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+啟用方向燈後，等待設定時間再變換車道。
+
+- **調高：** 增加適用的時間或延遲。
+- **調低：** 減少時間或延遲。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+此設定改變進入車道前的等待時間，不會改變已開始變換車道時的速度。請參閱[變換車道說明（英文）](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/lane-change.md)。
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END LaneChangeDelay -->
 
 <!-- CARROT:SETTING:END LaneChangeDelay -->

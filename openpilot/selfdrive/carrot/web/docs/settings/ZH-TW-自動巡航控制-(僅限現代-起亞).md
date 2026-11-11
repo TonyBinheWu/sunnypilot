@@ -28,6 +28,33 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoCruiseControl -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+符合條件時，此設定會自動啟用巡航加速與煞車；不會直接啟用橫向控制或限制轉向扭矩。
+
+- `0` — 停用自動巡航與柔和停車保持；手動巡航與常駐橫向控制仍可使用。
+- `1` — 啟用自動巡航，使用標準柔和停車保持行為。
+- `2` — 啟用自動巡航；柔和停車保持行為適用於使用標準模式會回報錯誤的車輛。
+- `3` — 目前控制路徑使用與 `2` 相同的自動巡航與柔和停車保持行為。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+不需要自動巡航時使用 `0`，一般自動巡航使用 `1`。僅當車輛在 `1` 時回報 soft-hold 錯誤，才使用 `2`，並在相同起步、油門及前車條件下比較啟用時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> `AlwaysLateral=1` 時，只要橫向控制已啟用，自動巡航關閉後仍會持續輔助轉向。`AlwaysLateral=0` 時，轉向與巡航共用啟用狀態，因此轉向看起來可能隨自動巡航一起切換。
+<!-- CARROT:NOTICE:END -->
+
+此設定適用於 Hyundai 及 Kia 車輛；實際可用性取決於車輛的縱向控制配置。
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoCruiseControl -->
 
 <!-- CARROT:SETTING:END AutoCruiseControl -->

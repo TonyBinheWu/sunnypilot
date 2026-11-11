@@ -29,6 +29,21 @@
 
 <!-- CARROT:MANUAL:BEGIN ClusterHudCameraViewMode -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 預設
+- `1` — 模式 1（底部畫面）
+- `2` — 道路攝影機背景
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+選擇模式時，檢查外接 HUD 的顯示延遲、清晰度及 CPU 使用量。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ClusterHudCameraViewMode -->
 
 <!-- CARROT:SETTING:END ClusterHudCameraViewMode -->

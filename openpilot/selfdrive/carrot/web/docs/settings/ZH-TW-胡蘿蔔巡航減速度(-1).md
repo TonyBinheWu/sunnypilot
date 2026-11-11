@@ -28,6 +28,31 @@
 
 <!-- CARROT:MANUAL:BEGIN CarrotCruiseDecel -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+Carrot 巡航減速度設定。
+
+- **正值調高：** 增加 Carrot Cruise 可請求的最大減速度。
+- **正值調低：** 降低允許請求的減速度。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在支援車輛及適用行車模式下，每次調整一項，檢查目標速度及實際加速／減速請求。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 目前實作只適用於受支援的 Hyundai／Kia 控制器。`-1` 會解除巡航，而非提出 Carrot Cruise 減速請求。
+<!-- CARROT:NOTICE:END -->
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END CarrotCruiseDecel -->
 
 <!-- CARROT:SETTING:END CarrotCruiseDecel -->

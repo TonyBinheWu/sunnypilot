@@ -28,6 +28,27 @@
 
 <!-- CARROT:MANUAL:BEGIN LaneChangeBsd -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 偵測 BSD（允許駕駛施加轉向扭矩）
+- `1` — 阻擋駕駛施加轉向扭矩
+- `-1` — 忽略 BSD
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+BSD 無法取代駕駛對盲點及後方車流的檢查。請參閱[變換車道說明（英文）](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/lane-change.md)。
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END LaneChangeBsd -->
 
 <!-- CARROT:SETTING:END LaneChangeBsd -->

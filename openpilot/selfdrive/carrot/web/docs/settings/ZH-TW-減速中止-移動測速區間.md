@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelMobileZone -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+取消減速總開關啟用時，啟用此項可用 + 或輕踩油門取消移動式測速區域減速；停用則不允許取消此類減速。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+移動式測速區域減速本身只在導航減速模式 3 運作。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END VehicleNaviDecelCancelMobileZone -->
 
 <!-- CARROT:SETTING:END VehicleNaviDecelCancelMobileZone -->

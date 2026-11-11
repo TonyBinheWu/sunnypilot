@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancel -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+啟用後，巡航 + 或輕踩油門可取消指定類型的支援原廠導航減速；停用時不使用此取消輸入。固定式、號誌及後方執法仍排除在外。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在子設定中選擇適用類型。若輸入已用於取消減速，就不會同時增加設定速度。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END VehicleNaviDecelCancel -->
 
 <!-- CARROT:SETTING:END VehicleNaviDecelCancel -->

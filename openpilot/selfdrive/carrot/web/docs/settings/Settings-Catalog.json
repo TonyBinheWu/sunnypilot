@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "2088b3871ecb1b0c6eae7c7864675fd56552919a",
-  "contentHash": "b61ee19356ca376928b5439c8d61783527da08f8a51781b0420d53ced6bb4f6b",
-  "generatedAt": "2026-11-11T00:00:00Z",
+  "catalogCommit": "5d69560797924a8f137782ef9b02cf6a538db203",
+  "contentHash": "ed6eeb62499bf028116ca8ddeb50042f66976c27a5ebe0a4be7fcacf9e54576e",
+  "generatedAt": "2026-11-12T00:00:00Z",
   "locales": [
     "ko",
     "en",
@@ -1806,60 +1806,60 @@
       "hash": "cb1af72a137d86f9de4cd47976114f5fe876fb1f6e0ecd0b23115efd13db2180"
     },
     "ZH-TW-ATC-輔助地圖顯示(0).md": {
-      "bytes": 1194,
-      "hash": "a0a9eade9df69c080df332a65216f67137fdaf8d5ddf847899daf25c02ff3ff4"
+      "bytes": 1928,
+      "hash": "94737c46d75e95c661481c4ba2168828082f458472c9bcd374b5f13945a7e7b0"
     },
     "ZH-TW-ATC-轉向速度(20).md": {
-      "bytes": 1310,
-      "hash": "ac635302dc19e8a647e7abf0f938ab0166e53b689bd5de46a488c7c02c9ee69f"
+      "bytes": 1956,
+      "hash": "c5ca2060d6b620cf1b96f8af6db929408b3a41849cd1a6d729130de966c1b565"
     },
     "ZH-TW-ATC-速度控制剩餘時間(3).md": {
-      "bytes": 1288,
-      "hash": "4af41ff5eb18fb19860f2ced788825bcca092269494f00abdd724f1fc07365cf"
+      "bytes": 1741,
+      "hash": "72e715ba49be4a63380f86ba070d24a8fe4a8a5aa2dcd9487e28f35e824286e3"
     },
     "ZH-TW-AutoSteering-Suspend-Angle(300).md": {
-      "bytes": 1268,
-      "hash": "4532849e4522563411545efbe6653d36380e00646e4f97509cfed3b639691997"
+      "bytes": 2118,
+      "hash": "20bca25b1da66f10cada8088099f4910f30550020e54959f33adb868745a9c6f"
     },
     "ZH-TW-C3X-Lite-硬體.md": {
-      "bytes": 1233,
-      "hash": "bd3743fcc01ff811feb757394e88a18d08476adbfacddc3973d7eebff9e19489"
+      "bytes": 2019,
+      "hash": "ff8549508c723d495f53a29ea6eca97c09022075041c64e9247a4f0b2beba7b6"
     },
     "ZH-TW-CAN-FD-SPAS-indicators-(trial).md": {
       "bytes": 1502,
       "hash": "5e26fb2892a1c52e171f408e6a307cd7000efa6a32eeda4977c4f1a1b3e1eeee"
     },
     "ZH-TW-CANFD-HDA2-(0).md": {
-      "bytes": 1042,
-      "hash": "6ed36ce822ae211adab0a098806ce769c665b9d30e2395491d006b7cd39109b0"
+      "bytes": 1698,
+      "hash": "1ce7f81634396a8c4c3ef3a8042e276dd3687677b01bb7b89405a77dd64e74ac"
     },
     "ZH-TW-CANFD-除錯-(0).md": {
-      "bytes": 1076,
-      "hash": "4b6894735fcc14e75dcecbea0169a1e0f883a0a18cfafb1693b04c552647bbe2"
+      "bytes": 1851,
+      "hash": "13848b9edeb04b68553b36df42990cd2d520002e2390515ce75ca7e16863dea6"
     },
     "ZH-TW-Comma-Pedal縱向控制.md": {
       "bytes": 2243,
       "hash": "3ca7d83d2d441c79b8e72dcbed85dc4da9375f6bdd36dba16a9227f643ed46ef"
     },
     "ZH-TW-External-HUD-Camera-View-Mode(0).md": {
-      "bytes": 1493,
-      "hash": "3256d98e904b9981e50fdfa602d75a9c913bd86f9a4e74f412229aeefe4cac69"
+      "bytes": 1889,
+      "hash": "1ec7001231c52dd46e22e8751219614e6b472dd6e16a3083becb1dd2db002157"
     },
     "ZH-TW-External-HUD-Debug(0).md": {
-      "bytes": 1189,
-      "hash": "fff0385f0e0aa175f6ecd4a8b00f74fce865c6fcd114ebac5295da908301e3fd"
+      "bytes": 1616,
+      "hash": "a25cb13c138a6e42ff439ce0e2a1f4633d9d2273cc76399e788d0c0cdf366da4"
     },
     "ZH-TW-External-HUD-Panel-Layout(0).md": {
       "bytes": 1509,
       "hash": "0dc53b2c849a21bffe6f03989bd147390590e864d39a3253cc056700b8fe251f"
     },
     "ZH-TW-LFA-按鈕模式(0).md": {
-      "bytes": 1194,
-      "hash": "e1482f89250b93296c0d69f3d67043910e8de719b8fe425cc84cd682ee876f77"
+      "bytes": 1783,
+      "hash": "a874fbb3e87262516d24ebc372000e9f88e6589bf0fe797a0cf02cb4db31a8a4"
     },
     "ZH-TW-Mapbox-樣式.md": {
-      "bytes": 1105,
-      "hash": "1030d550eabbda8c30f3fa70e8310cb823c54b729044be7fcba3a3eb443a0420"
+      "bytes": 1474,
+      "hash": "5e337274d39f73be2d170f0b4d244ab6acb6b11baa40da7a85306a4912e345a4"
     },
     "ZH-TW-NNFF-扭矩控制.md": {
       "bytes": 1460,
@@ -1894,16 +1894,16 @@
       "hash": "3b4e4fe40a3612d3d8b0c645ae7296c9ffa8b05399b0a1a54da1fcb0a30ebac5"
     },
     "ZH-TW-上路自動啟用.md": {
-      "bytes": 1147,
-      "hash": "fbff13098ca2fec27a2ad7297e7b9c2f57344b6248c94a35e663fce8c0140f20"
+      "bytes": 2320,
+      "hash": "e3f8321bf2704d3ab4da19a7d8042a8188216a6b739ceb5a813c1d67a7c2f09f"
     },
     "ZH-TW-交通訊號停止距離調整.md": {
-      "bytes": 1325,
-      "hash": "882e3a6bf6229a54125dad8c83fb8c440399abeb52eb61445eb4af696eb05469"
+      "bytes": 2051,
+      "hash": "2278d4866eecf73ec1b9d6067ef62195945a4b3e78e743cd66e19e70de9b67cd"
     },
     "ZH-TW-使用-HDP-(CCNC).md": {
-      "bytes": 1057,
-      "hash": "2e74c26514b0dd16570ba2b2860a30cba4b6ebe5152fe5a3811810a9e222d6eb"
+      "bytes": 1730,
+      "hash": "71f8d4e4ed893f9a50efaedad8637672d741407df4068ce47bc461ee803b7e83"
     },
     "ZH-TW-使用廣角前置攝影機.md": {
       "bytes": 1351,
@@ -1922,8 +1922,8 @@
       "hash": "5a348b2ff468a09d7f07d5898f62f68bd2c2c07f8fa7965fabd36cfde5025e0e"
     },
     "ZH-TW-停止距離(600)cm.md": {
-      "bytes": 1245,
-      "hash": "c4ff0bb48130b00420da0a48b14108b866eb0e17a163e9d6a1ad748f31c0290e"
+      "bytes": 2158,
+      "hash": "c44a26bd45f18672b4933f1ea587cfaf4e750373c4d9bc664942182301ba361b"
     },
     "ZH-TW-儀表-CAN-直接傳送.md": {
       "bytes": 1419,
@@ -1938,72 +1938,72 @@
       "hash": "394ef2998d93c8c7bf3998722f3967a7ec0c35d99f54fd52d84c1403a5182576"
     },
     "ZH-TW-加速度設定-0-0km-h(160).md": {
-      "bytes": 1237,
-      "hash": "1e82dc190f8b23c4ed660165f0a5f221937030248b96a20522eb7c3f8faa5609"
+      "bytes": 1893,
+      "hash": "88de22b60400870747301b10276b9cd6ac704e8b9deff9be155d488b4567faef"
     },
     "ZH-TW-加速度設定-1-10km-h(160).md": {
-      "bytes": 1240,
-      "hash": "0ccf807eab66065aabe44b5b7cfe095018cd7b7bb4f9b326faa2f409c77b20ad"
+      "bytes": 1897,
+      "hash": "ff71f544872588b4bbea4cfefcfbc32a40e53d94a1ecacbdac7df3e7d0fc92e2"
     },
     "ZH-TW-加速度設定-2-40km-h(120).md": {
-      "bytes": 1240,
-      "hash": "c3316c46828b485389764a1c85f0c859196103558f234c8dc5295649331f1316"
+      "bytes": 1897,
+      "hash": "0484ba5b6e0ccc22f0b8bd9c8895ef1d8b08666624b2c0f434dfd961cb39b5a8"
     },
     "ZH-TW-加速度設定-3-60km-h(100).md": {
-      "bytes": 1240,
-      "hash": "84ac96e5fe4584a05f9b212089babb33c4a15d4cec3ab0f42a627e11c98f48b5"
+      "bytes": 1897,
+      "hash": "61a4014cedb27ace6fc6d2b2ae4a89b9adb210e10e5328c9587325e0534b25f5"
     },
     "ZH-TW-加速度設定-4-80km-h(80).md": {
-      "bytes": 1238,
-      "hash": "a03f36be318870a284ae27ce2e17a09afbd54e5e702b483ff86065b3c61de05e"
+      "bytes": 1896,
+      "hash": "1aed7ed68237c5ffed1e4daecfffaef68b140b5bffd14689b413acfa8cda3c7e"
     },
     "ZH-TW-加速度設定-5-110km-h(70).md": {
-      "bytes": 1241,
-      "hash": "5dc6c4587ba0cc6d638a45ea5d68dc8a70fa41b504e679ab9becfd33ef60d07e"
+      "bytes": 1900,
+      "hash": "2a599dd2caaf494aab690e58b7e3eae7cb73aa4df0b8a5138fefe753e7047591"
     },
     "ZH-TW-加速度設定-6-140km-h(60).md": {
-      "bytes": 1234,
-      "hash": "d45ab7a207e7c8050902b56703bb362df4fbd5f43472d9061dd280626c801bb7"
+      "bytes": 1882,
+      "hash": "606b5e00b3b9360447b15b53f367e2cdee8944e600c3d0b8cd47206da2c8b20a"
     },
     "ZH-TW-原車導航-30-km-h-區域限速.md": {
       "bytes": 2353,
       "hash": "22d408d81d9e90b995d0caa5f60bf55b3c2974995b69bbbd5acf48d240b15cb6"
     },
     "ZH-TW-原車導航區間測速平均速度控制.md": {
-      "bytes": 2008,
-      "hash": "d68f937776d88c74f5ac0f4aed25eeab150c515c976b80d918d5c84d24441f93"
+      "bytes": 2607,
+      "hash": "b8890b7c76ef247a04d22e5a1279fba1536bcebcf02278c92d098ed41a61f225"
     },
     "ZH-TW-原車導航減速中止請求.md": {
-      "bytes": 1844,
-      "hash": "50067d3baca39bacfd186e925dc717e460dd6c2b852e095a0eabd9d8d8536d67"
+      "bytes": 2308,
+      "hash": "b82c41130641dea76468de8d80b0351058ed8c39eaea22c79effd9b95584f633"
     },
     "ZH-TW-取消後允許軟駐車(0).md": {
       "bytes": 1242,
       "hash": "695c44e314246b85f9b5690989b821ab3fc1271043284c928f373d130860710f"
     },
     "ZH-TW-取消按鈕模式(0).md": {
-      "bytes": 1174,
-      "hash": "045c851ee7cfd0bc6e63361f20c65beff369a1005ee834a7ebef00bff0cf4234"
+      "bytes": 1737,
+      "hash": "409c2c0c2d025c7428f0f536b4edb50a42e8c8ccbe5c71314d56e27833e2f22c"
     },
     "ZH-TW-叢集導航地圖-FPS(1).md": {
-      "bytes": 1392,
-      "hash": "6961627954a49afc04eeb56b4547b1cf9bffec76b447702461122323255965c8"
+      "bytes": 2184,
+      "hash": "b65f0e606c69ece9a612a54ddcdc2af884cb42b6e091e1a2baa74bbdc174ef20"
     },
     "ZH-TW-叢集導航地圖主題(1).md": {
-      "bytes": 1317,
-      "hash": "e67ebff951261ba6a7771839d1d18550b6a5032cefca43f95003953160568774"
+      "bytes": 1943,
+      "hash": "73bf097fd656dc67b7bc8de74d8243847177cc4ce4f14621ec8a7b2bb7afde37"
     },
     "ZH-TW-叢集導航地圖型別(0).md": {
-      "bytes": 1328,
-      "hash": "efeb7060a5b99692b18610e4f2034323765c213d86622f7c0f6340e67d62c8f1"
+      "bytes": 1949,
+      "hash": "aae45e39a74010f962ca97e6093b27da1b86cb0c51f11e12f3dce75eccd89164"
     },
     "ZH-TW-右轉前自動變道距離(米).md": {
       "bytes": 2675,
       "hash": "01ab62f390e38f7079aa61ad60a0431a0e1ae2abb5c203e5bd93c9bae266ee3f"
     },
     "ZH-TW-啟動加速度限制.md": {
-      "bytes": 1240,
-      "hash": "b62629a563c5a97c0dbb218518059eeb5137fca0a816b17a5bd96e1a78bd3c34"
+      "bytes": 2127,
+      "hash": "fd116d2f386a94b280d86ee7691bc8a76c7ac80169ba642be696dea1d426b091"
     },
     "ZH-TW-啟用-Carrot-Vision.md": {
       "bytes": 2012,
@@ -2014,24 +2014,24 @@
       "hash": "d64e37e09a0aa7f9bcccb31ba39d341e173edb87fe70b1108280e1370362b37c"
     },
     "ZH-TW-單觸變道請求等待-5-次閃爍.md": {
-      "bytes": 1519,
-      "hash": "87074aa94fb459b2621202350a535b03a696095b4c10edbfa90910e186d98984"
+      "bytes": 2027,
+      "hash": "ef77fad1504b165ba5676bfee5f52a6c896b7cc08ffb776deba4a3790402a62d"
     },
     "ZH-TW-地圖轉向速度因子.md": {
-      "bytes": 1258,
-      "hash": "7e0dc3951bbaa0dfa6ab0938bef2f02ffcc75a3e02f42657837b5767677c0e10"
+      "bytes": 2060,
+      "hash": "b9c72bd2c5f64af734983a4514d0c1abe63f0ca0ad911c31a44d108c9fd1d50e"
     },
     "ZH-TW-外部-HUD-主題(0).md": {
-      "bytes": 1145,
-      "hash": "80955480c27064af70b7ead63212082f28d09a794c8e491bb838145b902ee835"
+      "bytes": 1492,
+      "hash": "7f4baf7fe04f4ea0de1ed7df4cc3409b23bb5eff019992395ade4193db922d7f"
     },
     "ZH-TW-外部-HUD-亮度(0).md": {
-      "bytes": 1207,
-      "hash": "1e5223528240d682e6167b1bf16e27630a66db847f23e19bb3ed6c62344d1178"
+      "bytes": 1628,
+      "hash": "0318b30e5c3f9e90e8e149789c56ba6d49963e11e638cb9c995178688ca5115e"
     },
     "ZH-TW-外部-HUD-映象模式(0).md": {
-      "bytes": 1138,
-      "hash": "6701b99a47dc0c4bcc47ef363033dd0908c3301fad47f774ef93425da8b36f02"
+      "bytes": 1468,
+      "hash": "2a6974dc91dff4c79c567b6b0e04e3026361bcc4a2e7266a708125ff445a1b33"
     },
     "ZH-TW-外部-HUD-畫面模式(0).md": {
       "bytes": 2988,
@@ -2050,16 +2050,16 @@
       "hash": "10eb84036802f7586a93824d478d5ebcc2f45efa5afe086134c121845d70c546"
     },
     "ZH-TW-外部-HUD-雷達來源顏色(0).md": {
-      "bytes": 1289,
-      "hash": "cd278ea512f54d08c16cd71128e72272afd50493879c95e4c3d8f3a915fdb84c"
+      "bytes": 1723,
+      "hash": "3412b14a042b4a01376440d007c46b62a4259f73701fcfaf6e2ab05cdb4bc54b"
     },
     "ZH-TW-外部-HUD-雷達資訊(4).md": {
-      "bytes": 1271,
-      "hash": "417f1678ee2029f779fbff3603ce6cb846c54d7104352a16bd4f2f7a4ceafd06"
+      "bytes": 1751,
+      "hash": "2274c2c4243ff3856b0e2c1818f9853e440b275f4f9aca250ea61129eb614e29"
     },
     "ZH-TW-外部-HUD-雷達顯示選項(0).md": {
-      "bytes": 1253,
-      "hash": "97e045feeb0cc75ff2f8bad5c32e589354781a6b57317735a9f0f7a5125f4f74"
+      "bytes": 1658,
+      "hash": "77d1405e40cc78ea0785a1cc732bf296c71071272065f095278201b5feedda9b"
     },
     "ZH-TW-外部-HUD-顯示(0).md": {
       "bytes": 2106,
@@ -2070,80 +2070,80 @@
       "hash": "d9b310564a65b9e14312213741994f50b7ae48f2c15bde9f3fb79305a3a82f5c"
     },
     "ZH-TW-導航減速效率-0.01m-s^2x(120).md": {
-      "bytes": 1499,
-      "hash": "a1e54eaaf50191f07d1410ec90f7e8a717286930f1c3fcc827a927506dd19c85"
+      "bytes": 2173,
+      "hash": "8835a61bf2719430a41904b62c9b723bfdb5c090ae9426d8b74b7dabb4bda694"
     },
     "ZH-TW-導航減速模式-(2).md": {
-      "bytes": 1571,
-      "hash": "1f6f1be802c45497afb5226cd4439f7ffbb3e73a4534de79a4b333671b990882"
+      "bytes": 2655,
+      "hash": "d20ce9f0fac6ba73c96196115ec64f09e3d3cb7b5f15206a53b5544583e26d75"
     },
     "ZH-TW-導航減速結束點-(6秒).md": {
-      "bytes": 1288,
-      "hash": "dedca88cf23e0eb8416fac3b59033deaea94999349cc4aa5c23bf1783a722b97"
+      "bytes": 2031,
+      "hash": "ed6421f5a054060b050b1483a8471bee4314b493b264467b6f54df1da67a8824"
     },
     "ZH-TW-導航限速比例-(105).md": {
-      "bytes": 1349,
-      "hash": "2e0d420d84ceac87c74f4ef78e2d3571d2c449d2919148bae95ec0cd5034b64e"
+      "bytes": 2053,
+      "hash": "a4e2a31e663c4655796930bbadfd7cbb203870dfab9fd8048c5460ef8999da5b"
     },
     "ZH-TW-巡航按鈕模式(0).md": {
-      "bytes": 1235,
-      "hash": "1b5c0acac0450b8128a0bff4e3d5c1ff888d1df0312a9dafcccca4e953ba81c3"
+      "bytes": 2106,
+      "hash": "32a7c4a6593cf14b89bac2d2bf83e792b6758a6c9488c3a58cd0972fe955c08f"
     },
     "ZH-TW-巡航按鈕連發1(8).md": {
-      "bytes": 1235,
-      "hash": "9e014612f334f9e670851419b4117f6e14c39af0b9a78b1dbffc28a61c85755b"
+      "bytes": 2190,
+      "hash": "d146898a585389602a4b66a40597e247c3fb4049a3136635d478d79b6bed2b56"
     },
     "ZH-TW-巡航按鈕連發2(30).md": {
-      "bytes": 1240,
-      "hash": "a9f1b650cd5e11086d76078d38dcfd9272245a1bce6427fe13d9fbb304840760"
+      "bytes": 2201,
+      "hash": "18fc684e7b46b332ce9e8c57da1e88f439c1e2f64d5830bceb00487e917f0c1b"
     },
     "ZH-TW-巡航按鈕連發3(1).md": {
-      "bytes": 1231,
-      "hash": "400a8d2bb168ae97a984af39d35afafe225653620b97cc2a83f3e0c31ed12d56"
+      "bytes": 2174,
+      "hash": "dca7159b800b073485856133e1fb16b9b5bf3804f8ad86a88a6250365a5c5ab2"
     },
     "ZH-TW-巡航按鍵長按延遲(40).md": {
-      "bytes": 1272,
-      "hash": "61c2bcea949baf2654d2206b370f69f56c0a88efccd8a3801ac473643ea11ecf"
+      "bytes": 2016,
+      "hash": "e25073c548bf178458f1d282215919fc65144ec7ce4df7ec70aa70330b2d3311"
     },
     "ZH-TW-巡航滑行餘量.md": {
       "bytes": 3043,
       "hash": "b4d1afc0e8f363f44e96e608f3cea7e36b498d6a2437751f524c86fc290ebf36"
     },
     "ZH-TW-巡航節能控制(2km-h).md": {
-      "bytes": 1254,
-      "hash": "35943260b9df6e03b9a0356b003ab57e1415a48d03c039a147695965d5bb1ca8"
+      "bytes": 1923,
+      "hash": "55d7e6896c4b8bc567fc8b7fe0d124b5c1a41fef7fec1169ce6bb593ad1f6021"
     },
     "ZH-TW-巡航速度1(30).md": {
-      "bytes": 1236,
-      "hash": "881aff19e130d0b6c3fd354032c38d6d548d28fcdc03d0664ab8bebccc2f789c"
+      "bytes": 1857,
+      "hash": "10345088de08b5de598b6a4d22dce43e72761687024069b7da1bd934797a1041"
     },
     "ZH-TW-巡航速度2(50).md": {
-      "bytes": 1201,
-      "hash": "e05539d905d288fa99ed3eb3c4312b5c28940aa5bd43df69bba357fc875a4934"
+      "bytes": 1825,
+      "hash": "7be88de7224e5b3a74d3768a4206d9b6730747d1a7526cdc359102a7138b087b"
     },
     "ZH-TW-巡航速度3(80).md": {
-      "bytes": 1201,
-      "hash": "c29f74fbccd2d997066db11b3f898b5ee54d42acf1b3ce59e91ad20f4e4db3cd"
+      "bytes": 1825,
+      "hash": "cba0d15ab1bb1b43563e71bbe51da3c6ef93d409e7aa5045a0efdaee3f2627cb"
     },
     "ZH-TW-巡航速度4(110).md": {
-      "bytes": 1203,
-      "hash": "773685ee4aeb250590425522b81d06849db0ad170b1f153afc629685efdf07b3"
+      "bytes": 1827,
+      "hash": "a630e1fc22c8e934c476c190acda8ff9bf6be5bfc4c0228232fae3c50ab83a45"
     },
     "ZH-TW-巡航速度5(130).md": {
-      "bytes": 1203,
-      "hash": "78014d170f55012df7ab86f5969b147df7e868affdfba59924d5e25c6b70d069"
+      "bytes": 1827,
+      "hash": "1f9e2d10143d565399f659fab05d7af8fdabb456314658ecb07b393c4680be8f"
     },
     "ZH-TW-巡航速度單位基礎(10).md": {
-      "bytes": 1289,
-      "hash": "2e27a1128edf70eeed31094f0e4c5b7b19750387f560f9e8726e950e5c26b29c"
+      "bytes": 2063,
+      "hash": "931a63bba7d6f06e10e1a8dd08fb850bec5ac91aa7a7c9b4b8d91ddafd643621"
     },
     "ZH-TW-巡航速度單位擴充套件(10).md": {
-      "bytes": 1264,
-      "hash": "af87a69a99bd13c1568d0d4f2c9c5d691ecea1ef0ec40795a9ddfafb520143fe"
+      "bytes": 2122,
+      "hash": "13be34fe616aacc4c91850b24d3629f8a1a082ccc16e2a61ecc59b96ebb14471"
     },
     "ZH-TW-巡航開啟距離(0cm).md": {
-      "bytes": 1207,
-      "hash": "deb65c6968b93e6ecd56b8151227f8514c549ee045b746f9a96508735a5a8467"
+      "bytes": 1649,
+      "hash": "df974f131ef031a8a74add92c21fc062d5a1d66bc2b0d06872524b06f88cc6f2"
     },
     "ZH-TW-彎道自動減速下限-(30).md": {
       "bytes": 2118,
@@ -2166,16 +2166,16 @@
       "hash": "d3719e4ca9ab140d0c61589dfb6be2375ad7ac272be3c4cbffb61ee02325e56e"
     },
     "ZH-TW-換擋撥片模式(0).md": {
-      "bytes": 1210,
-      "hash": "f82ddc1c8aa3b07490d49c1203c50f6934a4920282c80333951d3d4ddf7a8728"
+      "bytes": 1819,
+      "hash": "3032ba8db1bda1e93e9becfa5a580318fa499fb0f4bd037a34e257f39a99725f"
     },
     "ZH-TW-攝影機YAW校正(0).md": {
-      "bytes": 1186,
-      "hash": "d18a25520d5968746582d2999dcad244d861e8329f821a1cc1ebe4aaffa2870f"
+      "bytes": 1605,
+      "hash": "b6f0b83b762990fb3746473ed681551f7310e8746b9a1e1a981a8746fda74967"
     },
     "ZH-TW-最大角度幀數-(89).md": {
-      "bytes": 1122,
-      "hash": "bce47bbbd55c3799286b4a73445565620871fd6912df4bce29b5901f12941151"
+      "bytes": 1878,
+      "hash": "8c78f54906ba7ea9cfa9e9144c5c925badabf6e470451b18c11a93ff8f1e3a24"
     },
     "ZH-TW-模型意圖轉向燈(試驗).md": {
       "bytes": 3216,
@@ -2186,64 +2186,64 @@
       "hash": "717463b0b6daccd1550c25289475d6049298228a2a5b86e0f5dd57a22993e0c9"
     },
     "ZH-TW-模型車速應用比例.md": {
-      "bytes": 1245,
-      "hash": "66f6e4aae8bebdf56bae39cc469b7d67b3eaa1f3fc3acbd9be5285e4b7c6342e"
+      "bytes": 2231,
+      "hash": "dc45b155ff90b132b1fef090fb1981734d4cf039b3f5f9b144420b48dc415f27"
     },
     "ZH-TW-橫向MPC加速代價(120).md": {
-      "bytes": 1233,
-      "hash": "54c52e19281112f01d946ec807731f3371614a58ef7fc873af78270ff8d7f98a"
+      "bytes": 2053,
+      "hash": "6aff036cb1954238e737c94f9b2de4e8445833211af7f65fae67da3e96782504"
     },
     "ZH-TW-橫向MPC衝擊代價(4).md": {
-      "bytes": 1202,
-      "hash": "3ba8904815b010cdd18664cea93cd848787c4846e1918b250de661df15ae3e23"
+      "bytes": 1998,
+      "hash": "054bb4b20499d98340fbe0c0634c035a449c4d961c3af73d001b9450244ce72b"
     },
     "ZH-TW-橫向MPC路徑代價(200).md": {
-      "bytes": 1209,
-      "hash": "9b79e587b97259d1ae4adc13e77922f355e826e22cc9c23ca0e5c78a4dd0f2b8"
+      "bytes": 2008,
+      "hash": "c60de158b267919bc2131039b6d406fbe00c9f8039dbaa1f323f99bb5ed21603"
     },
     "ZH-TW-橫向MPC輸入偏移(4).md": {
-      "bytes": 1223,
-      "hash": "6d8aafd49373d3decd4964c5e5e0489e082e180c20da2dfad504c67df8492d92"
+      "bytes": 2008,
+      "hash": "5d72082daedcb843e5d911f090022c490b1add1103a4f70ff99368a709fe02ee"
     },
     "ZH-TW-橫向MPC轉向速率代價(7).md": {
-      "bytes": 1283,
-      "hash": "e7656364930848fb96c96984bf9b8335eab873fdf44d405953f1422575e35562"
+      "bytes": 2079,
+      "hash": "3a94a1093f69453c212a2bacf0389b8ee6e6a1f741eaafa2f3eea4f89e0a88ee"
     },
     "ZH-TW-橫向MPC運動代價(7).md": {
-      "bytes": 1179,
-      "hash": "cb118a52a4cd916a0f2cf4372345e360334226d5337fd9a12521204dcacceeed"
+      "bytes": 1939,
+      "hash": "f6a7c1232f3f06d0b8f6dd9245e432ea3e52849bbcef8ea9cf9ed4434118147e"
     },
     "ZH-TW-減速中止-提前警告修正-實驗.md": {
-      "bytes": 2132,
-      "hash": "abc462d7488c42f598efdb2faa6077cfe25cbbed7f74caa60b1a2e5b729888a8"
+      "bytes": 2617,
+      "hash": "58cde9a1509c937007f1b34487a59107ab8ccef74eb9122e59fd28a3fd571de8"
     },
     "ZH-TW-減速中止-未識別型別的測速攝影機-實驗.md": {
-      "bytes": 1862,
-      "hash": "dc8a84fab3258d96b34cba94f4928f4fb21e64bee20a38bb9c76e12f252eb4ba"
+      "bytes": 2335,
+      "hash": "f27a492f652246a5179025574920a1a323952f0710ff7a2a7fb2b9e9b20e5f5b"
     },
     "ZH-TW-減速中止-減速帶.md": {
-      "bytes": 1566,
-      "hash": "9eb094db90424126e537bfc43e6010628d894d9b4b16eb936af0ffb6826c2d4e"
+      "bytes": 2006,
+      "hash": "c8771c0e930ecf578fcd517f0f78cc783f610089b80ce1061a098d78a150ee63"
     },
     "ZH-TW-減速中止-移動測速區間.md": {
-      "bytes": 1553,
-      "hash": "645c447ad0848ea2ee4cf8b06b58c3524ac1578c01854b1ac4d4de4499eb83c5"
+      "bytes": 1951,
+      "hash": "c8a07b73a283ef98a355cb1db22f0be188c4e1f577dc4e0ecf51b162f7816687"
     },
     "ZH-TW-減速中止-箱式攝影機.md": {
-      "bytes": 1387,
-      "hash": "8a81852bdb712fc910b02d5b78bbce414a401efd612c2184d032219986bb315c"
+      "bytes": 1809,
+      "hash": "0426e46bed40253a595bd2ed207a078d69a01a297eaf368b5832d727e67af476"
     },
     "ZH-TW-減速帶減速提前解除距離(200釐米).md": {
       "bytes": 2586,
       "hash": "df30677042c0835e5ae0afeb87892422c3acad2453aeebda7ee9107f56c93090"
     },
     "ZH-TW-減速帶結束點-(1秒).md": {
-      "bytes": 1258,
-      "hash": "ecfff3f1a6cb52ba281950f5ba3e3f6dd874940b49040110b3c4b1526e669c9c"
+      "bytes": 1923,
+      "hash": "674989e2944e38c778653a05b6f62294bc370557020fd9fea3a0c8e635ede712"
     },
     "ZH-TW-減速帶速度-(35km-h).md": {
-      "bytes": 1279,
-      "hash": "497ed0647b36b21787e36edd02050f2b61806ee44c47e99a460309da5f8f13db"
+      "bytes": 1890,
+      "hash": "d98e352b4e925d86f9cb7756844360a5f31ec68de5e85e75ef5a84da6042c86a"
     },
     "ZH-TW-減速時車距餘量-(0-).md": {
       "bytes": 2157,
@@ -2270,12 +2270,12 @@
       "hash": "2dd8296fea2bc7be9eb18d7931be9f335e7a77fb0a11b0c77dfe89eacd52f493"
     },
     "ZH-TW-現代-僅配備-LDWS-的車輛-(0).md": {
-      "bytes": 1104,
-      "hash": "98eda28560aaf7a61f1392709ebe97d083d6bee4f270ccd00d090df1cd338a8d"
+      "bytes": 1840,
+      "hash": "a86052230da99541edab4f7ab0e1e266c82b108819bcdacdb02513fb2187642a"
     },
     "ZH-TW-現代-攝影機-SCC-(0).md": {
-      "bytes": 2052,
-      "hash": "b54120992782e93b7f81b930bbe16c62a7f9abbc03ab666f62623df86971c370"
+      "bytes": 3917,
+      "hash": "7bc8d8c62d3b937a99e38ef30a25b03951b3159870ca13b2394b6ca9facec34a"
     },
     "ZH-TW-盲區保持時間.md": {
       "bytes": 1621,
@@ -2290,8 +2290,8 @@
       "hash": "37eed323e5b57a6b75093dc0544c8ff4c5b6ee55d9642509eef461f26119a34a"
     },
     "ZH-TW-紅綠燈檢測模式.md": {
-      "bytes": 1255,
-      "hash": "531af3992cc99088922bc1f3f1c28217d062570700046997d12acb8c6f4fabde"
+      "bytes": 2017,
+      "hash": "f59b95a564948e77230ea57c64a22aaaf3b6d0a0bf924b681a288eed5c701b46"
     },
     "ZH-TW-縱向-Kf(100)x0.01.md": {
       "bytes": 2086,
@@ -2306,124 +2306,124 @@
       "hash": "8198809bff9dc4db28123e68bc7476c7cddfc7ef909830fc711541721887dd85"
     },
     "ZH-TW-縱向執行器延遲(20)x0.01.md": {
-      "bytes": 1266,
-      "hash": "788538515a72ccfcc887f3aed8d5a51ac17ef75c892971be6bdc8131d5cb2912"
+      "bytes": 2177,
+      "hash": "4745d830179d70c3157d50683148cdf81f3e6a7ec87a8afd495163e499e2460b"
     },
     "ZH-TW-聲音語言.md": {
-      "bytes": 1143,
-      "hash": "1670fb78e83470b69c56aa033e86b70a2086807360bb3f5763ba7475687619bf"
+      "bytes": 1484,
+      "hash": "3f3171fc949b8ff868372e71d23c57bfa5b821a6952574ff237dbb5f2eb0752b"
     },
     "ZH-TW-胡蘿蔔巡航-ATC-減速度(-1).md": {
-      "bytes": 1277,
-      "hash": "e628c472a2762913f70b7cffa6b178366206579f9d8bf06cdbef7d1f660e19c7"
+      "bytes": 2151,
+      "hash": "80f3247d617568d500688c9f0087f2990454666b3eed10e693af81a573e2d35b"
     },
     "ZH-TW-胡蘿蔔巡航減速度(-1).md": {
-      "bytes": 1238,
-      "hash": "92cd34e10f806090295f3e5eb8e1c38b99788ac3cca563f07543620d295722d5"
+      "bytes": 2116,
+      "hash": "22342bec86a406b7d49805de2214518943b505b1dae1f535427dd2670aeb289b"
     },
     "ZH-TW-自動加速至-(100).md": {
-      "bytes": 1346,
-      "hash": "00c5bd15a80141c305fce35030d290a97504da87b9a24de98cfa33bedc680e11"
+      "bytes": 2031,
+      "hash": "6eeb768f1971cfab8817a90d780f8098e78e3078dcd9297cf3b6c91c3f410597"
     },
     "ZH-TW-自動巡航-踩油門起步速度.md": {
-      "bytes": 1282,
-      "hash": "7c737b0e2103fd1ae0352ac4cdeda9561184bde1144ae30314958c0a2c9a9dd1"
+      "bytes": 1747,
+      "hash": "3c5a90df7ceae29a39a7ee7c7b7fe0545997e1710ab6b1ded158415a1153200d"
     },
     "ZH-TW-自動巡航-鬆開油門取消速度.md": {
-      "bytes": 1325,
-      "hash": "13b4b1036bf987054b398d28837f12c3625ac05b1d4752b76cb9aeb6bc5e755c"
+      "bytes": 1773,
+      "hash": "e8babba986d136933e7de0dd1192d6b3ab7a1d3b71bc5d40a40654cb5302225b"
     },
     "ZH-TW-自動巡航控制-(僅限現代-起亞).md": {
-      "bytes": 1268,
-      "hash": "9ed46918f461164c557631d9eab8d9103daa48d2fcee1dece12877d242d160cc"
+      "bytes": 2641,
+      "hash": "3295e2ea88ccba44e679da746428fb24003acf4be3170ccf9a0d573c50e777d0"
     },
     "ZH-TW-自動更新巡航速度.md": {
-      "bytes": 1219,
-      "hash": "063d6ba4de711905d769c09845c187de9b7c2ef6f89eac84e99e3444bcae409a"
+      "bytes": 1686,
+      "hash": "25a055050066211f80c2e88e0269ba9ca2b8ca0f13ced4b91c8cc204e9cc4e8a"
     },
     "ZH-TW-自動轉向燈.md": {
       "bytes": 3436,
       "hash": "76585be012230bb8d8719fbf7e01b6fbdd36ddfdd4b1cdafc5b7ba3de37f99aa"
     },
     "ZH-TW-自動道路限速調整-(50).md": {
-      "bytes": 1293,
-      "hash": "0a3587bfe86f85eb0860e0b35096213b78400dd751c8134dbb2cf0fce71984e7"
+      "bytes": 2072,
+      "hash": "afe9e740f4ace14faaf84fce9e6b17e5868c4fc30e3225e221a379f194e080ed"
     },
     "ZH-TW-自定義最大轉向力矩(0).md": {
-      "bytes": 1253,
-      "hash": "20cb30f9b764ba090fcdf806da95fae16e2bdfcd6bb43643a2027560a7edce47"
+      "bytes": 2081,
+      "hash": "1aa4ea6bf8ee5b0e2175b64a04a0647ce770052b6967f3179f09b32d85102161"
     },
     "ZH-TW-自定義轉向力矩(0).md": {
-      "bytes": 1252,
-      "hash": "75bb6e231ced5be4f5ce6fdfc30a6169b9cb555c04411fd8a870986002b5e316"
+      "bytes": 2024,
+      "hash": "ec974674b12f01ee87c2fe14e07bbc263caf18796cf186b0fde0e519966d062c"
     },
     "ZH-TW-自定義轉向增大斜率(0).md": {
-      "bytes": 1276,
-      "hash": "fd6a8e482a1a333b0b4eaec0807de8e1a61cc80188f8fc58d4b2818b90e1e44d"
+      "bytes": 2095,
+      "hash": "c4346c2c9bde85948c4346a2286ca812a22c0a4512fb915e8ab878de6252b7af"
     },
     "ZH-TW-自定義轉向比x0.1(0).md": {
-      "bytes": 1135,
-      "hash": "e9978b0dfeea4f828123ce89f23ded0bdba193fca1572e20001c741eb82535c9"
+      "bytes": 2298,
+      "hash": "441049377e2a8a8f78ecd5ce74bedacf103074174a3bbf4496f73b28f5561625"
     },
     "ZH-TW-自定義轉向比率x0.01(100).md": {
-      "bytes": 1231,
-      "hash": "b24c03e7b422cb600d22aa752eed1db32fcd5192aaff542a0690017d2d67f7ec"
+      "bytes": 2273,
+      "hash": "0f18b953ffc4bcc9e9edd13cdc18c2ce360745e56c6087e738fd787ce7e37b6b"
     },
     "ZH-TW-自定義轉向減小斜率(0).md": {
-      "bytes": 1294,
-      "hash": "ac83de349006948a3aca5dd558592f9d6915c251023ae67b856ad8500d974b9c"
+      "bytes": 2113,
+      "hash": "aabf036496dd99052377580bfbec8711a525ecb6ca7c341923a1545bcbef7a4c"
     },
     "ZH-TW-行車中螢幕亮度(100-).md": {
-      "bytes": 1296,
-      "hash": "477779716b6b749f0e26249d184a4d3ed8960455cf88cf2b65a44dc62e8a9161"
+      "bytes": 1677,
+      "hash": "cb32bff408bc8a6d5fd8e59cf2708f750d3964a7804217ccf37a1eab07f50119"
     },
     "ZH-TW-行車畫面佈局(C4).md": {
       "bytes": 2654,
       "hash": "1aed6fded8ffc64fc17bdbc367e9662388f3e9aad8526b3025e555de77b0f608"
     },
     "ZH-TW-解除最小轉向速度限制.md": {
-      "bytes": 1208,
-      "hash": "9fc19198d9ad5791132e44b0ee573a81f0e4e912b90010dbb072db04c532000e"
+      "bytes": 1949,
+      "hash": "0951edb6ee3f17b77ab44ed408234cabc3fe10c199c160982c097aaf2b7e90ba"
     },
     "ZH-TW-訊號輔助模式(試驗).md": {
-      "bytes": 1896,
-      "hash": "99fd82c7ec8f14efa5315b7147ba605eb291df398f27bfd42f3b0b09677418d1"
+      "bytes": 2211,
+      "hash": "0bf09a8b593b344ae8ac3ba89e511eb9087665d838a7e2bfb89636b6ede02968"
     },
     "ZH-TW-記錄路面攝影機.md": {
-      "bytes": 1193,
-      "hash": "6d10b7d9ce77298ba3428ca204d79171f6acccf91daddf79e947943c40464b6f"
+      "bytes": 1839,
+      "hash": "02586817fe6a2af5a505440059249d639828e078cf304cd3d39c7f8fce93371a"
     },
     "ZH-TW-變道使用轉向力矩.md": {
-      "bytes": 1278,
-      "hash": "b3560cb5abd032fc25a0d1ee0dbeb72239322542bde360ab07441a2e380a0a80"
+      "bytes": 2002,
+      "hash": "d63ef07531e916782aea997f0ca1863c62d2958bfbf6c2c5fb8a443256e0b9f8"
     },
     "ZH-TW-變道延遲-x0.1s(0).md": {
-      "bytes": 1200,
-      "hash": "317f3bce99ff6a92785670b9de6a5ce01b9bacd31c9608b7c6186fbc1c2b5fd0"
+      "bytes": 1966,
+      "hash": "11201f06d8222224ab0d766494236729e858e71c21ba2c0126e18b7ca8df2561"
     },
     "ZH-TW-變道盲點監測-(BSD).md": {
-      "bytes": 1223,
-      "hash": "8936ca366cc6224dce908919db7365f261cc849759955c0685a28e43378892b3"
+      "bytes": 1965,
+      "hash": "9fb8f16f6bf858b600f3d71e36d657455f9f9fd1b35391c81f48e755c46d0b5f"
     },
     "ZH-TW-變道自定義轉向增大斜率(0).md": {
-      "bytes": 1312,
-      "hash": "2c02c96074cd4b7d7c91f4379db07c7b02fffe87183440a93dd5480f0ba3a3bf"
+      "bytes": 2129,
+      "hash": "08f0143a0606ab09117f7d7a7fb864e1215d8d76e3c40cbef81e2f23a317656e"
     },
     "ZH-TW-變道自定義轉向減小斜率(0).md": {
-      "bytes": 1330,
-      "hash": "e297bf605b82e54313a1da201c3fc8c2c9df2848b57f88f44e61cb9e059c07c7"
+      "bytes": 2149,
+      "hash": "5f33edc8d3b2b9a2658cc5b03905dd976f9b0f7a2d77dc48e7bd409d8a573e11"
     },
     "ZH-TW-變道車道判斷.md": {
-      "bytes": 1231,
-      "hash": "adced1cc90a49c6e14425ee68d9abd9448078c509802229215be5011ba962135"
+      "bytes": 2020,
+      "hash": "04e1c1390a73b84c8c3b8e015568639c70876e898297c3c5f65b8a98d55675ab"
     },
     "ZH-TW-變道響應-(100-).md": {
       "bytes": 2421,
       "hash": "605a9f843602be3b5dcb047aa9252876df696976de572244bbfff0aed6ccda42"
     },
     "ZH-TW-超速照相觸感反饋-(0).md": {
-      "bytes": 1317,
-      "hash": "8a825576a23f22597154da7bd22059ea4b8b4f37de3bffba97598c4b388bb03d"
+      "bytes": 2005,
+      "hash": "5a8c2357528cc356bd321500b5e89f590b57743be19cbfe1121c763e3e4defd0"
     },
     "ZH-TW-跟車時間(1)-TimeFollow1x0.01s(110).md": {
       "bytes": 1829,
@@ -2462,20 +2462,20 @@
       "hash": "32abc4bc74fd8547808afb9c9d37eec337d6097f3a197f573a1b91732eb8ab54"
     },
     "ZH-TW-車道偏移左右修正(0).md": {
-      "bytes": 1180,
-      "hash": "cb3d97cc88a2abbff0141df3f609458cb59f5093209ad0ed9ddaf1689ef9b9a4"
+      "bytes": 1604,
+      "hash": "1644a9221f97be3a486f7934db178b7c9a34e3b8fe523d360947c180ef4e95d0"
     },
     "ZH-TW-車道線-彎道速度-(0).md": {
-      "bytes": 1285,
-      "hash": "20067bdbab412a340da09a613e9e61c753a716b53973ad436a60ecaccd548ba4"
+      "bytes": 2044,
+      "hash": "0ae1a91ab8c5ab3f63b0cfa2a7f27c266b21f2fc394fc482822397e7f63a0faf"
     },
     "ZH-TW-車道線-車道偏移調整-(0)cm.md": {
-      "bytes": 1234,
-      "hash": "a841846a02c20c3b8c9ff936fe1533cae884f0e830bb40667c458423f2b710d9"
+      "bytes": 1987,
+      "hash": "89f14b86e528cd75ae08fe48ff52baecafc8aa0710a5db3e05e7c64853586f11"
     },
     "ZH-TW-車道線-速度-(0).md": {
-      "bytes": 1393,
-      "hash": "e4d9d576faa44e120a7793359e64594eabdb849e511e68c3b4eb1a2717006296"
+      "bytes": 2102,
+      "hash": "f91da12f0bf63525100ae898db445fcc7eed5660f17faae3cdac85d0e10cb22f"
     },
     "ZH-TW-車道置信度閾值.md": {
       "bytes": 1549,
@@ -2486,156 +2486,156 @@
       "hash": "a9031439d0112663994b19baf403bb237fd9d7858d29c59eff55ddb3433bf940"
     },
     "ZH-TW-輪胎軌跡.md": {
-      "bytes": 1227,
-      "hash": "06fb5fb66489c9d45f5bb66abf8b960732d193c4a154e7a0bbc21901557d09c8"
+      "bytes": 1585,
+      "hash": "041088b6302534f1d86ddc41f4d96a931b6ec94270fd96318729dd3c02e1380c"
     },
     "ZH-TW-轉向力矩-Kd-0.01(0).md": {
-      "bytes": 1211,
-      "hash": "3dc03edc72b66a401d531cde1ca54571bebea3cb75f18a610a6aa87d5cf34879"
+      "bytes": 1997,
+      "hash": "f1b0caa50f5b997d2d59f998281f908504bbcf29f036e6519d438c3ec841ea07"
     },
     "ZH-TW-轉向力矩-Kf-0.001(100).md": {
-      "bytes": 1219,
-      "hash": "a913cb1836057a143bf5ca9834c2e97456f4f77407d4fd53f924d787df36539e"
+      "bytes": 2005,
+      "hash": "337a37dc9772f1caf25cfc366e170ba3aba3f11915fcce1702eeaa17457d2dcd"
     },
     "ZH-TW-轉向力矩-Ki-0.01(10).md": {
-      "bytes": 1229,
-      "hash": "1b05266ea1f05409172ae083972695b053ee965b5378c4fa5d7af4237c3d8bf4"
+      "bytes": 2009,
+      "hash": "7515022dd84dc08283f91a035d3cf10d61dc5de21709c2bdd8dc13e348e39f14"
     },
     "ZH-TW-轉向力矩-Kp-0.01(100).md": {
-      "bytes": 1242,
-      "hash": "17926f9c084314f8d62efe6014583f02a44c25f3c0c8b514b1f2107950cb8b63"
+      "bytes": 2022,
+      "hash": "429c7277ceb4823f0bd93e6f4111337622edac32388882b9ccc11fcd035eb901"
     },
     "ZH-TW-轉向力矩加速係數-0.001(2500).md": {
-      "bytes": 1390,
-      "hash": "1842279bed407908c26105d6b6e1de0705f70bd73760839b9a2f6e0a3f33f506"
+      "bytes": 2251,
+      "hash": "ed0a006f054a5c0e927883d44f28873e2705550b639bd0185648f5097bad2b33"
     },
     "ZH-TW-轉向力矩摩擦係數-0.001(100).md": {
-      "bytes": 1298,
-      "hash": "6de2c8b04b853122a3748dd907cd11e604665cc60f8c1131e6d14baf10d4f404"
+      "bytes": 2084,
+      "hash": "eb67fb29155cde8932752c305e9f50cf2ab29874d03fc45205f9f62b645c62e0"
     },
     "ZH-TW-轉向執行器延遲(30).md": {
-      "bytes": 1325,
-      "hash": "71a3df4630a83071431be14a87db3be4f774eaf7a11fd5f6e20d68651a2dc7b7"
+      "bytes": 2045,
+      "hash": "5dab56b0632ea9c3b800208a6698c84fbfa3854335e9681982886e783eca085b"
     },
     "ZH-TW-轉向平滑時間(30).md": {
-      "bytes": 1146,
-      "hash": "67778133ece549b750dd1b5112fddd3396f009dad78e9537d19a8e401210913d"
+      "bytes": 1920,
+      "hash": "6198b0d8f6693edff8f8caa16d8ccf2ea51f187c41a944c3816f245c7943ee69"
     },
     "ZH-TW-轉向燈撥杆區分轉彎-變道-(km-h,-0=關).md": {
-      "bytes": 1641,
-      "hash": "e45ff2261562da13ce327863662c8ca79e57fa118c8ca464d694d2124b81c14a"
+      "bytes": 2199,
+      "hash": "7608d3c8e9cb7eb389390743871337850a43a5cf8723325a4a9d5d833d6ae1b0"
     },
     "ZH-TW-轉向速度控制模式.md": {
-      "bytes": 1276,
-      "hash": "b4dc662334c63bf71deebc863c35e38a33bb4c111df000870f31aa64a0619540"
+      "bytes": 1933,
+      "hash": "ae5e0e1aa97724ff542b7a173976b40a4c78c828a19e5a2a8889b1915f802737"
     },
     "ZH-TW-速度-TF-倍率.md": {
       "bytes": 2139,
       "hash": "8440db9c455cd5dce947e4276c9af07630757e385a85967f2af9aeada8501de3"
     },
     "ZH-TW-道路限速偏移-(-1).md": {
-      "bytes": 1305,
-      "hash": "487c435f8394190676746f55b72a1f84df7ae4c8243af193e63e62baf2bf5a87"
+      "bytes": 2040,
+      "hash": "e82745a1cb22b18dc046289e56b26efafe91e11cb39601e31bdc90158ebde992"
     },
     "ZH-TW-遮蔽安全帶感應.md": {
-      "bytes": 1095,
-      "hash": "4f7ac3abc31a1f671735087aa6b364718bc6f9655968e495c43a513c208a10be"
+      "bytes": 1822,
+      "hash": "cad14d167692f444fada35a7555e4b726d8a8d4575dc4801d5ffa4382b75a74c"
     },
     "ZH-TW-遮蔽車門感應.md": {
-      "bytes": 1050,
-      "hash": "9b77a180f5d7cb32f137bede53fed465bfccd3cb3b6be1679778d587e7f6ab20"
+      "bytes": 1759,
+      "hash": "d7e24cf72149e408c7709fcc4d22e292f025dd31b59a1e22ba6cc2a23c2aece7"
     },
     "ZH-TW-重心位置比例.md": {
       "bytes": 1575,
       "hash": "5144c613676564f929229fcb5e30ba93096f023a47206b0abf5849c6ebf50a56"
     },
     "ZH-TW-開啟熱點-(0).md": {
-      "bytes": 1114,
-      "hash": "24b65ab81a42fafb3012eacd7ff036237b6941ae72a15b8ee19e175dea96505a"
+      "bytes": 1751,
+      "hash": "688e2c42d115a2db7d6bb51817729814514fcf30efd662beeadd1f9d066c41e6"
     },
     "ZH-TW-開啟角雷達-(0).md": {
-      "bytes": 1173,
-      "hash": "0fa47c3cb49711e97214e150cc652c128e80b1b62b9298ecc0b4fcfaccd64ea0"
+      "bytes": 1995,
+      "hash": "7d4b363467a00998252910c6af9ecd3d600b6f1b45518ad2fefc3b7c62a4d56e"
     },
     "ZH-TW-開啟軟體選單.md": {
-      "bytes": 1056,
-      "hash": "dd4d34b65f2d7dd1669773f9af595d6786086e73b4ef34e2749049fc4ac71b59"
+      "bytes": 1789,
+      "hash": "642d780ebf806c92ac87bdbece906834388cd79645fe8c298a36a843a80ba9be"
     },
     "ZH-TW-開啟雷達軌跡-(0).md": {
-      "bytes": 1604,
-      "hash": "699450e14259fb04001cf362307c429599c8018ccf6f8cb9a542eb4cebcd10ef"
+      "bytes": 6916,
+      "hash": "8c399bd6a8930af97c37372d25f6228165c37d1a17a83889e61db904ab4c2a27"
     },
     "ZH-TW-關機時間-(分鐘).md": {
-      "bytes": 1273,
-      "hash": "6328eda0759936db60591f18938415cd17843747b7375da6a7a5a3e916fb69e7"
+      "bytes": 1706,
+      "hash": "afdf2a6b3fe01b2d03ac28b047a99501b69afbc790de539e6c010a3bce3f5587"
     },
     "ZH-TW-雷達左右反轉.md": {
       "bytes": 2106,
       "hash": "35abd2ba3e8da2f1646444aba191689742d599dfebed59388a9d940819e4afd2"
     },
     "ZH-TW-音量調節,啟用音量-(10-).md": {
-      "bytes": 1244,
-      "hash": "eb4f85f651f961e5a4bfb6df655acc7876ac63ac46fbfb4e24a7dac501688645"
+      "bytes": 1674,
+      "hash": "923252be05a2344d8056822e8226bbed2da1f3171217bae4a9f688a08f27331b"
     },
     "ZH-TW-音量調節-(100-).md": {
       "bytes": 2249,
       "hash": "a24af0fce90b24a3c89475aef241f940582f053ddaedb5a9d459e0a62903b445"
     },
     "ZH-TW-顯示時間資訊.md": {
-      "bytes": 1119,
-      "hash": "1c3626e004cdf1ea511d858de5742c421712bc5f3dd5069019d6cbe8d1a703ae"
+      "bytes": 1490,
+      "hash": "5a06ce43bbece74c8ddd9c33949712524b6762e636731dc1828f5adc3ed6edaa"
     },
     "ZH-TW-顯示胎壓-(TPMS)-資訊.md": {
-      "bytes": 1119,
-      "hash": "97d85b2db59c609c048a1af5d94d8075f3a94d555494d53400636e4a904160c7"
+      "bytes": 1490,
+      "hash": "57445b359deeae57e2e27a108d5aefa39f88c91e5d18b1efdaaa30d3251c5da8"
     },
     "ZH-TW-顯示裝置資訊.md": {
-      "bytes": 1094,
-      "hash": "15b5f1b555d612e5371703f31fe7bfac59f29749381954954e515aaf7287d426"
+      "bytes": 1507,
+      "hash": "852cb520286fa98da4097e83341bcf0af1ed685cba1bbe2d2d7034f7c19fb3bf"
     },
     "ZH-TW-顯示路徑模式-無車道-(9).md": {
-      "bytes": 1213,
-      "hash": "a7b63ccbe306862537a6a977adb1ce4a98a0e7856b46aaaca5bf23d5f61af9e4"
+      "bytes": 1724,
+      "hash": "12c1c15d0bac1d1046cf8a06ad7dca778554a6177207ca43a336514844bc34a1"
     },
     "ZH-TW-顯示路徑模式-車道模式-(11).md": {
-      "bytes": 1258,
-      "hash": "4342ca22023dffe401fc39813c62eff62998b50d60c14f884ac6c1cbc1263fcb"
+      "bytes": 1769,
+      "hash": "a9d6aa0e40d3ef3edae58200d0ab887e61d34f9f519303b720ab72db750531e8"
     },
     "ZH-TW-顯示路徑終點.md": {
-      "bytes": 1058,
-      "hash": "0d08de9cae4650f0325a94fb1e2785634e74e6b614a3e9158a06cc1de34c6db4"
+      "bytes": 1411,
+      "hash": "0a1e1118be7e3c8ca1c8a311ca9a8af2a826ee5d8c5104a870a56936e64b9805"
     },
     "ZH-TW-顯示路徑顏色-巡航關閉-(1).md": {
-      "bytes": 1248,
-      "hash": "72d7bdc9b27e3a9aacc6a1147919cdf730289632e8f3d283d5828cb5750db630"
+      "bytes": 1686,
+      "hash": "eeeb9ac0a1ccfe961119fc1b07451deff7ce857281d1ca3c272bbf0d6b0fe6ae"
     },
     "ZH-TW-顯示路徑顏色-無車道-(12).md": {
-      "bytes": 1207,
-      "hash": "4b6789e240c78f9d362f76f9032d4a1c3eddf1158717b5fc4d30183953144ba7"
+      "bytes": 1659,
+      "hash": "29ec3a54ac0ad3ab53f22272c84bd526f2eb4d14bfd87e5181a80895edad2924"
     },
     "ZH-TW-顯示路徑顏色-車道模式-(3).md": {
-      "bytes": 1246,
-      "hash": "6265178ba596309f9db6d81851c8a627ed50805c025da9bad040101a8fac481a"
+      "bytes": 1704,
+      "hash": "b4df56c09fe5a0cb8a3bdd262a670d71f1a3b282561e1946bd4198513ae86c86"
     },
     "ZH-TW-顯示路線資訊.md": {
-      "bytes": 1107,
-      "hash": "a44b04e8dca1e168679cf07896ab167bb9d3525f37678b03f8c1929d3aa16325"
+      "bytes": 1477,
+      "hash": "f428ef42553b1696b675e2c9414caaa7bd57060f641321f110a53a7938ef3793"
     },
     "ZH-TW-顯示車道資訊.md": {
-      "bytes": 1135,
-      "hash": "d19979e246d585ec23994c1ea06548558d89328674ad3b52c70a040a810cb149"
+      "bytes": 1537,
+      "hash": "a5c1cea6c3f5fdff81dce3ee29940c735eb5cc3779868fe27848267a81900e66"
     },
     "ZH-TW-顯示除錯圖表-(0).md": {
-      "bytes": 1217,
-      "hash": "50d9400f4ed2c19f7a05a6d8f9b4a5bafe1e22d9750b976962c34acf5b078e60"
+      "bytes": 1683,
+      "hash": "1d000d762b96ce00006162a9466b733c9101a619f1b8ab424e4d37ce06c11dd5"
     },
     "ZH-TW-顯示除錯資訊.md": {
-      "bytes": 1082,
-      "hash": "2784f547dc1a6b27757f5837669ca066ea2e23b2d3d7082424a3fbc9d5d161b7"
+      "bytes": 1450,
+      "hash": "e9fd42c4e920caeae4d652985f7f853e8f758bd709607af05b2af30087b88b7d"
     },
     "ZH-TW-顯示雷達資訊.md": {
-      "bytes": 1141,
-      "hash": "87d753747799f7e321e28015a3cf897d50603697dcfbd3bfbe804a5fe2e8cc8b"
+      "bytes": 2016,
+      "hash": "25a4d25205ec4216fedc0028691f3867a3a236485b20fdf84ca05646dac61b77"
     },
     "ZH-TW-駕駛員監控模式.md": {
       "bytes": 5052,

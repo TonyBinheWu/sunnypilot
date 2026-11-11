@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN VehicleNaviSectionAvgControl -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+啟用後，進入區間時仍保留既有速限上限。巡航啟用且設定速度較高時，按 + 或輕踩油門可利用較慢行駛累積的時間，將速度解鎖至設定速度。停用則保留既有區間上限。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+不需外部導航也可使用。長按 - 可重新鎖定；離開區間後重設。此實驗性估算取決於入口訊號及已行駛距離，出口測速照相的定點減速仍有效。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END VehicleNaviSectionAvgControl -->
 
 <!-- CARROT:SETTING:END VehicleNaviSectionAvgControl -->

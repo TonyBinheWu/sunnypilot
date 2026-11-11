@@ -28,6 +28,22 @@
 
 <!-- CARROT:MANUAL:BEGIN ClusterHudDebug -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 僅行車時
+- `1` — 持續啟用
+- `2` — 持續啟用＋介面
+- `3` — 持續啟用＋導航
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+僅供診斷，每次調整一項，確認外接 HUD 的影格穩定性及系統負載。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ClusterHudDebug -->
 
 <!-- CARROT:SETTING:END ClusterHudDebug -->

@@ -29,6 +29,28 @@ SET/DECEL 加減速單位 (基礎單位)
 
 <!-- CARROT:MANUAL:BEGIN CruiseSpeedUnitBasic -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+SET／DECEL 增減速度單位（基本單位）。
+
+- **調高：** 增加基本按鍵模式每次調整設定速度的幅度。
+- **調低：** 減少基本調整幅度。
+
+Volkswagen 一般模式下，此增量適用於獨立 +／- 按鈕的短按。SET 選取目前速度，RES 恢復先前設定速度。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+分別確認單次按壓及長按的設定速度變化量與時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END CruiseSpeedUnitBasic -->
 
 <!-- CARROT:SETTING:END CruiseSpeedUnitBasic -->

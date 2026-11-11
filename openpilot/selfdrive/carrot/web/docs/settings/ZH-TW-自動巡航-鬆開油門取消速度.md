@@ -29,6 +29,20 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoGasCancelSpeed -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+放開油門踏板時，低於此速度會取消巡航。
+
+- **調高：** 提高適用的速度或速度門檻。
+- **調低：** 降低速度或門檻。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同起步、油門及前車條件下，每次調整一項，比較巡航啟用時機及設定速度。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END AutoGasCancelSpeed -->
 
 <!-- CARROT:SETTING:END AutoGasCancelSpeed -->

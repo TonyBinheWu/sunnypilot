@@ -28,6 +28,26 @@
 
 <!-- CARROT:MANUAL:BEGIN CruiseMaxVals6 -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+140 km/h 以上的加速度。
+
+- **調高：** 允許此速度範圍使用較大的最大加速度。
+- **調低：** 讓此速度範圍內的加速較溫和。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在適用速度範圍內逐步調整，確認加速至目標速度的表現及乘坐舒適度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/cruise-gap.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END CruiseMaxVals6 -->
 
 <!-- CARROT:SETTING:END CruiseMaxVals6 -->

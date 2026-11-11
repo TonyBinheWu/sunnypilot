@@ -27,6 +27,27 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoTurnMapChange -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** ATC 轉彎控制啟動時，將連接的顯示器切換至地圖模式；該路段結束後恢復道路畫面。
+- **關閉：** ATC 不會傳送畫面切換指令。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> 此輔助功能會在 ATC 啟用期間，切換至已連接的外部導航地圖。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoTurnMapChange -->
 
 <!-- CARROT:SETTING:END AutoTurnMapChange -->

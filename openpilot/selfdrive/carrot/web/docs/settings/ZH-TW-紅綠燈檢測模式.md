@@ -28,6 +28,32 @@
 
 <!-- CARROT:MANUAL:BEGIN TrafficLightDetectMode -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 無
+- `1` — 僅停車時
+- `2` — 走停跟車
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在同一個視野清楚的路口，確認偵測、停車、重新起步時機及停車位置。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 紅綠燈偵測是輔助功能；駕駛仍須確認實際號誌與交通狀況。
+<!-- CARROT:NOTICE:END -->
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END TrafficLightDetectMode -->
 
 <!-- CARROT:SETTING:END TrafficLightDetectMode -->

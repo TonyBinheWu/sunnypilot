@@ -26,6 +26,17 @@
 
 <!-- CARROT:MANUAL:BEGIN SoundLanguageSetting -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選擇語音提示使用的語言。「自動」會跟隨裝置語言。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+停妥後播放提示，分別確認語言、一般音量及啟用／解除音量。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END SoundLanguageSetting -->
 
 <!-- CARROT:SETTING:END SoundLanguageSetting -->

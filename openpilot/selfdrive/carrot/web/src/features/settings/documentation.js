@@ -13,8 +13,8 @@ export function normalizeSettingDocLanguage(value) {
   return DOC_LANGUAGES.has(language) ? language : "en";
 }
 
-export function resolveSettingDocumentationIndexUrl() {
-  return SETTING_DOCUMENTATION_INDEX_URL;
+export function resolveSettingDocumentationIndexUrl(language) {
+  return normalizeSettingDocLanguage(language) === "zh-tw" ? TRADITIONAL_SETTINGS_INDEX_URL : SETTING_DOCUMENTATION_INDEX_URL;
 }
 
 export function createSettingDocumentationClient(options = {}) {
@@ -33,9 +33,11 @@ export function createSettingDocumentationClient(options = {}) {
     clock: options.clock,
   });
 
-  const traditionalClient = options.indexUrl ? client : createPublishedSettingDocumentationClient({
+  // An explicit upstream index must never override the Traditional reference.
+  const traditionalIndexUrl = String(options.traditionalIndexUrl || TRADITIONAL_SETTINGS_INDEX_URL);
+  const traditionalClient = createPublishedSettingDocumentationClient({
     ...options,
-    indexUrl: TRADITIONAL_SETTINGS_INDEX_URL,
+    indexUrl: traditionalIndexUrl,
     storageKey: "carrot.settings.traditional-docs.v1",
   });
 
@@ -45,7 +47,7 @@ export function createSettingDocumentationClient(options = {}) {
   function load(name, language, ...args) {
     const selected = normalizeSettingDocLanguage(language) === "zh-tw" ? traditionalClient : client;
     activeClient = selected;
-    activeIndexUrl = selected === client ? indexUrl : TRADITIONAL_SETTINGS_INDEX_URL;
+    activeIndexUrl = selected === client ? indexUrl : traditionalIndexUrl;
     return selected.load(name, language, ...args);
   }
 

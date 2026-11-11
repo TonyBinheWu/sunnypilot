@@ -29,6 +29,31 @@
 
 <!-- CARROT:MANUAL:BEGIN ClusterNaviMapFps -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 5 FPS
+- `1` — 10 FPS（預設）
+- `2` — 20 FPS
+- `3` — 30 FPS／此設定獨立於 HUD FPS，並會自動選擇地圖位元率。／變更時會自動重新連接外部導航 App
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+連接外接 HUD 後變更，確認方向、亮度及地圖連線。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> 地圖 FPS 獨立於主 HUD FPS，地圖位元率會依選定幀率自動調整。變更此設定會重新連接外部導航。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END ClusterNaviMapFps -->
 
 <!-- CARROT:SETTING:END ClusterNaviMapFps -->

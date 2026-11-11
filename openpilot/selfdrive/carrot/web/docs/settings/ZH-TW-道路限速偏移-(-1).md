@@ -29,6 +29,31 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoRoadSpeedLimitOffset -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+道路速限加上設定值。
+
+- **調高：** 將修正值往正方向調整。
+- **調低：** 將其往負方向調整。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在同一個道路速限變更路段，確認新的目標速度及切換時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> `-1` 會停用依道路速限計算的目標速度。
+<!-- CARROT:NOTICE:END -->
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoRoadSpeedLimitOffset -->
 
 <!-- CARROT:SETTING:END AutoRoadSpeedLimitOffset -->

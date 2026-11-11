@@ -28,6 +28,29 @@
 
 <!-- CARROT:MANUAL:BEGIN SteerActuatorDelay -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+轉向延遲值：數值越高越早轉向。0 表示使用即時延遲。
+
+- **調高：** 假設轉向延遲較大，較早請求轉向。
+- **調低：** 減少轉向控制的提前補償。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同直路及平緩彎道，每次小幅調整一項，檢查延遲、振盪及駕駛介入後的恢復。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> `0` 使用即時估計的轉向延遲，而非固定值。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END SteerActuatorDelay -->
 
 <!-- CARROT:SETTING:END SteerActuatorDelay -->

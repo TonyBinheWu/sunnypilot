@@ -29,6 +29,26 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoRoadSpeedAdjust -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- `-1` — 道路速限改變時，立即採用新的道路速限目標速度。
+- `0` — 保留既有巡航設定速度。
+- `1`–`99` — 將既有設定速度與降低後的新道路速限混合計算；數值越高，越接近新速限。
+- `100` — 直接套用降低後的新道路速限。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在同一個道路速限變更路段，確認新的目標速度及切換時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoRoadSpeedAdjust -->
 
 <!-- CARROT:SETTING:END AutoRoadSpeedAdjust -->

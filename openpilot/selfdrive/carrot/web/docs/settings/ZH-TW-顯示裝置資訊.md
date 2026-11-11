@@ -27,6 +27,18 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowDeviceState -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 在行車 HUD 顯示裝置狀態，例如 CPU 溫度與記憶體用量。
+- **關閉：** 隱藏裝置狀態，使用較小的 HUD 資訊框。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查行車畫面的配置及可讀性，只啟用需要的資訊。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowDeviceState -->
 
 <!-- CARROT:SETTING:END ShowDeviceState -->

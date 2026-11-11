@@ -516,7 +516,7 @@ The ATC right lane-change distance uses 0m for off and 50m steps up to 500m. The
 
 ## Interface language
 
-Carrot Web supports Korean, English, Simplified Chinese and Traditional Chinese. Choose **Tools > Language > 繁體中文** for Traditional Chinese. Device UI language is a separate setting and may require a reboot. Translated setting names, summaries and choices retain the same numeric values, bounds and activation timing. When no Traditional Chinese detailed Wiki article is published, the detail view reports its English fallback.
+Carrot Web supports Korean, English, Simplified Chinese and Traditional Chinese. Choose **Tools > Language > 繁體中文** for Traditional Chinese. Device UI language is a separate setting and may require a reboot. Translated setting names, summaries and choices retain the same numeric values, bounds and activation timing. Traditional Chinese detailed guides are bundled with this branch and selected independently of the upstream Wiki index.
 
 Traditional Chinese direct speech in CarrotAssist TW 0.2.13 can search exact catalog titles and assign bounded integer values, including the numbered results currently visible on screen. It retains the same local permission, prepare/commit validation and readback. Update the device code together with the APK; see [Traditional Chinese voice commands](carrot-assist.md#traditional-chinese-direct-commands-tw-0213).
 

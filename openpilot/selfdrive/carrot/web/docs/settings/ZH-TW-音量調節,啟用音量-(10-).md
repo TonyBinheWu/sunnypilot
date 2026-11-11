@@ -29,6 +29,20 @@
 
 <!-- CARROT:MANUAL:BEGIN SoundVolumeAdjustEngage -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+控制啟用、解除及倒車提示的音量倍率。
+
+- **調高：** 提高這些狀態提示的音量。
+- **調低：** 降低這些狀態提示的音量。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+停妥後播放提示，分別確認語言、一般音量及啟用／解除音量。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END SoundVolumeAdjustEngage -->
 
 <!-- CARROT:SETTING:END SoundVolumeAdjustEngage -->

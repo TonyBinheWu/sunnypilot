@@ -28,6 +28,22 @@
 
 <!-- CARROT:MANUAL:BEGIN ShowTpms -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 無
+- `1` — 上方
+- `2` — 下方
+- `3` — 兩者皆使用
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+檢查行車畫面的配置及可讀性，只啟用需要的資訊。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END ShowTpms -->
 
 <!-- CARROT:SETTING:END ShowTpms -->

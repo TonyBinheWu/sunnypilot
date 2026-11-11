@@ -28,6 +28,27 @@
 
 <!-- CARROT:MANUAL:BEGIN LaneLineCheck -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 顏色＋類型（阻擋時顯示黃色）
+- `1` — 僅類型
+- `2` — 類型＋駕駛施加扭矩時顯示實線
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在車道線清楚且附近無車流處測試，確認打方向燈後的等待、車道檢查及完成時機。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+攝影機或車輛可能誤判標線，允許越過實線也不代表跨越實線安全或合法。請參閱[變換車道說明（英文）](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/lane-change.md)。
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END LaneLineCheck -->
 
 <!-- CARROT:SETTING:END LaneLineCheck -->

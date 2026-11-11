@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN VehicleNaviDecelCancelBox -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+取消減速總開關啟用時，啟用此項可用 + 或輕踩油門取消箱式測速照相減速；停用則不允許取消此類減速。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+若同時存在固定式、號誌或後方執法預告，仍會保留該執法項目的減速。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END VehicleNaviDecelCancelBox -->
 
 <!-- CARROT:SETTING:END VehicleNaviDecelCancelBox -->

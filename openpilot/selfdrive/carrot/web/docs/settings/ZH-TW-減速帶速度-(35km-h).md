@@ -29,6 +29,26 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoNaviSpeedBumpSpeed -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+設定減速丘減速使用的目標速度。
+
+- **調高：** 提高通過時的目標速度。
+- **調低：** 降低通過時的目標速度。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同減速丘路段確認減速完成位置及通過速度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoNaviSpeedBumpSpeed -->
 
 <!-- CARROT:SETTING:END AutoNaviSpeedBumpSpeed -->

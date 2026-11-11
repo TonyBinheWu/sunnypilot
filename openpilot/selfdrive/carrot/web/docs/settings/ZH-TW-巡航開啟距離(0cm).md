@@ -29,6 +29,20 @@
 
 <!-- CARROT:MANUAL:BEGIN CruiseOnDist -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+放開踏板且接近前車時啟用巡航。
+
+- **調高：** 增加適用的距離或跟車間距。
+- **調低：** 減少距離或跟車間距。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同起步、油門及前車條件下，每次調整一項，比較巡航啟用時機及設定速度。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END CruiseOnDist -->
 
 <!-- CARROT:SETTING:END CruiseOnDist -->

@@ -28,6 +28,29 @@ Auto steering pauses at large steering angles and resumes when it returns within
 
 <!-- CARROT:MANUAL:BEGIN LatSuspendAngleDeg -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+大轉向角時暫停自動轉向，回到 15 以內後恢復。
+
+- **調高：** 駕駛介入轉向時，達到較大的轉向角度才會暫停輔助轉向。
+- **調低：** 在較小的轉向角度就會較早暫停輔助轉向。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同直路及平緩彎道，每次小幅調整一項，檢查延遲、振盪及駕駛介入後的恢復。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 不適當的數值可能降低轉向或縱向控制的穩定性與舒適度。每次只小幅調整一項，行為異常時恢復預設值。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END LatSuspendAngleDeg -->
 
 <!-- CARROT:SETTING:END LatSuspendAngleDeg -->

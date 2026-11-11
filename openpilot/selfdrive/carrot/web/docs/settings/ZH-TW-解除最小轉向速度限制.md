@@ -27,6 +27,27 @@
 
 <!-- CARROT:MANUAL:BEGIN DisableMinSteerSpeed -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 將車輛介面的最低輔助轉向速度改為 `0`。
+- **關閉：** 保留該車型的最低輔助轉向速度。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+安全停妥後變更，並於下次開始行車時確認轉向及巡航狀態是否依預期切換。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="CAUTION" -->
+> [!CAUTION]
+> 僅限實際支援低速轉向的車輛使用，例如受支援的 SMDPS 配置。此設定不會移除車輛本身的物理或安全限制。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END DisableMinSteerSpeed -->
 
 <!-- CARROT:SETTING:END DisableMinSteerSpeed -->

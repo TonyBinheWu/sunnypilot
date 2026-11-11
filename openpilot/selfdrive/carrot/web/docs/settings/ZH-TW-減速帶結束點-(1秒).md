@@ -29,6 +29,26 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoNaviSpeedBumpTime -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+使用剩餘距離及目前速度，計算減速丘減速完成位置。
+
+- **調高：** 使用減速丘前方距離較遠的減速完成點。
+- **調低：** 使用較接近減速丘的目標點。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同減速丘路段確認減速完成位置及通過速度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoNaviSpeedBumpTime -->
 
 <!-- CARROT:SETTING:END AutoNaviSpeedBumpTime -->

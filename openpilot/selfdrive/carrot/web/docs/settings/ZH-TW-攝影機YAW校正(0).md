@@ -28,6 +28,20 @@
 
 <!-- CARROT:MANUAL:BEGIN CameraYawTrimDeg -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+微調攝影機偏航對準角度（+：向右）。
+
+- **負值：** 將攝影機偏航角往左微調。
+- **正值：** 往右微調。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在平坦直路以穩定速度評估，逐步調整，比較向左／向右偏移是否減少。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END CameraYawTrimDeg -->
 
 <!-- CARROT:SETTING:END CameraYawTrimDeg -->

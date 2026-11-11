@@ -29,6 +29,20 @@
 
 <!-- CARROT:MANUAL:BEGIN PathOffset -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+僅適用於 LaneMode：負值向左，正值向右。
+
+- **負值：** 將目標路徑往左移。
+- **正值：** 將目標路徑往右移。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在平坦直路以穩定速度評估，逐步調整，比較向左／向右偏移是否減少。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END PathOffset -->
 
 <!-- CARROT:SETTING:END PathOffset -->

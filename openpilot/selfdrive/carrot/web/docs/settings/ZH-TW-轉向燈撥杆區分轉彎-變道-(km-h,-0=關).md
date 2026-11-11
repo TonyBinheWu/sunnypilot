@@ -29,6 +29,17 @@
 
 <!-- CARROT:MANUAL:BEGIN BlinkerLatchedTurn -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+車速低於或等於設定值時，輕撥後待方向燈亮兩次，再將撥桿定位，即提出轉彎請求。一般定位或輕撥會提出變換車道請求；提高此值會擴大轉彎手勢的適用速度範圍。設為零則保留既有分類方式。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+需要支援的 Hyundai CAN-FD 撥桿訊號。高於選定速度時，相同手勢會提出變換車道請求。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END BlinkerLatchedTurn -->
 
 <!-- CARROT:SETTING:END BlinkerLatchedTurn -->

@@ -27,6 +27,27 @@
 
 <!-- CARROT:MANUAL:BEGIN HotspotOnBoot -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+- **開啟：** 有可用行動網路連線時，請求在開機後自動啟動熱點。
+- **關閉：** 開機時不自動啟用熱點。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+有網路連線時變更，並於下次連線或開啟地圖時確認。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="NOTE" -->
+> [!NOTE]
+> 自動啟動熱點需要裝置具備可用的 USIM 與行動網路。
+<!-- CARROT:NOTICE:END -->
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END HotspotOnBoot -->
 
 <!-- CARROT:SETTING:END HotspotOnBoot -->

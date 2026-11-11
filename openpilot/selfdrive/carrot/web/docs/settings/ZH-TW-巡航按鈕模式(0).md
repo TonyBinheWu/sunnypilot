@@ -28,6 +28,30 @@
 
 <!-- CARROT:MANUAL:BEGIN CruiseButtonMode -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 一般
+- `1` — 自訂 1
+- `2` — 自訂 2
+- `3` — 自訂 3（使用速度表）
+
+Volkswagen 的獨立 SET 會設定目前儀表速度；RES 恢復煞車前儲存的速度，否則保留既有設定速度，尚未初始化時則使用目前速度。此模式適用於獨立 +／- 按鈕。手動啟用仍由實體 SET／RES 按鈕放開時觸發。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+停妥後選擇模式，分別確認短按、長按及取消行為。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/buttons-presets.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END CruiseButtonMode -->
 
 <!-- CARROT:SETTING:END CruiseButtonMode -->

@@ -27,6 +27,17 @@
 
 <!-- CARROT:MANUAL:BEGIN LaneChangeLeverWait -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+啟用後，若輕撥變換車道請求被 BSD 或車道檢查阻擋，會保持方向燈及請求約四秒，再加上設定的進入延遲，之後到期。停用時沿用既有依方向燈狀態等待的方式。
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+保持撥桿定位的請求會依既有檢查繼續等待。限時請求到期後，請重新提出請求。
+<!-- CARROT:SECTION:END USAGE -->
 <!-- CARROT:MANUAL:END LaneChangeLeverWait -->
 
 <!-- CARROT:SETTING:END LaneChangeLeverWait -->

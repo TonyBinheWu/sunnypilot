@@ -28,6 +28,35 @@
 
 <!-- CARROT:MANUAL:BEGIN AutoNaviSpeedCtrlMode -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 運作方式
+
+選定值會依下列方式改變行為。
+
+- `0` — 不使用
+- `1` — 測速攝影機
+- `2` — 測速攝影機＋減速丘
+- `3` — 測速攝影機＋減速丘＋APN 測速攝影機
+支援的原廠導航 CAN 移動式測速區域也遵循此設定：模式 3 減速，2 或以下忽略移動式測速區域警示。若同時有固定式、號誌或後方執法，仍保留減速。
+
+<!-- CARROT:SECTION:END BEHAVIOR -->
+
+<!-- CARROT:SECTION:BEGIN USAGE -->
+### 使用方式
+
+在相同速限及測速照相類型下，每次調整一項，比較減速起點、完成位置及通過速度。
+<!-- CARROT:SECTION:END USAGE -->
+
+<!-- CARROT:SECTION:BEGIN REFERENCE -->
+### 補充說明
+
+<!-- CARROT:NOTICE level="IMPORTANT" -->
+> [!IMPORTANT]
+> 導航資料必須提供所選事件類型的距離與速限資訊，自動減速才會作用。
+<!-- CARROT:NOTICE:END -->
+
+[相關英文操作指南](https://github.com/ajouatom/openpilot/blob/carrot-wip/docs/user/en/speed-deceleration.md)
+<!-- CARROT:SECTION:END REFERENCE -->
 <!-- CARROT:MANUAL:END AutoNaviSpeedCtrlMode -->
 
 <!-- CARROT:SETTING:END AutoNaviSpeedCtrlMode -->
