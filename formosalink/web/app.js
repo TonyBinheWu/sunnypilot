@@ -1,8 +1,8 @@
-import {initTheme} from './theme.js?v=0.4.1';
-import {healthValue} from './health-ui.js?v=0.4.1';
-import {deviceSettings} from './device-settings.js?v=0.4.1';
-import {translations} from './i18n.js?v=0.4.1';
-import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.4.1';
+import {initTheme} from './theme.js?v=0.5.0';
+import {healthValue} from './health-ui.js?v=0.5.0';
+import {deviceSettings} from './device-settings.js?v=0.5.0';
+import {translations} from './i18n.js?v=0.5.0';
+import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.5.0';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';
 try { language = localStorage.getItem('formosalink-language') || 'zh-TW'; } catch {}
@@ -63,7 +63,7 @@ function render() {
     if(device.state==='paired'){const detail=element('button',t('deviceSettings'),'secondary');detail.type='button';detail.addEventListener('click',()=>settings.open(device));bottom.append(detail);const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
   }
 }
-function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.close(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
+function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
 async function refresh(){
   if(busy)return;
   busy=true;
@@ -77,7 +77,7 @@ async function refresh(){
       auth={user:{id:'local-admin',name:''},github_enabled:false};
     }
     if(epoch!==authEpoch)return;
-    if(account?.id!==auth.user?.id){settings.close(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
+    if(account?.id!==auth.user?.id){settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
     account=auth.user;githubEnabled=auth.github_enabled;
     $('github-login').disabled=!githubEnabled;
     $('github-note').textContent=t(githubEnabled===null?'waiting':githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');
