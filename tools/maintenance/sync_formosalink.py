@@ -26,7 +26,12 @@ def hook_changes(target):
   text = path.read_text(encoding="utf-8")
   attribute = "formosalink/web/assets/formosapilot-logo.png -filter -diff -merge -text"
   if attribute not in text:
-    changes[path] = text.rstrip() + "\n\n# Keep the small FormosaLink brand mark available without Git LFS.\n" + attribute + "\n"
+    text = text.rstrip() + "\n\n# Keep the small FormosaLink brand mark available without Git LFS.\n" + attribute + "\n"
+  native_attribute = "openpilot/sunnypilot/formosalink/assets/formosapilot-logo.png -filter -diff -merge -text"
+  if native_attribute not in text:
+    text = text.rstrip() + "\n" + native_attribute + "\n"
+  if text != path.read_text(encoding="utf-8"):
+    changes[path] = text
   path = target / "openpilot/common/params_keys.h"
   text = path.read_text(encoding="utf-8")
   if '"FormosaLinkEnabled"' not in text:
@@ -94,8 +99,43 @@ def hook_changes(target):
     if text.count(anchor) != 1:
       raise ValueError("C4 pairing entry anchor is ambiguous")
     text = text.replace(anchor, anchor + hook, 1)
+  brand_import = "from openpilot.sunnypilot.formosalink.brand_ui import FormosaPilotPanel, LOGO_ASSET\n"
+  def insert_once(source, anchor, addition):
+    if addition in source:
+      return source
+    if source.count(anchor) != 1:
+      raise ValueError("FormosaPilot brand anchor is ambiguous; review manually")
+    return source.replace(anchor, addition + anchor, 1)
+
+  text = insert_once(text, "from openpilot.selfdrive.ui.mici.layouts.settings import settings as OP\n", brand_import)
+  text = insert_once(text, "class SunnylinkBigButton(SettingsBigButton):",
+                     "class FormosaBigButton(SettingsBigButton):\n  def _get_label_font_size(self):\n    return 36\n\n\n")
+  text = insert_once(text, "    items = self._scroller._items.copy()\n",
+                     '    formosa_panel = FormosaPilotPanel()\n    formosa_btn = FormosaBigButton("FormosaPilot", "FormosaLink", gui_app.texture(LOGO_ASSET, 80, 80))\n    formosa_btn.set_click_callback(lambda: gui_app.push_widget(formosa_panel))\n\n')
+  text = insert_once(text, "    # front slots", "    items.insert(0, formosa_btn)\n\n")
   if text != path.read_text(encoding="utf-8"):
     changes[path] = text
+  path = target / "openpilot/selfdrive/ui/sunnypilot/layouts/settings/settings.py"
+  text = path.read_text(encoding="utf-8")
+  text = insert_once(text, "from dataclasses import dataclass\n", brand_import)
+  text = insert_once(text, '    "SUNNYLINK",\n', '    "FORMOSAPILOT",\n')
+  text = insert_once(text, '      OP.PanelType.DEVICE: PanelInfo(',
+                     '      OP.PanelType.FORMOSAPILOT: PanelInfo("FormosaPilot", FormosaPilotPanel(embedded=True), icon=LOGO_ASSET),\n')
+  if 'font_size = 40 if self.panel_info.name == "FormosaPilot"' not in text:
+    anchor = "    text_size = measure_text_cached(self.parent._font_medium, self.panel_info.name, 65)"
+    if text.count(anchor) != 1:
+      raise ValueError("C3X brand navigation text anchor is ambiguous")
+    text = text.replace(anchor, '    font_size = 40 if self.panel_info.name == "FormosaPilot" else 55\n    text_size = measure_text_cached(self.parent._font_medium, self.panel_info.name, 40 if self.panel_info.name == "FormosaPilot" else 65)', 1)
+    text = text.replace("self.panel_info.name, text_pos, 55, 0, text_color", "self.panel_info.name, text_pos, font_size, 0, text_color", 1)
+  if text != path.read_text(encoding="utf-8"):
+    changes[path] = text
+  path = target / "openpilot/system/ui/lib/application.py"
+  text = path.read_text(encoding="utf-8")
+  if "    self._fallback_fonts = {}\n    self._fallback_codepoints = {}\n" not in text:
+    anchor = "    self._fallback_fonts = {}\n"
+    if text.count(anchor) != 1:
+      raise ValueError("font shutdown anchor is ambiguous; review manually")
+    changes[path] = text.replace(anchor, anchor + "    self._fallback_codepoints = {}\n", 1)
   path = target / "docs/architecture/module_map.json"
   text = path.read_text(encoding="utf-8")
   start = text.index('"id": "cloud"')
