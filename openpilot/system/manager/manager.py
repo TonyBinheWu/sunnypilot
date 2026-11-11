@@ -58,6 +58,10 @@ def manager_init() -> None:
     if default_value is not None and params.get(k) is None:
       params.put(k, default_value, block=True)
 
+  from openpilot.sunnypilot.formosalink.service_policy import disable_legacy, stop_legacy_daemon
+  disable_legacy(params)
+  stop_legacy_daemon(params)
+
   # Create folders needed for msgq
   try:
     os.mkdir(Paths.shm_path())

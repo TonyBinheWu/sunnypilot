@@ -7,11 +7,11 @@ See the LICENSE.md file in the root directory for more details.
 from openpilot.sunnypilot.formosalink.brand_ui import FormosaPilotPanel, LOGO_ASSET
 from openpilot.selfdrive.ui.mici.layouts.settings import settings as OP
 from openpilot.selfdrive.ui.mici.layouts.settings.settings import SettingsBigButton
-from openpilot.selfdrive.ui.mici.layouts.settings.device import DeviceLayoutMici
+from openpilot.selfdrive.ui.mici.layouts.settings.device import DeviceLayoutMici, PairBigButton
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton
 from openpilot.selfdrive.ui.mici.widgets.button import BigCircleButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog, BigDialog
-from openpilot.selfdrive.ui.sunnypilot.mici.layouts.sunnylink import SunnylinkLayoutMici
+from openpilot.sunnypilot.formosalink.ui import open_pairing
 from openpilot.selfdrive.ui.sunnypilot.mici.layouts.models import ModelsLayoutMici
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app, FontWeight
@@ -63,6 +63,7 @@ class LanguageLayoutMici(NavScroller):
 class DeviceLayoutSP(DeviceLayoutMici):
   def __init__(self):
     super().__init__()
+    self._scroller._items[:] = [item for item in self._scroller._items if not isinstance(item, PairBigButton)]
     self._language_button = BigButton("language", multilang.codes.get(multilang.language, "English"),
                                       gui_app.texture("icons_mici/settings/device/info.png", 64, 64))
     self._language_button.set_click_callback(lambda: gui_app.push_widget(LanguageLayoutMici()))
@@ -89,9 +90,8 @@ class SettingsLayoutSP(OP.SettingsLayout):
                                                 BIG_ICON_SIZE)
     self.icon_offroad_slider = gui_app.texture("icons_mici/settings/device/lkas.png", BIG_ICON_SIZE, BIG_ICON_SIZE)
 
-    sunnylink_panel = SunnylinkLayoutMici()
-    sunnylink_btn = SunnylinkBigButton("sunnylink", "", gui_app.texture("../../sunnypilot/selfdrive/assets/icons_mici/sunnylink.png", 76, 44))
-    sunnylink_btn.set_click_callback(lambda: gui_app.push_widget(sunnylink_panel))
+    formosalink_btn = FormosaBigButton("FormosaLink", "", gui_app.texture(LOGO_ASSET, 80, 80))
+    formosalink_btn.set_click_callback(open_pairing)
 
     models_panel = ModelsLayoutMici()
     models_btn = SettingsBigButton("models", "", gui_app.texture("../../sunnypilot/selfdrive/assets/offroad/icon_models.png", ICON_SIZE, ICON_SIZE))
@@ -118,7 +118,7 @@ class SettingsLayoutSP(OP.SettingsLayout):
     items = self._scroller._items.copy()
 
     items.insert(1, models_btn)
-    items.insert(5, sunnylink_btn)
+    items.insert(5, formosalink_btn)
 
     items.insert(0, formosa_btn)
 

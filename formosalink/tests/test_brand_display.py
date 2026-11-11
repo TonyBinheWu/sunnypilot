@@ -9,7 +9,7 @@ def test_product_text_is_replaced_in_all_languages():
 
 
 def test_real_references_and_internal_identifiers_are_preserved():
-  for reference in ("https://github.com/sunnypilot/sunnypilot", "https://sunnypilot.ai/terms", "community.sunnypilot.ai", "openpilot/sunnypilot/models", "SUNNYPILOT_UI", "sunnylink"):
+  for reference in ("https://github.com/sunnypilot/sunnypilot", "https://sunnypilot.ai/terms", "community.sunnypilot.ai", "openpilot/sunnypilot/models", "SUNNYPILOT_UI"):
     assert display_text(reference) == reference
   for notice in ("Copyright sunnypilot contributors", "MIT License: sunnypilot", "sunnypilot sponsor", "sunnypilot 著作權"):
     assert display_text(notice) == notice
@@ -20,3 +20,8 @@ def test_product_logos_use_original_formosa_asset_only():
   for path in ("../../sunnypilot/selfdrive/assets/logo.png", "../../sunnypilot/selfdrive/assets/images/spinner_sunnypilot.png"):
     assert display_asset(path) == LOGO_ASSET
   assert display_asset("icons_mici/settings/device/fcc_logo.png") == "icons_mici/settings/device/fcc_logo.png"
+
+
+def test_formosalink_has_its_own_display_name():
+  assert display_text("sunnylink") == "FormosaLink"
+  assert display_text("啟用 SUNNYLINK") == "啟用 FormosaLink"

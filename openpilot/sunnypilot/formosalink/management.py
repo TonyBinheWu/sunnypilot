@@ -8,12 +8,14 @@ import time
 from pathlib import Path
 
 from openpilot.sunnypilot.formosalink.identity import read
+from openpilot.sunnypilot.formosalink.service_policy import self_hosted_origin
 from openpilot.sunnypilot.formosalink.protocol import canonical, sign
 from openpilot.sunnypilot.formosalink.management_protocol import COMMAND_TTL, MAX_MANAGEMENT_BYTES
 
 
 class ManagementClient:
   def __init__(self, identity, private, provider, directory):
+    self_hosted_origin(identity["origin"])
     self.identity, self.private, self.provider = identity, private, provider
     self.path = Path(directory) / "setting-receipts.json"
     self.receipts = []

@@ -127,3 +127,14 @@ class TestSettingsProfile(unittest.TestCase):
         parked.return_value=False;dialog._toggle_remote();self.assertTrue(params.get_bool("FormosaLinkRemoteSettings"))
         parked.return_value=True;dialog._disable_monitoring();self.assertFalse(params.get_bool("FormosaLinkRemoteSettings"))
         dialog.hide_event()
+
+  def test_legacy_processes_cannot_start_and_cloud_is_optional(self):
+    from openpilot.system.manager.process_config import managed_processes
+    from openpilot.sunnypilot.formosalink.service_policy import LEGACY_PROCESSES, OptionalCloudOnboarding
+    from openpilot.selfdrive.ui.ui_state import ui_state
+    for name in LEGACY_PROCESSES:
+      if name in managed_processes:
+        self.assertFalse(managed_processes[name].enabled, name)
+    self.assertTrue(managed_processes["formosalink"].enabled)
+    self.assertTrue(OptionalCloudOnboarding().completed)
+    self.assertIsNone(ui_state.sunnylink_state)

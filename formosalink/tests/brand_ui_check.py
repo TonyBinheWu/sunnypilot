@@ -50,11 +50,26 @@ class TestNativeBrand(unittest.TestCase):
       layout = SettingsLayoutSP()
       self.assertIsInstance(layout._panels[OP.PanelType.FORMOSAPILOT].instance, brand_ui.FormosaPilotPanel)
       self.assertEqual(next(iter(layout._panels)), OP.PanelType.FORMOSAPILOT)
+      from openpilot.sunnypilot.formosalink.ui import FormosaPairingDialog
+      cloud = layout._panels[OP.PanelType.SUNNYLINK]
+      self.assertEqual(cloud.name, "FormosaLink")
+      self.assertIsInstance(cloud.instance, FormosaPairingDialog)
+      device = layout._panels[OP.PanelType.DEVICE].instance
+      self.assertNotIn(device._pair_device_btn, device._scroller._items)
       layout.set_current_panel(OP.PanelType.FORMOSAPILOT)
     else:
       from openpilot.selfdrive.ui.sunnypilot.mici.layouts.settings import SettingsLayoutSP
       layout = SettingsLayoutSP()
       self.assertTrue(any(getattr(item, "text", None) == "FormosaPilot" for item in layout._scroller._items))
+      self.assertTrue(any(getattr(item, "text", None) == "FormosaLink" for item in layout._scroller._items))
+      self.assertFalse(any("sunnylink" in str(getattr(item, "text", "")).lower() for item in layout._scroller._items))
+      from openpilot.selfdrive.ui.sunnypilot.mici.layouts.settings import DeviceLayoutSP
+      from openpilot.selfdrive.ui.mici.layouts.settings.device import PairBigButton
+      self.assertFalse(any(isinstance(item, PairBigButton) for item in DeviceLayoutSP()._scroller._items))
+      button = next(item for item in layout._scroller._items if getattr(item, "text", None) == "FormosaLink")
+      with patch.object(ui.ui_state, "is_offroad", return_value=True), patch.object(gui_app, "push_widget") as push:
+        button._click_callback()
+        self.assertIsInstance(push.call_args.args[0], ui.FormosaPairingDialog)
     output = Path(os.environ.get("FORMOSALINK_QR_OUTPUT", "build/native-brand"))
     output.mkdir(parents=True, exist_ok=True)
     with patch.object(ui.multilang, "_language", "zh-CHT"), patch.object(ui.ui_state, "always_offroad", False, create=True):

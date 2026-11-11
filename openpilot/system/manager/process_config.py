@@ -209,4 +209,9 @@ if os.path.exists("../../third_party/copyparty/copyparty-sfx.py"):
   copyparty_args += ["-q"]
   procs += [NativeProcess("copyparty-sfx", "openpilot/third_party/copyparty", ["./copyparty-sfx.py", *copyparty_args], and_(only_offroad, use_copyparty))]
 
+from openpilot.sunnypilot.formosalink.service_policy import LEGACY_PROCESSES
+for process in procs:
+  if process.name in LEGACY_PROCESSES:
+    process.enabled = False
+
 managed_processes = {p.name: p for p in procs}

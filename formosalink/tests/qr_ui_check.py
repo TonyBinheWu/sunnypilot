@@ -144,6 +144,21 @@ class TestQRScreen(unittest.TestCase):
     dialog._update_state()
     self.assertFalse(self.params.enabled)
 
+  def test_embedded_panel_can_be_opened_again_without_accepting_old_results(self):
+    dialog = ui.FormosaPairingDialog(embedded=True)
+    previous = dialog._generation
+    dialog.hide_event()
+    dialog.show_event()
+    self.assertTrue(dialog._active)
+    self.assertEqual(dialog._state, "intro")
+    dialog._events.put((previous, "enroll", {"state":"paired"}))
+    dialog._update_state()
+    self.assertFalse(self.params.enabled)
+    with patch.object(dialog, "_worker") as worker:
+      dialog._request()
+      worker.assert_called_once_with("enroll")
+    dialog.hide_event()
+
   def test_local_disable_wins_over_old_result_and_revoke_disables(self):
     dialog = ui.FormosaPairingDialog()
     self.pending(dialog)

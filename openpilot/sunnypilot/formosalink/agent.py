@@ -5,6 +5,8 @@ import random
 import time
 
 from openpilot.sunnypilot.formosalink.identity import default_directory, read
+from openpilot.sunnypilot.formosalink.connection_status import acknowledge
+from openpilot.sunnypilot.formosalink.service_policy import self_hosted_origin
 from openpilot.sunnypilot.formosalink.protocol import MAX_FRAME_BYTES, SAMPLE_INTERVAL, VERSION, canonical, sign
 
 log = logging.getLogger("formosalink")
@@ -21,6 +23,7 @@ def send_snapshot(ws, snapshot):
 
 
 def connect_once(identity, private, sampler, stop=None):
+  self_hosted_origin(identity["origin"])
   import websocket
   url = identity["origin"].replace("https://", "wss://", 1).replace("http://", "ws://", 1)
   ws = websocket.create_connection(url + "/api/v1/agent/ws", timeout=15, suppress_origin=True,
@@ -36,6 +39,7 @@ def connect_once(identity, private, sampler, stop=None):
     sequence = 0
     while stop is None or not stop.is_set():
       send_snapshot(ws, sampler.sample(sequence))
+      acknowledge(identity["origin"])
       sequence += 1
       if stop:
         stop.wait(SAMPLE_INTERVAL)
@@ -46,6 +50,7 @@ def connect_once(identity, private, sampler, stop=None):
 
 
 def connect_http(identity, private, sampler, stop=None, samples=60):
+  self_hosted_origin(identity["origin"])
   import requests
   with requests.Session() as session:
     for sequence in range(samples):
@@ -57,6 +62,7 @@ def connect_http(identity, private, sampler, stop=None, samples=60):
       response.raise_for_status()
       if len(response.content) > MAX_FRAME_BYTES or response.json() != {"type": "ack", "sequence": sequence}:
         raise ValueError("unexpected HTTPS acknowledgement")
+      acknowledge(identity["origin"])
       if stop:
         stop.wait(SAMPLE_INTERVAL)
       else:
