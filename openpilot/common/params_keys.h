@@ -37,7 +37,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SunnylinkUpdateRequestStatus", {CLEAR_ON_MANAGER_START, STRING, "idle"}},
     {"DisengageOnAccelerator", {PERSISTENT | BACKUP, BOOL, "0"}},
     {"DongleId", {PERSISTENT, STRING}},
-    {"FormosaLinkEnabled", {PERSISTENT, BOOL, "0"}},
+    {"FormosaLinkEnabled", {PERSISTENT, BOOL, "1"}},
     {"FormosaLinkSettingsVersion", {PERSISTENT, STRING, ""}},
     {"FormosaLinkRemoteSettings", {PERSISTENT, BOOL, "0"}},
     {"DoReboot", {CLEAR_ON_MANAGER_START, BOOL}},

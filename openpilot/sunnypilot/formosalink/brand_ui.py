@@ -10,7 +10,7 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.button import Button, ButtonStyle
 
 LOGO_ASSET = "../../sunnypilot/formosalink/assets/formosapilot-logo.png"
-NATIVE_VERSION = "0.6.2"
+NATIVE_VERSION = "0.7.0"
 COPY = {
   "zh-TW": ("裝置與雲端", "手機配對與遠端設定", "分支", "版本", "行動數據開關：網路設定", "停車後可配對及設定"),
   "en": ("Device & cloud", "Phone pairing & remote settings", "Branch", "Commit", "Cellular data switch: Network", "Park to pair and configure"),
@@ -18,46 +18,54 @@ COPY = {
 }
 
 
-class FormosaPilotPanel(Widget):
+from openpilot.system.ui.widgets.scroller import NavScroller
+from openpilot.system.ui.widgets.scroller_tici import Scroller
+
+
+class FormosaPilotPanel(NavScroller if not gui_app.big_ui() else Widget):
   def __init__(self, embedded=False):
     super().__init__()
     self.embedded = embedded
     self.branch = get_short_branch(BASEDIR) or "unknown"
     self.commit = (get_commit(BASEDIR) or "unknown")[:7]
-    self.logo = gui_app.texture(LOGO_ASSET, 180, 180)
-    self._pair = Button(lambda: "FormosaLink · " + text("scan"), open_pairing,
-                        font_size=36 if gui_app.big_ui() else 16, text_padding=6, button_style=ButtonStyle.PRIMARY)
+    self.logo = gui_app.texture(LOGO_ASSET, 80, 80)
+    if gui_app.big_ui():
+      from openpilot.system.ui.widgets.list_view import text_item
+      from openpilot.system.ui.sunnypilot.widgets.list_view import button_item_sp
+      self._pair = button_item_sp("FormosaLink", lambda:text("scan"), callback=open_pairing)
+      self._scroller = Scroller([
+        text_item("FormosaPilot", NATIVE_VERSION),
+        text_item(lambda:COPY[language()][2], self.branch),
+        text_item(lambda:COPY[language()][3], self.commit),
+        self._pair,
+      ], line_separator=True)
+    else:
+      from openpilot.selfdrive.ui.mici.widgets.button import BigButton
+      class BrandButton(BigButton):
+        def _get_label_font_size(self):
+          return 36
+      self._pair = BrandButton("FormosaLink", text("scan"), self.logo)
+      self._pair.set_click_callback(open_pairing)
+      self._branch_card = BigButton(COPY[language()][2], self.branch, scroll=True)
+      self._commit_card = BigButton(COPY[language()][3], self.commit)
+      self._scroller.add_widgets([
+        BrandButton("FormosaPilot", NATIVE_VERSION, self.logo),
+        self._branch_card,
+        self._commit_card,
+        self._pair,
+      ])
     from openpilot.selfdrive.ui.ui_state import ui_state
     self._pair.set_enabled(ui_state.is_offroad)
-    self._close = Button(lambda: text("close"), gui_app.pop_widget,
-                         font_size=34 if gui_app.big_ui() else 15, text_padding=6)
+
+  def _update_state(self):
+    super()._update_state()
+    if not gui_app.big_ui():
+      self._branch_card.set_text(COPY[language()][2])
+      self._commit_card.set_text(COPY[language()][3])
+      self._pair.set_value(text("scan"))
 
   def _render(self, rect):
-    rl.draw_rectangle_rec(rect, rl.Color(13, 23, 30, 255))
-    # Proportional to the panel, not the full screen: C3X reserves a sidebar.
-    scale = min(rect.width / 536, rect.height / 240)
-    x, y = rect.x + 16*scale, rect.y + 12*scale
-    font = gui_app.font(FontWeight.NORMAL)
-    labels = COPY[language()]
-    # Load the complete page's glyphs before issuing draw commands. Growing a
-    # fallback atlas halfway through a frame can invalidate earlier draw batches.
-    if multilang.requires_font_fallback():
-      gui_app.fallback_font("\n".join(labels) + text("scan") + text("close") + "FormosaLink ·")
-
-    def line(value, top, size=16, color=rl.WHITE):
-      rl.draw_text_ex(font, value, rl.Vector2(x, rect.y + top*scale), size*scale, 0, color)
-
-    logo_rect = rl.Rectangle(x, y, 54*scale, 54*scale)
-    rl.draw_texture_pro(self.logo, rl.Rectangle(0, 0, self.logo.width, self.logo.height), logo_rect, rl.Vector2(0, 0), 0, rl.WHITE)
-    rl.draw_text_ex(font, "FormosaPilot " + NATIVE_VERSION, rl.Vector2(x+64*scale, y+5*scale), 23*scale, 0, rl.WHITE)
-    rl.draw_text_ex(font, labels[0], rl.Vector2(x+64*scale, y+34*scale), 15*scale, 0, rl.Color(87, 209, 188, 255))
-    line(labels[1], 77)
-    line(f"{labels[2]}: {self.branch} · {labels[3]}: {self.commit}", 104, 14)
-    line("formosapilot.dinglu-t.com", 128, 14)
-    line(labels[4], 151, 14)
-    line(labels[5], 174, 12, rl.Color(160, 180, 185, 255))
-    width = rect.width - 32*scale
-    if not self.embedded:
-      width -= 90*scale
-      self._close.render(rl.Rectangle(rect.x+rect.width-96*scale, rect.y+199*scale, 80*scale, 32*scale))
-    self._pair.render(rl.Rectangle(x, rect.y+199*scale, width, 32*scale))
+    if gui_app.big_ui():
+      self._scroller.render(rect)
+    else:
+      super()._render(rect)

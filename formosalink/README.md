@@ -1,4 +1,4 @@
-# FormosaPilot / FormosaLink 0.6.1
+# FormosaPilot / FormosaLink 0.7.0
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
@@ -18,9 +18,9 @@ FormosaPilot は保守対象の sunnypilot を基盤とするブランドです�
 - GitHub accounts with owner-scoped devices, single Python worker, local SQLite. Existing administrator credentials and pairing data migrate in place.
 - Dedicated Ed25519 device keys, expiring one-use pairing codes, fingerprint confirmation, signed/replay-protected connection authentication.
 - WebSocket is preferred; proxies with incompatible upgrade handling use per-request signed HTTPS telemetry, retaining TLS verification, replay protection and revocation checks.
-- Device state, temperatures, memory, storage, speed when valid, installed version/branch/commit. No live location, driver-camera data or raw CAN. Typed parked settings use an explicit allowlist. The separately launched media preview publisher can upload signed, bounded JPEG frames; native camera capture is not connected yet.
-- Agent default: **disabled**. Explicit offroad opt-in is available in Settings → Device → FormosaLink on both C3X and C4. Scan its QR with a phone to pair without typing codes or fingerprints.
-- Cloud outages do not gate the existing driving processes. Existing comma/sunnylink services are not redirected or silently disabled.
+- Device health and typed parked settings, plus owner-requested ultra-wide/cabin camera previews from native IPC. JPEG previews are bounded, low-rate and ephemeral; no audio, live location or raw CAN. See [camera deployment and validation](docs/CAMERAS_V1.md).
+- Agent default: **background enabled**. Independent QR/GitHub pairing is still required; parked remote-setting consent remains separate. There is no device monitoring switch. Cameras upload only during a short owner viewing lease.
+- Cloud outages do not gate driving. Legacy Sunnylink services are explicitly retired; core openpilot/comma behavior and upstream metadata remain intact.
 - SQLite stores the latest snapshot only (not journey history); audit is bounded to 10,000 events. Online requires a live authenticated WebSocket or recent signed HTTPS telemetry within 20 seconds. Invalid or old samples are shown as stale.
 - GitHub OAuth uses one-time browser-bound state and S256 PKCE. The local administrator password remains a fallback. Device operations enforce ownership on the server.
 - Setup, private OAuth configuration, explicit administrator linking and migration recovery: [MULTI_USER.md](docs/MULTI_USER.md). GitHub login remains disabled until the host has OAuth credentials.
@@ -47,7 +47,7 @@ node --test formosalink/tests/web.test.mjs
 
 On restricted Windows hosts, use a new workspace-local `--basetemp build/formosalink-tests-<unique>` if the default temp directory is inaccessible. TestClient needs local socketpair access. CI runs Python 3.12/3.14 on Windows and Linux for both maintained branches; Node is needed only for the UI test, not production.
 
-Both `hkg-enhanced` and `ccnc-port` use the same companion files and protocol. Narrow hooks add the optional manager process, disabled-by-default Params key and offroad QR entries; branch-specific settings are retained. Vehicle controllers, safety, models and AGNOS are not part of this change. See [protocol and upstream maintenance](docs/PROTOCOL.md).
+Both `hkg-enhanced` and `ccnc-port` use the same companion files and protocol. Narrow hooks add the background companion process, enabled-by-default Params key and offroad QR entries; branch-specific settings are retained. Vehicle controllers, safety, models and AGNOS are not part of this change. See [protocol and upstream maintenance](docs/PROTOCOL.md).
 
 Native pre-push checks and real-model simulator failures are recorded in [SIMULATION_2026_11_09.md](docs/SIMULATION_2026_11_09.md). All four PC UI/telemetry profiles passed; three model scenarios failed, including a failure reproduced on the pre-feature baseline. These are not physical-device driving acceptance results.
 

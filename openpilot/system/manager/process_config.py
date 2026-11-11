@@ -26,6 +26,11 @@ def notcar(started: bool, params: Params, CP: car.CarParams) -> bool:
 def formosalink_enabled(started: bool, params: Params, CP: car.CarParams) -> bool:
   return params.get_bool("FormosaLinkEnabled")
 
+def formosalink_cameras(started: bool, params: Params, CP: car.CarParams) -> bool:
+  from openpilot.sunnypilot.formosalink.cameras import camera_requested
+  return params.get_bool("FormosaLinkEnabled") and camera_requested()
+
+
 def iscar(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and not CP.notCar
 
@@ -121,7 +126,7 @@ procs = [
   NativeProcess("stream_encoderd", "openpilot/system/loggerd", ["./encoderd", "--stream"], or_(livestream, notcar)),
   PythonProcess("logmessaged", "openpilot.system.logmessaged", always_run),
 
-  NativeProcess("camerad", "openpilot/system/camerad", ["./camerad"], or_(driverview, livestream), enabled=not WEBCAM),
+  NativeProcess("camerad", "openpilot/system/camerad", ["./camerad"], or_(driverview, livestream, formosalink_cameras), enabled=not WEBCAM),
   PythonProcess("webcamerad", "openpilot.system.camerad.webcam.camerad", driverview, enabled=WEBCAM),
   PythonProcess("proclogd", "openpilot.system.proclogd", only_onroad, enabled=platform.system() != "Darwin"),
   PythonProcess("journald", "openpilot.system.journald", only_onroad, platform.system() != "Darwin"),

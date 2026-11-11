@@ -76,6 +76,8 @@ def run(directory=None, demo=False, stop=None):
   directory = directory or default_directory()
   if not demo:
     start_management(directory,stop)
+    from openpilot.sunnypilot.formosalink.cameras import start as start_cameras
+    start_cameras(directory,stop)
   from openpilot.sunnypilot.formosalink.telemetry import DemoSampler, OpenpilotSampler
   sampler = DemoSampler() if demo else OpenpilotSampler()
   failures = 0

@@ -29,7 +29,7 @@ for language, values in {
 
 def connection_status(enabled, modem, now):
   """Fresh data bearer status, not SIM registration or an Internet reachability claim."""
-  stamp = modem.get("seconds_since_boot")
+  stamp = modem.get("data_checked_at", modem.get("seconds_since_boot"))
   if type(stamp) not in (int, float) or not 0 <= now-stamp <= 10:
     return "unknown"
   state = modem.get("state")
@@ -59,7 +59,7 @@ def label(key, language=None):
 
 
 def modem_data_state(enabled, modem, now):
-  stamp = modem.get("seconds_since_boot")
+  stamp = modem.get("data_checked_at", modem.get("seconds_since_boot"))
   if type(stamp) not in (int,float) or not 0 <= now-stamp <= 10:
     return "unknown"
   if modem.get("state") == "DATA_DISABLED":

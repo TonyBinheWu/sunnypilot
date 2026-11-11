@@ -31,8 +31,8 @@ class TestSharedProfile(OpenpilotTestCase):
     self.assertEqual(gui_app.big_ui(), expected)
     self.assertEqual(ui.BIG_UI, expected)
 
-  def test_agent_disabled_by_default(self):
-    self.assertFalse(Params().get_bool("FormosaLinkEnabled"))
+  def test_agent_background_default(self):
+    self.assertTrue(Params().get("FormosaLinkEnabled", return_default=True))
 
   def test_agnos_platform_configuration(self):
     device = os.environ["EXPECTED_DEVICE"]

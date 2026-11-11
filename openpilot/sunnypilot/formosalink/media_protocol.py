@@ -41,7 +41,7 @@ def validate_frame(value, now=None):
   sampled = value['sampled_at']
   if type(sampled) not in (int, float) or not math.isfinite(sampled) or abs((time.time() if now is None else now) - sampled) > MEDIA_TTL:
     raise ValueError('expired media frame')
-  if value['source'] not in ('demo', 'road-preview'):
+  if value['source'] not in ('demo', 'road-preview', 'wide-road', 'driver'):
     raise ValueError('unsupported media source')
   if any(type(value[k]) is not int for k in ('width','height')) or not 1 <= value['width'] <= 1280 or not 1 <= value['height'] <= 720:
     raise ValueError('invalid media dimensions')

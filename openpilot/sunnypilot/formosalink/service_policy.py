@@ -18,6 +18,9 @@ def self_hosted_origin(origin):
 
 
 def disable_legacy(params):
+  # Background monitoring is enabled by default; pairing is still required.
+  if not params.get_bool("FormosaLinkEnabled"):
+    params.put_bool("FormosaLinkEnabled", True, block=True)
   # Preserve old IDs, credentials and all independent FormosaLink state.
   for key in ("SunnylinkEnabled", "EnableSunnylinkUploader"):
     if params.get_bool(key):

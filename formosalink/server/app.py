@@ -68,7 +68,7 @@ def create_app(data_dir, web_dir=None):
   store = Store(directory / "formosalink.sqlite3")
   github = oauth.settings(directory)
   callback = config["origin"] + "/api/v1/auth/github/callback"
-  app = FastAPI(title="FormosaLink", version="0.6.0", docs_url=None, redoc_url=None, openapi_url=None)
+  app = FastAPI(title="FormosaLink", version="0.7.0", docs_url=None, redoc_url=None, openapi_url=None)
   app.state.store = store
   limiter = Limit()
   connections = {}
@@ -92,7 +92,7 @@ def create_app(data_dir, web_dir=None):
     if request.url.path.startswith("/api/"):
       if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
         return Response(status_code=400)
-      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media"):
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media", "/api/v1/agent/media/watch"):
         if request.headers.get("origin") != config["origin"]:
           return Response(status_code=403)
       try:
@@ -120,7 +120,7 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1"], "database_version": 3}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1"], "database_version": 3}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):

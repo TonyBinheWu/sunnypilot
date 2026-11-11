@@ -12,17 +12,17 @@ from openpilot.sunnypilot.formosalink.protocol import sign
 
 
 class PreviewPublisher:
-  def __init__(self, identity, private, source, demo=False):
+  def __init__(self, identity, private, source, demo=False, camera="road-preview"):
     self.identity, self.private, self.source = identity, private, source
     self.stream, self.sequence = str(uuid.uuid4()), 0
-    self.demo = demo
+    self.demo, self.camera = demo, camera
 
   def once(self, session):
     # The injected source owns consent, freshness and any future camera adapter.
     data, sampled_at, hud = self.source()
     width,height = jpeg_size(data)
     frame = validate_frame({'version':1,'stream':self.stream,'sequence':self.sequence,
-      'sampled_at':sampled_at,'source':'demo' if self.demo else 'road-preview',
+      'sampled_at':sampled_at,'source':'demo' if self.demo else self.camera,
       'width':width,'height':height,'jpeg':base64.b64encode(data).decode('ascii'),'hud':hud})
     self.sequence += 1
     response = session.post(self.identity['origin']+'/api/v1/agent/media',
