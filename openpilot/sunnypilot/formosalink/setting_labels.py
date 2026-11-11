@@ -2,6 +2,8 @@
 import re
 
 ROWS = """
+FormosaPilot Instrument Display (Experimental)|FormosaPilot 儀表顯示（實驗）|FormosaPilot メーター表示（実験）
+Camera CAN-FD only. Restart required; keeps OEM warnings.|限相機側 CAN-FD，保留原廠警告，重啟後生效。|カメラ側 CAN-FD 専用。純正警告を保持。再起動が必要です。
 Steering|轉向|ステアリング
 Cruise|巡航|クルーズ
 Display|顯示|表示
@@ -144,6 +146,8 @@ def localize(text, native=None):
   match = re.fullmatch(r"([0-9.]+)\s*(second|seconds|s|h|m)",text)
   if match:
     number, unit = match.groups()
-    zh,ja = {"second":("秒","秒"),"seconds":("秒","秒"),"s":("秒","秒"),"h":("小時","時間"),"m":("公尺" if ' ' in text else "分鐘","m" if ' ' in text else "分")}[unit]
+    units = {"second":("秒","秒"),"seconds":("秒","秒"),"s":("秒","秒"),"h":("小時","時間"),
+             "m":("公尺" if ' ' in text else "分鐘","m" if ' ' in text else "分")}
+    zh,ja = units[unit]
     return {"en":text,"zh-TW":number+" "+zh,"ja":number+" "+ja}
   return native(text) if native else {"en":text,"zh-TW":text,"ja":text}

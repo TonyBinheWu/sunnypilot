@@ -89,14 +89,15 @@ def native_items(schema):
 def catalog(schema, values, types, capabilities, offroad, translate=lambda text: {"zh-TW":text,"en":text,"ja":text}):
   result = {}
   native_translate = translate
-  translate = lambda text: localize(text,native_translate)
+  def translate(text):
+    return localize(text,native_translate)
   for item, group, conditions, remote in native_items(schema):
     key = item["key"]
     if key not in types or key in LOCAL_ONLY or "sunnylink" in key.lower():
       continue
     widget = item["widget"]
     entry = {"key":key, "group":translate(group), "title":translate(item.get("title", key)),
-             "description":{"zh-TW":"","en":"","ja":""}, "type":types[key], "widget":widget,
+             "description":translate(item.get("description", "")), "type":types[key], "widget":widget,
              "enabled":bool(remote and offroad and widget != "info" and rules_pass(conditions, values, capabilities, offroad)),
              "unit":item.get("unit", "")}
     for name in ("min", "max", "step"):

@@ -7,7 +7,7 @@ See the LICENSE.md file in the root directory for more details.
 from openpilot.selfdrive.ui.sunnypilot.layouts.settings.vehicle.brands.base import BrandSettings
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.multilang import tr
-from openpilot.system.ui.sunnypilot.widgets.list_view import multiple_button_item_sp
+from openpilot.system.ui.sunnypilot.widgets.list_view import multiple_button_item_sp, toggle_item_sp
 from opendbc.car.hyundai.values import CAR, UNSUPPORTED_LONGITUDINAL_CAR
 
 
@@ -20,13 +20,18 @@ class HyundaiSettings(BrandSettings):
     self.longitudinal_tuning_item = multiple_button_item_sp(tr("Custom Longitudinal Tuning"), "", tuning_texts,
                                                             button_width=300, callback=self._on_tuning_selected,
                                                             param="HyundaiLongitudinalTuning", inline=False)
-    self.items = [self.longitudinal_tuning_item]
+    self.cluster_item = toggle_item_sp(tr("FormosaPilot Instrument Display (Experimental)"),
+      tr("Camera CAN-FD only. Restart required; keeps OEM warnings."),
+      param="FormosaClusterDisplay")
+    self.items = [self.longitudinal_tuning_item, self.cluster_item]
 
   @staticmethod
   def _on_tuning_selected(index):
     ui_state.params.put("HyundaiLongitudinalTuning", index)
 
   def update_settings(self):
+    self.cluster_item.action_item.set_enabled(ui_state.is_offroad())
+    self.cluster_item.show_description(True)
     self.alpha_long_available = False
     bundle = ui_state.params.get("CarPlatformBundle")
     if bundle:

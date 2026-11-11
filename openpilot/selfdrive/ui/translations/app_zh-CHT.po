@@ -2181,3 +2181,9 @@ msgstr "更新項目"
 #: openpilot/selfdrive/ui/mici/layouts/settings/software.py
 msgid "Installed version notes"
 msgstr "目前版本更新說明"
+
+msgid "FormosaPilot Instrument Display (Experimental)"
+msgstr "FormosaPilot 儀表顯示（實驗）"
+
+msgid "Camera CAN-FD only. Restart required; keeps OEM warnings."
+msgstr "限相機側 CAN-FD，保留原廠警告，重啟後生效。"

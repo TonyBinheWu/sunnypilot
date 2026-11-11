@@ -10,7 +10,7 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.button import Button, ButtonStyle
 
 LOGO_ASSET = "../../sunnypilot/formosalink/assets/formosapilot-logo.png"
-NATIVE_VERSION = "0.8.0"
+NATIVE_VERSION = "0.9.0"
 COPY = {
   "zh-TW": ("裝置與雲端", "手機配對與遠端設定", "分支", "版本", "行動數據開關：網路設定", "停車後可配對及設定"),
   "en": ("Device & cloud", "Phone pairing & remote settings", "Branch", "Commit", "Cellular data switch: Network", "Park to pair and configure"),
