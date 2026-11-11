@@ -2350,6 +2350,29 @@
               "equals": true
             }
           ]
+        },
+        {
+          "key": "FormosaClusterDisplay",
+          "widget": "toggle",
+          "title": "FormosaPilot Instrument Display (Experimental)",
+          "description": "Camera CAN-FD only. Restart required; keeps OEM warnings.",
+          "visibility": [
+            {
+              "type": "capability",
+              "field": "brand",
+              "equals": "hyundai"
+            }
+          ],
+          "enablement": [
+            {
+              "type": "offroad_only"
+            },
+            {
+              "type": "capability",
+              "field": "formosa_cluster_supported",
+              "equals": true
+            }
+          ]
         }
       ]
     },

@@ -1870,3 +1870,9 @@ msgstr "關閉 NNLC／Jerk"
 #: openpilot/selfdrive/ui/sunnypilot/mici/layouts/steering.py
 msgid "Turn off conflicting steering tuning. The low-speed tuning switch stays unchanged."
 msgstr "關閉互相衝突的轉向調校，不會自動變更低速調校開關。"
+
+msgid "FormosaPilot Instrument Display (Experimental)"
+msgstr "FormosaPilot 儀表顯示（實驗）"
+
+msgid "Camera CAN-FD only. Restart required; keeps OEM warnings."
+msgstr "限相機側 CAN-FD，保留原廠警告，重啟後生效。"

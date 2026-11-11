@@ -128,6 +128,25 @@ class TestSettingsProfile(unittest.TestCase):
         parked.return_value=True;dialog._disable_monitoring();self.assertFalse(params.get_bool("FormosaLinkRemoteSettings"))
         dialog.hide_event()
 
+  def test_cluster_native_toggle_default_translations_and_driving_guard(self):
+    from openpilot.selfdrive.ui.sunnypilot.layouts.settings.vehicle.brands import hyundai
+    from openpilot.system.ui.lib.multilang import load_translations, TRANSLATIONS_DIR
+    with tempfile.TemporaryDirectory() as directory:
+      params = Params(directory)
+      self.assertFalse(params.get_bool("FormosaClusterDisplay"))
+      with patch.object(hyundai.ui_state, "params", params), patch.object(hyundai.ui_state, "is_offroad", return_value=True) as parked:
+        settings = hyundai.HyundaiSettings()
+        settings.update_settings()
+        self.assertTrue(settings.cluster_item.action_item.enabled)
+        parked.return_value = False
+        settings.update_settings()
+        self.assertFalse(settings.cluster_item.action_item.enabled)
+        self.assertFalse(params.get_bool("FormosaClusterDisplay"))
+      for language in ("zh-CHT", "ja"):
+        strings, _ = load_translations(TRANSLATIONS_DIR.joinpath(f"app_{language}.po"))
+        self.assertTrue(strings["FormosaPilot Instrument Display (Experimental)"])
+        self.assertTrue(strings["Camera CAN-FD only. Restart required; keeps OEM warnings."])
+
   def test_legacy_processes_cannot_start_and_cloud_is_optional(self):
     from openpilot.system.manager.process_config import managed_processes
     from openpilot.sunnypilot.formosalink.service_policy import LEGACY_PROCESSES, OptionalCloudOnboarding

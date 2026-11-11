@@ -26,6 +26,7 @@ PROTOCOL_VERSION = 1
 # Non-boolean fields must have defaults in CAPABILITY_DEFAULTS.
 CAPABILITY_FIELDS = (
   "protocol_version",
+  "formosa_cluster_supported",
   "has_longitudinal_control",
   "has_icbm",
   "icbm_available",
@@ -49,6 +50,7 @@ CAPABILITY_FIELDS = (
 )
 
 CAPABILITY_LABELS: dict[str, str] = {
+  "formosa_cluster_supported": "FormosaPilot instrument display available",
   "protocol_version": "Capabilities protocol version",
   "has_longitudinal_control": "sunnypilot longitudinal control",
   "has_icbm": "ICBM enabled",
@@ -162,6 +164,8 @@ def generate_capabilities(params: Params | None = None) -> dict:
       # which is a separate concept and is not interchangeable.
       caps["steer_control_type"] = str(CP.steerControlType)
       caps["torque_allowed"] = CP.steerControlType != car.CarParams.SteerControlType.angle
+      from opendbc.car.hyundai.formosa_cluster import supported as cluster_supported
+      caps["formosa_cluster_supported"] = bool(CP.brand == 'hyundai' and not CP.dashcamOnly and cluster_supported(CP))
       caps["hkg_low_speed_torque_available"] = supports_low_speed_torque(CP)
       caps["low_speed_steering_tune_available"] = supports_low_speed_tune(CP)
       if not caps["brand"] and CP.brand:
