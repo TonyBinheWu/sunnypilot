@@ -31,7 +31,16 @@
   const startPage = new URL(location.href).searchParams.get('formosa_page') === 'setting' ? 'setting' : null;
   globalThis.FormosaCarrotRemote = Object.freeze({ prefix, url: map, startPage });
   const fetchOriginal = window.fetch.bind(window);
-  window.fetch = (input, options) => fetchOriginal(input instanceof Request ? new Request(map(input.url), input) : map(input), options);
+  window.fetch = (input, options) => {
+    const mapped = map(input instanceof Request ? input.url : input);
+    const url = new URL(mapped, location.href);
+    // Native offline guides omit credentials. The owner-authenticated relay
+    // still needs its same-origin cookie; the server never forwards it to the
+    // device. External resources retain their caller's credential policy.
+    const init = url.origin === location.origin && url.pathname.startsWith(prefix)
+      ? { ...options, credentials: "same-origin" } : options;
+    return fetchOriginal(input instanceof Request ? new Request(mapped, input) : mapped, init);
+  };
   for (const name of ["Worker", "SharedWorker"]) {
     const Native = window[name];
     if (Native) window[name] = class extends Native { constructor(url, options) { super(map(url), options); } };

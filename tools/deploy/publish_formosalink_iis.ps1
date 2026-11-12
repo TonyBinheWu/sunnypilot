@@ -16,6 +16,7 @@ $files.Remove('package.json')
 $files['web.config'] = Join-Path $repoRoot 'formosalink\deploy\web.config'
 $files['App_Data\start-server.ps1'] = Join-Path $repoRoot 'formosalink\deploy\start-server.ps1'
 $files['App_Data\setup-server.ps1'] = Join-Path $repoRoot 'formosalink\deploy\setup-server.ps1'
+$files['App_Data\update-web-bridge.ps1'] = Join-Path $repoRoot 'formosalink\deploy\update-web-bridge.ps1'
 $pythonPackage = Join-Path $repoRoot 'build\formosalink-python-3.14.10.zip'
 if (Test-Path -LiteralPath $pythonPackage) { $files['App_Data\installers\python.3.14.10.nupkg'] = $pythonPackage }
 $files['App_Data\README.md'] = Join-Path $repoRoot 'formosalink\README.md'
@@ -52,6 +53,6 @@ foreach ($relative in ($files.Keys | Sort-Object)) {
   Copy-Item -LiteralPath $files[$relative] -Destination $target -Force
   if ((Get-FileHash -LiteralPath $target).Hash -ne (Get-FileHash -LiteralPath $files[$relative]).Hash) { throw "Hash mismatch: $relative" }
 }
-$manifest = @{ product = 'FormosaLink'; version = '0.8.4'; deployedAtUtc = [DateTime]::UtcNow.ToString('o'); files = @($files.Keys | Sort-Object) }
+$manifest = @{ product = 'FormosaLink'; version = '0.8.5'; deployedAtUtc = [DateTime]::UtcNow.ToString('o'); files = @($files.Keys | Sort-Object) }
 $manifest | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $marker -Encoding UTF8
 Write-Output "Published and hash-verified $($files.Count) files to $destinationRoot. For a new installation, complete IIS and Python service setup."

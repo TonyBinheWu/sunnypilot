@@ -28,10 +28,12 @@ def main():
   resolve = re.search(r'function resolveWebStartPage\(\) \{[\s\S]*?\n\}', navigation).group()
   native = ('<!doctype html><script src="__formosa_bridge.js"></script><body><script>'
             'const PAGE_ELEMENTS={setting:{},carrot:{}};window.getWebStartPage=()=>"carrot";'
-            +resolve+';document.body.dataset.page=resolveWebStartPage();</script>')
+            +resolve+';document.body.dataset.page=resolveWebStartPage();'
+            'fetch("/docs/settings/fixture.json",{credentials:"omit"}).then(r=>{if(!r.ok)throw Error("guide auth");'
+            'return r.json()}).then(d=>document.body.dataset.guide=d.language);</script>')
   now = time.time()
   device = {'id':'fixture-device', 'name':'Carrot browser fixture', 'state':'paired', 'online':True, 'stale':False,
-            'snapshot':{'sampled_at':now, 'metrics':{'branch':'carrot-wip','device_type':'DEMO-CARROT','started':False}}, 'health':{}}
+            'snapshot':{'sampled_at':now, 'metrics':{'branch':'origin/carrot-wip','device_type':'DEMO-CARROT','started':False}}, 'health':{}}
   state = {'fresh':True, 'commands':[], 'snapshot':{'offroad':True, 'remote_enabled':False, 'catalog':[],
            'values':{}, 'info':{}, 'session':'fixture', 'revision':'1','catalog_revision':'1'}}
   def route_api(route):
@@ -42,6 +44,10 @@ def main():
       return
     if path.endswith('/carrot/'):
       route.fulfill(body=native, content_type='text/html')
+      return
+    if path.endswith('/carrot/docs/settings/fixture.json'):
+      assert 'fixture-owner=authenticated' in route.request.headers.get('cookie',''), 'Guide needs relay owner cookie'
+      route.fulfill(body=json.dumps({'language':'zh-tw'}), content_type='application/json')
       return
     data = {'/api/v1/auth/me':{'user':{'id':'fixture-owner','github_login':'fixture'},'github_enabled':True},
             '/api/v1/devices':{'devices':[device], 'server_time':now},
@@ -54,6 +60,7 @@ def main():
       try:
         for viewport in [{'width':1280,'height':900}, {'width':390,'height':844}]:
           context = browser.new_context(viewport=viewport)
+          context.add_cookies([{'name':'fixture-owner','value':'authenticated','url':origin,'httpOnly':True}])
           context.route('**/api/v1/**', route_api)
           page = context.new_page()
           errors = []
@@ -64,6 +71,7 @@ def main():
           with page.expect_popup() as popup:
             entry.click()
           expect(popup.value.locator('body')).to_have_attribute('data-page', 'setting')
+          expect(popup.value.locator('body')).to_have_attribute('data-guide', 'zh-tw')
           popup.value.close()
           page.get_by_role('button', name='裝置資訊', exact=True).click()
           expect(page.locator('#settings-banner-text')).to_contain_text('此分支不使用「停車遠端設定」')

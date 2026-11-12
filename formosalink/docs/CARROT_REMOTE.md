@@ -18,7 +18,15 @@
 
 網站 `0.8.4` 另提供「Carrot 設定」按鈕，可直接進入該裝置的原生設定頁；「裝置資訊」內也有相同入口。搜尋、設定詳細說明及儲存均在原生頁面操作，不使用 sunnypilot 的空白設定目錄。首次使用仍先完成原生介紹流程。入口僅指定此分頁的起始頁，不改寫車機或瀏覽器儲存的首頁偏好，也不會自動開啟遠端授權。
 
-車機需更新本次 `carrot-wip` 才會自動切至設定頁；較舊版本仍可開啟原生網頁，再手動選「設定」。網站此次只更新靜態檔案及私有套件中的 bridge，IIS 後端不需重啟；既有帳號、配對與資料庫不變。
+車機需更新本次 `carrot-wip` 才會自動切至設定頁；較舊版本仍可開啟原生網頁，再手動選「設定」。網站 `0.8.5` 同時辨識車機回報的 `carrot-wip` 與 `origin/carrot-wip`，並修正本機指南經雲端讀取時省略登入憑證的問題。原生設定列的繁中標題與短說明修正需更新車機；不改變參數值或生效時機。
+
+**已使用 setup-server.ps1 安裝的 IIS 主機：**服務從網站外的 `C:\ProgramData\FormosaLink-code` 載入私有副本。只更新 `App_Data/server-package` 並不會更新正在使用的 bridge。在 IIS 主機以系統管理員 PowerShell 執行以下指令，同步這一個檔案即可；工具先備份並核對雜湊，不重啟服務、不更動帳號、配對或設定。使用自訂資料目錄時需附上原本的 `-DataDirectory`。
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs\FormosaPilot\App_Data\update-web-bridge.ps1"
+```
+
+完成後重新載入遠端 Carrot 分頁。此同來源憑證只用於 FormosaLink 所有者驗證；閘道不會把 FormosaLink cookie 傳給車機，外部指南請求仍沿用原本的憑證政策。
 
 每個分頁固定綁定一台裝置。兩台裝置同時開啟時，HTTP、WebSocket、靜態資源與瀏覽器偏好各自路由；沒有共用的「目前裝置」cookie。FormosaLink cookie 不會轉送給車機；Carrot 自己的 Bearer 授權可沿通道傳遞。
 
@@ -68,6 +76,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs
 
 ## English
 
-Portal 0.8.4 adds **Carrot settings** on the device card and information workspace. Enable the existing local **Carrot web: off → on** control while parked with ignition off; carrot-wip does not use sunnypilot's separate **Parked settings** switch. Settings, search and detailed help remain in the native web interface. Update the vehicle for direct settings-page navigation; older devices can open the native home page and select Settings manually. The per-tab hint preserves saved home-page preferences and the first-run introduction. This portal/bridge-only update needs no backend restart.
+Portal 0.8.4 adds **Carrot settings** on the device card and information workspace. Enable the existing local **Carrot web: off → on** control while parked with ignition off; carrot-wip does not use sunnypilot's separate **Parked settings** switch. Settings, search and detailed help remain in the native web interface. Update the vehicle for direct settings-page navigation and Traditional row text; older devices can open the native home page and select Settings manually. The per-tab hint preserves saved home-page preferences and the first-run introduction. Portal 0.8.5 recognizes tracking-branch names and preserves owner authentication for local guides. Installed IIS services read a private runtime copy: run the bridge-only PowerShell updater above on the IIS host, then reload the remote tab. No backend restart or account/pairing/settings change is needed.
 
 Update both `carrot-wip` and the IIS backend. Pair from the native FormosaLink screen, then explicitly enable **Carrot web** on the device while parked with ignition off. The portal opens the device's existing Carrot web in its own tab; native validation and confirmations remain active. This separate grant defaults off. Per-device paths isolate routing and browser preferences, while owner/session checks, signed outbound WSS and device-side parked/consent checks protect the connection. Upload requests are limited to 8 MiB; downloads stream with Range support. Use FormosaLink Live cameras for ultra-wide/cabin video: continuous MJPEG, target 8 fps, up to 640×360, no audio. The gateway does not supply WebRTC TURN/UDP forwarding. Existing accounts, pairings and the SQLite schema are preserved. Run the PowerShell command above on the IIS host and verify both health feature flags. Physical C3X/C4 cameras, load and external-network behavior remain to be validated.

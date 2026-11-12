@@ -2,7 +2,7 @@ import {mediaViewer} from './media-view.js?v=0.8.3';
 import {parseCoordinates} from './navigation-input.js?v=0.6.0';
 import {deviceHealth} from './health-ui.js?v=0.6.0';
 import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from './settings-edits.js?v=0.6.0';
-import {isCarrotDevice,carrotUrl,settingsStatus} from './carrot-entry.js?v=0.8.4';
+import {isCarrotDevice,carrotUrl,settingsStatus} from './carrot-entry.js?v=0.8.5';
 // Full-page, owner-scoped device workspace. Only device receipts confirm writes.
 export const sections=['home','live','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer'];
 export function category(entry){const group=entry.group?.en?.toLowerCase();return sections.includes(group)?group:'device';}

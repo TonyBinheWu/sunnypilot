@@ -1,5 +1,17 @@
 # Repository memory
 
+- 2026-11-12: Real FormosaLink acceptance found telemetry branch origin/carrot-wip
+  (not just carrot-wip), and classic utils.formatItemText missing zh-tw despite
+  localized catalog/derived resolver. Portal0.8.5 accepts both exact branch names;
+  classic rows now use ttitle/tdescr. Local guide credentials:omit must become
+  same-origin only for device-scoped relay URLs, never external requests.
+  setup-server copies code to DataDirectory+'-code'; updating the website's
+  server-package alone does not update the live bridge. The bridge-only host
+  updater backs up/hash-verifies that asset without restart or runtime-data edits.
+  Real cloud C4 settings test ShowDateTime0->1 persisted after reload, restored0
+  and reloaded0. Initial guides/row text failed; deployment acceptance pending
+  private-runtime bridge sync and vehicle update. No control settings modified.
+
 - 2026-11-12: FormosaLink portal0.8.4 adds owner/device-scoped Carrot settings
   links. CarrotStatusProvider stays read-only; local FormosaLinkRemoteWeb
   (遠端 Carrot 網頁) is the actual grant, not FormosaLinkRemoteSettings.

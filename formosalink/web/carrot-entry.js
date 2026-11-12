@@ -1,6 +1,6 @@
 // Navigation only: the device's existing local web consent remains authoritative.
 export function isCarrotDevice(device) {
-  return device?.snapshot?.metrics?.branch === 'carrot-wip';
+  return ['carrot-wip', 'origin/carrot-wip'].includes(device?.snapshot?.metrics?.branch);
 }
 
 export function carrotUrl(deviceId, settings = false) {

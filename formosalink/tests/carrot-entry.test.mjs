@@ -9,6 +9,11 @@ const carrot={id:'device-a',snapshot:{metrics:{branch:'carrot-wip'}}};
 test('Carrot settings use native web consent rather than the unused settings grant',()=>{
   const state={offroad:true,remote_enabled:false,catalog:[]};
   assert.equal(isCarrotDevice(carrot),true);
+  const tracked={...carrot,snapshot:{metrics:{branch:'origin/carrot-wip'}}};
+  assert.equal(isCarrotDevice(tracked),true);
+  assert.equal(settingsStatus(tracked,state,true),'carrotSettingsHelp');
+  for(const branch of [undefined,null,'origin/hkg-enhanced','feature/carrot-wip','carrot-wip-old'])
+    assert.equal(isCarrotDevice({snapshot:{metrics:{branch}}}),false);
   assert.equal(settingsStatus(carrot,state,true),'carrotSettingsHelp');
   assert.equal(settingsStatus(carrot,state,false),'settingsOffline');
   assert.equal(settingsStatus(carrot,{...state,offroad:false},true),'settingsDriving');

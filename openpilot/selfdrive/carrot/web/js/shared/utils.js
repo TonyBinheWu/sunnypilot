@@ -42,6 +42,7 @@ function escapeHtml(s) {
 }
 
 function formatItemText(p, keyKo, keyEn, fallback = "") {
+  if (LANG === "zh-tw") return (p["t" + keyEn.slice(1)] || p[keyEn] || p[keyKo] || fallback);
   if (LANG === "zh") return (p["c" + keyEn.slice(1)] || p[keyEn] || p[keyKo] || fallback);
   if (LANG === "ko") return (p[keyKo] || p[keyEn] || fallback);
   return (p[keyEn] || p[keyKo] || fallback);

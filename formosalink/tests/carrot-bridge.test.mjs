@@ -63,6 +63,21 @@ test('device preferences and clear never change another tab or the Formosa porta
   assert.equal(shared.getItem('formosalink-language'),'zh-TW');
 });
 
+test('local guides retain gateway owner authentication without adding credentials to external requests',async()=>{
+  const {ctx,prefix,calls}=browser('a');
+  await ctx.fetch('/docs/settings/Settings-Catalog.json',{credentials:'omit',cache:'no-store'});
+  assert.equal(calls.at(-1)[0],host+prefix+'docs/settings/Settings-Catalog.json');
+  assert.equal(calls.at(-1)[1].credentials,'same-origin');
+  assert.equal(calls.at(-1)[1].cache,'no-store');
+  await ctx.fetch(new Request(host+'/docs/settings/guide.md',{credentials:'omit'}));
+  assert.equal(calls.at(-1)[0].url,host+prefix+'docs/settings/guide.md');
+  assert.equal(calls.at(-1)[1].credentials,'same-origin');
+  await ctx.fetch('https://raw.githubusercontent.com/wiki/ajouatom/openpilot/Settings-Catalog.json',{credentials:'omit'});
+  assert.equal(calls.at(-1)[1].credentials,'omit');
+  await ctx.fetch('https://example.com/guide');
+  assert.equal(calls.at(-1)[1],undefined);
+});
+
 test('settings deep link is scoped to its tab and cannot select privileged pages',()=>{
   const a=browser('a',storage(),'?formosa_page=setting');
   assert.equal(a.ctx.FormosaCarrotRemote.startPage,'setting');

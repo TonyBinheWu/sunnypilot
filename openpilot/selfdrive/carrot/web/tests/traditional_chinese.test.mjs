@@ -6,6 +6,21 @@ import { normalizeSettingsCatalog } from "../src/features/settings/catalog.js";
 import { createSettingsDerivedModel, localizedSettingItemText, localizedSettingNodeLabel } from "../src/features/settings/derived_model.js";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
+test("classic settings rows use Traditional titles and descriptions with safe fallbacks", () => {
+  const source = read("../js/shared/utils.js");
+  const resolver = source.match(/function formatItemText\([^]*?\n\}/)[0];
+  const ctx = vm.createContext({ LANG: "zh-tw" });
+  vm.runInContext(resolver, ctx);
+  const item = { title: "시간", etitle: "Time", ctitle: "显示时间", ttitle: "顯示時間",
+    descr: "설명", edescr: "Description", cdescr: "显示日期", tdescr: "顯示日期" };
+  assert.equal(ctx.formatItemText(item, "title", "etitle"), item.ttitle);
+  assert.equal(ctx.formatItemText(item, "descr", "edescr"), item.tdescr);
+  assert.equal(ctx.formatItemText({etitle:"Fallback"}, "title", "etitle"), "Fallback");
+  ctx.LANG = "zh";
+  assert.equal(ctx.formatItemText(item, "title", "etitle"), item.ctitle);
+  ctx.LANG = "en";
+  assert.equal(ctx.formatItemText(item, "title", "etitle"), item.etitle);
+});
 function context(language = "zh-TW") {
   const window = { __CARROT_BOOTSTRAP__: {} };
   const ctx = vm.createContext({ window, navigator: { language, languages: [language] },
