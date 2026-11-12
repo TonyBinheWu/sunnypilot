@@ -55,6 +55,7 @@ In modes `EnableRadarTracks=1`–`3`, a confirmed departing front lead can recei
 
 Mode 3 bridges missing lateral support for at most one second. Range/speed discontinuities, missing SCC or path, and leaving the mode reset the previous refusal; a reused ID alone does not transfer it to another car.
 
+With standard, unmodified HDA2 wiring and openpilot longitudinal control, startup disables the factory SCC transmitter while raw front radar remains a separate input. Missing factory SCC does not invalidate healthy raw tracks in this configuration; missing required raw frames still causes a fault. Camera-SCC wiring and passive Bosch reception retain their native SCC handling. Mode `1` matches front radar to vision; modes `2` and `3` have no SCC fallback when that transmitter is disabled. Restart after changing radar source or wiring settings. This does not enable corner radar.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

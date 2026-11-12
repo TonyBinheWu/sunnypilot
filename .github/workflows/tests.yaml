@@ -142,6 +142,7 @@ jobs:
         run: |
           python -m pytest -o addopts='' -q \
             opendbc_repo/opendbc/car/hyundai/tests/test_radar.py \
+            opendbc_repo/opendbc/car/hyundai/tests/test_hda2_raw_radar.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_bosch_mature_retention.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_bosch_camera_extended.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_bosch_mirror_birth.py \
@@ -231,6 +232,7 @@ jobs:
             openpilot/selfdrive/carrot/tests/test_cluster_autorun.py \
             openpilot/selfdrive/carrot/bluetooth/tests \
             openpilot/selfdrive/car/tests/test_carrot_cruise_buttons.py \
+            openpilot/selfdrive/car/tests/test_cruise_settings.py \
             opendbc_repo/opendbc/car/volkswagen/tests/test_carstate_buttons.py \
             opendbc_repo/opendbc/car/volkswagen/tests/test_volkswagen.py::test_golf_mk7_wheel_speed_update \
             opendbc_repo/opendbc/car/hyundai/tests/test_stopping.py \

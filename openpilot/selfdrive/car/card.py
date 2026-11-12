@@ -185,7 +185,7 @@ class Car:
     self.params.put_nonblocking("CarParamsPersistent", cp_bytes)
 
     self.mock_carstate = MockCarState()
-    self.v_cruise_helper = VCruiseCarrot(self.CP) #VCruiseHelper(self.CP)
+    self.v_cruise_helper = VCruiseCarrot(self.CP, cached_settings=True) #VCruiseHelper(self.CP)
 
     self.is_metric = self.params.get_bool("IsMetric")
     self.experimental_mode = self.params.get_bool("ExperimentalMode")
@@ -213,7 +213,7 @@ class Car:
     self.card_diag_stage_current = dict.fromkeys(self.card_diag_stage_names, 0)
     self.card_diag_stage_sum_us = dict.fromkeys(self.card_diag_stage_names, 0)
     self.card_diag_stage_max_us = dict.fromkeys(self.card_diag_stage_names, 0)
-    self.runtime_diagnostics = RuntimeDiagnostics('card', cloudlog.event)
+    self.runtime_diagnostics = RuntimeDiagnostics('card', cloudlog.event, peak_metric='state_tail_ms')
 
   def _log_tesla_signals(self, CS, now: int) -> None:
     changed = self.tesla_signals.status != self.tesla_signal_status
@@ -542,13 +542,18 @@ class Car:
       work_ms=(time.monotonic_ns() - self.card_diag_recv_ns) / 1e6,
       thread_cpu_ms=(time.thread_time() - cpu_start) * 1000,
       **{f'{name}_ms': value / 1000 for name, value in self.card_diag_stage_current.items()},
+      **self.v_cruise_helper.cruise_stage_ms,
     )
 
   def params_thread(self, evt):
     while not evt.is_set():
       self.is_metric = self.params.get_bool("IsMetric")
       self.experimental_mode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
-      time.sleep(0.1)
+      try:
+        self.v_cruise_helper.refresh_params()
+      except (OSError, ValueError):
+        pass  # Keep the last complete preferences; age telemetry records a stalled refresh.
+      evt.wait(0.1)
 
   def card_thread(self):
     e = threading.Event()

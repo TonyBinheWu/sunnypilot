@@ -43,6 +43,8 @@ A radar fitted to the vehicle does not guarantee that carrotpilot can read the r
 
 On non-CAN FD Hyundai/Kia vehicles, a positive value normally attempts to enable radar tracks during startup and stores the result in `EnableRadarTracksResult`. The Bosch receive path below is an exception; for other configurations requiring activation, confirm both the activation result and actual incoming tracks.
 
+With standard, unmodified HDA2 wiring and openpilot longitudinal control, startup disables the factory SCC transmitter while raw front radar remains a separate input. Missing factory SCC does not invalidate healthy raw tracks in this configuration; missing required raw frames still causes a fault. Camera-SCC wiring and passive Bosch reception retain their native SCC handling. Mode `1` matches front radar to vision; modes `2` and `3` have no SCC fallback when that transmitter is disabled. Restart after changing radar source or wiring settings. This does not enable corner radar.
+
 <a id="bosch-passive-reception"></a>
 ### Bosch MRRevo14F passive reception exception
 

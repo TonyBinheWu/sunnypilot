@@ -1,5 +1,16 @@
 # Repository memory
 
+- 2026-11-12: EV6 standard HDA2/OP longitudinal disables native SCC_CONTROL
+  while raw ACAN tracks remain. Require raw input, not the deliberately stopped
+  SCC parser, only for raw HDA2 OP-long/non-Camera-SCC; preserve passive Bosch.
+  Exact5982-batch replay:1198 outputs,428->0 errors,3644 front points identical.
+  New raw-loss/own-TX and native-SCC regressions retain real fault rejection.
+  Latest route53 had CS107ms gap,tail96.656ms,CPUmax10.696ms and schedulerwait
+  0.380ms. Exact syscall unrecorded. Move26 periodic cruise reads into existing
+  settings worker, scope GM brake flag to GM; add correlated tail/phase timings.
+  Keep100ms freshness and fault recovery. Physical fix remains unverified;
+  no vehicle settings/update/reboot/actuation. Private evidence archive2026-11-12/ev6-can.
+
 - 2026-11-11: Restore Long Kp/Ki/Kf for identified Ray EV CommaPedal with
   CC_ONLY_CAR/PEDAL_INTERCEPTOR and OP longitudinal. Shared capability gates
   catalog/snapshot and actual speed-PID tuning, startup plus ~1s refresh.

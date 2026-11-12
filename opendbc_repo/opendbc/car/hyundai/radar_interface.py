@@ -613,7 +613,15 @@ class RadarInterface(RadarInterfaceBase):
     self.rcp_corner_objects_430 = get_corner_object_430_can_parser(CP, self.corner_object_430_tracks)
     # Enabling raw radar tracks on legacy CAN disables the stock SCC11 stream on
     # some Hyundai/Kia platforms. Camera-SCC cars may still use SCC11.
-    use_scc_parser = self.bosch is not None or not (self.radar_tracks and not self.canfd and not (CP.flags & HyundaiFlags.CAMERA_SCC))
+    # Standard HDA2 longitudinal disables the ADAS ECU (0x730). Its native
+    # SCC_CONTROL then stops, while raw radar remains on ACAN. Do not require
+    # the deliberately disabled stream, or read our own transmitted SCC as a
+    # measured lead. Camera-SCC and passive Bosch still receive native SCC.
+    hda2_scc_disabled = (self.canfd and bool(CP.flags & HyundaiFlags.CANFD_HDA2)
+                         and CP.openpilotLongitudinalControl
+                         and not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC))
+    use_scc_parser = self.bosch is not None or not (
+      self.radar_tracks and (hda2_scc_disabled or (not self.canfd and not (CP.flags & HyundaiFlags.CAMERA_SCC))))
     self.rcp_scc = get_radar_can_parser_scc(CP) if use_scc_parser else None
     self.trigger_msg_scc = 416 if self.canfd else 0x420
 

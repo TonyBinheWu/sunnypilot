@@ -9,6 +9,7 @@ from openpilot.selfdrive.carrot.cruise_gap import cruise_gap_levels, next_gap_pe
 from openpilot.selfdrive.carrot.bluetooth.model import BLUETOOTH_CANCEL, CommandReader, REMOTE_BUTTONS
 from openpilot.selfdrive.carrot.assistant_speed import AssistantSpeed
 from openpilot.selfdrive.car.toyota_pcm_speed import ToyotaPcmSetSpeedSync
+from openpilot.selfdrive.car.cruise_settings import read_cruise_settings
 
 from opendbc.car import structs
 GearShifter = structs.CarState.GearShifter
@@ -160,7 +161,7 @@ from openpilot.common.params import Params
 #EventName = log.OnroadEvent.EventName
 
 class VCruiseCarrot:
-  def __init__(self, CP):
+  def __init__(self, CP, *, cached_settings=False):
     self.CP = CP
     self.bluetooth_commands = CommandReader('cruise')
     self.assistant_speed = AssistantSpeed()
@@ -168,6 +169,10 @@ class VCruiseCarrot:
     self.frame = 0
     self.params_memory = Params("/dev/shm/params")
     self.params = Params()
+    self.periodic_settings = None
+    self.cruise_stage_ms = {}
+    if cached_settings:
+      self.refresh_params()
     self.v_cruise_kph = 20 #V_CRUISE_UNSET
     self.v_cruise_cluster_kph = 20 #V_CRUISE_UNSET
     self.v_cruise_kph_last = 20
@@ -269,40 +274,48 @@ class VCruiseCarrot:
   def _current_speed_for_initial_resume(self):
     return max(self.v_ego_kph_set, self._cruise_speed_min)
 
+  def refresh_params(self):
+    started = time.monotonic()
+    values = read_cruise_settings(self.params)
+    finished = time.monotonic()
+    self.periodic_settings = (finished, (finished - started) * 1000, values)
+
   def update_params(self, is_metric):
     unit_factor = 1.0 if is_metric else CV.MPH_TO_KPH
     if self.frame % 10 == 0:
-      self.autoCruiseControl = self.params.get_int("AutoCruiseControl") * unit_factor
-      self.soft_hold_on_cancel = self.params.get_bool("SoftHoldOnCancel")
-      self.autoGasTokSpeed = self.params.get_int("AutoGasTokSpeed") * unit_factor
-      self.autoGasCancelSpeed = self.params.get_int("AutoGasCancelSpeed") * unit_factor
-      self.autoGasSyncSpeed = self.params.get_int("AutoGasSyncSpeed")
-      self.applyModelSpeed = self.params.get_float("ApplyModelSpeed") * 0.01
-      self.autoSpeedUptoRoadSpeedLimit = self.params.get_float("AutoSpeedUptoRoadSpeedLimit") * 0.01
-      self.autoRoadSpeedAdjust = self.params.get_float("AutoRoadSpeedAdjust") * 0.01
+      snapshot = getattr(self, "periodic_settings", None)
+      values = read_cruise_settings(self.params) if snapshot is None else snapshot[2]
+      self.autoCruiseControl = values["AutoCruiseControl"] * unit_factor
+      self.soft_hold_on_cancel = values["SoftHoldOnCancel"]
+      self.autoGasTokSpeed = values["AutoGasTokSpeed"] * unit_factor
+      self.autoGasCancelSpeed = values["AutoGasCancelSpeed"] * unit_factor
+      self.autoGasSyncSpeed = values["AutoGasSyncSpeed"]
+      self.applyModelSpeed = values["ApplyModelSpeed"] * 0.01
+      self.autoSpeedUptoRoadSpeedLimit = values["AutoSpeedUptoRoadSpeedLimit"] * 0.01
+      self.autoRoadSpeedAdjust = values["AutoRoadSpeedAdjust"] * 0.01
 
-      useLaneLineSpeed = self.params.get_int("UseLaneLineSpeed") * unit_factor
+      useLaneLineSpeed = values["UseLaneLineSpeed"] * unit_factor
       if self.useLaneLineSpeed != useLaneLineSpeed:
         self.useLaneLineSpeedApply = useLaneLineSpeed
       self.useLaneLineSpeed = useLaneLineSpeed
 
-      self.speed_from_pcm = self.params.get_int("SpeedFromPCM")
-      self._cruise_speed_unit = self.params.get_int("CruiseSpeedUnit")
-      self._cruise_button_long_delay = self.params.get_int("CruiseButtonLongDelay")
-      self._cruise_speed_unit_basic = self.params.get_int("CruiseSpeedUnitBasic")
-      self._paddle_mode = self.params.get_int("PaddleMode")
-      self._cruise_button_mode = self.params.get_int("CruiseButtonMode")
-      self._cancel_button_mode = self.params.get_int("CancelButtonMode")
-      self._lfa_button_mode = self.params.get_int("LfaButtonMode")
-      self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
-      self.autoRoadSpeedLimitOffset = self.params.get_int("AutoRoadSpeedLimitOffset")
-      self.autoNaviSpeedSafetyFactor = self.params.get_float("AutoNaviSpeedSafetyFactor") * 0.01
-      self.cruiseOnDist = self.params.get_float("CruiseOnDist") * 0.01
-      cruiseSpeed1 = self.params.get_float("CruiseSpeed1") * unit_factor
-      cruiseSpeed2 = self.params.get_float("CruiseSpeed2") * unit_factor
-      cruiseSpeed3 = self.params.get_float("CruiseSpeed3") * unit_factor
-      cruiseSpeed4 = self.params.get_float("CruiseSpeed4") * unit_factor
-      cruiseSpeed5 = self.params.get_float("CruiseSpeed5") * unit_factor
+      self.speed_from_pcm = values["SpeedFromPCM"]
+      self._cruise_speed_unit = values["CruiseSpeedUnit"]
+      self._cruise_button_long_delay = values["CruiseButtonLongDelay"]
+      self._cruise_speed_unit_basic = values["CruiseSpeedUnitBasic"]
+      self._paddle_mode = values["PaddleMode"]
+      self._cruise_button_mode = values["CruiseButtonMode"]
+      self._cancel_button_mode = values["CancelButtonMode"]
+      self._lfa_button_mode = values["LfaButtonMode"]
+      self.disengage_on_accelerator = values["DisengageOnAccelerator"]
+      self.autoRoadSpeedLimitOffset = values["AutoRoadSpeedLimitOffset"]
+      self.autoNaviSpeedSafetyFactor = values["AutoNaviSpeedSafetyFactor"] * 0.01
+      self.cruiseOnDist = values["CruiseOnDist"] * 0.01
+      cruiseSpeed1 = values["CruiseSpeed1"] * unit_factor
+      cruiseSpeed2 = values["CruiseSpeed2"] * unit_factor
+      cruiseSpeed3 = values["CruiseSpeed3"] * unit_factor
+      cruiseSpeed4 = values["CruiseSpeed4"] * unit_factor
+      cruiseSpeed5 = values["CruiseSpeed5"] * unit_factor
       if cruiseSpeed1 <= 0:
         if self.autoRoadSpeedLimitOffset < 0:
           cruiseSpeed1 = self.nRoadLimitSpeed * self.autoNaviSpeedSafetyFactor
@@ -327,7 +340,13 @@ class VCruiseCarrot:
   def update_v_cruise(self, CS, sm, is_metric):
     prior_cruise_kph = self.v_cruise_kph
     self._add_log("")
+    params_started = time.monotonic()
     self.update_params(is_metric)
+    self.cruise_stage_ms = {"cruise_params_ms": (time.monotonic() - params_started) * 1000}
+    snapshot = getattr(self, "periodic_settings", None)
+    if snapshot is not None:
+      self.cruise_stage_ms.update(cruise_settings_age_ms=max(0.0, (params_started - snapshot[0]) * 1000),
+                                  cruise_settings_read_ms=snapshot[1])
     self.frame += 1
     if CS.gearShifter != GearShifter.drive:
       self.autoCruiseControl_cancel_timer = 20 * 100  # 20 sec
@@ -377,7 +396,9 @@ class VCruiseCarrot:
     if CC.enabled:
       self._cruise_ready = False
     previous_lat_enabled = self._lat_enabled
+    buttons_started = time.monotonic()
     v_cruise_kph = self._update_cruise_buttons(CS, CC, self.v_cruise_kph)
+    self.cruise_stage_ms["cruise_buttons_ms"] = (time.monotonic() - buttons_started) * 1000
     if self.assistant_speed.active:
       self._lat_enabled = previous_lat_enabled  # A speed request must not enable lateral control.
     pcm_speed = self.toyota_pcm_speed_sync.update(
@@ -421,10 +442,12 @@ class VCruiseCarrot:
 
     self.cruise_state_available_last = CS.cruiseState.available
     self.enabled_last = CC.enabled
+    finish_started = time.monotonic()
     try:
       self.assistant_speed.finish(self.v_cruise_kph)
     except (OSError, ValueError, TypeError):
       pass
+    self.cruise_stage_ms['cruise_finish_ms'] = (time.monotonic() - finish_started) * 1000
 
   def initialize_v_cruise(self, CS, experimental_mode: bool) -> None:
     return
@@ -895,7 +918,7 @@ class VCruiseCarrot:
         #self.autoCruiseControl_cancel_timer = 0
         self._engage_soft_hold()
       # GM: autoResume
-      elif self.params.get_bool("ActivateCruiseAfterBrake"):
+      elif self.CP.brand == "gm" and self.params.get_bool("ActivateCruiseAfterBrake"):
         self.params.put_bool_nonblocking("ActivateCruiseAfterBrake", False)
         self._cruise_control(1, -1, "Cruise on (brake)")
       elif self.v_cruise_kph < self.v_ego_kph_set:

@@ -1,6 +1,6 @@
 {
   "catalogCommit": "5d69560797924a8f137782ef9b02cf6a538db203",
-  "contentHash": "ed6eeb62499bf028116ca8ddeb50042f66976c27a5ebe0a4be7fcacf9e54576e",
+  "contentHash": "fde51811bf838cd7ff3d3e8e574772189ad328a9d5a6293a1ad8a9588bb63ee8",
   "generatedAt": "2026-11-12T00:00:00Z",
   "locales": [
     "ko",
@@ -310,8 +310,8 @@
       "hash": "147e668d39ab3d2d08bafb4015e6042a7e79d4702f25c2d7120a9519c0909586"
     },
     "EN-Enable-radar-tracks(0).md": {
-      "bytes": 7407,
-      "hash": "e5b8a52bec239c60b37fd2fc795b603ee223c5c21d56f990896cf97ef9930d8b"
+      "bytes": 7991,
+      "hash": "25c90249a1fb8a2a1c3bbbd3d24234f0715b7b66bed8cfe15d945bda8c7ef6da"
     },
     "EN-External-HUD-Brightness(0).md": {
       "bytes": 1781,
@@ -1274,8 +1274,8 @@
       "hash": "2bdb843b453e58d010147a02f7f892d8db8f49c70c99444299e5c17e32d42b17"
     },
     "KO-레이더트랙,SCC레이더설정(0).md": {
-      "bytes": 8197,
-      "hash": "2cf2941f258a54dc26a671cb34ca9a1cfc29a3c98cc2e3d1f61ec6ef05298ab6"
+      "bytes": 8933,
+      "hash": "b1996bd30087f778ee256f7c6d60faa1911017a9a336c15a0eda217e0477c6c0"
     },
     "KO-레인모드-속도(0).md": {
       "bytes": 2431,
@@ -2562,8 +2562,8 @@
       "hash": "642d780ebf806c92ac87bdbece906834388cd79645fe8c298a36a843a80ba9be"
     },
     "ZH-TW-開啟雷達軌跡-(0).md": {
-      "bytes": 6916,
-      "hash": "8c399bd6a8930af97c37372d25f6228165c37d1a17a83889e61db904ab4c2a27"
+      "bytes": 7475,
+      "hash": "683e23d9f51048f95d386abe0164b9b39fafd5e32cfdc11b5127c716a131a43a"
     },
     "ZH-TW-關機時間-(分鐘).md": {
       "bytes": 1706,
