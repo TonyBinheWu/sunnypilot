@@ -14,6 +14,8 @@ In CarrotAssist 0.2.4, drag the orange microphone to keep it in your preferred p
 
 Voice Tools operations require separate **Allow Tools panels and actions** permission. The [CarrotAssist guide](carrot-assist.md) covers backup/restore screens, confirmed GitPull/restart jobs, and separate first-installation and reconnection steps. Paste authorization codes into the device approval webpage, never a voice conversation.
 
+Radar-source choices require the matching wiring and a device restart. On standard HDA2 wiring with openpilot longitudinal control, raw front-radar/vision matching can operate after the factory SCC transmitter is stopped; SCC fallback is then unavailable. The detailed radar setting guide explains this distinction in Traditional Chinese as well. See [radar source behavior and checks](radar.md#front-radar).
+
 > [!NOTE]
 > This is the canonical English user guide maintained with the `carrot-wip` code. When user-visible behavior changes, update this document together with the related code and tests.
 
