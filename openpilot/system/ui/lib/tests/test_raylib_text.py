@@ -115,9 +115,9 @@ def korean_renderer(renderer):
   language = SimpleNamespace(value="en")
   scope.update(re=re, multilang=SimpleNamespace(requires_unifont=lambda: language.value == "ko"))
   tree = ast.parse((UI_DIR / "lib/application.py").read_text(encoding="utf-8"))
-  pattern = next(n for n in tree.body if isinstance(n, ast.Assign) and
-                 any(isinstance(t, ast.Name) and t.id == "_KOREAN_TEXT_RE" for t in n.targets))
-  exec(compile(ast.Module(body=[pattern], type_ignores=[]), "application.py", "exec"), scope)
+  patterns = [n for n in tree.body if isinstance(n, ast.Assign) and
+              any(isinstance(t, ast.Name) and t.id in {"_KOREAN_TEXT_RE", "_CJK_TEXT_RE"} for t in n.targets)]
+  exec(compile(ast.Module(body=patterns, type_ignores=[]), "application.py", "exec"), scope)
   load_definitions(UI_DIR / "lib/application.py", scope, {"font_fallback"})
 
   measurements = []
@@ -135,6 +135,19 @@ def korean_renderer(renderer):
 def test_english_locale_selects_korean_font(korean_renderer, text):
   r = korean_renderer
   assert r.font_fallback(r.normal, text) is r.display
+
+
+@pytest.mark.parametrize("text", ["繁體中文", "駕駛控制方式", "CAN 錯誤：請檢查連線！", "（設定）", "車輛".encode(), "日本語",
+                                  "沒有警示", "外接 GPU", "遠端 Carrot 網頁", "掃描 QR 配對"])
+def test_mixed_locale_cjk_uses_multilingual_font_for_measurement_and_draw(korean_renderer, text):
+  r = korean_renderer
+  assert r.font_fallback(r.normal, text) is r.display
+  value = text.decode() if isinstance(text, bytes) else text
+  label = r.Label(value, font_size=20)
+  label.render(r.rl.Rectangle(0, 0, 800, 120))
+  assert r.rl.draw_calls
+  assert all(call[0] is r.display for call in r.rl.draw_calls)
+  assert all(font is r.display for font, _ in r.measurements)
 
 
 @pytest.mark.parametrize("text", [None, "", "speed 100", "35° / € £ ¥", "français – ñü", "⚠️ 🛑", b"speed", b"\xff"])
@@ -218,17 +231,17 @@ def test_generated_and_source_fonts_cover_jamo_and_common_symbols(korean_rendere
   r = korean_renderer
   font_dir = UI_DIR.parents[1] / "selfdrive/assets/fonts"
   tree = ast.parse((font_dir / "process.py").read_text(encoding="utf-8"))
-  extra = next(n for n in tree.body if isinstance(n, ast.Assign) and
-               any(isinstance(t, ast.Name) and t.id == "EXTRA_CHARS" for t in n.targets))
-  scope = {"_languages": dict}
-  exec(compile(ast.Module(body=[extra], type_ignores=[]), "process.py", "exec"), scope)
+  extra = [n for n in tree.body if isinstance(n, ast.Assign) and
+           any(isinstance(t, ast.Name) and t.id in {"EXTRA_CHARS", "EXTRA_CJK_CHARS"} for t in n.targets)]
+  scope = {"_languages": dict, "NATIVE_UI_DIR": font_dir.parents[2] / "sunnypilot/formosalink"}
+  exec(compile(ast.Module(body=extra, type_ignores=[]), "process.py", "exec"), scope)
   load_definitions(font_dir / "process.py", scope, {"_char_sets"})
   base, generated = map(set, scope["_char_sets"]())
 
   tree = ast.parse((UI_DIR / "lib/application.py").read_text(encoding="utf-8"))
   app = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "GuiApplication")
   method = next(n for n in app.body if isinstance(n, ast.FunctionDef) and n.name == "_font_codepoints")
-  scope.update(FontWeight=r.FontWeight)
+  scope.update(FontWeight=r.FontWeight, FONT_DIR=font_dir)
   exec(compile(ast.Module(body=[method], type_ignores=[]), "application.py", "exec"), scope)
   source = scope["_font_codepoints"]
   jamo = set(range(0x1100, 0x1200)) | set(range(0x3130, 0x3190))
@@ -239,6 +252,21 @@ def test_generated_and_source_fonts_cover_jamo_and_common_symbols(korean_rendere
     assert jamo | common <= set(source(None, weight))
   assert common <= set(source(None, r.FontWeight.NORMAL))
   assert not jamo & set(source(None, r.FontWeight.NORMAL))
+
+
+def test_source_fallback_keeps_all_traditional_translation_characters(korean_renderer):
+  r = korean_renderer
+  font_dir = UI_DIR.parents[1] / "selfdrive/assets/fonts"
+  tree = ast.parse((UI_DIR / "lib/application.py").read_text(encoding="utf-8"))
+  app = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "GuiApplication")
+  method = next(n for n in app.body if isinstance(n, ast.FunctionDef) and n.name == "_font_codepoints")
+  scope = {"FontWeight": r.FontWeight, "FONT_DIR": font_dir}
+  exec(compile(ast.Module(body=[method], type_ignores=[]), "application.py", "exec"), scope)
+  translated = (font_dir.parents[1] / "ui/translations/app_zh-CHT.po").read_text(encoding="utf-8")
+  needed = {ord(c) for c in translated if ord(c) >= 128}
+  needed.update(map(ord, "『繁體中文：設定、駕駛與雷達。』"))
+  for weight in (r.FontWeight.DISPLAY, r.FontWeight.UNIFONT):
+    assert needed <= set(scope["_font_codepoints"](None, weight))
 
 
 def test_scrolling_label_reuses_geometry_but_updates_position_and_content(renderer):

@@ -8,9 +8,11 @@ FONT_DIR = Path(__file__).resolve().parent
 SELFDRIVE_DIR = FONT_DIR.parents[1]
 TRANSLATIONS_DIR = SELFDRIVE_DIR / "ui" / "translations"
 LANGUAGES_FILE = TRANSLATIONS_DIR / "languages.json"
+NATIVE_UI_DIR = SELFDRIVE_DIR.parent / "sunnypilot" / "formosalink"
 
 GLYPH_PADDING = 6
 EXTRA_CHARS = "–‑✓×°§•X⚙✕◀▶✔⌫⇧␣○●↳çêüñ–‑✓×°§•€£¥"
+EXTRA_CJK_CHARS = "，。！？：；「」『』（）【】《》〈〉、…—～　"
 UNIFONT_LANGUAGES = {"th", "zh-CHT", "zh-CHS", "ko", "ja"}
 KR_FONTS = {"KaiGenGothicKR-Bold"}
 
@@ -23,7 +25,7 @@ def _languages():
 
 def _char_sets():
   base = set(map(chr, range(32, 127))) | set(EXTRA_CHARS)
-  unifont = set(base)
+  unifont = set(base) | set(EXTRA_CJK_CHARS)
 
   unifont.update(map(chr, range(0xAC00, 0xD7A4)))
   unifont.update(map(chr, range(0x1100, 0x1200)))
@@ -36,6 +38,11 @@ def _char_sets():
     except FileNotFoundError:
       continue
     (unifont if code in UNIFONT_LANGUAGES else base).update(chars)
+
+  # FormosaLink's native UI has its own localized dictionaries rather than PO
+  # entries. Include their text too (e.g. 頁 in 遠端 Carrot 網頁).
+  for ui_path in NATIVE_UI_DIR.glob("*ui.py"):
+    unifont.update(ui_path.read_text(encoding="utf-8"))
 
   return tuple(sorted(ord(c) for c in base)), tuple(sorted(ord(c) for c in unifont))
 

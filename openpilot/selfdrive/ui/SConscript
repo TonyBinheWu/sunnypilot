@@ -4,6 +4,12 @@ Import('env', 'arch', 'common')
 # build the fonts
 generator = File("#openpilot/selfdrive/assets/fonts/process.py")
 source_files = Glob("#openpilot/selfdrive/assets/fonts/*.ttf") + Glob("#openpilot/selfdrive/assets/fonts/*.otf")
+# Glyph subsets are derived from these files. A translation-only update must
+# invalidate the atlas, including cached/prebuilt atlas downloads.
+translation_files = Glob("#openpilot/selfdrive/ui/translations/*.po") + [
+  File("#openpilot/selfdrive/ui/translations/languages.json"),
+]
+native_text_files = Glob("#openpilot/sunnypilot/formosalink/*ui.py")
 output_files = [
   (f"#{Path(f.path).with_suffix('.fnt')}", f"#{Path(f.path).with_suffix('.png')}")
   for f in source_files
@@ -11,7 +17,7 @@ output_files = [
 ]
 env.Command(
   target=output_files,
-  source=[generator, source_files],
+  source=[generator, source_files, translation_files, native_text_files],
   action=f"python3 {generator}",
 )
 

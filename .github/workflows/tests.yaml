@@ -32,12 +32,13 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - run: python -m pip install pytest numpy
+      - run: python -m pip install pytest numpy fonttools scons
       - name: Device strings, update tokens and text layout
         run: >-
           python -m pytest -c /dev/null --rootdir=. --noconftest -q
           openpilot/system/ui/lib/tests/test_raylib_text.py
           openpilot/selfdrive/ui/tests/test_traditional_chinese.py
+          openpilot/selfdrive/ui/tests/test_font_coverage.py
           openpilot/selfdrive/ui/tests/test_carrot_hud_renderer.py
           tools/docs/wiki_settings/tests
       - name: Web build and localized feature coverage
@@ -129,6 +130,10 @@ jobs:
       - run: ./tools/op.sh setup
       - name: Build openpilot
         run: scons
+      - name: Check production Traditional Chinese glyph atlas
+        env:
+          CARROT_REQUIRE_FONT_ATLAS: '1'
+        run: python -m pytest -o addopts='' -q openpilot/selfdrive/ui/tests/test_font_coverage.py
       - name: Check Tesla stop solver, gesture and shared defaults
         run: |
           python -c "import openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc"

@@ -1,5 +1,16 @@
 # Repository memory
 
+- 2026-11-12: Traditional missing glyphs include stale font atlases and FormosaLink
+  native UI dictionaries omitted from the subset (頁 in 遠端 Carrot 網頁).
+  Track PO/languages/native *ui.py as SCons font dependencies; include native
+  text and CJK punctuation in generated/source font coverage. CJK mixed-locale
+  labels select the same multilingual font for layout/draw. Real incremental
+  build reproduces the old stale atlas; new PO/language/native edits rebuild.
+  Production Raylib atlas12625->12659 requested glyphs stays8192x8192; actual
+  Traditional/native glyph bitmaps and reported labels verified, preview saved
+  privately. No vehicle write/restart. GitPull/full reboot reloads the atlas.
+  Evidence .analysis/archive/2026-11-12/traditional-fonts (archived at completion).
+
 - 2026-11-12: EV6 standard HDA2/OP longitudinal disables native SCC_CONTROL
   while raw ACAN tracks remain. Require raw input, not the deliberately stopped
   SCC parser, only for raw HDA2 OP-long/non-Camera-SCC; preserve passive Bosch.

@@ -137,18 +137,19 @@ class TextAlignmentVertical(IntEnum):
 
 
 _KOREAN_TEXT_RE = re.compile(r"[\u1100-\u11ff\u3130-\u318f\uac00-\ud7a3]")
+_CJK_TEXT_RE = re.compile(r"[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff00-\uffef]")
 
 
 def font_fallback(font: rl.Font, text: str | bytes | None = None) -> rl.Font:
-  """Keep locale fallback and also render Korean text in other locales."""
+  """Use the multilingual font for CJK text, including mixed-locale messages."""
   if not gui_app.has_font(FontWeight.DISPLAY):
     return font
   if multilang.requires_unifont():
     return gui_app.font(FontWeight.DISPLAY)
   if isinstance(text, bytes):
     text = text.decode("utf-8", errors="replace")
-  # Non-ASCII punctuation, Latin accents and emoji do not require a font change.
-  if isinstance(text, str) and _KOREAN_TEXT_RE.search(text):
+  # Latin accents, general symbols and emoji keep the requested font.
+  if isinstance(text, str) and (_KOREAN_TEXT_RE.search(text) or _CJK_TEXT_RE.search(text)):
     return gui_app.font(FontWeight.DISPLAY)
   return font
 
@@ -1045,6 +1046,15 @@ class GuiApplication:
     # Match the common symbols in the generated atlases (fonts/process.py).
     codepoints.update(map(ord, "–‑✓×°§•X⚙✕◀▶✔⌫⇧␣○●↳çêüñ–‑✓×°§•€£¥"))
     if font_weight in (FontWeight.DISPLAY, FontWeight.UNIFONT):
+      # Source-font fallback must cover the same translated punctuation and
+      # characters as process.py, even before the generated atlas is available.
+      codepoints.update(map(ord, "，。！？：；「」『』（）【】《》〈〉、…—～　"))
+      translations_dir = FONT_DIR.parents[1] / "ui" / "translations"
+      for po_path in translations_dir.glob("app_*.po"):
+        codepoints.update(map(ord, po_path.read_text(encoding="utf-8")))
+      native_ui_dir = FONT_DIR.parents[2] / "sunnypilot" / "formosalink"
+      for ui_path in native_ui_dir.glob("*ui.py"):
+        codepoints.update(map(ord, ui_path.read_text(encoding="utf-8")))
       codepoints.update(range(0xAC00, 0xD7A4))
       codepoints.update(range(0x1100, 0x1200))
       codepoints.update(range(0x3130, 0x3190))
