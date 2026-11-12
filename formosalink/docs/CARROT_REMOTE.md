@@ -7,7 +7,7 @@
 1. 更新本倉庫 `carrot-wip`，安全停車後重新啟動。
 2. C3X 在「裝置 → FormosaLink」開啟配對；C4 在「設定 → FormosaLink」開啟。
 3. 掃描 QR，於手機登入 GitHub，核對並完成配對。
-4. 要使用原生 Carrot 網頁時，在車機配對畫面開啟「遠端 Carrot 網頁」。此權限預設關閉，與原有 FormosaLink 停車設定權限分開。
+4. 要使用原生 Carrot 網頁時，在車機配對畫面將「遠端 Carrot 網頁：關」切換成「開」。此權限預設關閉；本分支沒有使用 sunnypilot 的「停車遠端設定」開關。
 5. 車機須保持網路連線。遠端網頁需要停車熄火、有效的裝置狀態與 Panda 狀態；資料過期時會關閉通道。
 
 本機參數 `FormosaLinkEnabled` 預設開啟背景連線，但仍需配對；`FormosaLinkRemoteWeb` 預設關閉，控制原生 Carrot 網頁通道。Carrot 的 FormosaLink 健康面板只提供讀取，設定操作使用原生 Carrot 網頁；沒有套用 sunnypilot 的車型設定 schema。原有 `FormosaLinkRemoteSettings` 不會自動授予完整網頁權限。
@@ -15,6 +15,10 @@
 ## 遠端操作 Carrot 網頁
 
 登入 FormosaLink，在 `carrot-wip` 裝置卡片選「遠端 Carrot 網頁」，於新分頁開啟原生介面。可使用既有的繁中設定搜尋、參數調整、說明、備份與工具；原生 Carrot 自己的驗證、生效時機與確認流程仍會執行。完整網頁也包含原有終端與維護能力，因此這是完整網頁授權。
+
+網站 `0.8.4` 另提供「Carrot 設定」按鈕，可直接進入該裝置的原生設定頁；「裝置資訊」內也有相同入口。搜尋、設定詳細說明及儲存均在原生頁面操作，不使用 sunnypilot 的空白設定目錄。首次使用仍先完成原生介紹流程。入口僅指定此分頁的起始頁，不改寫車機或瀏覽器儲存的首頁偏好，也不會自動開啟遠端授權。
+
+車機需更新本次 `carrot-wip` 才會自動切至設定頁；較舊版本仍可開啟原生網頁，再手動選「設定」。網站此次只更新靜態檔案及私有套件中的 bridge，IIS 後端不需重啟；既有帳號、配對與資料庫不變。
 
 每個分頁固定綁定一台裝置。兩台裝置同時開啟時，HTTP、WebSocket、靜態資源與瀏覽器偏好各自路由；沒有共用的「目前裝置」cookie。FormosaLink cookie 不會轉送給車機；Carrot 自己的 Bearer 授權可沿通道傳遞。
 
@@ -63,5 +67,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "\\192.168.20.145\htdocs
 這些是主機與協定測試。C3X／C4 實體鏡頭、夜間車內影像、CPU／溫度、行動網路與外網端到端延遲仍需實機驗收，不能以合成影像視為實車通過。
 
 ## English
+
+Portal 0.8.4 adds **Carrot settings** on the device card and information workspace. Enable the existing local **Carrot web: off → on** control while parked with ignition off; carrot-wip does not use sunnypilot's separate **Parked settings** switch. Settings, search and detailed help remain in the native web interface. Update the vehicle for direct settings-page navigation; older devices can open the native home page and select Settings manually. The per-tab hint preserves saved home-page preferences and the first-run introduction. This portal/bridge-only update needs no backend restart.
 
 Update both `carrot-wip` and the IIS backend. Pair from the native FormosaLink screen, then explicitly enable **Carrot web** on the device while parked with ignition off. The portal opens the device's existing Carrot web in its own tab; native validation and confirmations remain active. This separate grant defaults off. Per-device paths isolate routing and browser preferences, while owner/session checks, signed outbound WSS and device-side parked/consent checks protect the connection. Upload requests are limited to 8 MiB; downloads stream with Range support. Use FormosaLink Live cameras for ultra-wide/cabin video: continuous MJPEG, target 8 fps, up to 640×360, no audio. The gateway does not supply WebRTC TURN/UDP forwarding. Existing accounts, pairings and the SQLite schema are preserved. Run the PowerShell command above on the IIS host and verify both health feature flags. Physical C3X/C4 cameras, load and external-network behavior remain to be validated.

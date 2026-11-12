@@ -314,6 +314,9 @@ function getPageHistoryState(page) {
 }
 
 function resolveWebStartPage() {
+  // FormosaLink's settings entry is a per-tab navigation hint, not a saved
+  // device preference or a grant. The normal introduction gate still applies.
+  if (window.FormosaCarrotRemote?.startPage === "setting" && PAGE_ELEMENTS.setting) return "setting";
   const fallback = "carrot";
   let page = fallback;
   try {

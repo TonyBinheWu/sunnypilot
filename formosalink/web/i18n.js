@@ -944,3 +944,10 @@ for(const [locale,labels] of Object.entries({
  const keys=['mediaDiagStale','mediaDiagUpgrade','mediaDiagDemand','mediaDiagCamera','mediaDiagFrames','mediaDiagAge',...['unknown','unavailable','idle','polling','requested','initializing','connecting_camera','waiting_frame','encoding','connecting_cloud','sending','streaming'].map(stage=>'mediaStage_'+stage)];
  Object.assign(translations[locale],Object.fromEntries(keys.map((key,index)=>[key,labels[index]])));
 }
+
+// Carrot uses its native web settings, with independent local web consent.
+for (const [locale, labels] of Object.entries({
+  'zh-TW': ['Carrot 設定', '裝置資訊', '在車機 FormosaLink 配對畫面，將「遠端 Carrot 網頁：關」切換成「開」。停車熄火後，點「Carrot 設定」即可進入原生設定頁。此分支不使用「停車遠端設定」。', '請進入 Carrot 設定頁搜尋'],
+  en: ['Carrot settings', 'Device information', 'On the device FormosaLink pairing screen, switch “Carrot web: off” on. Park with ignition off, then open Carrot settings. This branch does not use the separate Parked settings permission.', 'Search inside Carrot settings'],
+  ja: ['Carrot 設定', 'デバイス情報', '本体の FormosaLink 登録画面で「Carrot Web：オフ」をオンにしてください。停車して電源をオフにした後、Carrot 設定を開きます。このブランチは別の「停車中の遠隔設定」権限を使用しません。', '検索は Carrot 設定で行ってください'],
+})) Object.assign(translations[locale], Object.fromEntries(['carrotSettings', 'carrotDeviceInfo', 'carrotSettingsHelp', 'carrotSearchHelp'].map((key, index) => [key, labels[index]])));

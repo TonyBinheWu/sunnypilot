@@ -28,7 +28,8 @@
         { ...descriptor, set(value) { descriptor.set.call(this, cssUrls(value)); } });
     }
   }
-  globalThis.FormosaCarrotRemote = Object.freeze({ prefix, url: map });
+  const startPage = new URL(location.href).searchParams.get('formosa_page') === 'setting' ? 'setting' : null;
+  globalThis.FormosaCarrotRemote = Object.freeze({ prefix, url: map, startPage });
   const fetchOriginal = window.fetch.bind(window);
   window.fetch = (input, options) => fetchOriginal(input instanceof Request ? new Request(map(input.url), input) : map(input), options);
   for (const name of ["Worker", "SharedWorker"]) {

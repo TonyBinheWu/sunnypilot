@@ -11,3 +11,5 @@ html[data-theme=dark] .settings-workspace .setting-sync[data-state=applied]{colo
 @media(max-width:760px){.settings-workspace .setting-row{display:flex;flex-direction:column;gap:14px}.settings-workspace .setting-label,.settings-workspace .setting-controls,.settings-workspace .setting-conflict{width:100%}.settings-workspace .setting-controls{justify-content:flex-start}.settings-workspace .setting-editor{flex-wrap:wrap;max-width:100%}.settings-workspace .setting-segments{width:100%}.settings-workspace .setting-sync{max-width:100%}}
 @media(prefers-reduced-motion:reduce){.settings-workspace .setting-editor input[role=switch],.settings-workspace .setting-editor input[role=switch]:before{transition:none}}
 .settings-workspace .navigation-form.setting-row{display:flex;flex-direction:column;align-items:stretch;max-width:520px;border:0}.settings-workspace .navigation-form.setting-row button{align-self:flex-start}
+
+.carrot-entry a.secondary{display:inline-flex;margin:0 .75rem .75rem 0}.workspace-nav>a.secondary{margin:.5rem 0;padding:.75rem}

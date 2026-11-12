@@ -1,5 +1,11 @@
 # 裝置資訊與停車設定 / Device settings / 停車中の設定（0.3.0）
 
+> **carrot-wip：**請使用裝置卡片或裝置資訊內的「Carrot 設定」，並在車機開啟「遠端 Carrot 網頁：關 → 開」。本頁下述「停車遠端設定」僅適用 hkg-enhanced／ccnc-port；Carrot 的搜尋、說明與修改請見[原生遠端網頁指南](CARROT_REMOTE.md)。
+>
+> **carrot-wip:** use **Carrot settings** with local **Carrot web** consent, not the separate **Parked settings** switch. See the [native web guide](CARROT_REMOTE.md).
+>
+> **carrot-wip：**本体の **Carrot Web** をオンにして **Carrot 設定** を開きます。別の停車中設定スイッチは使用しません。[原生 Web ガイド](CARROT_REMOTE.md)を参照してください。
+
 ## 繁體中文
 
 配對後，在裝置卡片選擇「資訊與設定」。資訊包含硬體、序號、系統／軟體版本、分支、提交、車型／VIN（有資料時）、運作時間、網路、溫度、記憶體、空間、功耗、風扇與亮度。不傳送密碼、金鑰、位置、攝影機或任意 Params。

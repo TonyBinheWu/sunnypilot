@@ -1,5 +1,14 @@
 # Repository memory
 
+- 2026-11-12: FormosaLink portal0.8.4 adds owner/device-scoped Carrot settings
+  links. CarrotStatusProvider stays read-only; local FormosaLinkRemoteWeb
+  (遠端 Carrot 網頁) is the actual grant, not FormosaLinkRemoteSettings.
+  The bridge permits only a per-tab setting start-page hint, preserving saved
+  home preference and native intro. Older devices can select Settings manually.
+  Update public assets and private package bridge; no backend restart needed.
+  Node49/Python163 pass9skip; real Chrome/Edge desktop/mobile fixture navigation
+  passes. No vehicle permission writes or physical remote-access acceptance.
+
 - 2026-11-12: Traditional missing glyphs include stale font atlases and FormosaLink
   native UI dictionaries omitted from the subset (頁 in 遠端 Carrot 網頁).
   Track PO/languages/native *ui.py as SCons font dependencies; include native

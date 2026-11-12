@@ -2,6 +2,7 @@ import {mediaViewer} from './media-view.js?v=0.8.3';
 import {parseCoordinates} from './navigation-input.js?v=0.6.0';
 import {deviceHealth} from './health-ui.js?v=0.6.0';
 import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from './settings-edits.js?v=0.6.0';
+import {isCarrotDevice,carrotUrl,settingsStatus} from './carrot-entry.js?v=0.8.4';
 // Full-page, owner-scoped device workspace. Only device receipts confirm writes.
 export const sections=['home','live','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer'];
 export function category(entry){const group=entry.group?.en?.toLowerCase();return sections.includes(group)?group:'device';}
@@ -27,13 +28,15 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   function nav(){
     const links=$('settings-nav');links.replaceChildren();
     links.append(button('section_home','home',()=>selectSection('home')),button('myDevices','devices',()=>close()),el('div',t('deviceSettingsNav'),'workspace-nav-label'));
-    for(const item of sections.filter(x=>x!=='home')){const b=button('section_'+item,item,()=>selectSection(item));b.dataset.section=item;b.classList.toggle('active',section===item);b.setAttribute('aria-current',section===item?'page':'false');links.append(b);}
+    for(const item of sections.filter(x=>x!=='home'&&(!isCarrotDevice(selected)||['device','live'].includes(x)))){const b=button('section_'+item,item,()=>selectSection(item));b.dataset.section=item;b.classList.toggle('active',section===item);b.setAttribute('aria-current',section===item?'page':'false');links.append(b);}
+    if(isCarrotDevice(selected))links.append(carrotLink(true));
     links.append(el('div',undefined,'workspace-nav-divider'),button('pairDevice','pair',onPair));
     const account=getAccount();$('settings-account').textContent=account?.github_login||account?.name||'FormosaLink';
     $('settings-device-label').textContent=selected.name;
     const choices=$('settings-device-options');choices.replaceChildren();
     for(const device of getDevices().filter(x=>x.state==='paired')){const b=el('button',device.name);b.type='button';b.setAttribute('aria-pressed',String(device.id===selected.id));b.addEventListener('click',()=>{open(device,section);$('settings-device-picker').open=false;});choices.append(b);}
-    $('settings-search').placeholder=t('searchSettings');$('settings-search').setAttribute('aria-label',t('searchSettings'));
+    $('settings-search').disabled=isCarrotDevice(selected);
+    $('settings-search').placeholder=t(isCarrotDevice(selected)?'carrotSearchHelp':'searchSettings');$('settings-search').setAttribute('aria-label',$('settings-search').placeholder);
     $('settings-language').textContent={'zh-TW':'繁體中文',en:'English',ja:'日本語'}[language()];$('settings-language').setAttribute('aria-label',t('language'));const languages=$('settings-language-options');languages.replaceChildren();for(const [code,name] of Object.entries({'zh-TW':'繁體中文',en:'English',ja:'日本語'})){const choice=el('button',name);choice.type='button';choice.setAttribute('aria-pressed',String(language()===code));choice.addEventListener('click',()=>{document.querySelector(`[data-language="${code}"]`).click();$('settings-languages').open=false;});languages.append(choice);}
     $('settings-menu').setAttribute('aria-label',t('openMenu'));$('settings-menu-close').setAttribute('aria-label',t('close'));
     $('settings-change-label').textContent=t('changeDevice');$('settings-nav-title').textContent=t('deviceSettingsNav');
@@ -82,10 +85,16 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     $('settings-subtitle').textContent=query?`${t('searchSettings')} · ${query}`:t('sectionDesc_'+section);
     const snapshot=state?.snapshot,fresh=state?.fresh===true;
     $('settings-connection').textContent=t(fresh?'connected':'offline');$('settings-connection').classList.toggle('is-online',fresh);
-    const status=!snapshot?'settingsWaiting':!fresh?'settingsOffline':!snapshot.offroad?'settingsDriving':!snapshot.remote_enabled?'settingsLocalDisabled':'settingsReady';
+    const status=settingsStatus(selected,snapshot,fresh);
     $('settings-banner').classList.toggle('is-ready',fresh&&snapshot?.offroad&&snapshot?.remote_enabled);
     $('settings-banner-text').textContent=t(status);$('settings-last-seen').textContent=`${t('received')} ${date(state?.received_at)}`;$('settings-retry-label').textContent=t('refresh');
     if(!query&&section==='home'){$('settings-banner-text').textContent=t('fleetHealthNote');$('settings-banner').classList.remove('is-ready');deviceHealth(body,{devices:getDevices(),t,el,date,onOpen:d=>open(d,'device')});return;}
+    if(isCarrotDevice(selected)){
+      if(snapshot&&!query&&section==='device')info(snapshot);
+      const card=el('section',undefined,'workspace-card carrot-entry');
+      card.append(el('h2',t('carrotSettings')),el('p',t('carrotSettingsHelp'),'workspace-muted'),carrotLink(true),carrotLink(false));
+      body.append(card);return;
+    }
     if(!snapshot){body.append(el('div',t('settingsWaiting'),'workspace-card workspace-empty'));return;}
     if(!query&&['device','home'].includes(section))info(snapshot);
     if(!query&&['models'].includes(section)){const card=el('section',undefined,'workspace-card workspace-empty');card.append(icon(section),el('h2',t('section_'+section)),el('p',t('featureUnavailable'),'workspace-muted'));body.append(card);return;}
@@ -96,6 +105,10 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     const list=el('section',undefined,'workspace-card settings-list');list.append(el('h2',t(query?'searchResults':'availableSettings')));body.append(list);
     for(const entry of entries.filter(x=>x.widget!=='navigation'))list.append(settingRow(entry,snapshot,editable));
     const note=el('p',t('editMemoryNote'),'settings-edit-note');body.append(note);
+  }
+  function carrotLink(settings){
+    const link=el('a',t(settings?'carrotSettings':'carrotRemote'),'secondary');
+    link.href=carrotUrl(selected.id,settings);link.target='_blank';link.rel='noopener';return link;
   }
   function settingRow(entry,snapshot,editable){
     const deviceId=selected.id,key=entry.key,current=snapshot.values[key],draft=edits.get(deviceId,key);

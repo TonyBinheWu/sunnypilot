@@ -41,9 +41,9 @@ test('live camera waiting describes automatic native startup in all supported la
  const index=readFileSync(new URL('../web/index.html',import.meta.url),'utf8');
  const app=readFileSync(new URL('../web/app.js',import.meta.url),'utf8');
  const workspace=readFileSync(new URL('../web/device-settings.js',import.meta.url),'utf8');
- assert.ok(index.includes('/app.js?v=0.8.3'));
- assert.ok(app.includes('./i18n.js?v=0.8.3'));
- assert.ok(app.includes('./device-settings.js?v=0.8.3'));
+ assert.ok(index.includes('/app.js?v=0.8.4'));
+ assert.ok(app.includes('./i18n.js?v=0.8.4'));
+ assert.ok(app.includes('./device-settings.js?v=0.8.4'));
  assert.ok(workspace.includes('./media-view.js?v=0.8.3'));
 });
 test('stream uses same self-hosted HTTPS authority, LAN addresses and supported cameras only',()=>{

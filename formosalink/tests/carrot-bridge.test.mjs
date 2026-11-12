@@ -9,7 +9,7 @@ function storage(values=new Map()){
   return {getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key),
     key:index=>[...values.keys()][index]??null,get length(){return values.size;}};
 }
-function browser(device,shared=storage()){
+function browser(device,shared=storage(),query=''){
   const prefix=`/api/v1/devices/${device}/carrot/`,calls=[];
   class Element {setAttribute(name,value){this[name]=value;}}
   class Socket {constructor(url,protocols){this.url=url;this.protocols=protocols;}static OPEN=1;}
@@ -21,7 +21,7 @@ function browser(device,shared=storage()){
       get(){return this['_'+attribute];},set(value){this['_'+attribute]=value;}});
   }
   const sandbox={...types,URL,Request,Element,XMLHttpRequest:XHR,WebSocket:Socket,navigator:{},
-    document:{currentScript:{src:host+prefix+'__formosa_bridge.js'}},location:new URL(host+prefix),
+    document:{currentScript:{src:host+prefix+'__formosa_bridge.js'}},location:new URL(host+prefix+query),
     Worker:class {constructor(url){this.url=url;}},
     FontFace:class {constructor(name,source){this.source=source;}},
     history:{pushState(){},replaceState(){}},localStorage:shared,sessionStorage:storage(),
@@ -61,4 +61,12 @@ test('device preferences and clear never change another tab or the Formosa porta
   assert.equal(a.ctx.localStorage.length,0);
   assert.equal(b.ctx.localStorage.getItem('language'),'en');
   assert.equal(shared.getItem('formosalink-language'),'zh-TW');
+});
+
+test('settings deep link is scoped to its tab and cannot select privileged pages',()=>{
+  const a=browser('a',storage(),'?formosa_page=setting');
+  assert.equal(a.ctx.FormosaCarrotRemote.startPage,'setting');
+  assert.equal(browser('b').ctx.FormosaCarrotRemote.startPage,null);
+  assert.equal(browser('a',storage(),'?formosa_page=terminal').ctx.FormosaCarrotRemote.startPage,null);
+  assert.equal(a.ctx.FormosaCarrotRemote.url('/api/params'),host+a.prefix+'api/params');
 });

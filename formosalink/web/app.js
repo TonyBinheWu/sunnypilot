@@ -1,7 +1,8 @@
 import {initTheme} from './theme.js?v=0.6.0';
 import {healthValue} from './health-ui.js?v=0.6.0';
-import {deviceSettings} from './device-settings.js?v=0.8.3';
-import {translations} from './i18n.js?v=0.8.3';
+import {deviceSettings} from './device-settings.js?v=0.8.4';
+import {translations} from './i18n.js?v=0.8.4';
+import {isCarrotDevice,carrotUrl} from './carrot-entry.js?v=0.8.4';
 import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.6.0';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';
@@ -61,13 +62,16 @@ function render() {
     for(const [key,value] of [['version',m.software_version],['branch',m.branch],['commit',m.commit?.slice(0,12)],['thermal',hidden?null:translations[language]['thermal_'+m.thermal_status]],['sampleTime',date(device.snapshot?.sampled_at)]]){details.append(element('dt',t(key)),element('dd',value||'—'));}card.append(details);
     const bottom=element('div',undefined,'card-bottom');bottom.append(element('span',`${t('received')} ${date(device.last_seen)}`));
     if(device.state==='paired'){
-      if(m.branch==='carrot-wip'){
+      if(isCarrotDevice(device)){
         const carrot=element('a',t('carrotRemote'),'secondary');
-        carrot.href='/api/v1/devices/'+encodeURIComponent(device.id)+'/carrot/';carrot.target='_blank';carrot.rel='noopener';
+        carrot.href=carrotUrl(device.id);carrot.target='_blank';carrot.rel='noopener';
         bottom.append(carrot);carrot.title=t('carrotHelp');
+        const carrotSettings=element('a',t('carrotSettings'),'secondary');
+        carrotSettings.href=carrotUrl(device.id,true);carrotSettings.target='_blank';carrotSettings.rel='noopener';
+        bottom.append(carrotSettings);carrotSettings.title=t('carrotSettingsHelp');
         const live=element('button',t('carrotLive'),'secondary');live.type='button';live.addEventListener('click',()=>settings.open(device,'live'));bottom.append(live);
       }
-      const detail=element('button',t('deviceSettings'),'secondary');detail.type='button';detail.addEventListener('click',()=>settings.open(device));bottom.append(detail);const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
+      const detail=element('button',t(isCarrotDevice(device)?'carrotDeviceInfo':'deviceSettings'),'secondary');detail.type='button';detail.addEventListener('click',()=>settings.open(device));bottom.append(detail);const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
   }
 }
 function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
