@@ -65,6 +65,15 @@ const WEB_SETTINGS_GROUPS = [
     labelKey: "web_settings_carrot_vision",
     items: [
       {
+        id: "vision_presentation",
+        titleKey: "vision_live_presentation",
+        descKey: "vision_live_description",
+        options: [
+          { value: "carrot", labelKey: "vision_live_classic" },
+          { value: "live_view", labelKey: "vision_live_name" },
+        ],
+      },
+      {
         id: "vision_fullscreen_default",
         titleKey: "web_vision_fullscreen_default",
         descKey: "web_vision_fullscreen_default_desc",

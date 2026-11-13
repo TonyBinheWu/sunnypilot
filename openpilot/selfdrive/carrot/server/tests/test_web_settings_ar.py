@@ -15,3 +15,11 @@ def test_vision_ar_is_explicit_opt_in():
     "default": False,
     "requiresCapability": "web_lab",
   }
+
+
+def test_live_view_presentation_defaults_and_validation():
+  assert web_settings.sanitize_web_settings({})["vision_presentation"] == "carrot"
+  assert web_settings.sanitize_web_settings({"vision_presentation": "live_view"})["vision_presentation"] == "live_view"
+  assert web_settings.sanitize_web_settings({"vision_presentation": "unknown"})["vision_presentation"] == "carrot"
+  spec = {field["key"]: field for field in web_settings.web_settings_client_spec()}
+  assert set(spec["vision_presentation"]["choices"]) == {"carrot", "live_view"}

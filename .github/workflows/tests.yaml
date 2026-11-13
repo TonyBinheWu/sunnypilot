@@ -33,6 +33,7 @@ jobs:
         with:
           node-version: '24'
       - run: python -m pip install pytest numpy fonttools scons
+      - run: python -m pytest -c /dev/null --noconftest -q openpilot/selfdrive/carrot/server/tests/test_web_settings_ar.py
       - name: Device strings, update tokens and text layout
         run: >-
           python -m pytest -c /dev/null --rootdir=. --noconftest -q
@@ -46,7 +47,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs tests/forced_offroad.test.mjs
+          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs tests/forced_offroad.test.mjs tests/vision_live_view.test.mjs 'tests/hud*.test.mjs'
           git diff --exit-code -- js/generated generated guide.zh-TW.html
 
   egpu_startup:

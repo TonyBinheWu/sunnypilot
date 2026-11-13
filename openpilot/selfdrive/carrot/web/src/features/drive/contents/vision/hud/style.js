@@ -1,5 +1,6 @@
 "use strict";
 
+import { LIVE_VIEW_CSS } from "./live_view.js";
 import { KAIGEN_FONT_URI } from "./assets.js";
 
 /* 오버레이 자체 CSS. 모듈이 <style>로 1회 주입한다(css 빌드 배선 불필요, self-contained).
@@ -210,7 +211,7 @@ html:not([data-carrot-mini-hud="1"]) #carrotMiniHud { display:none !important; }
   .chud-turn{width:clamp(132px,42cqw,200px)}
   .chud-speed{width:clamp(188px,68cqw,208px)}
 }
-`;
+` + LIVE_VIEW_CSS;
 
 export function injectStyle(doc) {
   if (!doc || doc.getElementById(STYLE_ID)) return;

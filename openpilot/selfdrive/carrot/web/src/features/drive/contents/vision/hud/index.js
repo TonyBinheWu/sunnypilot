@@ -6,6 +6,7 @@
  * - 위젯=순수 SVG 컴포넌트(widgets/*), 배치/degradation=layout.js, 룩=tokens/style.
  * 아직 구 HUD(#driveHudCard)는 제거하지 않음(비교/안정화 후 정리). */
 
+import { createLiveView } from "./live_view.js";
 import { injectStyle } from "./style.js";
 import { applyHudDegradation, createHudLayoutObserver } from "./layout.js";
 import { createSpeedPanel } from "./widgets/speed_panel.js";
@@ -97,6 +98,32 @@ export function createHudOverlay(doc) {
   injectStyle(doc);
   const root = el(doc, "div", { class: "chud", attrs: { "data-carrot-hud": "overlay" } });
 
+  const target = doc.defaultView || globalThis;
+  let presentation = "carrot";
+  let timer = null;
+  function syncPresentation() {
+    presentation = target.CarrotWebSettingsState?.vision_presentation === "live_view" ? "live_view" : "carrot";
+    root.classList.toggle("is-live-view", presentation === "live_view");
+    live.root.hidden = presentation !== "live_view";
+    if (timer != null) target.clearInterval?.(timer);
+    timer = null;
+    if (active && !destroyed && suppressions.size === 0 && presentation === "live_view") {
+      live.render();
+      timer = target.setInterval?.(() => live.render(), 500) ?? null;
+    }
+  }
+  async function togglePresentation() {
+    if (destroyed || typeof target.setWebSettingByKey !== "function") return false;
+    try {
+      await target.setWebSettingByKey("vision_presentation", presentation === "live_view" ? "carrot" : "live_view");
+    } catch (error) {
+      target.showAppToast?.(target.getUIText?.("vision_live_save_failed") || "Could not save Vision layout", { tone: "error" });
+      throw error;
+    }
+    syncPresentation();
+    return true;
+  }
+  const live = createLiveView(doc, target, { classic: () => { void togglePresentation().catch(() => {}); } });
   const lfa = createLfaIcon(doc);
   const wifi = createWifiIcon(doc);
   const clock = createClock(doc);
@@ -134,7 +161,7 @@ export function createHudOverlay(doc) {
   // 코너 스트립은 존이 아니다: 인셋 0으로 화면 모서리에 밀착하고, 존보다 먼저
   // 붙어 같은 z-index에서 항상 다른 HUD 아래에 깔린다. degradation 대상도 아니다.
   const cornerBL = el(doc, "div", { class: "chud-corner chud-corner--bl" }, [devTemp.el]);
-  root.append(cornerBL, zoneTL, zoneTC, zoneTR, zoneBL, zoneBR);
+  root.append(cornerBL, zoneTL, zoneTC, zoneTR, zoneBL, zoneBR, live.root);
   const layoutZones = {
     topLeft: zoneTL,
     topCenter: turn.el,
@@ -163,6 +190,7 @@ export function createHudOverlay(doc) {
       root.removeAttribute("aria-hidden");
       clock.start();
     }
+    syncPresentation();
     return !hidden;
   }
 
@@ -179,6 +207,7 @@ export function createHudOverlay(doc) {
     if (destroyed || !payload) return false;
     const data = mapPayload(payload);
     lastData = data;
+    live.update(data, payload);
     for (const w of widgets) w.update(data);
     const nextVisibilitySignature = [
       data.speedLimit != null && data.speedLimit > 0,
@@ -225,6 +254,7 @@ export function createHudOverlay(doc) {
     if (destroyed) return false;
     const changed = active;
     active = false;
+    live.reset();
     syncVisibility();
     return changed;
   }
@@ -255,13 +285,18 @@ export function createHudOverlay(doc) {
     layoutObserver?.destroy?.();
     layoutObserver = null;
     syncVisibility();
+    target.removeEventListener?.("carrot:websettingschange", syncPresentation);
+    target.removeEventListener?.("carrot:languagechange", live.render);
     root.remove?.();
     return true;
   }
 
+  target.addEventListener?.("carrot:websettingschange", syncPresentation);
+  target.addEventListener?.("carrot:languagechange", live.render);
   syncVisibility();
   return {
     root,
+    togglePresentation,
     update,
     relayout,
     activate,

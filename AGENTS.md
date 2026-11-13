@@ -1,5 +1,18 @@
 # Repository memory
 
+- 2026-11-13: Vision presentation adds opt-in `vision_presentation=live_view`;
+  default carrot preserves the instrument HUD. Existing camera/model projection,
+  stream ownership, alerts and driving commands stay unchanged. Live View consumes
+  normalized km/h/mph payloads; its two-second HUD update timeout clears values,
+  while paused recorded replay retains the media timeline. Responsive side/bottom
+  controls expose original layout/fullscreen/read-only details. Four locales.
+  CarrotAssist0.2.15/code22 top ▣ uses existing trusted-origin JS guard and saved
+  web setting with rollback/error toast; older device software gets update notice.
+  Android custom fullscreen hides native chrome; Back/search/navigation/destroy
+  restores it. Mocked browser and focused46 tests passed; physical phone/device
+  acceptance remains pending. No proprietary CommaView runtime or extra stream.
+
+
 - 2026-11-13: SoundLanguageVolume is a persistent5..300% navigation speech gain,
   default100, next to SoundLanguageSetting. Only audio_turn/audio_speed_down and
   audio_1..10 receive it; DM floors/final gain and other warnings/engagement

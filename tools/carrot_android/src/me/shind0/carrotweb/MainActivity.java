@@ -58,6 +58,9 @@ public final class MainActivity extends Activity {
   private TextView title, status;
   private ProgressBar progress;
   private WebView web;
+  private FrameLayout visionFullscreen;
+  private WebChromeClient.CustomViewCallback visionFullscreenCallback;
+  private int previousSystemUi;
   private ExecutorService workers;
   private volatile int generation;
   private long started;
@@ -135,6 +138,14 @@ public final class MainActivity extends Activity {
     title = text("CarrotAssist",18); title.setSingleLine(true); title.setEllipsize(android.text.TextUtils.TruncateAt.END);
     title.setOnClickListener(v -> updater.info()); title.setContentDescription(UiText.get("기기 이름 · 앱 정보와 업데이트 확인", "Device name · App information and updates"));
     bar.addView(title,new LinearLayout.LayoutParams(0,dp(48),1)); title.setGravity(Gravity.CENTER_VERTICAL);
+    Button visionLayout = button("▣", v -> {
+      if (web == null || !pageReady) { notice(UiText.get("기기 웹페이지를 먼저 열어 주세요.", "Open the device web page first.")); return; }
+      web.evaluateJavascript(onDevicePage("(()=>{if(!window.CarrotHudOverlay?.togglePresentation)return false;void window.CarrotHudOverlay.togglePresentation().catch(()=>{});return true;})()"), result -> {
+        if (!"true".equals(result)) notice(UiText.get("Vision 표시 전환을 위해 차량 소프트웨어를 업데이트해 주세요.", "Update the device software to switch Vision layouts."));
+      });
+    });
+    visionLayout.setContentDescription(UiText.get("Vision 표시 전환", "Switch Vision layout"));
+    bar.addView(visionLayout,new LinearLayout.LayoutParams(dp(48),dp(48)));
     root.addView(bar);
     FrameLayout page = new FrameLayout(this);
     root.addView(page, new LinearLayout.LayoutParams(-1, 0, 1));
@@ -172,7 +183,19 @@ public final class MainActivity extends Activity {
     if (workers != null) { workers.shutdownNow(); workers = null; }
     for (DeviceProbe p : probes) p.close(); probes.clear();
   }
+  private void hideVisionFullscreen() {
+    if (visionFullscreen == null) return;
+    FrameLayout fullscreen = visionFullscreen;
+    WebChromeClient.CustomViewCallback callback = visionFullscreenCallback;
+    visionFullscreen = null; visionFullscreenCallback = null;
+    if (fullscreen.getParent() instanceof ViewGroup) ((ViewGroup)fullscreen.getParent()).removeView(fullscreen);
+    fullscreen.removeAllViews();
+    root.setVisibility(View.VISIBLE);
+    getWindow().getDecorView().setSystemUiVisibility(previousSystemUi);
+    if (callback != null) callback.onCustomViewHidden();
+  }
   private void startSearch() {
+    hideVisionFullscreen();
     if (recovery != null) { recovery.cancel(); recovery = null; }
     recovering = false;
     stopSearch(); choosing = false; found.clear(); currentAddress = null;
@@ -305,7 +328,20 @@ public final class MainActivity extends Activity {
       settings.setMediaPlaybackRequiresUserGesture(true); settings.setSupportMultipleWindows(false);
       settings.setUserAgentString(settings.getUserAgentString()+" CarrotWebAndroid/0.1 CarrotAssistPhone/1");
       CookieManager.getInstance().setAcceptThirdPartyCookies(web,false);
-      web.setWebChromeClient(new WebChromeClient());
+      web.setWebChromeClient(new WebChromeClient() {
+        @Override public void onShowCustomView(View view, CustomViewCallback callback) {
+          if (visionFullscreen != null || !localPage()) { callback.onCustomViewHidden(); return; }
+          previousSystemUi = getWindow().getDecorView().getSystemUiVisibility();
+          visionFullscreenCallback = callback;
+          visionFullscreen = new FrameLayout(MainActivity.this);
+          visionFullscreen.setBackgroundColor(Color.BLACK);
+          visionFullscreen.addView(view,new FrameLayout.LayoutParams(-1,-1));
+          root.setVisibility(View.GONE);
+          addContentView(visionFullscreen,new ViewGroup.LayoutParams(-1,-1));
+          getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
+        @Override public void onHideCustomView() { hideVisionFullscreen(); }
+      });
       web.setWebViewClient(new WebViewClient() {
         @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request) {
           Uri uri = request.getUrl();
@@ -321,6 +357,7 @@ public final class MainActivity extends Activity {
           return true;
         }
         @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap icon) {
+          hideVisionFullscreen();
           pageReady = false; stopPhoneVoice(); cancelVoiceCheck();
           super.onPageStarted(view,url,icon);
         }
@@ -750,6 +787,6 @@ public final class MainActivity extends Activity {
   }
   @Override protected void onPause() { foregroundActivity = false; if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
   @Override protected void onStop() { checkAfterBackground=true; if (scanning) { stopSearch(); if (status!=null) status.setText(UiText.get("검색이 중단됐어요. 다시 검색을 눌러 주세요.", "Search paused. Tap Search again.")); } super.onStop(); }
-  @Override public void onBackPressed() { if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
+  @Override public void onBackPressed() { if (visionFullscreen != null) { hideVisionFullscreen(); return; } if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
   @Override protected void onDestroy() { if (speechSetup!=null) speechSetup.close(); if (recovery!=null) recovery.cancel(); stopSearch(); ui.removeCallbacksAndMessages(null); if (updater!=null) updater.close(); if (web!=null) { web.destroy(); web=null; } super.onDestroy(); }
 }

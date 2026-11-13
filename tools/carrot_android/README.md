@@ -1,6 +1,6 @@
 # CarrotAssist Android public beta — Traditional Chinese distribution
 
-This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.14 (code 21). It can coexist with the upstream app; data and authorizations are separate.
+This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.15 (code 22). It can coexist with the upstream app; data and authorizations are separate.
 
 [Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/CarrotAssist-TW-0.2.14.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.14)
 
@@ -184,3 +184,7 @@ References: https://developer.android.com/reference/android/app/Activity#showAss
 https://developer.android.com/privacy-and-security/local-network-permission
 https://support.google.com/gemini/answer/17209137
 https://developers.google.com/assistant/ca-sunset
+
+## Vision Live View (0.2.15)
+
+Update the device to this branch and open Carrot Vision. The top ▣ button switches the saved `vision_presentation` between the original instrument layout and Live View. The web settings dialog offers the same choice. Live View uses the existing video/model-overlay pipeline with a bottom speed cluster and responsive controls; it does not install the CommaView runtime or create another stream. The app supports WebView custom fullscreen views for the trusted current device origin. Back exits fullscreen before browser navigation; search, navigation and destruction clean it up. Physical Android/device acceptance remains pending. [Traditional Chinese instructions](../../docs/CARROT_MOBILE.zh-TW.md).

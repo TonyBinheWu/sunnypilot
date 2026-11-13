@@ -41,6 +41,10 @@
 
 APK 經建置、測試與簽章驗證；尚未在實體手機或實車驗證。iPhone 請使用 [Carrot Web](docs/CARROT_MOBILE.zh-TW.md)。
 
+## Carrot Vision 顯示版面
+
+新增參考 CommaView 配置的 **Live View 道路影像**：底部車速／定速／速限、側邊工具列、繁中詳細資訊，以及手機直向配置。原有儀表仍可切回。更新車機與新版 App 後，開啟 Carrot Vision，按 App 上方 **▣**，或由 **工具 → 網頁設定 → Carrot Vision → Vision 顯示版面** 選擇。這是顯示版面，影像及車道／路徑沿用既有資料，不改變駕駛控制。[操作方式與限制](docs/CARROT_MOBILE.zh-TW.md#carrot-visionlive-view-道路影像版面0215)。
+
 ## 繁體中文語音指令
 
 0.2.13 新增國語直接語音，不需 ChatGPT 帳號或配對碼。手機為繁體中文語系時會要求 `zh-TW` 辨識，需有可用的裝置端國語語音模型；語音辨識能力依手機與辨識服務而定。

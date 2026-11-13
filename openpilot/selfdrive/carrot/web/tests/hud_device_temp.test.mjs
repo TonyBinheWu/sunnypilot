@@ -47,6 +47,7 @@ class FakeNode {
   }
   appendChild(c) { if (c) this.children.push(c); return c; }
   append(...cs) { for (const c of cs) if (c) this.children.push(c); }
+  addEventListener() {}
   querySelectorAll() { return []; }
   getBBox() { return { x: 0, y: 0, width: 10, height: 10 }; }
 }
@@ -133,7 +134,7 @@ test("the temperature bar sits in a corner strip, behind every zone, and outside
   // zones on top of the bar rather than the other way around.
   const order = overlay.root.children.map((child) => classesOf(child)[1] || classesOf(child)[0]);
   assert.equal(order[0], "chud-corner--bl");
-  assert.deepEqual(order.slice(1), [
+  assert.deepEqual(order.slice(1, 6), [
     "chud-zone--tl",
     "chud-zone--tc",
     "chud-zone--tr",
@@ -172,4 +173,41 @@ test("the corner bar hugs the viewport and lifts the speed panel by its own heig
   for (const shedRule of CSS.match(/\.chud\[data-shed[^}]*\}/g) || []) {
     assert.doesNotMatch(shedRule, /chud-corner|chud-devtemp/);
   }
+});
+
+
+test("Live View switch preserves lifecycle and reports persistence failures", async () => {
+  const doc = createFakeDocument();
+  let started = 0, stopped = 0;
+  const events = new Map();
+  const target = {
+    CarrotWebSettingsState: { vision_presentation: "carrot" },
+    performance: { now: () => 10 },
+    setInterval() { started++; return started; }, clearInterval() { stopped++; },
+    addEventListener(name, listener) { events.set(name, listener); },
+    removeEventListener(name) { events.delete(name); },
+    async setWebSettingByKey(key, value) { this.CarrotWebSettingsState[key] = value; },
+  };
+  doc.defaultView = target;
+  const overlay = createHudOverlay(doc);
+  overlay.activate();
+  assert.equal(started, 0);
+  await overlay.togglePresentation();
+  assert.equal(target.CarrotWebSettingsState.vision_presentation, "live_view");
+  assert.equal(started, 1);
+  overlay.setSuppressed("replay-insights", true);
+  assert.equal(stopped, 1);
+  overlay.setSuppressed("replay-insights", false);
+  assert.equal(started, 2);
+  overlay.deactivate();
+  assert.equal(stopped, 2);
+  let notice = false;
+  target.showAppToast = () => { notice = true; };
+  target.setWebSettingByKey = async () => { throw new Error("offline"); };
+  await assert.rejects(overlay.togglePresentation(), /offline/);
+  assert.equal(notice, true);
+  assert.equal(target.CarrotWebSettingsState.vision_presentation, "live_view");
+  overlay.destroy();
+  assert.equal(events.size, 0);
+  assert.equal(await overlay.togglePresentation(), false);
 });
