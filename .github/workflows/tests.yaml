@@ -134,6 +134,8 @@ jobs:
         env:
           CARROT_REQUIRE_FONT_ATLAS: '1'
         run: python -m pytest -o addopts='' -q openpilot/selfdrive/ui/tests/test_font_coverage.py
+      - name: Check Sorento non-HDA-II vehicle selection and capability routing
+        run: python -m pytest -o addopts='' -q opendbc_repo/opendbc/car/hyundai/tests/test_sorento_2024.py
       - name: Check Tesla stop solver, gesture and shared defaults
         run: |
           python -c "import openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc"

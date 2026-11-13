@@ -1,5 +1,18 @@
 # Repository memory
 
+- 2026-11-13: Add selectable KIA_SORENTO_2024 / Kia Sorento (without HDA II)
+  2024-25 from ccnc-port's opendbc2a565d34: source specs, AUS/USA camera/radar
+  firmware and torque override2.5/2.5/.1. Keep 2021-23 and HEV profiles separate.
+  Carrot selectors and web catalog derive from CAR docs; no static list needed.
+  Do not copy source CCNC bit27: Carrot uses it for cluster direct TX. Retain
+  existing CAN/wiring capability and safety paths without new transmission
+  permissions, setting defaults or forced HDA2/CameraSCC. This adds a platform
+  entry, not a full ccnc-port controller/safety port or 2025 HEV validation.
+  Linux offline32 tests pass (full schemas, isolated Params/IPC): both selectors,
+  distinct exact FW matches, torque and8 capability/safety paths plus Staria
+  regression. Native CI runs the new Sorento fixture after the production build.
+  Vehicle runtime/road behavior remains unverified; no device writes performed.
+
 - 2026-11-12: Real FormosaLink acceptance found telemetry branch origin/carrot-wip
   (not just carrot-wip), and classic utils.formatItemText missing zh-tw despite
   localized catalog/derived resolver. Portal0.8.5 accepts both exact branch names;
