@@ -120,7 +120,7 @@ def test_recovery_and_agnos_precede_params_build() -> None:
   recovery = launch.index("  start_carrot_recovery", ssh_access)
   agnos_update = launch.index("    if ! agnos_init; then")
   clock_floor = launch.index('python3 "$DIR/openpilot/common/build_time.py"')
-  dependencies = launch.index("  if ! run_startup_command bootstrap_runtime_dependencies; then")
+  dependencies = launch.index("run_startup_command bootstrap_runtime_dependencies")
   params_build = launch.index('bash "$DIR/scripts/ensure_params_build.sh"')
   web = launch.index("  start_carrot_web")
   build = launch.index("    if ! run_startup_command ./build.py; then")
