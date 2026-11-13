@@ -129,6 +129,7 @@ class TestManager:
   def test_parked_vision_only_starts_camera_workers_with_a_live_request(self, monkeypatch, tmp_path):
     from openpilot.common import carrot_vision_camera
     monkeypatch.setenv("CARROT_VISION_CAMERA_LEASE", str(tmp_path / "camera.json"))
+    monkeypatch.setattr(carrot_vision_camera, "clock", lambda: 100.0)
     CP = car.CarParams.new_message()
     CP.notCar = False
     params = Params()

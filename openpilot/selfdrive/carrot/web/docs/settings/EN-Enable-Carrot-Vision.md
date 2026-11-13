@@ -13,10 +13,10 @@
 
 `CarrotVisionEnabled`
 
-Enables web road-camera streaming independently of driver monitoring, including while the external HUD is enabled. Simultaneous video use may increase device load.
+Enables web road video, including parked viewing. Camera and dedicated encoder are requested only for a viewing session and released afterward, independently of driver monitoring and the external HUD. Simultaneous video use may increase device load.
 
 <!-- CARROT:AUTO:BEGIN CarrotVisionEnabled -->
-<!-- CARROT:AUTO:SOURCE facts="cab86478aac061cfa65098823e247abcb048ec3c232d6a1fe9b1f5c0ed2e1e3f" semantic="06ceb617dbe739cddd0239009397024736b16a64f730822966da6da92c24437d" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="2e36a8334deed4a61ecb6e049ec9c02b215bd7e80f28b050c43ed520b0a4f65e" semantic="b2d518e8de1cb65052caf0bf8dd1cad8094210462341bdc7090b9f4156fdff5f" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Select
 - **Default:** Off (`0`)
@@ -28,23 +28,23 @@ Enables web road-camera streaming independently of driver monitoring, including 
 <!-- CARROT:AUTO:END CarrotVisionEnabled -->
 
 <!-- CARROT:MANUAL:BEGIN CarrotVisionEnabled -->
-<!-- CARROT:REVIEW reviewed-for="196e1f296cc743239e491c11d519cea88fbf7bde06ad6f1fe40b377fe6758e07" reviewed-at="2026-09-28T07:45:02.976276+00:00" -->
+<!-- CARROT:REVIEW reviewed-for="b2d518e8de1cb65052caf0bf8dd1cad8094210462341bdc7090b9f4156fdff5f" reviewed-at="2026-11-13T16:58:12Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### Behavior
 
-Enabling permits web road-camera streaming; disabling stops it. This setting is independent of driver monitoring.
+Enables road video while driving or parked, independently of driver monitoring and the external HUD. Parked camera and encoder demand exists only while a viewing session remains; other camera owners retain their own conditions.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->
 ### Usage
 
-Enable when using web road video. Carrot Vision is unavailable while the USB cluster is enabled.
+Enable this setting and open Vision in the app or web page. Update vehicle software and reboot once; CarrotAssist 0.2.16 remains compatible and a diagnostic camera runner is not needed.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->
 ### Reference
 
-The old DisableDM streaming choice is migrated to this setting once. Migration does not disable monitoring or enable experimental mode.
+Parked viewing does not start driving models, controls or normal driving recording, and does not reuse old driving guidance; recorded replay retains recorded data. Battery shutdown rules remain. The old DisableDM video choice migrates once without changing driver monitoring or experimental mode.
 <!-- CARROT:SECTION:END REFERENCE -->
 
 <!-- CARROT:MANUAL:END CarrotVisionEnabled -->

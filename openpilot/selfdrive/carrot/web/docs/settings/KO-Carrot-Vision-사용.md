@@ -13,10 +13,10 @@
 
 `CarrotVisionEnabled`
 
-웹 도로 영상 스트리밍을 활성화합니다. 운전자 감시와 독립적으로 동작하며 외부 HUD와 함께 사용할 수 있습니다. 동시 영상 사용 시 기기 부하가 증가할 수 있습니다.
+웹 도로 영상을 활성화합니다. 주차 중에도 시청 세션이 있을 때만 카메라와 전용 인코더를 요청하고 종료 후 해제합니다. 운전자 감시 및 외부 HUD와 독립적으로 동작합니다. 동시 영상 사용 시 기기 부하가 증가할 수 있습니다.
 
 <!-- CARROT:AUTO:BEGIN CarrotVisionEnabled -->
-<!-- CARROT:AUTO:SOURCE facts="3f52883d1e149378f0655716f9c3d050f9db5b7ec9babbb1b1cb4840a76b4505" semantic="06ceb617dbe739cddd0239009397024736b16a64f730822966da6da92c24437d" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="5fbb787301e91de8d19e1b45256b8852e1a5538270c374d20b04dda266f3b867" semantic="b2d518e8de1cb65052caf0bf8dd1cad8094210462341bdc7090b9f4156fdff5f" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 선택
 - **기본값:** 끄기 (`0`)
@@ -28,23 +28,23 @@
 <!-- CARROT:AUTO:END CarrotVisionEnabled -->
 
 <!-- CARROT:MANUAL:BEGIN CarrotVisionEnabled -->
-<!-- CARROT:REVIEW reviewed-for="196e1f296cc743239e491c11d519cea88fbf7bde06ad6f1fe40b377fe6758e07" reviewed-at="2026-09-28T07:45:02.991356+00:00" -->
+<!-- CARROT:REVIEW reviewed-for="b2d518e8de1cb65052caf0bf8dd1cad8094210462341bdc7090b9f4156fdff5f" reviewed-at="2026-11-13T16:58:12Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 동작
 
-켜면 웹 도로 영상 스트리밍을 사용할 수 있고 끄면 중지합니다. 운전자 감시 모드와 독립적입니다.
+운전자 감시 및 외부 HUD와 독립적으로 주행·주차 중 도로 영상을 제공합니다. 주차 카메라와 인코더는 시청 세션이 있을 때만 요청하며 다른 카메라 사용자는 기존 조건을 유지합니다.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->
 ### 사용
 
-웹 도로 영상을 사용할 때 켜세요. USB 계기판 사용 중에는 Carrot Vision을 사용할 수 없습니다.
+설정을 켜고 앱 또는 웹의 Vision을 엽니다. 차량 소프트웨어 업데이트 후 한 번 재부팅하면 CarrotAssist 0.2.16을 계속 사용할 수 있고 진단 카메라 실행기는 필요하지 않습니다.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->
 ### 참고
 
-기존 DisableDM의 영상 활성화 값은 최초 전환 시 이 설정으로 옮깁니다. 이 승계로 운전자 감시가 꺼지거나 실험 모드가 켜지지 않습니다.
+주차 시청은 주행 모델·제어·일반 주행 녹화를 시작하거나 이전 주행 안내를 재사용하지 않으며 녹화 재생은 기록된 데이터를 유지합니다. 배터리 종료 조건도 유지됩니다. 이전 DisableDM 영상 선택은 감시나 실험 모드를 바꾸지 않고 한 번만 이전됩니다.
 <!-- CARROT:SECTION:END REFERENCE -->
 
 <!-- CARROT:MANUAL:END CarrotVisionEnabled -->

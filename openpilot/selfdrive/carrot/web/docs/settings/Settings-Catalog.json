@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "04628f01a4a64ae9ef88734617dcb196bd1f32df",
-  "contentHash": "fe69598008a26c96e8535eb558464be39d169bdd2d25ae6cab01a27bc85e513b",
-  "generatedAt": "2026-11-13T00:00:00Z",
+  "catalogCommit": "222bcd207555c32eba648a493b3a71589a79a0fa",
+  "contentHash": "b463521c774abbfb413ceeae3e80f3ef1b2d6b54aee06d71fb9ef501f7b13870",
+  "generatedAt": "2026-11-13T16:58:12Z",
   "locales": [
     "ko",
     "en",
@@ -290,8 +290,8 @@
       "hash": "99dcd49ac03b1be8f589dbbfc5961709dc9ba48179a04c79ed070841d73518f3"
     },
     "EN-Enable-Carrot-Vision.md": {
-      "bytes": 2079,
-      "hash": "e74d39faca1e1353d435f7b58949b6d8b522950444ff8eee1349be20d68b98a5"
+      "bytes": 2512,
+      "hash": "deb76ee85fd12c196b0feadad1394e3e3c4277428a43a54ee5c6922d14b86fc3"
     },
     "EN-Enable-Corner-radar(0).md": {
       "bytes": 2129,
@@ -910,8 +910,8 @@
       "hash": "a1d22640f773f137dac231b3f634e7a087ac429b89af4026017b0ab434a19e95"
     },
     "KO-Carrot-Vision-사용.md": {
-      "bytes": 2279,
-      "hash": "3dff6e65c7dc399214524dd9212641071ebd106e9332f9bb1e23de2b68390537"
+      "bytes": 2715,
+      "hash": "95c4357f8594851d691d1ddd0121ef4c3136c5212cdb544b3057a292efb3e240"
     },
     "KO-Comma-Pedal사용.md": {
       "bytes": 2558,
@@ -2014,8 +2014,8 @@
       "hash": "fd116d2f386a94b280d86ee7691bc8a76c7ac80169ba642be696dea1d426b091"
     },
     "ZH-TW-啟用-Carrot-Vision.md": {
-      "bytes": 2012,
-      "hash": "4cd9bf68c080f89eb81c83145ee3a1501d310af5cb087bcf813424d2c661d5ae"
+      "bytes": 2379,
+      "hash": "e393bcfd29dd9c8fd46511938a2d763166c7d1f2cca07be3bd975702715fac6b"
     },
     "ZH-TW-啟用駕駛員監控(例外設定).md": {
       "bytes": 1626,
@@ -2838,8 +2838,8 @@
       "hash": "8d510238bae7fda0737096a5a645205fb709db2a36594fffbc6ced5ea322f26b"
     },
     "ZH-启用-Carrot-Vision.md": {
-      "bytes": 2009,
-      "hash": "ede26efa310e51a1a0c08cb8e4a5162c2163ebab5a95d7e931d79cc9e8dc8aa1"
+      "bytes": 2388,
+      "hash": "703439a406143db342c5c2333d2c775aaa1dc65c792212e6d7639f8c1cc416be"
     },
     "ZH-启用驾驶员监控(例外设置).md": {
       "bytes": 1623,
@@ -3423,8 +3423,8 @@
     }
   },
   "review": {
-    "current": 43,
-    "needs_review": 170
+    "current": 44,
+    "needs_review": 169
   },
   "schemaVersion": 1,
   "settings": {
@@ -4642,31 +4642,31 @@
       "locales": {
         "en": {
           "anchor": "CarrotVisionEnabled",
-          "factsHash": "cab86478aac061cfa65098823e247abcb048ec3c232d6a1fe9b1f5c0ed2e1e3f",
+          "factsHash": "2e36a8334deed4a61ecb6e049ec9c02b215bd7e80f28b050c43ed520b0a4f65e",
           "page": "EN-Enable-Carrot-Vision.md",
-          "reviewStatus": "needs_review"
+          "reviewStatus": "current"
         },
         "ko": {
           "anchor": "CarrotVisionEnabled",
-          "factsHash": "3f52883d1e149378f0655716f9c3d050f9db5b7ec9babbb1b1cb4840a76b4505",
+          "factsHash": "5fbb787301e91de8d19e1b45256b8852e1a5538270c374d20b04dda266f3b867",
           "page": "KO-Carrot-Vision-사용.md",
-          "reviewStatus": "needs_review"
+          "reviewStatus": "current"
         },
         "zh": {
           "anchor": "CarrotVisionEnabled",
-          "factsHash": "13e592d26ddea0d95c7c1d30d3f387000bbe9b0a1dea8fc0de3578970b84a599",
+          "factsHash": "cdd60522dda375f45e46989cbe980d16af80588513670a92c2b334db777be5ad",
           "page": "ZH-启用-Carrot-Vision.md",
-          "reviewStatus": "needs_review"
+          "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "CarrotVisionEnabled",
-          "factsHash": "ba8efc21d43470721fb0b25e78207cf3fc376ab9e137cfda4e6d6577ec185399",
+          "factsHash": "b96c968da37b5006a3a34d64c6de201daca44322c62a8910d066935ac567c411",
           "page": "ZH-TW-啟用-Carrot-Vision.md",
-          "reviewStatus": "needs_review"
+          "reviewStatus": "current"
         }
       },
-      "reviewStatus": "needs_review",
-      "semanticHash": "06ceb617dbe739cddd0239009397024736b16a64f730822966da6da92c24437d"
+      "reviewStatus": "current",
+      "semanticHash": "b2d518e8de1cb65052caf0bf8dd1cad8094210462341bdc7090b9f4156fdff5f"
     },
     "CenterToFrontRatio": {
       "group": "STEER_FEEL",
@@ -10032,5 +10032,5 @@
       "semanticHash": "b3ca6436f7051d2fd82ae24a9dc3974abf6b5ee32c633d085c3eb4bee630c364"
     }
   },
-  "wikiCommit": "b508296266c19191d679d0f4b4c8d0407d563748"
+  "wikiCommit": "345930dafca5920a64fc715a6421c70f4bae3bbf"
 }
