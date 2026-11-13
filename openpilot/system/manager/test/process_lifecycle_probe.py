@@ -92,7 +92,9 @@ def main(directory, legacy_fork, service='carrot_man'):
     supervise()
     first = ready()
     if os.name == 'posix':
-      os.kill(first.pid, signal.SIGABRT)
+      # Exercise an unexpected death without waiting for the host's core-dump
+      # collector (which may run even with RLIMIT_CORE=0 on hosted CI).
+      os.kill(first.pid, signal.SIGKILL)
     else:
       first.terminate()
     first.join(3)
