@@ -7,6 +7,7 @@ on:
     paths:
       - "openpilot/selfdrive/carrot_settings.json"
       - "tools/docs/wiki_settings/**"
+      - "openpilot/selfdrive/carrot/web/docs/settings/**"
       - ".github/workflows/wiki-settings-publish.yaml"
   gollum:
   workflow_dispatch:
@@ -48,11 +49,18 @@ jobs:
           git -C "$RUNNER_TEMP/carrot-wiki" config user.name "github-actions[bot]"
           git -C "$RUNNER_TEMP/carrot-wiki" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Import missing reviewed guides from the branch
+        run: |
+          python tools/docs/wiki_settings/seed.py \
+            --source-dir openpilot/selfdrive/carrot/web/docs/settings \
+            --wiki-dir "$RUNNER_TEMP/carrot-wiki"
+
       - name: Validate candidate before any write
         run: |
           python tools/docs/wiki_settings/ci_check.py \
             --wiki-dir "$RUNNER_TEMP/carrot-wiki" \
             --output-dir "$RUNNER_TEMP/wiki-settings-report/preflight" \
+            --locales ko en zh zh-tw \
             --catalog-commit "${{ steps.source.outputs.catalog }}" \
             --wiki-commit "$(git -C "$RUNNER_TEMP/carrot-wiki" rev-parse HEAD)"
 
@@ -62,6 +70,7 @@ jobs:
             --wiki-dir "$RUNNER_TEMP/carrot-wiki" \
             --write \
             --output-dir "$RUNNER_TEMP/carrot-wiki" \
+            --locales ko en zh zh-tw \
             --catalog-commit "${{ steps.source.outputs.catalog }}"
 
       - name: Validate synchronized Wiki
@@ -69,18 +78,21 @@ jobs:
           python tools/docs/wiki_settings/ci_check.py \
             --wiki-dir "$RUNNER_TEMP/carrot-wiki" \
             --output-dir "$RUNNER_TEMP/wiki-settings-report/synchronized" \
+            --locales ko en zh zh-tw \
             --catalog-commit "${{ steps.source.outputs.catalog }}"
 
       - name: Push synchronized Wiki when changed
         env:
-          WIKI_PUSH_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
+          WIKI_TOKEN: ${{ secrets.WIKI_TOKEN || github.token }}
         run: |
           git -C "$RUNNER_TEMP/carrot-wiki" add -A
           if git -C "$RUNNER_TEMP/carrot-wiki" diff --cached --quiet; then
             echo "Wiki already synchronized."
           else
             git -C "$RUNNER_TEMP/carrot-wiki" commit -m "chore: sync carrot settings"
-            git -C "$RUNNER_TEMP/carrot-wiki" push "$WIKI_PUSH_URL" HEAD
+            git -C "$RUNNER_TEMP/carrot-wiki" -c credential.helper= \
+              -c 'credential.helper=!f() { echo username=x-access-token; echo "password=$WIKI_TOKEN"; }; f' \
+              push origin HEAD
           fi
 
       - name: Add validation report to job summary

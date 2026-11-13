@@ -219,7 +219,9 @@ carrotpilot 是一個正在開發中的駕駛輔助軟體，而不是經認證�
 ## 文件
 
 - [CarrotPilot 使用說明書](https://g4iwnl.gitbook.io/carrotpilot)
-- [CarrotPilot Wiki](https://github.com/ajouatom/openpilot/wiki)
+- [本分支設定 Wiki（含繁體中文）](https://github.com/TonyBinheWu/sunnypilot/wiki)
+- [語音播報音量 SoundLanguageVolume 繁中詳細指南](https://github.com/TonyBinheWu/sunnypilot/wiki/ZH-TW-語音播報音量)
+- [上游 CarrotPilot Wiki](https://github.com/ajouatom/openpilot/wiki)
 
 carrotpilot 的官方公開說明主要以上述使用說明書和 Wiki 為主。請先查閱這些文件，確認車輛要求和設定說明。
 

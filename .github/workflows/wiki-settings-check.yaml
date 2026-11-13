@@ -53,6 +53,7 @@ jobs:
           python tools/docs/wiki_settings/ci_check.py \
             --wiki-dir "$RUNNER_TEMP/carrot-wiki" \
             --output-dir "$RUNNER_TEMP/wiki-settings-report" \
+            --locales ko en zh zh-tw \
             --catalog-commit "$CATALOG_COMMIT" \
             --wiki-commit "$WIKI_COMMIT"
 
