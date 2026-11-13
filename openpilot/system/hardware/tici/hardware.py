@@ -12,7 +12,6 @@ from openpilot.common.utils import sudo_read, sudo_write
 from openpilot.common.gpio import gpio_set, gpio_init, get_irqs_for_action
 from openpilot.system.hardware.base import HardwareBase, LPABase, ThermalConfig, ThermalZone
 from openpilot.system.hardware.tici import iwlist
-from openpilot.system.hardware.tici.lpa import TiciLPA
 from openpilot.system.hardware.tici.pins import GPIO
 from openpilot.system.hardware.tici.amplifier import Amplifier
 
@@ -154,6 +153,10 @@ class Tici(HardwareBase):
     }
 
   def get_sim_lpa(self) -> LPABase:
+    # The AGNOS updater imports hardware before runtime wheels are installed.
+    # Only eSIM operations need pyserial; a clean install must be able to show
+    # the updater (and its failure display) without that optional import graph.
+    from openpilot.system.hardware.tici.lpa import TiciLPA
     return TiciLPA()
 
   def get_imei(self, slot):

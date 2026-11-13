@@ -138,13 +138,21 @@ carrotpilot 不是由 comma.ai 開發、審查、批准或正式支援的 openpi
 
 ## 安裝與發行策略
 
-在重置裝置後，在安裝地址輸入框中使用以下地址：
+安裝本倉庫繁中 `carrot-wip` 時，在裝置的安裝地址輸入框使用：
+
+```text
+install.sunnypilot.ai/fork/TonyBinheWu/carrot-wip
+```
+
+此安裝服務會取得 `TonyBinheWu/sunnypilot` 的 `carrot-wip`。首次啟動可能先更新 AGNOS，再安裝本地依賴與編譯；請維持供電與網路。已修正乾淨安裝時，AGNOS 更新畫面載入失敗而停在啟動畫面的問題。若更新失敗，會進入獨立的啟動復原畫面，並提供 `6999` 連接埠的復原入口；AGNOS 更新日誌為 `/data/agnos-updater-ui.log`。
+
+原上游安裝地址保留如下：
 
 ```text
 i.carrotpilot.app/carrot-wip
 ```
 
-**上述網址安裝上游版本，不會安裝本倉庫的繁中修改。** 要使用此分支，安裝／更新來源須明確指定 `TonyBinheWu/sunnypilot` 的 `carrot-wip`。本次未建立獨立安裝服務，也未安裝到車機。
+**上述 `i.carrotpilot.app` 網址安裝上游版本，不會安裝本倉庫的繁中修改。** 本倉庫使用上方 sunnypilot 安裝服務，未建立獨立安裝服務。
 
 `carrot-wip` 是持續開發和釋出同步進行的 rolling branch。為了解決車輛特定問題、風險點和錯誤，程式碼會經常更新，它並不像傳統穩定版那樣長期凍結不變。更新前請確認改動內容，更新後請在能夠立即接管車輛控制的環境中進行驗證。
 

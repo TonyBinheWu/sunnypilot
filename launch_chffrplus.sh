@@ -163,9 +163,13 @@ function show_agnos_update_failure {
   local reason="$1"
   local message
 
-  printf -v message 'AGNOS update paused.\n\n%s\n\nOpen the recovery address shown above (port 6999).\nLog: /data/agnos-updater-ui.log\n\nTap Reboot to try the updater again.' "$reason"
+  printf -v message 'AGNOS update paused.\n\n%s\n\nOpen the recovery address shown above (port 6999).\nLog: /data/agnos-updater-ui.log\n\nUse recovery to get a software fix, or restart the device to retry the updater.' "$reason"
   printf '%s\n' "$message"
-  python3 "$DIR/openpilot/system/ui/text.py" "$message" || true
+  # The regular text UI shares the updater's dependencies. If one of those
+  # imports failed, it cannot report the failure either. Use the independent
+  # recovery UI, which relaunches after display failure instead of waiting
+  # forever with the last boot logo on screen.
+  show_startup_failure "$message" "/data/agnos-updater-ui.log"
 }
 
 function agnos_init {
@@ -531,6 +535,7 @@ function run_startup_command {
 
 function show_startup_failure {
   local reason="$1"
+  local log_path="${2:-/tmp/carrot_startup_failure.log}"
   # No build/manager can still hold the checkout when the update button runs.
   flock -u 9
   exec 9>&-
@@ -538,7 +543,7 @@ function show_startup_failure {
   export CARROT_STARTUP_RECOVERY=1
   start_carrot_recovery
   while true; do
-    python3 "$DIR/openpilot/system/ui/startup_recovery.py" --reason "$reason" --log /tmp/carrot_startup_failure.log
+    python3 "$DIR/openpilot/system/ui/startup_recovery.py" --reason "$reason" --log "$log_path"
     echo "Recovery display stopped; checking for a fix without graphics. Web recovery remains on port 6999."
     python3 -m openpilot.common.startup_recovery --repo "$DIR"
     sleep 30
