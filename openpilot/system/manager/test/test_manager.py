@@ -126,6 +126,31 @@ class TestManager:
     assert not managed_processes["carrot_webrtcd"].should_run(True, params, CP)
     assert not managed_processes["carrot_vision_encoderd"].should_run(True, params, CP)
 
+  def test_parked_vision_only_starts_camera_workers_with_a_live_request(self, monkeypatch, tmp_path):
+    from openpilot.common import carrot_vision_camera
+    monkeypatch.setenv("CARROT_VISION_CAMERA_LEASE", str(tmp_path / "camera.json"))
+    CP = car.CarParams.new_message()
+    CP.notCar = False
+    params = Params()
+    params.put_bool("CarrotVisionEnabled", True)
+    params.put_bool("IsDriverViewEnabled", False)
+    params.put_bool("FormosaLinkEnabled", False)
+    assert managed_processes["carrot_webrtcd"].should_run(False, params, CP)
+    assert not managed_processes["camerad"].should_run(False, params, CP)
+    assert not managed_processes["carrot_vision_encoderd"].should_run(False, params, CP)
+    carrot_vision_camera.update_camera_request(True)
+    assert managed_processes["camerad"].should_run(False, params, CP)
+    assert managed_processes["carrot_vision_encoderd"].should_run(False, params, CP)
+    for name in ("modeld", "controlsd", "selfdrived", "loggerd", "encoderd"):
+      assert not managed_processes[name].should_run(False, params, CP), name
+    carrot_vision_camera.update_camera_request(False)
+    assert not managed_processes["camerad"].should_run(False, params, CP)
+    assert not managed_processes["carrot_vision_encoderd"].should_run(False, params, CP)
+    params.put_bool("CarrotVisionEnabled", False)
+    carrot_vision_camera.update_camera_request(True)
+    assert not managed_processes["camerad"].should_run(False, params, CP)
+    assert not managed_processes["carrot_webrtcd"].should_run(False, params, CP)
+
   def test_removed_cluster_hud_mode_is_inactive(self):
     CP = car.CarParams.new_message()
     CP.notCar = False

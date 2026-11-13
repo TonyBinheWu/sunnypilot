@@ -107,7 +107,9 @@ export function createLiveView(doc, target, actions) {
     const model = liveViewData(last, { stale, metric: isMetric });
     const stream = health.snapshot({ now: now(), wallNow: Date.now(), replay, perf: target.CarrotRtcPerf });
     setText(speed, model.speed); setText(max, model.max); setText(limit, model.limit); setText(unit, model.unit);
-    setText(state, text(model.state));
+    const runtime = target.CarrotDeviceRuntimeState;
+    const parked = !replay && runtime?.isOffroad === true && runtime?.isOnroad !== true;
+    setText(state, text(parked ? "vision_live_parked" : model.state));
     setText(healthLabel, text(`vision_live_stream_${stream.state}`));
     healthLabel.setAttribute("data-state", stream.state);
     root.classList.toggle("is-stale", stale);

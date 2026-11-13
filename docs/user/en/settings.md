@@ -10,6 +10,9 @@ With updated vehicle software and CarrotAssist 0.2.15, use the top **▣** butto
 In 0.2.16, Live View offers collapsible tools (also by holding the app's ▣ button), a session-only speed-panel toggle, and the existing saved fit/normal/crop framing control. Hiding the speed panel does not hide driving alerts. A separate video status observes actually presented camera frames, not HUD messages or socket connectivity; late RTP mapping updates are ignored. Details show resolution, presentation FPS, RTT and bitrate when available; stale network statistics and recorded replay show placeholders. Neither the video-status display nor these controls creates another stream or changes reconnect policy.
 
 
+Parked road-camera viewing is supported after enabling **Carrot Vision**. Open Vision in the app or web page to request capture; no diagnostic camera runner or forced-onroad switch is needed. Manager starts only the camera and dedicated stream encoder on demand. Ending or losing the session releases capture; an expired request cannot keep it running. The driving-model/control/driving-recording stack is not started for a parked viewer. The display may sleep while camera cores stay available, but existing battery shutdown rules remain. Parked live view discards retained driving guidance and speed; recorded replay keeps its recorded data. Update vehicle software and reboot once; CarrotAssist 0.2.16 remains compatible.
+
+
 ## Force offroad (Park only)
 
 Device Settings → Device and Carrot Web → Tools → User / System provide the same session-scoped switch. Both enabling and disabling require fresh, valid Park/standstill data, near-zero vehicle speed and disengaged steering/cruise assistance. Unknown, stale or non-P state locks the control; every write and runtime activation rechecks the vehicle.

@@ -33,6 +33,20 @@ def formosalink_cameras(started: bool, params: Params, CP: car.CarParams) -> boo
   return params.get_bool("FormosaLinkEnabled") and camera_requested()
 
 
+def carrot_vision_camera(started: bool, params: Params, CP: car.CarParams) -> bool:
+  from openpilot.common.carrot_vision_camera import enabled_camera_requested
+  return not CP.notCar and enabled_camera_requested(params)
+
+
+def carrot_vision_service(started: bool, params: Params, CP: car.CarParams) -> bool:
+  # Keep negotiation available while parked; capture is separately on demand.
+  return not CP.notCar and params.get_bool("CarrotVisionEnabled")
+
+
+def carrot_vision_encoder(started: bool, params: Params, CP: car.CarParams) -> bool:
+  return carrot_vision_service(started, params, CP) and (started or carrot_vision_camera(started, params, CP))
+
+
 def notcar(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and CP.notCar
 
@@ -138,11 +152,11 @@ procs = [
   NativeProcess("stream_encoderd", "openpilot/system/loggerd", ["./encoderd", "--stream"], notcar),
   # Prewarm the hardware encoder with the rest of the onroad stack. The
   # encoder process stays idle until CarrotVisionActive is set by a session.
-  NativeProcess("carrot_vision_encoderd", "openpilot/system/loggerd", ["./encoderd", "--carrot-vision-road"], and_(iscar, enable_webrtc)),
+  NativeProcess("carrot_vision_encoderd", "openpilot/system/loggerd", ["./encoderd", "--carrot-vision-road"], carrot_vision_encoder),
   PythonProcess("logmessaged", "openpilot.system.logmessaged", always_run),
 
-  NativeProcess("camerad", "openpilot/system/camerad", ["./camerad"], or_(driverview, formosalink_cameras), enabled=not WEBCAM),
-  PythonProcess("webcamerad", "openpilot.tools.webcam.camerad", or_(driverview, formosalink_cameras), enabled=WEBCAM),
+  NativeProcess("camerad", "openpilot/system/camerad", ["./camerad"], or_(driverview, formosalink_cameras, carrot_vision_camera), enabled=not WEBCAM),
+  PythonProcess("webcamerad", "openpilot.tools.webcam.camerad", or_(driverview, formosalink_cameras, carrot_vision_camera), enabled=WEBCAM),
   PythonProcess("proclogd", "openpilot.system.proclogd", only_onroad, enabled=platform.system() != "Darwin"),
   PythonProcess("journald", "openpilot.system.journald", only_onroad, platform.system() != "Darwin"),
   PythonProcess("micd", "openpilot.system.micd", iscar),
@@ -190,7 +204,7 @@ procs = [
   # debug procs
   NativeProcess("bridge", "openpilot/cereal/messaging", ["./bridge"], notcar),
   PythonProcess("webrtcd", "openpilot.system.webrtc.webrtcd", notcar),
-  PythonProcess("carrot_webrtcd", "openpilot.system.webrtc.carrot_webrtcd", and_(iscar, enable_webrtc)),
+  PythonProcess("carrot_webrtcd", "openpilot.system.webrtc.carrot_webrtcd", carrot_vision_service),
   PythonProcess("webjoystick", "openpilot.tools.bodyteleop.web", notcar, enabled=BODYTELEOP_AVAILABLE),
   PythonProcess("joystick", "openpilot.tools.joystick.joystick_control", and_(joystick, iscar)),
 

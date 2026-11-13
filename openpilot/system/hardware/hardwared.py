@@ -16,6 +16,7 @@ from openpilot.cereal.services import SERVICE_LIST
 from openpilot.common.utils import strip_deprecated_keys
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.gpio import gpio_set
+from openpilot.common.carrot_vision_camera import enabled_camera_requested
 from openpilot.common.params import Params
 from openpilot.common.realtime import DT_HW
 from openpilot.selfdrive.selfdrived.alertmanager import set_offroad_alert
@@ -378,7 +379,10 @@ def hardware_thread(end_event, hw_queue) -> None:
     cp_cache.update(params)
     tesla_no_sleep = cp_cache.is_tesla
 
-    should_pwrsave = (not tesla_no_sleep) and not onroad_conditions["ignition"] and msg.deviceState.screenBrightnessPercent < 1e-3
+    # A parked viewer needs camera cores even with the display asleep. This
+    # changes CPU power saving only, not ignition, startup or battery shutdown.
+    should_pwrsave = ((not tesla_no_sleep) and not onroad_conditions["ignition"]
+                      and msg.deviceState.screenBrightnessPercent < 1e-3 and not enabled_camera_requested(params))
     if should_pwrsave != pwrsave or (count == 0):
       HARDWARE.set_power_save(should_pwrsave)
     pwrsave = should_pwrsave

@@ -95,14 +95,8 @@
 
   function getCarrotVisionPhaseStatusText(phase) {
     const environment = CARROT_VISION_STATE.environment || {};
-    if (environment.testStatus === "error" && environment.testError) {
+    if (phase === CARROT_VISION_PHASE.FAILED && environment.testStatus === "error" && environment.testError) {
       return getUIText("vision_test_failed_title", "Camera check stopped");
-    }
-    if (CARROT_VISION_STATE.active && environment.isOffroad === true && !environment.testActive) {
-      if (environment.testStatus === "starting") {
-        return getUIText("vision_test_starting_title", "Preparing camera check");
-      }
-      return getUIText("vision_parked_title", "Vehicle is parked");
     }
     switch (phase) {
       case CARROT_VISION_PHASE.UNAVAILABLE:
@@ -131,14 +125,8 @@
 
   function getCarrotVisionPhaseDetailText(phase) {
     const environment = CARROT_VISION_STATE.environment || {};
-    if (environment.testStatus === "error" && environment.testError) {
+    if (phase === CARROT_VISION_PHASE.FAILED && environment.testStatus === "error" && environment.testError) {
       return getUIText("vision_test_failed_detail", "Check the camera test log and try again.");
-    }
-    if (CARROT_VISION_STATE.active && environment.isOffroad === true && !environment.testActive) {
-      if (environment.testStatus === "starting") {
-        return getUIText("vision_step_starting", "Preparing the device camera.");
-      }
-      return getUIText("vision_parked_detail", "The camera will connect automatically when driving starts.");
     }
     switch (phase) {
       case CARROT_VISION_PHASE.UNAVAILABLE:

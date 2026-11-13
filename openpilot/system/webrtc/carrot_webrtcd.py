@@ -8,11 +8,11 @@ from aiohttp import web
 from openpilot.common.params import Params
 from openpilot.common.swaglog import cloudlog
 from openpilot.system.webrtc import webrtcd
-from openpilot.system.webrtc.carrot_session import get_stream, on_shutdown, stream_session_cleanup_context
+from openpilot.system.webrtc.carrot_session import get_stream, on_shutdown, stream_session_cleanup_context, sync_camera_request
 
 
 def carrot_webrtcd_thread(host: str, port: int, debug: bool) -> None:
-  webrtcd._set_carrot_vision_active(False)
+  sync_camera_request({})
   logging.basicConfig(level=logging.CRITICAL, handlers=[logging.StreamHandler()])
   logging_level = logging.DEBUG if debug else logging.INFO
   logging.getLogger("WebRTCStream").setLevel(logging_level)

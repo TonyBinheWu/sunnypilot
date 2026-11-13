@@ -47,7 +47,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs tests/forced_offroad.test.mjs tests/vision_live_view.test.mjs 'tests/hud*.test.mjs'
+          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs tests/forced_offroad.test.mjs tests/vision_live_view.test.mjs tests/vision_parked.test.mjs 'tests/hud*.test.mjs'
           git diff --exit-code -- js/generated generated guide.zh-TW.html
 
   egpu_startup:
@@ -167,6 +167,13 @@ jobs:
           openpilot/selfdrive/navd/tests/test_instruction_serialization.py
       - name: Check Park-only forced offroad controls and read-only card boundary
         run: python -m pytest -o addopts='' -q openpilot/common/tests/test_forced_offroad.py
+      - name: Check parked Vision demand and real manager routing
+        run: >-
+          python -m pytest -o addopts='' -q
+          openpilot/common/tests/test_carrot_vision_camera.py
+          openpilot/system/webrtc/tests/test_carrot_stream_session.py
+          openpilot/system/manager/test/test_manager.py::TestManager::test_parked_vision_only_starts_camera_workers_with_a_live_request
+          openpilot/system/manager/test/test_manager.py::TestManager::test_cluster_hud_allows_carrot_vision_processes
       - name: Check passive camera SOF diagnostics
         run: openpilot/system/camerad/test/test_camera_event_timing
       - name: Check Hyundai navigation and lever features and RAV4 ARS integration

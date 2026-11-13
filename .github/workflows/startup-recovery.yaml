@@ -25,6 +25,7 @@ jobs:
           bash -n launch_chffrplus.sh scripts/ensure_params_build.sh
           python -m pytest --noconftest -o addopts= -q \
             openpilot/common/tests/test_forced_offroad.py \
+            openpilot/common/tests/test_carrot_vision_camera.py \
             openpilot/system/manager/test/test_python_process_spawn.py \
             openpilot/system/manager/test/test_process_crash.py \
             openpilot/system/tests/test_build_cache.py \

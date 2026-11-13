@@ -1,5 +1,7 @@
 # Driver monitoring
 
+Parked Carrot Vision viewers request only the road camera and dedicated video encoder. This does not enable driver-monitoring models, driving controls or driving recording, or change the normal onroad startup conditions. Camera-core power saving is deferred while a valid viewer request exists, without changing battery shutdown rules.
+
 The Park-only forced-offroad switch follows the existing offroad process lifecycle: normal driving monitoring/control processes stop only after a fresh Park/standstill and disengaged-assistance check. The read-only vehicle observer retains current gear/speed information, and leaving Park or losing that information cancels the mode. Manager restarts vehicle initialization before normal onroad processing resumes. The switch does not change monitoring enablement, alert thresholds or lockout policy, and independent driver-camera preview retains its existing offroad conditions. See [Force offroad](settings.md#force-offroad-park-only).
 
 `DriverMonitoringEnabled` defaults to ON and saves your choice across drives and restarts. While monitoring is enabled, `DriverMonitoringMode` defaults to `0: Standard`; select `1: Experimental` separately. Mode changes apply live at roughly half-second intervals without rebooting. Switching preserves accumulated monitoring time, warning counts and lockout, and ends the previous interaction grace and forward-attention streak. Old `DisableDM` values do not opt into experimental monitoring.

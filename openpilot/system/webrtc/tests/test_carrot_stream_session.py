@@ -61,6 +61,7 @@ class TestCarrotStreamSession:
     session = mocker.Mock()
     session.identifier = identifier
     session.uses_road_camera = True
+    session._carrot_disconnected_monotonic = None
     session.get_answer = mocker.AsyncMock(return_value=SimpleNamespace(sdp="answer", type="answer"))
     session.stop = mocker.AsyncMock()
     return session
@@ -352,3 +353,30 @@ class TestCarrotStreamSession:
     healthy.stop.assert_awaited_once()
     assert app["streams"] == {}
     set_active.assert_called_once_with(False)
+
+
+def test_parked_camera_demand_refreshes_active_key_after_offroad_transition(mocker):
+  params = mocker.Mock()
+  params.get_bool.return_value = False
+  mocker.patch.object(webrtcd, '_carrot_vision_mode', True)
+  mocker.patch.object(webrtcd, '_carrot_vision_params', params)
+  mocker.patch.object(webrtcd, '_carrot_vision_active', True)
+  lease = mocker.patch.object(carrot_session, 'update_camera_request')
+  carrot_session.sync_camera_request({'viewer': SimpleNamespace(uses_road_camera=True)})
+  lease.assert_called_once_with(True)
+  params.put_bool_nonblocking.assert_called_once_with('CarrotVisionActive', True)
+  carrot_session.sync_camera_request({})
+  assert lease.call_args.args == (False,)
+
+
+def test_carrot_mode_rejects_input_bridge_and_other_cameras(mocker):
+  mocker.patch.object(webrtcd, '_carrot_vision_mode', True)
+
+  async def check():
+    for patch in ({'cameras': ['driver']}, {'bridge_services_in': ['carControl']}):
+      request = mocker.Mock()
+      request.app = {'streams': {}, 'debug': False}
+      request.json = mocker.AsyncMock(return_value={'sdp': 'offer', 'cameras': ['road'], **patch})
+      with pytest.raises(web.HTTPBadRequest):
+        await carrot_session.get_stream(request)
+  asyncio.run(check())

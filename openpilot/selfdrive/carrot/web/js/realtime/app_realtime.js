@@ -153,6 +153,7 @@ function normalizeRuntimeBool(value) {
 }
 
 function updateCarrotDeviceRuntimeState(patch = {}) {
+  const wasParked = isCarrotVisionParked();
   const previous = JSON.stringify({
     carrotVisionEnabled: CARROT_DEVICE_RUNTIME_STATE.carrotVisionEnabled,
     clusterHud: CARROT_DEVICE_RUNTIME_STATE.clusterHud,
@@ -175,6 +176,10 @@ function updateCarrotDeviceRuntimeState(patch = {}) {
   }
   CARROT_DEVICE_RUNTIME_STATE.fetchedAtMs = Date.now();
   window.CarrotDeviceRuntimeState = CARROT_DEVICE_RUNTIME_STATE;
+  if (wasParked !== isCarrotVisionParked() && !isCarrotRecordedReplayActive()) {
+    window.CarrotVisionRaw?.clearState?.({ reason: "vehicle runtime transition" });
+    window.CarrotVisionRaw?.updateHudFromRawState?.();
+  }
   return previous !== JSON.stringify({
     carrotVisionEnabled: CARROT_DEVICE_RUNTIME_STATE.carrotVisionEnabled,
     clusterHud: CARROT_DEVICE_RUNTIME_STATE.clusterHud,
@@ -217,10 +222,6 @@ function getCarrotVisionRealtimeBlockReason() {
   if (!isCarrotPageActive() || !isCarrotVisionActive()) return "";
   if (isCarrotRecordedReplayActive()) return "recorded-replay";
   if (window.CarrotMiniHudMode?.isActive?.()) return "mini-hud";
-  if (isCarrotVisionParked() && !isCarrotVisionTestActive()) {
-    if (CARROT_VISION_TEST_STATE.status === "starting") return "camera-test-starting";
-    return "vehicle-parked";
-  }
   return "";
 }
 

@@ -2586,13 +2586,13 @@
       "group": "시작",
       "name": "CarrotVisionEnabled",
       "title": "Carrot Vision 사용",
-      "descr": "웹 도로 영상 스트리밍을 활성화합니다. 운전자 감시와 독립적으로 동작하며 외부 HUD와 함께 사용할 수 있습니다. 동시 영상 사용 시 기기 부하가 증가할 수 있습니다.",
+      "descr": "웹 도로 영상을 활성화합니다. 주차 중에도 시청 세션이 있을 때만 카메라와 전용 인코더를 요청하고 종료 후 해제합니다. 운전자 감시 및 외부 HUD와 독립적으로 동작합니다. 동시 영상 사용 시 기기 부하가 증가할 수 있습니다.",
       "egroup": "START",
       "etitle": "Enable Carrot Vision",
-      "edescr": "Enables web road-camera streaming independently of driver monitoring, including while the external HUD is enabled. Simultaneous video use may increase device load.",
+      "edescr": "Enables web road video, including parked viewing. Camera and dedicated encoder are requested only for a viewing session and released afterward, independently of driver monitoring and the external HUD. Simultaneous video use may increase device load.",
       "cgroup": "启动设置",
       "ctitle": "启用 Carrot Vision",
-      "cdescr": "独立于驾驶员监控启用网页道路视频，可与外部HUD同时使用。同时使用视频可能增加设备负载。",
+      "cdescr": "启用网页道路影像，支持停车观看。有观看会话时才请求摄像头与专用编码器，结束后释放；独立于驾驶员监控及外部 HUD。 同时使用视频可能增加设备负载。",
       "min": 0,
       "max": 1,
       "default": 0,
@@ -2618,7 +2618,7 @@
       },
       "tgroup": "啟動設定",
       "ttitle": "啟用 Carrot Vision",
-      "tdescr": "獨立於駕駛員監控啟用網頁道路影片，可與外部HUD同時使用。同時使用影片可能增加裝置負載。"
+      "tdescr": "啟用網頁道路影像，支援停車觀看。有觀看會話時才請求鏡頭與專用編碼器，結束後釋放；獨立於駕駛員監控及外部 HUD。 同時使用影片可能增加裝置負載。"
     },
     {
       "group": "시작",

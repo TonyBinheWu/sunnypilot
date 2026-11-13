@@ -1,5 +1,21 @@
 # Repository memory
 
+- 2026-11-14: Parked Carrot Vision uses existing enablement and owner/session
+  rules. Negotiation daemon stays available when enabled; private boot-clock
+  lease5s renewed by session cleanup1Hz gates offroad camera/encoder demand.
+  No fake ignition/IsOnroad, driver-view flag or extra diagnostic runner.
+  Camera is shared with existing driver preview/FormosaLink predicates, never
+  killed by this feature while another owner requests it. Session cleanup also
+  reasserts CarrotVisionActive after manager clears it on offroad transition.
+  Carrot-only endpoint accepts read-only road video, no inbound control bridge;
+  standard WebRTC remains unchanged. Valid enabled lease defers CPU power saving
+  with dark screen, preserving battery/thermal/onroad startup rules. Frontend
+  removes parked connection block, clears raw state on live runtime transitions,
+  discards parked driving/model data and preserves recorded replay. Existing
+  APK0.2.16 works after vehicle update/full reboot. Physical camera acceptance
+  remains pending. Native CI covers real process registry and session lifecycle.
+
+
 - 2026-11-14: CarrotAssist0.2.16/code23 refines only Vision after user supplies
   CommaView0.0.166-alpha.9 APK and confirms Vision-only scope. Static ZIP/DEX
   analysis only; no reference APK execution/code/assets embedded. Live View adds

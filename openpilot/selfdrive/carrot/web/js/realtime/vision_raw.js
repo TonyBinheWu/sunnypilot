@@ -253,8 +253,22 @@ function buildCompactStateUrl(services) {
   return `${wsProto}://${location.host}/ws/compact_state?${params.toString()}`;
 }
 
+const PARKED_DRIVING_SERVICES = new Set([
+  "carState", "controlsState", "carrotMan", "selfdriveState", "longitudinalPlan",
+  "modelV2", "lateralPlan", "radarState", "carControl", "liveDelay",
+  "liveTorqueParameters", "liveParameters", "liveTracks", "cameraOdometry", "livePose", "carrotNavi",
+]);
+function parkedVisionLive() {
+  const runtime = window.CarrotDeviceRuntimeState;
+  return runtime?.isOffroad === true && runtime?.isOnroad !== true && !recordedReplayActive();
+}
+
 function applyCompactFrame(service, decoded, options = {}) {
   if (!decoded || typeof decoded !== "object") return false;
+  if (parkedVisionLive() && PARKED_DRIVING_SERVICES.has(service)) {
+    delete RAW_HUD_STATE[service]; delete RAW_OVERLAY_STATE[service];
+    return false;
+  }
   let applied = false;
   let hudDirty = false;
   let overlayDirty = false;

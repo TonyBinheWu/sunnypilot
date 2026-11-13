@@ -8,6 +8,7 @@ from typing import Any
 from aiohttp import web
 
 from openpilot.system.webrtc import webrtcd
+from openpilot.common.carrot_vision_camera import update_camera_request
 
 
 _STREAM_IDENTIFIER_PATTERN = re.compile(r"[^a-zA-Z0-9._:-]+")
@@ -121,10 +122,25 @@ class CarrotStreamSession(webrtcd.StreamSession):
         raise asyncio.CancelledError
 
 
+def sync_camera_request(stream_dict):
+  if webrtcd._carrot_vision_mode:
+    active = any(getattr(session, "uses_road_camera", False) for session in stream_dict.values())
+    try:
+      update_camera_request(active)
+      # Manager clears this key on the onroad->offroad transition. A retained
+      # viewer must reassert its demand, not rely on the daemon's cached bool.
+      params = webrtcd._carrot_vision_params
+      if active and params is not None and not params.get_bool(webrtcd.CARROT_VISION_ACTIVE_PARAM):
+        webrtcd._carrot_vision_active = None
+    except Exception:
+      webrtcd.webrtcd_log("exception", "Failed updating parked camera demand")
+  webrtcd._sync_carrot_vision_active(stream_dict)
+
+
 def remove_stream_session(stream_dict: dict[str, Any], identifier: str) -> bool:
   removed = stream_dict.pop(identifier, None) is not None
   if removed:
-    webrtcd._sync_carrot_vision_active(stream_dict)
+    sync_camera_request(stream_dict)
   return removed
 
 
@@ -208,6 +224,7 @@ async def stream_session_cleanup_context(app: web.Application):
       try:
         async with app["stream_lock"]:
           await prune_ended_stream_sessions(app["streams"])
+          sync_camera_request(app["streams"])
       except asyncio.CancelledError:
         raise
       except Exception:
@@ -242,6 +259,9 @@ async def get_stream(request: web.Request):
     takeover=bool(raw_body.get("takeover", False)),
     carrot_state=bool(raw_body.get("carrot_state", False)),
   )
+
+  if webrtcd._carrot_vision_mode and (body.cameras != ["road"] or body.bridge_services_in):
+    raise web.HTTPBadRequest(text="Carrot Vision is a read-only road camera viewer")
 
   async with request.app["stream_lock"]:
     await prune_ended_stream_sessions(stream_dict)
@@ -298,7 +318,7 @@ async def get_stream(request: web.Request):
         remove_stream_session(stream_dict, getattr(old, "identifier", ""))
 
     stream_dict[session.identifier] = session
-    webrtcd._sync_carrot_vision_active(stream_dict)
+    sync_camera_request(stream_dict)
 
     try:
       answer = await session.get_answer()
@@ -324,4 +344,9 @@ async def on_shutdown(app: web.Application):
     finally:
       remove_stream_session(app["streams"], getattr(session, "identifier", ""))
   app["streams"].clear()
+  if webrtcd._carrot_vision_mode:
+    try:
+      update_camera_request(False)
+    except OSError:
+      webrtcd.webrtcd_log("exception", "Failed releasing parked camera demand")
   webrtcd._set_carrot_vision_active(False)
