@@ -32,7 +32,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - run: python -m pip install pytest numpy fonttools scons
+      - run: python -m pip install pytest numpy fonttools scons aiohttp
       - run: python -m pytest -c /dev/null --noconftest -q openpilot/selfdrive/carrot/server/tests/test_web_settings_ar.py
       - name: Device strings, update tokens and text layout
         run: >-
