@@ -232,7 +232,12 @@ def main():
 
   updater = None
   try:
-    gui_app.init_window("System Update")
+    # Runs before SCons builds atlases. Load only the styles actually used by
+    # updater, Wi-Fi setup and keyboard; no unused UNIFONT/PRETENDARD atlas.
+    gui_app.init_window("System Update", font_weights=(
+      FontWeight.NORMAL, FontWeight.ROMAN, FontWeight.BOLD,
+      FontWeight.SEMI_BOLD, FontWeight.DISPLAY,
+    ))
     updater = Updater(updater_path, manifest_path)
     gui_app.push_widget(updater)
     updater.install_update()

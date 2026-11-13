@@ -529,13 +529,15 @@ function start_manager {
 }
 
 function run_startup_command {
-  "$@" 2>&1 | python3 -m openpilot.common.startup_recovery --capture-log /tmp/carrot_startup_failure.log
+  "$@" 2>&1 | python3 -m openpilot.common.startup_recovery --capture-log /tmp/carrot_startup_failure.log --stage "${CARROT_STARTUP_STAGE:-}"
   return "${PIPESTATUS[0]}"
 }
 
 function show_startup_failure {
   local reason="$1"
   local log_path="${2:-/tmp/carrot_startup_failure.log}"
+  # Lock failure can reach recovery before normal bootstrap sets PYTHONPATH.
+  export PYTHONPATH="$DIR/pydeps:$DIR${PYTHONPATH:+:$PYTHONPATH}"
   # No build/manager can still hold the checkout when the update button runs.
   flock -u 9
   exec 9>&-
@@ -558,9 +560,8 @@ function launch {
   exec 9>"$CARROT_REPO_LOCK_PATH"
   if ! flock -w 300 9; then
     echo "Another repository operation is still running; launch deferred."
-    exec 9>&-
-    start_carrot_recovery
-    while true; do sleep 1; done
+    show_startup_failure "Startup lock timed out: another repository operation has not finished. Recovery is available on port 6999."
+    return 1
   fi
   export CARROT_BOOT_LOCK_FD=9
   # The launcher owns startup failure display, including Python import errors.
@@ -637,7 +638,7 @@ function launch {
   # AGNOS must be current before installing its matching offline wheels. SCons
   # imports native dependency modules while building Params, so bootstrap them
   # before the first SCons invocation.
-  if ! run_startup_command bootstrap_runtime_dependencies; then
+  if ! CARROT_STARTUP_STAGE="Preparing runtime packages" run_startup_command bootstrap_runtime_dependencies; then
     show_startup_failure "Runtime dependency installation failed"
   fi
 
@@ -654,7 +655,7 @@ function launch {
   fi
 
   # Build Params before any long-running carrot service imports it.
-  if ! run_startup_command bash "$DIR/scripts/ensure_params_build.sh"; then
+  if ! CARROT_STARTUP_STAGE="Building settings registry" run_startup_command bash "$DIR/scripts/ensure_params_build.sh"; then
     echo "Params registry build failed, not starting openpilot."
     show_startup_failure "Params registry build failed"
   fi
@@ -674,7 +675,9 @@ function launch {
   # A reset before the Params build must still force the full build below.
   [ "$BUILD_STATE_RESET" = "1" ] && FORCE_REBUILD=1
   # Accept the pending external model once per real boot, before either backend.
-  flock /tmp/big_model_selection.lock python3 -m openpilot.common.big_model_catalog || exit 1
+  if ! run_startup_command flock /tmp/big_model_selection.lock python3 -m openpilot.common.big_model_catalog; then
+    show_startup_failure "Model selection initialization failed"
+  fi
   prepare_big_model_if_needed
   invalidate_modeld_build_if_needed
   invalidate_native_build_if_needed

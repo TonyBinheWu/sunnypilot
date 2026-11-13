@@ -325,3 +325,50 @@ def test_display_keeps_original_error_in_every_update_state(monkeypatch, status)
   assert error.y + error.height <= rebuild.y
   assert rebuild.x + rebuild.width < update.x
   assert update.x + update.width <= 536 and update.y + update.height <= 240
+
+
+def test_prebuild_progress_closes_before_next_stage_and_does_not_gate_work(monkeypatch):
+  from threading import Event
+  from openpilot.common import spinner
+  sent = Event()
+  closed = Event()
+  messages = []
+
+  class Progress:
+    def update(self, text):
+      messages.append(text)
+      sent.set()
+      return True
+
+    def close(self):
+      closed.set()
+
+  monkeypatch.setattr(spinner, 'Spinner', Progress)
+  with startup_recovery.startup_progress('Preparing runtime packages'):
+    assert sent.wait(2)
+    assert not closed.is_set()
+  assert closed.is_set()
+  assert messages[0] == 'Preparing runtime packages'
+
+  attempted = Event()
+
+  class BrokenProgress(Progress):
+    def update(self, text):
+      attempted.set()
+      raise RuntimeError('graphics unavailable')
+
+  monkeypatch.setattr(spinner, 'Spinner', BrokenProgress)
+  closed.clear()
+  with startup_recovery.startup_progress('Building settings registry'):
+    assert attempted.wait(2)
+  assert closed.is_set()
+
+
+def test_launcher_lock_timeout_and_selection_failure_reach_recovery():
+  root = Path(__file__).resolve().parents[3]
+  launch = (root / 'launch_chffrplus.sh').read_text(encoding='utf-8')
+  body = launch[launch.index('function launch {'):]
+  locked = body[body.index('if ! flock -w 300 9;'):body.index('export CARROT_BOOT_LOCK_FD=9')]
+  assert 'show_startup_failure' in locked
+  assert 'while true' not in locked
+  assert 'Model selection initialization failed' in body

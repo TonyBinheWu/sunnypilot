@@ -37,6 +37,7 @@ with patch('os.path.isfile', side_effect=lambda name: str(name) in ('/TICI', '/A
     importlib.import_module('openpilot.system.ui.' + ('mici_updater' if sys.argv[1] == 'mici' else 'tici_updater'))
     importlib.import_module('openpilot.system.ui.spinner')
     importlib.import_module('openpilot.system.ui.text')
+    importlib.import_module('openpilot.system.ui.startup_recovery')
 assert 'serial' not in sys.modules
 assert 'openpilot.system.hardware.tici.lpa' not in sys.modules
 print('Fresh ' + sys.argv[1] + ' updater, spinner and failure display imports passed')

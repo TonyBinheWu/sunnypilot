@@ -1,5 +1,20 @@
 # Repository memory
 
+- 2026-11-13: C4 fresh-boot follow-up reproduces source DISPLAY fallback packing
+  39,524 codepoints into16384x16384 with real Raylib5.5 CPU glyph packing.
+  Limit to translated/native UI + language names + Hangul; preserve generated
+  multilingual repertoire, observed8192x8192 on5.5 and official6.0 package.
+  Mici updater loads only its actual font styles. Pre-Params dependency/registry
+  work now owns a bounded-retry spinner, closes it before later UI/build; sends
+  once per renderer to avoid filling a stalled renderer stdin. No driving start
+  or build error is bypassed. Repo-lock timeout and model-selection failure now
+  reach independent recovery instead of silent wait/exit. Startup CI runs every
+  carrot branch push, covers stock5.5 + target6 in clean environments without
+  pyserial/native build products, and real atlas-size/coverage regression.
+  Actual affected C4 logs/IP not yet provided; same installer URL confirmed.
+  This repairs reproduced startup risks, not a proven diagnosis of that device.
+
+
 - 2026-11-13: Vision presentation adds opt-in `vision_presentation=live_view`;
   default carrot preserves the instrument HUD. Existing camera/model projection,
   stream ownership, alerts and driving commands stay unchanged. Live View consumes

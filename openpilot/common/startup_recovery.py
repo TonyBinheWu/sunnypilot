@@ -2,6 +2,7 @@
 import os
 import re
 from collections import deque
+from contextlib import contextmanager
 from pathlib import Path
 import subprocess
 import threading
@@ -35,6 +36,44 @@ def read_startup_error(log_path: Path | None) -> str:
       lines = lines[i:] + lines[:i]
       break
   return '\n'.join(lines)
+
+
+@contextmanager
+def startup_progress(stage: str):
+  """Display pre-build work; graphics failure must never gate bootstrap/logging."""
+  if not stage:
+    yield
+    return
+  from openpilot.common.spinner import Spinner
+  spinner = Spinner()
+  stopped = threading.Event()
+
+  def update():
+    first = True
+    try:
+      while not stopped.is_set():
+        try:
+          process = getattr(spinner, 'spinner_proc', None)
+          # Send once per renderer, retrying only if it exits. Repeated writes
+          # to a graphics process stuck before stdin could fill its pipe.
+          if first or process is None or process.poll() is not None:
+            if not spinner.update(stage):
+              return
+          first = False
+        except Exception as exc:
+          print(f'Startup progress display unavailable: {exc}', flush=True)
+          return
+        stopped.wait(1)
+    finally:
+      spinner.close()
+
+  worker = threading.Thread(target=update, name='startup-progress', daemon=True)
+  worker.start()
+  try:
+    yield
+  finally:
+    stopped.set()
+    worker.join(timeout=5)
 
 
 def capture_startup_output(source, destination, log_path: Path):
@@ -151,9 +190,13 @@ if __name__ == '__main__':
   action = parser.add_mutually_exclusive_group(required=True)
   action.add_argument('--repo', type=Path)
   action.add_argument('--capture-log', type=Path)
+  parser.add_argument("--stage", default="")
   args = parser.parse_args()
   if args.capture_log:
-    capture_startup_output(sys.stdin.buffer, sys.stdout.buffer, args.capture_log)
+    if args.stage:
+      args.capture_log.write_text(f'[startup] {args.stage}\n', encoding='utf-8')
+    with startup_progress(args.stage):
+      capture_startup_output(sys.stdin.buffer, sys.stdout.buffer, args.capture_log)
     raise SystemExit(0)
   if os.environ.get('CARROT_STARTUP_RECOVERY') != '1':
     raise SystemExit('Only the failed-startup launcher may request automatic recovery.')

@@ -2,27 +2,8 @@ name: Startup recovery checks
 on:
   push:
     branches: [carrot-wip, carrot-nav]
-    paths:
-      - 'launch_chffrplus.sh'
-      - 'SConstruct'
-      - 'scripts/ensure_params_build.sh'
-      - 'openpilot/common/*rebuild*'
-      - 'openpilot/common/*cache*lock*'
-      - 'openpilot/common/startup*'
-      - 'openpilot/common/*forced_offroad*'
-      - 'openpilot/common/tests/test_forced_offroad.py'
-      - 'openpilot/selfdrive/car/card.py'
-      - 'openpilot/system/hardware/hardwared.py'
-      - 'openpilot/system/manager/build.py'
-      - 'openpilot/system/manager/process.py'
-      - 'openpilot/system/manager/process_config.py'
-      - 'openpilot/system/manager/process_crash.py'
-      - 'openpilot/system/tombstoned.py'
-      - 'openpilot/system/manager/test/*process*'
-      - 'openpilot/system/ui/**'
-      - 'openpilot/system/hardware/tici/**'
-      - 'openpilot/system/tests/**'
-      - '.github/workflows/startup-recovery.yaml'
+    # Check every branch push: bootstrap can break through transitive imports,
+    # font/translation changes or dependency updates outside launcher/UI paths.
   workflow_dispatch:
 permissions:
   contents: read
@@ -55,7 +36,11 @@ jobs:
             openpilot/selfdrive/carrot/server/tests/test_git_config.py
 
   fresh_install:
-    name: Fresh AGNOS pre-build UI imports
+    name: Fresh AGNOS UI / ${{ matrix.raylib }}
+    strategy:
+      fail-fast: false
+      matrix:
+        raylib: ['raylib==5.5.0.4', 'comma-deps-raylib==6.0.0.1.post103']
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -65,7 +50,7 @@ jobs:
           python-version: '3.12'
       # Deliberately omit pyserial and all SCons-generated modules. This is the
       # dependency boundary before the first OS update on a clean vehicle.
-      - run: python -m pip install pytest==8.3.5 requests numpy raylib==5.5.0.4 pycapnp setproctitle pyzmq jeepney cffi zstandard pillow
+      - run: python -m pip install pytest==8.3.5 requests numpy "${{ matrix.raylib }}" pycapnp setproctitle pyzmq jeepney cffi zstandard pillow
       - name: Import real C4 and C3 updater, spinner and failure-display graphs
         env:
           PYTHONPATH: .:opendbc_repo
@@ -73,3 +58,4 @@ jobs:
         run: >-
           python -m pytest -c /dev/null --rootdir=. --confcutdir=openpilot/system/tests -q
           openpilot/system/tests/test_fresh_install_bootstrap.py
+          openpilot/system/tests/test_bootstrap_font_atlas.py

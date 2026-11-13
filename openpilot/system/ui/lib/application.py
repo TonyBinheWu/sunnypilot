@@ -1050,6 +1050,9 @@ class GuiApplication:
       # characters as process.py, even before the generated atlas is available.
       codepoints.update(map(ord, "，。！？：；「」『』（）【】《》〈〉、…—～　"))
       translations_dir = FONT_DIR.parents[1] / "ui" / "translations"
+      languages_path = translations_dir / "languages.json"
+      if languages_path.exists():
+        codepoints.update(map(ord, languages_path.read_text(encoding="utf-8")))
       for po_path in translations_dir.glob("app_*.po"):
         codepoints.update(map(ord, po_path.read_text(encoding="utf-8")))
       native_ui_dir = FONT_DIR.parents[2] / "sunnypilot" / "formosalink"
@@ -1058,8 +1061,9 @@ class GuiApplication:
       codepoints.update(range(0xAC00, 0xD7A4))
       codepoints.update(range(0x1100, 0x1200))
       codepoints.update(range(0x3130, 0x3190))
-      codepoints.update(range(0x4E00, 0xA000))
-      codepoints.update(range(0x3400, 0x4DC0))
+      # Match the shipped UI repertoire, not every CJK codepoint. A clean C4
+      # has no generated atlas yet; full CJK ranges turn this fallback into a
+      # 16384-square atlas before the OS updater can draw its first frame.
     return sorted(codepoints)
 
   @staticmethod
