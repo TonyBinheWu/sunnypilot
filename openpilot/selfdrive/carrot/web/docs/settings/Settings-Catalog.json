@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "5d69560797924a8f137782ef9b02cf6a538db203",
-  "contentHash": "fde51811bf838cd7ff3d3e8e574772189ad328a9d5a6293a1ad8a9588bb63ee8",
-  "generatedAt": "2026-11-12T00:00:00Z",
+  "catalogCommit": "04628f01a4a64ae9ef88734617dcb196bd1f32df",
+  "contentHash": "fe69598008a26c96e8535eb558464be39d169bdd2d25ae6cab01a27bc85e513b",
+  "generatedAt": "2026-11-13T00:00:00Z",
   "locales": [
     "ko",
     "en",
@@ -544,6 +544,10 @@
     "EN-NaviSpeedLimitRatio(105).md": {
       "bytes": 2121,
       "hash": "a1ced93ba9e8b21c757c42bf9f573d2aff0eb24bcd06eee6e6177d5197c99254"
+    },
+    "EN-Navigation-Voice-Volume.md": {
+      "bytes": 2178,
+      "hash": "a55e65c22fd6f15cac04a92ba5fd0d9e3c8458c9f2e6918c76222ac5432c65a7"
     },
     "EN-ONNX-Lane-and-BSD-Detection.md": {
       "bytes": 3392,
@@ -1221,6 +1225,10 @@
       "bytes": 2563,
       "hash": "8a239dbeb7e2959604af6bf14d77b5984f6ea784b0298dc0dbaca62bebbafa66"
     },
+    "KO-내비게이션-음성-볼륨.md": {
+      "bytes": 2262,
+      "hash": "157e9a5d5862d63c35be4d14535a65c3c113581008a765ea703692a9da256461"
+    },
     "KO-네비게이션감속모드(2).md": {
       "bytes": 2952,
       "hash": "664c3f22c965e9a89489cde495c223dc8f05020b6b6e72b24b907f2ba5011c72"
@@ -1706,8 +1714,8 @@
       "hash": "c36b52d2f81711770bb6532877ab8c359e6f5d670cc0ff058db0b0c834b7e810"
     },
     "Settings-Catalog.md": {
-      "bytes": 142672,
-      "hash": "d48f463c2e85039d3b399adfa6c6b7f385e56a784c2c7fee835180f4411f4f2a"
+      "bytes": 143293,
+      "hash": "abb440f3466e79327cd021b3ee0f023bef58b517d02431beb62295676727b893"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -2393,6 +2401,10 @@
       "bytes": 1839,
       "hash": "02586817fe6a2af5a505440059249d639828e078cf304cd3d39c7f8fce93371a"
     },
+    "ZH-TW-語音播報音量.md": {
+      "bytes": 2013,
+      "hash": "5acbefe9277912066781fdddc51db80fe8f14494dea28163e1b60953e7af2152"
+    },
     "ZH-TW-變道使用轉向力矩.md": {
       "bytes": 2002,
       "hash": "d63ef07531e916782aea997f0ca1863c62d2958bfbf6c2c5fb8a443256e0b9f8"
@@ -2901,6 +2913,10 @@
       "bytes": 1285,
       "hash": "f0bdc2d1d31f1b0bc22b6465acc1104289bad1f74e6e591ce625995476637e4b"
     },
+    "ZH-导航语音音量.md": {
+      "bytes": 2007,
+      "hash": "75b6ecca17b7779da77fc019fcd51d3faca3b711eb871643ed42530c9ab79012"
+    },
     "ZH-导航限速比例-(105).md": {
       "bytes": 1346,
       "hash": "5373708bd5ba1030616fa776562a4dc6dc77ae39fb15990df43a9bab44441519"
@@ -3407,7 +3423,7 @@
     }
   },
   "review": {
-    "current": 42,
+    "current": 43,
     "needs_review": 170
   },
   "schemaVersion": 1,
@@ -8867,6 +8883,37 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "e8353a1e741bf71c2729229e8e681ce88a49651279e82e6caad385a353f63560"
+    },
+    "SoundLanguageVolume": {
+      "group": "SYS_SOUND",
+      "locales": {
+        "en": {
+          "anchor": "SoundLanguageVolume",
+          "factsHash": "9f06316c87cef22a6cb87e69bb8067578152e5163fbb248fb380b60bb5ef1f50",
+          "page": "EN-Navigation-Voice-Volume.md",
+          "reviewStatus": "current"
+        },
+        "ko": {
+          "anchor": "SoundLanguageVolume",
+          "factsHash": "be9e28d9189a919f853465b606c0e18f5c6dd19b9e52161fe60d4f3c19e6fe44",
+          "page": "KO-내비게이션-음성-볼륨.md",
+          "reviewStatus": "current"
+        },
+        "zh": {
+          "anchor": "SoundLanguageVolume",
+          "factsHash": "2038e37b37c65eb0f3ca9b630db566bc1751aed5a72b1c945636aeb9e2d72c39",
+          "page": "ZH-导航语音音量.md",
+          "reviewStatus": "current"
+        },
+        "zh-tw": {
+          "anchor": "SoundLanguageVolume",
+          "factsHash": "9088be142e431e8282644996e17afbfc55c8a9520657595472010f4376ead89b",
+          "page": "ZH-TW-語音播報音量.md",
+          "reviewStatus": "current"
+        }
+      },
+      "reviewStatus": "current",
+      "semanticHash": "32c48f4cfc1ecf1e4753492b38495b772d329d24d3954eff9db073bc90a47934"
     },
     "SoundVolumeAdjust": {
       "group": "SYS_SOUND",

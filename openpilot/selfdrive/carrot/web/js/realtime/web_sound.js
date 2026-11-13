@@ -17,7 +17,7 @@
     6: { file: "prompt.wav", once: true },
     7: { file: "prompt.wav" },
     8: { file: "prompt_distracted.wav" },
-    9: { file: "audio_turn.wav" },
+    9: { file: "audio_turn.wav", navigationVoice: true },
     10: { file: "tici_engaged.wav" },
     11: { file: "tici_disengaged.wav" },
     12: { file: "traffic_sign_green.wav" },
@@ -29,19 +29,19 @@
     18: { file: "audio_disengage.wav" },
     19: { file: "audio_traffic_error.wav" },
     20: { file: "audio_car_watchout.wav" },
-    21: { file: "audio_speed_down.wav" },
+    21: { file: "audio_speed_down.wav", navigationVoice: true },
     22: { file: "audio_stopstop.wav" },
     23: { file: "reverse_gear.wav", once: true, engageVolume: true },
-    24: { file: "audio_1.wav" },
-    25: { file: "audio_2.wav" },
-    26: { file: "audio_3.wav" },
-    27: { file: "audio_4.wav" },
-    28: { file: "audio_5.wav" },
-    29: { file: "audio_6.wav" },
-    30: { file: "audio_7.wav" },
-    31: { file: "audio_8.wav" },
-    32: { file: "audio_9.wav" },
-    33: { file: "audio_10.wav" },
+    24: { file: "audio_1.wav", navigationVoice: true },
+    25: { file: "audio_2.wav", navigationVoice: true },
+    26: { file: "audio_3.wav", navigationVoice: true },
+    27: { file: "audio_4.wav", navigationVoice: true },
+    28: { file: "audio_5.wav", navigationVoice: true },
+    29: { file: "audio_6.wav", navigationVoice: true },
+    30: { file: "audio_7.wav", navigationVoice: true },
+    31: { file: "audio_8.wav", navigationVoice: true },
+    32: { file: "audio_9.wav", navigationVoice: true },
+    33: { file: "audio_10.wav", navigationVoice: true },
   });
 
   let enabled = loadEnabled();
@@ -59,6 +59,7 @@
   let lastCountdown = null;
   let volume = 1;
   let engageVolume = 1;
+  let voiceVolume = 1;
   let tizi = false;
   let activeSoundDirectory = bootstrapSoundDirectory();
   const bufferCache = new Map();
@@ -96,10 +97,13 @@
     try { localStorage.setItem(VOLUME_STORAGE_KEY, String(value)); } catch (_) {}
   }
 
+  function playbackGain(alert) {
+    return Math.max(0, Math.min(1, webVolume)) * (SOUND_MAP[alert]?.navigationVoice ? voiceVolume : 1);
+  }
+
   function applyGain() {
     if (current?.gain && context) {
-      // Independent of device Settings > Sound volume — Web slider only.
-      current.gain.gain.setValueAtTime(Math.max(0, Math.min(1, webVolume)), context.currentTime);
+      current.gain.gain.setValueAtTime(playbackGain(current.alert), context.currentTime);
     }
   }
 
@@ -161,13 +165,13 @@
     return audioContext.state === "running";
   }
 
-  async function loadBuffer(file) {
+  async function loadBuffer(file, directory = soundDirectory()) {
     const audioContext = ensureContext();
     if (!audioContext) throw new Error("AudioContext unavailable");
-    const key = `${soundDirectory()}/${file}`;
+    const key = `${directory}/${file}`;
     if (!bufferCache.has(key)) {
       bufferCache.set(key, (async () => {
-        const response = await fetch(`/sound-assets/${encodeURIComponent(soundDirectory())}/${encodeURIComponent(file)}`, { cache: "force-cache" });
+        const response = await fetch(`/sound-assets/${encodeURIComponent(directory)}/${encodeURIComponent(file)}`, { cache: "force-cache" });
         if (!response.ok) throw new Error(`sound asset HTTP ${response.status}`);
         const decoded = await audioContext.decodeAudioData(await response.arrayBuffer());
         readyBuffers.set(key, decoded);
@@ -222,8 +226,8 @@
     source.loop = !resolvedOneShot;
     // Web playback volume is intentionally independent of the device's
     // Settings > Sound volume (SoundVolumeAdjust / SoundVolumeAdjustEngage): only
-    // the in-dialog Web volume slider scales what the browser plays.
-    gain.gain.value = Math.max(0, Math.min(1, webVolume));
+    // the Web slider sets the base. Navigation voice has its own shared gain.
+    gain.gain.value = playbackGain(alertNum);
     source.connect(gain);
     gain.connect(context.destination);
     current = { source, gain, alert: alertNum, loop: source.loop, released: false };
@@ -303,6 +307,9 @@
     if (!enabled || state?.type !== "soundState") return;
     volume = Number.isFinite(Number(state.volume)) ? Number(state.volume) : 1;
     engageVolume = Number.isFinite(Number(state.engageVolume)) ? Number(state.engageVolume) : 1;
+    voiceVolume = state.voiceVolume != null && Number.isFinite(Number(state.voiceVolume))
+      ? Math.max(0.05, Math.min(3, Number(state.voiceVolume))) : 1;
+    applyGain();
     tizi = Boolean(state.tizi);
     const previousSoundDirectory = activeSoundDirectory;
     if (["sounds", "sounds_eng", "sounds_chs"].includes(state.soundDirectory)) {
@@ -520,6 +527,19 @@
     return testAlert(alert);
   }
 
+  async function previewLanguage(directory) {
+    if (!["sounds", "sounds_eng", "sounds_chs"].includes(directory)) throw new Error("Unsupported sound language");
+    await unlockAudio();
+    // An explicit audition works with live web sound OFF and uses a fresh gain.
+    const response = await fetch("/api/params_bulk?names=SoundLanguageVolume", { cache: "no-store" });
+    if (!response.ok) throw new Error(`Voice volume HTTP ${response.status}`);
+    const payload = await response.json();
+    const value = payload?.values?.SoundLanguageVolume;
+    voiceVolume = value != null && Number.isFinite(Number(value)) ? Math.max(.05, Math.min(3, Number(value) / 100)) : 1;
+    const buffer = await loadBuffer("audio_speed_down.wav", directory);
+    return startBuffer(21, buffer, true);
+  }
+
   function status() {
     return {
       enabled,
@@ -531,6 +551,7 @@
       soundDirectory: soundDirectory(),
       volume,
       engageVolume,
+      voiceVolume,
       webVolume,
       // Estimated browser audio output latency (ms) — the residual client-side lag
       // once the server poll is tightened; useful to verify realtime tuning.
@@ -659,6 +680,7 @@
     },
     test: testAlert,
     testCountdown,
+    previewLanguage,
     preview: (alert) => playAlert(alert, { oneShot: true, preview: true }),
   });
 })();

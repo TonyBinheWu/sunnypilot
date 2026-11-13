@@ -690,6 +690,7 @@
           "zh": "声音",
           "params": [
             "SoundLanguageSetting",
+            "SoundLanguageVolume",
             "SoundVolumeAdjust",
             "SoundVolumeAdjustEngage"
           ],
@@ -3692,6 +3693,26 @@
       "tgroup": "啟動設定",
       "ttitle": "聲音語言",
       "tdescr": "選擇提示音使用的語言。自動會跟隨裝置語言設定。"
+    },
+    {
+      "group": "시작",
+      "name": "SoundLanguageVolume",
+      "title": "내비게이션 음성 볼륨",
+      "descr": "회전·감속 안내와 1~10초 카운트다운 음성의 상대 음량입니다. 100%는 기존 음량이며 일반 음량과 주변 소음 보정에 곱해집니다. 약 1초 안에 적용되고 재시작은 필요 없습니다. 경고음과 인게이지 음량은 별도입니다.",
+      "egroup": "START",
+      "etitle": "Navigation Voice Volume",
+      "edescr": "Relative gain for navigation turn, slowdown and 1–10 countdown voice prompts. 100% keeps the existing level, multiplied by general volume and ambient-noise adjustment. Applies within about one second without restart. Warning tones and engagement sounds keep their separate volume.",
+      "cgroup": "启动设置",
+      "ctitle": "导航语音音量",
+      "cdescr": "导航转弯、减速和1–10倒计时语音的音量倍率。100%保持原音量，并与一般音量和环境噪声调节相乘。约1秒内生效，无需重启。警告音及启用音效另行控制。",
+      "tgroup": "啟動設定",
+      "ttitle": "語音播報音量",
+      "tdescr": "導航轉彎、減速及1–10倒數語音的音量倍率。100%維持原音量，並與一般音量及環境音調節相乘。約1秒內生效，無需重啟。警告音與啟用音效維持各自的音量控制。",
+      "min": 5,
+      "max": 300,
+      "default": 100,
+      "unit": 5,
+      "display_unit": "percent"
     },
     {
       "group": "시작",

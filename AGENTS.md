@@ -1,5 +1,20 @@
 # Repository memory
 
+- 2026-11-13: SoundLanguageVolume is a persistent5..300% navigation speech gain,
+  default100, next to SoundLanguageSetting. Only audio_turn/audio_speed_down and
+  audio_1..10 receive it; DM floors/final gain and other warnings/engagement
+  stay unchanged. Native gain polls with language once per second, uses final
+  PCM and limits boosted samples; no WAV reload or restart for value changes.
+  Web sound receives voiceVolume in its existing state stream, multiplies the
+  independent Web slider and updates current gain without restarting a clip.
+  Language/volume Sample uses a fresh stored gain via WebAudio even with live
+  web sound OFF. Existing general/engagement volume/defaults remain unchanged.
+  Four-locale bundled detailed guide and Korean/English settings guide updated.
+  Local172 audio/schema checks pass (one live-IPC test deferred to native CI),
+  plus257 web tests and32 Wiki/generator tests. Native CI runs the full soundd
+  suite including timeout IPC; no default gain or safety warning change.
+  Physical speaker loudness remains unverified; no vehicle Params writes made.
+
 - 2026-11-13: Add selectable KIA_SORENTO_2024 / Kia Sorento (without HDA II)
   2024-25 from ccnc-port's opendbc2a565d34: source specs, AUS/USA camera/radar
   firmware and torque override2.5/2.5/.1. Keep 2021-23 and HEV profiles separate.

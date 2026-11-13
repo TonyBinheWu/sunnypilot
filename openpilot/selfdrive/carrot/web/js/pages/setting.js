@@ -1114,6 +1114,7 @@ function getSoundAssetDirForLanguage(value) {
 
 async function playSoundLanguageSample(value) {
   const dir = getSoundAssetDirForLanguage(value);
+  if (window.CarrotWebSound?.previewLanguage) return window.CarrotWebSound.previewLanguage(dir);
   const url = `/sound-assets/${encodeURIComponent(dir)}/audio_speed_down.wav`;
   if (settingSoundSampleAudio) {
     settingSoundSampleAudio.pause();
@@ -2830,7 +2831,7 @@ async function renderItems(group, options = {}) {
       el.classList.add("setting--has-unit-cycle");
       actions.appendChild(unitBtn);
     }
-    if (name === "SoundLanguageSetting") {
+    if (name === "SoundLanguageSetting" || name === "SoundLanguageVolume") {
       const sampleBtn = document.createElement("button");
       sampleBtn.type = "button";
       sampleBtn.className = "setting-default-reset";
@@ -2839,7 +2840,9 @@ async function renderItems(group, options = {}) {
       sampleBtn.onclick = async (event) => {
         event.stopPropagation();
         try {
-          await playSoundLanguageSample(val.dataset.rawValue ?? p.default);
+          const language = name === "SoundLanguageSetting" ? (val.dataset.rawValue ?? p.default)
+            : (await bulkGet(["SoundLanguageSetting"])).SoundLanguageSetting ?? "auto";
+          await playSoundLanguageSample(language);
         } catch (e) {
           showAppToast(e?.message || getUIText("failed", "Failed"), { tone: "error" });
         }

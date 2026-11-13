@@ -561,6 +561,10 @@
     "VehicleNaviSectionAvgControl": {
       "englishHash": "76a90c3aac60786c04e0f28d02ca8ca6daf39a58f33c85007c7e7088a59cc79a",
       "manual": "<!-- CARROT:MANUAL:BEGIN VehicleNaviSectionAvgControl -->\n<!-- CARROT:REVIEW reviewed-for=\"\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n啟用後，進入區間時仍保留既有速限上限。巡航啟用且設定速度較高時，按 + 或輕踩油門可利用較慢行駛累積的時間，將速度解鎖至設定速度。停用則保留既有區間上限。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n不需外部導航也可使用。長按 - 可重新鎖定；離開區間後重設。此實驗性估算取決於入口訊號及已行駛距離，出口測速照相的定點減速仍有效。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END VehicleNaviSectionAvgControl -->"
+    },
+    "SoundLanguageVolume": {
+      "englishHash": "c01c0aa5167bce1e9e16defbef3949a3058e939afd5c24c02b94b6905ecdc098",
+      "manual": "<!-- CARROT:MANUAL:BEGIN SoundLanguageVolume -->\n<!-- CARROT:REVIEW reviewed-for=\"32c48f4cfc1ecf1e4753492b38495b772d329d24d3954eff9db073bc90a47934\" reviewed-at=\"2026-11-13T00:00:00Z\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n調整導航轉彎、減速及數字倒數語音。機器端乘以一般音量及環境音調節，網頁端乘以網頁音量。警告音與啟用音效維持原有控制。增益後的機器端取樣限制在輸出範圍內。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停車時逐步調高，確認導航播報清楚。約一秒內生效，無需重新啟動。網頁音量靜音時，網頁語音仍然靜音。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END SoundLanguageVolume -->"
     }
   }
 }

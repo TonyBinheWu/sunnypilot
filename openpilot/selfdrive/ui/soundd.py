@@ -13,6 +13,7 @@ from openpilot.common.realtime import Ratekeeper
 from openpilot.common.utils import retry
 from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.car.openpilot_toggle import CruiseMainOpenpilotToggle
+from openpilot.selfdrive.carrot.sound_volume import NAVIGATION_VOICE_FILES, read_voice_volume
 
 from openpilot.system import micd
 from openpilot.system.hardware import HARDWARE
@@ -176,6 +177,7 @@ class Soundd:
   def __init__(self):
     self.params = Params()
     self.soundVolumeAdjust = 1.0
+    self.voice_volume = read_voice_volume(self.params)
     self.carrot_count_down = 0
 
     self.lang = read_sound_language_setting(self.params)
@@ -229,6 +231,7 @@ class Soundd:
     if now < self.next_language_check_time:
       return
     self.next_language_check_time = now + 1.0
+    self.voice_volume = read_voice_volume(self.params)
 
     lang = read_sound_language_setting(self.params)
     if lang == self.lang:
@@ -258,7 +261,13 @@ class Soundd:
         written_frames += frames_to_write
         self.current_sound_frame += frames_to_write
 
-    return ret * dm_warning_volume(alert, alert_type, volume)
+    output = ret * dm_warning_volume(alert, alert_type, volume)
+    if alert in sound_list and sound_list[alert][0] in NAVIGATION_VOICE_FILES:
+      gain = getattr(self, "voice_volume", 1.0)
+      output *= gain
+      if gain > 1.0:
+        np.clip(output, -1.0, 1.0, out=output)
+    return output
 
   def callback(self, data_out: np.ndarray, frames: int, time, status) -> None:
     if status:

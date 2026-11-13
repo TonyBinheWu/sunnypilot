@@ -419,7 +419,7 @@ Carrot Vision에는 `carrot_settings.json` 카탈로그와 별도로 **AR 표시
 |---|---|---|
 | 녹화·전원 | `RecordRoadCam`, `MaxTimeOffroadMin` | 도로 카메라 저장과 시동 OFF 후 자동 전원 종료 시간 |
 | 네트워크·지도 | `HotspotOnBoot`, `MapboxStyle` | 부팅 시 핫스팟과 지도 배경 스타일 |
-| 사운드 | `SoundLanguageSetting`, `SoundVolumeAdjust`, `SoundVolumeAdjustEngage` | 안내음 언어와 일반·인게이지 볼륨 |
+| 사운드 | `SoundLanguageSetting`, `SoundLanguageVolume`, `SoundVolumeAdjust`, `SoundVolumeAdjustEngage` | 안내음 언어와 내비게이션·일반·인게이지 볼륨 |
 | 소프트웨어 | `SoftwareMenu` | Carrot Web의 소프트웨어 메뉴 활성화 |
 
 - `RecordRoadCam`: `0` 녹화 안 함, `1` 일반 카메라, `2` 일반+광각 카메라입니다. 저장 공간 사용량을 확인하세요.
@@ -428,6 +428,8 @@ Carrot Vision에는 `carrot_settings.json` 카탈로그와 별도로 **AR 표시
 - `SoftwareMenu`: 메모리 문제가 있을 때 끌 수 있는 Carrot Web 메뉴 설정입니다.
 
 `SoundVolumeAdjust`는 일반 안내음의 음량을 조절합니다. DM 첫 경고음은 출력 음량 최소 70%, 마지막 경고음은 항상 100%이며 볼륨 설정이나 주변 소음에 의해 낮아지지 않습니다. 그보다 앞선 화면 예고는 무음입니다. 자세한 내용은 [운전자 모니터링](driver-monitoring.md)을 참고하세요.
+
+**내비게이션 음성 볼륨**(`SoundLanguageVolume`)은 시스템 → 사운드의 **사운드 언어** 옆에 있습니다. 회전·감속 안내와 1~10초 카운트다운 음성을 5% 단위로 5~300% 조절하며 100%는 기존 음량입니다. 기기에서는 일반 음량 및 주변 소음 보정에 곱해지고 웹에서는 별도 웹 볼륨 슬라이더에 곱해집니다. 경고음과 인게이지 음량 및 DM의 보호 음량은 기존대로 유지됩니다. 약 1초 안에 반영되어 재시작이 필요 없습니다. 정차 중 조금씩 올려 확인하세요. 증폭된 기기 샘플은 출력 범위로 제한되므로 지나친 증폭은 왜곡을 만들 수 있습니다.
 
 실험 DM은 주변 이동 차량이 없다가 처음 나타날 때만 20초간 기본 감시로 전환하고, 차량 추가로 시간을 연장하지 않습니다. 이후 실험 감시로 복귀하되 차량이 남아 있으면 빈 도로 추가 완화는 적용하지 않습니다.
 

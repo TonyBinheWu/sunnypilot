@@ -364,6 +364,7 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 #### 사운드
 
 - [사운드 언어](https://github.com/ajouatom/openpilot/wiki/KO-%EC%82%AC%EC%9A%B4%EB%93%9C-%EC%96%B8%EC%96%B4) — `SoundLanguageSetting`
+- [내비게이션 음성 볼륨](https://github.com/ajouatom/openpilot/wiki/KO-%EB%82%B4%EB%B9%84%EA%B2%8C%EC%9D%B4%EC%85%98-%EC%9D%8C%EC%84%B1-%EB%B3%BC%EB%A5%A8) — `SoundLanguageVolume`
 - [사운드볼륨조절(100%)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%82%AC%EC%9A%B4%EB%93%9C%EB%B3%BC%EB%A5%A8%EC%A1%B0%EC%A0%88%28100-%29) — `SoundVolumeAdjust`
 - [사운드볼륨조절, 인게이지 볼륨(10%)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%82%AC%EC%9A%B4%EB%93%9C%EB%B3%BC%EB%A5%A8%EC%A1%B0%EC%A0%88%2C-%EC%9D%B8%EA%B2%8C%EC%9D%B4%EC%A7%80-%EB%B3%BC%EB%A5%A8%2810-%29) — `SoundVolumeAdjustEngage`
 
@@ -732,6 +733,7 @@ Per-setting pages generated from the current settings catalog.
 #### Sound
 
 - [Sound Language](https://github.com/ajouatom/openpilot/wiki/EN-Sound-Language) — `SoundLanguageSetting`
+- [Navigation Voice Volume](https://github.com/ajouatom/openpilot/wiki/EN-Navigation-Voice-Volume) — `SoundLanguageVolume`
 - [Sound Volume adjust(100%)](https://github.com/ajouatom/openpilot/wiki/EN-Sound-Volume-adjust%28100-%29) — `SoundVolumeAdjust`
 - [Sound Volume adjust,Engage(10%)](https://github.com/ajouatom/openpilot/wiki/EN-Sound-Volume-adjust%2CEngage%2810-%29) — `SoundVolumeAdjustEngage`
 
@@ -1100,6 +1102,7 @@ Per-setting pages generated from the current settings catalog.
 #### 声音
 
 - [声音语言](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%A3%B0%E9%9F%B3%E8%AF%AD%E8%A8%80) — `SoundLanguageSetting`
+- [导航语音音量](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%AF%BC%E8%88%AA%E8%AF%AD%E9%9F%B3%E9%9F%B3%E9%87%8F) — `SoundLanguageVolume`
 - [音量调节 (100%)](https://github.com/ajouatom/openpilot/wiki/ZH-%E9%9F%B3%E9%87%8F%E8%B0%83%E8%8A%82-%28100-%29) — `SoundVolumeAdjust`
 - [音量调节，激活音量 (10%)](https://github.com/ajouatom/openpilot/wiki/ZH-%E9%9F%B3%E9%87%8F%E8%B0%83%E8%8A%82%2C%E6%BF%80%E6%B4%BB%E9%9F%B3%E9%87%8F-%2810-%29) — `SoundVolumeAdjustEngage`
 
@@ -1468,6 +1471,7 @@ Per-setting pages generated from the current settings catalog.
 #### 聲音
 
 - [聲音語言](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%81%B2%E9%9F%B3%E8%AA%9E%E8%A8%80) — `SoundLanguageSetting`
+- [語音播報音量](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%AA%9E%E9%9F%B3%E6%92%AD%E5%A0%B1%E9%9F%B3%E9%87%8F) — `SoundLanguageVolume`
 - [音量調節 (100%)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%9F%B3%E9%87%8F%E8%AA%BF%E7%AF%80-%28100-%29) — `SoundVolumeAdjust`
 - [音量調節，啟用音量 (10%)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%9F%B3%E9%87%8F%E8%AA%BF%E7%AF%80%2C%E5%95%9F%E7%94%A8%E9%9F%B3%E9%87%8F-%2810-%29) — `SoundVolumeAdjustEngage`
 

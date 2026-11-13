@@ -417,12 +417,14 @@ The 12 system settings cover recording, power, network, maps, sound, and softwar
 |---|---|---|
 | Recording and power | `RecordRoadCam`, `MaxTimeOffroadMin` | Road-camera storage and delayed shutdown |
 | Network and map | `HotspotOnBoot`, `MapboxStyle` | Boot hotspot and map background style |
-| Sound | `SoundLanguageSetting`, `SoundVolumeAdjust`, `SoundVolumeAdjustEngage` | Prompt language and volume |
+| Sound | `SoundLanguageSetting`, `SoundLanguageVolume`, `SoundVolumeAdjust`, `SoundVolumeAdjustEngage` | Prompt language and navigation, general and engagement volume |
 | Software | `SoftwareMenu` | Carrot Web software-menu availability |
 
 Check storage use for recording and network use, heat, and privacy before enabling live streaming.
 
 `SoundVolumeAdjust` changes general sound volume. DM's first audible warning has a 70% minimum output gain; its final warning always uses 100%, regardless of volume settings or ambient-noise attenuation. The preceding visual-only notice remains silent. See [driver monitoring](driver-monitoring.md) for details.
+
+**Navigation Voice Volume** (`SoundLanguageVolume`) is beside **Sound Language** in System → Sound. It adjusts turn, slowdown and 1–10 countdown speech from 5–300%, in 5% steps; 100% preserves the existing level. On the device it multiplies general volume and ambient-noise adjustment; browser playback multiplies the separate Web volume slider. Warning tones and engagement sounds keep their existing controls, including DM's protected gains. Changes apply within about one second without restarting. Increase gradually while parked; boosted device samples are limited to the output range, so excessive gain may distort speech.
 
 Experimental DM switches to standard monitoring for 20 seconds only when moving traffic first appears after an absence. Additional vehicles do not extend it; experimental monitoring then resumes, with no empty-road bonus while traffic remains.
 

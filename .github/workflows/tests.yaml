@@ -46,7 +46,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs
+          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs
           git diff --exit-code -- js/generated generated guide.zh-TW.html
 
   egpu_startup:
@@ -136,6 +136,8 @@ jobs:
         run: python -m pytest -o addopts='' -q openpilot/selfdrive/ui/tests/test_font_coverage.py
       - name: Check Sorento non-HDA-II vehicle selection and capability routing
         run: python -m pytest -o addopts='' -q opendbc_repo/opendbc/car/hyundai/tests/test_sorento_2024.py
+      - name: Check navigation voice PCM gain and protected warnings
+        run: python -m pytest -o addopts='' -q openpilot/selfdrive/ui/tests/test_soundd.py openpilot/selfdrive/carrot/tests/test_sound_volume.py
       - name: Check Tesla stop solver, gesture and shared defaults
         run: |
           python -c "import openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc"

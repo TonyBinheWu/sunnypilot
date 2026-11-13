@@ -22,7 +22,7 @@ class TraditionalManualTest(unittest.TestCase):
         self.assertIn("<!-- CARROT:SECTION:BEGIN BEHAVIOR -->", traditional, param)
 
   def test_all_overlay_translations_match_source_and_bundled_manual(self):
-    self.assertEqual(len(self.translations), 140)
+    self.assertEqual(len(self.translations), 141)
     for param, entry in self.translations.items():
       english = self.existing["en", param].manual_block
       manual = self.existing["zh-tw", param].manual_block

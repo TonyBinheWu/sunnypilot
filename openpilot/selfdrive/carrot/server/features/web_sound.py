@@ -8,6 +8,7 @@ from aiohttp import WSMsgType, web
 from openpilot.cereal import car, messaging
 from openpilot.common.params import Params
 from openpilot.selfdrive.car.openpilot_toggle import CruiseMainOpenpilotToggle
+from openpilot.selfdrive.carrot.sound_volume import read_voice_volume
 
 
 AudibleAlert = car.CarControl.HUDControl.AudibleAlert
@@ -83,6 +84,7 @@ async def _send_sound_states(ws: web.WebSocketResponse) -> None:
   next_param_read = 0.0
   volume = 1.0
   engage_volume = 1.0
+  voice_volume = 1.0
   sound_directory = "sounds_eng"
   emitted_countdown = 100
   tizi = _is_tizi()
@@ -121,10 +123,11 @@ async def _send_sound_states(ws: web.WebSocketResponse) -> None:
     if now >= next_param_read:
       volume = _param_percent(params, "SoundVolumeAdjust")
       engage_volume = _param_percent(params, "SoundVolumeAdjustEngage")
+      voice_volume = read_voice_volume(params)
       sound_directory = _sound_directory(params)
       next_param_read = now + 1.0
 
-    signature = (alert, emitted_countdown, prompt_sequence, volume, engage_volume, sound_directory, tizi)
+    signature = (alert, emitted_countdown, prompt_sequence, volume, engage_volume, voice_volume, sound_directory, tizi)
     if signature != last_signature:
       sequence += 1
       await ws.send_json({
@@ -135,6 +138,7 @@ async def _send_sound_states(ws: web.WebSocketResponse) -> None:
         "promptSequence": prompt_sequence,
         "volume": volume,
         "engageVolume": engage_volume,
+        "voiceVolume": voice_volume,
         "soundDirectory": sound_directory,
         "tizi": tizi,
       })

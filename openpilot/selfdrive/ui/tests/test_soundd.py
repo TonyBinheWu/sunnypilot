@@ -35,6 +35,44 @@ class _SoundSubMaster:
 
 
 class TestSoundd:
+  @pytest.mark.parametrize('alert', [AudibleAlert.audioTurn, AudibleAlert.speedDown, *[getattr(AudibleAlert, f'audio{i}') for i in range(1, 11)]])
+  @pytest.mark.parametrize('gain', [.05, 1., 2., 3.])
+  def test_navigation_voice_gain_reaches_final_pcm(self, alert, gain):
+    soundd = Soundd.__new__(Soundd)
+    soundd.current_alert, soundd.current_alert_type = alert, ''
+    soundd.current_sound_frame, soundd.current_volume, soundd.voice_volume = 0, .5, gain
+    samples = np.array([.2, -.4, 1., -1.], dtype=np.float32)
+    soundd.loaded_sounds = {alert: samples}
+    np.testing.assert_allclose(soundd.get_sound_data(4), np.clip(samples * .5 * gain, -1., 1.))
+
+  @pytest.mark.parametrize('alert', [AudibleAlert.engage, AudibleAlert.prompt, AudibleAlert.warningSoft,
+                                     AudibleAlert.warningImmediate, AudibleAlert.promptDistracted, AudibleAlert.radarCutin])
+  def test_navigation_boost_does_not_change_other_sounds(self, alert):
+    soundd = Soundd.__new__(Soundd)
+    soundd.current_alert, soundd.current_alert_type = alert, ''
+    soundd.current_sound_frame, soundd.current_volume, soundd.voice_volume = 0, .5, 3.
+    soundd.loaded_sounds = {alert: np.ones(4, dtype=np.float32)}
+    np.testing.assert_allclose(soundd.get_sound_data(4), .5)
+
+  def test_voice_gain_refreshes_without_language_reload_or_restarting_sound(self, monkeypatch):
+    from openpilot.selfdrive.ui import soundd as module
+    values = {'SoundLanguageVolume': '150', 'SoundLanguageSetting': 'en'}
+    clock = [10.]
+    soundd = Soundd.__new__(Soundd)
+    soundd.params = SimpleNamespace(get=lambda key, **kwargs: values[key])
+    soundd.lang, soundd.next_language_check_time, soundd.current_sound_frame = 'en', 0., 123
+    monkeypatch.setattr(module.time, 'monotonic', lambda: clock[0])
+    soundd.update_language()
+    assert soundd.voice_volume == 1.5
+    values['SoundLanguageVolume'] = '250'
+    clock[0] += .5
+    soundd.update_language()
+    assert soundd.voice_volume == 1.5
+    clock[0] += .6
+    soundd.update_language()
+    assert soundd.voice_volume == 2.5
+    assert soundd.current_sound_frame == 123
+
   @pytest.mark.parametrize('name', ['driverDistracted', 'driverUnresponsive'])
   @pytest.mark.parametrize('volume', [0., 0.05, 0.69, 0.7, 0.85, 1., 1.5])
   @pytest.mark.parametrize('stage', [2, 3])
