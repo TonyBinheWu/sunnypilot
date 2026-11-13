@@ -10,7 +10,7 @@ from unittest.mock import patch
 def test_actual_camera_start_condition_all_modes():
   path = Path(__file__).resolve().parents[2]/'openpilot/system/manager/process_config.py'
   tree = ast.parse(path.read_text(encoding='utf-8'))
-  names = {'or_', 'driverview', 'livestream', 'formosalink_cameras'}
+  names = {'or_', 'driverview', 'livestream', 'formosalink_cameras', 'carrot_vision_camera'}
   functions = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
   scope = {'operator':operator, 'Params':object, 'car':SimpleNamespace(CarParams=object)}
   exec(compile(ast.Module(body=functions, type_ignores=[]), str(path), 'exec'), scope)
@@ -18,8 +18,12 @@ def test_actual_camera_start_condition_all_modes():
                 and isinstance(node.func, ast.Name) and node.func.id == 'NativeProcess'
                 and node.args and isinstance(node.args[0], ast.Constant) and node.args[0].value == 'camerad')
   predicate = eval(compile(ast.Expression(body=camera.args[3]), str(path), 'eval'), scope)
-  for started, driver, livestream, enabled, leased in itertools.product((False, True), repeat=5):
-    flags = {'IsDriverViewEnabled':driver, 'IsLiveStreaming':livestream, 'FormosaLinkEnabled':enabled}
+  for started, driver, livestream, enabled, leased, vision, vision_leased, not_car in itertools.product((False, True), repeat=8):
+    flags = {'IsDriverViewEnabled':driver, 'IsLiveStreaming':livestream, 'FormosaLinkEnabled':enabled,
+             'CarrotVisionEnabled':vision}
     params = SimpleNamespace(get_bool=lambda key:flags.get(key, False))
-    with patch('openpilot.sunnypilot.formosalink.cameras.camera_requested', return_value=leased):
-      assert predicate(started, params, None) == (started or driver or (livestream if "livestream" in scope else False) or enabled and leased)
+    with patch('openpilot.sunnypilot.formosalink.cameras.camera_requested', return_value=leased), \
+         patch('openpilot.common.carrot_vision_camera.camera_requested', return_value=vision_leased):
+      assert predicate(started, params, SimpleNamespace(notCar=not_car)) == (
+        started or driver or (livestream if "livestream" in scope else False)
+        or enabled and leased or vision and vision_leased and not not_car)
