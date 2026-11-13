@@ -16,15 +16,15 @@
 
 ## 下載與安裝
 
-**[⬇ 下載 CarrotAssist 繁體中文版 0.2.14（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/CarrotAssist-TW-0.2.14.apk)**
+**[⬇ 下載 CarrotAssist 繁體中文版 0.2.15（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.15/CarrotAssist-TW-0.2.15.apk)**
 
 | 項目 | 說明 |
 |---|---|
-| 版本 | **0.2.14**（版本代碼 21） |
+| 版本 | **0.2.15**（版本代碼 22） |
 | 安裝需求 | Android 8.0 以上 |
 | 手機直接語音 | Android 12 以上、可用的裝置端語音辨識服務與國語語音模型 |
 | 套件名稱 | `me.shind0.carrotweb.tw`，手機顯示為 **CarrotAssist 繁中** |
-| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.14) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/SHA256SUMS.txt) |
+| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.15) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.15/SHA256SUMS.txt) |
 | 更新來源 | 本倉庫 `TonyBinheWu/sunnypilot` 的繁中發行頻道 |
 
 ### 安裝步驟
@@ -35,7 +35,7 @@
 4. 手機與 comma 連到相同 Wi-Fi／熱點，搜尋裝置或手動輸入 IP。
 5. 更新車機至本倉庫的 `carrot-wip`，停車後完整重新啟動，再於網頁「工具 → 語言 → 繁體中文」選擇網頁語言。
 
-**從繁中版 0.2.12／0.2.13 更新：** 使用相同套件與簽章，可直接覆蓋安裝並保留 App 設定，不需先解除安裝。中文語音的新功能需要 App 與車機程式一起更新。
+**從既有繁中版更新：** 使用相同套件與簽章，可直接覆蓋安裝並保留 App 設定，不需先解除安裝。中文語音與新版 Vision 顯示需要 App 與車機程式一起更新。
 
 **與上游原版並存：** 繁中版使用獨立套件及專用簽章，可與原版 CarrotAssist 並存，原版資料會保留。新 App 的設定與 ChatGPT 授權獨立，可能需要重新連線。
 
