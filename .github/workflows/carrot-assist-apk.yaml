@@ -106,7 +106,7 @@ jobs:
           Android 8.0 以上可安裝；手機直接語音另需 Android 12 以上與可用語音服務，0.2.14 新增中文語音模型檢查、下載請求與麥克風權限引導。中文語音需要手機提供可用的 zh-TW 語音模型；系統與服務支援程度不同。
           手機與 comma 必須在相同 Wi-Fi／熱點。請同時更新本倉庫 carrot-wip 車機程式並重新啟動，才有中文設定名稱與直接巡航指令介面。
 
-          0.2.15 新增參考 CommaView 配置的 Carrot Vision Live View 版面切換與 Android 全螢幕容器。開啟 Vision 後按上方 ▣，或在工具 → 網頁設定 → Carrot Vision 選擇 Live View；原有儀表仍可切回。須同時更新車機 carrot-wip。
+          0.2.16 參考提供的 CommaView APK 結構，改善 Carrot Vision Live View。新增工具列收合、車速面板顯示切換、視野切換及獨立影像狀態／統計。長按上方 ▣ 可收合工具列。請同時更新車機 carrot-wip；畫面狀態以實際呈現影格判斷，沒有影格時不因車速資料更新而宣稱影像正常。
 
           此版本採用 TonyBinheWu/sunnypilot 專用簽章及更新來源。新 App 的連線資料與原版分開，可能需要重新授權 ChatGPT。
           建置完成並驗證 APK 簽章；尚未在實體手機驗證。

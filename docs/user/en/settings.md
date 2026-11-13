@@ -7,6 +7,9 @@
 With updated vehicle software and CarrotAssist 0.2.15, use the top **▣** button to switch between the original instrument layout and **Live View**. In Carrot Web, choose **Tools → Web settings → Carrot Vision → Vision presentation**. The original layout remains the default; selection is saved on the device and applies immediately. Live View uses the existing camera/model overlay, a bottom speed/set-speed/limit cluster and responsive display controls. Fullscreen needs landscape orientation and browser support; Android Back exits the app's fullscreen container first. Missing values show a dash, and live HUD update gaps over two seconds clear old values. Paused recorded replay retains its timeline. Lateral-active status does not imply longitudinal control. [Detailed Traditional Chinese mobile guide](../../CARROT_MOBILE.zh-TW.md).
 
 
+In 0.2.16, Live View offers collapsible tools (also by holding the app's ▣ button), a session-only speed-panel toggle, and the existing saved fit/normal/crop framing control. Hiding the speed panel does not hide driving alerts. A separate video status observes actually presented camera frames, not HUD messages or socket connectivity; late RTP mapping updates are ignored. Details show resolution, presentation FPS, RTT and bitrate when available; stale network statistics and recorded replay show placeholders. Neither the video-status display nor these controls creates another stream or changes reconnect policy.
+
+
 ## Force offroad (Park only)
 
 Device Settings → Device and Carrot Web → Tools → User / System provide the same session-scoped switch. Both enabling and disabling require fresh, valid Park/standstill data, near-zero vehicle speed and disengaged steering/cruise assistance. Unknown, stale or non-P state locks the control; every write and runtime activation rechecks the vehicle.

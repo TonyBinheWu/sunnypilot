@@ -105,6 +105,7 @@ export function createHudOverlay(doc) {
     presentation = target.CarrotWebSettingsState?.vision_presentation === "live_view" ? "live_view" : "carrot";
     root.classList.toggle("is-live-view", presentation === "live_view");
     live.root.hidden = presentation !== "live_view";
+    live.setActive(active && !destroyed && suppressions.size === 0 && presentation === "live_view");
     if (timer != null) target.clearInterval?.(timer);
     timer = null;
     if (active && !destroyed && suppressions.size === 0 && presentation === "live_view") {
@@ -297,6 +298,7 @@ export function createHudOverlay(doc) {
   return {
     root,
     togglePresentation,
+    toggleLiveTools: () => !destroyed && active && suppressions.size === 0 && presentation === "live_view" && live.toggleTools(),
     update,
     relayout,
     activate,

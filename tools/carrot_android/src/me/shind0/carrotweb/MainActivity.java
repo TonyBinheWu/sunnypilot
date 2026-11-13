@@ -144,7 +144,15 @@ public final class MainActivity extends Activity {
         if (!"true".equals(result)) notice(UiText.get("Vision 표시 전환을 위해 차량 소프트웨어를 업데이트해 주세요.", "Update the device software to switch Vision layouts."));
       });
     });
-    visionLayout.setContentDescription(UiText.get("Vision 표시 전환", "Switch Vision layout"));
+    visionLayout.setOnLongClickListener(v -> {
+      if (web == null || !pageReady) { notice(UiText.get("기기 웹페이지를 먼저 열어 주세요.", "Open the device web page first.")); return true; }
+      web.evaluateJavascript(onDevicePage("(()=>{if(typeof window.CarrotHudOverlay?.toggleLiveTools!=='function')return 'update';return window.CarrotHudOverlay.toggleLiveTools()?'ok':'open';})()"), result -> {
+        if ("\"update\"".equals(result)) notice(UiText.get("Vision 표시 전환을 위해 차량 소프트웨어를 업데이트해 주세요.", "Update the device software to switch Vision layouts."));
+        else if (!"\"ok\"".equals(result)) notice(UiText.get("Carrot Vision을 열고 Live View로 전환해 주세요.", "Open Carrot Vision and switch to Live View first."));
+      });
+      return true;
+    });
+    visionLayout.setContentDescription(UiText.get("Vision 표시 전환 · 길게 눌러 도구 표시/숨기기", "Switch Vision layout; long press to show or hide tools"));
     bar.addView(visionLayout,new LinearLayout.LayoutParams(dp(48),dp(48)));
     root.addView(bar);
     FrameLayout page = new FrameLayout(this);

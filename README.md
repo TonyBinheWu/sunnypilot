@@ -43,7 +43,9 @@ APK 經建置、測試與簽章驗證；尚未在實體手機或實車驗證。i
 
 ## Carrot Vision 顯示版面
 
-新增參考 CommaView 配置的 **Live View 道路影像**：底部車速／定速／速限、側邊工具列、繁中詳細資訊，以及手機直向配置。原有儀表仍可切回。更新車機與新版 App 後，開啟 Carrot Vision，按 App 上方 **▣**，或由 **工具 → 網頁設定 → Carrot Vision → Vision 顯示版面** 選擇。這是顯示版面，影像及車道／路徑沿用既有資料，不改變駕駛控制。[操作方式與限制](docs/CARROT_MOBILE.zh-TW.md#carrot-visionlive-view-道路影像版面0215)。
+0.2.16 參考提供的 CommaView APK 結構，新增可收合工具列、車速面板顯示切換、視野切換與獨立影像狀態／統計；長按 App 上方 **▣** 可收合工具列。影像正常以實際呈現的新影格判定，與 HUD 資料狀態分開。
+
+新增參考 CommaView 配置的 **Live View 道路影像**：底部車速／定速／速限、側邊工具列、繁中詳細資訊，以及手機直向配置。原有儀表仍可切回。更新車機與新版 App 後，開啟 Carrot Vision，按 App 上方 **▣**，或由 **工具 → 網頁設定 → Carrot Vision → Vision 顯示版面** 選擇。這是顯示版面，影像及車道／路徑沿用既有資料，不改變駕駛控制。[操作方式與限制](docs/CARROT_MOBILE.zh-TW.md#carrot-visionlive-view-道路影像版面0216)。
 
 ## 繁體中文語音指令
 

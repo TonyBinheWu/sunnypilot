@@ -1,5 +1,18 @@
 # Repository memory
 
+- 2026-11-14: CarrotAssist0.2.16/code23 refines only Vision after user supplies
+  CommaView0.0.166-alpha.9 APK and confirms Vision-only scope. Static ZIP/DEX
+  analysis only; no reference APK execution/code/assets embedded. Live View adds
+  session-only tool/speed-panel toggles and existing persisted framing selector.
+  Actual presented-frame observer supplies separate video status/FPS; exclude
+  late-rtp-mapping publications, do not infer pictures from HUD/RTC connected.
+  RTC statistics expire6s; video pause warning2s doesn't alter reconnect policy.
+  Replay hides live metrics. Observer is active only for visible Live View,
+  unsubscribes on suppression/deactivate/destroy; no stream/AR owner change.
+  Native top ▣ long press uses current-origin guard to toggle tools, with
+  older-device update hint. Preserve original HUD/style and protected alerts.
+
+
 - 2026-11-13: C4 fresh-boot follow-up reproduces source DISPLAY fallback packing
   39,524 codepoints into16384x16384 with real Raylib5.5 CPU glyph packing.
   Limit to translated/native UI + language names + Hangul; preserve generated

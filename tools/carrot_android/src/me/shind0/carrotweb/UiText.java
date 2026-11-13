@@ -35,6 +35,8 @@ public final class UiText {
     TRADITIONAL.put("Could not verify the saved ChatGPT connection. Check your Internet connection and ChatGPT connection settings.", "無法驗證儲存的 ChatGPT 連線，請檢查網際網路與連線設定。");
     TRADITIONAL.put("Open voice assistant. Drag to move", "開啟語音助手，可拖曳移動");
     TRADITIONAL.put("Update the device software to switch Vision layouts.", "請更新車機程式，才能切換 Vision 顯示版面。");
+    TRADITIONAL.put("Switch Vision layout; long press to show or hide tools", "切換 Vision 版面；長按顯示或隱藏工具列");
+    TRADITIONAL.put("Open Carrot Vision and switch to Live View first.", "請先開啟 Carrot Vision 並切換至 Live View。");
     TRADITIONAL.put("Switch Vision layout", "切換 Vision 顯示版面");
     TRADITIONAL.put("Open the device web page first.", "請先開啟裝置網頁。");
     TRADITIONAL.put("Find Carrot", "尋找 Carrot");
