@@ -25,7 +25,7 @@
  .clive-state{left:8px;top:8px}.clive-details{left:8px;top:46px;max-width:calc(100% - 36px)}
  .clive-dial{width:88px;height:78px}.clive-dial .clive-speed{font-size:36px}
 }
-@container chud (max-height:270px){.clive-cluster{bottom:6px;padding:4px 14px;gap:12px}.clive-dial{height:62px;width:80px}.clive-dial .clive-speed{font-size:29px}.clive-rail{gap:4px;padding:4px}.clive-brand{margin:0 0 3px}.clive-rail button{min-height:32px}}
+@container chud (min-width:541px) and (max-height:270px){.clive-cluster{bottom:6px;padding:4px 14px;gap:12px}.clive-dial{height:62px;width:80px}.clive-dial .clive-speed{font-size:29px}.clive-rail{gap:4px;padding:4px}.clive-brand{margin:0 0 3px}.clive-rail button{min-height:32px}}
 `;var vr="/shared-assets",ip=`${vr}/icons_mici/carrot_wheel_org.png`,bc=`${vr}/icons_mici/carrot_wheel_lane.png`,ap=`${vr}/icons_mici/settings/network/wifi_strength_full.png`,sp=`${vr}/images/speed_bg.png`,cp=`${vr}/images/traffic_red.png`,lp=`${vr}/images/traffic_green.png`,up=`${vr}/fonts/KaiGenGothicKR-Bold.ttf`;var dp="carrot-hud-overlay-style",Jv=`
 @font-face{
   font-family:"CarrotClusterHud";

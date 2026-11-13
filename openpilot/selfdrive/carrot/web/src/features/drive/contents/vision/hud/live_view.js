@@ -101,5 +101,5 @@ export const LIVE_VIEW_CSS = `
  .clive-state{left:8px;top:8px}.clive-details{left:8px;top:46px;max-width:calc(100% - 36px)}
  .clive-dial{width:88px;height:78px}.clive-dial .clive-speed{font-size:36px}
 }
-@container chud (max-height:270px){.clive-cluster{bottom:6px;padding:4px 14px;gap:12px}.clive-dial{height:62px;width:80px}.clive-dial .clive-speed{font-size:29px}.clive-rail{gap:4px;padding:4px}.clive-brand{margin:0 0 3px}.clive-rail button{min-height:32px}}
+@container chud (min-width:541px) and (max-height:270px){.clive-cluster{bottom:6px;padding:4px 14px;gap:12px}.clive-dial{height:62px;width:80px}.clive-dial .clive-speed{font-size:29px}.clive-rail{gap:4px;padding:4px}.clive-brand{margin:0 0 3px}.clive-rail button{min-height:32px}}
 `;
