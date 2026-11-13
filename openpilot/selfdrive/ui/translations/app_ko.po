@@ -1646,3 +1646,59 @@ msgstr "Deceleration: {info}"
 
 msgid "Arrival: {minutes:.1f} min ({hour:02d}:{minute:02d})"
 msgstr "Arrival: {minutes:.1f} min ({hour:02d}:{minute:02d})"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Force offroad (Park only)"
+msgstr "강제 비주행 모드 (P단 전용)"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "On"
+msgstr "켜짐"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Off"
+msgstr "꺼짐"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Park, stop and disengage assistance before switching. Driving processes and normal driving recording stop. Leaving Park, invalid vehicle data or ignition off cancels the mode. Resets after restart."
+msgstr "P단 정차 및 조향·크루즈 보조 해제 후에만 변경합니다. 일반 주행 프로세스와 주행 녹화가 중지됩니다. P단 해제, 차량 정보 오류 또는 시동 OFF 시 자동 취소되며 재시작하면 꺼집니다."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Fresh vehicle data is required."
+msgstr "유효한 최신 차량 정보가 필요합니다."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Only available in P gear."
+msgstr "P단에서만 변경할 수 있습니다."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Stop the vehicle before changing this switch."
+msgstr "완전히 정차한 후 변경하세요."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Waiting for assistance status."
+msgstr "주행 보조 상태를 기다리는 중입니다."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Disengage steering and cruise assistance first."
+msgstr "조향 및 크루즈 보조를 먼저 해제하세요."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Switching mode..."
+msgstr "모드 전환 중…"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Forced offroad is active."
+msgstr "강제 비주행 모드가 활성화되었습니다."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Normal automatic mode."
+msgstr "일반 자동 모드입니다."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Invalid switch value."
+msgstr "잘못된 스위치 값입니다."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Park and stop, then disengage all assistance. Normal driving processes and driving recording stop. Leaving Park or losing vehicle data cancels this mode. Resets after restart."
+msgstr "P단 정차 및 조향·크루즈 보조 해제 후에만 변경합니다. 일반 주행 프로세스와 주행 녹화가 중지됩니다. P단 해제, 차량 정보 오류 또는 시동 OFF 시 자동 취소되며 재시작하면 꺼집니다."

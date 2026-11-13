@@ -95,6 +95,7 @@ class Car:
     self.CC_prev = car.CarControl.new_message()
     self.CS_prev = car.CarState.new_message()
     self.initialized_prev = False
+    self.forced_offroad_observer = False
     self.lateral_startup = LateralStartupGate()
     self.cruise_main_toggle = CruiseMainOpenpilotToggle(ButtonType.mainCruise)
 
@@ -517,7 +518,21 @@ class Car:
     cpu_start = time.thread_time()
     CS = self.state_update()
 
-    if self.cruise_main_toggle.update(CS.buttonEvents, self.sm['carControl'].enabled):
+    forced_offroad = (self.params.get_bool("ForceOffroad") or self.params.get_bool("ForceOffroadActive")
+                      or self.params.get_bool("ForceOffroadObserver"))
+    if forced_offroad and not self.forced_offroad_observer:
+      self.forced_offroad_observer = True
+      self.params.put_bool("ForceOffroadObserver", True)
+    # Latch read-only until manager replaces this process. This also prevents
+    # a queued old control from running during the offroad -> onroad handover.
+    observe_only = self.forced_offroad_observer
+    if observe_only:
+      # Do not call CI.init/apply or the SPAS signal sender. Panda also enters
+      # its normal offroad NO_OUTPUT mode through IsOnroad. Keep decoding CAN.
+      self.initialized_prev = False
+      self.last_actuators_output = car.CarControl.Actuators.new_message()
+
+    if not observe_only and self.cruise_main_toggle.update(CS.buttonEvents, self.sm['carControl'].enabled):
       if self.CI.CC is not None and not self.CP.dashcamOnly:
         openpilot_enabled = not self.params.get_bool("OpenpilotEnabledToggle")
         cloudlog.warning(f"Cruise MAIN long press: setting OpenpilotEnabledToggle to {openpilot_enabled}")
@@ -532,10 +547,10 @@ class Car:
 
     initialized = (not any(e.name == EventName.selfdriveInitializing for e in self.sm['onroadEvents']) and
                    self.sm.seen['onroadEvents'])
-    if not self.CP.passive and initialized:
+    if not observe_only and not self.CP.passive and initialized:
       self.controls_update(CS, self.sm['carControl'])
 
-    self.initialized_prev = initialized
+    self.initialized_prev = initialized and not observe_only
     self.CS_prev = CS
     self.runtime_diagnostics.record(
       context={'can_backend': CAN_BACKEND},

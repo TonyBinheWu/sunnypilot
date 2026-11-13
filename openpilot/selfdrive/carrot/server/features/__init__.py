@@ -36,6 +36,8 @@ from . import (
 
 
 def register_all(app: web.Application) -> None:
+  from . import forced_offroad
+  forced_offroad.register(app)
   assistant_connection.register(app)
   assistant_drive.register(app)
   assistant_settings.register(app)

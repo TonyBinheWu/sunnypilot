@@ -46,7 +46,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs
+          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs tests/forced_offroad.test.mjs
           git diff --exit-code -- js/generated generated guide.zh-TW.html
 
   egpu_startup:
@@ -164,6 +164,8 @@ jobs:
           openpilot/selfdrive/navigation/tests/test_route_engine.py
           openpilot/selfdrive/carrot/server/tests/test_navigation_map.py
           openpilot/selfdrive/navd/tests/test_instruction_serialization.py
+      - name: Check Park-only forced offroad controls and read-only card boundary
+        run: python -m pytest -o addopts='' -q openpilot/common/tests/test_forced_offroad.py
       - name: Check passive camera SOF diagnostics
         run: openpilot/system/camerad/test/test_camera_event_timing
       - name: Check Hyundai navigation and lever features and RAV4 ARS integration

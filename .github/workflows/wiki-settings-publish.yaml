@@ -8,6 +8,7 @@ on:
       - "openpilot/selfdrive/carrot_settings.json"
       - "tools/docs/wiki_settings/**"
       - "openpilot/selfdrive/carrot/web/docs/settings/**"
+      - "docs/FORCED_OFFROAD.zh-TW.md"
       - ".github/workflows/wiki-settings-publish.yaml"
   gollum:
   workflow_dispatch:
@@ -57,6 +58,7 @@ jobs:
 
       - name: Validate candidate before any write
         run: |
+          python tools/docs/wiki_settings/validate.py docs/FORCED_OFFROAD.zh-TW.md
           python tools/docs/wiki_settings/ci_check.py \
             --wiki-dir "$RUNNER_TEMP/carrot-wiki" \
             --output-dir "$RUNNER_TEMP/wiki-settings-report/preflight" \
@@ -85,6 +87,8 @@ jobs:
         env:
           WIKI_TOKEN: ${{ secrets.WIKI_TOKEN || github.token }}
         run: |
+          # This standalone guide is source-maintained; generated setting regions stay separate.
+          cp docs/FORCED_OFFROAD.zh-TW.md "$RUNNER_TEMP/carrot-wiki/ZH-TW-強制非行車模式.md"
           git -C "$RUNNER_TEMP/carrot-wiki" add -A
           if git -C "$RUNNER_TEMP/carrot-wiki" diff --cached --quiet; then
             echo "Wiki already synchronized."

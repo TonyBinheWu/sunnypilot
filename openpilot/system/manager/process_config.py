@@ -22,6 +22,12 @@ def formosalink_enabled(started: bool, params: Params, CP: car.CarParams) -> boo
   return params.get_bool("FormosaLinkEnabled")
 
 
+def car_state_observer(started: bool, params: Params, CP: car.CarParams) -> bool:
+  # A forced-offroad session still needs current Park/speed data to unlock the
+  # UI and to cancel the mode when the driver selects another gear.
+  return started or params.get_bool("ForceOffroad") or params.get_bool("ForceOffroadActive")
+
+
 def formosalink_cameras(started: bool, params: Params, CP: car.CarParams) -> bool:
   from openpilot.sunnypilot.formosalink.cameras import camera_requested
   return params.get_bool("FormosaLinkEnabled") and camera_requested()
@@ -156,7 +162,7 @@ procs = [
   PythonProcess("controlsd", "openpilot.selfdrive.controls.controlsd", and_(not_joystick, iscar)),
   PythonProcess("joystickd", "openpilot.tools.joystick.joystickd", or_(joystick, notcar)),
   PythonProcess("selfdrived", "openpilot.selfdrive.selfdrived.selfdrived", only_onroad),
-  PythonProcess("card", "openpilot.selfdrive.car.card", only_onroad),
+  PythonProcess("card", "openpilot.selfdrive.car.card", car_state_observer),
   PythonProcess("deleter", "openpilot.system.loggerd.deleter", always_run),
   PythonProcess("dmonitoringd", "openpilot.selfdrive.monitoring.dm2d", enable_dm, enabled=(WEBCAM or not PC)),
   # Restart GPS without forking the running manager's IPC state.

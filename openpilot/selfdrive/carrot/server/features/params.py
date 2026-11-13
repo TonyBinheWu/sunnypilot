@@ -84,6 +84,8 @@ async def api_param_set(request: web.Request) -> web.Response:
   if not name:
     return web.json_response({"ok": False, "error": "missing name"}, status=400)
   if name in INTERNAL_SESSION_PARAMS:
+    if str(name).startswith("ForceOffroad"):
+      return web.json_response({"ok": False, "error": "use the Park-only offroad switch"}, status=403)
     return web.json_response({"ok": False, "error": "driver monitoring is controlled by the vehicle CANCEL gesture"}, status=403)
 
   # clamp using settings if numeric

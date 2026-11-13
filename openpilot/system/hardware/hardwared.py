@@ -5,6 +5,7 @@ import queue
 import struct
 import threading
 import time
+from openpilot.common.forced_offroad import ACTIVE_KEY, REQUEST_KEY, OffroadPolicy
 from collections import OrderedDict, namedtuple
 
 import psutil
@@ -173,7 +174,9 @@ class _CarParamsCache:
 
 def hardware_thread(end_event, hw_queue) -> None:
   pm = messaging.PubMaster(['deviceState'])
-  sm = messaging.SubMaster(["peripheralState", "gpsLocationExternal", "selfdriveState", "pandaStates"], poll="pandaStates")
+  sm = messaging.SubMaster(["peripheralState", "gpsLocationExternal", "selfdriveState", "pandaStates",
+                           "carState", "carControl"], poll="pandaStates")
+  forced_offroad = OffroadPolicy()
 
   count = 0
 
@@ -343,6 +346,13 @@ def hardware_thread(end_event, hw_queue) -> None:
       startup_conditions["registered_device"] = True #PC or (params.get("DongleId") != UNREGISTERED_DONGLE_ID)
 
     # Handle offroad/onroad transition
+    requested_offroad = params.get_bool(REQUEST_KEY)
+    forced_active = forced_offroad.update(requested_offroad, sm, ignition=onroad_conditions["ignition"])
+    if requested_offroad and not forced_active:
+      params.put_bool(REQUEST_KEY, False)
+    if params.get_bool(ACTIVE_KEY) != forced_active:
+      params.put_bool(ACTIVE_KEY, forced_active)
+    onroad_conditions["not_forced_offroad"] = not forced_active
     should_start = all(onroad_conditions.values())
     if started_ts is None:
       should_start = should_start and all(startup_conditions.values())

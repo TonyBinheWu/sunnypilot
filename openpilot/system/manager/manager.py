@@ -5,6 +5,7 @@ import os
 import signal
 import sys
 import time
+from openpilot.common.forced_offroad import observer_failed, release_observer
 import traceback
 
 from openpilot.cereal import log
@@ -232,6 +233,9 @@ def manager_thread(update_status: UpdateStatus) -> None:
 
     xiaoge_ready = xiaoge_startup.update(started, sm, sm['carParams'], params.get_bool('ControlsReady'), now)
     not_run = ignore if xiaoge_ready else [*ignore, 'xiaoge_data']
+    if observer_failed(params, managed_processes['card']):
+      not_run = [*not_run, 'card']
+    release_observer(params, managed_processes['card'])
     ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=not_run)
 
     running = ' '.join("{}{}\u001b[0m".format("\u001b[32m" if p.proc.is_alive() else "\u001b[31m", p.name)

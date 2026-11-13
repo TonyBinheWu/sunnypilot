@@ -2,6 +2,14 @@
 
 [한국어](../ko/settings.md)
 
+## Force offroad (Park only)
+
+Device Settings → Device and Carrot Web → Tools → User / System provide the same session-scoped switch. Both enabling and disabling require fresh, valid Park/standstill data, near-zero vehicle speed and disengaged steering/cruise assistance. Unknown, stale or non-P state locks the control; every write and runtime activation rechecks the vehicle.
+
+Forced offroad stops the normal driving models, control processes and driving recording through the existing offroad lifecycle. A read-only car process continues decoding CAN without CI initialization or control sends, while Panda follows its existing offroad NO_OUTPUT behavior. Leaving Park, movement, invalid vehicle data or ignition off cancels the request. Manager replaces the observer before normal vehicle initialization resumes; original startup conditions still apply. The mode resets after manager/device restart. Independent offroad camera/remote services retain their existing conditions and permissions. [Traditional Chinese detailed guide](../../FORCED_OFFROAD.zh-TW.md).
+
+
+
 With **phone voice** in CarrotAssist 0.2.8, say “Find acceleration settings.” After granting setting access once on the device, say “Set acceleration setting zero to 240.” Direct commands work without ChatGPT or MCP registration. In the same voice session, you can follow a search with “Set the first one to 240”. [Phone voice instructions](carrot-assist.md)
 
 Android [CarrotAssist](carrot-assist.md) uses ChatGPT to find, explain and open settings. Separate device and ChatGPT authorization enables live reads and changes. With relay0.7.3, a clear setting/value or adjustment command applies after bounds checks without another question. For example, “Set acceleration setting 0 to 240” produces a short result after verified storage. Ambiguous requests and AI-recommended values require clarification; out-of-range values are rejected. Supported driving settings follow the same procedure while driving. Only initial authorization requires stationary/disengaged state; each setting keeps its existing activation timing.

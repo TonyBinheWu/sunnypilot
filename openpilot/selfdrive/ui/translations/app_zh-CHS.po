@@ -1527,3 +1527,59 @@ msgstr "请重启设备以应用更新"
 #: openpilot/selfdrive/selfdrived/events.py
 msgid "Park safely before rebooting your device"
 msgstr "请安全停车后再重启设备"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Force offroad (Park only)"
+msgstr "强制非行车模式（仅 P 挡）"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "On"
+msgstr "开"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Off"
+msgstr "关"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Park, stop and disengage assistance before switching. Driving processes and normal driving recording stop. Leaving Park, invalid vehicle data or ignition off cancels the mode. Resets after restart."
+msgstr "仅限 P 挡、静止且已退出转向及巡航辅助时切换。一般行车程序与行车录像将停止。离开 P 挡、车况失效或熄火时自动取消；重启后恢复关闭。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Fresh vehicle data is required."
+msgstr "需要有效且实时的车况数据。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Only available in P gear."
+msgstr "仅限 P 挡操作。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Stop the vehicle before changing this switch."
+msgstr "请先完全停车，再切换此开关。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Waiting for assistance status."
+msgstr "正在等待驾驶辅助状态。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Disengage steering and cruise assistance first."
+msgstr "请先退出转向与巡航辅助。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Switching mode..."
+msgstr "正在切换模式…"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Forced offroad is active."
+msgstr "强制非行车模式已启用。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Normal automatic mode."
+msgstr "目前为正常自动模式。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Invalid switch value."
+msgstr "开关值无效。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Park and stop, then disengage all assistance. Normal driving processes and driving recording stop. Leaving Park or losing vehicle data cancels this mode. Resets after restart."
+msgstr "仅限 P 挡、静止且已退出转向及巡航辅助时切换。一般行车程序与行车录像将停止。离开 P 挡、车况失效或熄火时自动取消；重启后恢复关闭。"

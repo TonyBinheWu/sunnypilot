@@ -1514,3 +1514,59 @@ msgstr "Driver camera unavailable"
 #: openpilot/selfdrive/selfdrived/events.py
 msgid "Monitoring driver controls"
 msgstr "Monitoring driver controls"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Force offroad (Park only)"
+msgstr "Force offroad (Park only)"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "On"
+msgstr "On"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Off"
+msgstr "Off"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Park, stop and disengage assistance before switching. Driving processes and normal driving recording stop. Leaving Park, invalid vehicle data or ignition off cancels the mode. Resets after restart."
+msgstr "Park, stop and disengage assistance before switching. Driving processes and normal driving recording stop. Leaving Park, invalid vehicle data or ignition off cancels the mode. Resets after restart."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Fresh vehicle data is required."
+msgstr "Fresh vehicle data is required."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Only available in P gear."
+msgstr "Only available in P gear."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Stop the vehicle before changing this switch."
+msgstr "Stop the vehicle before changing this switch."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Waiting for assistance status."
+msgstr "Waiting for assistance status."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Disengage steering and cruise assistance first."
+msgstr "Disengage steering and cruise assistance first."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Switching mode..."
+msgstr "Switching mode..."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Forced offroad is active."
+msgstr "Forced offroad is active."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Normal automatic mode."
+msgstr "Normal automatic mode."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Invalid switch value."
+msgstr "Invalid switch value."
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Park and stop, then disengage all assistance. Normal driving processes and driving recording stop. Leaving Park or losing vehicle data cancels this mode. Resets after restart."
+msgstr "Park, stop and disengage assistance before switching. Driving processes and normal driving recording stop. Leaving Park, invalid vehicle data or ignition off cancels the mode. Resets after restart."

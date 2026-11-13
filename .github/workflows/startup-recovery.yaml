@@ -9,6 +9,10 @@ on:
       - 'openpilot/common/*rebuild*'
       - 'openpilot/common/*cache*lock*'
       - 'openpilot/common/startup*'
+      - 'openpilot/common/*forced_offroad*'
+      - 'openpilot/common/tests/test_forced_offroad.py'
+      - 'openpilot/selfdrive/car/card.py'
+      - 'openpilot/system/hardware/hardwared.py'
       - 'openpilot/system/manager/build.py'
       - 'openpilot/system/manager/process.py'
       - 'openpilot/system/manager/process_config.py'
@@ -39,6 +43,7 @@ jobs:
         run: |
           bash -n launch_chffrplus.sh scripts/ensure_params_build.sh
           python -m pytest --noconftest -o addopts= -q \
+            openpilot/common/tests/test_forced_offroad.py \
             openpilot/system/manager/test/test_python_process_spawn.py \
             openpilot/system/manager/test/test_process_crash.py \
             openpilot/system/tests/test_build_cache.py \

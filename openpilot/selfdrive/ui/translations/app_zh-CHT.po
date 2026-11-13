@@ -2170,3 +2170,59 @@ msgstr "請在「裝置」設定中重新啟動，以套用語言。"
 
 msgid "Language"
 msgstr "語言"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Force offroad (Park only)"
+msgstr "強制非行車模式（限 P 檔）"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "On"
+msgstr "開"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Off"
+msgstr "關"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Park, stop and disengage assistance before switching. Driving processes and normal driving recording stop. Leaving Park, invalid vehicle data or ignition off cancels the mode. Resets after restart."
+msgstr "僅限 P 檔、靜止且已退出轉向及巡航輔助時切換。一般行車程序與行車錄影將停止。離開 P 檔、車況失效或熄火時自動取消；重新啟動後恢復關閉。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Fresh vehicle data is required."
+msgstr "需要有效且即時的車況資料。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Only available in P gear."
+msgstr "僅限 P 檔操作。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Stop the vehicle before changing this switch."
+msgstr "請先完全停車，再切換此開關。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Waiting for assistance status."
+msgstr "正在等候駕駛輔助狀態。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Disengage steering and cruise assistance first."
+msgstr "請先退出轉向與巡航輔助。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Switching mode..."
+msgstr "正在切換模式…"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Forced offroad is active."
+msgstr "強制非行車模式已啟用。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Normal automatic mode."
+msgstr "目前為正常自動模式。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Invalid switch value."
+msgstr "開關數值無效。"
+
+#: openpilot/selfdrive/ui/widgets/forced_offroad.py
+msgid "Park and stop, then disengage all assistance. Normal driving processes and driving recording stop. Leaving Park or losing vehicle data cancels this mode. Resets after restart."
+msgstr "僅限 P 檔、靜止且已退出轉向及巡航輔助時切換。一般行車程序與行車錄影將停止。離開 P 檔、車況失效或熄火時自動取消；重新啟動後恢復關閉。"

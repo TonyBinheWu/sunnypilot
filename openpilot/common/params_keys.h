@@ -6,6 +6,9 @@
 #include "cereal/gen/cpp/log.capnp.h"
 
 inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
+    {"ForceOffroad", {CLEAR_ON_MANAGER_START, BOOL, "0"}},
+    {"ForceOffroadActive", {CLEAR_ON_MANAGER_START, BOOL, "0"}},
+    {"ForceOffroadObserver", {CLEAR_ON_MANAGER_START, BOOL, "0"}},
     {"AccessToken", {CLEAR_ON_MANAGER_START | DONT_LOG, STRING}},
     {"AdbEnabled", {PERSISTENT, BOOL}},
     {"AlwaysOnDM", {PERSISTENT, BOOL}},

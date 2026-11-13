@@ -20,6 +20,7 @@ from openpilot.selfdrive.ui.ui_state import device, ui_state
 from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.html_render import HtmlModal, HtmlRenderer
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
+from openpilot.selfdrive.ui.widgets.forced_offroad import offroad_big_toggle
 
 
 class ReviewTermsPage(TermsPage, NavScroller):
@@ -343,6 +344,7 @@ class DeviceLayoutMici(NavScroller):
 
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
+      offroad_big_toggle(),
       UpdateOpenpilotBigButton(),
       PairBigButton(),
       review_training_guide_btn,
