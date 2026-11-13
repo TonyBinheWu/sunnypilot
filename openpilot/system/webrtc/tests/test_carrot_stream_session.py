@@ -380,3 +380,43 @@ def test_carrot_mode_rejects_input_bridge_and_other_cameras(mocker):
       with pytest.raises(web.HTTPBadRequest):
         await carrot_session.get_stream(request)
   asyncio.run(check())
+
+
+def test_camera_lease_renews_while_negotiation_holds_registry_lock(mocker):
+  mocker.patch.object(carrot_session, 'CARROT_STREAM_PRUNE_INTERVAL_SEC', 0)
+  prune = mocker.patch.object(carrot_session, 'prune_ended_stream_sessions', new_callable=mocker.AsyncMock)
+
+  async def check():
+    renewed = asyncio.Event()
+    sync = mocker.patch.object(carrot_session, 'sync_camera_request', side_effect=lambda _: renewed.set())
+    app = {'streams': {}, 'stream_lock': asyncio.Lock()}
+    async with app['stream_lock']:
+      context = carrot_session.stream_session_cleanup_context(app)
+      await anext(context)
+      try:
+        await asyncio.wait_for(renewed.wait(), timeout=1)
+        sync.assert_called_with(app['streams'])
+        prune.assert_not_awaited()
+      finally:
+        await context.aclose()
+    assert 'stream_cleanup_task' not in app
+  asyncio.run(check())
+
+
+def test_stalled_answer_times_out_and_releases_session(mocker):
+  mocker.patch.object(carrot_session, 'CARROT_STREAM_NEGOTIATION_TIMEOUT_SEC', 0.01)
+  mocker.patch.object(carrot_session, 'sync_camera_request')
+
+  async def check():
+    session = TestCarrotStreamSession._lifecycle_session(mocker)
+    async def pending_answer():
+      await asyncio.Future()
+    session.get_answer = pending_answer
+    mocker.patch.object(carrot_session, 'CarrotStreamSession', return_value=session)
+    streams = {}
+    request = TestCarrotStreamSession._stream_request(mocker, streams, client_id='viewer')
+    with pytest.raises(TimeoutError):
+      await carrot_session.get_stream(request)
+    assert streams == {}
+    session.stream.stop.assert_awaited_once()
+  asyncio.run(check())

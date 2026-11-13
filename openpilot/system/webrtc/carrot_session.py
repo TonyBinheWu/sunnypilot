@@ -222,9 +222,12 @@ async def stream_session_cleanup_context(app: web.Application):
     while True:
       await asyncio.sleep(CARROT_STREAM_PRUNE_INTERVAL_SEC)
       try:
-        async with app["stream_lock"]:
-          await prune_ended_stream_sessions(app["streams"])
-          sync_camera_request(app["streams"])
+        # SDP/ICE negotiation holds this lock. Keep the camera lease alive
+        # while that request awaits network I/O instead of blocking on it.
+        if not app["stream_lock"].locked():
+          async with app["stream_lock"]:
+            await prune_ended_stream_sessions(app["streams"])
+        sync_camera_request(app["streams"])
       except asyncio.CancelledError:
         raise
       except Exception:
@@ -321,7 +324,7 @@ async def get_stream(request: web.Request):
     sync_camera_request(stream_dict)
 
     try:
-      answer = await session.get_answer()
+      answer = await asyncio.wait_for(session.get_answer(), timeout=CARROT_STREAM_NEGOTIATION_TIMEOUT_SEC)
     except Exception:
       await session.stop()
       raise
