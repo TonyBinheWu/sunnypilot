@@ -1630,7 +1630,7 @@ window.HomeDrive = (() => {
     const quality = window.getWebSettingByKey?.("vision_render_quality") || "auto";
     if (quality === "low") return 0.75;
     if (quality === "standard") return 1;
-    if (quality === "high") return Math.min(2, Math.max(1, rawDpr));
+    if (quality === "high") return 2;
     const portrait = !window.CarrotLayout?.isWide?.();
     const shortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
     if (portrait && shortSide > 0 && shortSide <= 540) {
