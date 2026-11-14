@@ -98,6 +98,7 @@ function applyWebSettings(settings = {}) {
       : (Object.prototype.hasOwnProperty.call(webSettingsState, key) ? webSettingsState[key] : WEB_SETTING_DEFAULTS[key]);
     webSettingsState[key] = normalizeWebSettingValue(key, value);
   });
+  window.CarrotDisplayPreferences?.apply(webSettingsState);
   return webSettingsState;
 }
 

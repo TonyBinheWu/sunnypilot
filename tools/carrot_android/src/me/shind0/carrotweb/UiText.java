@@ -8,6 +8,8 @@ import java.util.Map;
 public final class UiText {
   private static final Map<String, String> TRADITIONAL = new HashMap<>();
   static {
+    TRADITIONAL.put("Native interface text size", "App 原生介面字體大小");
+    TRADITIONAL.put("Apply and reload app", "套用並重新載入 App");
     TRADITIONAL.put("Start the voice assistant when Carrot Web connects", "Carrot Web 連線後啟動語音助手");
     TRADITIONAL.put("Listen for commands on this phone first", "優先在此手機聆聽指令");
     TRADITIONAL.put("Direct listening handles lane requests and turn signal settings. Repeat questions in the default assistant. Turn off direct listening to start in the assistant overlay.\n\nInstall updates while parked.", "直接聆聽支援繁體中文搜尋與修改設定、變換車道及調整巡航速度。其他問題請向預設助手重述。關閉直接聆聽後，會啟動助手浮動視窗。\n\n請停車後安裝更新。");

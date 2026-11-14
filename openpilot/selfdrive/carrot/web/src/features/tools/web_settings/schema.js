@@ -10,6 +10,12 @@ const WEB_SETTINGS_GROUPS = [
     labelKey: "web_settings_general",
     items: [
       {
+        id: "web_text_scale",
+        titleKey: "web_text_scale",
+        descKey: "web_text_scale_desc",
+        options: [80, 90, 100, 110, 125, 150, 175, 200].map(value => ({ value: String(value), label: `${value}%` })),
+      },
+      {
         id: "auto_update_git_pull",
         titleKey: "web_auto_update",
         descKey: "web_auto_update_desc",
@@ -64,6 +70,28 @@ const WEB_SETTINGS_GROUPS = [
     id: "vision",
     labelKey: "web_settings_carrot_vision",
     items: [
+      {
+        id: "vision_stream_resolution",
+        titleKey: "vision_stream_resolution",
+        descKey: "vision_stream_resolution_desc",
+        options: [
+          { value: "standard", labelKey: "vision_quality_existing" },
+          { value: "360", label: "360p" },
+          { value: "540", label: "540p" },
+          { value: "720", label: "720p" },
+        ],
+      },
+      {
+        id: "vision_render_quality",
+        titleKey: "vision_render_quality",
+        descKey: "vision_render_quality_desc",
+        options: [
+          { value: "auto", labelKey: "vision_quality_auto" },
+          { value: "low", labelKey: "vision_quality_low" },
+          { value: "standard", labelKey: "vision_quality_standard" },
+          { value: "high", labelKey: "vision_quality_high" },
+        ],
+      },
       {
         id: "vision_presentation",
         titleKey: "vision_live_presentation",

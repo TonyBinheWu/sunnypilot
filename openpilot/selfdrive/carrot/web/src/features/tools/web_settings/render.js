@@ -102,7 +102,7 @@ function renderWebSettingsItem(item) {
       .filter((option) => allowed.size === 0 || allowed.has(option.value))
       .map((option) => `
         <option value="${escapeHtml(option.value)}" ${option.value === value ? "selected" : ""}>
-          ${escapeHtml(webSettingsText(option.labelKey))}
+          ${escapeHtml(option.label ?? webSettingsText(option.labelKey))}
         </option>
       `).join("");
     return `

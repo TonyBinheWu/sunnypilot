@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.assist.AssistContent;
 import android.content.Intent;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -103,12 +105,34 @@ public final class MainActivity extends Activity {
     final String address; final DeviceProbe probe;
     Target(String address, DeviceProbe probe) { this.address = address; this.probe = probe; }
   }
+  @Override protected void attachBaseContext(Context base) {
+    int percent = DisplayPolicy.normalize(base.getSharedPreferences("carrot-web", MODE_PRIVATE).getInt("native_text_scale",100));
+    Configuration config = new Configuration();
+    config.fontScale = base.getResources().getConfiguration().fontScale * percent / 100f;
+    super.attachBaseContext(base.createConfigurationContext(config));
+  }
+  private void showTextSize() {
+    String[] labels = new String[DisplayPolicy.TEXT_SCALES.length];
+    int current = DisplayPolicy.normalize(preferences.getInt("native_text_scale",100));
+    final int[] selected = {current};
+    int checked = 2;
+    for (int i=0;i<labels.length;i++) {
+      labels[i] = DisplayPolicy.TEXT_SCALES[i] + "%";
+      if (DisplayPolicy.TEXT_SCALES[i] == current) checked=i;
+    }
+    new AlertDialog.Builder(this).setTitle(UiText.get("앱 기본 화면 글자 크기", "Native interface text size"))
+      .setSingleChoiceItems(labels,checked,(dialog,index)->selected[0]=DisplayPolicy.TEXT_SCALES[index])
+      .setPositiveButton(UiText.get("적용 및 앱 다시 열기", "Apply and reload app"),(dialog,which)->{
+        preferences.edit().putInt("native_text_scale",selected[0]).apply();
+        recreate();
+      }).setNegativeButton(UiText.get("닫기", "Close"),null).show();
+  }
   @Override public void onCreate(Bundle saved) {
     super.onCreate(saved);
     preferences = getSharedPreferences("carrot-web", MODE_PRIVATE);
     initializeVoiceMode(preferences);
     speechSetup = new SpeechSetup(this);
-    updater = new AppUpdater(this, preferences, () -> showSpeechSetup(""));
+    updater = new AppUpdater(this, preferences, () -> showSpeechSetup(""), this::showTextSize);
     welcome = new VoiceWelcome(this);
     phoneVoice = new PhoneVoice(this, new PhoneVoice.Listener() {
       public void status(String text) { title.setText(text); if (!phoneVoice.listening()) phoneSession = false; }
@@ -144,10 +168,10 @@ public final class MainActivity extends Activity {
     LinearLayout bar = new LinearLayout(this); bar.setGravity(Gravity.CENTER_VERTICAL);
     nativeBar = bar;
     Button search = button("⌕", v -> startSearch()); search.setContentDescription(UiText.get("당근 기기 찾기", "Find Carrot"));
-    bar.addView(search,new LinearLayout.LayoutParams(dp(52),dp(48)));
+    bar.addView(search,new LinearLayout.LayoutParams(dp(52),fontRowHeight(48)));
     title = text("CarrotAssist",18); title.setSingleLine(true); title.setEllipsize(android.text.TextUtils.TruncateAt.END);
     title.setOnClickListener(v -> updater.info()); title.setContentDescription(UiText.get("기기 이름 · 앱 정보와 업데이트 확인", "Device name · App information and updates"));
-    bar.addView(title,new LinearLayout.LayoutParams(0,dp(48),1)); title.setGravity(Gravity.CENTER_VERTICAL);
+    bar.addView(title,new LinearLayout.LayoutParams(0,fontRowHeight(48),1)); title.setGravity(Gravity.CENTER_VERTICAL);
     Button visionLayout = button("▣", v -> {
       if (web == null || !pageReady) { notice(UiText.get("기기 웹페이지를 먼저 열어 주세요.", "Open the device web page first.")); return; }
       web.evaluateJavascript(onDevicePage("(()=>{if(!window.CarrotHudOverlay?.togglePresentation)return false;void window.CarrotHudOverlay.togglePresentation().catch(()=>{});return true;})()"), result -> {
@@ -163,7 +187,7 @@ public final class MainActivity extends Activity {
       return true;
     });
     visionLayout.setContentDescription(UiText.get("Vision 표시 전환 · 길게 눌러 도구 표시/숨기기", "Switch Vision layout; long press to show or hide tools"));
-    bar.addView(visionLayout,new LinearLayout.LayoutParams(dp(48),dp(48)));
+    bar.addView(visionLayout,new LinearLayout.LayoutParams(dp(48),fontRowHeight(48)));
     root.addView(bar);
     FrameLayout page = new FrameLayout(this);
     root.addView(page, new LinearLayout.LayoutParams(-1, 0, 1));
@@ -185,6 +209,7 @@ public final class MainActivity extends Activity {
       preferences.edit().putBoolean("voice_local_first", !alreadyUsed).apply();
     }
   }
+  private int fontRowHeight(int value) { return Math.round(dp(value) * Math.max(1f, getResources().getConfiguration().fontScale)); }
   private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
   private LinearLayout column() { LinearLayout v = new LinearLayout(this); v.setOrientation(LinearLayout.VERTICAL); return v; }
   private TextView text(String value,int size) { TextView v = new TextView(this); v.setText(value); v.setTextSize(size); v.setTextColor(foreground); return v; }
@@ -268,8 +293,8 @@ public final class MainActivity extends Activity {
     progress = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal); progress.setIndeterminate(true); panel.addView(progress);
     devices = column(); ScrollView list = new ScrollView(this); list.addView(devices); panel.addView(list,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout actions = new LinearLayout(this);
-    actions.addView(button(UiText.get("다시 검색", "Search again"),v -> startSearch()),new LinearLayout.LayoutParams(0,dp(52),1));
-    actions.addView(button(UiText.get("주소 직접 입력", "Enter IP address"),v -> manualAddress()),new LinearLayout.LayoutParams(0,dp(52),1)); panel.addView(actions);
+    actions.addView(button(UiText.get("다시 검색", "Search again"),v -> startSearch()),new LinearLayout.LayoutParams(0,fontRowHeight(52),1));
+    actions.addView(button(UiText.get("주소 직접 입력", "Enter IP address"),v -> manualAddress()),new LinearLayout.LayoutParams(0,fontRowHeight(52),1)); panel.addView(actions);
     panel.addView(button(UiText.get("검색 중단", "Stop search"),v -> { stopSearch(); status.setText(UiText.get("검색을 중단했습니다. 발견된 기기를 선택할 수 있어요.", "Search stopped. You can select a device already found.")); progress.setVisibility(View.GONE); }));
     content.addView(panel,new LinearLayout.LayoutParams(-1,-1));
     List<Target> targets = targets();
@@ -332,7 +357,7 @@ public final class MainActivity extends Activity {
     if (found.size()>1) choosing = true;
     Button row = button(device.name+"\n"+device.address+":7000",v -> openDevice(device));
     row.setGravity(Gravity.START | Gravity.CENTER_VERTICAL); row.setPadding(dp(14),dp(12),dp(14),dp(12));
-    devices.addView(row,new LinearLayout.LayoutParams(-1,dp(82)));
+    devices.addView(row,new LinearLayout.LayoutParams(-1,fontRowHeight(82)));
   }
   private List<Target> targets() {
     LinkedHashMap<String,Target> out = new LinkedHashMap<>();

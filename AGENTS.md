@@ -1,5 +1,18 @@
 # Repository memory
 
+- 2026-11-14: Display preferences add vehicle-persisted web_text_scale80..200,
+  vision_stream_resolution standard/360/540/720, and independent render quality.
+  Text declarations scale once without zooming video/map geometry; standalone
+  navigation loads the same preference. The dedicated Carrot Vision encoder
+  applies validated profiles only while no viewers are active, preserves source
+  aspect and bounds dimensions/bitrate; generic streams, recordings and model
+  inputs retain their existing paths. Standard keeps prior platform behavior.
+  CarrotAssist0.2.18/code25 adds independent native font scaling based on the OS
+  font scale, reloads on apply, and keeps WebView text zoom100 to avoid doubling.
+  Browser component fixtures verify 390x844,800x360,1280x480, text sizing and
+  persistence. Physical Android/CarPlay and hardware resolution transitions
+  remain unverified; do not describe fixture checks as vehicle acceptance.
+
 - 2026-11-14: Merged upstream ajouatom/openpilot carrot-wip f89f40a3 via
   a30d1514, retaining both histories. Pre-merge 8b874989 is pushed as
   carrot-wip-backup-2026-11-14. Preservation checks retain all 213 old settings,

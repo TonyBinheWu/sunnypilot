@@ -10,9 +10,11 @@ import { installSegmentedControlFacade } from "../ui/components/segmented_contro
 import { installSettingRowFacade } from "../ui/components/setting_row/facade.js";
 import { installStateSurfaceFacade } from "../ui/components/state_surface/facade.js";
 import { installSettingsChoiceDialogFacade } from "../features/settings/choice_dialog.js";
+import { installDisplayPreferences } from "../shared/web/display_preferences.js";
 
 const target = globalThis;
 const documentRoot = target.document;
+installDisplayPreferences(target);
 
 if (documentRoot.getElementById("carrotAssetManifest")) installAssetUrlFacade(documentRoot, target);
 installDialogFacade(target, documentRoot);

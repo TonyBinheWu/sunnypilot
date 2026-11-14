@@ -1,11 +1,18 @@
 # CarrotAssist Android public beta — Traditional Chinese distribution
 
-This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.17 (code 24). It can coexist with the upstream app; data and authorizations are separate.
+This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.18 (code 25). It can coexist with the upstream app; data and authorizations are separate.
 
-[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.17/CarrotAssist-TW-0.2.17.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.17)
+[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.18/CarrotAssist-TW-0.2.18.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.18)
 
 Updates are restricted to this repository’s `carrot-assist-tw-updates` channel and `carrot-assist-tw-vX.Y.Z` release URLs. The `.github/workflows/carrot-assist-apk.yaml` workflow runs the build checks, signs using protected repository secrets, verifies the APK and prepares a draft release. Signing keys never belong in this repository. A published version is immutable; increment the version name and code for another APK.
 
+
+
+## Display preferences (0.2.18)
+
+Tap the device name, then **App 原生介面字體大小**, to select 80–200% native text size. Applying reloads the activity and retains connection preferences; device selection may be needed again. The multiplier respects Android system font scale. Native chrome and discovery rows reserve space for larger text, and the information dialog scrolls.
+
+Web content uses its separate vehicle-persisted **Tools → Web settings → General → Interface text size** preference. WebView text zoom stays at 100%, avoiding double scaling. Updated vehicle code also provides **Vision stream resolution** (existing quality, 360p, 540p, 720p) and independent **Vision render quality**. End all viewing sessions and reconnect after changing stream resolution. Permissions, trusted origins, fullscreen exit, voice handling and update signing are retained.
 
 ## Vision immersive host (0.2.17)
 

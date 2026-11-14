@@ -2,11 +2,18 @@
   "schemaVersion": 1,
   "assets": [
     {
+      "id": "app.display-preferences",
+      "kind": "bundle",
+      "source": "src/entries/display_preferences.js",
+      "path": "js/generated/display-preferences.js",
+      "hash": "9843eed2f5c6c2b357d2ac111a2d67ed0de96e703e6824771f9584124bb05b04"
+    },
+    {
       "id": "app.asset-url",
       "kind": "bundle",
       "source": "src/entries/app.js",
       "path": "js/generated/app.js",
-      "hash": "03bfd69256fcde4152f79865e8e229119c29592148c769b3e80aa5b73036b7ba"
+      "hash": "7f9a99baf2e7a1fedf8c3ee3586fce1babc164691e16db6abc0863ffa818e161"
     },
     {
       "id": "drive.runtime",
@@ -34,7 +41,7 @@
       "kind": "bundle",
       "source": "src/entries/tools.js",
       "path": "js/generated/tools.js",
-      "hash": "1da56d2b85604759a55ef1d319bde98e56280af355bda4635ba3494a2d199312"
+      "hash": "37d9d797b7e8314b120c328a58fbf82f3c4f0d82ebc37fdf10110e64e617226f"
     },
     {
       "id": "logs.runtime",

@@ -1440,6 +1440,10 @@ window.HomeDrive = (() => {
 
   function syncDisplayModeFromServer(event) {
     const keys = Array.isArray(event?.detail?.keys) ? event.detail.keys : [];
+    if (keys.includes("vision_render_quality") || keys.includes("web_text_scale")) {
+      overlaySizeSignature = "";
+      requestRender({ force: true, overlayDirty: true, hudDirty: true });
+    }
     if (keys.length && !keys.includes(DISPLAY_MODE_SETTING_KEY)) return;
     const nextIndex = readServerDisplayModeIndex();
     if (nextIndex === displayModeIndex) return;
@@ -1623,6 +1627,10 @@ window.HomeDrive = (() => {
 
   function getCanvasDpr() {
     const rawDpr = window.devicePixelRatio || 1;
+    const quality = window.getWebSettingByKey?.("vision_render_quality") || "auto";
+    if (quality === "low") return 0.75;
+    if (quality === "standard") return 1;
+    if (quality === "high") return Math.min(2, Math.max(1, rawDpr));
     const portrait = !window.CarrotLayout?.isWide?.();
     const shortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
     if (portrait && shortSide > 0 && shortSide <= 540) {
@@ -1637,6 +1645,7 @@ window.HomeDrive = (() => {
   }
 
   function getPerformanceCanvasDpr(baseDpr) {
+    if ((window.getWebSettingByKey?.("vision_render_quality") || "auto") !== "auto") return baseDpr;
     if (!prefersPerformanceRenderer()) return baseDpr;
     // This scales only the backing pixels. Geometry keeps using the original
     // videoWidth/videoHeight coordinate space passed to beginFrame().

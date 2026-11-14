@@ -1,8 +1,12 @@
 #include <cassert>
+#include <fstream>
+#include "json11/json11.hpp"
 
 #include "common/params.h"
+#include "common/timing.h"
 #include "system/loggerd/loggerd.h"
 #include "system/loggerd/encoder/jpeg_encoder.h"
+#include "system/loggerd/vision_resolution.h"
 
 #ifdef __TICI__
 #include "system/loggerd/encoder/v4l_encoder.h"
@@ -13,6 +17,19 @@
 #endif
 
 ExitHandler do_exit;
+
+static std::string carrot_vision_profile() {
+  const char *root = getenv("CARROT_DATA_DIR");
+  const std::string path = std::string(root ? root : "/data/carrot") + "/state/web_settings.json";
+  std::ifstream input(path);
+  std::string text(65537, '\0');
+  input.read(text.data(), text.size());
+  text.resize(input.gcount());
+  if (text.size() > 65536) return "standard";
+  std::string error;
+  const auto value = json11::Json::parse(text, error)["vision_stream_resolution"].string_value();
+  return error.empty() && (value == "360" || value == "540" || value == "720") ? value : "standard";
+}
 
 struct EncoderdState {
   int max_waiting = 0;
@@ -57,20 +74,33 @@ void encoder_thread(EncoderdState *s, const LogCameraInfo &cam_info, bool encode
 
   int cur_seg = 0;
   bool prewarm_pending = encode_on_demand;
+  std::string vision_profile;
+  uint64_t next_profile_check = 0;
   while (!do_exit) {
-    if (!vipc_client.connect(false)) {
+    if (!vipc_client.connected && !vipc_client.connect(false)) {
       util::sleep_for(5);
       continue;
     }
 
     // init encoders
     if (encoders.empty()) {
+      if (encode_on_demand) vision_profile = carrot_vision_profile();
       const VisionBuf &buf_info = vipc_client.buffers[0];
       LOGW("encoder %s init %zux%zu", cam_info.thread_name, buf_info.width, buf_info.height);
       assert(buf_info.width > 0 && buf_info.height > 0);
 
       for (const auto &encoder_info : cam_info.encoder_infos) {
-        auto &e = encoders.emplace_back(new Encoder(encoder_info, buf_info.width, buf_info.height));
+        EncoderInfo selected_info = encoder_info;
+        if (encode_on_demand && vision_profile != "standard") {
+          auto settings = encoder_info.get_settings(buf_info.width);
+          const auto resolution = carrot_vision_resolution(vision_profile, buf_info.width, buf_info.height, settings.bitrate);
+          selected_info.frame_width = settings.frame_width = resolution.width;
+          selected_info.frame_height = settings.frame_height = resolution.height;
+          settings.bitrate = resolution.bitrate;
+          selected_info.get_settings = [settings](int) { return settings; };
+          LOGW("Carrot Vision profile %s: %dx%d, %d bps", vision_profile.c_str(), resolution.width, resolution.height, resolution.bitrate);
+        }
+        auto &e = encoders.emplace_back(new Encoder(selected_info, buf_info.width, buf_info.height));
         e->set_idle(false);
         e->encoder_open();
       }
@@ -105,6 +135,16 @@ void encoder_thread(EncoderdState *s, const LogCameraInfo &cam_info, bool encode
       // Prime VIDC with one frame so firmware loading, DMA mapping, and codec
       // headers are complete before a user requests Carrot Vision.
       const bool session_active = !encode_on_demand || params.getBool("CarrotVisionActive");
+      // Apply a changed shared profile only after all viewers leave. Never
+      // interrupt another viewer or replace an encoder during active viewing.
+      if (encode_on_demand && !session_active && nanos_since_boot() >= next_profile_check) {
+        next_profile_check = nanos_since_boot() + 1000000000ULL;
+        if (carrot_vision_profile() != vision_profile) {
+          encoders.clear();
+          prewarm_pending = true;
+          break;
+        }
+      }
       const bool idle = !session_active && !prewarm_pending;
       for (auto &e : encoders) {
         e->set_idle(idle);
