@@ -16,15 +16,15 @@
 
 ## 下載與安裝
 
-**[⬇ 下載 CarrotAssist 繁體中文版 0.2.16（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.16/CarrotAssist-TW-0.2.16.apk)**
+**[⬇ 下載 CarrotAssist 繁體中文版 0.2.17（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.17/CarrotAssist-TW-0.2.17.apk)**
 
 | 項目 | 說明 |
 |---|---|
-| 版本 | **0.2.16**（版本代碼 23） |
+| 版本 | **0.2.17**（版本代碼 24） |
 | 安裝需求 | Android 8.0 以上 |
 | 手機直接語音 | Android 12 以上、可用的裝置端語音辨識服務與國語語音模型 |
 | 套件名稱 | `me.shind0.carrotweb.tw`，手機顯示為 **CarrotAssist 繁中** |
-| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.16) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.16/SHA256SUMS.txt) |
+| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.17) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.17/SHA256SUMS.txt) |
 | 更新來源 | 本倉庫 `TonyBinheWu/sunnypilot` 的繁中發行頻道 |
 
 ### 安裝步驟
@@ -42,6 +42,8 @@
 APK 經建置、測試與簽章驗證；尚未在實體手機或實車驗證。iPhone 請使用 [Carrot Web](docs/CARROT_MOBILE.zh-TW.md)。
 
 ## Carrot Vision 顯示版面
+
+**0.2.17：APK 即時 Vision 自動全螢幕。** 與車機一併更新後，隱藏上方 CarrotPilot／裝置 IP 列、浮動語音鈕與 Android 系統列，以 Live View 完整影像比例顯示；畫面內退出鍵或 Android 返回鍵可恢復。側邊新增可收合的「當前事件」，逐項顯示目前有資料的控制、方向燈、盲區及警示，資料過期即移除。支援橫向 Android 盒子的大螢幕版面，當次視野切換不覆寫原有偏好。[繁中使用方式與實機驗證限制](docs/CARROT_MOBILE.zh-TW.md#carrot-visionapp-全螢幕與當前事件0217)。
 
 0.2.16 參考提供的 CommaView APK 結構，新增可收合工具列、車速面板顯示切換、視野切換與獨立影像狀態／統計；長按 App 上方 **▣** 可收合工具列。影像正常以實際呈現的新影格判定，與 HUD 資料狀態分開。
 

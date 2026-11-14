@@ -1,5 +1,14 @@
 # Repository memory
 
+- 2026-11-14: Published signed CarrotAssist TW0.2.17/code24 from ea1538c2;
+  APK SHA25650830fab40dd05be6be33037ed6feedf674fe2a699dcb0211ebdde7429767787,
+  signing identity matches0.2.16. Public APK and stable update-channel URL were
+  anonymously fetched and verified. This release is immutable; bump the version
+  for another Android binary. Follow-up30fb9c8b releases page transform bounds
+  and uses existing overlay carControl for event rows. IAB fixtures verified
+  1280x480,800x360 and390x844, exit/reentry, panel hiding and stale-source clearing;
+  these are simulated data, not physical Android/CarPlay acceptance.
+
 - 2026-11-14: CarrotAssist0.2.17/code24 adds foreground trusted-origin native
   Vision polling, hides title/IP/voice chrome and system bars, restores on
   navigation/pause/search, handles cutouts and invalidates stale callbacks.

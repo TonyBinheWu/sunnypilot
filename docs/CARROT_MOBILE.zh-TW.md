@@ -4,7 +4,7 @@
 
 ## Carrot Vision：App 全螢幕與當前事件（0.2.17）
 
-App 與車機須一併更新。開啟即時 Carrot Vision 後，App 會自動使用 Live View 全螢幕，隱藏原生「CarrotPilot／裝置 IP」列、浮動語音鈕與 Android 系統列。按畫面右上方 **退出全螢幕** 或 Android 返回鍵可恢復原介面；退出後不會立刻自動重入。離開 Vision、重新搜尋或換頁時恢復標題列，回放與迷你 HUD 不自動進入此模式。可由「視覺全屏」控制自動進入，關閉時仍可用全螢幕按鈕手動進入。
+[下載已簽章的 0.2.17 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.17/CarrotAssist-TW-0.2.17.apk)。App 與車機須一併更新。開啟即時 Carrot Vision 後，App 會自動使用 Live View 全螢幕，隱藏原生「CarrotPilot／裝置 IP」列、浮動語音鈕與 Android 系統列。按畫面右上方 **退出全螢幕** 或 Android 返回鍵可恢復原介面；退出後不會立刻自動重入。離開 Vision、重新搜尋或換頁時恢復標題列，回放與迷你 HUD 不自動進入此模式。可由「視覺全屏」控制自動進入，關閉時仍可用全螢幕按鈕手動進入。
 
 App 全螢幕預設使用「完整影像／Fit」，依原比例呈現，不為填滿螢幕而裁切；不同長寬比會有留黑。模式內可切換視野，僅影響當次全螢幕，退出後恢復既有網頁偏好。這是依 CommaView 使用情境調整 Carrot 自身介面，並非執行或鏡像該 App。
 
@@ -14,7 +14,7 @@ App 全螢幕預設使用「完整影像／Fit」，依原比例呈現，不為�
 
 ## Carrot Vision：Live View 道路影像版面（0.2.16）
 
-更新車機的 `carrot-wip` 並重新啟動，再安裝 CarrotAssist 0.2.16。開啟 Carrot Vision 後，點 App 上方的「▣」切換鍵，或在 **工具 → 網頁設定 → Carrot Vision → Vision 顯示版面** 選擇 **Live View 道路影像**。原有儀表仍為預設；此選擇儲存在車機，重新開啟網頁仍保留，切換後立即生效，不必重啟。
+更新車機的 `carrot-wip` 並重新啟動，再安裝上方最新版 CarrotAssist（此版面自 0.2.16 提供）。開啟 Carrot Vision 後，點 App 上方的「▣」切換鍵，或在 **工具 → 網頁設定 → Carrot Vision → Vision 顯示版面** 選擇 **Live View 道路影像**。原有儀表仍為預設；此選擇儲存在車機，重新開啟網頁仍保留，切換後立即生效，不必重啟。
 
 版面參考 [CommaView Live View](https://commaview.com/) 的道路影像與底部車速資訊配置，以 Carrot 自身資料呈現，並非 CommaView 原生 UI 鏡像。道路影像、車道／路徑、前車標記沿用既有 Carrot Vision 串流與疊圖；需要車機提供相應模型資料，不會因切換版面自動開啟鏡頭或改變駕駛控制。
 
@@ -80,7 +80,7 @@ Carrot Web 適用於手機、平板與電腦瀏覽器；iPhone 可使用網頁�
 
 ## Android CarrotAssist
 
-本分支的 Android 原生介面新增繁中，依手機的 `zh-Hant`／臺灣／香港／澳門語系顯示，與網頁語言分開。已提供 [0.2.14 已簽章 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/CarrotAssist-TW-0.2.14.apk)。繁中版使用獨立套件，可與原版並存；新 App 的授權與設定分開保存。
+本分支的 Android 原生介面新增繁中，依手機的 `zh-Hant`／臺灣／香港／澳門語系顯示，與網頁語言分開。已提供 [0.2.17 已簽章 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.17/CarrotAssist-TW-0.2.17.apk)。繁中版使用獨立套件，可與原版並存；新 App 的授權與設定分開保存。
 
 App 可搜尋同網路裝置、手動輸入 IP、開啟 Carrot Web、檢查 App 更新、開啟手機預設助手與使用直接語音。App 更新、車機 Git 更新及中繼服務更新是各自獨立的流程。
 

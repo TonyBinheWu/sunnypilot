@@ -6,12 +6,12 @@
 <main><h1>carrotpilot 手機操作指南與功能解析</h1>
 <p>依本倉庫 <code>carrot-wip</code> 的程式碼及既有指南整理。清單代表程式提供的功能；實際可用性仍取決於車型、裝置版本、資料來源、瀏覽器與權限。本次未進行實車或實體手機驗證。</p>
 <h2>Carrot Vision：App 全螢幕與當前事件（0.2.17）</h2>
-<p>App 與車機須一併更新。開啟即時 Carrot Vision 後，App 會自動使用 Live View 全螢幕，隱藏原生「CarrotPilot／裝置 IP」列、浮動語音鈕與 Android 系統列。按畫面右上方 <strong>退出全螢幕</strong> 或 Android 返回鍵可恢復原介面；退出後不會立刻自動重入。離開 Vision、重新搜尋或換頁時恢復標題列，回放與迷你 HUD 不自動進入此模式。可由「視覺全屏」控制自動進入，關閉時仍可用全螢幕按鈕手動進入。</p>
+<p><a href="https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.17/CarrotAssist-TW-0.2.17.apk">下載已簽章的 0.2.17 APK</a>。App 與車機須一併更新。開啟即時 Carrot Vision 後，App 會自動使用 Live View 全螢幕，隱藏原生「CarrotPilot／裝置 IP」列、浮動語音鈕與 Android 系統列。按畫面右上方 <strong>退出全螢幕</strong> 或 Android 返回鍵可恢復原介面；退出後不會立刻自動重入。離開 Vision、重新搜尋或換頁時恢復標題列，回放與迷你 HUD 不自動進入此模式。可由「視覺全屏」控制自動進入，關閉時仍可用全螢幕按鈕手動進入。</p>
 <p>App 全螢幕預設使用「完整影像／Fit」，依原比例呈現，不為填滿螢幕而裁切；不同長寬比會有留黑。模式內可切換視野，僅影響當次全螢幕，退出後恢復既有網頁偏好。這是依 CommaView 使用情境調整 Carrot 自身介面，並非執行或鏡像該 App。</p>
 <p><strong>當前事件</strong> 在寬螢幕側邊逐項列出目前警示、整體／橫向／縱向控制啟用、方向燈、盲區與制動保持等目前有提供的狀態。踏板、駕駛轉向、駐車制動僅在資料來源包含對應欄位時顯示，不從其他訊號推測。每個來源獨立檢查新鮮度，超過 1.5 秒即移除其事件；停車時不沿用上次行車資料，回放則保留該時間點的紀錄。沒有新資料時顯示「等待新鮮車輛資料」。面板可收合，窄螢幕預設收合；原本重要行車警示仍保留。這是唯讀事件清單，不是歷程時間軸或額外錄影功能。</p>
 <p>可安裝 Android APK 的 Android 盒子可使用橫向版面，不鎖定方向；工具按鈕可觸控並收合。只有 CarPlay 接收功能的車機不能直接安裝 APK，盒子廠商或 CarPlay 接收端保留的系統列不一定能由 App 隱藏。本次以本機模擬資料與自動化測試驗證，實體 Android 盒子／手機、CarPlay 大螢幕與實車影像仍待驗收。</p>
 <h2>Carrot Vision：Live View 道路影像版面（0.2.16）</h2>
-<p>更新車機的 <code>carrot-wip</code> 並重新啟動，再安裝 CarrotAssist 0.2.16。開啟 Carrot Vision 後，點 App 上方的「▣」切換鍵，或在 <strong>工具 → 網頁設定 → Carrot Vision → Vision 顯示版面</strong> 選擇 <strong>Live View 道路影像</strong>。原有儀表仍為預設；此選擇儲存在車機，重新開啟網頁仍保留，切換後立即生效，不必重啟。</p>
+<p>更新車機的 <code>carrot-wip</code> 並重新啟動，再安裝上方最新版 CarrotAssist（此版面自 0.2.16 提供）。開啟 Carrot Vision 後，點 App 上方的「▣」切換鍵，或在 <strong>工具 → 網頁設定 → Carrot Vision → Vision 顯示版面</strong> 選擇 <strong>Live View 道路影像</strong>。原有儀表仍為預設；此選擇儲存在車機，重新開啟網頁仍保留，切換後立即生效，不必重啟。</p>
 <p>版面參考 <a href="https://commaview.com/">CommaView Live View</a> 的道路影像與底部車速資訊配置，以 Carrot 自身資料呈現，並非 CommaView 原生 UI 鏡像。道路影像、車道／路徑、前車標記沿用既有 Carrot Vision 串流與疊圖；需要車機提供相應模型資料，不會因切換版面自動開啟鏡頭或改變駕駛控制。</p>
 <ul>
 <li><strong>底部面板：</strong> 顯示車速、巡航設定速度與道路速限，沿用原有 km/h／mph 單位。來源缺少數值顯示「—」，不推測速限。</li>
@@ -138,7 +138,7 @@
 </tbody></table>
 <p>網頁、設定與維護操作請先安全停車。螢幕錄影不能取代車輛控制問題所需的原始行車記錄。</p>
 <h2>Android CarrotAssist</h2>
-<p>本分支的 Android 原生介面新增繁中，依手機的 <code>zh-Hant</code>／臺灣／香港／澳門語系顯示，與網頁語言分開。已提供 <a href="https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.14/CarrotAssist-TW-0.2.14.apk">0.2.14 已簽章 APK</a>。繁中版使用獨立套件，可與原版並存；新 App 的授權與設定分開保存。</p>
+<p>本分支的 Android 原生介面新增繁中，依手機的 <code>zh-Hant</code>／臺灣／香港／澳門語系顯示，與網頁語言分開。已提供 <a href="https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.17/CarrotAssist-TW-0.2.17.apk">0.2.17 已簽章 APK</a>。繁中版使用獨立套件，可與原版並存；新 App 的授權與設定分開保存。</p>
 <p>App 可搜尋同網路裝置、手動輸入 IP、開啟 Carrot Web、檢查 App 更新、開啟手機預設助手與使用直接語音。App 更新、車機 Git 更新及中繼服務更新是各自獨立的流程。</p>
 <h3>手機直接語音</h3>
 <p>依既有指南，CarrotAssist 0.2.11 可使用 Android 12 以上的裝置端語音辨識，需要可用辨識服務、語言模型及麥克風權限。直接語音不需 ChatGPT 帳號、訂閱或配對碼；須讓已驗證的 Carrot Web 保持可見。</p>
