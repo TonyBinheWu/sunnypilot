@@ -254,10 +254,6 @@ public final class MainActivity extends Activity {
     resetVisionHost(); hideVisionFullscreen();
     if (foregroundActivity) ui.postDelayed(pollVision,500);
   }
-  @Override public void onWindowFocusChanged(boolean hasFocus) {
-    super.onWindowFocusChanged(hasFocus);
-    if (hasFocus && (visionImmersive || visionFullscreen != null)) getWindow().getDecorView().setSystemUiVisibility(immersiveFlags());
-  }
   private void startSearch() {
     hideVisionFullscreen();
     if (recovery != null) { recovery.cancel(); recovery = null; }
@@ -490,6 +486,7 @@ public final class MainActivity extends Activity {
   }
   @Override public void onWindowFocusChanged(boolean focus) {
     super.onWindowFocusChanged(focus);
+    if (focus && (visionImmersive || visionFullscreen != null)) getWindow().getDecorView().setSystemUiVisibility(immersiveFlags());
     if (!focus && phoneSession) stopPhoneVoice();
     if (focus && ui != null) scheduleAutoVoice();
   }
