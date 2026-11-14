@@ -1,5 +1,20 @@
 # Repository memory
 
+- 2026-11-14: Navigation favorites are vehicle-owned web/app shared state under
+  CARROT_STATE_DIR/navigation_favorites.json, outside the Git checkout. CRUD
+  preserves active navigation; only the ID-based destination POST starts it.
+  Names1..80, max100 entries, validated coordinates, atomic fsync/replace and
+  corrupt/write-failure preservation. Editing address invalidates selection;
+  renaming needs no geocode, delete has inline confirmation (no JS dialogs).
+  Favorite address search uses explicit Mapbox permanent=true with localized
+  account/billing notice; ordinary search remains temporary. Do not silently
+  persist temporary geocodes. Navigation HTML fingerprints its two scripts.
+  Label is now End current navigation / 結束當前導航, retaining Mapbox-only
+  cancellation and external-navigation priority. Existing APK0.2.16 works after
+  vehicle update; no Android binary change. Local13 HTTP tests and12 Node tests
+  plus real IAB fixture CRUD/reload/navigation/mobile390px passed. Native CI and
+  physical Android/vehicle acceptance must be reported separately.
+
 - 2026-11-14: Parked Carrot Vision uses existing enablement and owner/session
   rules. Negotiation daemon stays available when enabled; private boot-clock
   lease5s renewed by session cleanup1Hz gates offroad camera/encoder demand.

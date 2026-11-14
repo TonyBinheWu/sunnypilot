@@ -11,11 +11,27 @@ button{cursor:pointer;white-space:nowrap;flex-shrink:0}button:hover{border-color
 ul{padding:0}.map-frame{position:relative;aspect-ratio:1;background:#10151c}#map{display:block;width:100%;height:100%;image-rendering:auto}#map[hidden]{display:none}small,.note{color:#aab7c6}
 #mapStatus{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;margin:0;padding:24px;text-align:center}#mapStatus[hidden]{display:none}
 #status{min-height:3em}#clear{margin-top:12px} @media(max-width:700px){.layout{grid-template-columns:1fr}main{padding:14px}}
+.layout>section{min-width:0}li button{overflow-wrap:anywhere}
+.favorite-row{border-bottom:1px solid #33404f;padding:10px 0}.favorite-row .go{display:block;width:100%;white-space:normal;text-align:left;overflow-wrap:anywhere}
+.favorite-row small{display:block;overflow-wrap:anywhere}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}li .actions button{width:auto}
+#favoriteForm{display:grid;gap:10px;margin-top:16px;padding:16px;border:1px solid #516072;border-radius:12px}
+#favoriteForm[hidden]{display:none}label{display:block}label input{display:block;margin-top:4px}.address-search{display:flex;gap:8px}
 </style></head><body><main><header><h1 id="title">Carrot 내비게이션</h1><a href="/">Carrot Web ↗</a></header>
 <div class="layout"><section><div class="map-frame"><img id="map" alt="Navigation route map" hidden><p id="mapStatus" role="status">Waiting for route map…</p></div>
 <small>© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://protomaps.com/">Protomaps</a> · <a href="https://apps.mapbox.com/feedback/">Improve this map</a></small></section>
 <section><h2 id="searchTitle">목적지 검색</h2><form id="form"><input id="query" maxlength="200" minlength="2" required aria-label="Destination"><button id="search" type="submit">검색</button></form>
-<ul id="results"></ul><p id="status" role="status"></p><p id="current"></p><button id="clear">Mapbox 목적지 취소</button>
+<ul id="results"></ul><p id="status" role="status" aria-live="polite"></p><p id="current"></p>
+<div class="actions"><button id="clear">End current navigation</button><button id="saveCurrent" disabled>Save current destination</button></div>
+<h2 id="favoritesTitle">Favorites</h2><p id="favoritesNote" class="note"></p>
+<button id="addFavorite">Add favorite</button><p id="favoritesStatus" role="status" aria-live="polite"></p>
+<button id="retryFavorites" hidden>Retry</button><ul id="favorites"></ul>
+<form id="favoriteForm" hidden><h3 id="editorTitle">Add favorite</h3>
+<label><span id="nameLabel">Name</span><input id="favoriteName" maxlength="80" required autocomplete="off"></label>
+<label><span id="addressLabel">Address or place</span><input id="favoriteQuery" maxlength="200" required autocomplete="off"></label>
+<p id="storageNote" class="note"></p>
+<button id="favoriteSearch" type="button">Search address</button><ul id="favoriteResults"></ul>
+<p id="editorStatus" role="status" aria-live="polite"></p><div class="actions">
+<button id="saveFavorite" type="submit">Save</button><button id="cancelFavorite" type="button">Cancel</button></div></form>
 <p class="note" id="note">외부 내비의 TBT·경로가 우선입니다. Mapbox 목적지는 외부 내비 연결이 끝나면 사용합니다. 키는 Carrot Web 설정 → 네트워크에서 등록하세요.</p>
 </section></div></main><script src="/js/pages/navigation_zh_tw.js"></script>
 <script src="/js/pages/navigation_map.js" defer></script></body></html>
