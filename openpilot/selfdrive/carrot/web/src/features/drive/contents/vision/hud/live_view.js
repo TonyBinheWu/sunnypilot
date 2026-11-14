@@ -176,7 +176,10 @@ export const LIVE_VIEW_CSS = `
 .clive-rail button:focus-visible,.clive-tools-toggle:focus-visible{outline:3px solid #50dfc1;outline-offset:2px}
 .clive-rail button{flex-shrink:0}
 .clive-exit{position:absolute;right:116px;top:8px;min-height:44px;pointer-events:auto;background:#0b121bef;color:white;border:1px solid #ffffff40;border-radius:12px;padding:8px 12px;font:600 12px system-ui;cursor:pointer}
-.clive-exit[hidden],.clive-events[hidden]{display:none}
+.clive-exit[hidden],.clive-events[hidden],.clive-rail[hidden],.clive-cluster[hidden]{display:none}
+.clive-rail,.clive-events{overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#628b8b transparent}
+.clive-rail::-webkit-scrollbar,.clive-events::-webkit-scrollbar{width:4px;height:4px}
+.clive-rail::-webkit-scrollbar-thumb,.clive-events::-webkit-scrollbar-thumb{background:#628b8b;border-radius:4px}
 .clive-events{position:absolute;right:8px;top:64px;bottom:142px;width:clamp(160px,22%,240px);overflow:auto;pointer-events:auto;box-sizing:border-box;border:1px solid #ffffff24;border-radius:12px;padding:12px;background:#0b121be8;font:12px/1.5 system-ui}
 .clive-events strong{display:block;color:#50dfc1;margin-bottom:8px}.clive-event{padding:8px;border-left:3px solid #50dfc1;border-radius:4px;margin-top:6px;background:#ffffff0b;overflow-wrap:anywhere}.clive-event.is-warning{border-color:#ffc46b;color:#ffdc9c}.clive-event-empty{color:#a9bfca}
 .clive.events-visible .clive-cluster{left:calc(50% - 62px);max-width:calc(100% - 320px)}

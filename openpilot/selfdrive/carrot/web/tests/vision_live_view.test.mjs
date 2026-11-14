@@ -44,7 +44,8 @@ test('current events retain independent source freshness and do not fabricate mi
   assert.ok(events.some(e => e.text === '請接管'));
   assert.ok(events.some(e => e.key === 'replay_event_left_blindspot'));
   assert.ok(!events.some(e => e.key === 'replay_event_brake_pressed'));
-  const target = {CarrotHudState:state,CarrotStateReceivedAtMonotonic:{carState:0,carControl:1900,selfdriveState:100}};
+  const target = {CarrotHudState:{carState:state.carState,selfdriveState:state.selfdriveState},
+    CarrotOverlayState:{carControl:state.carControl},CarrotStateReceivedAtMonotonic:{carState:0,carControl:1900,selfdriveState:100}};
   const live = visionEventSnapshot(target,false,2000,99999);
   assert.deepEqual(live.rows.map(e => e.key),['replay_event_lateral_control_on']);
   assert.equal(visionEventSnapshot(target,false,4000,99999).available,false);

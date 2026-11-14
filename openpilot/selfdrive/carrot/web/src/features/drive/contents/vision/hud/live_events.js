@@ -28,7 +28,8 @@ export function currentVisionEvents(state = {}, fresh = () => true) {
 
 export function visionEventSnapshot(target, replay, now, wallNow) {
   const parked = !replay && target.CarrotDeviceRuntimeState?.isOffroad === true && target.CarrotDeviceRuntimeState?.isOnroad !== true;
-  const state = parked ? {} : target.CarrotHudState || {};
+  // carControl belongs to the existing overlay group, not the HUD group.
+  const state = parked ? {} : {...target.CarrotOverlayState, ...target.CarrotHudState};
   const fresh = service => {
     if (!state[service]) return false;
     if (replay) return true;

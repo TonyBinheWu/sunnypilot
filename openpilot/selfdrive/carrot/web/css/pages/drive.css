@@ -1,4 +1,11 @@
 ﻿/* ?? WebRTC Video ??????????????????????????????????????????? */
+/* Transitions create a fixed-position containing block; release that block
+   while focused so the camera uses the window rather than the old page size. */
+body.carrot-android-vision #pageCarrot {
+  position:fixed!important;inset:0!important;width:100%!important;height:100%!important;
+  transform:none!important;will-change:auto!important;max-width:none!important;
+  margin:0!important;padding:0!important;z-index:200;
+}
 body.carrot-android-vision #carrotStage {
   position:fixed!important;inset:0!important;width:100%!important;height:100%!important;
   max-width:none!important;max-height:none!important;border-radius:0!important;margin:0!important;z-index:200;
