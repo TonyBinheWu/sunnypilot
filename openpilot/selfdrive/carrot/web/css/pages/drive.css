@@ -1,4 +1,9 @@
 ﻿/* ?? WebRTC Video ??????????????????????????????????????????? */
+body.carrot-android-vision #carrotStage {
+  position:fixed!important;inset:0!important;width:100%!important;height:100%!important;
+  max-width:none!important;max-height:none!important;border-radius:0!important;margin:0!important;z-index:200;
+}
+body.carrot-android-vision {overflow:hidden;}
 .rtcVideo {
   width: 100%;
   border-radius: var(--r-md);

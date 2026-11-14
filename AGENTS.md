@@ -1,5 +1,18 @@
 # Repository memory
 
+- 2026-11-14: CarrotAssist0.2.17/code24 adds foreground trusted-origin native
+  Vision polling, hides title/IP/voice chrome and system bars, restores on
+  navigation/pause/search, handles cutouts and invalidates stale callbacks.
+  Vehicle AndroidVision controller focuses only active live Vision (not replay
+  or mini HUD), respects auto-fullscreen setting and retains explicit dismissal
+  until Vision leaves; visible exit and Android Back restore chrome. Session-only
+  Live View/Fit overrides do not overwrite saved presentation/framing. Current
+  event cards read existing raw services with independent1.5s freshness, clear
+  parked/stale inputs, do not invent missing pedals or suppress protected alerts.
+  No vendor APK code/assets, JavascriptInterface, permissions, streams or driving
+  command changes. Reference APK hash matches prior static inspection. Physical
+  Android box/CarPlay/phone and vehicle-camera acceptance remains pending.
+
 - 2026-11-14: Navigation favorites are vehicle-owned web/app shared state under
   CARROT_STATE_DIR/navigation_favorites.json, outside the Git checkout. CRUD
   preserves active navigation; only the ID-based destination POST starts it.

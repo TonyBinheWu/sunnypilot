@@ -1,5 +1,6 @@
 import { el, setText } from "./dom.js";
 import { createLiveFrameHealth } from "./live_health.js";
+import { visionEventSnapshot } from "./live_events.js";
 
 export function liveViewData(data, { stale = false, metric = true } = {}) {
   const value = (number) => !stale && Number.isFinite(number) ? String(number) : "—";
@@ -44,7 +45,10 @@ export function createLiveView(doc, target, actions) {
   const displayButton = button(null, async () => {
     if (saving || typeof target.setWebSettingByKey !== "function") return;
     const modes = ["fit", "normal", "crop"];
-    const current = target.CarrotWebSettingsState?.vision_display_mode || "normal";
+    const current = target.CarrotAndroidVision?.displayMode?.() || target.CarrotWebSettingsState?.vision_display_mode || "normal";
+    if (target.CarrotAndroidVision?.isImmersive?.()) {
+      target.CarrotAndroidVision.setDisplayMode(modes[(modes.indexOf(current) + 1) % modes.length]); render(); return;
+    }
     saving = true; render();
     try { await target.setWebSettingByKey("vision_display_mode", modes[(modes.indexOf(current) + 1) % modes.length]); }
     catch { target.showAppToast?.(text("vision_live_save_failed"), { tone: "error" }); }
@@ -52,6 +56,18 @@ export function createLiveView(doc, target, actions) {
   });
   const toolsButton = button(null, () => toggleTools(), root);
   toolsButton.className = "clive-tools-toggle";
+  const exitButton = button('vision_live_exit_fullscreen', async () => {
+    target.CarrotAndroidVision?.exit?.();
+    if (doc.fullscreenElement) await target.ExitCarrotFullscreen?.({quiet:true});
+  }, root);
+  exitButton.className = 'clive-exit';
+  let eventsVisible = Number(target.innerWidth || 1024) >= 700;
+  const eventButton = button('vision_live_events', () => { eventsVisible = !eventsVisible; render(); });
+  eventButton.setAttribute('aria-expanded', String(eventsVisible));
+  const eventTitle = el(doc, 'strong', {text:text('vision_live_events')});
+  const eventRows = el(doc, 'div', {class:'clive-event-rows'});
+  const eventPanel = el(doc, 'aside', {class:'clive-events', attrs:{'aria-label':text('vision_live_events')}}, [eventTitle, eventRows]);
+  let eventSignature = '';
   function toggleTools() {
     toolsVisible = !toolsVisible;
     rail.hidden = !toolsVisible;
@@ -82,7 +98,7 @@ export function createLiveView(doc, target, actions) {
   const streamDetail = el(doc, "div", { class: "clive-stream-detail" });
   const details = el(doc, "section", { class: "clive-details" }, [vehicleDetail, streamDetail]);
   details.hidden = true;
-  root.append(rail, cluster, state, healthLabel, details);
+  root.append(rail, cluster, state, healthLabel, details, eventPanel);
   let last = {}, isMetric = true, lastUpdate = null, active = false, unsubscribe = null;
   const now = () => target.performance?.now?.() ?? Date.now();
   const health = createLiveFrameHealth();
@@ -109,6 +125,20 @@ export function createLiveView(doc, target, actions) {
     setText(speed, model.speed); setText(max, model.max); setText(limit, model.limit); setText(unit, model.unit);
     const runtime = target.CarrotDeviceRuntimeState;
     const parked = !replay && runtime?.isOffroad === true && runtime?.isOnroad !== true;
+    exitButton.hidden = !target.CarrotAndroidVision?.isImmersive?.();
+    eventPanel.hidden = !eventsVisible;
+    eventButton.setAttribute('aria-expanded', String(eventsVisible));
+    root.classList.toggle('events-visible', eventsVisible);
+    setText(eventTitle, text('vision_live_events'));
+    const events = visionEventSnapshot(target, replay, now(), Date.now());
+    const signature = JSON.stringify([events.available, events.rows, text('vision_live_events_waiting'), text('vision_live_events_none'), events.rows.map(row => text(row.key))]);
+    if (signature !== eventSignature) {
+      eventSignature = signature;
+      const rows = events.rows.map(row => el(doc, 'div', {class:row.warning ? 'clive-event is-warning' : 'clive-event',
+        text:row.text ? `${text(row.key)} · ${row.text}` : text(row.key)}));
+      if (!rows.length) rows.push(el(doc, 'div', {class:'clive-event-empty', text:text(events.available ? 'vision_live_events_none' : 'vision_live_events_waiting')}));
+      eventRows.replaceChildren(...rows);
+    }
     setText(state, text(parked ? "vision_live_parked" : model.state));
     setText(healthLabel, text(`vision_live_stream_${stream.state}`));
     healthLabel.setAttribute("data-state", stream.state);
@@ -118,8 +148,8 @@ export function createLiveView(doc, target, actions) {
     toolsButton.setAttribute("aria-expanded", String(toolsVisible));
     setText(speedButton, text(speedVisible ? "vision_live_hide_speed" : "vision_live_show_speed"));
     setText(toolsButton, text(toolsVisible ? "vision_live_hide_tools" : "vision_live_show_tools"));
-    setText(fullscreenButton, text(doc.fullscreenElement ? "vision_live_exit_fullscreen" : "vision_live_fullscreen"));
-    const display = target.CarrotWebSettingsState?.vision_display_mode || "normal";
+    setText(fullscreenButton, text(doc.fullscreenElement || target.CarrotAndroidVision?.isImmersive?.() ? "vision_live_exit_fullscreen" : "vision_live_fullscreen"));
+    const display = target.CarrotAndroidVision?.displayMode?.() || target.CarrotWebSettingsState?.vision_display_mode || "normal";
     setText(displayButton, `${text("vision_live_framing")}: ${text(`display_${display}`)}`);
     displayButton.disabled = saving || typeof target.setWebSettingByKey !== "function";
     labels.forEach(([node, key]) => { if (key) setText(node, text(key)); });
@@ -145,6 +175,11 @@ export const LIVE_VIEW_CSS = `
 .clive-rail button{min-height:44px;border:1px solid #ffffff24;border-radius:10px;color:#e9f8f5;background:#ffffff09;font:inherit;font-size:12px;cursor:pointer;padding:6px 2px;touch-action:manipulation}
 .clive-rail button:focus-visible,.clive-tools-toggle:focus-visible{outline:3px solid #50dfc1;outline-offset:2px}
 .clive-rail button{flex-shrink:0}
+.clive-exit{position:absolute;right:116px;top:8px;min-height:44px;pointer-events:auto;background:#0b121bef;color:white;border:1px solid #ffffff40;border-radius:12px;padding:8px 12px;font:600 12px system-ui;cursor:pointer}
+.clive-exit[hidden],.clive-events[hidden]{display:none}
+.clive-events{position:absolute;right:8px;top:64px;bottom:142px;width:clamp(160px,22%,240px);overflow:auto;pointer-events:auto;box-sizing:border-box;border:1px solid #ffffff24;border-radius:12px;padding:12px;background:#0b121be8;font:12px/1.5 system-ui}
+.clive-events strong{display:block;color:#50dfc1;margin-bottom:8px}.clive-event{padding:8px;border-left:3px solid #50dfc1;border-radius:4px;margin-top:6px;background:#ffffff0b;overflow-wrap:anywhere}.clive-event.is-warning{border-color:#ffc46b;color:#ffdc9c}.clive-event-empty{color:#a9bfca}
+.clive.events-visible .clive-cluster{left:calc(50% - 62px);max-width:calc(100% - 320px)}
 .clive-tools-toggle{position:absolute;right:8px;top:8px;min-width:96px;min-height:44px;pointer-events:auto;border:1px solid #ffffff40;border-radius:12px;padding:8px 12px;color:#effffa;background:#0b121bf0;font:600 12px system-ui;cursor:pointer;touch-action:manipulation}
 .clive.tools-collapsed .clive-cluster{left:50%;max-width:calc(100% - 24px)}
 .clive.tools-collapsed .clive-state,.clive.tools-collapsed .clive-health{left:8px}
@@ -168,6 +203,9 @@ export const LIVE_VIEW_CSS = `
  .clive-state{left:8px;top:8px;max-width:calc(100% - 140px)}.clive-health{left:8px;top:46px;max-width:calc(100% - 32px)}
  .clive-details{left:8px;top:84px;max-width:calc(100% - 36px)}
  .clive-dial{width:88px;height:78px}.clive-dial .clive-speed{font-size:36px}
+ .clive.events-visible .clive-cluster{left:50%;max-width:calc(100% - 16px)}
+ .clive-events{top:84px;bottom:235px;width:min(240px,calc(100% - 16px));padding:8px}
+ .clive.tools-collapsed .clive-events{bottom:135px}
 }
 @container chud (max-width:540px) and (max-height:270px){.clive-rail{display:flex;overflow-x:auto;height:52px;gap:4px}.clive-rail button{min-width:84px}.clive-cluster{bottom:70px;padding:5px 12px;gap:10px}.clive-dial{height:64px;width:78px}.clive-dial .clive-speed{font-size:30px}}
 @container chud (min-width:541px) and (max-height:270px){.clive-cluster{bottom:6px;padding:4px 14px;gap:12px}.clive-dial{height:62px;width:80px}.clive-dial .clive-speed{font-size:29px}.clive-rail{gap:4px;padding:4px}.clive-brand{margin:0 0 3px}.clive-rail button{min-height:44px}}

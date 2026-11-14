@@ -1,4 +1,5 @@
 import contentCatalogSource from "../features/drive/core/content_catalog.json";
+import { installAndroidVision } from "../features/drive/contents/vision/android_vision.js";
 import { installDriveContentFacade } from "../features/drive/core/content.js";
 import {
   createDriveLayoutSpec,
@@ -20,6 +21,7 @@ import {
 } from "../features/drive/contents/vision/index.js";
 
 const target = globalThis;
+installAndroidVision(target);
 const catalog = validateDriveContentCatalog(contentCatalogSource);
 
 // Classic realtime consumers load after this bundle. Install the shared

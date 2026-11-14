@@ -46,6 +46,7 @@ class FakeNode {
     return on;
   }
   appendChild(c) { if (c) this.children.push(c); return c; }
+  replaceChildren(...children) { this.children = children; }
   append(...cs) { for (const c of cs) if (c) this.children.push(c); }
   addEventListener() {}
   querySelectorAll() { return []; }

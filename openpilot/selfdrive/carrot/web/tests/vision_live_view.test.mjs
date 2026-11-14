@@ -3,16 +3,55 @@ import test from "node:test";
 import { liveViewData, createLiveView } from "../src/features/drive/contents/vision/hud/live_view.js";
 import { mapPayload } from "../src/features/drive/contents/vision/hud/index.js";
 import { createLiveFrameHealth } from "../src/features/drive/contents/vision/hud/live_health.js";
+import { installAndroidVision } from "../src/features/drive/contents/vision/android_vision.js";
+import { currentVisionEvents, visionEventSnapshot } from "../src/features/drive/contents/vision/hud/live_events.js";
 
 class Node {
   children = []; attrs = {}; listeners = {}; hidden = false; textContent = "";
   classList = { toggle() {} };
   appendChild(child) { this.children.push(child); return child; }
   append(...children) { this.children.push(...children); }
+  replaceChildren(...children) { this.children = children; }
   setAttribute(k, v) { this.attrs[k] = v; }
   addEventListener(k, fn) { this.listeners[k] = fn; }
 }
 const find = (root, name) => root.className === name ? root : root.children.map(n => find(n, name)).find(Boolean);
+
+test('Android Vision requires a trusted host opt-in, restores on exit and does not immediately reenter', () => {
+  let active = true, replay = false, focused;
+  const target = {document:{body:{dataset:{page:'carrot'},classList:{toggle:(_,v) => focused=v}}},
+    CarrotVisionContentRuntime:{isActive:() => active}, CarrotVisionReplay:{isActive:() => replay},
+    CarrotWebSettingsState:{vision_fullscreen_default:true}};
+  const api = installAndroidVision(target);
+  assert.equal(api.sync(), false);
+  assert.equal(api.sync(true), true); assert.equal(focused, true);
+  assert.equal(api.displayMode(), 'fit'); api.setDisplayMode('crop'); assert.equal(api.displayMode(),'crop');
+  api.exit(); assert.equal(focused, false); assert.equal(api.sync(true), false);
+  assert.equal(api.displayMode(),null);
+  api.toggle(); assert.equal(focused, true);
+  active = false; api.sync(); assert.equal(focused, false);
+  active = true; assert.equal(api.sync(), true);
+  replay = true; assert.equal(api.sync(), false);
+  replay = false; target.CarrotWebSettingsState.vision_fullscreen_default = false;
+  assert.equal(api.sync(), false); api.toggle(); assert.equal(focused, true);
+  assert.equal(api.sync(false), false);
+});
+
+test('current events retain independent source freshness and do not fabricate missing driver inputs', () => {
+  const state = {carState:{leftBlinker:true, leftBlindspot:true}, carControl:{latActive:true},
+    selfdriveState:{enabled:true,alertSize:'small',alertText1:'請接管'}};
+  const events = currentVisionEvents(state);
+  assert.ok(events.some(e => e.text === '請接管'));
+  assert.ok(events.some(e => e.key === 'replay_event_left_blindspot'));
+  assert.ok(!events.some(e => e.key === 'replay_event_brake_pressed'));
+  const target = {CarrotHudState:state,CarrotStateReceivedAtMonotonic:{carState:0,carControl:1900,selfdriveState:100}};
+  const live = visionEventSnapshot(target,false,2000,99999);
+  assert.deepEqual(live.rows.map(e => e.key),['replay_event_lateral_control_on']);
+  assert.equal(visionEventSnapshot(target,false,4000,99999).available,false);
+  assert.equal(visionEventSnapshot(target,true,4000,99999).rows.length,events.length);
+  target.CarrotDeviceRuntimeState={isOffroad:true,isOnroad:false};
+  assert.deepEqual(visionEventSnapshot(target,false,2000,99999).rows,[]);
+});
 
 test("Live View reuses normalized units and distinguishes absent speed from zero", () => {
   const mph = mapPayload({ vEgoKph: 100, vSetKph: 110, speedLimitKph: 90, isMetric: false, latActive: true });

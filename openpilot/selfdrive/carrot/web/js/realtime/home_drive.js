@@ -248,6 +248,8 @@ window.HomeDrive = (() => {
   }
 
   function readServerDisplayModeIndex() {
+    const androidMode = window.CarrotAndroidVision?.displayMode?.();
+    if (androidMode) return displayModeIndexForKey(androidMode);
     const key = typeof window.getWebSettingByKey === "function"
       ? window.getWebSettingByKey(DISPLAY_MODE_SETTING_KEY, "normal")
       : window.CarrotWebSettingsState?.[DISPLAY_MODE_SETTING_KEY];
@@ -2838,6 +2840,7 @@ window.HomeDrive = (() => {
     return false;
   }
   window.addEventListener("carrot:websettingschange", syncDisplayModeFromServer);
+  window.addEventListener("carrot:androidvisionchange", syncDisplayModeFromServer);
 
   async function handleStageFullscreenToggle(event) {
     if (!isCarrotVisionActive()) return;

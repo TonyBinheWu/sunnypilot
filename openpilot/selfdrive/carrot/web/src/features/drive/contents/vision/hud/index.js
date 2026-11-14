@@ -102,7 +102,7 @@ export function createHudOverlay(doc) {
   let presentation = "carrot";
   let timer = null;
   function syncPresentation() {
-    presentation = target.CarrotWebSettingsState?.vision_presentation === "live_view" ? "live_view" : "carrot";
+    presentation = target.CarrotAndroidVision?.isImmersive?.() || target.CarrotWebSettingsState?.vision_presentation === "live_view" ? "live_view" : "carrot";
     root.classList.toggle("is-live-view", presentation === "live_view");
     live.root.hidden = presentation !== "live_view";
     live.setActive(active && !destroyed && suppressions.size === 0 && presentation === "live_view");
@@ -115,8 +115,10 @@ export function createHudOverlay(doc) {
   }
   async function togglePresentation() {
     if (destroyed || typeof target.setWebSettingByKey !== "function") return false;
+    const nextPresentation = presentation === "live_view" ? "carrot" : "live_view";
+    if (target.CarrotAndroidVision?.isImmersive?.()) target.CarrotAndroidVision.exit();
     try {
-      await target.setWebSettingByKey("vision_presentation", presentation === "live_view" ? "carrot" : "live_view");
+      await target.setWebSettingByKey("vision_presentation", nextPresentation);
     } catch (error) {
       target.showAppToast?.(target.getUIText?.("vision_live_save_failed") || "Could not save Vision layout", { tone: "error" });
       throw error;
@@ -287,12 +289,14 @@ export function createHudOverlay(doc) {
     layoutObserver = null;
     syncVisibility();
     target.removeEventListener?.("carrot:websettingschange", syncPresentation);
+    target.removeEventListener?.("carrot:androidvisionchange", syncPresentation);
     target.removeEventListener?.("carrot:languagechange", live.render);
     root.remove?.();
     return true;
   }
 
   target.addEventListener?.("carrot:websettingschange", syncPresentation);
+  target.addEventListener?.("carrot:androidvisionchange", syncPresentation);
   target.addEventListener?.("carrot:languagechange", live.render);
   syncVisibility();
   return {

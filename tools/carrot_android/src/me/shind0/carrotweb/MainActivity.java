@@ -61,6 +61,10 @@ public final class MainActivity extends Activity {
   private FrameLayout visionFullscreen;
   private WebChromeClient.CustomViewCallback visionFullscreenCallback;
   private int previousSystemUi;
+  private View nativeBar, voiceOverlay;
+  private boolean visionImmersive;
+  private int visionHostSystemUi, visionHostEpoch;
+  private final Runnable pollVision = this::pollVisionHost;
   private ExecutorService workers;
   private volatile int generation;
   private long started;
@@ -123,16 +127,22 @@ public final class MainActivity extends Activity {
     });
     root = column(); root.setBackgroundColor(background);
     if (android.os.Build.VERSION.SDK_INT >= 30) root.setOnApplyWindowInsetsListener((v,insets) -> {
-      android.graphics.Insets b = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
+      android.graphics.Insets b = insets.getInsets((visionImmersive ? 0 : WindowInsets.Type.systemBars()) | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
       v.setPadding(b.left,b.top,b.right,b.bottom);
       // The native host already reserves these insets; WebView must not reserve them again.
       return WindowInsets.CONSUMED;
     });
     // API 26-29 use the legacy system-window inset accessors.
     if (android.os.Build.VERSION.SDK_INT < 30) root.setOnApplyWindowInsetsListener((v,insets) -> {
-      v.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom()); return insets.consumeSystemWindowInsets();
+      if (visionImmersive) {
+        android.view.DisplayCutout cutout = android.os.Build.VERSION.SDK_INT >= 28 ? insets.getDisplayCutout() : null;
+        v.setPadding(cutout == null ? 0 : cutout.getSafeInsetLeft(), cutout == null ? 0 : cutout.getSafeInsetTop(),
+          cutout == null ? 0 : cutout.getSafeInsetRight(), cutout == null ? 0 : cutout.getSafeInsetBottom());
+      } else v.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());
+      return insets.consumeSystemWindowInsets();
     });
     LinearLayout bar = new LinearLayout(this); bar.setGravity(Gravity.CENTER_VERTICAL);
+    nativeBar = bar;
     Button search = button("⌕", v -> startSearch()); search.setContentDescription(UiText.get("당근 기기 찾기", "Find Carrot"));
     bar.addView(search,new LinearLayout.LayoutParams(dp(52),dp(48)));
     title = text("CarrotAssist",18); title.setSingleLine(true); title.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -160,6 +170,7 @@ public final class MainActivity extends Activity {
     content = column();
     page.addView(content, new FrameLayout.LayoutParams(-1, -1));
     FloatingVoiceButton assistant = new FloatingVoiceButton(this, preferences);
+    voiceOverlay = assistant;
     assistant.setOnClickListener(v -> invokeAssistant());
     page.addView(assistant, new FrameLayout.LayoutParams(dp(68), dp(68)));
     page.addOnLayoutChangeListener((v,l,t,r,b,oldL,oldT,oldR,oldB) -> assistant.place());
@@ -179,6 +190,7 @@ public final class MainActivity extends Activity {
   private TextView text(String value,int size) { TextView v = new TextView(this); v.setText(value); v.setTextSize(size); v.setTextColor(foreground); return v; }
   private Button button(String label,View.OnClickListener listener) { Button b = new Button(this); b.setText(label); b.setAllCaps(false); b.setTextColor(accent); b.setOnClickListener(listener); return b; }
   private void stopSearch() {
+    resetVisionHost();
     stopPhoneVoice(); resumePhoneVoice = false;
     voiceVerifiedUntil = 0;
     if (welcome != null) welcome.reset();
@@ -199,8 +211,52 @@ public final class MainActivity extends Activity {
     if (fullscreen.getParent() instanceof ViewGroup) ((ViewGroup)fullscreen.getParent()).removeView(fullscreen);
     fullscreen.removeAllViews();
     root.setVisibility(View.VISIBLE);
-    getWindow().getDecorView().setSystemUiVisibility(previousSystemUi);
+    getWindow().getDecorView().setSystemUiVisibility(visionImmersive ? immersiveFlags() : previousSystemUi);
     if (callback != null) callback.onCustomViewHidden();
+  }
+  private int immersiveFlags() {
+    return View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+  }
+  private void setVisionImmersive(boolean enabled) {
+    if (visionImmersive == enabled) return;
+    if (enabled) visionHostSystemUi = visionFullscreen != null ? previousSystemUi : getWindow().getDecorView().getSystemUiVisibility();
+    visionImmersive = enabled;
+    if (nativeBar != null) nativeBar.setVisibility(enabled ? View.GONE : View.VISIBLE);
+    if (voiceOverlay != null) voiceOverlay.setVisibility(enabled ? View.GONE : View.VISIBLE);
+    if (!enabled && visionFullscreen != null) previousSystemUi = visionHostSystemUi;
+    getWindow().getDecorView().setSystemUiVisibility(enabled || visionFullscreen != null ? immersiveFlags() : visionHostSystemUi);
+    root.requestApplyInsets();
+  }
+  private void resetVisionHost() {
+    visionHostEpoch++; ui.removeCallbacks(pollVision); setVisionImmersive(false);
+  }
+  private void pollVisionHost() {
+    ui.removeCallbacks(pollVision);
+    if (!foregroundActivity || isFinishing() || web == null) return;
+    if (!pageReady || web.getUrl() == null || !isCurrent(Uri.parse(web.getUrl())) || !hasWindowFocus()
+        || (speechSetup != null && speechSetup.showing())) {
+      setVisionImmersive(false); ui.postDelayed(pollVision,500); return;
+    }
+    final int epoch = visionHostEpoch;
+    final String url = web.getUrl();
+    web.evaluateJavascript(onDevicePage("!!window.CarrotAndroidVision?.sync(true)"), value -> {
+      if (epoch != visionHostEpoch || !foregroundActivity || !pageReady || web == null || !url.equals(web.getUrl())) return;
+      setVisionImmersive("true".equals(value) && hasWindowFocus() && (speechSetup == null || !speechSetup.showing()));
+      ui.postDelayed(pollVision,500);
+    });
+  }
+  private void leaveVisionView() {
+    if (web != null && pageReady && web.getUrl() != null && isCurrent(Uri.parse(web.getUrl())))
+      // A WebChromeClient custom view may hide the original WebView. Dismiss
+      // its UI-only controller even then, while retaining the exact origin guard.
+      web.evaluateJavascript("(location.origin===" + JSONObject.quote("http://" + currentAddress + ":7000")
+        + " && window.CarrotAndroidVision?.exit())", null);
+    resetVisionHost(); hideVisionFullscreen();
+    if (foregroundActivity) ui.postDelayed(pollVision,500);
+  }
+  @Override public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+    if (hasFocus && (visionImmersive || visionFullscreen != null)) getWindow().getDecorView().setSystemUiVisibility(immersiveFlags());
   }
   private void startSearch() {
     hideVisionFullscreen();
@@ -348,7 +404,7 @@ public final class MainActivity extends Activity {
           addContentView(visionFullscreen,new ViewGroup.LayoutParams(-1,-1));
           getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
-        @Override public void onHideCustomView() { hideVisionFullscreen(); }
+        @Override public void onHideCustomView() { leaveVisionView(); }
       });
       web.setWebViewClient(new WebViewClient() {
         @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request) {
@@ -365,6 +421,7 @@ public final class MainActivity extends Activity {
           return true;
         }
         @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap icon) {
+          resetVisionHost();
           hideVisionFullscreen();
           pageReady = false; stopPhoneVoice(); cancelVoiceCheck();
           super.onPageStarted(view,url,icon);
@@ -372,6 +429,7 @@ public final class MainActivity extends Activity {
         @Override public void onPageFinished(WebView view,String url) {
           if (isCurrent(Uri.parse(url))) {
             pageReady = true;
+            ui.removeCallbacks(pollVision); ui.post(pollVision);
             scheduleAutoVoice();
           }
         }
@@ -792,9 +850,10 @@ public final class MainActivity extends Activity {
     }
     checkAfterBackground=false;
     scheduleAutoVoice();
+    ui.removeCallbacks(pollVision); ui.post(pollVision);
   }
-  @Override protected void onPause() { foregroundActivity = false; if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
+  @Override protected void onPause() { foregroundActivity = false; resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
   @Override protected void onStop() { checkAfterBackground=true; if (scanning) { stopSearch(); if (status!=null) status.setText(UiText.get("검색이 중단됐어요. 다시 검색을 눌러 주세요.", "Search paused. Tap Search again.")); } super.onStop(); }
-  @Override public void onBackPressed() { if (visionFullscreen != null) { hideVisionFullscreen(); return; } if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
+  @Override public void onBackPressed() { if (visionFullscreen != null || visionImmersive) { leaveVisionView(); return; } if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
   @Override protected void onDestroy() { if (speechSetup!=null) speechSetup.close(); if (recovery!=null) recovery.cancel(); stopSearch(); ui.removeCallbacksAndMessages(null); if (updater!=null) updater.close(); if (web!=null) { web.destroy(); web=null; } super.onDestroy(); }
 }

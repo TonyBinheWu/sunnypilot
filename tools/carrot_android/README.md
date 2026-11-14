@@ -7,6 +7,12 @@ This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, 
 Updates are restricted to this repository’s `carrot-assist-tw-updates` channel and `carrot-assist-tw-vX.Y.Z` release URLs. The `.github/workflows/carrot-assist-apk.yaml` workflow runs the build checks, signs using protected repository secrets, verifies the APK and prepares a draft release. Signing keys never belong in this repository. A published version is immutable; increment the version name and code for another APK.
 
 
+## Vision immersive host (0.2.17)
+
+Update the vehicle and APK together. The native host polls only its validated current device origin, with generation/URL checks on callbacks, while foreground and page-ready. The vehicle's display-only Android Vision controller opts in for active live Vision; replay and mini HUD stay separate. Default fullscreen hides native title/IP and voice controls and system bars, preserves cutouts, and uses a session-only Fit framing. The visible exit action or Android Back dismisses this session's automatic entry. Navigation, discovery and pause restore native chrome. No JavascriptInterface, added permission, new stream or vehicle command is introduced. Touch controls and orientation changes are supported for Android boxes; vendor/CarPlay receiver chrome may remain outside the app's control.
+
+Current-event cards reuse existing decoded services with independent 1.5-second freshness, show only supplied inputs, and leave protected onroad alerts intact. Physical Android boxes, receivers and vehicle video still need acceptance; browser fixtures are not physical-phone verification.
+
 ## Chinese speech setup (0.2.14)
 
 The device-name dialog opens **中文語音檢查與安裝**, without requiring a car connection. Missing permission/model errors also open the Traditional Chinese guide. It provides permission requests, app permission settings, voice-input settings and privacy settings.

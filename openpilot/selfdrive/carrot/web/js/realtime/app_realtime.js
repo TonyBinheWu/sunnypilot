@@ -320,6 +320,10 @@ function isFullscreenActive() {
 }
 
 async function requestCarrotFullscreen(options = {}) {
+  if (window.CarrotAndroidVision?.isHost?.()) {
+    if (!window.CarrotAndroidVision.isImmersive()) window.CarrotAndroidVision.toggle();
+    return window.CarrotAndroidVision.isImmersive();
+  }
   const quiet = Boolean(options.quiet);
   if (!isLandscapeOrientation()) return false;
   if (isFullscreenActive()) return true;
@@ -381,6 +385,7 @@ async function toggleCarrotFullscreen(options = {}) {
   if (isFullscreenActive()) {
     return exitCarrotFullscreen(options);
   }
+  if (window.CarrotAndroidVision?.isHost?.()) return window.CarrotAndroidVision.toggle();
   return requestCarrotFullscreen(options);
 }
 
