@@ -2226,3 +2226,118 @@ msgstr "開關數值無效。"
 #: openpilot/selfdrive/ui/widgets/forced_offroad.py
 msgid "Park and stop, then disengage all assistance. Normal driving processes and driving recording stop. Leaving Park or losing vehicle data cancels this mode. Resets after restart."
 msgstr "僅限 P 檔、靜止且已退出轉向及巡航輔助時切換。一般行車程序與行車錄影將停止。離開 P 檔、車況失效或熄火時自動取消；重新啟動後恢復關閉。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering learning progress"
+msgstr "轉向學習進度"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering delay learning"
+msgstr "轉向延遲學習"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering torque learning"
+msgstr "轉向扭力學習"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Data progress"
+msgstr "資料進度"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Live data"
+msgstr "即時資料"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Data expired (last received)"
+msgstr "資料已過期（上次收到）"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Last saved record (not live)"
+msgstr "上次保存紀錄（非即時）"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "No learning data available"
+msgstr "尚無學習資料"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Verified"
+msgstr "已通過驗證"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Collecting data"
+msgstr "資料蒐集中"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Estimate not verified"
+msgstr "估計未通過驗證"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Live torque tuning is not used"
+msgstr "此控制方式未採用即時扭力學習"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Selected delay"
+msgstr "選定延遲"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Candidate delay"
+msgstr "候選估計延遲"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Valid data blocks"
+msgstr "有效資料區塊"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Selected acceleration factor"
+msgstr "選定側向加速度係數"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Selected friction compensation"
+msgstr "選定摩擦補償"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Collected samples"
+msgstr "已收集樣本數"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Custom tuning is active; learned values do not override it."
+msgstr "目前使用自訂調校，學習值不會覆寫自訂值。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Progress measures data coverage, not driving time. Similar straight-road samples may not advance it. This view does not reset or change tuning."
+msgstr "進度代表資料涵蓋程度，不是開車時間。相似的直線資料不一定推進進度。此畫面不會重設或修改調校。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Connection interrupted; showing previous data."
+msgstr "連線中斷，顯示上次資料。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "steering\nlearning"
+msgstr "轉向學習\n進度"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Waiting for data"
+msgstr "等待資料"

@@ -1,5 +1,16 @@
 # Repository memory
 
+- 2026-11-15: Added read-only steering learner status: web/APK Tools -> Steering
+  learning progress; C3/C3X and C4 Device menus share a scrolling status view.
+  Existing UI SubMaster is reused; web subscribes lazily at2Hz. Data coverage
+  percentage stays separate from validation, applied/candidate delay and torque
+  samples. Age>=2s/invalid transport is stale; compatible saved records are
+  explicitly historical, unknown is never0%. Custom overrides are marked.
+  No learner/control/reset writes. Existing APK0.2.18 loads updated web assets.
+  Local real-schema/cache/API tests10, focused web270, localization/font11
+  (2 native-atlas checks reserved for CI) pass. Browser component fixture
+  verifies390x844/1280x480 and disconnected expiry; no hardware acceptance.
+
 - 2026-11-14: Display preferences add vehicle-persisted web_text_scale80..200,
   vision_stream_resolution standard/360/540/720, and independent render quality.
   Text declarations scale once without zooming video/map geometry; standalone

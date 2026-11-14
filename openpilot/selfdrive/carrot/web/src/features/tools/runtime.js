@@ -3,6 +3,7 @@ import { localVoice } from './local_voice.js';
 
 import { handleWebAutoUpdateStatus, openWebSettingsDialog } from "./web_settings/controller.js";
 import { openAssistantDialog } from "./assistant.js";
+import { openSteeringLearning } from "./steering_learning.js";
 import {
   bindToolsDeviceInfoCopy,
   buildToolsDeviceInfoDialog,
@@ -1133,6 +1134,7 @@ function initToolsPage() {
     if (typeof openWebSettingsDialog === "function") openWebSettingsDialog();
   });
   bindOnce("btnToolsAssistant", openAssistantDialog);
+  bindOnce("btnSteeringLearning", openSteeringLearning);
 
   bindOnce("btnDeviceInfo", async () => {
     let values = toolsMetaLastValues || {};

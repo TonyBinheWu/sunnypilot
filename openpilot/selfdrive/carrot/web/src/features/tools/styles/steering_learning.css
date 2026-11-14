@@ -1,0 +1,11 @@
+.steering-learning {display:grid;gap:var(--sp-md);min-width:0;text-align:start;white-space:normal}
+.steering-learning__section {border:1px solid var(--md-outline-var);border-radius:var(--r-md);padding:var(--sp-md);min-width:0}
+.steering-learning h3 {margin:0 0 var(--sp-sm);font-size:var(--fs-title-md)}
+.steering-learning p {margin:var(--sp-sm) 0;line-height:1.5;overflow-wrap:anywhere}
+.steering-learning__source,.steering-learning__help {color:var(--md-on-surface-var);font-size:var(--fs-body-sm)}
+.steering-learning progress {display:block;width:100%;height:14px;accent-color:var(--md-primary)}
+.steering-learning [data-source="cached"] progress,.steering-learning [data-source="stale"] progress {accent-color:#999;opacity:.65}
+.steering-learning dl {margin:var(--sp-md) 0 0}
+.steering-learning__row {display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--sp-sm);padding:var(--sp-xs) 0}
+.steering-learning dt,.steering-learning dd {margin:0;overflow-wrap:anywhere}
+.steering-learning dd {font-variant-numeric:tabular-nums}

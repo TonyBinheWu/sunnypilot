@@ -1702,3 +1702,118 @@ msgstr "잘못된 스위치 값입니다."
 #: openpilot/selfdrive/ui/widgets/forced_offroad.py
 msgid "Park and stop, then disengage all assistance. Normal driving processes and driving recording stop. Leaving Park or losing vehicle data cancels this mode. Resets after restart."
 msgstr "P단 정차 및 조향·크루즈 보조 해제 후에만 변경합니다. 일반 주행 프로세스와 주행 녹화가 중지됩니다. P단 해제, 차량 정보 오류 또는 시동 OFF 시 자동 취소되며 재시작하면 꺼집니다."
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering learning progress"
+msgstr "조향 학습 진행률"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering delay learning"
+msgstr "조향 지연 학습"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering torque learning"
+msgstr "조향 토크 학습"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Data progress"
+msgstr "데이터 진행률"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Live data"
+msgstr "실시간 데이터"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Data expired (last received)"
+msgstr "데이터 만료 (마지막 수신)"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Last saved record (not live)"
+msgstr "마지막 저장 기록 (실시간 아님)"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "No learning data available"
+msgstr "학습 데이터 없음"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Verified"
+msgstr "검증 완료"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Collecting data"
+msgstr "데이터 수집 중"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Estimate not verified"
+msgstr "추정값 검증 안 됨"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Live torque tuning is not used"
+msgstr "현재 제어는 실시간 토크 학습을 사용하지 않음"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Selected delay"
+msgstr "선택된 지연"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Candidate delay"
+msgstr "후보 지연 추정값"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Valid data blocks"
+msgstr "유효 데이터 블록"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Selected acceleration factor"
+msgstr "선택된 횡가속 계수"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Selected friction compensation"
+msgstr "선택된 마찰 보상"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Collected samples"
+msgstr "수집한 표본 수"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Custom tuning is active; learned values do not override it."
+msgstr "사용자 지정 튜닝이 적용 중이며 학습값이 덮어쓰지 않습니다."
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Progress measures data coverage, not driving time. Similar straight-road samples may not advance it. This view does not reset or change tuning."
+msgstr "진행률은 운전 시간이 아닌 데이터 범위입니다. 비슷한 직선 데이터는 진행률을 높이지 않을 수 있습니다. 이 화면은 튜닝을 초기화하거나 변경하지 않습니다."
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Connection interrupted; showing previous data."
+msgstr "연결 끊김, 이전 데이터를 표시합니다."
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "steering\nlearning"
+msgstr "조향\n학습"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Waiting for data"
+msgstr "데이터 대기 중"

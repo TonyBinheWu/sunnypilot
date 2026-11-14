@@ -135,6 +135,8 @@ jobs:
       - run: ./tools/op.sh setup
       - name: Build openpilot
         run: scons
+      - name: Check read-only steering learning status and cache identity
+        run: python -m pytest -o addopts='' -q openpilot/common/tests/test_steering_learning.py openpilot/selfdrive/carrot/server/tests/test_steering_learning_api.py
       - name: Check production Traditional Chinese glyph atlas
         env:
           CARROT_REQUIRE_FONT_ATLAS: '1'
