@@ -43,6 +43,7 @@ jobs:
           python -m pytest -c /dev/null --rootdir=. --noconftest -q
           openpilot/system/ui/lib/tests/test_raylib_text.py
           openpilot/selfdrive/ui/tests/test_traditional_chinese.py
+          openpilot/selfdrive/ui/tests/test_steering_learning_view.py
           openpilot/selfdrive/ui/tests/test_font_coverage.py
           openpilot/selfdrive/ui/tests/test_carrot_hud_renderer.py
           tools/docs/wiki_settings/tests

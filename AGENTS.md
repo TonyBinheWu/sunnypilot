@@ -1,7 +1,8 @@
 # Repository memory
 
 - 2026-11-15: Added read-only steering learner status: web/APK Tools -> Steering
-  learning progress; C3/C3X and C4 Device menus share a scrolling status view.
+  learning progress; C3/C3X use a rich dialog; C4 uses a compact native full-page NavRawScrollPanel
+  for its536x240 canvas, with24px body text and clipped vertical scrolling.
   Existing UI SubMaster is reused; web subscribes lazily at2Hz. Data coverage
   percentage stays separate from validation, applied/candidate delay and torque
   samples. Age>=2s/invalid transport is stale; compatible saved records are

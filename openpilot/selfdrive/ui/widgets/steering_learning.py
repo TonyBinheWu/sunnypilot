@@ -66,8 +66,46 @@ def learning_item():
   return button_item(lambda: tr(TITLE), lambda: tr('VIEW'), callback=lambda: gui_app.push_widget(LearningDialog()))
 
 
+def learning_mici_dialog():
+  # Mici is 536x240: the tici ConfirmDialog's 100px margins and 160px
+  # action button cannot fit. Use its native full-page scroll/back navigation.
+  import pyray as rl
+  from openpilot.system.ui.widgets.scroller import NavRawScrollPanel
+  from openpilot.system.ui.widgets.html_render import HtmlRenderer, ElementType
+
+  class MiciLearningPanel(NavRawScrollPanel):
+    def __init__(self):
+      super().__init__()
+      self._reader = LearningReader(Params())
+      self._next_update = 0.
+      self._last_html = ''
+      self._content = HtmlRenderer(text='', text_size={ElementType.P: 24})
+
+    def _update_state(self):
+      super()._update_state()
+      if time.monotonic() >= self._next_update:
+        self._next_update = time.monotonic() + .5
+        content = learning_html(self._reader.snapshot(ui_state.sm))
+        if content != self._last_html:
+          self._last_html = content
+          self._content.parse_html_content(content)
+
+    def _render(self, rect):
+      viewport = rl.Rectangle(rect.x + 12, rect.y + 8, max(1, rect.width - 24), max(1, rect.height - 16))
+      height = self._content.get_total_height(int(viewport.width))
+      offset = self._scroll_panel.update(viewport, height)
+      content_rect = rl.Rectangle(viewport.x, viewport.y + round(offset), viewport.width, height)
+      rl.begin_scissor_mode(int(viewport.x), int(viewport.y), int(viewport.width), int(viewport.height))
+      try:
+        self._content.render(content_rect)
+      finally:
+        rl.end_scissor_mode()
+
+  return MiciLearningPanel()
+
+
 def learning_big_button():
   from openpilot.selfdrive.ui.mici.widgets.button import BigButton
   button = BigButton(tr('steering\nlearning'), '', gui_app.texture('icons_mici/settings/device/info.png', 64, 64))
-  button.set_click_callback(lambda: gui_app.push_widget(LearningDialog()))
+  button.set_click_callback(lambda: gui_app.push_widget(learning_mici_dialog()))
   return button
