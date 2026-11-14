@@ -23,7 +23,7 @@ class SeedTest(unittest.TestCase):
       wiki = Path(directory)
       home = wiki / "Home.md"
       home.write_text("# Keep this home\n", encoding="utf-8")
-      self.assertEqual(SEED.seed_missing_guides(BUNDLED, wiki), 852)
+      self.assertEqual(SEED.seed_missing_guides(BUNDLED, wiki), 856)
       page = wiki / "ZH-TW-語音播報音量.md"
       self.assertIn("### 使用方式", page.read_text(encoding="utf-8"))
       renamed = wiki / "ZH-TW-Custom-title.md"

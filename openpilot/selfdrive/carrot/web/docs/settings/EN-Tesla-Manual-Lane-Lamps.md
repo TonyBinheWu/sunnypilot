@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="en" group="BASIC_START" param="TeslaManualLaneSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="en" group="TESLA_FEATURES" param="TeslaManualLaneSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla Manual Lane Lamps
 
-**Menu:** Driving \> Start & Auto \> Engage
+**Menu:** Driving \> Tesla \> Tesla Features
 
 ---
 
@@ -16,12 +16,12 @@
 Requires Tesla Automatic Turn Signals and Share Data. At 30 km/h or more, driver torque, sustained boundary approach, repeated ONNX dashed classification and adjacent-lane geometry request lamps only, even without cruise. Solid, unknown or stale results block new requests, never physical stalk operation. No colour or same-direction proof and no steering permission. Default OFF; reboot and closed-course validation required.
 
 <!-- CARROT:AUTO:BEGIN TeslaManualLaneSignals -->
-<!-- CARROT:AUTO:SOURCE facts="cef5057e173b03073358bf9bc2f899a61d40886ab8aef27181970f184429f5aa" semantic="669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="e2c112faf7706d4587a5d9f3e5b79c1e8c6a187de011cb9f8abc3a9f1bda8ac3" semantic="669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
 - **Range:** `0` ~ `1`
-- **Menu:** Driving \> Start & Auto \> Engage
+- **Menu:** Driving \> Tesla \> Tesla Features
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaManualLaneSignals -->
 

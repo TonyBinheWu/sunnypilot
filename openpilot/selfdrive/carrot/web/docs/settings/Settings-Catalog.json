@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "222bcd207555c32eba648a493b3a71589a79a0fa",
-  "contentHash": "b463521c774abbfb413ceeae3e80f3ef1b2d6b54aee06d71fb9ef501f7b13870",
-  "generatedAt": "2026-11-13T16:58:12Z",
+  "catalogCommit": "a30d15146d5ec695ce60c0a72c3dfdfb7cf88aa8",
+  "contentHash": "301fbc4f46641ccaee6f8c1d66b8af05d814103ce115bdc493dc30a8e7e2ac76",
+  "generatedAt": "2026-11-14T02:05:14Z",
   "locales": [
     "ko",
     "en",
@@ -482,12 +482,12 @@
       "hash": "b5523344a4795db00ab320c59287f5cb0dd5b1a1f047526b49e79ed41b848e52"
     },
     "EN-Manual-lane-change-indicator-(trial).md": {
-      "bytes": 4234,
-      "hash": "5733d6027b11092640d56b8ed1f82195a7e4526a805ee83be38b2b5ba334002b"
+      "bytes": 5060,
+      "hash": "4e536339176e650b45c8393b57080a80cf376d5e82d5d9fc367e1c812ef524ff"
     },
     "EN-Manual-turn-indicator-(trial).md": {
-      "bytes": 3158,
-      "hash": "f46ae256fd40650e97aafc9fdcf9543c49b3c7f7b29ddcccfdbe7ad0bcf668ac"
+      "bytes": 3495,
+      "hash": "6efb1f9fb932a2297ff641304efa21b0a87da4d072b9d4c38410db504bb0ddfa"
     },
     "EN-MapTurnSpeedFactor.md": {
       "bytes": 2177,
@@ -506,8 +506,8 @@
       "hash": "b8346c7e558646ba168a822f585161db71a1e6bc53e46251cdfeedc392b783e2"
     },
     "EN-Model-desire-indicator-(trial).md": {
-      "bytes": 3563,
-      "hash": "cb6cdb10bb1e92dcbb26eb9375d8300b76e3f13c106b06004b17da82e8e83a8b"
+      "bytes": 4429,
+      "hash": "1887cc210771edbb0e5cc1998534b40f845ae12529592ad9a99049d49e2b3621"
     },
     "EN-Model-path-indicator-(trial).md": {
       "bytes": 2666,
@@ -749,25 +749,29 @@
       "bytes": 3475,
       "hash": "8a1616cdb42c98fd98262b646d442f74f8826aa0bc9630d1988dd9ca63bfe116"
     },
+    "EN-Tesla-Automatic-Speed-Wheel.md": {
+      "bytes": 2961,
+      "hash": "05ae257458fddecbb1f8570c5e31b418693dc764cac0e32c73db8bbb623cc98d"
+    },
     "EN-Tesla-Automatic-Turn-Signals.md": {
-      "bytes": 3654,
-      "hash": "a3ea9a8953805637ad7fdaf3d935d5a86ef815efb86c5b27e4dd0f9adaaee289"
+      "bytes": 3659,
+      "hash": "285ecef1fca8568076fb2ca6a45389ca42fccd1eb4c6588207962c0b9f1855ef"
     },
     "EN-Tesla-CAN-Red-Light-Stop.md": {
-      "bytes": 3234,
-      "hash": "543ad0f0cca719f310b694af2f36b9a4e574615bb3021c16c42574f2df356d1b"
+      "bytes": 3239,
+      "hash": "159d28429f85af33a54219953291285c42bbb3152c1027f320f01a6823cde9c4"
     },
     "EN-Tesla-Manual-Lane-Lamps.md": {
-      "bytes": 3029,
-      "hash": "58e87fec93ad5ec594562579da0286c08285b6e5c30497bbdee645b34cec93d2"
+      "bytes": 3034,
+      "hash": "54f7346f680606ecb53a8d6b47e3055df43ef736fdd7697fe46d03e44bc4019d"
     },
     "EN-Tesla-Model-Desire-Lamps.md": {
-      "bytes": 2979,
-      "hash": "9ced10254c56d896e72fba0d8cef36c05e3b9911d02d9cedf9ec6737f764e208"
+      "bytes": 2984,
+      "hash": "f153349c4754fc563a3b760f8cb2d6957e56464394772e6601502c581382e169"
     },
     "EN-Tesla-Model-Path-Lamps.md": {
-      "bytes": 2936,
-      "hash": "99f42e254c6da3e53671e8c6031eb3092f750bd58214dd50860a2cd0743ed078"
+      "bytes": 2941,
+      "hash": "04ae4a45f38a2838c94d65dbd16dfee1508ff4770e3eb9e90ba12952e6c56322"
     },
     "EN-Tire-Trajectory.md": {
       "bytes": 1697,
@@ -1054,24 +1058,28 @@
       "hash": "2818bd4eeabd596a4bc99d3757235e9a8123685fb3c9091a1bcd7d056fdf3757"
     },
     "KO-Tesla-CAN-빨간불-정지.md": {
-      "bytes": 3401,
-      "hash": "20f15f214c54b5ea99acd9db41df68f3d4eaf75cd65207b0c0139d2dafd54ca8"
+      "bytes": 3398,
+      "hash": "6f1274e308718b90fbeed8aa8f957cfc8f369d102eda8371b8ca07508bc4f122"
     },
     "KO-Tesla-모델-경로-램프.md": {
-      "bytes": 3130,
-      "hash": "3bbd6977919092eb3a3382cd23ebec3921dcfdb00c0ad38657b6e63dd3bc67d6"
+      "bytes": 3127,
+      "hash": "4f9575b2f142ec33dcd0bffadc55b8b69ab5f2e5a3326b0df394f32404784059"
     },
     "KO-Tesla-모델-의도-램프.md": {
-      "bytes": 3097,
-      "hash": "4c9fe3976e57d77a8ddb7bacd6a4f455ef6088c41e49931c8f250730e84ad9a0"
+      "bytes": 3094,
+      "hash": "8c2b43af12c14fde3ac39df9d7e4697b2f6ef4482a4cce60cc83cb9245599f2c"
     },
     "KO-Tesla-수동-차로변경-램프.md": {
-      "bytes": 3168,
-      "hash": "9109d10118fbde178a660abb6016743f43d4852cab6261472b49f69e6bdf8620"
+      "bytes": 3165,
+      "hash": "ca95bd12c51bf000c9673007f1c2d32dbfd299c3f6a5043a1ada34b6801b42f7"
     },
     "KO-Tesla-자동-방향지시등.md": {
-      "bytes": 3809,
-      "hash": "9e91b1340331345f0dba1c5fbdf8c050131c89c53af115daa41ded2705d1c7d9"
+      "bytes": 3806,
+      "hash": "669531c5fae69c583f778247898a11d43ea7be991f53fced0078034ee4356b41"
+    },
+    "KO-Tesla-자동-속도-휠.md": {
+      "bytes": 3100,
+      "hash": "e14383f000d22be678888fdcfe89c6610c8e624e4fc474c0f9779e2211ce71fb"
     },
     "KO-TrafficStopDistanceAdjust(-150).md": {
       "bytes": 2355,
@@ -1302,8 +1310,8 @@
       "hash": "88c1fdd312e2d5a7e9552852b0c03d0704e67001fb06cc5676190c9ecba1d85e"
     },
     "KO-모델-desire-자동깜박이(시험).md": {
-      "bytes": 4086,
-      "hash": "c5095cb9c13f48359abaf44c3b3c9202a429ff5810d954d947e74b995bc8d244"
+      "bytes": 5031,
+      "hash": "d20d6173ac629e8c1d8f42ac2bfa693484bb60465a0398b429f9ad245f9eb758"
     },
     "KO-모델-경로-자동깜박이(시험).md": {
       "bytes": 2894,
@@ -1354,12 +1362,12 @@
       "hash": "f7f120e629c0a3b793893bde72469ec4aa91db42e6061cb03252d92d4ec51d9f"
     },
     "KO-수동-차선변경-깜박이(시험).md": {
-      "bytes": 4669,
-      "hash": "9d700429db6a0845338dce703fd446b0eaf0be43061e5ef3f3931b35573b15da"
+      "bytes": 5635,
+      "hash": "1c5954e18f6cd7034c0bd27e01bdb4dc5e7a0894fa1dad44840bd1e84ff0e20c"
     },
     "KO-수동-턴-자동깜박이(시험).md": {
-      "bytes": 3443,
-      "hash": "0c52cf5cf550aa8b61c61b888187a90f066193cfb23bcd0f9f6ae1f8d74d7cf7"
+      "bytes": 3777,
+      "hash": "e49157bb94076095007853cb2a63105ee764fb62ee5950857325c67577a9b1a0"
     },
     "KO-시간정보표시.md": {
       "bytes": 1668,
@@ -1714,8 +1722,8 @@
       "hash": "c36b52d2f81711770bb6532877ab8c359e6f5d670cc0ff058db0b0c834b7e810"
     },
     "Settings-Catalog.md": {
-      "bytes": 143293,
-      "hash": "abb440f3466e79327cd021b3ee0f023bef58b517d02431beb62295676727b893"
+      "bytes": 144095,
+      "hash": "0edeab10117d77295f6cd47f24143b60604a2ad79a9b02d05e109aa0b24fb76e"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -1900,6 +1908,10 @@
     "ZH-TW-TF4-跟車響應性.md": {
       "bytes": 3223,
       "hash": "3b4e4fe40a3612d3d8b0c645ae7296c9ffa8b05399b0a1a54da1fcb0a30ebac5"
+    },
+    "ZH-TW-Tesla-自動滾輪調速.md": {
+      "bytes": 2818,
+      "hash": "cd71ac07b974928ab4f1f007d2b469bf9ef891fe640ff479c36417aab38891fa"
     },
     "ZH-TW-上路自動啟用.md": {
       "bytes": 2320,
@@ -2166,12 +2178,12 @@
       "hash": "8967bc57bb7601c313ef4e3900e6a302878973b1bb1d7be49c75d52aa9ee366b"
     },
     "ZH-TW-手動變道轉向燈(試驗).md": {
-      "bytes": 3707,
-      "hash": "bc0b090061150422dda82200f03b019a2121aff94ff9d8359bcae0d19fbbc5bb"
+      "bytes": 4433,
+      "hash": "cde644231901b6693f5cb0e05c33f89eb7ac70d5b9d479210dd01e5ff10a97bd"
     },
     "ZH-TW-手動轉彎轉向燈(試驗).md": {
-      "bytes": 2804,
-      "hash": "d3719e4ca9ab140d0c61589dfb6be2375ad7ac272be3c4cbffb61ee02325e56e"
+      "bytes": 3062,
+      "hash": "c3175b7f309b494f76eb6eae2971f7614148823f0945d8f09d5de2ae85e2c394"
     },
     "ZH-TW-換擋撥片模式(0).md": {
       "bytes": 1819,
@@ -2186,8 +2198,8 @@
       "hash": "8c78f54906ba7ea9cfa9e9144c5c925badabf6e470451b18c11a93ff8f1e3a24"
     },
     "ZH-TW-模型意圖轉向燈(試驗).md": {
-      "bytes": 3216,
-      "hash": "cf132682c49d139ac06e2dd939dd25c273be17271604257d548129cb146c502c"
+      "bytes": 3971,
+      "hash": "8c4c7fb3b811f617c61a1c4d0748bc5ae66ff037aa13961f28e0e2e3d5395fb1"
     },
     "ZH-TW-模型路徑轉向燈(試驗).md": {
       "bytes": 2435,
@@ -2258,24 +2270,24 @@
       "hash": "e07c2d2c0c2be1e69d85d43e90b443319a59edfb1a023246a48625970cdee1e9"
     },
     "ZH-TW-特斯拉-CAN-紅燈停車.md": {
-      "bytes": 3041,
-      "hash": "bd69855bb7578520c6e20553b68ba92b2fd72bd2d9fa083c345108f2bf39e146"
+      "bytes": 3040,
+      "hash": "c97355a074722eaca6ca9467bf764e8760bcdf12011c2e1afb447b8af338ebae"
     },
     "ZH-TW-特斯拉手動變道燈.md": {
-      "bytes": 2887,
-      "hash": "153545415a088618667829bc090d1ae7b2efdf61558b98ae93d6c6f161011a1f"
+      "bytes": 2886,
+      "hash": "c3477e7595423c9d5d88fa6a5a76a5848e6dde5aa52f81d2e56189a8846fbd96"
     },
     "ZH-TW-特斯拉模型意圖燈.md": {
-      "bytes": 2764,
-      "hash": "cb616ae8e793b5fd0bb8117359d8dab08af739a0c266f64493c858469b8c21ec"
+      "bytes": 2763,
+      "hash": "254f1b208dd748d57222563346e9733ff47366ee3aa6705e30a6119777a279fe"
     },
     "ZH-TW-特斯拉模型路徑燈.md": {
-      "bytes": 2791,
-      "hash": "6506debde8e18850adb644ef03e75a7a03ba02d32be715a56ea3230eb56adc57"
+      "bytes": 2790,
+      "hash": "51fb534fc1786414f6c2187bd1a7f8f8a335f8697572f2f44a60a10695409284"
     },
     "ZH-TW-特斯拉自動轉向燈.md": {
-      "bytes": 3507,
-      "hash": "2dd8296fea2bc7be9eb18d7931be9f335e7a77fb0a11b0c77dfe89eacd52f493"
+      "bytes": 3506,
+      "hash": "745c4ffb2873d0f97420fa44cd9972fb3f9f874ef6d8252b4b54cdc2a490888e"
     },
     "ZH-TW-現代-僅配備-LDWS-的車輛-(0).md": {
       "bytes": 1840,
@@ -3014,12 +3026,12 @@
       "hash": "acc05e52e8ecc658ac0d002a6bfa86b5db4ec2f3aace9cad06fe55ef40d3e288"
     },
     "ZH-手动变道转向灯(试验).md": {
-      "bytes": 3704,
-      "hash": "62e343b119611eda638812c21012fa3f72d031e3232d941197a428001d7f750b"
+      "bytes": 4421,
+      "hash": "1b57aef6425b64452d055e2fa44ca00faa3e1f5e4226de719d5edc13c0b7e8e2"
     },
     "ZH-手动转弯转向灯(试验).md": {
-      "bytes": 2801,
-      "hash": "80aee9c6a029a9f8a15040466232ada23b291914a7b0fb51558b6c5a35e5e53d"
+      "bytes": 3047,
+      "hash": "50098026becf2c339055c3cf5a0f72c76b996cb5dd12f266a125a05e3c05e0ec"
     },
     "ZH-换挡拨片模式(0).md": {
       "bytes": 1207,
@@ -3094,8 +3106,8 @@
       "hash": "efec0671ab9988d8c2369bb9503604c92a27f55fa1d4502b1ec1d500f9157a4c"
     },
     "ZH-模型意图转向灯(试验).md": {
-      "bytes": 3213,
-      "hash": "65a48807c75c431a0d01304be6e341d8a6eeb517947997a860fa365e16affc1a"
+      "bytes": 3923,
+      "hash": "c5e1cb6443a9ac9ed4381f086c338d09ea43741520fbafca5f783befc015c03f"
     },
     "ZH-模型路径转向灯(试验).md": {
       "bytes": 2432,
@@ -3130,24 +3142,28 @@
       "hash": "aea116f385103a36f7490569efe37b63cbf9dfd0959fe0447f44181056b8710c"
     },
     "ZH-特斯拉-CAN-红灯停车.md": {
-      "bytes": 3014,
-      "hash": "25491a77aa13f3157fb3f01333f7412e9afa6b376da9cbfeacc5cbd625d32753"
+      "bytes": 3025,
+      "hash": "dd9770db1a17a52660dc39ee026826dfc6630aebaed175441278126f96a686fe"
     },
     "ZH-特斯拉手动变道灯.md": {
-      "bytes": 2875,
-      "hash": "2c5f8f29c4876852daf87d93a3be5259290b4b231e0b55314601058615028f4f"
+      "bytes": 2886,
+      "hash": "81e182f1efe454b7f952f2a28a6ce7e43e5049a03df93aa3b1ba9af1df89e0d8"
     },
     "ZH-特斯拉模型意图灯.md": {
-      "bytes": 2752,
-      "hash": "801d4df6185555b9aadfe92d943a9e8af331bf88125b15538d8c419648fc3b6c"
+      "bytes": 2763,
+      "hash": "9dad50132a3bc5d80e3729030cb163e19e4c033925d370c9077906dad7d723a0"
     },
     "ZH-特斯拉模型路径灯.md": {
-      "bytes": 2779,
-      "hash": "d69905a175bb67762e03d8bcf10d3155c880c48ba2973f06d3d791df5f91a0bc"
+      "bytes": 2790,
+      "hash": "3e4f6a0e4d07559b091e0e1044c5a6eb100193aa11306e73cd3628ee877ba89f"
+    },
+    "ZH-特斯拉自动滚轮调速.md": {
+      "bytes": 2782,
+      "hash": "4a51119daf809a852be78049e12dc25b62163d19f5de85def09299af4b050779"
     },
     "ZH-特斯拉自动转向灯.md": {
-      "bytes": 3483,
-      "hash": "2b48f740c682afaf47bfe86570c9d8f4fb8768a4c7b5a917c13721e99275f75c"
+      "bytes": 3494,
+      "hash": "7dac188c861171fd6b594c25ff872e594755165badeb76e2f72c2ebbae7fb7a3"
     },
     "ZH-现代-仅配备-LDWS-的车辆-(0).md": {
       "bytes": 1101,
@@ -3423,7 +3439,7 @@
     }
   },
   "review": {
-    "current": 44,
+    "current": 45,
     "needs_review": 169
   },
   "schemaVersion": 1,
@@ -7494,62 +7510,62 @@
       "locales": {
         "en": {
           "anchor": "ManualLaneChangeIndicator",
-          "factsHash": "7b315dcbb2763355a1fce447c7264783da61d5627b911238bc0678a32f72329d",
+          "factsHash": "08439be71cbae0896913fa3b0d732c7cb6ee825a04a63e18287a3a88956fcc0b",
           "page": "EN-Manual-lane-change-indicator-(trial).md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "ManualLaneChangeIndicator",
-          "factsHash": "5b545ac8fa0a5c09a206ce61c7b294b919675a641082725f46d5b4d61feee8c0",
+          "factsHash": "0a909accfa21f5454ecf52202c3c0f9603979c014e2b82b9a270e560474efb03",
           "page": "KO-수동-차선변경-깜박이(시험).md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "ManualLaneChangeIndicator",
-          "factsHash": "fd6db5c0b6ff7bcfdad2dca25d2d2e07209ca9fd9ed7ef548a17a09f993cea61",
+          "factsHash": "70cef1b7776304de02bf757fb0aec7865765bdce13c0cb449f4e09e7669390a6",
           "page": "ZH-手动变道转向灯(试验).md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "ManualLaneChangeIndicator",
-          "factsHash": "de3b338ecea4846c9ebe37685b4f2e22b232ec7b93fc44b006700a903800119f",
+          "factsHash": "c4ae2e45cd1cedda7fe861233987292192e45e283e6d208bf8e2e80b51da0eda",
           "page": "ZH-TW-手動變道轉向燈(試驗).md",
           "reviewStatus": "current"
         }
       },
       "reviewStatus": "current",
-      "semanticHash": "e2259bfc81f439587e99cd8f87f9640f16cb2ddb370571afbfd23611dc2f1d7f"
+      "semanticHash": "d96432b8f8ff840459f65cab076ba12f6d57b1d333e585a4be25652182e1e7ba"
     },
     "ManualTurnIndicator": {
       "group": "STEER_LANECHANGE",
       "locales": {
         "en": {
           "anchor": "ManualTurnIndicator",
-          "factsHash": "ee534ae5553734f36e35112db8a494ecd7969994b63a4b613a0cf0288f9e0f1a",
+          "factsHash": "7e5f4096bb942e065956393c2baae2c472f43b830306493e2886891ff497a35c",
           "page": "EN-Manual-turn-indicator-(trial).md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "ManualTurnIndicator",
-          "factsHash": "87e85105067793e89ab0a8baf0953cd7fcc41c3cf436b56bfa5e08ce4b3b39eb",
+          "factsHash": "491428b06239c2ab55b4e9365e2a17bd741c375c8f24119418ace5c763cf1d0f",
           "page": "KO-수동-턴-자동깜박이(시험).md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "ManualTurnIndicator",
-          "factsHash": "ebe7c32d295e044664b14a99f88083b35e3b21ae1434907753390558f397e4fb",
+          "factsHash": "191c6a4bddf9c6833802e07f66c1982441ab7af3201f78778042dad1266405b2",
           "page": "ZH-手动转弯转向灯(试验).md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "ManualTurnIndicator",
-          "factsHash": "c26b0bdd4e3bce8120c208b4e9635ac8df75eb58e51fea185cd344f33901242f",
+          "factsHash": "ffb82d362231246afd407b601bb973761c3d8337521a73d66d577704eca4b82e",
           "page": "ZH-TW-手動轉彎轉向燈(試驗).md",
           "reviewStatus": "current"
         }
       },
       "reviewStatus": "current",
-      "semanticHash": "376bcf8235f7ad9de6c1ed48484745355356b0c0edbb66be12b5637052655754"
+      "semanticHash": "e08aa7e7e006ddb909a0060571a3f7983d6c70f1249f7f29cc42c19e87f3451a"
     },
     "MapTurnSpeedFactor": {
       "group": "SPEED_CURVE",
@@ -7680,31 +7696,31 @@
       "locales": {
         "en": {
           "anchor": "ModelDesireIndicator",
-          "factsHash": "18bb3c189f1c687133c41c52144ffd4543a91a6c9b73f9877fc09a81159a9245",
+          "factsHash": "435c8c3010f84bb7fae300a9b42fd791e5abe6b95709ee402c72177c230f2e42",
           "page": "EN-Model-desire-indicator-(trial).md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "ModelDesireIndicator",
-          "factsHash": "f020fcf7d1f8a93549c9d9c412d2a1396f677396208f71a0fdae87077639797c",
+          "factsHash": "1a1198f8c98797645cdf1aafc9690a802ca23623c4d259f60dd1b6354fbfdd93",
           "page": "KO-모델-desire-자동깜박이(시험).md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "ModelDesireIndicator",
-          "factsHash": "18a389ecaeeef9d8d4e2e220a8bc2c455328e2ca995ccd532361a3c316e4badc",
+          "factsHash": "7cef9fbf6d0c1a9e920d6acc051469d924e9cf25cf203e11506b9dcda6f746be",
           "page": "ZH-模型意图转向灯(试验).md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "ModelDesireIndicator",
-          "factsHash": "2e6d9b83ebce62d52dcd3c0926755d78ec1bd81532d6247e7351136486089f47",
+          "factsHash": "9c53fb1b98bfee9f33b2c1cf8009932bd8aeaf582b416669d1e08a25b036e398",
           "page": "ZH-TW-模型意圖轉向燈(試驗).md",
           "reviewStatus": "current"
         }
       },
       "reviewStatus": "current",
-      "semanticHash": "85643599439e3e55d38ab927bf13b2d2b17ffa165c1e3dd5f7b7d003daaf5a6d"
+      "semanticHash": "d73f84bcf6ba7064705bfb722d8a81eb4a2d19fa2936d3d3e21fe478a59c63b5"
     },
     "ModelPathIndicator": {
       "group": "STEER_LANECHANGE",
@@ -9318,30 +9334,61 @@
       "reviewStatus": "current",
       "semanticHash": "a772a1a64ce8b511e296150a40a883a31e7950a6c45ae92c5a364b37c775e817"
     },
+    "TeslaAutoSpeedLimit": {
+      "group": "TESLA_FEATURES",
+      "locales": {
+        "en": {
+          "anchor": "TeslaAutoSpeedLimit",
+          "factsHash": "caf5cff5f9b44ac3eb03975026e2657aa897c598cbddbdecc6b7a984e2656508",
+          "page": "EN-Tesla-Automatic-Speed-Wheel.md",
+          "reviewStatus": "current"
+        },
+        "ko": {
+          "anchor": "TeslaAutoSpeedLimit",
+          "factsHash": "21990d6e31ba76522bbc4473851f2d11e118849e1dfeb8eedee1dabbf6b02b9a",
+          "page": "KO-Tesla-자동-속도-휠.md",
+          "reviewStatus": "current"
+        },
+        "zh": {
+          "anchor": "TeslaAutoSpeedLimit",
+          "factsHash": "fc60933750cb754328e33e03676340a2f82194b50eaf37ee07c8416ee9bcd1dc",
+          "page": "ZH-特斯拉自动滚轮调速.md",
+          "reviewStatus": "current"
+        },
+        "zh-tw": {
+          "anchor": "TeslaAutoSpeedLimit",
+          "factsHash": "28f50913a8cec686e3927e01dbbc8acf29faae4a265841c8951852ac9462bda3",
+          "page": "ZH-TW-Tesla-自動滾輪調速.md",
+          "reviewStatus": "current"
+        }
+      },
+      "reviewStatus": "current",
+      "semanticHash": "911d5260e6889f09c0ae7b64773f4b55f394fc435d0c6b998249abe3deeb2be0"
+    },
     "TeslaAutoTurnSignals": {
-      "group": "BASIC_START",
+      "group": "TESLA_FEATURES",
       "locales": {
         "en": {
           "anchor": "TeslaAutoTurnSignals",
-          "factsHash": "fbd1e8cc2bfd851ecf9f6eb78bc1e444815bbd66c105ec11865fdebf41484ff7",
+          "factsHash": "9af96d5636abbc71788d451dcc318d4cbcce49611677b9e2541800021b38cc11",
           "page": "EN-Tesla-Automatic-Turn-Signals.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "TeslaAutoTurnSignals",
-          "factsHash": "a658f06c8ad01c490b020b650c7b0af3c62b79cb4d94a838c12ddc07e4dce71f",
+          "factsHash": "9cd472dec07cc87709e961c1f807da47e76124aafa76097fbcd5632609971940",
           "page": "KO-Tesla-자동-방향지시등.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "TeslaAutoTurnSignals",
-          "factsHash": "b0b37580d3a0b62378714acbee08274a36c8ca5dd81310092a64459db41866e2",
+          "factsHash": "b35dbe94e60935c45a96deeecf7fe4100982f28eee4ed65f61ff704196e0762c",
           "page": "ZH-特斯拉自动转向灯.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "TeslaAutoTurnSignals",
-          "factsHash": "42decc10e44675ce20850a2a2e7cf23b3e88d6a80b2c4973d14756817cde7490",
+          "factsHash": "b20df8a65470018a90684351efdbdc35581348c7c7143d665f3b438d54ed70bf",
           "page": "ZH-TW-特斯拉自動轉向燈.md",
           "reviewStatus": "current"
         }
@@ -9350,29 +9397,29 @@
       "semanticHash": "8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6"
     },
     "TeslaCanTrafficStop": {
-      "group": "BASIC_START",
+      "group": "TESLA_FEATURES",
       "locales": {
         "en": {
           "anchor": "TeslaCanTrafficStop",
-          "factsHash": "eaca4d6bd2f28e2d2dd50a8805776aad81eed15ed488ef536d90f8cf32c66c32",
+          "factsHash": "7b83dcffe906a21c4a95aa38449c876881cb43655b2d68295361cc8b4795b8ef",
           "page": "EN-Tesla-CAN-Red-Light-Stop.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "TeslaCanTrafficStop",
-          "factsHash": "13d1f4d9dff19151c8bb5b930803b89c92d692a931031b27001fb57d48310baf",
+          "factsHash": "a0c55e30d8b93bfb52e4732942ee95a0588de4d33687f89f92d276222a1888ff",
           "page": "KO-Tesla-CAN-빨간불-정지.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "TeslaCanTrafficStop",
-          "factsHash": "51ef6fd35dac41fd4bca7eea57db084c388d3291a52ea924f03841f1deda44da",
+          "factsHash": "86c76e5224ed8d636ac3a6d71b3d3b6768ea57f90c0c9e4cf6000469a4b5fc3b",
           "page": "ZH-特斯拉-CAN-红灯停车.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "TeslaCanTrafficStop",
-          "factsHash": "785b74797a55b428a6930af304a4deffedc5f345b96ea39089a8de13c0e31fd2",
+          "factsHash": "c38bfe1c51c4c4c231782deacf8967e99ee700c14910e42f12c7e5760e49f72e",
           "page": "ZH-TW-特斯拉-CAN-紅燈停車.md",
           "reviewStatus": "current"
         }
@@ -9381,29 +9428,29 @@
       "semanticHash": "046215718bed37d52f0c6633e5d551de2ff163be2a341b1cb647fab8b5f803dc"
     },
     "TeslaManualLaneSignals": {
-      "group": "BASIC_START",
+      "group": "TESLA_FEATURES",
       "locales": {
         "en": {
           "anchor": "TeslaManualLaneSignals",
-          "factsHash": "cef5057e173b03073358bf9bc2f899a61d40886ab8aef27181970f184429f5aa",
+          "factsHash": "e2c112faf7706d4587a5d9f3e5b79c1e8c6a187de011cb9f8abc3a9f1bda8ac3",
           "page": "EN-Tesla-Manual-Lane-Lamps.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "TeslaManualLaneSignals",
-          "factsHash": "8e55bfe22c5a7c6cf65f63771a9214b0dc83aa5b54465814922fdf588fd9e96a",
+          "factsHash": "d194268420c3481a101512fa6a1fbf2df9b4e2838e88270828c4874b65464e45",
           "page": "KO-Tesla-수동-차로변경-램프.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "TeslaManualLaneSignals",
-          "factsHash": "674105a72bf617da6635870fdade48405b1639bcf24f46efb717a65d0133fa03",
+          "factsHash": "7caf39b6e360889cee2c73f0a02fcf683149be9065542a1babe169387e286a09",
           "page": "ZH-特斯拉手动变道灯.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "TeslaManualLaneSignals",
-          "factsHash": "81b53acfed2760728cfe062143df13487e7094526111d16e06b30324c5814837",
+          "factsHash": "1982c03f9b00da4d2d90291548e019b3e9c0e0027d93b3a764aa8ab7fbe51b2d",
           "page": "ZH-TW-特斯拉手動變道燈.md",
           "reviewStatus": "current"
         }
@@ -9412,29 +9459,29 @@
       "semanticHash": "669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec"
     },
     "TeslaModelDesireSignals": {
-      "group": "BASIC_START",
+      "group": "TESLA_FEATURES",
       "locales": {
         "en": {
           "anchor": "TeslaModelDesireSignals",
-          "factsHash": "944d2b2cbfc8a225841f21077edd1c752fd6aa41c1a8f26deb5a69be4f8082d8",
+          "factsHash": "f332dbb7c1e0b2412f1ce60f150b35bd47e32bd2b8fa8588952b19b0e8a266b5",
           "page": "EN-Tesla-Model-Desire-Lamps.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "TeslaModelDesireSignals",
-          "factsHash": "20c4d36828baab210b5afa26d44e64c071e8890c00d04969e57a1f18d3d2aa28",
+          "factsHash": "6c05691bec7a82d235e1d0f90248001c3c3390530eeff658e1f4c099e5ddc54c",
           "page": "KO-Tesla-모델-의도-램프.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "TeslaModelDesireSignals",
-          "factsHash": "4d36ecd6b0a1ee03ae8f32d4c48b11a60c07da43abdb62250a41a998f83e0caa",
+          "factsHash": "68265c2efff1d618091747f7fa513d22c587822d2fc1198ee3d359f0713e6add",
           "page": "ZH-特斯拉模型意图灯.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "TeslaModelDesireSignals",
-          "factsHash": "bb3f2530bea14de46bb5893f58e43b3640fe491e402f8241a67d739c245e6af5",
+          "factsHash": "f4c6ef89da8178e4203f15e604fb296d0aa2cb9dc3c28d684bbf55cd2561eaf9",
           "page": "ZH-TW-特斯拉模型意圖燈.md",
           "reviewStatus": "current"
         }
@@ -9443,29 +9490,29 @@
       "semanticHash": "bca04977c235f3a14fba9b7ea53e0b0d380d401a15291409e8f45d1bfb0bedc7"
     },
     "TeslaModelPathSignals": {
-      "group": "BASIC_START",
+      "group": "TESLA_FEATURES",
       "locales": {
         "en": {
           "anchor": "TeslaModelPathSignals",
-          "factsHash": "24f31c2a98eee2978e77ab62a55cde4cd33f2e8f9440c78a723348351b72b463",
+          "factsHash": "6c305a043bec2738c5e4234f10b7159b5b23ef209a7ec633e10f55582c3e60a8",
           "page": "EN-Tesla-Model-Path-Lamps.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "TeslaModelPathSignals",
-          "factsHash": "389a6e712ec9667a9c0391e6dec1209923f894997a2e7b9ded7989b2a221ebed",
+          "factsHash": "a7a2af245bc4c2ff8ba415b5bf5ef5dc442a68d15396e3b6ceae2bab6b294dd0",
           "page": "KO-Tesla-모델-경로-램프.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "TeslaModelPathSignals",
-          "factsHash": "b0763e0a0c7b77c6e41879f1214d58889fcef2d0bb9f3669c866936269c2b6e8",
+          "factsHash": "ef8c0cc2dd26de749b1e443ae8d097cc7a1cda169d4d18de845ceeee5c2c068d",
           "page": "ZH-特斯拉模型路径灯.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "TeslaModelPathSignals",
-          "factsHash": "9818c04ff7d27ea918f098a1919b06f295c3974de48008ddd56fadd7ed7e54ce",
+          "factsHash": "c0762a543f34cd5899b01e3f2ce54c4fe97784d39d8489fdfb5a43ed4d70acc2",
           "page": "ZH-TW-特斯拉模型路徑燈.md",
           "reviewStatus": "current"
         }
@@ -10032,5 +10079,5 @@
       "semanticHash": "b3ca6436f7051d2fd82ae24a9dc3974abf6b5ee32c633d085c3eb4bee630c364"
     }
   },
-  "wikiCommit": "345930dafca5920a64fc715a6421c70f4bae3bbf"
+  "wikiCommit": "84c9662e801971d80d064f7f88b207a34d00e851"
 }

@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="zh-tw" group="BASIC_START" param="TeslaModelPathSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="zh-tw" group="TESLA_FEATURES" param="TeslaModelPathSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # 特斯拉模型路徑燈
 
-**選單:** 駕駛控制 \> 啟動·自動 \> 起步動作
+**選單:** 駕駛控制 \> Tesla 專用 \> Tesla 功能
 
 ---
 
@@ -16,12 +16,12 @@
 獨立且預設關閉的路徑預測燈：需特斯拉自動轉向燈、資料共享、橫向控制啟用、30km/h 以上、相對車道曲率連續預測越線及新鮮 ONNX 虛線和相鄰車道證據。可能提前或錯誤亮燈；不恢復導航轉彎提前亮燈，不增加掉頭邏輯或轉向許可權。修改後重新啟動，需封閉場地驗證。
 
 <!-- CARROT:AUTO:BEGIN TeslaModelPathSignals -->
-<!-- CARROT:AUTO:SOURCE facts="9818c04ff7d27ea918f098a1919b06f295c3974de48008ddd56fadd7ed7e54ce" semantic="edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="c0762a543f34cd5899b01e3f2ce54c4fe97784d39d8489fdfb5a43ed4d70acc2" semantic="edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 開關
 - **預設值:** `0`
 - **範圍:** `0` ~ `1`
-- **選單:** 駕駛控制 \> 啟動·自動 \> 起步動作
+- **選單:** 駕駛控制 \> Tesla 專用 \> Tesla 功能
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaModelPathSignals -->
 

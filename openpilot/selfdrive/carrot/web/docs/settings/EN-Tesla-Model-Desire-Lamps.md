@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="en" group="BASIC_START" param="TeslaModelDesireSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="en" group="TESLA_FEATURES" param="TeslaModelDesireSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla Model Desire Lamps
 
-**Menu:** Driving \> Start & Auto \> Engage
+**Menu:** Driving \> Tesla \> Tesla Features
 
 ---
 
@@ -16,12 +16,12 @@
 Independent default-OFF lane-change prediction lamps: requires Tesla Automatic Turn Signals, Share Data, active lateral control, 30 km/h, repeated model lane-change probability and fresh ONNX dashed/adjacent-lane evidence. May light before an actual maneuver or falsely. Does not use navigation turn announcements, predict U-turns or authorize steering. Reboot and closed-course validation required.
 
 <!-- CARROT:AUTO:BEGIN TeslaModelDesireSignals -->
-<!-- CARROT:AUTO:SOURCE facts="944d2b2cbfc8a225841f21077edd1c752fd6aa41c1a8f26deb5a69be4f8082d8" semantic="bca04977c235f3a14fba9b7ea53e0b0d380d401a15291409e8f45d1bfb0bedc7" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="f332dbb7c1e0b2412f1ce60f150b35bd47e32bd2b8fa8588952b19b0e8a266b5" semantic="bca04977c235f3a14fba9b7ea53e0b0d380d401a15291409e8f45d1bfb0bedc7" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
 - **Range:** `0` ~ `1`
-- **Menu:** Driving \> Start & Auto \> Engage
+- **Menu:** Driving \> Tesla \> Tesla Features
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaModelDesireSignals -->
 

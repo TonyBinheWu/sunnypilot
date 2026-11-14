@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="zh" group="BASIC_START" param="TeslaManualLaneSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="zh" group="TESLA_FEATURES" param="TeslaManualLaneSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # 特斯拉手动变道灯
 
-**菜单:** 驾驶控制 \> 启动·自动 \> 起步动作
+**菜单:** 驾驶控制 \> 特斯拉专用 \> 特斯拉功能
 
 ---
 
@@ -16,12 +16,12 @@
 需开启特斯拉自动转向灯和数据共享。30km/h 以上结合驾驶员转向意图、持续接近车道线、连续 ONNX 虚线分类与相邻车道几何，仅请求左右灯，巡航未激活也可使用。实线、未知或过期结果禁止新自动请求，不限制真实拨杆。不能证明车道线颜色或同向车流，不增加转向权限。默认关闭，修改后重启，需封闭场地实车验证。
 
 <!-- CARROT:AUTO:BEGIN TeslaManualLaneSignals -->
-<!-- CARROT:AUTO:SOURCE facts="674105a72bf617da6635870fdade48405b1639bcf24f46efb717a65d0133fa03" semantic="669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="7caf39b6e360889cee2c73f0a02fcf683149be9065542a1babe169387e286a09" semantic="669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 开关
 - **默认值:** `0`
 - **范围:** `0` ~ `1`
-- **菜单:** 驾驶控制 \> 启动·自动 \> 起步动作
+- **菜单:** 驾驶控制 \> 特斯拉专用 \> 特斯拉功能
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaManualLaneSignals -->
 

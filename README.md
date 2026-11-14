@@ -10,6 +10,16 @@
 
 [下載與安裝](#下載與安裝) · [中文語音](#繁體中文語音指令) · [介面語言](#繁體中文介面) · [手機功能](#手機操作功能) · [車機安裝](#安裝與發行策略) · [Jetson](#jetson-連接與安裝) · [車輛支援](#車輛支援範圍) · [法律聲明](#法律聲明)
 
+## 上游合併（2026-11-14）
+
+已合併上游 `carrot-wip` 至 [`f89f40a3`](https://github.com/ajouatom/openpilot/commit/f89f40a37965b8a75f6a313e879cee02d8cff610)，保留本分支的繁體中文、CarrotAssist、FormosaLink、導航最愛、語音音量及停車 Vision 等功能。合併前版本保存在 [`carrot-wip-backup-2026-11-14`](https://github.com/TonyBinheWu/sunnypilot/tree/carrot-wip-backup-2026-11-14)。
+
+- 更新 B1 第 5 版回訊處理與方向燈判斷，保留原有車型適用條件與保護。
+- 新增「Tesla 自動滾輪調速」及繁中詳細指南，預設關閉；符合硬體及縱向控制條件後，須明確開啟並完整重新啟動。
+- 整合 Jetson MAXN_SUPER 設定、首次開機韌體準備及 SD 映像檢查流程；僅在符合條件的 Jetson 上執行。
+
+原有設定的預設值不變；現有 CarrotAssist 0.2.17 可繼續使用。軟體測試不代表已完成實車、韌體升級或道路驗證。
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/4d80d256-7e66-4473-a289-04a50733b7e0" alt="carrotpilot" width="640">
 </p>

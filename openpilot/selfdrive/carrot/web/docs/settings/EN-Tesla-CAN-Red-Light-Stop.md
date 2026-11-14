@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="en" group="BASIC_START" param="TeslaCanTrafficStop" -->
+<!-- CARROT:GENERATED schema="1" locale="en" group="TESLA_FEATURES" param="TeslaCanTrafficStop" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla CAN Red Light Stop
 
-**Menu:** Driving \> Start & Auto \> Engage
+**Menu:** Driving \> Tesla \> Tesla Features
 
 ---
 
@@ -16,12 +16,12 @@
 Default OFF; restart required. Tesla Model 3/Y with active openpilot longitudinal control only: fresh APP\_trafficControl red and a stop line below 126 m supplement existing stops. Supports only the 8-byte, metre-scale, vision-backed profile; rejects 6-byte DAS\_road. Green releases only this constraint. Late red may exceed braking capability; lost/inconsistent signals request takeover and the existing soft-disable. Other obstacles and manual stops remain. Verify the vehicle protocol/distance reference and validate on a closed course; not road acceptance.
 
 <!-- CARROT:AUTO:BEGIN TeslaCanTrafficStop -->
-<!-- CARROT:AUTO:SOURCE facts="eaca4d6bd2f28e2d2dd50a8805776aad81eed15ed488ef536d90f8cf32c66c32" semantic="046215718bed37d52f0c6633e5d551de2ff163be2a341b1cb647fab8b5f803dc" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="7b83dcffe906a21c4a95aa38449c876881cb43655b2d68295361cc8b4795b8ef" semantic="046215718bed37d52f0c6633e5d551de2ff163be2a341b1cb647fab8b5f803dc" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
 - **Range:** `0` ~ `1`
-- **Menu:** Driving \> Start & Auto \> Engage
+- **Menu:** Driving \> Tesla \> Tesla Features
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaCanTrafficStop -->
 

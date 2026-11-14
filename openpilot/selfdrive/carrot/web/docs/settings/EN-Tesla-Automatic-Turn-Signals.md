@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="en" group="BASIC_START" param="TeslaAutoTurnSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="en" group="TESLA_FEATURES" param="TeslaAutoTurnSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla Automatic Turn Signals
 
-**Menu:** Driving \> Start & Auto \> Engage
+**Menu:** Driving \> Tesla \> Tesla Features
 
 ---
 
@@ -16,12 +16,12 @@
 Model 3/Y with vehicle CAN and a physical stalk: no turn pre-signalling; measured heading/wheel return complete turns. Only confirmed turns may wait at standstill under fresh permission. Lane-change preparation lamps remain. Driver priority and steering/departure permissions are unchanged. Default OFF; reboot required. Validate in a closed course before road use.
 
 <!-- CARROT:AUTO:BEGIN TeslaAutoTurnSignals -->
-<!-- CARROT:AUTO:SOURCE facts="fbd1e8cc2bfd851ecf9f6eb78bc1e444815bbd66c105ec11865fdebf41484ff7" semantic="8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="9af96d5636abbc71788d451dcc318d4cbcce49611677b9e2541800021b38cc11" semantic="8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
 - **Range:** `0` ~ `1`
-- **Menu:** Driving \> Start & Auto \> Engage
+- **Menu:** Driving \> Tesla \> Tesla Features
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaAutoTurnSignals -->
 

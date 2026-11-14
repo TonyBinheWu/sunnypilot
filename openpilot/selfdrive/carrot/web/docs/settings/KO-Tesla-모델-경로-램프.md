@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="ko" group="BASIC_START" param="TeslaModelPathSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="ko" group="TESLA_FEATURES" param="TeslaModelPathSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla 모델 경로 램프
 
-**메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+**메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 
 ---
 
@@ -16,12 +16,12 @@
 Tesla 자동 방향지시등·데이터 공유가 필요합니다. 횡제어 활성·30km/h 이상에서 차선 곡률 대비 모델 경로의 반복된 경계 통과 예측과 ONNX 점선·인접 차로 형상으로 램프만 요청합니다. 의도 예측과 독립적인 기본 꺼짐 옵션입니다. 내비 회전 사전점등·유턴을 추가하지 않습니다. 오점등 가능, 조향 권한 불변. 변경 후 재부팅·폐쇄 시험장 검증 필요.
 
 <!-- CARROT:AUTO:BEGIN TeslaModelPathSignals -->
-<!-- CARROT:AUTO:SOURCE facts="389a6e712ec9667a9c0391e6dec1209923f894997a2e7b9ded7989b2a221ebed" semantic="edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="a7a2af245bc4c2ff8ba415b5bf5ef5dc442a68d15396e3b6ceae2bab6b294dd0" semantic="edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
 - **범위:** `0` ~ `1`
-- **메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+- **메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaModelPathSignals -->
 

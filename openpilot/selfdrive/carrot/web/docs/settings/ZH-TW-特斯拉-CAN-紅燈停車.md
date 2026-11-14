@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="zh-tw" group="BASIC_START" param="TeslaCanTrafficStop" -->
+<!-- CARROT:GENERATED schema="1" locale="zh-tw" group="TESLA_FEATURES" param="TeslaCanTrafficStop" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # 特斯拉 CAN 紅燈停車
 
-**選單:** 駕駛控制 \> 啟動·自動 \> 起步動作
+**選單:** 駕駛控制 \> Tesla 專用 \> Tesla 功能
 
 ---
 
@@ -16,12 +16,12 @@
 預設關閉，修改後重新啟動。僅 Tesla Model 3/Y 且 openpilot 縱向已啟用時，使用新鮮 APP\_trafficControl 紅燈及小於126米的停止線補充停車約束。僅支援8位元組、米制、視覺來源協議，拒絕6位元組 DAS\_road。綠燈只解除本約束，不覆蓋其他障礙和人工停車。近距離變紅可能超出制動能力；訊號丟失或距離不一致會提示接管並請求既有軟退出。需核對實車協議和距離參考點，並在封閉場地驗證，不代表已透過道路驗收。
 
 <!-- CARROT:AUTO:BEGIN TeslaCanTrafficStop -->
-<!-- CARROT:AUTO:SOURCE facts="785b74797a55b428a6930af304a4deffedc5f345b96ea39089a8de13c0e31fd2" semantic="046215718bed37d52f0c6633e5d551de2ff163be2a341b1cb647fab8b5f803dc" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="c38bfe1c51c4c4c231782deacf8967e99ee700c14910e42f12c7e5760e49f72e" semantic="046215718bed37d52f0c6633e5d551de2ff163be2a341b1cb647fab8b5f803dc" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 開關
 - **預設值:** `0`
 - **範圍:** `0` ~ `1`
-- **選單:** 駕駛控制 \> 啟動·自動 \> 起步動作
+- **選單:** 駕駛控制 \> Tesla 專用 \> Tesla 功能
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaCanTrafficStop -->
 

@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="ko" group="BASIC_START" param="TeslaModelDesireSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="ko" group="TESLA_FEATURES" param="TeslaModelDesireSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla 모델 의도 램프
 
-**메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+**메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 
 ---
 
@@ -16,12 +16,12 @@
 Tesla 자동 방향지시등·데이터 공유가 필요합니다. 횡제어 활성·30km/h 이상에서 반복된 모델 차로변경 예측과 ONNX 점선·인접 차로 형상으로 램프만 미리 요청합니다. 수동 램프와 독립적인 기본 꺼짐 옵션입니다. 회전 내비 안내·유턴은 대상이 아닙니다. 예측 오점등 가능, 조향 권한 불변. 변경 후 재부팅·폐쇄 시험장 검증 필요.
 
 <!-- CARROT:AUTO:BEGIN TeslaModelDesireSignals -->
-<!-- CARROT:AUTO:SOURCE facts="20c4d36828baab210b5afa26d44e64c071e8890c00d04969e57a1f18d3d2aa28" semantic="bca04977c235f3a14fba9b7ea53e0b0d380d401a15291409e8f45d1bfb0bedc7" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="6c05691bec7a82d235e1d0f90248001c3c3390530eeff658e1f4c099e5ddc54c" semantic="bca04977c235f3a14fba9b7ea53e0b0d380d401a15291409e8f45d1bfb0bedc7" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
 - **범위:** `0` ~ `1`
-- **메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+- **메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaModelDesireSignals -->
 

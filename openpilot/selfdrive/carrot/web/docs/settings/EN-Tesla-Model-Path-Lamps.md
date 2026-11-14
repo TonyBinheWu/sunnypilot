@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="en" group="BASIC_START" param="TeslaModelPathSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="en" group="TESLA_FEATURES" param="TeslaModelPathSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla Model Path Lamps
 
-**Menu:** Driving \> Start & Auto \> Engage
+**Menu:** Driving \> Tesla \> Tesla Features
 
 ---
 
@@ -16,12 +16,12 @@
 Independent default-OFF path prediction lamps: requires Tesla Automatic Turn Signals, Share Data, active lateral control, 30 km/h, repeated predicted boundary crossing relative to lane curvature and fresh ONNX dashed/adjacent-lane evidence. May light early or falsely; no navigation turn preannouncement, U-turn logic or steering permission. Reboot and closed-course validation required.
 
 <!-- CARROT:AUTO:BEGIN TeslaModelPathSignals -->
-<!-- CARROT:AUTO:SOURCE facts="24f31c2a98eee2978e77ab62a55cde4cd33f2e8f9440c78a723348351b72b463" semantic="edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="6c305a043bec2738c5e4234f10b7159b5b23ef209a7ec633e10f55582c3e60a8" semantic="edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
 - **Range:** `0` ~ `1`
-- **Menu:** Driving \> Start & Auto \> Engage
+- **Menu:** Driving \> Tesla \> Tesla Features
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaModelPathSignals -->
 

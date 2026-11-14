@@ -15,11 +15,6 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 
 - [오토인게이지](https://github.com/ajouatom/openpilot/wiki/KO-%EC%98%A4%ED%86%A0%EC%9D%B8%EA%B2%8C%EC%9D%B4%EC%A7%80) — `AutoEngage`
 - [상시 조향](https://github.com/ajouatom/openpilot/wiki/KO-%EC%83%81%EC%8B%9C-%EC%A1%B0%ED%96%A5) — `AlwaysLateral`
-- [Tesla 자동 방향지시등](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EC%9E%90%EB%8F%99-%EB%B0%A9%ED%96%A5%EC%A7%80%EC%8B%9C%EB%93%B1) — `TeslaAutoTurnSignals`
-- [Tesla CAN 빨간불 정지](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-CAN-%EB%B9%A8%EA%B0%84%EB%B6%88-%EC%A0%95%EC%A7%80) — `TeslaCanTrafficStop`
-- [Tesla 수동 차로변경 램프](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EC%88%98%EB%8F%99-%EC%B0%A8%EB%A1%9C%EB%B3%80%EA%B2%BD-%EB%9E%A8%ED%94%84) — `TeslaManualLaneSignals`
-- [Tesla 모델 의도 램프](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EB%AA%A8%EB%8D%B8-%EC%9D%98%EB%8F%84-%EB%9E%A8%ED%94%84) — `TeslaModelDesireSignals`
-- [Tesla 모델 경로 램프](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EB%AA%A8%EB%8D%B8-%EA%B2%BD%EB%A1%9C-%EB%9E%A8%ED%94%84) — `TeslaModelPathSignals`
 - [저속조향제한해제](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A0%80%EC%86%8D%EC%A1%B0%ED%96%A5%EC%A0%9C%ED%95%9C%ED%95%B4%EC%A0%9C) — `DisableMinSteerSpeed`
 
 ##### 오토크루즈
@@ -30,6 +25,17 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 - [오토크루즈: 엑셀톡 시작속도](https://github.com/ajouatom/openpilot/wiki/KO-%EC%98%A4%ED%86%A0%ED%81%AC%EB%A3%A8%EC%A6%88-%EC%97%91%EC%85%80%ED%86%A1-%EC%8B%9C%EC%9E%91%EC%86%8D%EB%8F%84) — `AutoGasTokSpeed`
 - [가속페달 해제 시 크루즈 해제 속도(30)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%80%EC%86%8D%ED%8E%98%EB%8B%AC-%ED%95%B4%EC%A0%9C-%EC%8B%9C-%ED%81%AC%EB%A3%A8%EC%A6%88-%ED%95%B4%EC%A0%9C-%EC%86%8D%EB%8F%84%2830%29) — `AutoGasCancelSpeed`
 - [자동크루즈속도 업데이트](https://github.com/ajouatom/openpilot/wiki/KO-%EC%9E%90%EB%8F%99%ED%81%AC%EB%A3%A8%EC%A6%88%EC%86%8D%EB%8F%84-%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8) — `AutoGasSyncSpeed`
+
+#### Tesla 전용
+
+##### Tesla 기능
+
+- [Tesla 자동 방향지시등](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EC%9E%90%EB%8F%99-%EB%B0%A9%ED%96%A5%EC%A7%80%EC%8B%9C%EB%93%B1) — `TeslaAutoTurnSignals`
+- [Tesla 자동 속도 휠](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EC%9E%90%EB%8F%99-%EC%86%8D%EB%8F%84-%ED%9C%A0) — `TeslaAutoSpeedLimit`
+- [Tesla CAN 빨간불 정지](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-CAN-%EB%B9%A8%EA%B0%84%EB%B6%88-%EC%A0%95%EC%A7%80) — `TeslaCanTrafficStop`
+- [Tesla 수동 차로변경 램프](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EC%88%98%EB%8F%99-%EC%B0%A8%EB%A1%9C%EB%B3%80%EA%B2%BD-%EB%9E%A8%ED%94%84) — `TeslaManualLaneSignals`
+- [Tesla 모델 의도 램프](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EB%AA%A8%EB%8D%B8-%EC%9D%98%EB%8F%84-%EB%9E%A8%ED%94%84) — `TeslaModelDesireSignals`
+- [Tesla 모델 경로 램프](https://github.com/ajouatom/openpilot/wiki/KO-Tesla-%EB%AA%A8%EB%8D%B8-%EA%B2%BD%EB%A1%9C-%EB%9E%A8%ED%94%84) — `TeslaModelPathSignals`
 
 #### 버튼·프리셋
 
@@ -384,11 +390,6 @@ Per-setting pages generated from the current settings catalog.
 
 - [Auto Engage on onroad](https://github.com/ajouatom/openpilot/wiki/EN-Auto-Engage-on-onroad) — `AutoEngage`
 - [Always Lateral](https://github.com/ajouatom/openpilot/wiki/EN-Always-Lateral) — `AlwaysLateral`
-- [Tesla Automatic Turn Signals](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Automatic-Turn-Signals) — `TeslaAutoTurnSignals`
-- [Tesla CAN Red Light Stop](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-CAN-Red-Light-Stop) — `TeslaCanTrafficStop`
-- [Tesla Manual Lane Lamps](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Manual-Lane-Lamps) — `TeslaManualLaneSignals`
-- [Tesla Model Desire Lamps](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Model-Desire-Lamps) — `TeslaModelDesireSignals`
-- [Tesla Model Path Lamps](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Model-Path-Lamps) — `TeslaModelPathSignals`
 - [DisableMinSteerSpeed](https://github.com/ajouatom/openpilot/wiki/EN-DisableMinSteerSpeed) — `DisableMinSteerSpeed`
 
 ##### Auto Cruise
@@ -399,6 +400,17 @@ Per-setting pages generated from the current settings catalog.
 - [Auto Cruise: Accelerator Tap Start Speed](https://github.com/ajouatom/openpilot/wiki/EN-Auto-Cruise-Accelerator-Tap-Start-Speed) — `AutoGasTokSpeed`
 - [Auto Cruise: Gas Release Cancel Speed](https://github.com/ajouatom/openpilot/wiki/EN-Auto-Cruise-Gas-Release-Cancel-Speed) — `AutoGasCancelSpeed`
 - [Auto update Cruise speed](https://github.com/ajouatom/openpilot/wiki/EN-Auto-update-Cruise-speed) — `AutoGasSyncSpeed`
+
+#### Tesla
+
+##### Tesla Features
+
+- [Tesla Automatic Turn Signals](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Automatic-Turn-Signals) — `TeslaAutoTurnSignals`
+- [Tesla Automatic Speed Wheel](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Automatic-Speed-Wheel) — `TeslaAutoSpeedLimit`
+- [Tesla CAN Red Light Stop](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-CAN-Red-Light-Stop) — `TeslaCanTrafficStop`
+- [Tesla Manual Lane Lamps](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Manual-Lane-Lamps) — `TeslaManualLaneSignals`
+- [Tesla Model Desire Lamps](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Model-Desire-Lamps) — `TeslaModelDesireSignals`
+- [Tesla Model Path Lamps](https://github.com/ajouatom/openpilot/wiki/EN-Tesla-Model-Path-Lamps) — `TeslaModelPathSignals`
 
 #### Buttons & Presets
 
@@ -753,11 +765,6 @@ Per-setting pages generated from the current settings catalog.
 
 - [上路自动激活](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%B8%8A%E8%B7%AF%E8%87%AA%E5%8A%A8%E6%BF%80%E6%B4%BB) — `AutoEngage`
 - [全时横向控制](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%85%A8%E6%97%B6%E6%A8%AA%E5%90%91%E6%8E%A7%E5%88%B6) — `AlwaysLateral`
-- [特斯拉自动转向灯](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E8%87%AA%E5%8A%A8%E8%BD%AC%E5%90%91%E7%81%AF) — `TeslaAutoTurnSignals`
-- [特斯拉 CAN 红灯停车](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89-CAN-%E7%BA%A2%E7%81%AF%E5%81%9C%E8%BD%A6) — `TeslaCanTrafficStop`
-- [特斯拉手动变道灯](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E6%89%8B%E5%8A%A8%E5%8F%98%E9%81%93%E7%81%AF) — `TeslaManualLaneSignals`
-- [特斯拉模型意图灯](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E6%A8%A1%E5%9E%8B%E6%84%8F%E5%9B%BE%E7%81%AF) — `TeslaModelDesireSignals`
-- [特斯拉模型路径灯](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E6%A8%A1%E5%9E%8B%E8%B7%AF%E5%BE%84%E7%81%AF) — `TeslaModelPathSignals`
 - [解除最小转向速度限制](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%A7%A3%E9%99%A4%E6%9C%80%E5%B0%8F%E8%BD%AC%E5%90%91%E9%80%9F%E5%BA%A6%E9%99%90%E5%88%B6) — `DisableMinSteerSpeed`
 
 ##### 自动巡航
@@ -768,6 +775,17 @@ Per-setting pages generated from the current settings catalog.
 - [自动巡航: 踩油门起步速度](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%8A%A8%E5%B7%A1%E8%88%AA-%E8%B8%A9%E6%B2%B9%E9%97%A8%E8%B5%B7%E6%AD%A5%E9%80%9F%E5%BA%A6) — `AutoGasTokSpeed`
 - [自动巡航: 松开油门取消速度](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%8A%A8%E5%B7%A1%E8%88%AA-%E6%9D%BE%E5%BC%80%E6%B2%B9%E9%97%A8%E5%8F%96%E6%B6%88%E9%80%9F%E5%BA%A6) — `AutoGasCancelSpeed`
 - [自动更新巡航速度](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E5%B7%A1%E8%88%AA%E9%80%9F%E5%BA%A6) — `AutoGasSyncSpeed`
+
+#### 特斯拉专用
+
+##### 特斯拉功能
+
+- [特斯拉自动转向灯](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E8%87%AA%E5%8A%A8%E8%BD%AC%E5%90%91%E7%81%AF) — `TeslaAutoTurnSignals`
+- [特斯拉自动滚轮调速](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E8%87%AA%E5%8A%A8%E6%BB%9A%E8%BD%AE%E8%B0%83%E9%80%9F) — `TeslaAutoSpeedLimit`
+- [特斯拉 CAN 红灯停车](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89-CAN-%E7%BA%A2%E7%81%AF%E5%81%9C%E8%BD%A6) — `TeslaCanTrafficStop`
+- [特斯拉手动变道灯](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E6%89%8B%E5%8A%A8%E5%8F%98%E9%81%93%E7%81%AF) — `TeslaManualLaneSignals`
+- [特斯拉模型意图灯](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E6%A8%A1%E5%9E%8B%E6%84%8F%E5%9B%BE%E7%81%AF) — `TeslaModelDesireSignals`
+- [特斯拉模型路径灯](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%96%AF%E6%8B%89%E6%A8%A1%E5%9E%8B%E8%B7%AF%E5%BE%84%E7%81%AF) — `TeslaModelPathSignals`
 
 #### 按钮·预设
 
@@ -1122,11 +1140,6 @@ Per-setting pages generated from the current settings catalog.
 
 - [上路自動啟用](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%B8%8A%E8%B7%AF%E8%87%AA%E5%8B%95%E5%95%9F%E7%94%A8) — `AutoEngage`
 - [全時橫向控制](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%85%A8%E6%99%82%E6%A9%AB%E5%90%91%E6%8E%A7%E5%88%B6) — `AlwaysLateral`
-- [特斯拉自動轉向燈](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89%E8%87%AA%E5%8B%95%E8%BD%89%E5%90%91%E7%87%88) — `TeslaAutoTurnSignals`
-- [特斯拉 CAN 紅燈停車](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89-CAN-%E7%B4%85%E7%87%88%E5%81%9C%E8%BB%8A) — `TeslaCanTrafficStop`
-- [特斯拉手動變道燈](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89%E6%89%8B%E5%8B%95%E8%AE%8A%E9%81%93%E7%87%88) — `TeslaManualLaneSignals`
-- [特斯拉模型意圖燈](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89%E6%A8%A1%E5%9E%8B%E6%84%8F%E5%9C%96%E7%87%88) — `TeslaModelDesireSignals`
-- [特斯拉模型路徑燈](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89%E6%A8%A1%E5%9E%8B%E8%B7%AF%E5%BE%91%E7%87%88) — `TeslaModelPathSignals`
 - [解除最小轉向速度限制](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%A7%A3%E9%99%A4%E6%9C%80%E5%B0%8F%E8%BD%89%E5%90%91%E9%80%9F%E5%BA%A6%E9%99%90%E5%88%B6) — `DisableMinSteerSpeed`
 
 ##### 自動巡航
@@ -1137,6 +1150,17 @@ Per-setting pages generated from the current settings catalog.
 - [自動巡航: 踩油門起步速度](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%87%AA%E5%8B%95%E5%B7%A1%E8%88%AA-%E8%B8%A9%E6%B2%B9%E9%96%80%E8%B5%B7%E6%AD%A5%E9%80%9F%E5%BA%A6) — `AutoGasTokSpeed`
 - [自動巡航: 鬆開油門取消速度](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%87%AA%E5%8B%95%E5%B7%A1%E8%88%AA-%E9%AC%86%E9%96%8B%E6%B2%B9%E9%96%80%E5%8F%96%E6%B6%88%E9%80%9F%E5%BA%A6) — `AutoGasCancelSpeed`
 - [自動更新巡航速度](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%87%AA%E5%8B%95%E6%9B%B4%E6%96%B0%E5%B7%A1%E8%88%AA%E9%80%9F%E5%BA%A6) — `AutoGasSyncSpeed`
+
+#### Tesla 專用
+
+##### Tesla 功能
+
+- [特斯拉自動轉向燈](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89%E8%87%AA%E5%8B%95%E8%BD%89%E5%90%91%E7%87%88) — `TeslaAutoTurnSignals`
+- [Tesla 自動滾輪調速](https://github.com/ajouatom/openpilot/wiki/ZH-TW-Tesla-%E8%87%AA%E5%8B%95%E6%BB%BE%E8%BC%AA%E8%AA%BF%E9%80%9F) — `TeslaAutoSpeedLimit`
+- [特斯拉 CAN 紅燈停車](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89-CAN-%E7%B4%85%E7%87%88%E5%81%9C%E8%BB%8A) — `TeslaCanTrafficStop`
+- [特斯拉手動變道燈](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89%E6%89%8B%E5%8B%95%E8%AE%8A%E9%81%93%E7%87%88) — `TeslaManualLaneSignals`
+- [特斯拉模型意圖燈](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89%E6%A8%A1%E5%9E%8B%E6%84%8F%E5%9C%96%E7%87%88) — `TeslaModelDesireSignals`
+- [特斯拉模型路徑燈](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%96%AF%E6%8B%89%E6%A8%A1%E5%9E%8B%E8%B7%AF%E5%BE%91%E7%87%88) — `TeslaModelPathSignals`
 
 #### 按鈕·預設
 

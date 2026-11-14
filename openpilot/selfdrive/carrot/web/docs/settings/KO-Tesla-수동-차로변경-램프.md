@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="ko" group="BASIC_START" param="TeslaManualLaneSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="ko" group="TESLA_FEATURES" param="TeslaManualLaneSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla 수동 차로변경 램프
 
-**메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+**메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 
 ---
 
@@ -16,12 +16,12 @@
 Tesla 자동 방향지시등과 데이터 공유가 필요합니다. 30km/h 이상에서 운전자 조향 의도·차선 접근과 ONNX의 연속된 점선 분류·인접 차로 형상을 확인해 좌우 램프만 요청합니다. 크루즈 비활성도 허용하나 조향 권한은 늘리지 않습니다. 실선·불명·오래된 결과는 새 요청을 차단합니다. 차선 색상·진행 방향은 판별하지 못합니다. 기본 꺼짐, 변경 후 재부팅; 폐쇄 시험장 검증 필요.
 
 <!-- CARROT:AUTO:BEGIN TeslaManualLaneSignals -->
-<!-- CARROT:AUTO:SOURCE facts="8e55bfe22c5a7c6cf65f63771a9214b0dc83aa5b54465814922fdf588fd9e96a" semantic="669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="d194268420c3481a101512fa6a1fbf2df9b4e2838e88270828c4874b65464e45" semantic="669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
 - **범위:** `0` ~ `1`
-- **메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+- **메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaManualLaneSignals -->
 

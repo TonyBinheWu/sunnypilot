@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="ko" group="BASIC_START" param="TeslaCanTrafficStop" -->
+<!-- CARROT:GENERATED schema="1" locale="ko" group="TESLA_FEATURES" param="TeslaCanTrafficStop" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla CAN 빨간불 정지
 
-**메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+**메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 
 ---
 
@@ -16,12 +16,12 @@
 기본 꺼짐, 변경 후 재시작. Tesla Model 3/Y의 활성 openpilot 종제어에서만 신선한 APP\_trafficControl 빨간불·126m 미만 정지선을 보조 정지 제약으로 사용합니다. 8바이트·미터 단위·비전 출처만 지원하며 6바이트 DAS\_road는 차단합니다. 초록불은 이 제약만 해제합니다. 늦은 빨간불은 제동 한계를 넘을 수 있고, 신호 상실·거리 불일치는 인계와 기존 soft-disable을 요청합니다. 모델·주변 차량·수동 정지는 유지됩니다. 실차 신호와 거리 기준을 확인하고 폐쇄 시험장에서 검증해야 하며 도로 사용 승인을 뜻하지 않습니다.
 
 <!-- CARROT:AUTO:BEGIN TeslaCanTrafficStop -->
-<!-- CARROT:AUTO:SOURCE facts="13d1f4d9dff19151c8bb5b930803b89c92d692a931031b27001fb57d48310baf" semantic="046215718bed37d52f0c6633e5d551de2ff163be2a341b1cb647fab8b5f803dc" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="a0c55e30d8b93bfb52e4732942ee95a0588de4d33687f89f92d276222a1888ff" semantic="046215718bed37d52f0c6633e5d551de2ff163be2a341b1cb647fab8b5f803dc" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
 - **범위:** `0` ~ `1`
-- **메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+- **메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaCanTrafficStop -->
 

@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="ko" group="BASIC_START" param="TeslaAutoTurnSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="ko" group="TESLA_FEATURES" param="TeslaAutoTurnSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # Tesla 자동 방향지시등
 
-**메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+**메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 
 ---
 
@@ -16,12 +16,12 @@
 차량 CAN과 실제 스토크가 있는 Model 3/Y: 회전 desire 시작 시 점등, 실측 방위·핸들 복귀로 완료. 확인된 회전만 신선한 허용 아래 정차 유지하며 차로변경 준비 점등은 유지합니다. 운전자 우선, 조향·출발 권한은 그대로입니다. 기본 꺼짐, 변경 후 재부팅 필요. 실차 검증 전 일반 도로에서 사용하지 마세요.
 
 <!-- CARROT:AUTO:BEGIN TeslaAutoTurnSignals -->
-<!-- CARROT:AUTO:SOURCE facts="a658f06c8ad01c490b020b650c7b0af3c62b79cb4d94a838c12ddc07e4dce71f" semantic="8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="9cd472dec07cc87709e961c1f807da47e76124aafa76097fbcd5632609971940" semantic="8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
 - **범위:** `0` ~ `1`
-- **메뉴:** 주행 제어 \> 시작·오토 \> 시작 동작
+- **메뉴:** 주행 제어 \> Tesla 전용 \> Tesla 기능
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaAutoTurnSignals -->
 

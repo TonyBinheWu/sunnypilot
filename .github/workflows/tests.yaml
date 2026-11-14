@@ -148,6 +148,11 @@ jobs:
             openpilot/selfdrive/controls/tests/test_lateral_startup_control.py \
             openpilot/selfdrive/controls/tests/test_controlsd_publish.py \
             openpilot/common/tests/test_params.py::test_always_lateral_manager_preserves_existing_default_and_saved_choice
+      - name: Check Tesla automatic wheel opt-in and feedback gates
+        run: >-
+          python -m pytest -o addopts='' -q
+          opendbc_repo/opendbc/car/tesla/tests/test_auto_turn_signals.py
+          opendbc_repo/opendbc/car/tesla/tests/test_speed_limit_controller.py
       - name: Bosch provider regression tests
         run: |
           python -m pytest -o addopts='' -q \

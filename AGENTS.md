@@ -1,5 +1,17 @@
 # Repository memory
 
+- 2026-11-14: Merged upstream ajouatom/openpilot carrot-wip f89f40a3 via
+  a30d1514, retaining both histories. Pre-merge 8b874989 is pushed as
+  carrot-wip-backup-2026-11-14. Preservation checks retain all 213 old settings,
+  defaults/ranges/options/Traditional titles and all 852 prior manual guides;
+  three indicator manuals receive appended explanations. TeslaAutoSpeedLimit
+  is the only new setting (default OFF); four-locale detailed guides are reviewed.
+  Own Wiki manual update 84c9662 is published. CarrotAssist remains immutable
+  0.2.17; Vision, favorites, voice gain, FormosaLink, Park-only offroad, startup
+  fixes and vehicle additions are retained. Upstream Jetson signed host bundle
+  0cb67d46 hash/signature/source commit and B1 release5 hash were verified;
+  no firmware was flashed and no physical vehicle acceptance was performed.
+
 - 2026-11-14: Published signed CarrotAssist TW0.2.17/code24 from ea1538c2;
   APK SHA25650830fab40dd05be6be33037ed6feedf674fe2a699dcb0211ebdde7429767787,
   signing identity matches0.2.16. Public APK and stable update-channel URL were

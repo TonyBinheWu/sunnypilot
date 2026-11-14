@@ -13,10 +13,10 @@
 
 `ModelDesireIndicator`
 
-Indicates repeated dominant model turn/lane-change predictions of at least 50%. Starts with lateral control active, at 10km/h for turns or 30km/h for lane changes. Does not add an automatic steering request. Default OFF; Ioniq 5 PE with Jetson USB2CAN and AutoBlinkerControl 1 or 2. Physical lamp and road validation remain separate. At 30 km/h or above, the two nearest model forecasts can also trigger an indication when both predict the same lane change with at least 65% probability and both measured lane boundaries show the vehicle approaching that side. A forecast alone does not light the indicator or request steering. After forecast-based initiation, widening lane lines at a fork do not end the hold while the model and measured motion still indicate the same direction. Fading or opposite intent ends the fork hold; cruise CANCEL releases it immediately.
+Indicates repeated dominant model turn/lane-change predictions of at least 50%. Starts with lateral control active, at 10km/h for turns or 30km/h for lane changes. Does not add an automatic steering request. Default OFF; Ioniq 5 PE with Jetson USB2CAN and AutoBlinkerControl 1 or 2. Physical lamp and road validation remain separate. At 30 km/h or above, the two nearest model forecasts can also trigger an indication when both predict the same lane change with at least 65% probability and both measured lane boundaries show the vehicle approaching that side. A forecast alone does not light the indicator or request steering. After forecast-based initiation, widening lane lines at a fork do not end the hold while the model and measured motion still indicate the same direction. Fading or opposite intent ends the fork hold; cruise CANCEL releases it immediately. Model-turn indication also requires at least 15 degrees of same-direction steering and 3 degrees/s of measured rotation. While moving, a turn probability below 30% and wheel return within ±10 degrees for 0.4s end the hold.
 
 <!-- CARROT:AUTO:BEGIN ModelDesireIndicator -->
-<!-- CARROT:AUTO:SOURCE facts="18bb3c189f1c687133c41c52144ffd4543a91a6c9b73f9877fc09a81159a9245" semantic="85643599439e3e55d38ab927bf13b2d2b17ffa165c1e3dd5f7b7d003daaf5a6d" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="435c8c3010f84bb7fae300a9b42fd791e5abe6b95709ee402c72177c230f2e42" semantic="d73f84bcf6ba7064705bfb722d8a81eb4a2d19fa2936d3d3e21fe478a59c63b5" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
@@ -26,7 +26,7 @@ Indicates repeated dominant model turn/lane-change predictions of at least 50%. 
 <!-- CARROT:AUTO:END ModelDesireIndicator -->
 
 <!-- CARROT:MANUAL:BEGIN ModelDesireIndicator -->
-<!-- CARROT:REVIEW reviewed-for="85643599439e3e55d38ab927bf13b2d2b17ffa165c1e3dd5f7b7d003daaf5a6d" reviewed-at="2026-11-10T10:51:22.871833+00:00" -->
+<!-- CARROT:REVIEW reviewed-for="d73f84bcf6ba7064705bfb722d8a81eb4a2d19fa2936d3d3e21fe478a59c63b5" reviewed-at="2026-11-14T02:05:14Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### Behavior
 
@@ -38,6 +38,9 @@ Manual/model indication distinguishes its short one-touch echo only with matchin
 At 30 km/h or above, the two nearest model forecasts can also trigger an indication when both predict the same lane change with at least 65% probability and both measured lane boundaries show the vehicle approaching that side. A forecast alone does not light the indicator or request steering.
 
 After forecast-based initiation, widening lane lines at a fork do not end the hold while the model and measured motion still indicate the same direction. Fading or opposite intent ends the fork hold; cruise CANCEL releases it immediately.
+Model-turn initiation additionally requires at least 15 degrees of same-direction wheel angle and fresh measured rotation of at least 3 degrees/s. While moving, a turn probability below 30% and wheel return within ±10 degrees for 0.4 seconds can end the hold before the old 30-degree peak has been reached.
+
+With B1 release 5, a confirmed own-tap echo can remain accepted through dark flash intervals. Neutral feedback after the tap closes that allowance; a later lever report cancels ownership. Opposite lamps, raw driver input, invalid CAN and expired leases still cancel. Software replay does not establish physical hold or cancellation performance.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 <!-- CARROT:MANUAL:END ModelDesireIndicator -->
 

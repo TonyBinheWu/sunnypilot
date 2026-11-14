@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="zh-tw" group="BASIC_START" param="TeslaManualLaneSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="zh-tw" group="TESLA_FEATURES" param="TeslaManualLaneSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # 特斯拉手動變道燈
 
-**選單:** 駕駛控制 \> 啟動·自動 \> 起步動作
+**選單:** 駕駛控制 \> Tesla 專用 \> Tesla 功能
 
 ---
 
@@ -16,12 +16,12 @@
 需開啟特斯拉自動轉向燈和資料共享。30km/h 以上結合駕駛員轉向意圖、持續接近車道線、連續 ONNX 虛線分類與相鄰車道幾何，僅請求左右燈，巡航未啟用也可使用。實線、未知或過期結果禁止新自動請求，不限制真實撥杆。不能證明車道線顏色或同向車流，不增加轉向許可權。預設關閉，修改後重新啟動，需封閉場地實車驗證。
 
 <!-- CARROT:AUTO:BEGIN TeslaManualLaneSignals -->
-<!-- CARROT:AUTO:SOURCE facts="81b53acfed2760728cfe062143df13487e7094526111d16e06b30324c5814837" semantic="669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="1982c03f9b00da4d2d90291548e019b3e9c0e0027d93b3a764aa8ab7fbe51b2d" semantic="669db437b176b1b2fdb9d4effef75f18f63f9ba24fa2385698d782ce9d784aec" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 開關
 - **預設值:** `0`
 - **範圍:** `0` ~ `1`
-- **選單:** 駕駛控制 \> 啟動·自動 \> 起步動作
+- **選單:** 駕駛控制 \> Tesla 專用 \> Tesla 功能
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaManualLaneSignals -->
 

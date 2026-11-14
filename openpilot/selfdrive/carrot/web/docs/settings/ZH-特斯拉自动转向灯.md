@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="zh" group="BASIC_START" param="TeslaAutoTurnSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="zh" group="TESLA_FEATURES" param="TeslaAutoTurnSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # 特斯拉自动转向灯
 
-**菜单:** 驾驶控制 \> 启动·自动 \> 起步动作
+**菜单:** 驾驶控制 \> 特斯拉专用 \> 特斯拉功能
 
 ---
 
@@ -16,12 +16,12 @@
 仅适用于车辆 CAN 与真实拨杆有效的 Model 3/Y。不再导航提前打转弯灯，用实测航向和回正判定完成；仅已确认点亮的转弯可在新鲜权限下停车等待，保留变道准备亮灯。驾驶员优先，不增加转向或起步权限。默认关闭，修改后需重启。未经封闭场地实车验证，不应用于公共道路。
 
 <!-- CARROT:AUTO:BEGIN TeslaAutoTurnSignals -->
-<!-- CARROT:AUTO:SOURCE facts="b0b37580d3a0b62378714acbee08274a36c8ca5dd81310092a64459db41866e2" semantic="8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="b35dbe94e60935c45a96deeecf7fe4100982f28eee4ed65f61ff704196e0762c" semantic="8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 开关
 - **默认值:** `0`
 - **范围:** `0` ~ `1`
-- **菜单:** 驾驶控制 \> 启动·自动 \> 起步动作
+- **菜单:** 驾驶控制 \> 特斯拉专用 \> 特斯拉功能
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaAutoTurnSignals -->
 

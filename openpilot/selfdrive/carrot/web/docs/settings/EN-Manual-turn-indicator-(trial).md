@@ -13,10 +13,10 @@
 
 `ManualTurnIndicator`
 
-Detects driver turns using steering torque, wheel movement and measured vehicle rotation. Operates independently of ATC, including intersections with faint lane markings. Starts at 5–60km/h after 0.15s same-direction driver torque, at least 42 degrees steering with a 22-degree increase and consistent vehicle rotation. Ends after wheel return within ±15 degrees and settled rotation, opposite driver steering, or 30 seconds. Default OFF. Requires Ioniq 5 PE, a supported indicator adapter and AutoBlinkerControl 1 or 2. Parking-aisle turns can also trigger. Curves and evasive maneuvers can cause false indications. Physical lamp validation remains pending.
+Detects driver turns using steering torque, wheel movement and measured vehicle rotation. Operates independently of ATC, including intersections with faint lane markings. Starts at 5–60km/h after 0.15s same-direction driver torque, at least 42 degrees steering with a 22-degree increase and consistent vehicle rotation. Ends after wheel return within ±15 degrees and settled rotation, opposite driver steering, or 30 seconds. Default OFF. Requires Ioniq 5 PE, a supported indicator adapter and AutoBlinkerControl 1 or 2. Parking-aisle turns can also trigger. Curves and evasive maneuvers can cause false indications. Physical lamp validation remains pending. When same-direction manual-turn conditions are met during a manual lane indication, the existing request continues under turn completion tracking.
 
 <!-- CARROT:AUTO:BEGIN ManualTurnIndicator -->
-<!-- CARROT:AUTO:SOURCE facts="ee534ae5553734f36e35112db8a494ecd7969994b63a4b613a0cf0288f9e0f1a" semantic="376bcf8235f7ad9de6c1ed48484745355356b0c0edbb66be12b5637052655754" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="7e5f4096bb942e065956393c2baae2c472f43b830306493e2886891ff497a35c" semantic="e08aa7e7e006ddb909a0060571a3f7983d6c70f1249f7f29cc42c19e87f3451a" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
@@ -26,7 +26,7 @@ Detects driver turns using steering torque, wheel movement and measured vehicle 
 <!-- CARROT:AUTO:END ManualTurnIndicator -->
 
 <!-- CARROT:MANUAL:BEGIN ManualTurnIndicator -->
-<!-- CARROT:REVIEW reviewed-for="376bcf8235f7ad9de6c1ed48484745355356b0c0edbb66be12b5637052655754" reviewed-at="2026-11-08T12:45:07+00:00" -->
+<!-- CARROT:REVIEW reviewed-for="e08aa7e7e006ddb909a0060571a3f7983d6c70f1249f7f29cc42c19e87f3451a" reviewed-at="2026-11-14T02:05:14Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### Behavior
 
@@ -34,6 +34,7 @@ Combines same-direction driver torque, increasing wheel angle and fresh measured
 
 Wheel return and settled rotation complete the request. Opposite driver steering, invalid inputs or disabling the setting end it.
 A new manual turn requires two seconds since the previous indication last renewed its hold and one continuous second with both lamps off. These intervals run concurrently.
+If same-direction manual-turn conditions are met during a manual lane indication, the existing request and acknowledgement continue under turn-completion tracking; this is not a new tap request.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

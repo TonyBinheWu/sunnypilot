@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="zh" group="BASIC_START" param="TeslaModelPathSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="zh" group="TESLA_FEATURES" param="TeslaModelPathSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # 特斯拉模型路径灯
 
-**菜单:** 驾驶控制 \> 启动·自动 \> 起步动作
+**菜单:** 驾驶控制 \> 特斯拉专用 \> 特斯拉功能
 
 ---
 
@@ -16,12 +16,12 @@
 独立且默认关闭的路径预测灯：需特斯拉自动转向灯、数据共享、横向控制激活、30km/h 以上、相对车道曲率连续预测越线及新鲜 ONNX 虚线和相邻车道证据。可能提前或错误亮灯；不恢复导航转弯提前亮灯，不增加掉头逻辑或转向权限。修改后重启，需封闭场地验证。
 
 <!-- CARROT:AUTO:BEGIN TeslaModelPathSignals -->
-<!-- CARROT:AUTO:SOURCE facts="b0763e0a0c7b77c6e41879f1214d58889fcef2d0bb9f3669c866936269c2b6e8" semantic="edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="ef8c0cc2dd26de749b1e443ae8d097cc7a1cda169d4d18de845ceeee5c2c068d" semantic="edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 开关
 - **默认值:** `0`
 - **范围:** `0` ~ `1`
-- **菜单:** 驾驶控制 \> 启动·自动 \> 起步动作
+- **菜单:** 驾驶控制 \> 特斯拉专用 \> 特斯拉功能
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaModelPathSignals -->
 

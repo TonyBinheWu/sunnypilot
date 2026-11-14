@@ -1,8 +1,8 @@
-<!-- CARROT:GENERATED schema="1" locale="zh-tw" group="BASIC_START" param="TeslaAutoTurnSignals" -->
+<!-- CARROT:GENERATED schema="1" locale="zh-tw" group="TESLA_FEATURES" param="TeslaAutoTurnSignals" -->
 <!-- CARROT:AUTHORING guide="https://github.com/ajouatom/openpilot/blob/carrot-wip/tools/docs/wiki_settings/AUTHORING_GUIDE.md" editable="CARROT:MANUAL only" -->
 # 特斯拉自動轉向燈
 
-**選單:** 駕駛控制 \> 啟動·自動 \> 起步動作
+**選單:** 駕駛控制 \> Tesla 專用 \> Tesla 功能
 
 ---
 
@@ -16,12 +16,12 @@
 僅適用於車輛 CAN 與真實撥杆有效的 Model 3/Y。不再導航提前打轉彎燈，用實測航向和回正判定完成；僅已確認點亮的轉彎可在新鮮許可權下停車等待，保留變道準備亮燈。駕駛員優先，不增加轉向或起步許可權。預設關閉，修改後需重新啟動。未經封閉場地實車驗證，不應用於公共道路。
 
 <!-- CARROT:AUTO:BEGIN TeslaAutoTurnSignals -->
-<!-- CARROT:AUTO:SOURCE facts="42decc10e44675ce20850a2a2e7cf23b3e88d6a80b2c4973d14756817cde7490" semantic="8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="b20df8a65470018a90684351efdbdc35581348c7c7143d665f3b438d54ed70bf" semantic="8b6946fdb18666d41bbb517905b3d386b2941ffcbbf16b84ab7bf6f7eb3920a6" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 開關
 - **預設值:** `0`
 - **範圍:** `0` ~ `1`
-- **選單:** 駕駛控制 \> 啟動·自動 \> 起步動作
+- **選單:** 駕駛控制 \> Tesla 專用 \> Tesla 功能
 <!-- CARROT:SECTION:END OVERVIEW -->
 <!-- CARROT:AUTO:END TeslaAutoTurnSignals -->
 
