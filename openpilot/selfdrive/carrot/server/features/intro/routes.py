@@ -233,7 +233,7 @@ async def api_reconfigure_apply(request):
     result = await asyncio.to_thread(reconfigure.apply, params.Params(), body,
       read_web=web_settings.read_web_settings, update_web=web_settings.update_web_settings,
       makers=makers, write=write, guard=lambda: _reconfigure_guard(request.app),
-      record=lambda name, before, after: append_param_change(name, before, after, source='intro_reconfigure', engaged=False))
+      record=lambda name, before, after: append_param_change(name, before, after, source='intro', engaged=False))
     return web.json_response(result)
   except (ValueError, TypeError):
     return web.json_response({'ok': False, 'error': 'invalid_selection'}, status=400)
