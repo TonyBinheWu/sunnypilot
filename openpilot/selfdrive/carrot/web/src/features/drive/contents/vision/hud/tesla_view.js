@@ -1,3 +1,5 @@
+import {bevProjection} from "./bev_annotations.js";
+import {createBevWorkbench,BEV_CSS} from "./bev_workbench.js";
 import {el, setText} from './dom.js';
 
 export const METRIC_DEFAULTS = Object.freeze({speed:[.04,.04,1.2],limit:[.04,.43,1],set:[.04,.80,1]});
@@ -30,15 +32,16 @@ export function canEditMetrics(target, now) {
   const car=target.CarrotHudState?.carState;
   return serviceFresh(target,'carState',now)&&car?.gearShifter==='park'&&Number.isFinite(car?.vEgo)&&Math.abs(car.vEgo)<.1;
 }
-export function drawBirdScene(ctx,w,h,scene,{rainbow=false}={}) {
+export function drawBirdScene(ctx,w,h,scene,{rainbow=false,projection=null,maxDistance=75}={}) {
   ctx.clearRect(0,0,w,h);ctx.fillStyle='#171c23';ctx.fillRect(0,0,w,h);
   const model=scene.model;
-  const px=(x,y)=>[w*.5-y*w/22,h*.85-x*h/90];
+  // Model y is right-positive; native lead yRel is left-positive.
+  const px=projection?.project||((x,y)=>[w*.5+y*w/22,h*.85-x*h/90]);
   const line=(path,color,width)=>{
     if(!Array.isArray(path?.x)||!Array.isArray(path?.y))return;
     ctx.beginPath();let started=false;
     for(let i=0;i<Math.min(path.x.length,path.y.length);i++){
-      const x=path.x[i],y=path.y[i];if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>75||Math.abs(y)>15)continue;
+      const x=path.x[i],y=path.y[i];if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>maxDistance||Math.abs(y)>100){started=false;continue;}
       const p=px(x,y);if(!started){ctx.moveTo(...p);started=true;}else ctx.lineTo(...p);
     }
     ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
@@ -64,8 +67,8 @@ export function drawBirdScene(ctx,w,h,scene,{rainbow=false}={}) {
     if(ego){ctx.strokeStyle='#d7e9ff';ctx.lineWidth=2;ctx.strokeRect(cx-vw/2,cy-vh/2,vw,vh);}
   };
   for(const lead of [scene.radar?.leadOne,scene.radar?.leadTwo]){
-    if(lead?.status===true&&Number.isFinite(lead.dRel)&&lead.dRel>0&&lead.dRel<=75&&Number.isFinite(lead.yRel)&&Math.abs(lead.yRel)<12)
-      vehicle(lead.dRel,lead.yRel,'#b2bdca');
+    if(lead?.status===true&&Number.isFinite(lead.dRel)&&lead.dRel>0&&lead.dRel<=maxDistance&&Number.isFinite(lead.yRel)&&Math.abs(lead.yRel)<12)
+      vehicle(lead.dRel,-lead.yRel,'#b2bdca');
   }
   vehicle(0,0,'#397fdf',true);
 }
@@ -136,11 +139,13 @@ export function createTeslaView(doc,target) {
   toggle.addEventListener('click',e=>{e.stopPropagation();if(!canEditMetrics(target,now()))return;
     if(editing){layout=metricLayout(target.CarrotWebSettingsState?.vision_metric_layout);dirty=false;}
     editing=!editing;editor.hidden=!editing;size.value=String(layout[selected][2]);render(data,stale,unit);});
-  root.append(notice,metrics,toggle,editor);
+  const bev=createBevWorkbench(doc,target,canvas,{canEdit:()=>canEditMetrics(target,now()),refresh:()=>{lastSignature='';render(data,stale,unit);},getHud:()=>({data:{speed:data.speed,setSpeed:data.setSpeed,speedLimit:data.speedLimit},stale,unit})});
+  root.append(notice,metrics,toggle,editor,bev.root);
   function render(next={},isStale=true,units='km/h',visible=metricVisible){
     data=next||{};stale=isStale;unit=units;metricVisible=visible;
-    const settings=target.CarrotWebSettingsState||{},tesla=settings.vision_presentation==='tesla';
+    const settings=target.CarrotWebSettingsState||{},isBev=settings.vision_presentation==='bev',tesla=['tesla','bev'].includes(settings.vision_presentation);
     const custom=settings.vision_custom_metrics===true||tesla;
+    canvas.setAttribute('aria-label',text(isBev?'bev_name':'vision_tesla_name',isBev?'BEV annotation view':'Bird’s-eye view'));
     root.hidden=!custom&&!tesla;canvas.hidden=!tesla;notice.hidden=!tesla;metrics.hidden=!custom||!visible;toggle.hidden=!custom||!visible;
     root.parentElement?.classList.toggle('has-custom-metrics',custom);
     root.parentElement?.classList.toggle('is-tesla-view',tesla);
@@ -148,30 +153,31 @@ export function createTeslaView(doc,target) {
     if(editing&&(!visible||!canEditMetrics(target,now()))){editing=false;editor.hidden=true;drag=null;dirty=false;layout=metricLayout(settings.vision_metric_layout);}
     root.classList.toggle('is-editing',editing);toggle.disabled=!canEditMetrics(target,now())||saving;
     setText(toggle,text(editing?'vision_metric_done':'vision_metric_edit',editing?'Finish editing':'Arrange information'));
+    const scene=bev.prepare(tesla?birdScene(target,now()):{});
+    const frozenHud=bev.frozenHud,displayData=frozenHud?.data||data,displayStale=frozenHud?.stale??stale,displayUnit=frozenHud?.unit||unit;
     for(const [key,card] of Object.entries(cards)){
-      const v=data[{speed:'speed',set:'setSpeed',limit:'speedLimit'}[key]];
-      setText(card.parts.title,text(labels[key],key));setText(card.parts.value,!stale&&Number.isFinite(v)?String(v):'—');
-      setText(card.parts.units,unit);card.setAttribute('aria-label',`${text(labels[key],key)} ${!stale&&Number.isFinite(v)?v:'—'} ${unit}`);
+      const v=displayData[{speed:'speed',set:'setSpeed',limit:'speedLimit'}[key]];
+      setText(card.parts.title,text(labels[key],key));setText(card.parts.value,!displayStale&&Number.isFinite(v)?String(v):'—');
+      setText(card.parts.units,displayUnit);card.setAttribute('aria-label',`${text(labels[key],key)} ${!displayStale&&Number.isFinite(v)?v:'—'} ${displayUnit}`);
     }
     place();
     if(tesla){
-      const scene=birdScene(target,now());
-      setText(notice,text(scene.model?'vision_tesla_notice':'vision_tesla_wait',scene.model?'Model bird’s-eye view · not a surround camera':'Waiting for fresh model data'));
+      setText(notice,bev.frozen?text('bev_frozen','Annotation snapshot · not live'):text(scene.model?'vision_tesla_notice':'vision_tesla_wait',scene.model?'Model bird’s-eye view · not a surround camera':'Waiting for fresh model data'));
       const vw=root.clientWidth||536,vh=root.clientHeight||300;
       const quality=settings.vision_render_quality,cap=quality==='high'?[1920,1080,2]:quality==='low'?[480,270,1]:[960,540,1];
       const factor=Math.min(cap[2],cap[0]/vw,cap[1]/vh);
       const w=Math.max(1,Math.round(vw*factor)),h=Math.max(1,Math.round(vh*factor));
       const stamp=target.CarrotStateReceivedAtMonotonic?.modelV2??target.CarrotStateUpdatedAt?.modelV2;
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
-      const signature=`${w}:${h}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${settings.vision_rainbow_lane}`;
+      const signature=`${w}:${h}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}`;
       if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
-        const ctx=canvas.getContext('2d');if(ctx)drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true});lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
+        const ctx=canvas.getContext('2d');if(ctx){const projection=isBev?bevProjection(w,h,bev.range):null;drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:isBev?bev.range:75});if(isBev)bev.draw(ctx,projection,scene);}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
     }
     lastMode=tesla;
   }
   const observer=typeof target.ResizeObserver==='function'?new target.ResizeObserver(()=>{lastSignature='';render(data,stale,unit);}):null;
   observer?.observe(root);
-  return {root,canvas,render,destroy(){observer?.disconnect();canvas.remove();root.remove();}};
+  return {root,canvas,render,destroy(){bev.destroy();observer?.disconnect();canvas.remove();root.remove();}};
 }
 export const TESLA_VIEW_CSS=`
 .tesla-view{position:absolute;inset:0;pointer-events:none;z-index:4;color:#fff;font-family:system-ui,sans-serif}.tesla-view[hidden],.tesla-view [hidden]{display:none!important}
@@ -179,4 +185,4 @@ export const TESLA_VIEW_CSS=`
 .tesla-metrics{position:absolute;inset:0}.tesla-metric{position:absolute;box-sizing:border-box;min-width:96px;width:max-content;padding:8px 10px;text-align:center;background:#101924df;border:1px solid #ffffff40;border-radius:12px;transform-origin:0 0;font-variant-numeric:tabular-nums;white-space:nowrap}.tesla-metric small{display:block;font-size:12px;line-height:1.4}.tesla-metric b{display:block;font-size:34px;line-height:1.15}
 .tesla-edit,.tesla-editor{position:absolute;right:8px;top:8px;pointer-events:auto;background:#101924ef;border:1px solid #ffffff50;border-radius:10px;padding:8px;color:white;font:13px system-ui}.tesla-edit{top:auto;bottom:8px;min-height:40px}.tesla-editor{top:48px;max-width:calc(100% - 24px);display:flex;flex-wrap:wrap;align-items:center;gap:8px;white-space:normal}.tesla-editor button,.tesla-editor select{min-height:36px;font:inherit;color:white;background:#24364c;border:1px solid #ffffff50;border-radius:6px;padding:6px}.tesla-editor label{display:flex;gap:8px;align-items:center;font-size:12px}.tesla-editor input{max-width:130px}.tesla-view.is-editing .tesla-metric{pointer-events:auto;touch-action:none;cursor:move;outline:2px dashed #65baff}
 .chud.has-custom-metrics .chud-speed,.chud.has-custom-metrics .chud-limit,.chud.has-custom-metrics .clive-cluster{display:none!important}.chud.is-tesla-view .clive{z-index:3}.chud.is-tesla-view .tesla-view{z-index:4}.chud.is-tesla-view .clive-state{top:auto;bottom:8px;left:8px}.chud.is-tesla-view .clive-health{top:auto;bottom:54px;left:auto;right:8px}.chud.is-tesla-view .tesla-editor,.chud.is-tesla-view .tesla-edit{pointer-events:auto}.chud.is-tesla-view .clive{pointer-events:none}
-`;
+` + BEV_CSS;

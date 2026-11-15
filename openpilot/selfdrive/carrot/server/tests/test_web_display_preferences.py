@@ -35,3 +35,13 @@ def test_tesla_view_and_recording_quota_defaults_and_validation():
   assert layout['speed'] == [1,0,2.2] and set(layout) == {'speed','limit','set'}
   assert layout['limit'] == [.04,.43,1.]
   assert web_settings.sanitize_web_settings({'recording_quota_percent': '100'})['recording_quota_percent'] == '0'
+
+
+def test_bev_annotation_options_do_not_change_existing_presentation_or_driving_settings():
+  settings=web_settings.sanitize_web_settings({})
+  assert settings['vision_presentation']=='carrot'
+  assert settings['vision_bev_range']=='50' and settings['vision_bev_grid'] is True
+  enabled=web_settings.sanitize_web_settings({'vision_presentation':'bev','vision_bev_range':'30','vision_bev_details':False})
+  assert enabled['vision_presentation']=='bev' and enabled['vision_bev_range']=='30'
+  assert enabled['vision_bev_details'] is False
+  assert web_settings.sanitize_web_settings({'vision_bev_range':'999'})['vision_bev_range']=='50'

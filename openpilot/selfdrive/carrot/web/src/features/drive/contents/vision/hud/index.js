@@ -107,15 +107,15 @@ export function createHudOverlay(doc) {
   let teslaMetric = true;
   const renderTesla = () => tesla?.render(lastData, teslaUpdatedAt == null || (target.CarrotVisionReplay?.status?.()?.active !== true && (target.performance?.now?.() ?? Date.now()) - teslaUpdatedAt > 2000), teslaMetric === false ? "mph" : "km/h", live?.isSpeedVisible?.() ?? true);
   function syncPresentation() {
-    if (!tesla && (target.CarrotWebSettingsState?.vision_presentation === 'tesla' || target.CarrotWebSettingsState?.vision_custom_metrics === true)) {
+    if (!tesla && (['tesla','bev'].includes(target.CarrotWebSettingsState?.vision_presentation) || target.CarrotWebSettingsState?.vision_custom_metrics === true)) {
       tesla = createTeslaView(doc, target);root.appendChild(tesla.canvas);root.appendChild(tesla.root);
     }
     presentation = target.CarrotAndroidVision?.isImmersive?.() || target.CarrotWebSettingsState?.vision_presentation === "live_view" ? "live_view" : "carrot";
-    if (target.CarrotWebSettingsState?.vision_presentation === 'tesla') presentation = 'tesla';
+    if (['tesla','bev'].includes(target.CarrotWebSettingsState?.vision_presentation)) presentation = target.CarrotWebSettingsState.vision_presentation;
     const livePresentation = presentation !== 'carrot';
     root.classList.toggle("is-live-view", livePresentation);
     live.root.hidden = !livePresentation;
-    live.setTeslaMode?.(presentation === 'tesla');
+    live.setTeslaMode?.(['tesla','bev'].includes(presentation));
     live.setActive(active && !destroyed && suppressions.size === 0 && livePresentation);
     renderTesla();
     if (timer != null) target.clearInterval?.(timer);

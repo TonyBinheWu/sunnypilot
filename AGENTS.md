@@ -1,5 +1,20 @@
 # Repository memory
 
+- 2026-11-15: Added opt-in `bev` presentation using existing model/native lead
+  data, not a new perception network. Equal-metre grid/range30/50/75, probability
+  and uncertainty labels, parked/replay freeze with paired display HUD, bounded
+  human points/polylines, undo/retained draft and user-triggered JSON/PNG exports.
+  Model calibrated y is RIGHT-positive; native lead yRel is LEFT-positive and
+  must be negated. Fixed old bird-view model mirroring; driving code unchanged.
+  Export carrot-bev-annotations/v1 keeps source origins, receipt times and frame
+  ID, but explicitly claims neither exact registration nor synchronized fusion,
+  ground truth or reviewed labels. No occupancy, new pedestrian/sign inference,
+  fleet maps, image training pairs, uploads or model training. Drafts are tab-
+  local only. Existing APK0.2.18 can show/copy JSON; browser downloads depend on
+  host support. Browser synthetic replay tests exercise point/polyline labels,
+  JSON/PNG downloads, range persistence, moving interlock and draft restore;
+  390x844/1280x720 fixtures are not physical vehicle/Android acceptance.
+
 - 2026-11-15: Camera longitudinal CAN-FD now registers ACAN-only CAM_0x2a4
   and CAM_0x362 lane descriptions with optional alive checks. Missing/expired
   ACAN lanes do not invalidate vehicle CAN; decode, checksum/counter checks and
