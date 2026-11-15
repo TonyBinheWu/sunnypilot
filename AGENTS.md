@@ -1,5 +1,14 @@
 # Repository memory
 
+- 2026-11-15: Camera longitudinal CAN-FD now registers ACAN-only CAM_0x2a4
+  and CAM_0x362 lane descriptions with optional alive checks. Missing/expired
+  ACAN lanes do not invalidate vehicle CAN; decode, checksum/counter checks and
+  original timestamps remain intact. Camera-side lane, body and SCC checks are
+  unchanged, as are stock and non-CameraSCC modes. Real-parser offline tests
+  cover 12s ACAN loss/recovery, bus offsets, TCS/MDPS/SCC loss and mode scope;
+  57 focused tests pass with Windows Params isolation and real schemas/DBC.
+  No vehicle deployment or physical acceptance was performed.
+
 - 2026-11-15: Carrot View adds opt-in Tesla-style model bird's-eye presentation,
   GPU-batched rainbow path bands, and independent normalized position/scale for
   current speed, road limit and cruise set speed. Edit via parked/replay-only

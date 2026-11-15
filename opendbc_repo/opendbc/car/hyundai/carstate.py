@@ -411,7 +411,7 @@ class CarState(CarStateBase):
       self.cp_cam = can_parsers[Bus.cam]
       self.cp_alt = can_parsers[Bus.alt] if Bus.alt in can_parsers else None
 
-      def add_if_seen(parser, name, ignore_counter = False):
+      def add_if_seen(parser, name, ignore_counter = False, freq=None):
         msg = parser.dbc.name_to_msg.get(name)
         if not msg:
           print(f"{name} not in DBC")
@@ -420,10 +420,10 @@ class CarState(CarStateBase):
           return
         if msg.address in parser.addresses:
           return
-        parser._add_message(name, ignore_counter = ignore_counter)   # ← 이름으로 등록
+        parser._add_message(name, freq, ignore_counter = ignore_counter)   # ← 이름으로 등록
 
-      def add_and_cache(parser, name: str, attr: str, ignore_counter: bool = False):
-        add_if_seen(parser, name, ignore_counter)
+      def add_and_cache(parser, name: str, attr: str, ignore_counter: bool = False, freq=None):
+        add_if_seen(parser, name, ignore_counter, freq)
         if name in parser.vl:   # 등록 성공했을 때만
           setattr(self, attr, parser.vl[name])
           return True
@@ -481,9 +481,13 @@ class CarState(CarStateBase):
           add_and_cache(self.cp, "STEER_TOUCH_2AF", "steer_touch_2af")
         elif self.controls_ready_count == 124:
           add_and_cache(self.cp, self.cruise_btns_msg_canfd, "cruise_buttons_msg")
+          # Camera longitudinal wiring need not expose ACAN lane descriptions.
+          # Decode them when seen, but do not require their continued reception.
+          # Keep camera-side lanes and all vehicle/SCC checks unchanged.
+          alt_lane_freq = math.nan if self.CP.openpilotLongitudinalControl and self.CP.flags & HyundaiFlags.CAMERA_SCC else None
           if not add_and_cache(self.cp_cam, "CAM_0x362", "cam_0x362") and self.cp_alt is not None:
-            add_and_cache(self.cp_alt, "CAM_0x362", "cam_0x362")
-          if not add_and_cache(self.cp_alt, "CAM_0x2a4", "cam_0x2a4") and self.cp_cam is not None:
+            add_and_cache(self.cp_alt, "CAM_0x362", "cam_0x362", freq=alt_lane_freq)
+          if not add_and_cache(self.cp_alt, "CAM_0x2a4", "cam_0x2a4", freq=alt_lane_freq) and self.cp_cam is not None:
             add_and_cache(self.cp_cam, "CAM_0x2a4", "cam_0x2a4")
         elif self.controls_ready_count == 125:
           add_and_cache(self.cp, "MANUAL_SPEED_LIMIT_ASSIST", "manual_speed_limit_assist", ignore_counter = True)
