@@ -7,7 +7,14 @@ import { openAssistantDialog } from "./assistant.js";
 import { openSteeringLearning } from "./steering_learning.js";
 import { openSetupGuide } from "./reconfigure.js";
 import { installSelfDiagnostics } from "./diagnostics/index.js";
+import { messages as laneMappingMessages } from "../lane_mapping/messages.js";
 installSelfDiagnostics(globalThis);
+function localizeLaneMappingLink(){
+  const link=document.getElementById('laneMappingLink');
+  if(link)link.textContent=laneMappingMessages(globalThis.CarrotWebSettingsState?.web_language||document.documentElement.lang).title;
+}
+globalThis.addEventListener('carrot:languagechange',localizeLaneMappingLink);
+localizeLaneMappingLink();
 import {
   bindToolsDeviceInfoCopy,
   buildToolsDeviceInfoDialog,

@@ -5,6 +5,9 @@
 <nav><a href="/?page=tools">返回 Carrot Web 工具</a><a href="#details">各頁面詳細操作</a></nav>
 <main><h1>carrotpilot 手機操作指南與功能解析</h1>
 <p>依本倉庫 <code>carrot-wip</code> 的程式碼及既有指南整理。清單代表程式提供的功能；實際可用性仍取決於車型、裝置版本、資料來源、瀏覽器與權限。本次未進行實車或實體手機驗證。</p>
+<h2>車道建圖與多趟比對（研究工具）</h2>
+<p>更新車機後，網頁及既有 CarrotAssist 0.2.19 可由「工具 → 車道建圖與多趟比對」開啟離線成果。支援 BEV／3D、旋轉／縮放／平移、趟次篩選、來源與品質、版本觀測差異、人工審查 JSON。可看明確標示的合成範例、本機／貼上 JSON，或管理者手動放在 <code>/data/carrot/mapping</code> 的成果。資料不自動上傳；審查僅存目前分頁，需匯出保存。</p>
+<p>工作站工具擷取模型車道，配合外部已配準位姿建圖；沒有新增 VIO 求解器、訓練權重、完整環景或可控制車輛的高精度地圖。不同路線／視野造成的未觀測不代表道路消失，分散度也不是實測精度。前窄角＋廣角仍需內外參與時間同步；更高精度另需測量／RTK 基準。<a href="https://github.com/TonyBinheWu/sunnypilot/blob/carrot-wip/docs/carrot_mapping_zh-TW.md">完整繁中格式、指令與配套清單</a>。</p>
 <h2>錯誤自我診斷與修復（0.2.19）</h2>
 <p>更新並完整重新啟動車機後，網頁及 APK 可開啟 <strong>工具 → 錯誤自我診斷與修復</strong>。完整車機診斷也可由既有 APK 載入更新後網頁；下述原生離線連線檢查須安裝 <a href="https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk">0.2.19 APK</a>。</p>
 <h3>自動檢查與結果判讀</h3>

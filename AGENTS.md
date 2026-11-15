@@ -1,5 +1,23 @@
 # Repository memory
 
+- 2026-11-16: Offline tools.carrot_mapping extracts selected local full-schema
+  rlog model lanes and requires external optimized world_from_model poses in an
+  explicitly shared ENU metre frame. No VIO solver, raw video/IMU ingestion,
+  cross-trip alignment, global HD accuracy, occupancy or rain/night weights are
+  implemented. Enforce boot-clock/vehicle/trip identity, increasing times,
+  <=25ms nearest-pose association and optional exact frame ID; calibration,
+  probability, range and uncertainty admission. One trip vote/1x1x.5m cell;
+  median centres and dispersion are predictions, never measured accuracy.
+  Immutable hashed revisions compare observation coverage only, not confirmed
+  road changes. JSON/PLY stay control_eligible/ground_truth/pose_verified=false.
+  Web/APK Tools viewer offers BEV/oblique, trip filtering and tab-local review
+  export. Local import validates format/bounds only; read-only device catalog
+  /data/carrot/mapping verifies revision hashes and bounded files, no upload or
+  mutation API. Existing CarrotAssist0.2.19 loads vehicle web assets; no new
+  Android permission/binary. Never publish routes/images automatically or treat
+  synthetic UI/native-schema fixtures as surveyed road/hardware acceptance.
+  Prerequisites and external pose contract: docs/carrot_mapping_zh-TW.md.
+
 - 2026-11-16: Tools -> Error diagnosis and repair shares a read-only on-demand
   native snapshot across web/APK. Fresh invalid carState Event still supplies
   canValid/canTimeout failure evidence; do not confuse invalid CAN with stale

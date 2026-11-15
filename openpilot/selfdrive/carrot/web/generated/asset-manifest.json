@@ -2,6 +2,13 @@
   "schemaVersion": 1,
   "assets": [
     {
+      "id": "tools.lane-mapping",
+      "kind": "bundle",
+      "source": "src/entries/lane_mapping.js",
+      "path": "js/generated/lane-mapping.js",
+      "hash": "68680f826f790ec4c3b0dcd1088a7b471fe306693ac08753d683513d2f180788"
+    },
+    {
       "id": "app.display-preferences",
       "kind": "bundle",
       "source": "src/entries/display_preferences.js",
@@ -41,7 +48,7 @@
       "kind": "bundle",
       "source": "src/entries/tools.js",
       "path": "js/generated/tools.js",
-      "hash": "3328f3be53bd7f1b9de3d5f1646f595337eea61bd0d5c5072b11782a432ed1f8"
+      "hash": "26cc903abef932669ff46cb33edf32cf982d2802673da3f60abdcc67bb5f39ea"
     },
     {
       "id": "logs.runtime",

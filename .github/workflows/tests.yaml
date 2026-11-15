@@ -38,6 +38,8 @@ jobs:
         run: python -m pytest -c /dev/null --rootdir=. --noconftest -q openpilot/selfdrive/carrot/server/tests/test_intro_reconfigure.py
       - name: Check read-only diagnosis and guarded single-use repairs
         run: python -m pytest -c /dev/null --rootdir=. --noconftest -q openpilot/selfdrive/carrot/server/tests/test_self_diagnostics.py
+      - name: Check offline lane map geometry, clocks, revisions and read-only serving
+        run: python -m pytest -c /dev/null --rootdir=. --noconftest -q tools/carrot_mapping/test_pipeline.py
       - name: Check Vision resolution policy
         run: |
           g++ -std=c++17 -Iopenpilot openpilot/system/loggerd/tests/test_vision_resolution.cc -o /tmp/vision-resolution-test
@@ -140,6 +142,8 @@ jobs:
       - run: ./tools/op.sh setup
       - name: Build openpilot
         run: scons
+      - name: Check actual full-cereal offline lane extraction
+        run: python -m pytest -o addopts='' -q tools/carrot_mapping/test_native_extract.py
       - name: Check recording quota and existing emergency cleanup
         run: python -m pytest -o addopts='' -q openpilot/system/loggerd/tests/test_recording_quota.py openpilot/system/loggerd/tests/test_deleter.py
       - name: Check read-only steering learning status and cache identity
