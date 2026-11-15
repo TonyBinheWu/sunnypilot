@@ -47,7 +47,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{}}={}) {
     const enabled=target.CarrotWebSettingsState?.vision_object_detection===true;
     if(!enabled){failed=false;wasEnabled=false;stop();return;}
     if(!wasEnabled){failed=false;wasEnabled=true;}
-    if(!active||frozen||doc.hidden){stop('paused');return;}
+    if(!active||frozen||doc.hidden){if(!failed)stop('paused');return;}
     if(failed)return;
     const video=doc.getElementById?.('carrotRoadVideo');
     if(!video||video.readyState<2||!video.videoWidth||!video.videoHeight||video.seeking){

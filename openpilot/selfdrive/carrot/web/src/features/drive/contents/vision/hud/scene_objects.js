@@ -11,7 +11,7 @@ export function surroundingTargets(radar, range=75) {
     // The same native target is repeated in primary/side/cut-in collections.
     // Without a usable track ID, only collapse nearly identical observations.
     if(out.some(p=>Math.abs(p.x-x)<(id!==null&&p.trackId===id?2:.5)&&Math.abs(p.y-y)<.35
-      &&(id!==null&&p.trackId===id||finite(lead.vRel)&&finite(p.vRel)&&Math.abs(p.vRel-lead.vRel)<.3)))return;
+      &&(id!==null&&p.trackId===id||(id===null||p.trackId===null)&&finite(lead.vRel)&&finite(p.vRel)&&Math.abs(p.vRel-lead.vRel)<.3)))return;
     out.push({id:source,source:`radarState.${source}`,kind:'unknown',x,y,vRel:finite(lead.vRel)?lead.vRel:null,
       trackId:id,radarUsed:typeof lead.radar==='boolean'?lead.radar:null,origin:'native_lead_reference',
       probability:finite(lead.modelProb)&&lead.modelProb>=0&&lead.modelProb<=1?lead.modelProb:null});

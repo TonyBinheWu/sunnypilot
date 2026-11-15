@@ -11,6 +11,7 @@ test('all native lane collections render with right-positive coordinates, bounde
   const out=surroundingTargets({leadOne:a,leadLeft:a,leadsLeft:[a],leadsRight:[b,c],leadsCutIn:[b]});
   assert.deepEqual(out.map(p=>[p.x,p.y]),[[20,-3],[30,3],[40,3]]);
   assert.ok(out.every(p=>p.kind==='unknown'));
+  assert.equal(surroundingTargets({leadOne:a,leadsLeft:[lead(20.2,3.1,9)]}).length,2); // distinct known IDs stay distinct
   assert.equal(surroundingTargets({leadOne:lead(Infinity,0,1),leadTwo:lead(-3,0,2),leadLeft:lead(10,NaN,3)}).length,0);
 });
 test('camera geometry requires completed calibration, height, known sensor and uncropped aspect',()=>{
@@ -80,6 +81,7 @@ test('bitmap creation races are closed after a source switch or freeze; old work
 test('unavailable worker support and timeouts fail closed until an explicit off/on retry',()=>{
   const f=fixture();f.target.Worker=null;f.perception.update();assert.equal(f.perception.scene().status,'unsupported');
   const g=fixture();g.perception.update();[...g.timers.values()][0]();
+  assert.equal(g.perception.scene().status,'load_error');g.perception.update({active:false});
   assert.equal(g.perception.scene().status,'load_error');g.perception.update();assert.equal(g.workers.length,1);
   g.target.CarrotWebSettingsState.vision_object_detection=false;g.perception.update();
   g.target.CarrotWebSettingsState.vision_object_detection=true;g.perception.update();assert.equal(g.workers.length,2);

@@ -81,7 +81,7 @@ def write_catalog(root, payload):
 class WikiSettingsGeneratorTest(unittest.TestCase):
   def test_locale_iterator_keeps_requested_menu_labels(self):
     settings, leaves = GENERATOR.load_catalog(GENERATOR.DEFAULT_CATALOG, iter(("ko", "en")))
-    self.assertEqual(len(settings), 214)
+    self.assertEqual(len(settings), 215)
     self.assertTrue(all(set(leaf.labels) == {"ko", "en"} for leaf in leaves))
 
   def test_traditional_bundle_matches_current_catalog_and_preserves_manual(self):
@@ -101,7 +101,8 @@ class WikiSettingsGeneratorTest(unittest.TestCase):
       catalog_commit=COMMIT,
       generated_at=STAMP,
     )
-    self.assertEqual(len(result.generated_settings), 214)
+    self.assertEqual(len(result.generated_settings), 215)
+    self.assertIn("RainbowMode", result.index["settings"])
     self.assertIn("TeslaAutoSpeedLimit", result.index["settings"])
     self.assertIn("TeslaAutoTurnSignals", result.index["settings"])
     self.assertIn("NNFF", result.index["settings"])
@@ -123,15 +124,15 @@ class WikiSettingsGeneratorTest(unittest.TestCase):
     for retired in ("ClusterHudPriority", "ClusterHudCoreMode", "ClusterHudLiveFps", "CanfdStopRetry", "DisableDM",
                     "CarrotYouTubeLive", "CarrotYouTubeQuality", "CarrotYouTubeTimestamp"):
       self.assertNotIn(retired, result.index["settings"])
-    self.assertEqual(result.index["review"], {"current": 0, "needs_review": 214})
+    self.assertEqual(result.index["review"], {"current": 0, "needs_review": 215})
     self.assertEqual(result.index["locales"], ["ko", "en", "zh"])
-    self.assertEqual(len(result.pages), (214 * 3) + 2)
+    self.assertEqual(len(result.pages), (215 * 3) + 2)
     setting_pages = {
       name: text
       for name, text in result.pages.items()
       if GENERATOR.GENERATED_PAGE_RE.fullmatch(name)
     }
-    self.assertEqual(len(setting_pages), 214 * 3)
+    self.assertEqual(len(setting_pages), 215 * 3)
     self.assertTrue(all(text.count("<!-- CARROT:SETTING:BEGIN ") == 1 for text in setting_pages.values()))
     for name, text in result.pages.items():
       if name.endswith(".md"):

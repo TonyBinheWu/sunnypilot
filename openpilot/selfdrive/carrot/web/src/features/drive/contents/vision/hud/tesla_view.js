@@ -200,4 +200,5 @@ export const TESLA_VIEW_CSS=`
  .tesla-perception{position:absolute;left:150px;right:140px;bottom:12px;text-align:center;font-size:11px;color:#b7c9db;white-space:normal;overflow-wrap:anywhere}.is-light-scene .tesla-notice{color:#4e5e6c;background:#ffffffd9}.is-light-scene .tesla-perception{color:#53616f}.is-light-scene .tesla-metric{color:#263440;background:#ffffffeb;border-color:#aab6bf99;box-shadow:0 2px 12px #263b4f10}.is-light-scene .tesla-edit{color:#455564;background:#fffffff0;border-color:#aab6bf}.is-light-scene .tesla-metric b{font-weight:600}
  @media(max-width:600px){.tesla-notice{left:130px;right:8px;font-size:10px;top:56px}.tesla-perception{left:130px;right:8px;bottom:60px;font-size:10px}}
 .chud.is-light-scene::before,.chud.is-light-scene::after{display:none}.chud.is-light-scene .clive-state,.chud.is-light-scene .clive-health{background:#ffffffee;color:#53616f;border:1px solid #c8d0d6}.chud.is-light-scene .clive-health[data-state=playing]{display:none}
+@media(max-width:600px){.tesla-perception{top:96px;bottom:auto;background:#102030dd;border-radius:6px;padding:5px}.is-light-scene .tesla-perception{background:#ffffffe8}}
 ` + BEV_CSS;
