@@ -30,6 +30,8 @@ def test_offroad_absence_is_not_a_can_or_model_failure_and_missing_data_is_not_h
   assert 'vehicle_unknown' in codes({'device': {'fresh':True,'started':True},'car':{'fresh':False}})
   assert 'device_unknown' in codes({})
   assert not rules.diagnose({})['actions']
+  assert 'offroad' not in codes({'device': {'fresh':True}})
+  assert 'device_unknown' in codes({'device': {'fresh':True}})
 
 
 @pytest.mark.parametrize('facts,expected', [

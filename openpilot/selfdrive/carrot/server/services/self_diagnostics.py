@@ -13,7 +13,10 @@ def diagnose(facts):
     add('device_unknown', 'unknown')
   else:
     started = device.get('started') is True
-    add('onroad' if started else 'offroad')
+    if type(device.get('started')) is bool:
+      add('onroad' if started else 'offroad')
+    else:
+      add('device_unknown', 'unknown')
     if device.get('thermal') in ('red', 'danger'):
       add('thermal_high', 'error', thermal=device['thermal'])
     if isinstance(device.get('freeSpace'), (int, float)) and device['freeSpace'] <= 5:
