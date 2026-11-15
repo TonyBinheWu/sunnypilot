@@ -217,6 +217,7 @@ jobs:
         run: >-
           python -m pytest -o addopts='' -q
           openpilot/selfdrive/ui/tests/test_path_geometry.py
+          openpilot/selfdrive/ui/tests/test_rainbow_path.py
           openpilot/selfdrive/ui/tests/test_carrot_model_renderer.py
           openpilot/selfdrive/ui/tests/test_carrot_model_renderer_lane_visibility.py
           openpilot/selfdrive/ui/tests/test_render_diagnostics.py

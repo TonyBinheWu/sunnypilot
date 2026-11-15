@@ -5,6 +5,7 @@ import time
 import numpy as np
 
 from openpilot.selfdrive.ui.onroad.path_geometry import project_path, sample_path
+from openpilot.selfdrive.ui.onroad.rainbow_path import RainbowPath
 from openpilot.selfdrive.ui.render_diagnostics import RenderDiagnostics
 import pyray as rl
 from openpilot.cereal import messaging, car, log
@@ -118,6 +119,7 @@ class ModelRenderer(Widget):
 
     self._font_display: rl.Font = gui_app.font(FontWeight.DISPLAY)
     self._init_carrot()
+    self._rainbow_path = RainbowPath()
     self._render_diagnostics = RenderDiagnostics('uiModel')
 
   def set_transform(self, transform: np.ndarray):
@@ -1498,7 +1500,11 @@ class ModelRenderer(Widget):
 
     show_path_mode = self._carrot_show_path_mode
 
-    if show_path_mode == 0:
+    if ui_state.rainbow_path and ui_state.lat_active:
+      self._rainbow_path.draw(self._rect, self._path.projected_points, rl.get_time())
+      if brake_valid:
+        self._draw_polygon_outline_carrot(self._path.projected_points, rl.Color(255, 0, 0, 255), 2.0)
+    elif show_path_mode == 0:
       draw_polygon_solid(self._path.projected_points, self._carrot_colors[show_path_color % 10])
       if show_path_color >= 10 or brake_valid:
         self._draw_polygon_outline_carrot(

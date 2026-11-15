@@ -20,7 +20,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "813623d1df6f5152fe15d064e4439ffc02aec8adb9c429bcc270d1830f686573"
+      "hash": "149a64edb3d2f8730f27a34a4f78be66a2b1be93e790824bf9017443bc5ca7f2"
     },
     {
       "id": "replay.runtime",
@@ -41,7 +41,7 @@
       "kind": "bundle",
       "source": "src/entries/tools.js",
       "path": "js/generated/tools.js",
-      "hash": "fb22e4d0375b01fc23db1fe8b192a240c530b796bdb6eaeb8c7868eb822b545a"
+      "hash": "89100409ecfd3ff75d25727592f8ceeb4fc0ce7b196ecec1fbd7f0f64ab72245"
     },
     {
       "id": "logs.runtime",
@@ -154,6 +154,12 @@
       "source": "src/entries/intro.css",
       "path": "css/generated/intro.css",
       "hash": "2bab523e68f30faadee22c63ed8d6fad0703696194c4bcae8b4a66af6bf2104a"
+    },
+    {
+      "id": "vision.object-detector-worker",
+      "kind": "worker",
+      "path": "js/generated/bev-detector-worker.js",
+      "hash": "135f47e60ebc8888b0a5bf7dd2e331f23375cf05fed381a54564a9016cc5961d"
     },
     {
       "id": "vision.webgl2.worker",

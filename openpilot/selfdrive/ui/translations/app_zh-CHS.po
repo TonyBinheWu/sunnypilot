@@ -1698,3 +1698,13 @@ msgstr "转向学习\n进度"
 #: openpilot/selfdrive/ui/widgets/steering_learning.py
 msgid "Waiting for data"
 msgstr "等待数据"
+
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Rainbow Road (SP style)"
+msgstr "彩虹道路（SP 风格）"
+
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
+msgstr "横向控制启用时，在预测路径显示动态彩虹。仅改变显示，无需重启即可应用。"

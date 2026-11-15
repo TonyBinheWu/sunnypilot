@@ -359,8 +359,11 @@ With `CarrotVisionEnabled` on, the external HUD and web camera view can be used 
 |---|---|---|
 | Information | `ShowDebugUI`, `ShowTpms`, `ShowDateTime`, `ShowPathEnd`, `ShowDeviceState`, `ShowLaneInfo`, `ShowRadarInfo`, `ShowRouteInfo`, `ShowPlotMode` | Debug, tire, time, lane, radar, and route information |
 | Path | `ShowPathMode`, `ShowPathColor`, `ShowPathColorCruiseOff`, `ShowPathModeLane`, `ShowPathColorLane` | Path shape and color by driving state |
+| Rainbow road | `RainbowMode` | SP-style animated path fill while lateral control is active; display only |
 | Brightness/on-road view | `ShowCustomBrightness`, `ShowModelView`, `ShowCameraWithCluster` | Brightness, camera/model composition, and the on-device camera while the external HUD is connected |
 | External HUD | `ClusterHud`, `ClusterHudBrightness`, `ClusterHudOrientation`, and related `ClusterHud*` settings | Supported TURZX HUD layout, live brightness, screen rotation, camera, radar, and encoder options |
+
+`RainbowMode` defaults off. Enable **Rainbow Road (SP style)** on the device Toggles screen, or search for it in Carrot Web / CarrotAssist. C3/C3X and C4 apply it without restarting, when lateral control is active. Turning it off restores the existing path mode and color. It changes only path fill and preserves geometry, steering, cruise control and alerts. The web / APK rainbow uses the separate `vision_rainbow_lane` display preference.
 
 For RAV4 2022 with the ARS display stream, `ShowRadarInfo=3` on the standard device
 driving screen also shows adjacent-lane objects separately from control leads. Modes 1/2

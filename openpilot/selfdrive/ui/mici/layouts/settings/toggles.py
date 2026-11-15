@@ -18,6 +18,7 @@ class TogglesLayoutMici(NavScroller):
                                                  [tr("aggressive"), tr("standard"), tr("relaxed"), tr("moreRelaxed")])
     self._experimental_btn = BigParamControl(tr("experimental mode"), "ExperimentalMode")
     is_metric_toggle = BigParamControl(tr("use metric units"), "IsMetric")
+    rainbow_toggle = BigParamControl(tr("Rainbow Road (SP style)"), "RainbowMode")
     ldw_toggle = BigParamControl(tr("lane departure warnings"), "IsLdwEnabled")
     always_on_dm_toggle = BigParamControl(tr("always-on driver monitor"), "AlwaysOnDM")
     record_front = BigParamControl(tr("record & upload driver camera"), "RecordFront", toggle_callback=restart_needed_callback)
@@ -28,6 +29,7 @@ class TogglesLayoutMici(NavScroller):
       self._personality_toggle,
       self._experimental_btn,
       is_metric_toggle,
+      rainbow_toggle,
       ldw_toggle,
       always_on_dm_toggle,
       record_front,
@@ -39,6 +41,7 @@ class TogglesLayoutMici(NavScroller):
     self._refresh_toggles = (
       ("ExperimentalMode", self._experimental_btn),
       ("IsMetric", is_metric_toggle),
+      ("RainbowMode", rainbow_toggle),
       ("IsLdwEnabled", ldw_toggle),
       ("AlwaysOnDM", always_on_dm_toggle),
       ("RecordFront", record_front),

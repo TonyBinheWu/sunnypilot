@@ -31,6 +31,7 @@ DESCRIPTIONS = {
   'RecordFront': tr_noop("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
   "IsMetric": tr_noop("Display speed in km/h instead of mph."),
   "RecordAudio": tr_noop("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
+  "RainbowMode": tr_noop("Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."),
 }
 
 
@@ -51,6 +52,12 @@ class TogglesLayout(Widget):
       "ExperimentalMode": (
         lambda: tr("Experimental Mode"),
         "",
+        "experimental_white.png",
+        False,
+      ),
+      "RainbowMode": (
+        lambda: tr("Rainbow Road (SP style)"),
+        DESCRIPTIONS["RainbowMode"],
         "experimental_white.png",
         False,
       ),

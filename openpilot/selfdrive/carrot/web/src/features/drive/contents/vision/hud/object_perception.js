@@ -1,0 +1,89 @@
+import {cameraGeometry,cameraTargets} from './scene_objects.js';
+
+export const DETECTION_TTL_MS=1200;
+export function createObjectPerception(doc,target,{onChange=()=>{}}={}) {
+  let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,lastAttempt=-Infinity;
+  let lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
+  let state={status:'off',objects:[],count:0,capturedAt:null,revision};
+  const now=()=>target.performance?.now?.()??Date.now();
+  const clearTimeout=()=>{if(timeout!==null)target.clearTimeout(timeout);timeout=null;};
+  const publish=(status,extra={})=>{state={status,objects:[],count:0,capturedAt:null,...extra,revision:++revision};onChange();};
+  function stop(status='off'){
+    generation++;worker?.terminate();worker=null;ready=false;busy=false;request=null;clearTimeout();
+    lastTime=null;lastSource=null;lastReplay=null;lastAttempt=-Infinity;interval=250;
+    if(state.status!==status||state.objects.length)publish(status);
+  }
+  const fail=status=>{failed=true;stop(status);};
+  function start(){
+    if(typeof target.Worker!=='function'||typeof target.WebAssembly!=='object'||typeof target.createImageBitmap!=='function'||typeof target.OffscreenCanvas!=='function'){
+      fail('unsupported');return;
+    }
+    const url=target.CarrotAssetUrl?.resolve?.('vision.object-detector-worker');
+    if(!url){fail('load_error');return;}
+    try{
+      worker=new target.Worker(url);const current=generation;
+      worker.onerror=()=>{if(current===generation)fail('load_error');};
+      worker.onmessage=({data})=>{
+        if(current!==generation)return;
+        clearTimeout();
+        if(data.type==='ready'){ready=true;publish('waiting');return;}
+        if(data.type==='error'){fail(data.stage==='load'?'load_error':'inference_error');return;}
+        if(data.type!=='result'||!request||data.id!==request.id)return;
+        busy=false;
+        const captured=request;request=null;
+        interval=Math.min(1200,Math.max(250,Number(data.durationMs||0)*3));
+        if(now()-captured.capturedAt>DETECTION_TTL_MS){publish('stale');return;}
+        const objects=cameraTargets(data.detections,captured.geometry);
+        publish(captured.geometry?'ready':'calibration',{
+          objects,count:Array.isArray(data.detections)?data.detections.length:0,capturedAt:captured.capturedAt,
+          videoTime:captured.videoTime,durationMs:data.durationMs,camera:captured.geometry?.sensor||null,
+        });
+      };
+      timeout=target.setTimeout(()=>fail('load_error'),90000);
+      worker.postMessage({type:'init'});publish('loading');
+    }catch{fail('load_error');}
+  }
+  function update({active=true,frozen=false}={}){
+    const enabled=target.CarrotWebSettingsState?.vision_object_detection===true;
+    if(!enabled){failed=false;wasEnabled=false;stop();return;}
+    if(!wasEnabled){failed=false;wasEnabled=true;}
+    if(!active||frozen||doc.hidden){stop('paused');return;}
+    if(failed)return;
+    const video=doc.getElementById?.('carrotRoadVideo');
+    if(!video||video.readyState<2||!video.videoWidth||!video.videoHeight||video.seeking){
+      if(state.objects.length||busy)stop('waiting');else if(state.status!=='loading'&&state.status!=='waiting')publish('waiting');
+      return;
+    }
+    const replay=target.CarrotVisionReplay?.status?.()?.active===true;
+    const source=video.srcObject||video.currentSrc||video.src;
+    if(worker&&(source!==lastSource||lastReplay!==replay||lastTime!==null&&video.currentTime<lastTime))stop('waiting');
+    if(!worker){lastSource=source;lastReplay=replay;start();return;}
+    if(!ready||busy||now()-lastAttempt<interval||lastTime===video.currentTime)return;
+    const current=generation,capturedAt=now(),videoTime=video.currentTime;
+    lastAttempt=capturedAt;lastTime=videoTime;busy=true;
+    const width=Math.min(640,video.videoWidth),height=Math.round(video.videoHeight*width/video.videoWidth);
+    const raw=target.CarrotOverlayState||{},stamps=target.CarrotStateReceivedAtMonotonic||{};
+    // A replay source is historical by design. Live calibration/profile must be fresh.
+    const fresh=key=>replay||Number.isFinite(stamps[key])&&capturedAt-stamps[key]>=0&&capturedAt-stamps[key]<2000;
+    const geometry=fresh('liveCalibration')&&fresh('roadCameraState')?cameraGeometry(raw,width,height):null;
+    request={id:revision+1,capturedAt,geometry,videoTime};
+    timeout=target.setTimeout(()=>fail('inference_error'),4000);
+    let capture;
+    try{capture=target.createImageBitmap(video,{resizeWidth:width,resizeHeight:height,resizeQuality:'low'});}
+    catch{fail('unsupported');return;}
+    Promise.resolve(capture).then(bitmap=>{
+      if(current!==generation){bitmap.close();return;}
+      if(bitmap.width!==width||bitmap.height!==height){bitmap.close();fail('unsupported');return;}
+      try{worker.postMessage({type:'frame',bitmap,id:request.id},[bitmap]);}
+      catch{bitmap.close();fail('unsupported');}
+    }).catch(()=>{if(current===generation)fail('unsupported');});
+  }
+  return {update,
+    scene(){
+      if(state.capturedAt!==null&&now()-state.capturedAt>DETECTION_TTL_MS)
+        return {...state,status:'stale',objects:[],count:0};
+      return state;
+    },
+    destroy(){stop();},
+  };
+}

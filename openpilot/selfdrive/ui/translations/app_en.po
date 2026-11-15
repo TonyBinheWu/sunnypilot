@@ -1570,3 +1570,13 @@ msgstr "Invalid switch value."
 #: openpilot/selfdrive/ui/widgets/forced_offroad.py
 msgid "Park and stop, then disengage all assistance. Normal driving processes and driving recording stop. Leaving Park or losing vehicle data cancels this mode. Resets after restart."
 msgstr "Park, stop and disengage assistance before switching. Driving processes and normal driving recording stop. Leaving Park, invalid vehicle data or ignition off cancels the mode. Resets after restart."
+
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Rainbow Road (SP style)"
+msgstr "Rainbow Road (SP style)"
+
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
+msgstr "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."

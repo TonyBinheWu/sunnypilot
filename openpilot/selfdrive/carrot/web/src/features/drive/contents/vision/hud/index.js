@@ -105,7 +105,7 @@ export function createHudOverlay(doc) {
   let tesla = null;
   let teslaUpdatedAt = null;
   let teslaMetric = true;
-  const renderTesla = () => tesla?.render(lastData, teslaUpdatedAt == null || (target.CarrotVisionReplay?.status?.()?.active !== true && (target.performance?.now?.() ?? Date.now()) - teslaUpdatedAt > 2000), teslaMetric === false ? "mph" : "km/h", live?.isSpeedVisible?.() ?? true);
+  const renderTesla = () => tesla?.render(lastData, teslaUpdatedAt == null || (target.CarrotVisionReplay?.status?.()?.active !== true && (target.performance?.now?.() ?? Date.now()) - teslaUpdatedAt > 2000), teslaMetric === false ? "mph" : "km/h", live?.isSpeedVisible?.() ?? true, active && !destroyed && suppressions.size===0 && !root.hidden);
   function syncPresentation() {
     if (!tesla && (['tesla','bev'].includes(target.CarrotWebSettingsState?.vision_presentation) || target.CarrotWebSettingsState?.vision_custom_metrics === true)) {
       tesla = createTeslaView(doc, target);root.appendChild(tesla.canvas);root.appendChild(tesla.root);

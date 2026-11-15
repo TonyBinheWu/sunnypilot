@@ -1516,3 +1516,13 @@ msgstr ""
 #: openpilot/selfdrive/selfdrived/events.py
 msgid "Park safely before rebooting your device"
 msgstr ""
+
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Rainbow Road (SP style)"
+msgstr ""
+
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
+msgstr ""

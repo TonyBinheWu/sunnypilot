@@ -105,6 +105,7 @@ const WEB_SETTINGS_GROUPS = [
       },
       {id:"vision_custom_metrics",titleKey:"vision_custom_metrics",descKey:"vision_custom_metrics_desc"},
       {id:"vision_rainbow_lane",titleKey:"vision_rainbow_lane",descKey:"vision_rainbow_lane_desc"},
+      {id:"vision_object_detection",titleKey:"scene_detection",descKey:"scene_detection_desc"},
       {id:"vision_bev_range",titleKey:"bev_range",descKey:"bev_range_desc",options:[30,50,75].map(n=>({value:String(n),label:`${n} m`}))},
       {id:"vision_bev_grid",titleKey:"bev_grid",descKey:"bev_grid_desc"},
       {id:"vision_bev_details",titleKey:"bev_details",descKey:"bev_details_desc"},

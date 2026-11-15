@@ -45,3 +45,11 @@ def test_bev_annotation_options_do_not_change_existing_presentation_or_driving_s
   assert enabled['vision_presentation']=='bev' and enabled['vision_bev_range']=='30'
   assert enabled['vision_bev_details'] is False
   assert web_settings.sanitize_web_settings({'vision_bev_range':'999'})['vision_bev_range']=='50'
+
+
+def test_front_camera_recognition_is_opt_in_and_independent_of_vehicle_display_setting():
+  defaults = web_settings.sanitize_web_settings({})
+  assert defaults['vision_object_detection'] is False
+  enabled = web_settings.sanitize_web_settings({'vision_object_detection': True, 'RainbowMode': True})
+  assert enabled['vision_object_detection'] is True
+  assert 'RainbowMode' not in enabled  # Native vehicle Params has its own setting API.

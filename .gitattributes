@@ -6,6 +6,8 @@ tools/jetlink/*.py text eol=lf
 # Store bundled artifacts as ordinary Git blobs, without LFS bandwidth usage.
 # Keep their exact bytes on every platform. Larger external models stay on NAS.
 *.onnx -diff -merge -text
+# Pinned local browser inference artifacts must retain their published bytes.
+openpilot/selfdrive/carrot/web/vendor/bev-detector/** -filter -text
 openpilot/system/hardware/tici/updater -diff -merge -text
 
 # Image / font / sound types are shipped as REAL blobs in this fork. Declaring

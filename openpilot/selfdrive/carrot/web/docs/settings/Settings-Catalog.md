@@ -307,6 +307,7 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 #### 경로 표시
 
 - [타이어 궤적](https://github.com/ajouatom/openpilot/wiki/KO-%ED%83%80%EC%9D%B4%EC%96%B4-%EA%B6%A4%EC%A0%81) — `CarrotTireTrajectory`
+- [무지개 도로 (SP 스타일)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%AC%B4%EC%A7%80%EA%B0%9C-%EB%8F%84%EB%A1%9C-%28SP-%EC%8A%A4%ED%83%80%EC%9D%BC%29) — `RainbowMode`
 - [패스종류,레인리스(9)](https://github.com/ajouatom/openpilot/wiki/KO-%ED%8C%A8%EC%8A%A4%EC%A2%85%EB%A5%98%2C%EB%A0%88%EC%9D%B8%EB%A6%AC%EC%8A%A4%289%29) — `ShowPathMode`
 - [패스색상,레인리스(12)](https://github.com/ajouatom/openpilot/wiki/KO-%ED%8C%A8%EC%8A%A4%EC%83%89%EC%83%81%2C%EB%A0%88%EC%9D%B8%EB%A6%AC%EC%8A%A4%2812%29) — `ShowPathColor`
 - [패스색상,크루즈OFF(1)](https://github.com/ajouatom/openpilot/wiki/KO-%ED%8C%A8%EC%8A%A4%EC%83%89%EC%83%81%2C%ED%81%AC%EB%A3%A8%EC%A6%88OFF%281%29) — `ShowPathColorCruiseOff`
@@ -682,6 +683,7 @@ Per-setting pages generated from the current settings catalog.
 #### Path Display
 
 - [Tire Trajectory](https://github.com/ajouatom/openpilot/wiki/EN-Tire-Trajectory) — `CarrotTireTrajectory`
+- [Rainbow Road (SP style)](https://github.com/ajouatom/openpilot/wiki/EN-Rainbow-Road-%28SP-style%29) — `RainbowMode`
 - [Show Path Mode:LaneLess(9)](https://github.com/ajouatom/openpilot/wiki/EN-Show-Path-Mode-LaneLess%289%29) — `ShowPathMode`
 - [Show Path Color:LaneLess(12)](https://github.com/ajouatom/openpilot/wiki/EN-Show-Path-Color-LaneLess%2812%29) — `ShowPathColor`
 - [Show Path Color:CruiseOFF(1)](https://github.com/ajouatom/openpilot/wiki/EN-Show-Path-Color-CruiseOFF%281%29) — `ShowPathColorCruiseOff`
@@ -1057,6 +1059,7 @@ Per-setting pages generated from the current settings catalog.
 #### 路径显示
 
 - [轮胎轨迹](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%BD%AE%E8%83%8E%E8%BD%A8%E8%BF%B9) — `CarrotTireTrajectory`
+- [彩虹道路（SP 风格）](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%BD%A9%E8%99%B9%E9%81%93%E8%B7%AF%28SP-%E9%A3%8E%E6%A0%BC%29) — `RainbowMode`
 - [显示路径模式: 无车道 (9)](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%98%BE%E7%A4%BA%E8%B7%AF%E5%BE%84%E6%A8%A1%E5%BC%8F-%E6%97%A0%E8%BD%A6%E9%81%93-%289%29) — `ShowPathMode`
 - [显示路径颜色: 无车道 (12)](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%98%BE%E7%A4%BA%E8%B7%AF%E5%BE%84%E9%A2%9C%E8%89%B2-%E6%97%A0%E8%BD%A6%E9%81%93-%2812%29) — `ShowPathColor`
 - [显示路径颜色: 巡航关闭 (1)](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%98%BE%E7%A4%BA%E8%B7%AF%E5%BE%84%E9%A2%9C%E8%89%B2-%E5%B7%A1%E8%88%AA%E5%85%B3%E9%97%AD-%281%29) — `ShowPathColorCruiseOff`
@@ -1432,6 +1435,7 @@ Per-setting pages generated from the current settings catalog.
 #### 路徑顯示
 
 - [輪胎軌跡](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%BC%AA%E8%83%8E%E8%BB%8C%E8%B7%A1) — `CarrotTireTrajectory`
+- [彩虹道路（SP 風格）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%BD%A9%E8%99%B9%E9%81%93%E8%B7%AF%28SP-%E9%A2%A8%E6%A0%BC%29) — `RainbowMode`
 - [顯示路徑模式: 無車道 (9)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%A1%AF%E7%A4%BA%E8%B7%AF%E5%BE%91%E6%A8%A1%E5%BC%8F-%E7%84%A1%E8%BB%8A%E9%81%93-%289%29) — `ShowPathMode`
 - [顯示路徑顏色: 無車道 (12)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%A1%AF%E7%A4%BA%E8%B7%AF%E5%BE%91%E9%A1%8F%E8%89%B2-%E7%84%A1%E8%BB%8A%E9%81%93-%2812%29) — `ShowPathColor`
 - [顯示路徑顏色: 巡航關閉 (1)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%A1%AF%E7%A4%BA%E8%B7%AF%E5%BE%91%E9%A1%8F%E8%89%B2-%E5%B7%A1%E8%88%AA%E9%97%9C%E9%96%89-%281%29) — `ShowPathColorCruiseOff`

@@ -22,7 +22,7 @@ export function createBevWorkbench(doc,target,canvas,{canEdit,refresh,getHud}) {
   const status=el(doc,'p',{attrs:{role:'status'}}),help=el(doc,'p',{text:text('bev_help','Freeze while parked or in replay. Click to add an unverified human point; lane correction requires at least two points. Drafts are temporary; export before closing. No model training or vehicle control is performed.')});
   const button=(key,fallback,fn)=>{const b=el(doc,'button',{attrs:{type:'button'},text:text(key,fallback)});b.addEventListener('click',e=>{e.stopPropagation();void fn();});panel.appendChild(b);return b;};
   const freeze=button('bev_freeze','Freeze snapshot',async()=>{
-    if(!canEdit()||(!lastScene.model&&!lastScene.radar))return;
+    if(!canEdit()||(!lastScene.model&&!lastScene.radar&&!lastScene.vision?.objects?.length))return;
     if(frozen){frozen=false;pending=[];revision++;refresh();return;}
     if(draft?.snapshot.manual.length&&target.appConfirm&&!await target.appConfirm(text('bev_replace','Replace the previous annotation draft? Export it first.')))return;
     const range=Number(target.CarrotWebSettingsState?.vision_bev_range)||50;
@@ -89,7 +89,7 @@ export function createBevWorkbench(doc,target,canvas,{canEdit,refresh,getHud}) {
       const range=frozen?draft.snapshot.rangeM:Number(target.CarrotWebSettingsState?.vision_bev_range)||50;
       rangeSelect.value=String(range);rangeSelect.disabled=frozen;
       for(const input of panel.querySelectorAll('[data-bev-setting]'))input.checked=target.CarrotWebSettingsState?.[input.dataset.bevSetting]!==false;
-      freeze.disabled=!canEdit()||(!lastScene.model&&!lastScene.radar&&!frozen);
+      freeze.disabled=!canEdit()||(!lastScene.model&&!lastScene.radar&&!lastScene.vision?.objects?.length&&!frozen);
       setText(freeze,text(frozen?'bev_resume':'bev_freeze',frozen?'Resume live / replay':'Freeze snapshot'));
       restore.disabled=!draft||frozen||!canEdit();category.disabled=!frozen||!canEdit();
       finish.disabled=!frozen||pending.length<2||!canEdit();undo.disabled=!frozen||(!pending.length&&!draft?.snapshot.manual.length)||!canEdit();

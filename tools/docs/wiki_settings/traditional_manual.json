@@ -565,6 +565,10 @@
     "SoundLanguageVolume": {
       "englishHash": "c01c0aa5167bce1e9e16defbef3949a3058e939afd5c24c02b94b6905ecdc098",
       "manual": "<!-- CARROT:MANUAL:BEGIN SoundLanguageVolume -->\n<!-- CARROT:REVIEW reviewed-for=\"32c48f4cfc1ecf1e4753492b38495b772d329d24d3954eff9db073bc90a47934\" reviewed-at=\"2026-11-13T00:00:00Z\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n調整導航轉彎、減速及數字倒數語音。機器端乘以一般音量及環境音調節，網頁端乘以網頁音量。警告音與啟用音效維持原有控制。增益後的機器端取樣限制在輸出範圍內。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n停車時逐步調高，確認導航播報清楚。約一秒內生效，無需重新啟動。網頁音量靜音時，網頁語音仍然靜音。\n<!-- CARROT:SECTION:END USAGE -->\n<!-- CARROT:MANUAL:END SoundLanguageVolume -->"
+    },
+    "RainbowMode": {
+      "englishHash": "8878800c32741945a5747ecf8397188acf6dd519fd0d0ad2d133be1ed88acea0",
+      "manual": "<!-- CARROT:MANUAL:BEGIN RainbowMode -->\n<!-- CARROT:REVIEW reviewed-for=\"1aba7ed0cb53ca634c206d22650345f906fe8d15486d15e502ccfad140063cfd\" reviewed-at=\"2026-11-15T15:32:11.549173+00:00\" -->\n<!-- CARROT:SECTION:BEGIN BEHAVIOR -->\n### 運作方式\n\n開啟後，橫向控制啟用時，機器的預測路徑會使用 SP 風格的動態彩虹漸層。關閉或橫向控制未啟用時，使用原有路徑樣式。\n<!-- CARROT:SECTION:END BEHAVIOR -->\n\n<!-- CARROT:SECTION:BEGIN USAGE -->\n### 使用方式\n\n在機器的開關選單操作，或在 Carrot Web / CarrotAssist 搜尋 `RainbowMode`。C3/C3X 與 C4 不必重新啟動即可套用；關閉後恢復原有路徑模式及顏色。\n<!-- CARROT:SECTION:END USAGE -->\n\n<!-- CARROT:SECTION:BEGIN REFERENCE -->\n### 補充說明\n\n此功能只改變路徑填色，不改變轉向、巡航速度、模型輸出或警示。網頁 / APK 的彩虹顯示另有 `vision_rainbow_lane` 設定。\n<!-- CARROT:SECTION:END REFERENCE -->\n\n<!-- CARROT:MANUAL:END RainbowMode -->"
     }
   }
 }

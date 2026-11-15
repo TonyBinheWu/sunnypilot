@@ -1817,3 +1817,13 @@ msgstr "조향\n학습"
 #: openpilot/selfdrive/ui/widgets/steering_learning.py
 msgid "Waiting for data"
 msgstr "데이터 대기 중"
+
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Rainbow Road (SP style)"
+msgstr "무지개 도로 (SP 스타일)"
+
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
+msgstr "횡방향 제어 중 예측 경로를 움직이는 무지개로 표시합니다. 표시 전용이며 재시작 없이 적용됩니다。"

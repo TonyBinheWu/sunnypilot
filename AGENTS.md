@@ -1,5 +1,24 @@
 # Repository memory
 
+- 2026-11-15: Live Tesla-style web/APK scene now uses original light perspective
+  vector art and all available native side-lane target collections (deduplicated,
+  unclassified neutral markers). Opt-in vision_object_detection runs pinned local
+  MediaPipe0.10.21 / EfficientDet-Lite0 int8 v1 in a classic CPU worker on the
+  viewing device, not the driving model. Classes person/bicycle/car/motorcycle/
+  bus/truck only, score>=.5, one frame in flight, max4Hz/adaptive. Full ROAD aspect,
+  fresh completed calibration/height required for approximate flat-ground BEV;
+  reject truncated/horizon/invalid boxes, expire after1.2s. No surround coverage,
+  measured dimensions/heading, cross-frame identity, radar-camera fusion, uploads
+  or control/alert integration. Local model/WASM assets pinned and hashed; classic
+  worker importScripts loader is intentional. APK0.2.18 uses vehicle web assets;
+  physical WebView/Android box performance remains unvalidated. Browser test image
+  really detects bus/person; fixture geometry is synthetic, never road validation.
+  Native RainbowMode defaults OFF, SP-style shader gradient on C3/C3X and C4 only
+  while lateral control is active; same path geometry, normal style restored when
+  disabled. Toggle on both device menus, catalog/web search, no restart. Native
+  rainbow and vision_rainbow_lane web preference are independent. Localized guides
+  and reviewed four-locale Wiki manuals cover the new native setting.
+
 - 2026-11-15: Added opt-in `bev` presentation using existing model/native lead
   data, not a new perception network. Equal-metre grid/range30/50/75, probability
   and uncertainty labels, parked/replay freeze with paired display HUD, bounded

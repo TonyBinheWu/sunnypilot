@@ -571,6 +571,7 @@
           "zh": "路径显示",
           "params": [
             "CarrotTireTrajectory",
+            "RainbowMode",
             "ShowPathMode",
             "ShowPathColor",
             "ShowPathColorCruiseOff",
@@ -2948,6 +2949,25 @@
       "tgroup": "顯示設定",
       "ttitle": "輪胎軌跡",
       "tdescr": "在預測路徑上以漸變色(綠→紅)顯示車道偏離程度, 並在底部顯示偏移量(L/R/C, m)。\n0:關, 1:開"
+    },
+    {
+      "group": "화면패스",
+      "name": "RainbowMode",
+      "title": "무지개 도로 (SP 스타일)",
+      "descr": "횡방향 제어가 활성화되면 예측 경로에 SP 스타일의 움직이는 무지개를 표시합니다. 0:끄기, 1:켜기. 표시만 바꾸며 조향·속도·경로 계산은 바뀌지 않습니다. 재시작 없이 적용됩니다.",
+      "egroup": "DISP",
+      "etitle": "Rainbow Road (SP style)",
+      "edescr": "Show an animated SP-style rainbow on the predicted path while lateral control is active. 0:Off, 1:On. Display only; steering, speed and path calculation are unchanged. Applies without restarting.",
+      "cgroup": "显示设置",
+      "ctitle": "彩虹道路（SP 风格）",
+      "cdescr": "横向控制启用时，在预测路径上显示 SP 风格的动态彩虹。0:关闭，1:开启。仅改变显示，不改变转向、速度或路径计算。无需重启。",
+      "tgroup": "顯示設定",
+      "ttitle": "彩虹道路（SP 風格）",
+      "tdescr": "橫向控制啟用時，在預測路徑上顯示 SP 風格的動態彩虹。0:關閉，1:開啟。僅改變顯示，不改變轉向、速度或路徑計算。不必重新啟動。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1
     },
     {
       "group": "화면패스",

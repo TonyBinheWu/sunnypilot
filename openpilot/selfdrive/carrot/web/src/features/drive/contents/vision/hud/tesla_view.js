@@ -1,6 +1,9 @@
 import {bevProjection} from "./bev_annotations.js";
 import {createBevWorkbench,BEV_CSS} from "./bev_workbench.js";
 import {el, setText} from './dom.js';
+import {surroundingTargets} from './scene_objects.js';
+import {drawDrivingScene,drawSceneObject} from './driving_scene.js';
+import {createObjectPerception} from './object_perception.js';
 
 export const METRIC_DEFAULTS = Object.freeze({speed:[.04,.04,1.2],limit:[.04,.43,1],set:[.04,.80,1]});
 export function metricLayout(value) {
@@ -66,10 +69,9 @@ export function drawBirdScene(ctx,w,h,scene,{rainbow=false,projection=null,maxDi
     ctx.fillStyle='#ecf6ff';ctx.fillRect(cx-vw*.38,cy-vh*.44,vw*.2,vh*.055);ctx.fillRect(cx+vw*.18,cy-vh*.44,vw*.2,vh*.055);
     if(ego){ctx.strokeStyle='#d7e9ff';ctx.lineWidth=2;ctx.strokeRect(cx-vw/2,cy-vh/2,vw,vh);}
   };
-  for(const lead of [scene.radar?.leadOne,scene.radar?.leadTwo]){
-    if(lead?.status===true&&Number.isFinite(lead.dRel)&&lead.dRel>0&&lead.dRel<=maxDistance&&Number.isFinite(lead.yRel)&&Math.abs(lead.yRel)<12)
-      vehicle(lead.dRel,-lead.yRel,'#b2bdca');
-  }
+  const flatProject=(x,y)=>px(x,y);
+  for(const object of surroundingTargets(scene.radar,maxDistance))drawSceneObject(ctx,flatProject,object,{flat:true});
+  for(const object of scene.vision?.objects||[])if(object.x<=maxDistance)drawSceneObject(ctx,flatProject,object,{flat:true,text:scene.text});
   vehicle(0,0,'#397fdf',true);
 }
 
@@ -78,11 +80,12 @@ export function createTeslaView(doc,target) {
   const root=el(doc,'div',{class:'tesla-view'});
   const canvas=el(doc,'canvas',{class:'tesla-scene',attrs:{'aria-label':text('vision_tesla_name','Bird’s-eye view')}});
   const notice=el(doc,'div',{class:'tesla-notice'});
+  const perceptionStatus=el(doc,'div',{class:'tesla-perception',attrs:{role:'status'}});
   const metrics=el(doc,'div',{class:'tesla-metrics'});
   const editor=el(doc,'div',{class:'tesla-editor'});editor.hidden=true;
   const toggle=el(doc,'button',{class:'tesla-edit',attrs:{type:'button'}});
   let layout=metricLayout(target.CarrotWebSettingsState?.vision_metric_layout),editing=false,dirty=false,saving=false;
-  let selected='speed',data={},stale=true,unit='km/h',lastMode=false,metricVisible=true,drag=null,lastSignature='',lastModel=null,lastRadar=null;
+  let selected='speed',data={},stale=true,unit='km/h',lastMode=false,metricVisible=true,drag=null,lastSignature='',lastModel=null,lastRadar=null,viewActive=true;
   const labels={speed:'vision_metric_speed',limit:'vision_metric_limit',set:'vision_metric_set'};
   const cards={};
   const button=(label,fn,parent=editor)=>{const b=el(doc,'button',{attrs:{type:'button'},text:label});b.addEventListener('click',e=>{e.stopPropagation();fn();});parent.appendChild(b);return b;};
@@ -140,20 +143,29 @@ export function createTeslaView(doc,target) {
     if(editing){layout=metricLayout(target.CarrotWebSettingsState?.vision_metric_layout);dirty=false;}
     editing=!editing;editor.hidden=!editing;size.value=String(layout[selected][2]);render(data,stale,unit);});
   const bev=createBevWorkbench(doc,target,canvas,{canEdit:()=>canEditMetrics(target,now()),refresh:()=>{lastSignature='';render(data,stale,unit);},getHud:()=>({data:{speed:data.speed,setSpeed:data.setSpeed,speedLimit:data.speedLimit},stale,unit})});
-  root.append(notice,metrics,toggle,editor,bev.root);
-  function render(next={},isStale=true,units='km/h',visible=metricVisible){
-    data=next||{};stale=isStale;unit=units;metricVisible=visible;
+  const perception=createObjectPerception(doc,target,{onChange:()=>{lastSignature='';render(data,stale,unit);}});
+  root.append(notice,perceptionStatus,metrics,toggle,editor,bev.root);
+  function render(next={},isStale=true,units='km/h',visible=metricVisible,active=viewActive){
+    data=next||{};stale=isStale;unit=units;metricVisible=visible;viewActive=active;
     const settings=target.CarrotWebSettingsState||{},isBev=settings.vision_presentation==='bev',tesla=['tesla','bev'].includes(settings.vision_presentation);
     const custom=settings.vision_custom_metrics===true||tesla;
     canvas.setAttribute('aria-label',text(isBev?'bev_name':'vision_tesla_name',isBev?'BEV annotation view':'Bird’s-eye view'));
     root.hidden=!custom&&!tesla;canvas.hidden=!tesla;notice.hidden=!tesla;metrics.hidden=!custom||!visible;toggle.hidden=!custom||!visible;
     root.parentElement?.classList.toggle('has-custom-metrics',custom);
     root.parentElement?.classList.toggle('is-tesla-view',tesla);
+    root.parentElement?.classList.toggle('is-light-scene',tesla&&!isBev);
+    root.classList.toggle('is-light-scene',tesla&&!isBev);
     if(!editing&&!dirty)layout=metricLayout(settings.vision_metric_layout);
     if(editing&&(!visible||!canEditMetrics(target,now()))){editing=false;editor.hidden=true;drag=null;dirty=false;layout=metricLayout(settings.vision_metric_layout);}
     root.classList.toggle('is-editing',editing);toggle.disabled=!canEditMetrics(target,now())||saving;
     setText(toggle,text(editing?'vision_metric_done':'vision_metric_edit',editing?'Finish editing':'Arrange information'));
-    const scene=bev.prepare(tesla?birdScene(target,now()):{});
+    perception.update({active:tesla&&viewActive,frozen:bev.frozen});
+    const vision=perception.scene(),liveScene=tesla?{...birdScene(target,now()),vision}:{};
+    const scene=bev.prepare(liveScene);scene.text=text;
+    perceptionStatus.hidden=!tesla;
+    setText(perceptionStatus,settings.vision_object_detection===true
+      ? `${text(`scene_status_${vision.status}`,vision.status)}${vision.status==='ready'?` · ${vision.objects.length} ${text('scene_targets','positioned targets')}`:''}`
+      :text('scene_radar_only','Model / radar targets · classes unavailable'));
     const frozenHud=bev.frozenHud,displayData=frozenHud?.data||data,displayStale=frozenHud?.stale??stale,displayUnit=frozenHud?.unit||unit;
     for(const [key,card] of Object.entries(cards)){
       const v=displayData[{speed:'speed',set:'setSpeed',limit:'speedLimit'}[key]];
@@ -162,22 +174,22 @@ export function createTeslaView(doc,target) {
     }
     place();
     if(tesla){
-      setText(notice,bev.frozen?text('bev_frozen','Annotation snapshot · not live'):text(scene.model?'vision_tesla_notice':'vision_tesla_wait',scene.model?'Model bird’s-eye view · not a surround camera':'Waiting for fresh model data'));
+      setText(notice,bev.frozen?text('bev_frozen','Annotation snapshot · not live'):text(scene.model?'scene_live_notice':'vision_tesla_wait',scene.model?'Live observations · front camera / native targets; not 360°':'Waiting for fresh model data'));
       const vw=root.clientWidth||536,vh=root.clientHeight||300;
       const quality=settings.vision_render_quality,cap=quality==='high'?[1920,1080,2]:quality==='low'?[480,270,1]:[960,540,1];
       const factor=Math.min(cap[2],cap[0]/vw,cap[1]/vh);
       const w=Math.max(1,Math.round(vw*factor)),h=Math.max(1,Math.round(vh*factor));
       const stamp=target.CarrotStateReceivedAtMonotonic?.modelV2??target.CarrotStateUpdatedAt?.modelV2;
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
-      const signature=`${w}:${h}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}`;
+      const signature=`${w}:${h}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${scene.vision?.revision}:${vision.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}`;
       if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
-        const ctx=canvas.getContext('2d');if(ctx){const projection=isBev?bevProjection(w,h,bev.range):null;drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:isBev?bev.range:75});if(isBev)bev.draw(ctx,projection,scene);}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
+        const ctx=canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text});}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
     }
     lastMode=tesla;
   }
   const observer=typeof target.ResizeObserver==='function'?new target.ResizeObserver(()=>{lastSignature='';render(data,stale,unit);}):null;
   observer?.observe(root);
-  return {root,canvas,render,destroy(){bev.destroy();observer?.disconnect();canvas.remove();root.remove();}};
+  return {root,canvas,render,destroy(){viewActive=false;perception.destroy();bev.destroy();observer?.disconnect();canvas.remove();root.remove();}};
 }
 export const TESLA_VIEW_CSS=`
 .tesla-view{position:absolute;inset:0;pointer-events:none;z-index:4;color:#fff;font-family:system-ui,sans-serif}.tesla-view[hidden],.tesla-view [hidden]{display:none!important}
@@ -185,4 +197,7 @@ export const TESLA_VIEW_CSS=`
 .tesla-metrics{position:absolute;inset:0}.tesla-metric{position:absolute;box-sizing:border-box;min-width:96px;width:max-content;padding:8px 10px;text-align:center;background:#101924df;border:1px solid #ffffff40;border-radius:12px;transform-origin:0 0;font-variant-numeric:tabular-nums;white-space:nowrap}.tesla-metric small{display:block;font-size:12px;line-height:1.4}.tesla-metric b{display:block;font-size:34px;line-height:1.15}
 .tesla-edit,.tesla-editor{position:absolute;right:8px;top:8px;pointer-events:auto;background:#101924ef;border:1px solid #ffffff50;border-radius:10px;padding:8px;color:white;font:13px system-ui}.tesla-edit{top:auto;bottom:8px;min-height:40px}.tesla-editor{top:48px;max-width:calc(100% - 24px);display:flex;flex-wrap:wrap;align-items:center;gap:8px;white-space:normal}.tesla-editor button,.tesla-editor select{min-height:36px;font:inherit;color:white;background:#24364c;border:1px solid #ffffff50;border-radius:6px;padding:6px}.tesla-editor label{display:flex;gap:8px;align-items:center;font-size:12px}.tesla-editor input{max-width:130px}.tesla-view.is-editing .tesla-metric{pointer-events:auto;touch-action:none;cursor:move;outline:2px dashed #65baff}
 .chud.has-custom-metrics .chud-speed,.chud.has-custom-metrics .chud-limit,.chud.has-custom-metrics .clive-cluster{display:none!important}.chud.is-tesla-view .clive{z-index:3}.chud.is-tesla-view .tesla-view{z-index:4}.chud.is-tesla-view .clive-state{top:auto;bottom:8px;left:8px}.chud.is-tesla-view .clive-health{top:auto;bottom:54px;left:auto;right:8px}.chud.is-tesla-view .tesla-editor,.chud.is-tesla-view .tesla-edit{pointer-events:auto}.chud.is-tesla-view .clive{pointer-events:none}
+ .tesla-perception{position:absolute;left:150px;right:140px;bottom:12px;text-align:center;font-size:11px;color:#b7c9db;white-space:normal;overflow-wrap:anywhere}.is-light-scene .tesla-notice{color:#4e5e6c;background:#ffffffd9}.is-light-scene .tesla-perception{color:#53616f}.is-light-scene .tesla-metric{color:#263440;background:#ffffffeb;border-color:#aab6bf99;box-shadow:0 2px 12px #263b4f10}.is-light-scene .tesla-edit{color:#455564;background:#fffffff0;border-color:#aab6bf}.is-light-scene .tesla-metric b{font-weight:600}
+ @media(max-width:600px){.tesla-notice{left:130px;right:8px;font-size:10px;top:56px}.tesla-perception{left:130px;right:8px;bottom:60px;font-size:10px}}
+.chud.is-light-scene::before,.chud.is-light-scene::after{display:none}.chud.is-light-scene .clive-state,.chud.is-light-scene .clive-health{background:#ffffffee;color:#53616f;border:1px solid #c8d0d6}.chud.is-light-scene .clive-health[data-state=playing]{display:none}
 ` + BEV_CSS;

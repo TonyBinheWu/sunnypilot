@@ -387,6 +387,7 @@ def _build_live_calibration(service: Any, previous: dict[str, Any] | None = None
   payload = previous if isinstance(previous, dict) else {}
   payload["calStatus"] = safe_enum_int(safe_get(service, "calStatus"))
   _fill_list(_ensure_list(payload, "rpyCalib"), safe_get(service, "rpyCalib"), limit=3)
+  _fill_list(_ensure_list(payload, "height"), safe_get(service, "height"), limit=1)
   _fill_list(_ensure_list(payload, "wideFromDeviceEuler"), safe_get(service, "wideFromDeviceEuler"), limit=3)
   return payload
 

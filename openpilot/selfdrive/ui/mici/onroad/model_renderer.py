@@ -8,6 +8,7 @@ from openpilot.common.params import Params
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.selfdrive.locationd.calibrationd import HEIGHT_INIT
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
+from openpilot.selfdrive.ui.onroad.rainbow_path import RainbowPath
 from openpilot.selfdrive.ui.vision_status import blindspot_source_packet, blindspot_sources
 from openpilot.selfdrive.ui.road_markings import lane_dash_segments, project_blindspot_barrier, blindspot_barrier_quads
 from openpilot.selfdrive.ui.mici.onroad import blend_colors
@@ -70,6 +71,7 @@ class ModelRenderer(Widget):
   def __init__(self):
     super().__init__()
     self._overlay = OverlayLayer(0)
+    self._rainbow_path = RainbowPath()
     self._overlay_state = None
     self._display_clock = DisplayClock()
     self._model_frame = -1
@@ -484,6 +486,10 @@ class ModelRenderer(Widget):
   def _draw_path(self, sm):
     """Draw path with dynamic coloring based on mode and throttle state."""
     if not self._path.projected_points.size:
+      return
+
+    if ui_state.rainbow_path and ui_state.lat_active:
+      self._rainbow_path.draw(self._rect, self._path.projected_points, rl.get_time())
       return
 
     allow_throttle = sm['longitudinalPlan'].allowThrottle or not self._longitudinal_control

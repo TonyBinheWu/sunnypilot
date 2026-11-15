@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "a30d15146d5ec695ce60c0a72c3dfdfb7cf88aa8",
-  "contentHash": "301fbc4f46641ccaee6f8c1d66b8af05d814103ce115bdc493dc30a8e7e2ac76",
-  "generatedAt": "2026-11-14T02:05:14Z",
+  "catalogCommit": "6ceb5793df6e6e5ccc7b2fd71e2734a8bf89f791",
+  "contentHash": "5bc463bbd0848a7c9781b87f62c57f8c7dd4114e7b3c3570c0beb4d36b9e9f8e",
+  "generatedAt": "2026-11-15T15:32:13Z",
   "locales": [
     "ko",
     "en",
@@ -584,6 +584,10 @@
     "EN-Radar-Left-Right-Inversion.md": {
       "bytes": 2282,
       "hash": "fef6a62bc7976ffd8defad6ff6b8e506edb247e6a72357d7f893d526be221dfb"
+    },
+    "EN-Rainbow-Road-(SP-style).md": {
+      "bytes": 2190,
+      "hash": "1f42ed49973daafa6ff24cc594aea04b8e86700cce16c825c7a3e3ef1f892c3f"
     },
     "EN-Rear-Camera-Post-pass-Hold-Distance-(m).md": {
       "bytes": 3281,
@@ -1325,6 +1329,10 @@
       "bytes": 1686,
       "hash": "71aa57058375adcaeac7034c3d415c403b86081a4b1b46237c3a54271f8de4fa"
     },
+    "KO-무지개-도로-(SP-스타일).md": {
+      "bytes": 2299,
+      "hash": "0f1f418f7bedaf97ed317da9db7fce32e572b852bf7c1edcbf63b0cb0b5b109a"
+    },
     "KO-방지턱-감속-조기-종료-거리(200cm).md": {
       "bytes": 2946,
       "hash": "02c54347ae5abcc7e9937d4e1b0d29d39219c4210df8c662cfdc96bc93c6aaeb"
@@ -1722,8 +1730,8 @@
       "hash": "c36b52d2f81711770bb6532877ab8c359e6f5d670cc0ff058db0b0c834b7e810"
     },
     "Settings-Catalog.md": {
-      "bytes": 144095,
-      "hash": "0edeab10117d77295f6cd47f24143b60604a2ad79a9b02d05e109aa0b24fb76e"
+      "bytes": 144726,
+      "hash": "e9754efa19389f30b3b9210e38c438d2d116abdeb10095eb940d8ec332f3bd4c"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -2172,6 +2180,10 @@
     "ZH-TW-彎道速度調節比例(100-).md": {
       "bytes": 2465,
       "hash": "340b1c15ffc033fd1997fcc23f496e32041b5902403ea1b6ac5b0bf40bd954d4"
+    },
+    "ZH-TW-彩虹道路(SP-風格).md": {
+      "bytes": 2125,
+      "hash": "fe8d4910fb6f2433f14e7231a50b31916d6b03d142eac0e4419f7f3307e397fc"
     },
     "ZH-TW-後向攝影機透過後保持距離(m).md": {
       "bytes": 2969,
@@ -3025,6 +3037,10 @@
       "bytes": 2462,
       "hash": "acc05e52e8ecc658ac0d002a6bfa86b5db4ec2f3aace9cad06fe55ef40d3e288"
     },
+    "ZH-彩虹道路(SP-风格).md": {
+      "bytes": 2110,
+      "hash": "b7cc3edd0bdcf8ba4687fd99d5f7fa69b095d847f6190cbab35b649d76c6f9c4"
+    },
     "ZH-手动变道转向灯(试验).md": {
       "bytes": 4421,
       "hash": "1b57aef6425b64452d055e2fa44ca00faa3e1f5e4226de719d5edc13c0b7e8e2"
@@ -3439,7 +3455,7 @@
     }
   },
   "review": {
-    "current": 45,
+    "current": 46,
     "needs_review": 169
   },
   "schemaVersion": 1,
@@ -8187,6 +8203,37 @@
       "reviewStatus": "needs_review",
       "semanticHash": "943dbe7612241b525566748d4a0c0383a19f20e4a140a100fad0a061f818df64"
     },
+    "RainbowMode": {
+      "group": "DISP_PATH",
+      "locales": {
+        "en": {
+          "anchor": "RainbowMode",
+          "factsHash": "5a34484bb0ee76cd328ad48761ce9e211b382cf10bae1ce9e95b5ac7ca0ad5e4",
+          "page": "EN-Rainbow-Road-(SP-style).md",
+          "reviewStatus": "current"
+        },
+        "ko": {
+          "anchor": "RainbowMode",
+          "factsHash": "bec59155d8a40345836bde7e3cfe70fbf041eee24186b1c2aad4518430fd529b",
+          "page": "KO-무지개-도로-(SP-스타일).md",
+          "reviewStatus": "current"
+        },
+        "zh": {
+          "anchor": "RainbowMode",
+          "factsHash": "5b7cf496ee33a101275e6ef0eea4f2772a24478e0de18004b76b0a89752bc384",
+          "page": "ZH-彩虹道路(SP-风格).md",
+          "reviewStatus": "current"
+        },
+        "zh-tw": {
+          "anchor": "RainbowMode",
+          "factsHash": "b6da2e2e9b2601921087ba99c26db3eb33759d9aaa6365058c2bcb8d8dceb1c4",
+          "page": "ZH-TW-彩虹道路(SP-風格).md",
+          "reviewStatus": "current"
+        }
+      },
+      "reviewStatus": "current",
+      "semanticHash": "1aba7ed0cb53ca634c206d22650345f906fe8d15486d15e502ccfad140063cfd"
+    },
     "RecordRoadCam": {
       "group": "SYS_RECORD_BASIC",
       "locales": {
@@ -10078,6 +10125,5 @@
       "reviewStatus": "current",
       "semanticHash": "b3ca6436f7051d2fd82ae24a9dc3974abf6b5ee32c633d085c3eb4bee630c364"
     }
-  },
-  "wikiCommit": "84c9662e801971d80d064f7f88b207a34d00e851"
+  }
 }

@@ -1,4 +1,5 @@
 // Model-assisted BEV review data. Never produces ground truth or control inputs.
+import {surroundingTargets} from './scene_objects.js';
 export const BEV_SCHEMA = 'carrot-bev-annotations/v1';
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const probability = value => finite(value) && value >= 0 && value <= 1 ? value : null;
@@ -32,14 +33,19 @@ export function bevObjects(scene,range=50) {
     (Array.isArray(model.roadEdges)?model.roadEdges:[]).slice(0,2).forEach((line,i)=>
       vector(line,`edge${i}`,'road_edge',`modelV2.roadEdges[${i}]`,null,model.roadEdgeStds?.[i]));
   }
-  for(const [slot,lead] of [['leadOne',scene.radar?.leadOne],['leadTwo',scene.radar?.leadTwo]]){
-    if(lead?.status!==true||!finite(lead.dRel)||lead.dRel<=0||lead.dRel>range||!finite(lead.yRel)||Math.abs(lead.yRel)>100)continue;
-    objects.push({id:slot,kind:'lead_target',source:`radarState.${slot}`,origin:'native_lead_reference',
-      geometry:{type:'Point',coordinates:[lead.dRel,-lead.yRel]},
-      relativeSpeedMps:finite(lead.vRel)?lead.vRel:null,modelProbability:probability(lead.modelProb),
-      radarUsed:typeof lead.radar==='boolean'?lead.radar:null,
-      nativeTrackId:lead.radar===true&&Number.isSafeInteger(lead.radarTrackId)&&lead.radarTrackId>=0?lead.radarTrackId:null,
+  for(const target of surroundingTargets(scene.radar,range)){
+    objects.push({id:target.id,kind:['leadOne','leadTwo'].includes(target.id)?'lead_target':'native_target',source:target.source,origin:target.origin,
+      geometry:{type:'Point',coordinates:[target.x,target.y]},classification:null,
+      relativeSpeedMps:target.vRel,modelProbability:target.probability,
+      radarUsed:target.radarUsed,nativeTrackId:target.trackId,
       dimensions:null,provenance:'model_assisted',reviewed:false});
+  }
+  for(const target of (scene.vision?.objects||[]).slice(0,24)){
+    if(!finite(target.x)||!finite(target.y)||target.x<1||target.x>range||Math.abs(target.y)>20)continue;
+    objects.push({id:target.id,kind:'camera_target',classification:target.kind,source:target.source,origin:target.origin,
+      geometry:{type:'Point',coordinates:[target.x,target.y]},probability:probability(target.probability),
+      positionMethod:'flat_ground_projection',dimensions:null,heading:null,
+      provenance:'model_assisted',reviewed:false,groundTruth:false});
   }
   return objects;
 }
@@ -52,7 +58,10 @@ export function bevSnapshot(scene,{range=50,now=Date.now(),replay=false,sourceTi
       radarReceivedMonotonicMs:finite(sourceTimes.radarState)?sourceTimes.radarState:null,
       frameSynchronized:false},
     rangeM:range,groundTruth:false,reviewed:false,containsCameraImage:false,
-    unavailableCapabilities:['occupancy','pedestrian_detection','traffic_sign_detection','lane_connectivity','fleet_mapping'],
+    perception:{source:scene.vision?.capturedAt!=null?'browser.efficientdet_lite0':null,
+      status:scene.vision?.status||'off',capturedMonotonicMs:scene.vision?.capturedAt??null,
+      videoTimeSeconds:scene.vision?.videoTime??null,positionMethod:'flat_ground_projection',frameSynchronized:false},
+    unavailableCapabilities:['occupancy','surround_camera_coverage','traffic_sign_detection','lane_connectivity','fleet_mapping'],
     objects:bevObjects(scene,range),manual:[]};
 }
 export function addHumanLabel(snapshot,category,coordinates) {
@@ -92,6 +101,7 @@ export function drawBevAnnotations(ctx,projection,objects,{grid=true,details=tru
     const name=human?`${text('bev_human','Human · unverified')} ${text(`bev_kind_${object.kind}`,object.kind)}`:
       text(`bev_kind_${object.kind}`,object.kind);
     let label=`${name} ${object.id.split(':')[0]}`;
+    if(object.classification)label+=` · ${text(`scene_kind_${object.classification}`,object.classification)} ≈`;
     if(point&&!human){label+=` · ${object.geometry.coordinates[0].toFixed(1)} m`;
       if(finite(object.relativeSpeedMps))label+=` · Δv ${object.relativeSpeedMps.toFixed(1)} m/s`;}
     if(object.probability!==null&&finite(object.probability))label+=` · p ${(object.probability*100).toFixed(0)}%`;

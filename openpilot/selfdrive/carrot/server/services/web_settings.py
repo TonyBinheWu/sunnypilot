@@ -446,6 +446,7 @@ WEB_SETTINGS_SPEC: List[_Field] = [
   _Field("vision_custom_metrics", "bool", False),
   _Field("vision_metric_layout", "str", _normalize_metric_layout(''), normalize=_normalize_metric_layout, hidden=True),
   _Field("vision_rainbow_lane", "bool", False),
+  _Field("vision_object_detection", "bool", False),
   _Field("vision_bev_range", "enum", "50", choices={"30", "50", "75"}),
   _Field("vision_bev_grid", "bool", True),
   _Field("vision_bev_details", "bool", True),

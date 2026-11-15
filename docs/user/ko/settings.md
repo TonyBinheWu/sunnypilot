@@ -357,11 +357,14 @@ Jetson HUD에는 `jetSON` 아래에 Jetson 내부 센서의 최고 온도가 표
 |---|---|---|
 | 정보 표시 | `ShowDebugUI`, `ShowTpms`, `ShowDateTime`, `ShowPathEnd`, `ShowDeviceState`, `ShowLaneInfo`, `ShowRadarInfo`, `ShowRouteInfo`, `ShowPlotMode` | 주행 화면의 디버그, 타이어, 시간, 차선, 레이더와 경로 정보 |
 | 경로 표시 | `ShowPathMode`, `ShowPathColor`, `ShowPathColorCruiseOff`, `ShowPathModeLane`, `ShowPathColorLane` | 레인리스·레인모드·크루즈 OFF 상태의 경로 모양과 색상 |
+| 무지개 도로 | `RainbowMode` | 횡방향 제어 중 SP 스타일의 동적 경로 채움, 표시 전용 |
 | 밝기·주행화면 | `ShowCustomBrightness`, `ShowModelView`, `ShowCameraWithCluster` | 주행 중 밝기, 카메라·모델 표시 조합과 외부 HUD 연결 중 본체 카메라 표시 |
 | 외부 HUD·기본 | `ClusterHud`, `ClusterHudBrightness`, `ClusterHudOrientation`, `ClusterHudMirror`, `ClusterHudTheme`, `ClusterNaviMapTheme`, `ClusterNaviMapType`, `ClusterNaviMapFps` | TURZX 외부 HUD, 밝기, 화면 회전, 미러링과 지도 테마 |
 | 외부 HUD·화면·카메라 | `ClusterHudEncoder`, `ClusterHudScreenMode`, `ClusterHudPanelLayout`, `ClusterHudCameraViewMode` | 인코더와 화면·카메라·좌우 패널 구성 |
 | 외부 HUD·레이더 표시 | `ClusterHudRadarInfo`, `ClusterHudRadarDisplay`, `ClusterHudRadarSourceColor` | 외부 HUD의 레이더 정보와 색상 |
 | 외부 HUD·디버그 | `ClusterHudDebug` | 진단 정보 |
+
+`RainbowMode`는 기본 꺼짐입니다. 기기의 토글 화면에서 **무지개 도로 (SP 스타일)**를 켜거나 Carrot Web / CarrotAssist에서 검색합니다. C3/C3X와 C4에서 재시작 없이 적용되며 횡방향 제어 중에 표시됩니다. 끄면 기존 경로 모양과 색상으로 돌아갑니다. 채움만 변경하며 경로 형상, 조향, 순항 제어와 경고는 유지합니다. 웹 / APK의 무지개 표시는 별도 `vision_rainbow_lane` 설정입니다.
 
 ARS 표시 스트림을 지원하는 RAV4 2022에서는 장치 기본 주행 화면의 `ShowRadarInfo=3`이
 제어용 앞차 목록과 분리한 옆 차선 객체도 표시합니다. 1/2와 다른 수신기의 동작은 유지합니다.
