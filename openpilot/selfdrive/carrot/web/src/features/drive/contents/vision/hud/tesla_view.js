@@ -157,12 +157,14 @@ export function createTeslaView(doc,target) {
     if(tesla){
       const scene=birdScene(target,now());
       setText(notice,text(scene.model?'vision_tesla_notice':'vision_tesla_wait',scene.model?'Model bird’s-eye view · not a surround camera':'Waiting for fresh model data'));
-      const vw=root.clientWidth||536,vh=root.clientHeight||300,factor=Math.min(1,960/vw,540/vh);
+      const vw=root.clientWidth||536,vh=root.clientHeight||300;
+      const quality=settings.vision_render_quality,cap=quality==='high'?[1920,1080,2]:quality==='low'?[480,270,1]:[960,540,1];
+      const factor=Math.min(cap[2],cap[0]/vw,cap[1]/vh);
       const w=Math.max(1,Math.round(vw*factor)),h=Math.max(1,Math.round(vh*factor));
       const stamp=target.CarrotStateReceivedAtMonotonic?.modelV2??target.CarrotStateUpdatedAt?.modelV2;
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
       const signature=`${w}:${h}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${settings.vision_rainbow_lane}`;
-      if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){canvas.width=w;canvas.height=h;
+      if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
         const ctx=canvas.getContext('2d');if(ctx)drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true});lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
     }
     lastMode=tesla;
