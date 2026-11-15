@@ -2,6 +2,10 @@
 
 [한국어](../ko/settings.md)
 
+## Revisit initial vehicle and control choices
+
+Use **Tools → Run setup again** in the web page or CarrotAssist to revisit language, vehicle, HDA and driving control. This stages selections until a final old/new-value review; Cancel preserves saved settings. Keep-current options retain custom tuning. Applying a control preset replaces its seven listed values; vehicle changes require restart while parked. [Steps, state checks and recovery](carrot-web.md#run-setup-again).
+
 ## Carrot Vision presentation
 
 With updated vehicle software and CarrotAssist 0.2.15, use the top **▣** button to switch between the original instrument layout and **Live View**. In Carrot Web, choose **Tools → Web settings → Carrot Vision → Vision presentation**. The original layout remains the default; selection is saved on the device and applies immediately. Live View uses the existing camera/model overlay, a bottom speed/set-speed/limit cluster and responsive display controls. Fullscreen needs landscape orientation and browser support; Android Back exits the app's fullscreen container first. Missing values show a dash, and live HUD update gaps over two seconds clear old values. Paused recorded replay retains its timeline. Lateral-active status does not imply longitudinal control. [Detailed Traditional Chinese mobile guide](../../CARROT_MOBILE.zh-TW.md).

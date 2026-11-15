@@ -107,6 +107,16 @@ See [Understanding Settings](settings.md) for ranges, units, and a safe tuning o
 
 ## Tools page
 
+### Run setup again
+
+Open **Tools → Run setup again** to revisit the original language, vehicle, HDA and driving-control guide. Web and CarrotAssist 0.2.18 use the updated vehicle page; no new APK is required. Park in P with steering/cruise disengaged, or switch the parked vehicle off. Fresh device state is required both when opening and applying.
+
+Selections remain a draft until **Review changes → Apply these changes**. **Cancel setup** returns to Tools without changing the saved values or completion record. Use the keep-current options for vehicle, HDA or driving control to retain your custom configuration. HDA is offered only for Hyundai/Kia/Genesis. Language here changes the web language.
+
+Selecting a driving-control preset can overwrite `HyundaiCameraSCC`, `SpeedFromPCM`, `DriverMonitoringMode`, `EnableRadarTracks`, `EnableCornerRadar`, `AutoCruiseControl` and `AutoEngage`; review the exact old/new values before applying. Choose the actual vehicle and harness. Other settings, calibration and pairing remain intact. If another client changes these settings, cancel and reopen the guide. For backup import, cancel and use Tools Restore separately. A failed write attempts to restore this operation's earlier values; an incomplete rollback is reported explicitly.
+
+Vehicle-configuration changes require a full device restart while parked before using driving assistance. The guide never restarts automatically; a web-language-only change needs no restart. If the connection ends before confirmation, cancel and reopen the guide to check the actual saved values before trying again.
+
 Tools contains management actions that can immediately change device or repository state.
 Manage `ONNX Lane and BSD Detection` in **Settings → Driving → Steering → ONNX Lane & BSD**, not through a Tools shortcut.
 

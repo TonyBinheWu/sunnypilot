@@ -5,6 +5,9 @@ window.CarrotTranslations.register("ko", {
   nativeName: "한국어",
   shortName: "KO",
   strings: {
+    setup_again_title: "설정 마법사 다시 실행",
+    setup_again_park: "최신 차량·장치 상태를 확인할 수 없습니다. 정차 및 제어 해제 또는 시동을 끈 후 다시 시도하세요.",
+    setup_again_unavailable: "장치 설정을 읽을 수 없습니다. 장치를 업데이트하고 안내를 다시 여세요.",
     scene_detection: "전방 영상 객체 인식 (실험적)",
     scene_detection_desc: "Recognize visible people, motorcycles, bicycles, cars, buses and trucks on the viewing browser or APK. Defaults off. Uses a bundled EfficientDet-Lite0 int8 model in a CPU worker, up to 4 updates/s with adaptive pacing. No camera images are uploaded. Requires a current WebView with Worker, WebAssembly and OffscreenCanvas. Positions require fresh road camera calibration and are approximate flat-ground projections. No side/rear camera coverage or driving-control integration. Unclassified native targets remain unclassified. Turn off/on to retry after a load error.",
     scene_live_notice: "실시간 관측 · 전방 영상 / 기본 표적, 360° 아님",

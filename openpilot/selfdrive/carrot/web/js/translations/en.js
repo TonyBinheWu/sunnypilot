@@ -5,6 +5,9 @@ window.CarrotTranslations.register("en", {
   nativeName: "English",
   shortName: "EN",
   strings: {
+    setup_again_title: "Run setup again",
+    setup_again_park: "Fresh vehicle/device state is unavailable. Park and disengage, or switch off the vehicle, then try again.",
+    setup_again_unavailable: "Device settings are unavailable. Update the vehicle and reopen the guide.",
     scene_detection: "Front camera object recognition (experimental)",
     scene_detection_desc: "Recognize visible people, motorcycles, bicycles, cars, buses and trucks on the viewing browser or APK. Defaults off. Uses a bundled EfficientDet-Lite0 int8 model in a CPU worker, up to 4 updates/s with adaptive pacing. No camera images are uploaded. Requires a current WebView with Worker, WebAssembly and OffscreenCanvas. Positions require fresh road camera calibration and are approximate flat-ground projections. No side/rear camera coverage or driving-control integration. Unclassified native targets remain unclassified. Turn off/on to retry after a load error.",
     scene_live_notice: "Live observations · front camera / native targets; not 360°",

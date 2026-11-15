@@ -1,5 +1,20 @@
 # Repository memory
 
+- 2026-11-16: Web/APK Tools -> Run setup again reuses the original language,
+  car, HDA and control steps in an explicit draft mode. Only the final reviewed
+  POST writes; cancel never resets intro.json, labels, Params or preferences.
+  Keep-current choices preserve tuning; selected control presets retain all
+  seven original values. Revision/readback/rollback detect competing edits;
+  incomplete rollback is explicit, never overwrite a third-party value while
+  restoring. Not power-failure atomic. Reuse the native forced_offroad service's
+  locked subscriber and refresh every guard: compact web broker deliberately
+  excludes carState/deviceState. Require fresh P/zero-speed/disengaged state or
+  genuine offroad; reject contradictory driving/active state. No automatic
+  reboot; vehicle changes require restart. Backup import remains a separate
+  Tools action. APK0.2.18 uses the vehicle page, no new binary. Isolated actual
+  HTTP/browser fixtures verify staging/cancel, keep, guarded apply, retry,
+  390x844/1280x480 and transition cancellation; no vehicle/Android acceptance.
+
 - 2026-11-15: Live Tesla-style web/APK scene now uses original light perspective
   vector art and all available native side-lane target collections (deduplicated,
   unclassified neutral markers). Opt-in vision_object_detection runs pinned local

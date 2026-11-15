@@ -25,7 +25,7 @@ CarrotIntro.register({
     el.innerHTML = `
       ${CarrotIntroIcons.hda}
       <h2 class="intro-title">${t("hdaTitle")}</h2>
-      <p class="intro-lead"><b>${ctx.car}</b></p>
+      <p class="intro-lead"><b>${escapeHtml(ctx.car)}</b></p>
       <div class="intro-opts">
         ${[[0, "hda1", "hda1d"], [1, "hda2", "hda2d"]].map(([v, tk, dk]) => `
           <button class="intro-opt intro-opt--desc ${ctx.hda === v ? "is-picked" : ""}"
@@ -34,6 +34,8 @@ CarrotIntro.register({
             <span class="intro-opt__d">${t(dk)}</span>
           </button>`).join("")}
       </div>`;
+    if(ctx.reconfigure){const keep=document.createElement('button');keep.className='intro-ghost';keep.type='button';
+      keep.textContent=t('againKeepHda');keep.onclick=()=>{ctx.hda=null;CarrotIntroShell.goTo('control');};el.appendChild(keep);}
 
     el.querySelectorAll("[data-hda]").forEach((opt) => {
       opt.addEventListener("click", () => {

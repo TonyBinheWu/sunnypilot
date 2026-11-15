@@ -320,6 +320,7 @@
   font-variant-numeric: tabular-nums;
   transition: color var(--motion-base) var(--ease-standard);
 }
+.intro-review{max-height:40dvh;overflow:auto;text-align:left;overflow-wrap:anywhere;font-size:var(--intro-meta);line-height:1.6;width:100%}.intro-review p{margin:8px 0}
 .intro-opt:hover .intro-list__count { color: var(--md-outline-var); }
 
 /* 보조 액션 — 본 선택지보다 확실히 아래 위계 */

@@ -62,6 +62,8 @@ CarrotIntro.register({
             <span class="intro-opt__d">${br(t(dk))}</span>
           </button>`).join("")}
       </div>`;
+    if(ctx.reconfigure){const keep=document.createElement('button');keep.className='intro-ghost';keep.type='button';
+      keep.textContent=t('againKeepControl');keep.onclick=()=>{ctx.preset=null;CarrotIntroShell.goTo('legal');};el.appendChild(keep);}
 
     el.querySelectorAll("[data-preset]").forEach((opt) => {
       opt.addEventListener("click", () => {

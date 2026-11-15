@@ -254,6 +254,7 @@ function renderUIText() {
   setText("btnToolsCarSelect", getUIText("car_select", "Car Select"));
   setText("btnToolsLanguage", getUIText("language", "Language"));
   setText("btnToolsWebSettings", getUIText("web_settings", "Web Settings"));
+  setText("btnSetupAgain", getUIText("setup_again_title", "Run setup again"));
   setText("toolsAssistantLabel", getUIText("assistant_title", "ChatGPT assistant"));
   setText("btnDeviceInfo", getUIText("info", "Info"));
   setText("btnRecordingQuota", getUIText("recording_quota_status", "Recording storage status"));

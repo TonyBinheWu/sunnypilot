@@ -1,4 +1,5 @@
 "use strict";
+import {setupBody,setupChanges} from '../draft.js';
 
 /* 6단계 — 마무리 (마지막)
  *
@@ -18,6 +19,36 @@ CarrotIntro.register({
 
   render(el) {
     const { t, br, ctx } = CarrotIntro;
+    if(ctx.reconfigure){
+      const heading=document.createElement('h2');heading.className='intro-title';heading.textContent=t('againReview');
+      const list=document.createElement('div');list.className='intro-review';
+      const changes=setupChanges(ctx);
+      for(const row of changes){const item=document.createElement('p');
+        const title=row.key==='CarSelected3'?t('againVehicle'):row.key==='web_language'?t('againLanguage'):row.key==='CanfdHDA2'?t('hdaTitle'):row.title;
+        const value=v=>row.key==='CanfdHDA2'&&[0,1].includes(v)?t(v===1?'hda2':'hda1'):v??'—';
+        item.textContent=`${title}: ${value(row.before)} → ${value(row.after)}`;list.appendChild(item);}
+      if(!changes.length)list.textContent=t('againNoChanges');
+      const help=document.createElement('p');help.className='intro-lead';help.textContent=t('againReviewHelp');
+      const button=document.createElement('button');button.type='button';button.className='intro-cta';button.textContent=t('againApply');
+      el.append(heading,list,help,button);
+      button.onclick=async()=>{
+        if(ctx.applied){CarrotIntroShell.finish();return;}
+        el.querySelector('.intro-error')?.remove();
+        button.disabled=true;CarrotIntroShell.setApplying(true);
+        try{
+          const result=await CarrotIntroApi.reconfigure(setupBody(ctx));ctx.applied=true;
+          for(const [name,value] of Object.entries(result.applied||{}))globalThis.dispatchEvent(new CustomEvent('carrot:paramchange',{detail:{name,value,source:'intro_reconfigure'}}));
+          if(globalThis.CarrotWebSettingsState)globalThis.CarrotWebSettingsState.web_language=result.webLanguage;
+          if(globalThis.__CARROT_BOOTSTRAP__?.webSettings)globalThis.__CARROT_BOOTSTRAP__.webSettings.web_language=result.webLanguage;
+          try{globalThis.setWebLanguage?.(result.webLanguage,{persist:false});}catch{}
+          try{globalThis.applyCurrentCarLabel?.(stripMaker(ctx.car,ctx.maker));}catch{}
+          heading.textContent=t('againSaved');help.textContent=t(result.requiresRestart?'againRestart':'againSavedHelp');
+          button.textContent=t('againReturn');
+        }catch(error){CarrotIntroShell.error(t(`againError_${error.message}`)===`againError_${error.message}`?t('againError_apply_unconfirmed'):t(`againError_${error.message}`));}
+        finally{button.disabled=false;CarrotIntroShell.setApplying(false);}
+      };
+      return;
+    }
 
     el.innerHTML = `
       ${CarrotIntroIcons.chill}

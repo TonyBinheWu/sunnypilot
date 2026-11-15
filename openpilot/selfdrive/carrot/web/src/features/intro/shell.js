@@ -49,6 +49,8 @@ globalThis.CarrotIntroShell = (() => {
   let busy = false;
   let closing = false;
   let previewDocumentLang = null;
+  let session = 0;
+  let returnFocus = null;
 
   /* ── pane 만들기 ──────────────────────────────────────── */
   function build() {
@@ -61,6 +63,7 @@ globalThis.CarrotIntroShell = (() => {
     const p = document.createElement("div");
     p.className = "intro-pane";
     p.dataset.introStep = currentId;
+    p.tabIndex = -1;
 
     const col = document.createElement("div");
     col.className = "intro-col";
@@ -75,16 +78,16 @@ globalThis.CarrotIntroShell = (() => {
     back.addEventListener("click", goBack);
     p.appendChild(back);
 
-    if (CarrotIntro.ctx.preview) {
+    if (CarrotIntro.ctx.preview || CarrotIntro.ctx.reconfigure) {
       const note = document.createElement("div");
       note.className = "intro-preview-note";
-      note.textContent = CarrotIntro.t("preview");
+      note.textContent = CarrotIntro.t(CarrotIntro.ctx.reconfigure ? 'againNote' : "preview");
       p.appendChild(note);
 
       const close = document.createElement("button");
       close.type = "button";
       close.className = "intro-close";
-      close.textContent = CarrotIntro.t("previewClose");
+      close.textContent = CarrotIntro.t(CarrotIntro.ctx.reconfigure ? 'againCancel' : "previewClose");
       close.addEventListener("click", finish);
       p.appendChild(close);
     }
@@ -103,12 +106,14 @@ globalThis.CarrotIntroShell = (() => {
 
     deck.appendChild(p);
     pane = p;
+    if(CarrotIntro.ctx.reconfigure){deck.setAttribute('role','dialog');deck.setAttribute('aria-modal','true');deck.setAttribute('aria-label',CarrotIntro.t('againTitle'));p.focus({preventScroll:true});}
     return p;
   }
 
   /* ── 이동 ─────────────────────────────────────────────── */
   function transition(nextId, { push = true, reverse = false } = {}) {
-    if (busy) return;
+    if (busy || closing || deck.hidden || CarrotIntro.ctx.applying || CarrotIntro.ctx.applied) return;
+    const activeSession=session;
     if (!CarrotIntro.get(nextId)) {
       console.error(`CarrotIntroShell: 없는 id — ${nextId}`);
       return;
@@ -119,6 +124,7 @@ globalThis.CarrotIntroShell = (() => {
 
     /* 2단계: 옛 화면을 지우고 → 새 화면을 만든다. 겹치지 않는다. */
     const swap = () => {
+      if(activeSession!==session||closing||deck.hidden)return;
       if (old) old.remove();
       if (push) history.push(currentId);
       currentId = nextId;
@@ -130,7 +136,7 @@ globalThis.CarrotIntroShell = (() => {
         { duration: IN_MS, easing: EASE_IN, fill: "both" },
       ).finished.then(release).catch(release);
     };
-    const release = () => { busy = false; };
+    const release = () => { if(activeSession===session)busy = false; };
 
     if (!old) { swap(); return; }
 
@@ -146,7 +152,7 @@ globalThis.CarrotIntroShell = (() => {
 
   /* 뒤로 — step 이 자기 안에서 먼저 처리할 기회를 준다 */
   function goBack() {
-    if (busy) return;
+    if (busy || CarrotIntro.ctx.applying || CarrotIntro.ctx.applied) return;
     if (backHandler && backHandler() === true) return;  // step 이 삼켰다
     if (!history.length) return;
     const prev = history.pop();
@@ -159,19 +165,27 @@ globalThis.CarrotIntroShell = (() => {
     busy = true;
     pane.querySelectorAll(".intro-opt").forEach((x) => x.classList.remove("is-picked"));
     el.classList.add("is-picked");
-    setTimeout(() => { busy = false; goTo(nextId); }, PICK_HOLD_MS);
+    const activeSession=session;
+    setTimeout(() => { if(activeSession!==session||closing)return;busy = false; goTo(nextId); }, PICK_HOLD_MS);
   }
 
   /* ── 개막 / 폐막 ──────────────────────────────────────── */
-  function open({ preview = false } = {}) {
+  function open({ preview = false, reconfigure = null } = {}) {
     if (!deck.hidden) return false;
 
     deck.hidden = false;
     document.body.dataset.introOpen = "1";
 
     CarrotIntro.reset();
+    session++;returnFocus=document.activeElement;
     CarrotIntro.ctx.preview = preview === true;
-    if (CarrotIntro.ctx.preview) {
+    if(reconfigure && !preview){
+      Object.assign(CarrotIntro.ctx,{reconfigure:true,baseline:reconfigure,
+        lang:reconfigure.lang||globalThis.CarrotWebSettingsState?.web_language||CarrotIntro.ctx.lang,
+        car:reconfigure.car||'',maker:String(reconfigure.car||'').split(' ',1)[0],
+        hda:[0,1].includes(reconfigure.values?.CanfdHDA2)?reconfigure.values.CanfdHDA2:null});
+    }
+    if (CarrotIntro.ctx.preview || CarrotIntro.ctx.reconfigure) {
       previewDocumentLang = document.documentElement.lang || "";
       document.body.dataset.introPreview = "1";
     } else {
@@ -198,9 +212,11 @@ globalThis.CarrotIntroShell = (() => {
   }
 
   function finish() {
-    if (closing || deck.hidden) return;
+    if (closing || deck.hidden || CarrotIntro.ctx.applying) return;
     closing = true;
+    session++;
     const wasPreview = CarrotIntro.ctx.preview === true;
+    const wasReconfigure=CarrotIntro.ctx.reconfigure===true,wasApplied=CarrotIntro.ctx.applied===true;
     if (cleanup) { cleanup(); cleanup = null; }
     curtain.className = "intro-curtain is-closing";
     setTimeout(() => {
@@ -210,12 +226,14 @@ globalThis.CarrotIntroShell = (() => {
       delete document.body.dataset.introOpen;
       delete document.body.dataset.introPreview;
       curtain.className = "intro-curtain";
+      deck.removeAttribute('role');deck.removeAttribute('aria-modal');deck.removeAttribute('aria-label');
       closing = false;
 
-      if (wasPreview) {
-        if (previewDocumentLang) document.documentElement.lang = previewDocumentLang;
+      if (wasPreview || wasReconfigure) {
+        if (!wasApplied && previewDocumentLang!==null) document.documentElement.lang = previewDocumentLang;
         previewDocumentLang = null;
         CarrotIntro.reset();
+        returnFocus?.focus?.({preventScroll:true});returnFocus=null;
         return;
       }
       /* 인트로가 끝나고 나서야 앱의 첫 페이지를 띄운다.
@@ -232,6 +250,17 @@ globalThis.CarrotIntroShell = (() => {
      앞으로 가는 키는 없다 (임의 전진 금지). */
   document.addEventListener("keydown", (e) => {
     if (deck.hidden) return;
+    if(CarrotIntro.ctx.reconfigure){
+      if(e.key==='Escape'){e.preventDefault();finish();return;}
+      if(e.key==='Tab'){
+        const focusable=[...pane.querySelectorAll('button:not(:disabled),select:not(:disabled),input:not(:disabled)')].filter(el=>!el.hidden&&el.getClientRects().length);
+        const first=focusable[0],last=focusable.at(-1);
+        if(!first){e.preventDefault();return;}
+        if(!pane.contains(document.activeElement)||document.activeElement===pane){e.preventDefault();(e.shiftKey?last:first).focus();return;}
+        if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+        return;
+      }
+    }
     if (e.key === "Escape" && CarrotIntro.ctx.preview && history.length === 0 && !backHandler) {
       e.preventDefault();
       finish();
@@ -256,7 +285,14 @@ globalThis.CarrotIntroShell = (() => {
     box.textContent = message;
   }
 
-  return { goTo, goBack, pick, open, finish, error };
+  function setApplying(value){
+    CarrotIntro.ctx.applying=value;
+    const note=pane?.querySelector('.intro-preview-note');
+    if(note&&CarrotIntro.ctx.reconfigure)note.textContent=CarrotIntro.t(CarrotIntro.ctx.applied?'againSaved':'againNote');
+    pane?.querySelectorAll('.intro-back').forEach(el=>el.disabled=value||CarrotIntro.ctx.applied);
+    pane?.querySelectorAll('.intro-close').forEach(el=>{el.disabled=value;el.textContent=CarrotIntro.t(CarrotIntro.ctx.applied?'againReturn':'againCancel');});
+  }
+  return { goTo, goBack, pick, open, finish, error, setApplying };
 })();
 
 /* 여기서 열지 않는다. 게이트는 shared/ui/navigation.js 의

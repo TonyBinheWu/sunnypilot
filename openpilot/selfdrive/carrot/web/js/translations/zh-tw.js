@@ -5,6 +5,9 @@ window.CarrotTranslations.register("zh-tw", {
   nativeName: "繁體中文",
   shortName: "繁中",
   strings: {
+    setup_again_title: "重新執行設定引導",
+    setup_again_park: "尚無新鮮的車輛／裝置狀態。請停車並關閉控制，或停車熄火後等待裝置連線，再重試。",
+    setup_again_unavailable: "無法讀取車機設定。請更新車機並重新開啟引導。",
     scene_detection: "前方影像物件辨識（實驗性）",
     scene_detection_desc: "由觀看網頁或 APK 的裝置辨識前方影像中的行人、機車、自行車、汽車、公車與卡車，預設關閉。內附 EfficientDet-Lite0 int8 模型，以背景 CPU 工作程序執行，每秒最多 4 次並依效能降頻，不上傳攝影機影像。需要支援 Worker、WebAssembly、OffscreenCanvas 的新版瀏覽器或 Android System WebView。定位需要新鮮的道路相機校正與高度資料；位置是以平坦地面估算，可能受坡度、遮擋與偵測誤差影響。沒有側後方相機涵蓋，也不介入駕駛控制。原生雷達未分類目標不會猜成汽車或機車。載入失敗時，可先更新車機與 WebView，再關閉重開此功能。",
     scene_live_notice: "即時觀測 · 前方影像／原生目標，非 360° 環景",

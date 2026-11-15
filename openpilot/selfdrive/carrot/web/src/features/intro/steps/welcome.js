@@ -67,8 +67,10 @@ CarrotIntro.register({
     });
 
     el.querySelector("[data-restore]").addEventListener("click", () => {
+      if(ctx.reconfigure){CarrotIntroShell.error(t('againRestore'));return;}
       CarrotIntroShell.goTo("restore");
     });
+    if(ctx.reconfigure){const info=document.createElement('p');info.className='intro-lead';info.textContent=t('againDraft');el.appendChild(info);}
 
     /* 셸이 pane 을 버릴 때 호출한다. 타이머가 남아 죽은 pane 을
        가리키면 다음 단계가 엉킨다. */

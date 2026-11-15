@@ -27,6 +27,7 @@ globalThis.CarrotIntro = (() => {
   const ctx = {
     lang: detectCarrotIntroLang(),
     preview: false, // 터미널에서 연 실제 흐름의 dry-run. 장치/브라우저 상태를 쓰지 않는다.
+    reconfigure: false, baseline: null, applying: false, applied: false,
     car: "",
     maker: "",
     hda: null,     // 0 = HDA1, 1 = HDA2, null = 미선택/비HKG
@@ -38,6 +39,7 @@ globalThis.CarrotIntro = (() => {
     Object.assign(ctx, {
       lang: detectCarrotIntroLang(),
       preview: false,
+      reconfigure: false, baseline: null, applying: false, applied: false,
       car: "", maker: "", hda: null, preset: null, restored: false,
     });
   }

@@ -56,6 +56,11 @@ CarrotIntro.register({
 
     let mode = "makers";   // "makers" | "models"
     let alive = true;
+    if(ctx.reconfigure&&ctx.baseline.car&&!ctx.baseline.car.toLowerCase().includes('mock')){
+      const keep=document.createElement('button');keep.className='intro-ghost';keep.type='button';
+      keep.textContent=`${t('againKeepCar')} · ${ctx.baseline.car}`;
+      keep.onclick=()=>{ctx.car=ctx.baseline.car;ctx.maker=ctx.car.split(' ',1)[0];if(!isHkg())ctx.hda=null;CarrotIntroShell.goTo(isHkg()?'hda':'control');};el.appendChild(keep);
+    }
 
     const makersOf = () => (CARS && CARS.makers) || {};
 
