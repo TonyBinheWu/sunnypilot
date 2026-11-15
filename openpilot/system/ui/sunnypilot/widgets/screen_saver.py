@@ -30,7 +30,7 @@ class ScreenSaverSP(Widget):
     self._hue = 150
     self.color = rl.color_from_hsv(self._hue, 1, 1)
 
-    self.text = "sunnypilot"
+    self.text = "FormosaPilot"
     self.font_size = 50 if self._is_mici else 200
     self._start_time = None
     self._dismiss = False
@@ -65,7 +65,7 @@ class ScreenSaverSP(Widget):
   def _update_state(self):
     super()._update_state()
 
-    self.font = gui_app.font(FontWeight.AUDIOWIDE)
+    self.font = gui_app.font(FontWeight.BOLD)
     text_size = measure_text_cached(self.font, self.text, self.font_size, 0)
     self.logo_width = text_size.x
     self.logo_height = text_size.y

@@ -116,6 +116,24 @@ class Car:
       self.CP = self.CI.CP
       self.CP_SP = self.CI.CP_SP
 
+      # Diagnose opt-in HKG steering initialization once, before Panda safety is
+      # configured. Logging only; never alter the safety flags from this path.
+      if self.CP.brand == "hyundai":
+        from opendbc.car.hyundai.values import HyundaiFlags, HyundaiSafetyFlags
+        requested = self.params.get_bool("HkgLowSpeedTorque")
+        actual = bool(self.CP.flags & HyundaiFlags.CANFD_DYNAMIC_TORQUE)
+        safety = any(bool(config.safetyParam & HyundaiSafetyFlags.CANFD_DYNAMIC_TORQUE)
+                     for config in self.CP.safetyConfigs)
+        cloudlog.warning({
+          "event": "hkg_low_speed_torque_initialization",
+          "platform": str(self.CP.carFingerprint),
+          "requested": requested,
+          "controller_enabled": actual,
+          "panda_safety_enabled": safety,
+        })
+        if requested and not (actual and safety):
+          cloudlog.warning("HKG low-speed torque requested but vehicle compatibility/safety did not permit it")
+
       # continue onto next fingerprinting step in pandad
       self.params.put_bool("FirmwareQueryDone", True, block=True)
     else:

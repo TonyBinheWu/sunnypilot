@@ -1,8 +1,11 @@
+import ast
 import datetime
 import os
+from pathlib import Path
 import threading
 import time
 import uuid
+from unittest.mock import Mock
 
 from openpilot.common.test import OpenpilotTestCase
 from openpilot.common.params import Params, ParamKeyFlag, UnknownKeyName
@@ -66,6 +69,44 @@ class TestParams(OpenpilotTestCase):
       self.params.put(b"DongleId\0suffix", "abc", block=True)
 
     assert self.params.get_param_path(b"key\0suffix").endswith("/key\0suffix")
+
+  def test_chestnut_retry_lifecycle(self):
+    assert not self.params.get_bool("ChestnutRetry")
+    self.params.put_bool("ChestnutRetry", True, block=True)
+    # A requested onroad cycle must not grant another retry in the same ignition.
+    for transition in (ParamKeyFlag.CLEAR_ON_OFFROAD_TRANSITION, ParamKeyFlag.CLEAR_ON_ONROAD_TRANSITION):
+      self.params.clear_all(transition)
+      assert self.params.get_bool("ChestnutRetry")
+    for reset in (ParamKeyFlag.CLEAR_ON_IGNITION_ON, ParamKeyFlag.CLEAR_ON_MANAGER_START):
+      self.params.put_bool("ChestnutRetry", True, block=True)
+      self.params.clear_all(reset)
+      assert not self.params.get_bool("ChestnutRetry")
+
+  def test_model_load_failure_retries_once_then_selects_fallback(self):
+    root = Path(__file__).resolve().parents[3]
+    for runner in ('openpilot/selfdrive/modeld/modeld.py', 'openpilot/sunnypilot/modeld_v2/modeld.py'):
+      with self.subTest(runner=runner):
+        self.params.clear_all(ParamKeyFlag.ALL)
+        tree = ast.parse((root / runner).read_text())
+        retry = next(node for node in ast.walk(tree) if isinstance(node, ast.If)
+                     and isinstance(node.test, ast.BoolOp) and any(
+                       isinstance(child, ast.Constant) and child.value == 'ChestnutRetry' for child in ast.walk(node.test)))
+        code = compile(ast.Module(body=[retry], type_ignores=[]), runner, 'exec')
+        namespace = {'model': None, 'params': self.params, 'cloudlog': Mock()}
+        exec(code, namespace)
+        deadline = time.monotonic() + 5.
+        while not self.params.get_bool('OnroadCycleRequested') and time.monotonic() < deadline:
+          time.sleep(.01)
+        assert self.params.get_bool('ChestnutRetry')
+        assert self.params.get_bool('OnroadCycleRequested')
+        self.params.put_bool('OnroadCycleRequested', False, block=True)
+        self.params.clear_all(ParamKeyFlag.CLEAR_ON_OFFROAD_TRANSITION)
+        exec(code, namespace)
+        deadline = time.monotonic() + 5.
+        while self.params.get('ChestnutActive') is None and time.monotonic() < deadline:
+          time.sleep(.01)
+        assert self.params.get('ChestnutActive') is False
+        assert not self.params.get_bool('OnroadCycleRequested')
 
   def test_remove_not_there(self):
     assert self.params.get("CarParams") is None

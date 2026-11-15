@@ -13,7 +13,7 @@ from openpilot.system.ui.widgets.label import Label
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.common.version import terms_version, training_version, terms_version_sp
 
-from openpilot.selfdrive.ui.sunnypilot.layouts.onboarding import SunnylinkOnboarding
+from openpilot.sunnypilot.formosalink.service_policy import OptionalCloudOnboarding
 
 DEBUG = False
 
@@ -188,7 +188,7 @@ class OnboardingWindow(Widget):
 
     # sunnylink consent pages
     self._accepted_terms = self._accepted_terms and ui_state.params.get("HasAcceptedTermsSP") == terms_version_sp
-    self._sunnylink = SunnylinkOnboarding()
+    self._sunnylink = OptionalCloudOnboarding()
     if not self._accepted_terms:
       self._state = OnboardingState.TERMS
     elif not self._sunnylink.completed:
