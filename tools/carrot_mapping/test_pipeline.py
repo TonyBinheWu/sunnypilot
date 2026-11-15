@@ -116,6 +116,16 @@ def test_modified_parent_revision_is_not_a_valid_comparison():
   with pytest.raises(ValueError,match='revision_invalid'):build_map([o],p,previous)
 
 
+def test_rounded_optimizer_rotations_stay_rigid_and_boolean_frame_ids_are_invalid():
+  o,p=inputs()
+  q=[0,.7070,.7070,0]
+  r=rotation(q)
+  assert np.allclose(r.T @ r,np.eye(3),atol=1e-12)
+  assert np.linalg.norm(r @ np.array([60,0,0]))==pytest.approx(60)
+  p['trajectories'][0]['poses'][0]['frame_id']=True
+  with pytest.raises(ValueError,match='invalid_pose_frame_id'):build_map([o],p)
+
+
 def load_feature():
   # Do not import the full server registry/native Params for isolated HTTP tests.
   folder=Path(__file__).resolve().parents[2]/'openpilot/selfdrive/carrot/server/features'

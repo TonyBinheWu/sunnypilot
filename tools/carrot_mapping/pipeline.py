@@ -37,9 +37,13 @@ def vector(value, size, limit):
 
 
 def rotation(q):
-  w, x, y, z = vector(q, 4, 1.001)
-  if abs(np.linalg.norm([w, x, y, z]) - 1) > .001:
+  quaternion = vector(q, 4, 1.001)
+  norm = np.linalg.norm(quaternion)
+  if abs(norm - 1) > .001:
     raise ValueError('quaternion_not_unit')
+  # Rounded optimizer output may be nearly unit length. Normalize before using
+  # the unit-quaternion matrix, otherwise it can silently scale lane geometry.
+  w, x, y, z = quaternion / norm
   return np.array([[1-2*(y*y+z*z), 2*(x*y-z*w), 2*(x*z+y*w)],
                    [2*(x*y+z*w), 1-2*(x*x+z*z), 2*(y*z-x*w)],
                    [2*(x*z-y*w), 2*(y*z+x*w), 1-2*(x*x+y*y)]])
@@ -84,6 +88,8 @@ def pose_index(document):
     times, poses = [], []
     for row in rows:
       t = timestamp(row.get('timestamp_ns'))
+      if 'frame_id' in row and (isinstance(row['frame_id'], bool) or not isinstance(row['frame_id'], int) or row['frame_id'] < 0):
+        raise ValueError('invalid_pose_frame_id')
       if times and t <= times[-1]:
         raise ValueError('pose_clock_not_increasing')
       poses.append((row, rotation(row.get('quaternion_wxyz')), vector(row.get('translation'), 3, 100_000)))
