@@ -152,3 +152,24 @@ def test_real_open_recording_is_retained_even_when_its_mtime_is_old(tmp_path):
   with recording.open('rb'):
     result=enforce_quota(root,[],10,now=2000,capacity=lambda _:1000)
   assert result['deleted']==0 and recording.exists()
+
+
+def test_screen_only_install_does_not_require_a_routes_directory(tmp_path):
+  screen=tmp_path/'videos';screen.mkdir()
+  file=old(screen/'20260101-000000.mp4')
+  result=enforce_quota(tmp_path/'not-created-yet',[screen],10,now=2000,opened=set(),capacity=lambda _:1000)
+  assert result['deleted']==1 and not file.exists()
+
+
+def test_new_folder_preserve_marker_is_rechecked_before_deletion(tmp_path,monkeypatch):
+  from openpilot.system.loggerd import recording_quota as module
+  screen=tmp_path/'videos';screen.mkdir()
+  file=old(screen/'20260101-000000.mp4')
+  original=module.inventory
+  def scanning(*args):
+    result=original(*args)
+    (screen/'.preserve').write_text('')
+    return result
+  monkeypatch.setattr(module,'inventory',scanning)
+  result=enforce_quota(tmp_path/'routes',[screen],10,now=2000,opened=set(),capacity=lambda _:1000)
+  assert result['deleted']==0 and file.exists()

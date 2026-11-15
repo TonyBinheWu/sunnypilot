@@ -91,10 +91,17 @@ def inspect(path, opened, now, grace=120):
   return size, newest, protected or newest > now - grace
 
 
+def screen_protected(folder, path):
+  return (preserved(folder) or any((folder / name).exists() for name in ('.lock', '.preserve', '.protected')) or
+          any((folder / (path.name + suffix)).exists() for suffix in ('.lock', '.preserve')))
+
+
 def inventory(log_root, screen_roots, opened, now):
   groups = {}
-  root = Path(log_root).resolve(strict=True)
-  for entry in root.iterdir():
+  root = Path(log_root).resolve()
+  if root.exists() and not root.is_dir():
+    raise ValueError("recording root is not a directory")
+  for entry in root.iterdir() if root.exists() else ():
     if entry.is_symlink() or not entry.is_dir() or not SEGMENT_NAME.fullmatch(entry.name):
       continue
     if not any((entry / name).is_file() for name in ROUTE_FILES) and not any(p.name.endswith('.lock') for p in entry.iterdir()):
@@ -124,8 +131,7 @@ def inventory(log_root, screen_roots, opened, now):
       if entry.is_symlink() or not entry.is_file() or not SCREEN_NAME.fullmatch(entry.name):
         continue
       size, newest, protect = inspect(entry, opened, now)
-      protect |= preserved(folder) or (folder / '.lock').exists() or (folder / '.preserve').exists() or (folder / '.protected').exists()
-      protect |= (folder / (entry.name + '.lock')).exists() or (folder / (entry.name + '.preserve')).exists()
+      protect |= screen_protected(folder, entry)
       dev = entry.stat().st_dev
       groups[(dev, str(folder), entry.name)] = Recording(folder, [entry], dev, size, newest, protect)
   return list(groups.values())
@@ -170,7 +176,7 @@ def enforce_quota(log_root, screen_roots, percent, *, now=None, opened=None, cap
           if protected or modified > item.newest:
             safe = False
             break
-          if path.is_file() and ((path.parent / (path.name + '.lock')).exists() or (path.parent / (path.name + '.preserve')).exists()):
+          if path.is_file() and screen_protected(path.parent, path):
             safe = False
             break
         if not safe:
