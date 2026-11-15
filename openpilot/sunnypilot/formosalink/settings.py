@@ -58,6 +58,24 @@ def rules_pass(rules, values, capabilities, offroad):
   return all(rule_value(rule, values, capabilities, offroad) is True for rule in rules or [])
 
 
+def disabled_reason(conditions, values, capabilities, offroad, remote, widget):
+  if not offroad:
+    return "offroad_required"
+  if not remote or widget == "info":
+    return "read_only"
+  for rule in conditions:
+    result = rule_value(rule, values, capabilities, offroad)
+    if result is not True:
+      if result is None:
+        return "unknown_condition"
+      def has_capability(node):
+        if isinstance(node, dict):
+          return node.get("type") == "capability" or any(has_capability(v) for v in node.values())
+        return isinstance(node, list) and any(has_capability(v) for v in node)
+      return "capability_required" if has_capability(rule) else "dependency_required"
+  return ""
+
+
 def native_items(schema):
   """Carry parent conditions down; never expose rule references as writable keys."""
   def visit(item, group, parents, remote):
@@ -100,6 +118,7 @@ def catalog(schema, values, types, capabilities, offroad, translate=lambda text:
              "description":translate(item.get("description", "")), "type":types[key], "widget":widget,
              "enabled":bool(remote and offroad and widget != "info" and rules_pass(conditions, values, capabilities, offroad)),
              "unit":item.get("unit", "")}
+    entry["disabled_reason"] = disabled_reason(conditions, values, capabilities, offroad, remote, widget)
     for name in ("min", "max", "step"):
       if name in item:
         entry[name] = item[name]
@@ -113,6 +132,7 @@ def catalog(schema, values, types, capabilities, offroad, translate=lambda text:
           "enabled":rules_pass(option.get("enablement"), values, capabilities, offroad)})
     elif widget not in ("toggle", "info") and not all(name in entry for name in ("min", "max", "step")):
       entry["enabled"] = False
+      entry["disabled_reason"] = "unsupported_type"
     result[key] = entry
   return list(result.values())
 

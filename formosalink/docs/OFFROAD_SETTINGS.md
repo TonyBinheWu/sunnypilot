@@ -1,3 +1,33 @@
+# FormosaPilot 0.9.1 — offroad settings
+
+## 繁體中文
+
+遠端參數設定與原生介面採用一致的 offroad 判定：`IsOffroad` 必須為真，且最近 2 秒內收到有效 `deviceState`、其 `started` 為假。電門開著、Panda 點火訊號仍為真，不再單獨禁止 offroad 設定；Panda 資料缺失也不會單獨鎖住參數設定。這不會允許 onroad 修改，也不會送出任何轉向、煞車或 CAN 指令。
+
+裝置端 FormosaLink 的「遠端設定」仍須由使用者開啟。網站會分別提示未授權、離線、等待裝置確認、車型／控制模式不支援或功能條件尚未滿足。停車不會自動讓所有設定相容，例如 Hyundai 車型的 Honda／Toyota 專用設定仍不可操作。
+
+更新 `hkg-enhanced` 或 `ccnc-port` 後重啟裝置；網站重新整理即可載入新提示。設定仍依序經過裝置狀態確認、型別／範圍檢查、版本衝突檢查、寫入前再次檢查及裝置讀回，才顯示已套用。需要下次行車或重啟才生效的參數仍依原本規則生效。伺服器 API、帳號、配對、OAuth 與資料庫不需變更。
+
+2026-11-15：兩分支各 177 項 Python 測試、22 項網頁測試通過；C3X／C4 原生介面每分支每機型 33 項，共 132 項通過。新增回歸涵蓋點火開／關、Panda 缺失、onroad、manager 狀態不符、過期／無效狀態及參數回讀。未直接連線使用者實機驗收，需更新裝置後確認。
+
+## English
+
+Remote Params writes now use native offroad semantics: `IsOffroad=true` and a valid `deviceState` sampled within two seconds with `started=false`. Ignition being on, or Panda data being absent, does not independently disable offroad settings. Onroad writes and stale/invalid device-state data remain blocked. No vehicle commands or CAN transmissions are introduced.
+
+Local remote-settings consent is still required. The website distinguishes permission, offline, unconfirmed state, unsupported vehicle/control mode and unmet dependency conditions. Updating the device branch and restarting loads the fix; refresh the website for the new explanations. Device readback is still required before showing Applied. Existing next-drive/restart activation rules remain. Server API, accounts, pairing, OAuth and database are unchanged.
+
+## 日本語
+
+遠隔パラメーター設定の offroad 判定を本体の設定画面に合わせます。`IsOffroad=true` に加え、2 秒以内の有効な `deviceState` が `started=false` であることを確認します。イグニッションがオン、または Panda 情報が未受信という理由だけでは無効化しません。onroad 中や状態情報が古い／無効な場合の変更は引き続き禁止します。車両制御や CAN 送信は追加しません。
+
+本体で遠隔設定の許可を有効にしてください。ウェブには権限、接続、状態確認待ち、車種／制御モード非対応、依存機能の条件を区別して表示します。対象ブランチ更新後に本体を再起動し、ウェブを再読み込みしてください。適用済み表示には本体の読戻し確認が必要です。次回走行／再起動で有効になる既存の規則は維持します。サーバー API、アカウント、ペアリング、OAuth、データベースの変更は不要です。
+
+---
+
+## 歷史版本的部署與協定參考 / Historical deployment reference / 旧版の導入手順
+
+以下保留 0.3.x 文件；目前狀態判定以本頁 0.9.1 說明為準。The 0.9.1 state guard above supersedes the older ignition/Panda requirements below. 現在の判定条件は上記 0.9.1 を参照してください。
+
 # 裝置資訊與停車設定 / Device settings / 停車中の設定（0.3.0）
 
 ## 繁體中文

@@ -1,5 +1,4 @@
 """Device-authoritative settings capture and guarded single-parameter writes."""
-import json
 import math
 import time
 import uuid
@@ -9,7 +8,7 @@ from openpilot.sunnypilot.formosalink.settings import LOCAL_ONLY, catalog, nativ
 
 class SettingsProvider:
   """Injected I/O permits testing the same apply path without native device access."""
-  def __init__(self, params, schema, capabilities, guard, info=lambda: {}, translate=None, navigation=False):
+  def __init__(self, params, schema, capabilities, guard, info=dict, translate=None, navigation=False):
     self.params, self.schema, self.capabilities, self.guard, self.info = params, schema, capabilities, guard, info
     self.translate = translate
     self.navigation = navigation
@@ -60,7 +59,7 @@ class SettingsProvider:
       entries.append(entry(bool(offroad and self.allowed() and self.params.get_bool("NavigationEnabled"))))
     published = {item["key"]:values[item["key"]] for item in entries}
     catalog_hash = revision(entries)
-    return {"version":1,"session":self.session,"sampled_at":time.time(),"offroad":offroad,
+    return {"version":1,"session":self.session,"sampled_at":time.time(),"offroad":offroad,  # noqa: TID251 - wire UTC timestamp
             "remote_enabled":self.allowed(), "catalog":entries,
             "catalog_revision":catalog_hash,"values":published,
             "revision":revision({"catalog":catalog_hash,"values":published}),"info":self.info(),"receipts":[]}
@@ -137,12 +136,20 @@ class NativeSettingsProvider(SettingsProvider):
     self.sm = messaging.SubMaster(["deviceState", "pandaStates", "carState", "chestnutGpuState"])
     params = Params()
     information = DeviceInformation(self.sm, params)
+    self._settings_guard = "waiting_device_state"
     super().__init__(params, generate_schema(), lambda: generate_capabilities(params), self.parked,
-                     information.capture, NativeTranslations(), navigation=True)
+                     lambda: {**information.capture(), "settings_guard": self._settings_guard}, NativeTranslations(), navigation=True)
 
   def parked(self):
     from openpilot.sunnypilot.formosalink.telemetry import source_valid
     self.sm.update(0)
-    return bool(source_valid(self.sm,"deviceState",2) and source_valid(self.sm,"pandaStates",2)
-                and self.params.get_bool("IsOffroad") and not self.sm["deviceState"].started
-                and not any(p.ignitionLine or p.ignitionCan for p in self.sm["pandaStates"]))
+    # Match native settings availability: offroad is a manager/device state,
+    # not ignition-off. Panda can remain powered with ignition on in offroad.
+    # These are guarded Params writes, never immediate vehicle commands.
+    if not source_valid(self.sm, "deviceState", 2):
+      self._settings_guard = "waiting_device_state"
+    elif not self.params.get_bool("IsOffroad") or self.sm["deviceState"].started:
+      self._settings_guard = "onroad"
+    else:
+      self._settings_guard = "ready"
+    return self._settings_guard == "ready"
