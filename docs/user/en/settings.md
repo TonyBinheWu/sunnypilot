@@ -365,6 +365,8 @@ With `CarrotVisionEnabled` on, the external HUD and web camera view can be used 
 
 `RainbowMode` defaults off. Enable **Rainbow Road (SP style)** on the device Toggles screen, or search for it in Carrot Web / CarrotAssist. C3/C3X and C4 apply it without restarting, when lateral control is active. Turning it off restores the existing path mode and color. It changes only path fill and preserves geometry, steering, cruise control and alerts. The web / APK rainbow uses the separate `vision_rainbow_lane` display preference.
 
+After changing the setting remotely, allow the device UI's regular parameter refresh. Enabling the display preference does not activate lateral control; the normal path remains visible until lateral control is active. Install the software update and restart the device once before first use; subsequent rainbow-toggle changes do not need another restart.
+
 For RAV4 2022 with the ARS display stream, `ShowRadarInfo=3` on the standard device
 driving screen also shows adjacent-lane objects separately from control leads. Modes 1/2
 and other receivers retain their behavior. A marker does not mean braking-target selection
