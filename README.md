@@ -26,15 +26,15 @@
 
 ## 下載與安裝
 
-**[⬇ 下載 CarrotAssist 繁體中文版 0.2.18（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.18/CarrotAssist-TW-0.2.18.apk)**
+**[⬇ 下載 CarrotAssist 繁體中文版 0.2.19（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk)**
 
 | 項目 | 說明 |
 |---|---|
-| 版本 | **0.2.18**（版本代碼 25） |
+| 版本 | **0.2.19**（版本代碼 26） |
 | 安裝需求 | Android 8.0 以上 |
 | 手機直接語音 | Android 12 以上、可用的裝置端語音辨識服務與國語語音模型 |
 | 套件名稱 | `me.shind0.carrotweb.tw`，手機顯示為 **CarrotAssist 繁中** |
-| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.18) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.18/SHA256SUMS.txt) |
+| 發行與驗證 | [發行頁面](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.19) · [SHA-256 校驗檔](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/SHA256SUMS.txt) |
 | 更新來源 | 本倉庫 `TonyBinheWu/sunnypilot` 的繁中發行頻道 |
 
 ### 安裝步驟
@@ -52,6 +52,12 @@
 APK 經建置、測試與簽章驗證；尚未在實體手機或實車驗證。iPhone 請使用 [Carrot Web](docs/CARROT_MOBILE.zh-TW.md)。
 
 **選錯初始設定時：** 更新車機後，網頁與 APK 可由「工具 → 重新執行設定引導」重選語言、車型、HDA 與控制方式。選項先暫存，最後確認才套用；取消會保留原值，也可逐項選擇保留目前設定。須停車關閉控制或熄火操作；變更車輛配置後依提示完整重啟。[繁中操作說明](docs/CARROT_MOBILE.zh-TW.md#重新執行設定引導)。
+
+## 錯誤自我診斷與修復
+
+網頁與 APK 的「工具 → 錯誤自我診斷與修復」可檢查 CAN、處理延遲、程序、溫度、儲存空間、模型與 FormosaLink。網頁請求／影像連線失敗時會限頻自動做唯讀檢查；需要修復時，先確認操作內容，且由車機重新確認停車狀態。資料不足會明確顯示，CAN、轉向、煞車與校正參數不會自動更改。
+
+**0.2.19 APK** 另提供「上方裝置名稱 → 連線自我診斷與修復」，即使車機網頁打不開，也能檢查區域網路、驗證選取的 Carrot Web、重新搜尋、輸入 IP，以及開啟 Wi-Fi／中文語音檢查。更新並重啟車機後再使用完整診斷。[繁中操作與修復範圍](docs/CARROT_MOBILE.zh-TW.md#錯誤自我診斷與修復0219)。
 
 ## Carrot Vision 顯示版面
 

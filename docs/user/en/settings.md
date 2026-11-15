@@ -4,6 +4,8 @@
 
 ## Revisit initial vehicle and control choices
 
+For error messages, use **Tools → Error diagnosis and repair** first. It distinguishes observed faults from missing data; any supported repair requires confirmation and a fresh parked-state check. [Diagnosis scope and recovery](carrot-web.md#error-diagnosis-and-repair).
+
 Use **Tools → Run setup again** in the web page or CarrotAssist to revisit language, vehicle, HDA and driving control. This stages selections until a final old/new-value review; Cancel preserves saved settings. Keep-current options retain custom tuning. Applying a control preset replaces its seven listed values; vehicle changes require restart while parked. [Steps, state checks and recovery](carrot-web.md#run-setup-again).
 
 ## Carrot Vision presentation

@@ -36,6 +36,8 @@ jobs:
       - run: python -m pytest -c /dev/null --rootdir=. --noconftest -q openpilot/selfdrive/carrot/server/tests/test_web_settings_ar.py openpilot/selfdrive/carrot/server/tests/test_web_display_preferences.py openpilot/system/loggerd/tests/test_recording_quota.py
       - name: Check repeat setup staging and rollback
         run: python -m pytest -c /dev/null --rootdir=. --noconftest -q openpilot/selfdrive/carrot/server/tests/test_intro_reconfigure.py
+      - name: Check read-only diagnosis and guarded single-use repairs
+        run: python -m pytest -c /dev/null --rootdir=. --noconftest -q openpilot/selfdrive/carrot/server/tests/test_self_diagnostics.py
       - name: Check Vision resolution policy
         run: |
           g++ -std=c++17 -Iopenpilot openpilot/system/loggerd/tests/test_vision_resolution.cc -o /tmp/vision-resolution-test

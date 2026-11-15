@@ -2,6 +2,10 @@
 
 [한국어](../ko/carrot-assist.md) · [Carrot Web](carrot-web.md)
 
+## Connection diagnosis (0.2.19)
+
+Tap the device name → **Connection diagnosis and repair**, even if the vehicle page cannot load. Native controls check local IPv4 interfaces, verify the selected Carrot Web using existing bounded read-only probes, report microphone permission/speech-service availability, and link to rediscovery, manual IP, Wi-Fi and Chinese speech setup. A service check does not prove a zh-TW model is installed or that CAN/video is healthy. Main-frame load/HTTP 5xx errors show recovery controls and keep voice/page readiness disabled. Closing or backgrounding cancels probes and ignores late callbacks. No permissions, credentials or stored settings are reset. Full [vehicle diagnosis](carrot-web.md#error-diagnosis-and-repair) needs updated/restarted vehicle software; its web feature also works with existing compatible APKs. Physical Android acceptance remains pending.
+
 CarrotAssist discovers a Carrot device on the local network, opens its Carrot Web interface, and invokes the phone's default Android assistant. Connecting the Carrot plugin to ChatGPT enables setting search, explanations and screen navigation. Additional permission enables live setting reads and bounded changes on clear setting/value commands.
 
 ### Direct voice commands on the phone

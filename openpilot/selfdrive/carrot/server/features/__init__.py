@@ -36,6 +36,8 @@ from . import (
 
 
 def register_all(app: web.Application) -> None:
+  from . import self_diagnostics
+  self_diagnostics.register(app)
   from . import steering_learning
   steering_learning.register(app)
   from . import forced_offroad

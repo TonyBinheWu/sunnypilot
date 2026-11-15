@@ -65,12 +65,19 @@ async function readJsonResponse(response) {
 }
 
 async function requestJson(url, options = {}) {
+  try {
   const response = await fetch(url, options);
   const payload = await readJsonResponse(response);
   if (!response.ok || payload?.ok === false) {
     throw buildApiError(response, payload);
   }
   return payload;
+  } catch (error) {
+    if (!error.status || error.status >= 500 || error.errorCode === 'INVALID_JSON_RESPONSE') {
+      try { window.dispatchEvent(new CustomEvent('carrot:diagnosticerror', {detail:{kind:'request',url,status:error.status||0,code:error.errorCode||'REQUEST_FAILED'}})); } catch (_) {}
+    }
+    throw error;
+  }
 }
 
 async function postJson(url, bodyObj) {

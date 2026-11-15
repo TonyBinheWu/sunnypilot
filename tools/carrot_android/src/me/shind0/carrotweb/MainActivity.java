@@ -74,6 +74,8 @@ public final class MainActivity extends Activity {
   private String currentAddress;
   private SharedPreferences preferences;
   private AppUpdater updater;
+  private AppDiagnostics diagnostics;
+  private boolean pageLoadFailed;
   private ConnectionRecovery recovery;
   private boolean recovering;
   private ConnectionRecovery voiceCheck;
@@ -132,7 +134,9 @@ public final class MainActivity extends Activity {
     preferences = getSharedPreferences("carrot-web", MODE_PRIVATE);
     initializeVoiceMode(preferences);
     speechSetup = new SpeechSetup(this);
-    updater = new AppUpdater(this, preferences, () -> showSpeechSetup(""), this::showTextSize);
+    diagnostics = new AppDiagnostics(this, () -> currentAddress == null ? preferences.getString("last_address", "") : currentAddress,
+      this::startSearch, this::manualAddress, () -> showSpeechSetup(""), this::openDeviceDiagnosis);
+    updater = new AppUpdater(this, preferences, () -> showSpeechSetup(""), this::showTextSize, diagnostics::open);
     welcome = new VoiceWelcome(this);
     phoneVoice = new PhoneVoice(this, new PhoneVoice.Listener() {
       public void status(String text) { title.setText(text); if (!phoneVoice.listening()) phoneSession = false; }
@@ -283,7 +287,7 @@ public final class MainActivity extends Activity {
     hideVisionFullscreen();
     if (recovery != null) { recovery.cancel(); recovery = null; }
     recovering = false;
-    stopSearch(); choosing = false; found.clear(); currentAddress = null;
+    stopSearch(); choosing = false; found.clear(); currentAddress = null; pageLoadFailed = false;
     if (web != null) { web.stopLoading(); web.loadUrl("about:blank"); }
     content.removeAllViews(); title.setText(UiText.get("당근 기기 찾기", "Find Carrot"));
     LinearLayout panel = column(); panel.setPadding(dp(22),dp(28),dp(22),dp(16));
@@ -442,20 +446,30 @@ public final class MainActivity extends Activity {
           return true;
         }
         @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap icon) {
+          pageLoadFailed = false;
           resetVisionHost();
           hideVisionFullscreen();
           pageReady = false; stopPhoneVoice(); cancelVoiceCheck();
           super.onPageStarted(view,url,icon);
         }
         @Override public void onPageFinished(WebView view,String url) {
-          if (isCurrent(Uri.parse(url))) {
+          if (!pageLoadFailed && view.getParent() == content && isCurrent(Uri.parse(url))) {
             pageReady = true;
             ui.removeCallbacks(pollVision); ui.post(pollVision);
             scheduleAutoVoice();
           }
         }
         @Override public void onReceivedError(WebView view,WebResourceRequest request,android.webkit.WebResourceError error) {
-          if (request.isForMainFrame()) title.setText(UiText.get("기기 연결 끊김 · 왼쪽에서 다시 검색", "Device disconnected · Use search on the left"));
+          if (request.isForMainFrame() && isCurrent(request.getUrl())) showDeviceConnectionFailure();
+        }
+        @Override public void onReceivedHttpError(WebView view,WebResourceRequest request,android.webkit.WebResourceResponse response) {
+          if (request.isForMainFrame() && isCurrent(request.getUrl()) && response.getStatusCode() >= 500) showDeviceConnectionFailure();
+        }
+        @Override public boolean onRenderProcessGone(WebView view,android.webkit.RenderProcessGoneDetail detail) {
+          if(view==web){web=null;showDeviceConnectionFailure();}
+          if(view.getParent() instanceof ViewGroup)((ViewGroup)view.getParent()).removeView(view);
+          view.destroy();
+          return true; // Recovery creates a new verified WebView; storage is retained.
         }
       });
     }
@@ -498,6 +512,22 @@ public final class MainActivity extends Activity {
       + ",status:" + JSONObject.quote(lastPhoneResult) + "}}))", null);
   }
   private boolean isCurrent(Uri uri) { return currentAddress!=null && "http".equals(uri.getScheme()) && currentAddress.equals(uri.getHost()) && uri.getPort()==7000 && uri.getUserInfo()==null; }
+  private void showDeviceConnectionFailure() {
+    pageLoadFailed=true;pageReady=false;resetVisionHost();hideVisionFullscreen();stopPhoneVoice();cancelVoiceCheck();
+    if(web!=null)web.stopLoading();
+    if(!foregroundActivity||isFinishing())return;
+    content.removeAllViews();
+    TextView error=text("zh-tw".equals(UiText.languageCode())?"車機連線發生錯誤，可先執行唯讀診斷，或重新搜尋裝置。":"Device connection failed. Run read-only diagnosis or search again.",18);
+    error.setPadding(dp(18),dp(18),dp(18),dp(18));content.addView(error);
+    content.addView(button("zh-tw".equals(UiText.languageCode())?"連線自我診斷與修復":"Connection diagnosis and repair",v->diagnostics.open()));
+    content.addView(button(UiText.get("다시 검색","Search again"),v->startSearch()));
+  }
+  private void openDeviceDiagnosis() {
+    if(web==null||!pageReady||!foregroundActivity){notice("zh-tw".equals(UiText.languageCode())?"請先恢復車機連線；目前仍可使用 App 的連線及語音檢查。":"Reconnect to the device first; app connection and speech checks remain available.");return;}
+    web.evaluateJavascript(onDevicePage("(()=>{if(typeof window.CarrotSelfDiagnostics?.open!=='function')return false;void window.CarrotSelfDiagnostics.open();return true;})()"),value->{
+      if(!"true".equals(value))notice("zh-tw".equals(UiText.languageCode())?"請先更新並重新啟動車機，才能使用完整診斷中心。":"Update and restart the device to use full diagnosis.");
+    });
+  }
   private void invokeAssistant() {
     if (!foregroundActivity) return;
     if (recovering) { notice(UiText.get("당근웹 연결 중이에요. 웹이 열리면 음성을 시작할 수 있어요.", "Connecting to Carrot Web. Voice is available when the page opens.")); return; }
@@ -860,7 +890,8 @@ public final class MainActivity extends Activity {
   }
   private void notice(String message) { new AlertDialog.Builder(this).setMessage(message).setPositiveButton(UiText.get("확인", "OK"),null).show(); }
   @Override protected void onResume() {
-    super.onResume(); foregroundActivity = true; if (speechSetup!=null) speechSetup.resume(); if (web!=null) web.onResume(); if (updater!=null) updater.resume();
+    super.onResume(); foregroundActivity = true; if (diagnostics!=null) diagnostics.resume(); if (speechSetup!=null) speechSetup.resume(); if (web!=null) web.onResume(); if (updater!=null) updater.resume();
+    if(pageLoadFailed)showDeviceConnectionFailure();
     if (checkAfterBackground && currentAddress!=null && !recovering) {
       final String address=currentAddress; final int token=generation;
       final DeviceProbe probe=new DeviceProbe(url -> (HttpURLConnection)url.openConnection()); resumeProbe=probe;
@@ -874,8 +905,8 @@ public final class MainActivity extends Activity {
     scheduleAutoVoice();
     ui.removeCallbacks(pollVision); ui.post(pollVision);
   }
-  @Override protected void onPause() { foregroundActivity = false; resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
+  @Override protected void onPause() { foregroundActivity = false; if (diagnostics!=null) diagnostics.pause(); resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
   @Override protected void onStop() { checkAfterBackground=true; if (scanning) { stopSearch(); if (status!=null) status.setText(UiText.get("검색이 중단됐어요. 다시 검색을 눌러 주세요.", "Search paused. Tap Search again.")); } super.onStop(); }
-  @Override public void onBackPressed() { if (visionFullscreen != null || visionImmersive) { leaveVisionView(); return; } if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
-  @Override protected void onDestroy() { if (speechSetup!=null) speechSetup.close(); if (recovery!=null) recovery.cancel(); stopSearch(); ui.removeCallbacksAndMessages(null); if (updater!=null) updater.close(); if (web!=null) { web.destroy(); web=null; } super.onDestroy(); }
+  @Override public void onBackPressed() { if (visionFullscreen != null || visionImmersive) { leaveVisionView(); return; } if(pageLoadFailed){startSearch();return;} if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
+  @Override protected void onDestroy() { if (diagnostics!=null) diagnostics.close(); if (speechSetup!=null) speechSetup.close(); if (recovery!=null) recovery.cancel(); stopSearch(); ui.removeCallbacksAndMessages(null); if (updater!=null) updater.close(); if (web!=null) { web.destroy(); web=null; } super.onDestroy(); }
 }

@@ -6,6 +6,8 @@ import { handleWebAutoUpdateStatus, openWebSettingsDialog } from "./web_settings
 import { openAssistantDialog } from "./assistant.js";
 import { openSteeringLearning } from "./steering_learning.js";
 import { openSetupGuide } from "./reconfigure.js";
+import { installSelfDiagnostics } from "./diagnostics/index.js";
+installSelfDiagnostics(globalThis);
 import {
   bindToolsDeviceInfoCopy,
   buildToolsDeviceInfoDialog,
@@ -991,6 +993,7 @@ async function confirmText(msg, placeholder = "") {
 }
 
 function showError(action, error) {
+  globalThis.CarrotSelfDiagnostics?.record({kind:'request',code:'TOOL_FAILED'});
   const labels = getActionLabel(action);
   const title = labels.failed;
   const msg = (typeof error === "object" && error.message) ? error.message : String(error);
@@ -1139,6 +1142,8 @@ function initToolsPage() {
   bindOnce("btnRecordingQuota", openRecordingQuota);
   bindOnce("btnSteeringLearning", openSteeringLearning);
   bindOnce("btnSetupAgain", openSetupGuide);
+  const diagnostics = installSelfDiagnostics(globalThis);
+  bindOnce("btnSelfDiagnostics", diagnostics.open);
 
   bindOnce("btnDeviceInfo", async () => {
     let values = toolsMetaLastValues || {};

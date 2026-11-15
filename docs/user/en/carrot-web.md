@@ -107,6 +107,14 @@ See [Understanding Settings](settings.md) for ranges, units, and a safe tuning o
 
 ## Tools page
 
+### Error diagnosis and repair
+
+Open **Tools → Error diagnosis and repair** after updating/restarting the device. Request/tool/script failures and an active Vision connection failure trigger a debounced read-only check, at most once per 30 seconds in a visible tab. A tab-local 12-item error buffer expires after 15 minutes; diagnostic failures cannot trigger a loop. The previous setting write is never replayed.
+
+The report distinguishes observed CAN/timeout/process/thermal/storage/memory/model/FormosaLink problems from unavailable data. Missing driving data offroad may be normal. Local pasted-text rules offer suggestions, not a proven root cause. Existing stream recovery remains active. **Enable Carrot Vision** and **Restart the parked device** appear only for matching results, require explicit confirmation and rechecked fresh Park/standstill/disengaged or genuine offroad state, and use short-lived single-use requests. Enablement is read back; a reboot acknowledgement is only a request, not verified recovery. Reconnect/recheck before retrying an uncertain result.
+
+CAN/harness/HDA, calibration, model verification, cooling, storage and remote permission problems receive specific guidance. No automatic CAN/steering/braking tuning, warning suppression, cache/log deletion, calibration reset, pairing or remote grants. Reports are generated locally without pasted text, request bodies/query strings, credentials or raw logs; download support depends on the host and selectable text is also available. No automatic upload. See [APK offline connection checks](carrot-assist.md#connection-diagnosis-0219) and the [Traditional Chinese detailed guide](../../CARROT_MOBILE.zh-TW.md#錯誤自我診斷與修復0219).
+
 ### Run setup again
 
 Open **Tools → Run setup again** to revisit the original language, vehicle, HDA and driving-control guide. Web and CarrotAssist 0.2.18 use the updated vehicle page; no new APK is required. Park in P with steering/cruise disengaged, or switch the parked vehicle off. Fresh device state is required both when opening and applying.

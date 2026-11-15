@@ -1,5 +1,24 @@
 # Repository memory
 
+- 2026-11-16: Tools -> Error diagnosis and repair shares a read-only on-demand
+  native snapshot across web/APK. Fresh invalid carState Event still supplies
+  canValid/canTimeout failure evidence; do not confuse invalid CAN with stale
+  transport, or missing fields with healthy CAN. Offroad expected absences are
+  informational. Reports distinguish observations, unknowns and local text-rule
+  suggestions; no root-cause certainty from a single status. Client failures
+  retain12 sanitized entries15min, deduplicate/debounce and auto-GET at most30s
+  only while visible; exclude diagnostics recursion and never replay writes.
+  Explicit Vision enable/reboot use60s single-use tickets and refresh the native
+  P/zero-speed/disengaged or genuine-offroad interlock at the write. Unknown
+  results never auto-retry or claim repaired. No tuning/warning suppression,
+  data deletion, calibration reset, pairing, remote grants, shell or uploads.
+  App0.2.19/code26 adds foreground cancellable native LAN/voice-service checks
+  and recovery controls when the trusted page/renderer fails, retaining storage
+  and existing verified discovery. No new permission or JS bridge. Reports are
+  local, omit pasted text/query/body/credentials; WebView download varies and
+  selectable text remains. Browser fixtures use synthetic data only; Android
+  hardware/vehicle acceptance remains separate.
+
 - 2026-11-16: Web/APK Tools -> Run setup again reuses the original language,
   car, HDA and control steps in an explicit draft mode. Only the final reviewed
   POST writes; cancel never resets intro.json, labels, Params or preferences.

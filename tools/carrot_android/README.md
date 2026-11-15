@@ -1,12 +1,18 @@
 # CarrotAssist Android public beta — Traditional Chinese distribution
 
-This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.18 (code 25). It can coexist with the upstream app; data and authorizations are separate.
+This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.19 (code 26). It can coexist with the upstream app; data and authorizations are separate.
 
-[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.18/CarrotAssist-TW-0.2.18.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.18)
+[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.19)
 
 Updates are restricted to this repository’s `carrot-assist-tw-updates` channel and `carrot-assist-tw-vX.Y.Z` release URLs. The `.github/workflows/carrot-assist-apk.yaml` workflow runs the build checks, signs using protected repository secrets, verifies the APK and prepares a draft release. Signing keys never belong in this repository. A published version is immutable; increment the version name and code for another APK.
 
 
+
+## Diagnosis and connection recovery (0.2.19)
+
+The device-name dialog offers **Connection diagnosis and repair** even when the vehicle page cannot load. It checks local IPv4 interfaces, verifies the selected private-IP Carrot Web with the existing bounded probes, reports microphone permission and on-device speech-service availability, and links to rediscovery, manual IP, Wi-Fi and Chinese speech setup. Service availability does not prove that a zh-TW model is installed. Checks do not grant permissions or transmit reports.
+
+Main-frame connection/HTTP 5xx failures show native recovery controls and keep voice/page readiness disabled. Retry uses the existing verified discovery flow; no settings, credentials, pairing or WebView storage are reset. Closing/backgrounding cancels probes and ignores old callbacks. The full vehicle diagnosis opens only in the trusted current local page after a user action. No JavaScript bridge or extra permissions are added. Update/restart vehicle software too. Physical Android/WebView/network acceptance remains pending.
 
 ## Display preferences (0.2.18)
 
