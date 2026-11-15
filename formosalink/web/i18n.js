@@ -111,7 +111,7 @@ export const translations = {
     "settingsWaiting": "等待裝置回報資訊。請更新裝置並啟用 FormosaLink。",
     "settingsOffline": "裝置離線或資料過期，暫時無法修改。",
     "settingsDriving": "行車中，設定僅供檢視。",
-    "settingsLocalDisabled": "請在裝置的 FormosaLink 畫面開啟「停車遠端設定」。",
+    "settingsLocalDisabled": "請在裝置的 FormosaLink 畫面開啟「遠端設定」。",
     "settingsReady": "停車中，可修改支援的設定。",
     "searchSettings": "搜尋設定",
     "save": "儲存",
@@ -907,6 +907,10 @@ export const translations = {
   }
 };
 
+Object.assign(translations['zh-TW'],{settingReadOnly:'此項目僅供檢視或須在裝置上設定。',settingUnknownCondition:'尚未取得車型或必要設定資訊，請等待裝置同步。',settingCapabilityRequired:'目前車型或控制模式不支援此設定。',settingDependencyRequired:'請先啟用此設定所需的功能，或關閉互相衝突的設定。'});
+Object.assign(translations.en,{settingReadOnly:'This item is read-only or must be configured on the device.',settingUnknownCondition:'Vehicle or required setting information is unavailable. Wait for device sync.',settingCapabilityRequired:'The current vehicle or control mode does not support this setting.',settingDependencyRequired:'Enable the required feature or turn off conflicting settings first.'});
+Object.assign(translations.ja,{settingReadOnly:'表示専用、または本体での設定が必要です。',settingUnknownCondition:'車種または必要な設定情報を待っています。本体の同期をお待ちください。',settingCapabilityRequired:'現在の車種または制御モードはこの設定に対応していません。',settingDependencyRequired:'必要な機能を有効にするか、競合する設定を無効にしてください。'});
+
 for(const [locale,labels] of Object.entries({
  'zh-TW':['鏡頭','超廣角鏡頭','車內鏡頭','道路／測試預覽','即時鏡頭預覽。觀看時由裝置背景傳送，停止觀看後自動停止傳送。','尚未提供的功能','完整行車疊圖、行程與定位仍在開發中。'],
  en:['Camera','Ultra-wide camera','Cabin camera','Road / demo preview','Live camera previews. The background service uploads only while an owner is watching.','Upcoming features','Full driving overlays, trips and location are still in development.'],
@@ -922,3 +926,7 @@ Object.assign(translations.ja,{mediaWaiting:'カメラ画像を待っていま�
 Object.assign(translations['zh-TW'],{mediaTitle:'即時影像',sectionDesc_live:'超廣角與車內鏡頭即時串流。',mediaPhase:'透過自架服務加密串流，目標每秒 8 格。只有裝置所有者觀看時才傳送。',mediaLive:'即時串流中',mediaStreamError:'串流中斷，正在重新連線。請確認裝置在線，且伺服器已啟用 WebSocket。'});
 Object.assign(translations.en,{mediaTitle:'Live video',sectionDesc_live:'Live ultra-wide and cabin camera streams.',mediaPhase:'Encrypted streaming through your self-hosted service, targeting 8 fps. Uploads run only while the owner watches.',mediaLive:'Live streaming',mediaStreamError:'Stream interrupted; reconnecting. Check that the device is online and the server supports WebSocket.'});
 Object.assign(translations.ja,{mediaTitle:'ライブ映像',sectionDesc_live:'超広角・車内カメラのライブ配信。',mediaPhase:'自前サーバー経由の暗号化配信。目標は毎秒8フレームで、所有者の視聴中のみ送信します。',mediaLive:'ライブ配信中',mediaStreamError:'配信が中断しました。再接続中です。本体の接続とサーバーの WebSocket 設定を確認してください。'});
+
+Object.assign(translations['zh-TW'],{settingsStateWaiting:"正在等待裝置確認 offroad 狀態，暫時僅供檢視。"});
+Object.assign(translations.en,{settingsStateWaiting:"Waiting for the device to confirm offroad state. Settings are temporarily read-only."});
+Object.assign(translations.ja,{settingsStateWaiting:"本体の offroad 状態の確認を待っています。現在は表示のみです。"});

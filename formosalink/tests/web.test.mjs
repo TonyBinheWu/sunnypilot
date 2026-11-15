@@ -47,7 +47,23 @@ test('QR parser rejects duplicate or forged fields, malformed input and unavaila
   assert.ok(js.includes("addEventListener('hashchange'"));
   assert.ok(!js.includes("localStorage.setItem('formosalink-pending"));
 });
-import {sections,category,filterEntries,parseRoute,routeFor} from '../web/device-settings.js';
+import {sections,category,filterEntries,parseRoute,routeFor,settingBlockReason} from '../web/device-settings.js';
+
+test('settings distinguish global offroad/permission gates from per-setting conditions',()=>{
+ const state={fresh:true,snapshot:{offroad:true,remote_enabled:true,info:{settings_guard:'ready'}}};
+ assert.equal(settingBlockReason(state,{enabled:true}),null);
+ assert.equal(settingBlockReason(state,{enabled:false,disabled_reason:'capability_required'}),'settingCapabilityRequired');
+ assert.equal(settingBlockReason(state,{enabled:false,disabled_reason:'dependency_required'}),'settingDependencyRequired');
+ state.snapshot.remote_enabled=false;
+ assert.equal(settingBlockReason(state,{enabled:false}),'settingsLocalDisabled');
+ state.snapshot.offroad=false;state.snapshot.info.settings_guard='waiting_device_state';
+ assert.equal(settingBlockReason(state),'settingsStateWaiting');
+ state.snapshot.info.settings_guard='onroad';
+ assert.equal(settingBlockReason(state),'settingsDriving');
+ state.fresh=false;
+ assert.equal(settingBlockReason(state),'settingsOffline');
+ assert.equal(settingBlockReason(null),'settingsWaiting');
+});
 test('device workspace routes and category search preserve native identities',()=>{
  const id='59bbc277-4ab4-4a1f-8fe0-4cb7b17d7947';
  assert.deepEqual(parseRoute(routeFor(id,'models')),{device:id,section:'models'});

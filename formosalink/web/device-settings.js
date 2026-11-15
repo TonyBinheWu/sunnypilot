@@ -5,6 +5,15 @@ import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from 
 // Full-page, owner-scoped device workspace. Only device receipts confirm writes.
 export const sections=['home','live','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer'];
 export function category(entry){const group=entry.group?.en?.toLowerCase();return sections.includes(group)?group:'device';}
+export function settingBlockReason(state,entry){
+  const snapshot=state?.snapshot;
+  if(!snapshot)return 'settingsWaiting';
+  if(!state.fresh)return 'settingsOffline';
+  if(!snapshot.offroad)return snapshot.info?.settings_guard==='waiting_device_state'?'settingsStateWaiting':'settingsDriving';
+  if(!snapshot.remote_enabled)return 'settingsLocalDisabled';
+  if(entry?.enabled===false)return ({offroad_required:'settingsDriving',read_only:'settingReadOnly',unknown_condition:'settingUnknownCondition',capability_required:'settingCapabilityRequired',dependency_required:'settingDependencyRequired',unsupported_type:'settingReadOnly'}[entry.disabled_reason]||'settingDisabled');
+  return null;
+}
 export function routeFor(device,section){return '#device='+encodeURIComponent(device)+'&tab='+section;}
 export function parseRoute(hash){const p=new URLSearchParams(hash.replace(/^#/,''));if(p.get('tab')==='maps')p.set('tab','navigation');return p.has('device')?{device:p.get('device'),section:sections.includes(p.get('tab'))?p.get('tab'):'device'}:null;}
 export function filterEntries(catalog,section,query=''){
@@ -41,7 +50,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   function info(snapshot){
     const card=el('section',undefined,'workspace-card information');card.append(el('h2',t('deviceInfo')));
     const dl=el('dl',undefined,'device-details');
-    for(const [key,value] of Object.entries(snapshot.info).filter(([k])=>!["health_valid","soc_status","egpu_status","thermal_names","thermal_values","soc_detection","aux_soc_status"].includes(k)))dl.append(el('dt',t('info_'+key)),el('dd',Array.isArray(value)?value.join(', '):key==='cellular_data_enabled'?t(value?'cellularOn':'cellularOff'):key==='cellular_data_state'?t('cellularState_'+value):String(value??'—')));
+    for(const [key,value] of Object.entries(snapshot.info).filter(([k])=>!["settings_guard","health_valid","soc_status","egpu_status","thermal_names","thermal_values","soc_detection","aux_soc_status"].includes(k)))dl.append(el('dt',t('info_'+key)),el('dd',Array.isArray(value)?value.join(', '):key==='cellular_data_enabled'?t(value?'cellularOn':'cellularOff'):key==='cellular_data_state'?t('cellularState_'+value):String(value??'—')));
     if(!dl.childElementCount)card.append(el('p',t('settingsWaiting'),'workspace-muted'));else card.append(dl);if('cellular_data_enabled' in snapshot.info)card.append(el('p',t('cellularLocalHelp'),'workspace-muted'));body.append(card);
   }
   function navigation(snapshot){
@@ -82,7 +91,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     $('settings-subtitle').textContent=query?`${t('searchSettings')} · ${query}`:t('sectionDesc_'+section);
     const snapshot=state?.snapshot,fresh=state?.fresh===true;
     $('settings-connection').textContent=t(fresh?'connected':'offline');$('settings-connection').classList.toggle('is-online',fresh);
-    const status=!snapshot?'settingsWaiting':!fresh?'settingsOffline':!snapshot.offroad?'settingsDriving':!snapshot.remote_enabled?'settingsLocalDisabled':'settingsReady';
+    const status=settingBlockReason(state)||'settingsReady';
     $('settings-banner').classList.toggle('is-ready',fresh&&snapshot?.offroad&&snapshot?.remote_enabled);
     $('settings-banner-text').textContent=t(status);$('settings-last-seen').textContent=`${t('received')} ${date(state?.received_at)}`;$('settings-retry-label').textContent=t('refresh');
     if(!query&&section==='home'){$('settings-banner-text').textContent=t('fleetHealthNote');$('settings-banner').classList.remove('is-ready');deviceHealth(body,{devices:getDevices(),t,el,date,onOpen:d=>open(d,'device')});return;}
@@ -106,7 +115,8 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     if(label(entry.description)){const help=el('details',undefined,'setting-help');help.append(el('summary',t('settingDetails')),el('p',label(entry.description),'workspace-muted'));description.append(help);}
     if(entry.widget==='info'){row.append(description,el('span',String(current??'—')));return row;}
     const badge=el('span',undefined,'setting-sync');badge.setAttribute('role','status');description.append(badge);
-    if(!entry.enabled)description.append(el('p',t('settingDisabled'),'workspace-muted'));
+    const reason=settingBlockReason(state,entry);
+    if(reason)description.append(el('p',t(reason),'workspace-muted'));
     const controls=el('div',undefined,'setting-controls'),editor=el('div',undefined,'setting-editor');
     const save=el('button',t('save'),'workspace-save');save.type='submit';save.dataset.field='save';
     const discard=el('button',t('editDiscard'),'setting-discard');discard.type='button';discard.dataset.field='discard';
