@@ -1,3 +1,4 @@
+import { drawRainbowRibbon } from "./rainbow_ribbon.js";
 /* ============================================================================
  * CARROT VISION GRAPHICS - DO NOT CHANGE CASUALLY
  *
@@ -131,6 +132,10 @@ export function createRoadOverlayGeometryRenderer(options = {}) {
 
   function drawPathRibbon(ribbon, style, canvasHeight) {
     if (!ribbon.polygon.length) return;
+    if (globalThis.CarrotWebSettingsState?.vision_rainbow_lane === true && drawRainbowRibbon(geometry, ribbon, rgba)) {
+      if (style.emphasisStroke) geometry.drawPolygon(ribbon.polygon, 'rgba(0,0,0,0)', style.strokeColor, 2);
+      return;
+    }
     const baseColor = paletteColor(style.paletteIndex);
     if (style.mode === 0) {
       geometry.drawPolygon(
@@ -230,6 +235,7 @@ export function createRoadOverlayGeometryRenderer(options = {}) {
     if (ribbon.polygon.length < 3) return;
 
     drawPathRibbon(ribbon, style, canvasHeight);
+    if (globalThis.CarrotWebSettingsState?.vision_rainbow_lane === true) return;
     if (style.mode === 0) return;
     if (style.mode >= 13 && style.mode <= 15) {
       drawSpecialPath(ribbon, style);

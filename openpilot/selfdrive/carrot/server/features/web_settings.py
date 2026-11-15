@@ -1,3 +1,6 @@
+import asyncio
+import json
+from pathlib import Path
 from aiohttp import web
 
 from ..services.web_capabilities import resolve_web_capabilities
@@ -28,6 +31,19 @@ async def set_web_settings(request: web.Request) -> web.Response:
   })
 
 
+async def get_recording_quota(_request):
+  from openpilot.system.loggerd.recording_quota import STATUS
+  try:
+    body = await asyncio.to_thread(Path(STATUS).read_text)
+    data = json.loads(body)
+    if not isinstance(data, dict):
+      raise ValueError('invalid status')
+  except (OSError, ValueError):
+    data = {'available': False}
+  return web.json_response(data, headers={'Cache-Control': 'no-store'})
+
+
 def register(app: web.Application) -> None:
+  app.router.add_get("/api/recording_quota", get_recording_quota)
   app.router.add_get("/api/web_settings", get_web_settings)
   app.router.add_post("/api/web_settings", set_web_settings)

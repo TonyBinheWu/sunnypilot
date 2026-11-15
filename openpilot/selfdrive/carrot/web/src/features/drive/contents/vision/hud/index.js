@@ -6,6 +6,7 @@
  * - 위젯=순수 SVG 컴포넌트(widgets/*), 배치/degradation=layout.js, 룩=tokens/style.
  * 아직 구 HUD(#driveHudCard)는 제거하지 않음(비교/안정화 후 정리). */
 
+import { createTeslaView } from "./tesla_view.js";
 import { createLiveView } from "./live_view.js";
 import { injectStyle } from "./style.js";
 import { applyHudDegradation, createHudLayoutObserver } from "./layout.js";
@@ -101,21 +102,32 @@ export function createHudOverlay(doc) {
   const target = doc.defaultView || globalThis;
   let presentation = "carrot";
   let timer = null;
+  let tesla = null;
+  let teslaUpdatedAt = null;
+  let teslaMetric = true;
+  const renderTesla = () => tesla?.render(lastData, teslaUpdatedAt == null || (target.CarrotVisionReplay?.status?.()?.active !== true && (target.performance?.now?.() ?? Date.now()) - teslaUpdatedAt > 2000), teslaMetric === false ? "mph" : "km/h", live?.isSpeedVisible?.() ?? true);
   function syncPresentation() {
+    if (!tesla && (target.CarrotWebSettingsState?.vision_presentation === 'tesla' || target.CarrotWebSettingsState?.vision_custom_metrics === true)) {
+      tesla = createTeslaView(doc, target);root.appendChild(tesla.canvas);root.appendChild(tesla.root);
+    }
     presentation = target.CarrotAndroidVision?.isImmersive?.() || target.CarrotWebSettingsState?.vision_presentation === "live_view" ? "live_view" : "carrot";
-    root.classList.toggle("is-live-view", presentation === "live_view");
-    live.root.hidden = presentation !== "live_view";
-    live.setActive(active && !destroyed && suppressions.size === 0 && presentation === "live_view");
+    if (target.CarrotWebSettingsState?.vision_presentation === 'tesla') presentation = 'tesla';
+    const livePresentation = presentation !== 'carrot';
+    root.classList.toggle("is-live-view", livePresentation);
+    live.root.hidden = !livePresentation;
+    live.setTeslaMode?.(presentation === 'tesla');
+    live.setActive(active && !destroyed && suppressions.size === 0 && livePresentation);
+    renderTesla();
     if (timer != null) target.clearInterval?.(timer);
     timer = null;
-    if (active && !destroyed && suppressions.size === 0 && presentation === "live_view") {
+    if (active && !destroyed && suppressions.size === 0 && (livePresentation || target.CarrotWebSettingsState?.vision_custom_metrics === true)) {
       live.render();
-      timer = target.setInterval?.(() => live.render(), 500) ?? null;
+      timer = target.setInterval?.(() => {live.render();renderTesla();}, 500) ?? null;
     }
   }
   async function togglePresentation() {
     if (destroyed || typeof target.setWebSettingByKey !== "function") return false;
-    const nextPresentation = presentation === "live_view" ? "carrot" : "live_view";
+    const nextPresentation = presentation !== "carrot" ? "carrot" : "live_view";
     if (target.CarrotAndroidVision?.isImmersive?.()) target.CarrotAndroidVision.exit();
     try {
       await target.setWebSettingByKey("vision_presentation", nextPresentation);
@@ -126,7 +138,7 @@ export function createHudOverlay(doc) {
     syncPresentation();
     return true;
   }
-  const live = createLiveView(doc, target, { classic: () => { void togglePresentation().catch(() => {}); } });
+  const live = createLiveView(doc, target, { classic: () => { void togglePresentation().catch(() => {}); }, speedVisibility: renderTesla });
   const lfa = createLfaIcon(doc);
   const wifi = createWifiIcon(doc);
   const clock = createClock(doc);
@@ -211,6 +223,7 @@ export function createHudOverlay(doc) {
     const data = mapPayload(payload);
     lastData = data;
     live.update(data, payload);
+    teslaUpdatedAt = target.performance?.now?.() ?? Date.now();teslaMetric = payload.isMetric !== false;renderTesla();
     for (const w of widgets) w.update(data);
     const nextVisibilitySignature = [
       data.speedLimit != null && data.speedLimit > 0,
@@ -258,6 +271,7 @@ export function createHudOverlay(doc) {
     const changed = active;
     active = false;
     live.reset();
+    teslaUpdatedAt = null;renderTesla();
     syncVisibility();
     return changed;
   }
@@ -291,6 +305,7 @@ export function createHudOverlay(doc) {
     target.removeEventListener?.("carrot:websettingschange", syncPresentation);
     target.removeEventListener?.("carrot:androidvisionchange", syncPresentation);
     target.removeEventListener?.("carrot:languagechange", live.render);
+    tesla?.destroy();
     root.remove?.();
     return true;
   }
@@ -302,7 +317,7 @@ export function createHudOverlay(doc) {
   return {
     root,
     togglePresentation,
-    toggleLiveTools: () => !destroyed && active && suppressions.size === 0 && presentation === "live_view" && live.toggleTools(),
+    toggleLiveTools: () => !destroyed && active && suppressions.size === 0 && livePresentation && live.toggleTools(),
     update,
     relayout,
     activate,

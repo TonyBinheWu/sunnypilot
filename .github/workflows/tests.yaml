@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: '24'
       - run: python -m pip install pytest numpy fonttools scons aiohttp
-      - run: python -m pytest -c /dev/null --rootdir=. --noconftest -q openpilot/selfdrive/carrot/server/tests/test_web_settings_ar.py openpilot/selfdrive/carrot/server/tests/test_web_display_preferences.py
+      - run: python -m pytest -c /dev/null --rootdir=. --noconftest -q openpilot/selfdrive/carrot/server/tests/test_web_settings_ar.py openpilot/selfdrive/carrot/server/tests/test_web_display_preferences.py openpilot/system/loggerd/tests/test_recording_quota.py
       - name: Check Vision resolution policy
         run: |
           g++ -std=c++17 -Iopenpilot openpilot/system/loggerd/tests/test_vision_resolution.cc -o /tmp/vision-resolution-test
@@ -136,6 +136,8 @@ jobs:
       - run: ./tools/op.sh setup
       - name: Build openpilot
         run: scons
+      - name: Check recording quota and existing emergency cleanup
+        run: python -m pytest -o addopts='' -q openpilot/system/loggerd/tests/test_recording_quota.py openpilot/system/loggerd/tests/test_deleter.py
       - name: Check read-only steering learning status and cache identity
         run: python -m pytest -o addopts='' -q openpilot/common/tests/test_steering_learning.py openpilot/selfdrive/carrot/server/tests/test_steering_learning_api.py
       - name: Check production Traditional Chinese glyph atlas

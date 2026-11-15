@@ -99,8 +99,13 @@ const WEB_SETTINGS_GROUPS = [
         options: [
           { value: "carrot", labelKey: "vision_live_classic" },
           { value: "live_view", labelKey: "vision_live_name" },
+          { value: "tesla", labelKey: "vision_tesla_name" },
         ],
       },
+      {id:"vision_custom_metrics",titleKey:"vision_custom_metrics",descKey:"vision_custom_metrics_desc"},
+      {id:"vision_rainbow_lane",titleKey:"vision_rainbow_lane",descKey:"vision_rainbow_lane_desc"},
+      {id:"recording_quota_percent",titleKey:"recording_quota_percent",descKey:"recording_quota_percent_desc",
+        options:[{value:"0",labelKey:"recording_quota_off"},...[10,20,30,40,50,60,70,80,90].map(v=>({value:String(v),label:`${v}%`}))]},
       {
         id: "vision_fullscreen_default",
         titleKey: "web_vision_fullscreen_default",

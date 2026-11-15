@@ -256,6 +256,7 @@ function renderUIText() {
   setText("btnToolsWebSettings", getUIText("web_settings", "Web Settings"));
   setText("toolsAssistantLabel", getUIText("assistant_title", "ChatGPT assistant"));
   setText("btnDeviceInfo", getUIText("info", "Info"));
+  setText("btnRecordingQuota", getUIText("recording_quota_status", "Recording storage status"));
   setText("btnSteeringLearning", getUIText("steering_learning_title", "Steering learning progress"));
   setText("btnGitBranch", "change branch");
   setText("btnGitResetRepo", "reset repo");

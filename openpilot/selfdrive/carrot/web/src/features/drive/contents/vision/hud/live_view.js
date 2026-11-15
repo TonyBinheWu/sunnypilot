@@ -40,7 +40,7 @@ export function createLiveView(doc, target, actions) {
     render();
   });
   detailsButton.setAttribute("aria-expanded", "false");
-  const speedButton = button(null, () => { speedVisible = !speedVisible; render(); });
+  const speedButton = button(null, () => { speedVisible = !speedVisible; render(); actions.speedVisibility?.(speedVisible); });
   let saving = false;
   const displayButton = button(null, async () => {
     if (saving || typeof target.setWebSettingByKey !== "function") return;
@@ -68,6 +68,20 @@ export function createLiveView(doc, target, actions) {
   const eventRows = el(doc, 'div', {class:'clive-event-rows'});
   const eventPanel = el(doc, 'aside', {class:'clive-events', attrs:{'aria-label':text('vision_live_events')}}, [eventTitle, eventRows]);
   let eventSignature = '';
+  let teslaMode = false, priorTeslaTools = null;
+  function setTeslaMode(value) {
+    if (teslaMode === value) return;
+    teslaMode = value;
+    if (value) {
+      priorTeslaTools = {toolsVisible, eventsVisible};
+      eventsVisible = false;
+      if (toolsVisible) toggleTools();
+    } else if (priorTeslaTools) {
+      eventsVisible = priorTeslaTools.eventsVisible;
+      if (toolsVisible !== priorTeslaTools.toolsVisible) toggleTools();
+      priorTeslaTools = null;
+    }
+  }
   function toggleTools() {
     toolsVisible = !toolsVisible;
     rail.hidden = !toolsVisible;
@@ -159,7 +173,7 @@ export function createLiveView(doc, target, actions) {
     setText(streamDetail, `${text("vision_live_stream_stats")}: ${stream.resolution} · ${number(stream.fps)} fps · RTT ${number(stream.rttMs)} ms · ${number(stream.bitrateMbps, 2)} Mbps`);
   }
   return {
-    root, render, setActive, toggleTools,
+    root, render, setActive, toggleTools, setTeslaMode, isSpeedVisible: () => speedVisible,
     update(data, payload) { last = data; isMetric = payload.isMetric !== false; lastUpdate = now(); render(); },
     reset() { last = {}; lastUpdate = null; health.reset(); render(); },
   };

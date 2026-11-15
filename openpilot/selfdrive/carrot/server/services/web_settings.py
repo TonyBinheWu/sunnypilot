@@ -1,6 +1,7 @@
 import copy
 import json
 import logging
+import math
 import os
 import re
 import threading
@@ -376,6 +377,19 @@ def _normalize_web_sound_volume(value: Any) -> str:
   return f"{min(1.0, max(0.0, volume)):.2f}"
 
 
+def _normalize_metric_layout(value):
+  defaults = {"speed": [0.04, 0.04, 1.2], "limit": [0.04, 0.43, 1.0], "set": [0.04, 0.80, 1.0]}
+  try:
+    incoming = json.loads(value) if isinstance(value, str) and len(value) <= 2048 else {}
+    for key, fallback in defaults.items():
+      row = incoming.get(key)
+      if isinstance(row, list) and len(row) == 3 and all(type(x) in (int, float) and math.isfinite(x) for x in row):
+        defaults[key] = [round(min(1., max(0., row[0])), 4), round(min(1., max(0., row[1])), 4), round(min(2.2, max(.6, row[2])), 2)]
+  except (TypeError, ValueError, AttributeError):
+    pass
+  return json.dumps(defaults, separators=(',', ':'))
+
+
 class _Field:
   """One web setting. Type/default and ordinary validation live here. Drive
   content choices and pair normalization are derived from the source catalog."""
@@ -428,7 +442,11 @@ WEB_SETTINGS_SPEC: List[_Field] = [
   _Field("web_language", "str", "", normalize=_normalize_language),
   _Field("web_text_scale", "enum", "100", choices={"80", "90", "100", "110", "125", "150", "175", "200"}),
   _Field("web_lab_enabled", "bool", False),
-  _Field("vision_presentation", "enum", "carrot", choices={"carrot", "live_view"}),
+  _Field("vision_presentation", "enum", "carrot", choices={"carrot", "live_view", "tesla"}),
+  _Field("vision_custom_metrics", "bool", False),
+  _Field("vision_metric_layout", "str", _normalize_metric_layout(''), normalize=_normalize_metric_layout, hidden=True),
+  _Field("vision_rainbow_lane", "bool", False),
+  _Field("recording_quota_percent", "enum", "0", choices={str(x) for x in range(0, 100, 10)}),
   _Field("vision_stream_resolution", "enum", "standard", choices={"standard", "360", "540", "720"}),
   _Field("vision_render_quality", "enum", "auto", choices={"auto", "low", "standard", "high"}),
   _Field("vision_fullscreen_default", "bool", False),

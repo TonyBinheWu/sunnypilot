@@ -1,5 +1,21 @@
 # Repository memory
 
+- 2026-11-15: Carrot View adds opt-in Tesla-style model bird's-eye presentation,
+  GPU-batched rainbow path bands, and independent normalized position/scale for
+  current speed, road limit and cruise set speed. Edit via parked/replay-only
+  pointer drag, keyboard and size slider; save/reset/cancel persist through web
+  settings for APK0.2.18 too. Stale model/radar sources expire independently;
+  parked live never reuses old driving geometry. No invented surrounding cars
+  or surround-camera claim. Quota defaults OFF;10..90% of filesystem capacity
+  combines native routes and known date-named device screen recordings. Deleter
+  checks30s, oldest complete eligible recording first, max4 groups/batch,2%p
+  hysteresis. Locks, preserve markers, recent/open files, linked trees and other
+  owners are excluded; quota scan failure skips deletion. Existing emergency
+  free-space cleanup remains independent. Phone downloads are outside scope.
+  Browser component fixtures390x844/1280x480 verify real drag, resize, saved
+  reload, reset, visibility/mode toggles and localized status. No vehicle or
+  Android hardware acceptance; do not describe fixtures as road validation.
+
 - 2026-11-15: Added read-only steering learner status: web/APK Tools -> Steering
   learning progress; C3/C3X use a rich dialog; C4 uses a compact native full-page NavRawScrollPanel
   for its536x240 canvas, with24px body text and clipped vertical scrolling.

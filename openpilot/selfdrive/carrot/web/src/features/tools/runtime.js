@@ -1,3 +1,4 @@
+import {openRecordingQuota} from "./recording_quota.js";
 import { localVoice } from './local_voice.js';
 "use strict";
 
@@ -1134,6 +1135,7 @@ function initToolsPage() {
     if (typeof openWebSettingsDialog === "function") openWebSettingsDialog();
   });
   bindOnce("btnToolsAssistant", openAssistantDialog);
+  bindOnce("btnRecordingQuota", openRecordingQuota);
   bindOnce("btnSteeringLearning", openSteeringLearning);
 
   bindOnce("btnDeviceInfo", async () => {
