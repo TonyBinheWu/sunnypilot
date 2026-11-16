@@ -16,6 +16,13 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verify upstream version negotiation and pinned C4 templates
+        run: |
+          python tools/carrot_installer/fetch_profiles.py --output /tmp/carrot-installer-fixtures
+          CARROT_INSTALLER_FIXTURES=/tmp/carrot-installer-fixtures node --test tools/carrot_installer/test_gateway.mjs
       - run: python -m pip install pytest
       - run: python -m pytest -c /dev/null --rootdir=. --noconftest -q tools/carrot_installer/test_installer.py tools/carrot_installer/test_official.py
       - name: Inspect actual official C4 loader, display backend and fork target

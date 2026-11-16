@@ -2,14 +2,16 @@
 
 **V1/v2 are retired.** The affected C4 still returned to Start before an
 Installing UI. Both wrappers embed the same Wayland installer; cache-only
-tests do not validate that graphical runtime. The current official installer
-uses `/tmp/drmfd.sock` and has its own copied-cache origin fix. Use
-`TonyBinheWu/carrot-wip` in the C4 setup URL field, which expands to
-`https://installer.comma.ai/TonyBinheWu/carrot-wip`.
+tests do not validate that graphical runtime. The official shorthand also
+returned to Start on the affected device. Use the version-aware entry
+`https://is.gd/tonyc4`, or read-only version check `https://is.gd/tonyc4check`.
+See [GATEWAY.md](GATEWAY.md) for pinned upstream templates, exact configuration
+patches and limits. This is not a claim of physical C4 acceptance.
 
 `verify_official.py` checks the actual fetched ELF's architecture, DT_NEEDED,
 display contract, fork/branch and cache command without executing it. CI now
-uploads that verification report instead of rebuilding old wrappers. Historical
+uploads that verification report, and separately tests version negotiation
+against three pinned real ELF templates, instead of rebuilding old wrappers. Historical
 reproduction requires `build.py --historical-reproduction`; no physical-device
 acceptance is implied by inspection or CI.
 

@@ -184,17 +184,21 @@ carrotpilot 不是由 comma.ai 開發、審查、批准或正式支援的 openpi
 
 ## 安裝與發行策略
 
-**C4 新安裝請使用修正版入口：**
+**C4 安裝入口（依 AGNOS 版本選擇樣板）：**
 
 ```text
-TonyBinheWu/carrot-wip
+https://is.gd/tonyc4
 ```
 
-在 C4「自訂軟體安裝網址」直接輸入以上簡寫，原廠 Setup 會自動補成 [comma 官方安裝網址](https://installer.comma.ai/TonyBinheWu/carrot-wip)。它透過既有 `openpilot.git` 轉址取得本倉庫 `sunnypilot` 的 `carrot-wip`；不是安裝原廠分支。
+在 C4「自訂軟體安裝網址」輸入以上網址。此公開入口固定安裝本倉庫 `TonyBinheWu/sunnypilot` 的 `carrot-wip`；不是安裝上游。完整入口為 [CarrotPilot 繁中分支安裝](https://carrot-tw-install.tony-binhe-wu.chatgpt.site)。
 
-**停止使用 `is.gd/carrotc4`、`is.gd/carrotc4v2` 與 v1/v2 發行檔。** 實機回報兩版仍在 Installing 出現前回 Start。檢查發現它們沿用的 C4 安裝器依賴 Wayland；目前 comma 官方下載的版本使用 DRM 通道，並已包含複製快取後修正來源的功能。快取單元測試與包裝程式建置成功不能證明畫面相容。
+若下載後直接回 Start，先在同一欄輸入 `https://is.gd/tonyc4check`。這是**只讀版本檢查**，預期顯示 `AGNOS: 版本` 和 `Device: mici`，不執行安裝器；請記下完整文字後再回到安裝入口。舊版 Setup 是否能顯示 HTTP 409 診斷文字仍需實機確認，未顯示也不代表下載已執行。
 
-CI 會檢查實際官方下載檔的 ARM64 架構、動態函式庫、DRM 顯示通道、目標倉庫／分支及快取修正，並保存雜湊報告；不執行下載檔，也不代表已完成實機驗收。若仍回 Start，需要車機日誌確認原因。先前 v1/v2 留下的 `/data/carrot-installer-error.txt`、`/data/carrot-installer.log` 可供診斷；官方入口不使用這兩個包裝程式日誌。
+**停止使用 `is.gd/carrotc4`、`is.gd/carrotc4v2` 與 v1/v2 發行檔。** 實機回報這兩版和 `TonyBinheWu/carrot-wip` 官方簡寫仍在 Installing 出現前回 Start，尚無該台 C4 的日誌可確認根因。上游入口會依 Setup 回報的 AGNOS 版本提供不同檔案，不能只按「C4」選一個固定安裝器。新入口保留上游版本選擇與分支處理，核對固定來源的 SHA-256，只修改倉庫／分支預留欄位；不會重新包裝顯示程式。
+
+`19.6.3-carrot` 使用上游針對該系統驗證過的原生相容樣板。舊版樣板另改用同長度的獨立快取識別字，避開沿用工廠倉庫來源；不搬移或改寫工廠快取檔案。已確認的版本才有離線樣板備援，未知來源雜湊會停止並顯示診斷，不能把新樣板未經檢查直接送給車機。服務不儲存或轉送車機序號，不接受任意倉庫或上傳。
+
+CI 會核對三種實際 ARM64 樣板、允許修改的資料範圍、版本選擇、快取策略及診斷路徑；另檢查 comma 官方檔案的動態函式庫、DRM 顯示通道與目標設定並保存報告。這些檢查不執行下載檔，也不代表已完成實機驗收。先前 v1/v2 留下的 `/data/carrot-installer-error.txt`、`/data/carrot-installer.log` 可供診斷；新入口不使用這兩個包裝程式日誌。維護與驗證方式見 [C4 安裝入口說明](tools/carrot_installer/GATEWAY.md)。
 
 **C3／C3X 原有安裝入口：**
 

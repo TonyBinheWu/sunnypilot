@@ -1,5 +1,26 @@
 # Repository memory
 
+- 2026-11-16 third follow-up: official shorthand also returns to Start, no
+  Installing; C4 IP/OS unavailable, same C4 previously installed upstream.
+  Upstream i.carrotpilot.app selects different ELF by AGNOSSetup-version.
+  tools/carrot_installer/gateway_worker.mjs preserves that negotiation, pins
+  three actual ARM64 templates, retargets repository/branch data only, and for
+  legacy/compat changes same-size cache marker literal to a never-created
+  private marker so factory origin cannot select upstream accidentally.
+  No cache file moves/writes, no wrapper child, original executable code intact.
+  Exact 19.6.3-carrot uses upstream's pinned native compat template; unknown
+  hashes stop, offline fallback only for independently verified versions.
+  9 Node tests use real ELF fixtures; CI fetches pins every push. /check 409 is
+  read-only, reflects version/type without execution; older device UI unverified.
+  User explicitly approved public Sites gateway on 2026-11-16. Same project
+  appgprj_6afa6df070c08191bf9bddfac1b91b83, expected origin
+  https://carrot-tw-install.tony-binhe-wu.chatgpt.site, immutable short aliases
+  is.gd/tonyc4 and is.gd/tonyc4check. Source in independent Sites Git repo; main
+  branch push alone does not deploy gateway. Do not overwrite these aliases or
+  reuse retired v1/v2. Anonymous delivery checks are not physical acceptance.
+  upload.shind0.synology.me is upstream infrastructure, not verified user-owned;
+  do not modify it. User IIS/share unavailable during investigation.
+
 - 2026-11-16 second follow-up: v2 also returns to Start before Installing;
   affected C4 IP unavailable. Retire both Wayland wrappers rather than publish
   another cache-only variation. Actual official installer.comma.ai/TonyBinheWu/
