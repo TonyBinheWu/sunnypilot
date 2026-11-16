@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {createGateway,retarget,patchSlot,PROFILES,TARGET,UPSTREAM} from './gateway_worker.mjs';
+import {createGateway,retarget,patchSlot,PROFILES,TARGET,UPSTREAM,CLASSIC_UPSTREAM} from './gateway_worker.mjs';
 
 const root=process.env.CARROT_INSTALLER_FIXTURES||'.analysis/archive/2026-11-16/install-loop/upstream-fixtures';
 const raw=Object.fromEntries(await Promise.all(Object.keys(PROFILES).map(async id=>[id,new Uint8Array(await readFile(`${root}/${id}.elf`))])));
@@ -24,7 +24,7 @@ test('observed 19.8-carrot-bt1 succeeds live and with compact pinned fallback',a
 for(const id of Object.keys(PROFILES))test(`actual ${id} ELF changes reserved slots only and retains source bytes`,async()=>{
   const before=raw[id].slice(),value=await retarget(raw[id]);
   assert.equal(value.id,id);assert.deepEqual(raw[id],before);assert.equal(value.bytes.length,before.length);
-  const text=new TextDecoder('latin1').decode(value.bytes);assert.ok(text.includes(TARGET+'?'));
+  const text=new TextDecoder('latin1').decode(value.bytes);assert.ok(text.includes(TARGET+(id==='classic'?'\0':'?')));
   if(id!=='current'){
     assert.ok(text.includes('/data/.carrot_cache_v3\0'));
     assert.ok(!text.includes('/data/.openpilot_cache\0'));
@@ -71,10 +71,66 @@ test('offline fallback is only for verified exact versions; changed bytes never 
   const changed=createGateway({embedded,fetchImpl:async()=>new Response(new Uint8Array(100))});
   assert.equal((await changed(req('19.8'))).status,409);
 });
-test('browser/non-C4/write requests cannot trigger installer delivery',async()=>{
+test('browser/unknown-device/write requests cannot trigger installer delivery',async()=>{
   const handler=createGateway({embedded,fetchImpl:()=>{throw Error('must not fetch');}});
   assert.equal((await handler(new Request('https://install.test/'))).headers.get('Content-Type'),'text/html; charset=utf-8');
-  assert.equal((await handler(req('19.8','/c4',{'X-openpilot-device-type':'tizi'}))).status,409);
+  assert.equal((await handler(req('19.8','/c4',{'X-openpilot-device-type':'neo'}))).status,409);
   assert.equal((await handler(new Request('https://install.test/c4',{method:'POST'}))).status,405);
   assert.equal((await handler(req('19.8','/arbitrary'))).status,404);
+});
+
+const matrix=JSON.parse(await readFile(`${root}/routing-matrix.json`,'utf8'));
+for(const {device,version,profile} of matrix)test(`verified download routing ${device}/${version||'unversioned'}`,async()=>{
+  let called=0;
+  const handler=createGateway({embedded,fetchImpl:async(url,init)=>{
+    called++;assert.equal(url,version?UPSTREAM:CLASSIC_UPSTREAM);
+    assert.equal(init.headers['X-openpilot-device-type'],device);
+    assert.equal(init.headers['User-Agent'],version?'AGNOSSetup-'+version:'AGNOSSetup');
+    return new Response(raw[profile]);
+  }});
+  const request=new Request('https://install.test/',{headers:{'User-Agent':version?'AGNOSSetup-'+version:'AGNOSSetup','X-openpilot-device-type':device}});
+  const response=await handler(request);
+  assert.equal(response.status,200);assert.equal(response.headers.get('X-Carrot-Profile'),profile);
+  assert.equal(response.headers.get('X-Carrot-Device'),device);assert.equal(called,1);
+  assert.deepEqual(new Uint8Array(await response.arrayBuffer()),(await retarget(raw[profile])).bytes);
+});
+
+test('same OS cache and native C4 override remain isolated across device types',async()=>{
+  const calls=[];
+  const handler=createGateway({embedded,fetchImpl:async(_,init)=>{
+    const device=init.headers['X-openpilot-device-type'];calls.push(device);
+    return new Response(raw[device==='tici'?'current':'legacy']);
+  }});
+  for(const [device,profile] of [['tici','current'],['tizi','legacy'],['mici','compat'],['tici','current'],['tizi','legacy']]){
+    const response=await handler(req('19.6.3-carrot','/',{'X-openpilot-device-type':device}));
+    assert.equal(response.status,200);assert.equal(response.headers.get('X-Carrot-Profile'),profile);
+  }
+  assert.deepEqual(calls,['tici','tizi']);
+});
+
+test('all three supported device types can negotiate concurrently on a cold gateway',async()=>{
+  const handler=createGateway({embedded,fetchImpl:async()=>new Response(raw.current)});
+  const responses=await Promise.all(['tici','tizi','mici'].map(device=>handler(req('19.8','/',{'X-openpilot-device-type':device}))));
+  for(const response of responses)assert.equal(response.status,200);
+});
+
+test('offline snapshots are keyed by both device and OS; valid wrong-device templates are rejected',async()=>{
+  const handler=createGateway({embedded,fetchImpl:async()=>{throw Error('offline');}});
+  for(const [device,profile] of [['tici','current'],['tizi','legacy'],['mici','legacy']]){
+    const response=await handler(req('19.6.3','/',{'X-openpilot-device-type':device}));
+    assert.equal(response.status,200);assert.equal(response.headers.get('X-Carrot-Profile'),profile);
+  }
+  const wrong=createGateway({embedded,fetchImpl:async()=>new Response(raw.compat)});
+  assert.equal((await wrong(req('19.8','/',{'X-openpilot-device-type':'tizi'}))).status,409);
+  const wrongClassic=createGateway({embedded,fetchImpl:async()=>new Response(raw.classic)});
+  assert.equal((await wrongClassic(req('19.8'))).status,409);
+});
+
+test('unversioned requests require a known C3 device; diagnostics reflect each real device',async()=>{
+  const handler=createGateway({embedded,fetchImpl:async()=>{throw Error('offline');}});
+  for(const device of ['mici','unknown',''])assert.equal((await handler(new Request('https://install.test/',{headers:{'User-Agent':'AGNOSSetup','X-openpilot-device-type':device}}))).status,409);
+  for(const device of ['tici','tizi','mici']){
+    const response=await handler(req('19.8','/check',{'X-openpilot-device-type':device}));
+    assert.equal(response.status,409);assert.ok((await response.text()).includes('Device: '+device));
+  }
 });

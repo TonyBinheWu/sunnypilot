@@ -1,4 +1,4 @@
-name: Carrot C4 installer
+name: Carrot universal installer
 on:
   workflow_dispatch:
   push:
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Verify upstream version negotiation and pinned C4 templates
+      - name: Verify C3/C3X/C4 device and version routing
         run: |
           python tools/carrot_installer/fetch_profiles.py --output /tmp/carrot-installer-fixtures
           CARROT_INSTALLER_FIXTURES=/tmp/carrot-installer-fixtures node --test tools/carrot_installer/test_gateway.mjs

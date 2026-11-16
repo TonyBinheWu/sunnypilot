@@ -1,5 +1,17 @@
 # Repository memory
 
+- 2026-11-16 universal installer: existing is.gd/tonyc4 now serves C3(tici),
+  C3X(tizi), C4(mici) through the same public Sites project. Forward only device
+  and AGNOS UA, key cache/flights/offline snapshots by BOTH. Source requests
+  proved 19.6.3 tici uses current, tizi/mici legacy. Keep C4-only19.6.3-carrot
+  native compat override, retain bt1 compact reconstruction. Unversioned C3/C3X
+  with explicit device header uses pinned classic sunnypilot fork ELF already
+  targeting this repo; change only cache literal. Unknown device or unversioned
+  C4 stops, never guess. Five raw profiles,18 real source routing checks,34 Node
+  tests, per-device diagnostics and response headers. No new short alias/site.
+  Main branch push alone does not deploy gateway. C3/C3X actual fresh installs
+  remain unverified; download/header/hash tests are not hardware acceptance.
+
 - 2026-11-16 live support acceptance: same user's C4P was re-paired under
   FormosaPilotc4 (do not confuse old offline entry with new online identity).
   Runtime initially26356f9e lacked support agent despite server being updated.

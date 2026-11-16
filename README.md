@@ -184,23 +184,25 @@ carrotpilot 不是由 comma.ai 開發、審查、批准或正式支援的 openpi
 
 ## 安裝與發行策略
 
-**C4 安裝入口（依 AGNOS 版本選擇樣板）：**
+**C3／C3X／C4 通用安裝入口（自動依裝置與 AGNOS 版本選擇）：**
 
 ```text
 https://is.gd/tonyc4
 ```
 
-在 C4「自訂軟體安裝網址」輸入以上網址。此公開入口固定安裝本倉庫 `TonyBinheWu/sunnypilot` 的 `carrot-wip`；不是安裝上游。完整入口為 [CarrotPilot 繁中分支安裝](https://carrot-tw-install.tony-binhe-wu.chatgpt.site)。
+三種機型都在「自訂軟體安裝網址」輸入同一網址，無須手動選擇機型。短網址雖保留原名 `tonyc4`，已供 C3、C3X、C4 通用。此公開入口固定安裝本倉庫 `TonyBinheWu/sunnypilot` 的 `carrot-wip`；不是安裝上游。完整入口為 [CarrotPilot 繁中分支安裝](https://carrot-tw-install.tony-binhe-wu.chatgpt.site)。
 
 `https://is.gd/tonyc4check` 是**只讀版本檢查**，回傳 HTTP 409 與 `AGNOS: 版本` 文字，不提供安裝檔。受影響 C4 已回報僅顯示 `download failed`，因此不要反覆嘗試檢查入口，直接使用上方正式安裝網址。這個檢查結果不能判定正式安裝成功或失敗；若介面能顯示版本文字，再記下供診斷。
 
 **停止使用 `is.gd/carrotc4`、`is.gd/carrotc4v2` 與 v1/v2 發行檔。** 實機回報這兩版和 `TonyBinheWu/carrot-wip` 官方簡寫仍在 Installing 出現前回 Start，尚無該台 C4 的日誌可確認根因。上游入口會依 Setup 回報的 AGNOS 版本提供不同檔案，不能只按「C4」選一個固定安裝器。新入口保留上游版本選擇與分支處理，核對固定來源的 SHA-256，只修改倉庫／分支預留欄位；不會重新包裝顯示程式。
 
-`19.8-carrot-bt1` 已依實際車機請求核對並加入固定樣板，修正先前雜湊未收錄導致的 HTTP 409／`download failed`。`19.6.3-carrot` 使用上游針對該系統驗證過的原生相容樣板。舊版樣板另改用同長度的獨立快取識別字，避開沿用工廠倉庫來源；不搬移或改寫工廠快取檔案。已確認的版本才有離線樣板備援，未知來源雜湊會停止並顯示診斷，不能把新樣板未經檢查直接送給車機。服務程式不轉送車機序號；主機平台可能保留請求標頭紀錄，不接受任意倉庫或上傳。
+`19.8-carrot-bt1` 已依實際車機請求核對並加入固定樣板，修正先前雜湊未收錄導致的 HTTP 409／`download failed`。C4 的 `19.6.3-carrot` 使用上游針對該系統驗證過的原生相容樣板。舊版樣板另改用同長度的獨立快取識別字，避開沿用工廠倉庫來源；不搬移或改寫工廠快取檔案。已確認的版本才有離線樣板備援，未知來源雜湊會停止並顯示診斷，不能把新樣板未經檢查直接送給車機。服務程式不轉送車機序號；主機平台可能保留請求標頭紀錄，不接受任意倉庫或上傳。
 
-CI 會核對四種實際 ARM64 樣板、允許修改的資料範圍、版本選擇、快取策略及診斷路徑；另檢查 comma 官方檔案的動態函式庫、DRM 顯示通道與目標設定並保存報告。這些檢查不執行下載檔，也不代表已完成實機驗收。先前 v1/v2 留下的 `/data/carrot-installer-error.txt`、`/data/carrot-installer.log` 可供診斷；新入口不使用這兩個包裝程式日誌。維護與驗證方式見 [C4 安裝入口說明](tools/carrot_installer/GATEWAY.md)。
+服務依安裝畫面回報的裝置代碼與 AGNOS 版本選擇樣板；不同機型的快取與備援分開。舊式 C3／C3X 若僅回報 `AGNOSSetup`，會使用已核對的原有 C3 安裝器；缺少裝置代碼時停止，避免猜錯機型。下載與雜湊驗證已涵蓋三種裝置，C3／C3X 尚待實機新安裝驗收。
 
-**C3／C3X 原有安裝入口：**
+CI 會核對五種實際 ARM64 樣板、18 組裝置／版本來源回應與 34 項測試、允許修改的資料範圍、版本選擇、快取策略及診斷路徑；另檢查 comma 官方檔案的動態函式庫、DRM 顯示通道與目標設定並保存報告。這些檢查不執行下載檔，也不代表已完成實機驗收。先前 v1/v2 留下的 `/data/carrot-installer-error.txt`、`/data/carrot-installer.log` 可供診斷；新入口不使用這兩個包裝程式日誌。維護與驗證方式見 [通用安裝入口說明](tools/carrot_installer/GATEWAY.md)。
+
+**C3／C3X 原有安裝入口（保留備用，平常使用上方通用短網址）：**
 
 ```text
 install.sunnypilot.ai/fork/TonyBinheWu/carrot-wip
