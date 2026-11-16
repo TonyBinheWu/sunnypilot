@@ -1,0 +1,24 @@
+name: Carrot C4 installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [carrot-wip]
+    paths: ['tools/carrot_installer/**', 'openpilot/selfdrive/ui/installer/**', '.github/workflows/carrot-installer.yaml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - run: python -m pytest -c /dev/null --rootdir=. --noconftest -q tools/carrot_installer/test_installer.py
+      - run: python tools/carrot_installer/build.py --output /tmp/carrot-installer
+      - uses: actions/upload-artifact@v6
+        with:
+          name: carrot-c4-installer
+          path: /tmp/carrot-installer/

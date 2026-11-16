@@ -1,5 +1,19 @@
 # Repository memory
 
+- 2026-11-16: C4 fork installer inspection must send AGNOSSetup plus
+  X-openpilot-device-type:mici; tizi gets different bytes. The official C4
+  cachedFetch retains factory origin, so requesting a fork-only branch can
+  fail before our checkout launches. openpilot.git is currently a valid
+  redirect to this sunnypilot repo; the alias is not itself the failure.
+  Retarget cachedFetch's COPY before fetch. A separate static C4 entry in
+  tools/carrot_installer corrects only marked factory cache with no continue.sh,
+  embeds an unmodified pinned C4 ELF, checks/durably syncs handoff and logs stages.
+  No Params/permission writes or cache deletion. Build/publish immutable v1
+  installer and manifest through Carrot C4 installer workflow; changed upstream
+  bytes must fail closed for inspection. README distinguishes C4's own release
+  entry from the external C3/C3X URL. External service and factory setup retry
+  behavior are outside branch control. No physical C4 acceptance claimed.
+
 - 2026-11-16: Offline tools.carrot_mapping extracts selected local full-schema
   rlog model lanes and requires external optimized world_from_model poses in an
   explicitly shared ENU metre frame. No VIO solver, raw video/IMU ingestion,
