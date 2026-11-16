@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "f51a78aea3e9907bd2b15bd56bdcf0ef80c4697b",
-  "contentHash": "d1db41d3025aa62c18390be7a057d01ac3f60ebae4ef97061c48fb3a483b7d54",
-  "generatedAt": "2026-11-15T15:48:35Z",
+  "catalogCommit": "cc2bae70f40f5173be0c6ffa819c249730914502",
+  "contentHash": "44e0a9a6a39467b2dac1e49bdd4f46eadae10afb7754d325578b5b851b12ab70",
+  "generatedAt": "2026-11-16T11:34:55Z",
   "locales": [
     "ko",
     "en",
@@ -480,6 +480,10 @@
     "EN-LongActuatorDelay(20)x0.01.md": {
       "bytes": 2331,
       "hash": "b5523344a4795db00ab320c59287f5cb0dd5b1a1f047526b49e79ed41b848e52"
+    },
+    "EN-Low-speed-model-steering-reserve.md": {
+      "bytes": 2619,
+      "hash": "7e064adcc7b9e83932ef70a6666c8faed0bcbb7b0a6b552e14f3d1e7157de856"
     },
     "EN-Manual-lane-change-indicator-(trial).md": {
       "bytes": 5060,
@@ -1501,6 +1505,10 @@
       "bytes": 1903,
       "hash": "98010b69e61dd9d2fbc9f2f47b201082a5939619975f340c58247746f20f193a"
     },
+    "KO-저속-모델-조향-여유.md": {
+      "bytes": 2684,
+      "hash": "f48ff7efb9fca84b3bc15109f280af6e08239fb7999b16592681fd4a4332acf9"
+    },
     "KO-저속조향제한해제.md": {
       "bytes": 2188,
       "hash": "4ae63e97001ed2a1fce09b4b6c5fbe434238c97e1140554e03f89315aef5d19a"
@@ -1730,8 +1738,8 @@
       "hash": "c36b52d2f81711770bb6532877ab8c359e6f5d670cc0ff058db0b0c834b7e810"
     },
     "Settings-Catalog.md": {
-      "bytes": 144726,
-      "hash": "e9754efa19389f30b3b9210e38c438d2d116abdeb10095eb940d8ec332f3bd4c"
+      "bytes": 145407,
+      "hash": "8ec820ad9b9c2d08f11fd863c279c4358fa80ecb4b05641c9adf855826b504a7"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -1928,6 +1936,10 @@
     "ZH-TW-交通訊號停止距離調整.md": {
       "bytes": 2051,
       "hash": "2278d4866eecf73ec1b9d6067ef62195945a4b3e78e743cd66e19e70de9b67cd"
+    },
+    "ZH-TW-低速模型轉向餘量.md": {
+      "bytes": 2511,
+      "hash": "b0f8b9fb5e101f4c62ecfda253347ab456f798452349b115c7f514db5f5bc767"
     },
     "ZH-TW-使用-HDP-(CCNC).md": {
       "bytes": 1730,
@@ -2697,6 +2709,10 @@
       "bytes": 1410,
       "hash": "aaecc6b34b45bf9bf598a228f0b40733fd2a9abf1c530256afb7abd95501f287"
     },
+    "ZH-低速模型转向余量.md": {
+      "bytes": 2400,
+      "hash": "7685ba4d9560daae1f35401f3495acc5a0bc2f1e6d28e467774964d103201f3d"
+    },
     "ZH-使用-HDP-(CCNC).md": {
       "bytes": 1054,
       "hash": "b6d90023c0f65d02364abc6615ee90a61b9ec366bdb64e3d3e111d6e262b6816"
@@ -3456,7 +3472,7 @@
   },
   "review": {
     "current": 46,
-    "needs_review": 169
+    "needs_review": 170
   },
   "schemaVersion": 1,
   "settings": {
@@ -7520,6 +7536,37 @@
       },
       "reviewStatus": "current",
       "semanticHash": "da83b19cd7c1eaed65e221d1571b66a8f33f00b0c83097c2f56007bccd5323c1"
+    },
+    "LowSpeedSteerReserve": {
+      "group": "STEER_TORQUE_LIMIT",
+      "locales": {
+        "en": {
+          "anchor": "LowSpeedSteerReserve",
+          "factsHash": "f9c4660750711d42a48a3e4ffcf2cb417007641f52f547ac6b4935bd492de5be",
+          "page": "EN-Low-speed-model-steering-reserve.md",
+          "reviewStatus": "needs_review"
+        },
+        "ko": {
+          "anchor": "LowSpeedSteerReserve",
+          "factsHash": "bfe3d8748db01453a4871c312a455dda38c963b2c89398d9663c23760e799a55",
+          "page": "KO-저속-모델-조향-여유.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh": {
+          "anchor": "LowSpeedSteerReserve",
+          "factsHash": "c84f1d8532b2f5093443d04c0211379af50b173d51607c8cfe5998c0b9e9d37c",
+          "page": "ZH-低速模型转向余量.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh-tw": {
+          "anchor": "LowSpeedSteerReserve",
+          "factsHash": "326f938fe5354466c9e449dbdb9e1feef5c4e3de56b938a06d221dabc4049406",
+          "page": "ZH-TW-低速模型轉向餘量.md",
+          "reviewStatus": "needs_review"
+        }
+      },
+      "reviewStatus": "needs_review",
+      "semanticHash": "6a5d981658c4dd294c2fd535015e46b0fe4d8c3e9583fbe6b51bcf29586bdb4d"
     },
     "ManualLaneChangeIndicator": {
       "group": "STEER_LANECHANGE",

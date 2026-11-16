@@ -9,6 +9,8 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 
 from opendbc.car.interfaces import LatControlInputs
+from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
+from opendbc.car.hyundai.values import CarControllerParams
 from opendbc.car.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.common.pid import PIDController
@@ -78,6 +80,10 @@ class LatControlTorque(LatControl):
     # carrot
     self.frame = 0
     self.params = Params()
+    self.reserve_supported = supports_reserve(CP)
+    self.reserve = LowSpeedSteerReserve()
+    self.reserve_enabled = False
+    self.reserve_base = self.reserve_default_base = CarControllerParams(CP).STEER_MAX if self.reserve_supported else 1
     self.lateralTorqueCustom = self.params.get_int("LateralTorqueCustom")
     self.latAccelFactor_default = self.torque_params.latAccelFactor
     self.latAccelOffset_default = self.torque_params.latAccelOffset
@@ -141,6 +147,20 @@ class LatControlTorque(LatControl):
 
   def update(self, active, CS, VM, params, steer_limited_by_controls, desired_curvature, CC, curvature_limited, model_data=None):
     self.frame += 1
+    if self.frame == 1 or self.frame % 50 == 0:
+      self.reserve_enabled = self.reserve_supported and self.params.get_bool("LowSpeedSteerReserve")
+      if self.reserve_supported:
+        custom_max = self.params.get_int("CustomSteerMax")
+        self.reserve_base = custom_max if custom_max > 0 else self.reserve_default_base
+    # Extend only the clipping boundary, keeping the baseline normalization,
+    # gains, feedforward and learned parameters unchanged. Use pre-clip demand.
+    if self.reserve_supported:
+      raw_demand = -(self.pid.p + self.pid.i + self.pid.d + self.pid.f)
+      available = self.reserve.update(
+        enabled=self.reserve_enabled, active=active, cs=CS, base=self.reserve_base,
+        model_frame=model_data.frameId if model_data is not None else None, demand=raw_demand)
+      self.steer_max = available / self.reserve_base
+      self.pid.pos_limit, self.pid.neg_limit = self.steer_max, -self.steer_max
     if self.frame % 10 == 0:
       lateralTorqueCustom = self.params.get_int("LateralTorqueCustom")
       if lateralTorqueCustom > 0:

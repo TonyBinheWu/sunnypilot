@@ -248,6 +248,7 @@
                   "zh": "转向限制",
                   "params": [
                     "CustomSteerMax",
+                    "LowSpeedSteerReserve",
                     "CustomSteerDeltaUp",
                     "CustomSteerDeltaDown",
                     "CustomSteerDeltaUpLC",
@@ -1057,6 +1058,30 @@
       "tgroup": "轉向",
       "ttitle": "自定義最大轉向力矩(0)",
       "tdescr": "最大轉向力矩 — 在 270/384/409 中選擇不報錯的最大值"
+    },
+    {
+      "group": "조향토크",
+      "name": "LowSpeedSteerReserve",
+      "title": "저속 모델 조향 여유",
+      "descr": "CAN-FD 토크 제어 전용. 30 km/h 이하에서 지속적인 요구가 있을 때 최대 409, 30–40 km/h에서 기본 한계로 복귀. 기본 토크 비율과 CustomSteerMax는 유지됩니다. 실차 검증 필요.",
+      "egroup": "LAT_TQ",
+      "etitle": "Low-speed model steering reserve",
+      "edescr": "Hyundai/Kia CAN-FD torque control only. Sustained demand can use up to 409 below 30 km/h; taper to the baseline at 40 km/h. Preserves CustomSteerMax and baseline scaling. Vehicle validation required.",
+      "cgroup": "转向",
+      "ctitle": "低速模型转向余量",
+      "cdescr": "仅 Hyundai/Kia CAN-FD 力矩控制。30 km/h 以下持续达到原上限才提供额外输出，最高 409；30–40 km/h 逐步回归原上限。保留原参数与控制比例，需实车验证。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "低速模型轉向餘量",
+      "tdescr": "僅 Hyundai／Kia CAN-FD 扭力控制。30 km/h 以下持續達到原上限才提供額外輸出，最高 409；30–40 km/h 逐步回歸原上限。保留 CustomSteerMax 與控制比例，需實車驗證。",
+      "control": "toggle",
+      "risk": "high",
+      "brands": [
+        "hyundai"
+      ]
     },
     {
       "group": "조향토크",

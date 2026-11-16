@@ -9,6 +9,7 @@ from opendbc.car.hyundai import hyundaicanfd, hyundaican
 from opendbc.car.hyundai.carstate import CarState
 from opendbc.car.hyundai.stopping import CanfdStopping
 from opendbc.car.hyundai.steering_handover import SteeringHandover
+from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
 from opendbc.car.carlog import carlog
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags
@@ -183,6 +184,10 @@ class CarController(CarControllerBase):
     super().__init__(dbc_names, CP)
     self.CAN = CanBus(CP)
     self.params = CarControllerParams(CP)
+    self.default_steer_max = self.params.STEER_MAX
+    self.low_speed_steer_reserve = LowSpeedSteerReserve()
+    self.reserve_supported = supports_reserve(CP)
+    self.reserve_enabled = False
     self.packer = CANPacker(dbc_names[Bus.pt])
     self.angle_limit_counter = 0
 
@@ -266,12 +271,15 @@ class CarController(CarControllerBase):
       params = Params()
       self.max_angle_frames = params.get_int("MaxAngleFrames")
       steerMax = params.get_int("CustomSteerMax")
+      self.reserve_enabled = self.reserve_supported and params.get_bool("LowSpeedSteerReserve")
       steerDeltaUp = params.get_int("CustomSteerDeltaUp")
       steerDeltaDown = params.get_int("CustomSteerDeltaDown")
       steerDeltaUpLC = params.get_int("CustomSteerDeltaUpLC")
       steerDeltaDownLC = params.get_int("CustomSteerDeltaDownLC")
       if steerMax > 0:
         self.params.STEER_MAX = steerMax
+      else:
+        self.params.STEER_MAX = self.default_steer_max
       if steerDeltaUp > 0:
         self.steerDeltaUp = steerDeltaUp
         #self.params.ANGLE_TORQUE_UP_RATE = steerDeltaUp
@@ -319,7 +327,11 @@ class CarController(CarControllerBase):
 
     # steering torque
     new_torque = int(round(actuators.torque * self.params.STEER_MAX))
-    apply_torque = apply_driver_steer_torque_limits(new_torque, self.apply_torque_last, CS.out.steeringTorque, self.params)
+    reserve_max = self.low_speed_steer_reserve.update(
+      enabled=self.reserve_enabled, active=CC.latActive, cs=CS.out, base=self.params.STEER_MAX,
+      model_frame=CS.modelV2.frameId if CS.modelV2 is not None else None, demand=actuators.torque)
+    apply_torque = apply_driver_steer_torque_limits(new_torque, self.apply_torque_last, CS.out.steeringTorque,
+                                                   self.params, steer_max=reserve_max)
 
     # >90 degree steering fault prevention
     self.angle_limit_counter, apply_steer_req = common_fault_avoidance(abs(CS.out.steeringAngleDeg) >= MAX_ANGLE, CC.latActive,

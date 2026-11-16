@@ -139,6 +139,7 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 ###### 조향 제한
 
 - [\_CustomSteerMax(0)](https://github.com/ajouatom/openpilot/wiki/KO-_CustomSteerMax%280%29) — `CustomSteerMax`
+- [저속 모델 조향 여유](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A0%80%EC%86%8D-%EB%AA%A8%EB%8D%B8-%EC%A1%B0%ED%96%A5-%EC%97%AC%EC%9C%A0) — `LowSpeedSteerReserve`
 - [\_CustomSteerDeltaUp(0)](https://github.com/ajouatom/openpilot/wiki/KO-_CustomSteerDeltaUp%280%29) — `CustomSteerDeltaUp`
 - [\_CustomSteerDeltaDown(0)](https://github.com/ajouatom/openpilot/wiki/KO-_CustomSteerDeltaDown%280%29) — `CustomSteerDeltaDown`
 - [\_CustomSteerDeltaUpLC(0)](https://github.com/ajouatom/openpilot/wiki/KO-_CustomSteerDeltaUpLC%280%29) — `CustomSteerDeltaUpLC`
@@ -515,6 +516,7 @@ Per-setting pages generated from the current settings catalog.
 ###### Steering Limits
 
 - [\_CustomSteerMax(0)](https://github.com/ajouatom/openpilot/wiki/EN-_CustomSteerMax%280%29) — `CustomSteerMax`
+- [Low-speed model steering reserve](https://github.com/ajouatom/openpilot/wiki/EN-Low-speed-model-steering-reserve) — `LowSpeedSteerReserve`
 - [\_CustomSteerDeltaUp(0)](https://github.com/ajouatom/openpilot/wiki/EN-_CustomSteerDeltaUp%280%29) — `CustomSteerDeltaUp`
 - [\_CustomSteerDeltaDown(0)](https://github.com/ajouatom/openpilot/wiki/EN-_CustomSteerDeltaDown%280%29) — `CustomSteerDeltaDown`
 - [\_CustomSteerDeltaUpLC(0)](https://github.com/ajouatom/openpilot/wiki/EN-_CustomSteerDeltaUpLC%280%29) — `CustomSteerDeltaUpLC`
@@ -891,6 +893,7 @@ Per-setting pages generated from the current settings catalog.
 ###### 转向限制
 
 - [自定义最大转向力矩(0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%9C%80%E5%A4%A7%E8%BD%AC%E5%90%91%E5%8A%9B%E7%9F%A9%280%29) — `CustomSteerMax`
+- [低速模型转向余量](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BD%8E%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%BD%AC%E5%90%91%E4%BD%99%E9%87%8F) — `LowSpeedSteerReserve`
 - [自定义转向增大斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BD%AC%E5%90%91%E5%A2%9E%E5%A4%A7%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaUp`
 - [自定义转向减小斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BD%AC%E5%90%91%E5%87%8F%E5%B0%8F%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaDown`
 - [变道自定义转向增大斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8F%98%E9%81%93%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BD%AC%E5%90%91%E5%A2%9E%E5%A4%A7%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaUpLC`
@@ -1267,6 +1270,7 @@ Per-setting pages generated from the current settings catalog.
 ###### 轉向限制
 
 - [自定義最大轉向力矩(0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%87%AA%E5%AE%9A%E7%BE%A9%E6%9C%80%E5%A4%A7%E8%BD%89%E5%90%91%E5%8A%9B%E7%9F%A9%280%29) — `CustomSteerMax`
+- [低速模型轉向餘量](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%BD%8E%E9%80%9F%E6%A8%A1%E5%9E%8B%E8%BD%89%E5%90%91%E9%A4%98%E9%87%8F) — `LowSpeedSteerReserve`
 - [自定義轉向增大斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%87%AA%E5%AE%9A%E7%BE%A9%E8%BD%89%E5%90%91%E5%A2%9E%E5%A4%A7%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaUp`
 - [自定義轉向減小斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%87%AA%E5%AE%9A%E7%BE%A9%E8%BD%89%E5%90%91%E6%B8%9B%E5%B0%8F%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaDown`
 - [變道自定義轉向增大斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%AE%8A%E9%81%93%E8%87%AA%E5%AE%9A%E7%BE%A9%E8%BD%89%E5%90%91%E5%A2%9E%E5%A4%A7%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaUpLC`

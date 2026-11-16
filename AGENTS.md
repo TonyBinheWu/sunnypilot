@@ -1,5 +1,16 @@
 # Repository memory
 
+- 2026-11-16 LowSpeedSteerReserve is default-off and sits directly below
+  CustomSteerMax in the shared native/web/APK catalog. Hyundai/Kia CAN-FD torque
+  control only: 0.30s near-baseline demand, <=30km/h headroom to409, taper30–40,
+  no extra eligibility >=40. Retain original baseline normalization/gains and
+  CustomSteerMax storage; extend PID clipping and independent CAN cap, never
+  rescale all requests to409. Driver/CAN/fault/gear/standstill/model freshness
+  guards cancel eligibility; existing slew limits govern withdrawal. Resetting
+  CustomSteerMax to0 restores the factory mapping at runtime. EPS angle-request
+  and Panda limits unchanged. 96 desktop control/CAN/docs and287 web settings
+  tests; no physical steering acceptance or guaranteed sharp-turn completion.
+
 - 2026-11-16 universal installer: existing is.gd/tonyc4 now serves C3(tici),
   C3X(tizi), C4(mici) through the same public Sites project. Forward only device
   and AGNOS UA, key cache/flights/offline snapshots by BOTH. Source requests
