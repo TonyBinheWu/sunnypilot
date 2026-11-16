@@ -1,5 +1,16 @@
 # Repository memory
 
+- 2026-11-16 second follow-up: v2 also returns to Start before Installing;
+  affected C4 IP unavailable. Retire both Wayland wrappers rather than publish
+  another cache-only variation. Actual official installer.comma.ai/TonyBinheWu/
+  carrot-wip ELF uses DRM fd socket, no DT_NEEDED Wayland, and copied-cache
+  set-url fix. Factory C4 URL shorthand TonyBinheWu/carrot-wip expands to that
+  endpoint; openpilot.git remains a verified alias to sunnypilot. Recommend it
+  instead of is.gd v1/v2. CI inspects actual ELF loader/backend and target for
+  mici requests; retain raw hash reports, not another wrapper artifact. Build
+  old wrappers only with explicit historical-reproduction flag. Actual device
+  failure remains unconfirmed without logs; no hardware acceptance claim.
+
 - 2026-11-16 follow-up: User's C4 returns to Start before any Installing UI.
   Reproduced v1 preflight failure factory_cache_origin_failed with read-only
   .git under a nonroot Linux user. v2 never runs Git on the original cache;

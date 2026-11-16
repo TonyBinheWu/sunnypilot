@@ -187,14 +187,14 @@ carrotpilot 不是由 comma.ai 開發、審查、批准或正式支援的 openpi
 **C4 新安裝請使用修正版入口：**
 
 ```text
-https://is.gd/carrotc4v2
+TonyBinheWu/carrot-wip
 ```
 
-此短網址直接轉往固定版本的 v2 GitHub 安裝檔。[原始長網址備用](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-c4-installer-v2/carrot-c4-installer)。舊 `carrotc4` 指向 v1，請勿繼續使用。
+在 C4「自訂軟體安裝網址」直接輸入以上簡寫，原廠 Setup 會自動補成 [comma 官方安裝網址](https://installer.comma.ai/TonyBinheWu/carrot-wip)。它透過既有 `openpilot.git` 轉址取得本倉庫 `sunnypilot` 的 `carrot-wip`；不是安裝原廠分支。
 
-v1 直接修改原廠快取的 Git 設定，在唯讀或擁有權受限時可能連 Installing 都未顯示就退出；此失敗已在 Linux 重現。v2 不再對原快取執行 Git，而是暫存快取標記，讓固定雜湊的 C4 安裝器走乾淨下載。保留原快取，失敗時以不覆寫方式恢復標記；若其他程序已更改標記，保留暫存副本供查核。分支內安裝器仍會修正複製後快取的來源設定。單純更新分支無法替換外部服務已提供的安裝器。
+**停止使用 `is.gd/carrotc4`、`is.gd/carrotc4v2` 與 v1/v2 發行檔。** 實機回報兩版仍在 Installing 出現前回 Start。檢查發現它們沿用的 C4 安裝器依賴 Wayland；目前 comma 官方下載的版本使用 DRM 通道，並已包含複製快取後修正來源的功能。快取單元測試與包裝程式建置成功不能證明畫面相容。
 
-入口不清除 Params、校正或配對資料，也不更改已有 `continue.sh` 的安裝來源；完成後檢查交接檔並同步至磁碟。失敗階段記錄在 `/data/carrot-installer-error.txt`，完整日誌為 `/data/carrot-installer.log`。此修正已用原廠／分叉快取的隔離測試驗證，仍需受影響 C4 實機確認。
+CI 會檢查實際官方下載檔的 ARM64 架構、動態函式庫、DRM 顯示通道、目標倉庫／分支及快取修正，並保存雜湊報告；不執行下載檔，也不代表已完成實機驗收。若仍回 Start，需要車機日誌確認原因。先前 v1/v2 留下的 `/data/carrot-installer-error.txt`、`/data/carrot-installer.log` 可供診斷；官方入口不使用這兩個包裝程式日誌。
 
 **C3／C3X 原有安裝入口：**
 

@@ -26,7 +26,10 @@ def validate(data):
 
 def main():
   parser=argparse.ArgumentParser();parser.add_argument('--output',required=True);parser.add_argument('--cc',default='gcc')
+  parser.add_argument('--historical-reproduction', action='store_true', help='Inspect/reproduce retired Wayland wrappers only; not an install recommendation')
   args=parser.parse_args();out=Path(args.output);out.mkdir(parents=True,exist_ok=True)
+  if not args.historical_reproduction:
+    parser.error('v1/v2 Wayland wrappers are retired. Use https://installer.comma.ai/TonyBinheWu/carrot-wip')
   request=urllib.request.Request(URL,headers={'User-Agent':'AGNOSSetup','X-openpilot-device-type':'mici'})
   with urllib.request.urlopen(request,timeout=60) as response:data=validate(response.read(2_000_001))
   with tempfile.TemporaryDirectory() as temp:

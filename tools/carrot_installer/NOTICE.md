@@ -1,5 +1,18 @@
 # C4 compatibility installer
 
+**V1/v2 are retired.** The affected C4 still returned to Start before an
+Installing UI. Both wrappers embed the same Wayland installer; cache-only
+tests do not validate that graphical runtime. The current official installer
+uses `/tmp/drmfd.sock` and has its own copied-cache origin fix. Use
+`TonyBinheWu/carrot-wip` in the C4 setup URL field, which expands to
+`https://installer.comma.ai/TonyBinheWu/carrot-wip`.
+
+`verify_official.py` checks the actual fetched ELF's architecture, DT_NEEDED,
+display contract, fork/branch and cache command without executing it. CI now
+uploads that verification report instead of rebuilding old wrappers. Historical
+reproduction requires `build.py --historical-reproduction`; no physical-device
+acceptance is implied by inspection or CI.
+
 `build.py` embeds the unmodified C4 ELF served by sunnypilot's official fork
 installer service for TonyBinheWu/carrot-wip with device header `mici`.
 Its exact SHA-256 is pinned; a service update fails the build until inspected.
