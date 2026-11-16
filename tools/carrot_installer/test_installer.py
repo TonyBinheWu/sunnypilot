@@ -24,7 +24,7 @@ def entry(tmp_path):
     payload=tmp_path/'payload.c';blob=script.encode()
     payload.write_text('#include <stddef.h>\nconst unsigned char installer_payload[]={'+','.join(map(str,blob))+'};\nconst size_t installer_size=sizeof(installer_payload);\n')
     binary=tmp_path/'entry'
-    subprocess.run(['gcc','-std=c11','-Wall','-Wextra','-Werror',f'-DDATA_ROOT="{data}"',f'-DMODEL_PATH="{model}"',str(ROOT/'tools/carrot_installer/bootstrap.c'),str(payload),'-o',str(binary)],check=True)
+    subprocess.run(['gcc','-std=c11','-O2','-Wall','-Wextra','-Werror','-static',f'-DDATA_ROOT="{data}"',f'-DMODEL_PATH="{model}"',str(ROOT/'tools/carrot_installer/bootstrap.c'),str(payload),'-o',str(binary)],check=True)
     return subprocess.run([str(binary)],env={**os.environ,'TEST_DATA_ROOT':str(data)},text=True,capture_output=True)
   return data,checkout,model,build
 

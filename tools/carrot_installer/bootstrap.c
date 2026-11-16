@@ -43,7 +43,9 @@ int main(void) {
   char model[128] = {0};
   FILE *in = fopen(MODEL_PATH, "rb");
   if (!in) return failure("device_model_unavailable");
-  (void)fread(model, 1, sizeof(model)-1, in); fclose(in);
+  size_t read_size=fread(model, 1, sizeof(model)-1, in);
+  int model_ok=read_size>0 && !ferror(in);
+  if (fclose(in)!=0 || !model_ok) return failure("device_model_unavailable");
   for (size_t i=0; i<sizeof(model); ++i) if (model[i]>='A' && model[i]<='Z') model[i]+='a'-'A';
   if (!strstr(model, "mici") && !strstr(model, "c4")) return failure("C4_installer_required");
   int logfd = open(DATA_ROOT "/carrot-installer.log", O_CREAT|O_WRONLY|O_APPEND, 0600);
