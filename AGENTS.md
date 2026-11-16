@@ -1,5 +1,20 @@
 # Repository memory
 
+- 2026-11-16 Cockpit0.1.0/code1 published as a prerelease, public APK SHA256
+  7497f5fadb1ae76cfdeb403e90bbe6450fc1fd58e7863a83dc290dc3257acd3d.
+  Native source2bf69134; vehicle UI requires439fc3d0 or later. Native build inputs
+  (src/res/cockpit manifest/build script) are identical across those revisions.
+  v2/v3 signature certificate90e20971ea5792bd0fb3cee37e573fd15388ee7a84e84c83cf736967e6b051a8
+  matches original TW. Anonymous download and dedicated cockpit update.json
+  verified. Never overwrite this published binary or use the standard channel.
+  294 focused JS and6 HTTP/cache tests pass; full web suite's projection floating
+  precision and missing-isCarrotVisionParked test failures reproduce at baseline.
+  Native browser confirm stalled automation; cockpit uses inline confirm/cancel
+  and built-IIFE isolated DOM tests for staging, P/state transition, readback and
+  unknown responses. Browser layout/entry checks are not physical Android checks.
+  Report actual latActive/longActive independently (AlwaysLateral may run when
+  selfdriveState.enabled=false); fresh inactive carControl also gates the shortcut.
+
 - 2026-11-16 Carrot Cockpit is a separate Android package
   me.shind0.carrotweb.tw.cockpit (0.1.0/code1), opening /cockpit after the same
   private-origin verification. Original TW0.2.19 stays immutable. build.ps1
