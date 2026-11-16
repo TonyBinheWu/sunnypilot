@@ -36,7 +36,7 @@ def main():
     subprocess.run([args.cc,'-std=c11','-O2','-Wall','-Wextra','-Werror','-static',str(Path(__file__).with_name('bootstrap.c')),str(source),'-o',str(binary)],check=True)
   result=binary.read_bytes()
   if result[:6]!=b'\x7fELF\x02\x01' or int.from_bytes(result[18:20],'little')!=183:raise ValueError('Wrong build architecture')
-  manifest={'version':1,'device':'mici/C4','repository':'https://github.com/TonyBinheWu/sunnypilot.git','branch':'carrot-wip',
+  manifest={'version':2,'device':'mici/C4','repository':'https://github.com/TonyBinheWu/sunnypilot.git','branch':'carrot-wip',
             'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
             'upstream_url':URL,'upstream_device_header':'mici','upstream_sha256':SHA256,
             'sha256':hashlib.sha256(result).hexdigest(),'bytes':len(result)}

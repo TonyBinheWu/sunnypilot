@@ -1,5 +1,16 @@
 # Repository memory
 
+- 2026-11-16 follow-up: User's C4 returns to Start before any Installing UI.
+  Reproduced v1 preflight failure factory_cache_origin_failed with read-only
+  .git under a nonroot Linux user. v2 never runs Git on the original cache;
+  atomically parks only its marker to force the pinned child to fresh-clone,
+  restores on failure via renameat2(RENAME_NOREPLACE), preserves competing
+  marker changes, and adds early logs/errno/child exit or signal details.
+  v1 release/short URL remain immutable and deprecated; publish v2 separately.
+  Test read-only cache and failure restoration, not just writable clones.
+  Affected C4 IP/logs still requested; this is a reproduced defect, not proven
+  diagnosis or physical acceptance of that vehicle.
+
 - 2026-11-16: C4 fork installer inspection must send AGNOSSetup plus
   X-openpilot-device-type:mici; tizi gets different bytes. The official C4
   cachedFetch retains factory origin, so requesting a fork-only branch can

@@ -15,14 +15,17 @@ upstream licensing remain applicable. Source references:
 - https://github.com/commaai/openpilot/tree/master/selfdrive/ui/installer
 - This checkout: `openpilot/selfdrive/ui/installer/installer.cc`
 
-The compatibility preflight changes only a marked `/data/openpilot` factory
-cache's origin when `/data/continue.sh` is absent. It does not delete the cache,
+Version 2 parks only the factory-cache marker when `/data/continue.sh` is absent,
+so the child fresh-clones. It never runs Git against or writes into the original
+cache, which can be read-only or owned by another user. Failure restores the
+marker with atomic no-overwrite rename; competing changes preserve its parked
+copy. Success removes only the parked marker. It does not delete the cache,
 reset settings, grant access or retry a failed installation. The upstream child
 performs the existing requested installation. Child failure and missing/invalid
 handoff return a nonzero result with a persistent stage file and log. This entry
 cannot change the factory setup program's own retry behavior.
 
 The `openpilot.git` URL embedded by the official C4 payload currently redirects
-to TonyBinheWu/sunnypilot. The preflight uses the canonical sunnypilot URL.
+to TonyBinheWu/sunnypilot. The copied-cache source fix uses the configured fork URL.
 The branch-installed source separately fixes cachedFetch to retarget its copy
 before fetching; that source change alone cannot repair an older external ELF.

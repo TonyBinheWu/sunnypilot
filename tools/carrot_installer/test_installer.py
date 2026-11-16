@@ -32,13 +32,26 @@ def entry(tmp_path):
 SUCCESS='#!/bin/sh\nprintf "#!/bin/sh\\nexit 0\\n" > "$TEST_DATA_ROOT/continue.sh"\nchmod 755 "$TEST_DATA_ROOT/continue.sh"\n'
 
 
-def test_c4_marked_factory_cache_origin_is_corrected_before_child(entry):
+def test_c4_factory_cache_is_skipped_without_retargeting_original(entry):
   data,checkout,_,build=entry;(data/'.openpilot_cache').touch()
-  result=build(SUCCESS)
+  result=build('#!/bin/sh\ntest ! -e "$TEST_DATA_ROOT/.openpilot_cache" || exit 19\n'+SUCCESS.split('\n',1)[1])
   assert result.returncode==0
-  assert git(checkout,'remote','get-url','origin').stdout.strip()==ORIGIN
+  assert git(checkout,'remote','get-url','origin').stdout.strip()=='https://github.com/commaai/openpilot.git'
   assert 'handoff verified' in (data/'carrot-installer.log').read_text()
-  assert (data/'.openpilot_cache').exists()
+  assert not (data/'.openpilot_cache').exists()
+  assert not list(data.glob('.carrot-factory-cache-*'))
+
+
+def test_readonly_factory_git_does_not_block_installer_ui(entry):
+  data,checkout,_,build=entry
+  (data/'.openpilot_cache').touch()
+  git_dir=checkout/'.git'
+  git_dir.chmod(0o555)
+  try:
+    result=build(SUCCESS)
+    assert result.returncode==0, (data/'carrot-installer-error.txt').read_text()
+  finally:
+    git_dir.chmod(0o755)
 
 
 @pytest.mark.parametrize('installed',[False,True])
@@ -57,15 +70,27 @@ def test_unmarked_or_installed_checkout_is_not_retargeted(entry,installed):
 ])
 def test_failure_is_logged_and_child_is_not_retried(entry,script,reason):
   data,_,_,build=entry
+  (data/'.openpilot_cache').write_text('original marker')
   result=build(script)
   assert result.returncode==1
   assert (data/'carrot-installer-error.txt').read_text().strip()==reason
+  assert (data/'.openpilot_cache').read_text()=='original marker'
+  assert not list(data.glob('.carrot-factory-cache-*'))
 
 
 def test_c3_cannot_launch_wayland_c4_payload(entry):
   data,_,model,build=entry;model.write_text('comma c3')
   assert build(SUCCESS).returncode==1
   assert not (data/'continue.sh').exists()
+
+
+def test_failure_never_overwrites_a_new_marker_from_another_actor(entry):
+  data,_,_,build=entry;(data/'.openpilot_cache').write_text('original')
+  result=build('#!/bin/sh\nprintf new > "$TEST_DATA_ROOT/.openpilot_cache"\nexit 17\n')
+  assert result.returncode==1
+  assert (data/'.openpilot_cache').read_text()=='new'
+  backups=list(data.glob('.carrot-factory-cache-*'))
+  assert len(backups)==1 and backups[0].read_text()=='original'
 
 
 def test_actual_cached_fetch_command_fails_with_factory_origin_then_works_with_fork(tmp_path):
