@@ -15,6 +15,10 @@ test('zero is a measurement, missing/nonfinite state is never zero or enabled',(
 test('park admission requires fresh P, stopped speed and disengaged assistance',()=>{
   let now=0;const s=createCockpitState(()=>now);const car={service:'carState',sequence:1,decoded:{gearShifter:'park',vEgo:0}};
   s.accept(car);assert.equal(telemetry(s).parked,false);s.accept({service:'selfdriveState',sequence:1,decoded:{enabled:false,alertText1:'接管',alertText2:'注意道路'}});
+  assert.equal(telemetry(s).parked,false);
+  s.accept({service:'carControl',sequence:1,decoded:{latActive:true,longActive:false}});
+  assert.equal(telemetry(s).parked,false);assert.equal(telemetry(s).latActive,true);
+  s.accept({service:'carControl',sequence:2,decoded:{latActive:false,longActive:false}});
   assert.equal(telemetry(s).parked,true);assert.equal(telemetry(s).alert,'接管\n注意道路');
   s.accept({...car,sequence:2,decoded:{gearShifter:'drive',vEgo:0}});assert.equal(telemetry(s).parked,false);
   s.accept({...car,sequence:3});now=1600;assert.equal(telemetry(s).parked,false);assert.equal(telemetry(s).alert,'');
