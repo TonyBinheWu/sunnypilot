@@ -1,5 +1,6 @@
 [CmdletBinding(DefaultParameterSetName='Debug')]
 param(
+  [switch]$Cockpit,
   [string]$Sdk = "$env:LOCALAPPDATA\Android\Sdk",
   [string]$BuildTools = "35.0.0",
   [string]$Platform = "android-36",
@@ -69,7 +70,8 @@ $resources = Join-Path $buildRoot 'resources.zip'
 & (Join-Path $bin 'aapt2.exe') compile --dir (Join-Path $sourceRoot 'res') -o $resources
 Assert-Exit 'Compile resources'
 $unsigned = Join-Path $buildRoot 'unsigned.apk'
-& (Join-Path $bin 'aapt2.exe') link -I $platformJar --manifest (Join-Path $sourceRoot 'AndroidManifest.xml') --min-sdk-version 26 --target-sdk-version 36 -o $unsigned $resources
+$manifestName = if ($Cockpit) { 'AndroidManifest.cockpit.xml' } else { 'AndroidManifest.xml' }
+& (Join-Path $bin 'aapt2.exe') link -I $platformJar --manifest (Join-Path $sourceRoot $manifestName) --min-sdk-version 26 --target-sdk-version 36 -o $unsigned $resources
 Assert-Exit 'Link APK'
 $classJar = Join-Path $buildRoot 'classes.jar'
 & $jarExe cf $classJar -C $classes .

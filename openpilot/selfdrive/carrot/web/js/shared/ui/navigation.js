@@ -314,6 +314,7 @@ function getPageHistoryState(page) {
 }
 
 function resolveWebStartPage() {
+  if (/(?:^|[?&])cockpit_embed=1(?:&|$)/.test(window.location?.search || '') && PAGE_ELEMENTS.setting) return 'setting';
   // FormosaLink's settings entry is a per-tab navigation hint, not a saved
   // device preference or a grant. The normal introduction gate still applies.
   if (window.FormosaCarrotRemote?.startPage === "setting" && PAGE_ELEMENTS.setting) return "setting";

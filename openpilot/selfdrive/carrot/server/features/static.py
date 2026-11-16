@@ -313,7 +313,19 @@ async def handle_index(request: web.Request) -> web.Response:
   return response
 
 
+async def handle_cockpit(request: web.Request) -> web.Response:
+  try:
+    def load():
+      with open(os.path.join(WEB_DIR, "cockpit.html"), encoding="utf-8") as source:
+        return _rewrite_index_asset_urls(source.read(), WEB_DIR)
+    html = await asyncio.to_thread(load)
+  except (OSError, UnicodeError):
+    raise web.HTTPServiceUnavailable(text="請更新並重新啟動 carrot-wip 車機後，再開啟 Carrot Cockpit。")
+  return web.Response(text=html, content_type="text/html", headers={"Cache-Control": "no-store"})
+
+
 def register(app: web.Application) -> None:
+  app.router.add_get("/cockpit", handle_cockpit)
   app.router.add_get("/", handle_index)
   if os.path.isdir(TRAINING_ASSETS_DIR):
     app.router.add_static("/training/", TRAINING_ASSETS_DIR, show_index=False)

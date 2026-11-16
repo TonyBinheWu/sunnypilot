@@ -435,6 +435,12 @@ public final class MainActivity extends Activity {
         @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request) {
           Uri uri = request.getUrl();
           if ("carrotassist".equals(uri.getScheme())) {
+            if (request.isForMainFrame() && request.hasGesture() && view.getUrl()!=null && isCurrent(Uri.parse(view.getUrl()))
+                && UpdatePolicy.cockpit(getPackageName()) && "app".equals(uri.getHost())) {
+              if ("/menu".equals(uri.getPath())) { leaveVisionView(); title.performClick(); }
+              else if ("/voice".equals(uri.getPath())) invokeAssistant();
+              return true;
+            }
             if (request.isForMainFrame() && view.getUrl() != null && isCurrent(Uri.parse(view.getUrl()))) openPhoneApp(uri, view);
             return true;
           }
@@ -463,7 +469,8 @@ public final class MainActivity extends Activity {
           if (request.isForMainFrame() && isCurrent(request.getUrl())) showDeviceConnectionFailure();
         }
         @Override public void onReceivedHttpError(WebView view,WebResourceRequest request,android.webkit.WebResourceResponse response) {
-          if (request.isForMainFrame() && isCurrent(request.getUrl()) && response.getStatusCode() >= 500) showDeviceConnectionFailure();
+          if (request.isForMainFrame() && isCurrent(request.getUrl()) && (response.getStatusCode() >= 500
+              || UpdatePolicy.cockpit(getPackageName()) && response.getStatusCode() == 404)) showDeviceConnectionFailure();
         }
         @Override public boolean onRenderProcessGone(WebView view,android.webkit.RenderProcessGoneDetail detail) {
           if(view==web){web=null;showDeviceConnectionFailure();}
@@ -484,7 +491,7 @@ public final class MainActivity extends Activity {
       if (token != generation || isFinishing()) return;
       recovering = false;
       content.removeAllViews(); content.addView(web,new LinearLayout.LayoutParams(-1,-1));
-      web.loadUrl("http://"+device.address+":7000/");
+      web.loadUrl("http://"+device.address+":7000/"+(UpdatePolicy.cockpit(getPackageName()) ? "cockpit" : ""));
       if (!message.isEmpty() && !phoneMode()) {
         title.setText(UiText.get("ChatGPT 연결 확인 필요 · ", "Check ChatGPT connection · ")+device.address);
         if (foregroundActivity) notice(message);
@@ -517,7 +524,7 @@ public final class MainActivity extends Activity {
     if(web!=null)web.stopLoading();
     if(!foregroundActivity||isFinishing())return;
     content.removeAllViews();
-    TextView error=text("zh-tw".equals(UiText.languageCode())?"車機連線發生錯誤，可先執行唯讀診斷，或重新搜尋裝置。":"Device connection failed. Run read-only diagnosis or search again.",18);
+    TextView error=text(UpdatePolicy.cockpit(getPackageName()) ? "座艙頁面無法載入。請先更新並重新啟動 carrot-wip 車機，再重新連線；也可執行連線診斷。" : "zh-tw".equals(UiText.languageCode())?"車機連線發生錯誤，可先執行唯讀診斷，或重新搜尋裝置。":"Device connection failed. Run read-only diagnosis or search again.",18);
     error.setPadding(dp(18),dp(18),dp(18),dp(18));content.addView(error);
     content.addView(button("zh-tw".equals(UiText.languageCode())?"連線自我診斷與修復":"Connection diagnosis and repair",v->diagnostics.open()));
     content.addView(button(UiText.get("다시 검색","Search again"),v->startSearch()));
@@ -891,6 +898,7 @@ public final class MainActivity extends Activity {
   private void notice(String message) { new AlertDialog.Builder(this).setMessage(message).setPositiveButton(UiText.get("확인", "OK"),null).show(); }
   @Override protected void onResume() {
     super.onResume(); foregroundActivity = true; if (diagnostics!=null) diagnostics.resume(); if (speechSetup!=null) speechSetup.resume(); if (web!=null) web.onResume(); if (updater!=null) updater.resume();
+    cockpitLifecycle("resume");
     if(pageLoadFailed)showDeviceConnectionFailure();
     if (checkAfterBackground && currentAddress!=null && !recovering) {
       final String address=currentAddress; final int token=generation;
@@ -905,7 +913,11 @@ public final class MainActivity extends Activity {
     scheduleAutoVoice();
     ui.removeCallbacks(pollVision); ui.post(pollVision);
   }
-  @Override protected void onPause() { foregroundActivity = false; if (diagnostics!=null) diagnostics.pause(); resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
+  private void cockpitLifecycle(String action) {
+    if (UpdatePolicy.cockpit(getPackageName()) && web!=null && currentAddress!=null)
+      web.evaluateJavascript(onDevicePage("window.CarrotCockpit?."+action+"()"),null);
+  }
+  @Override protected void onPause() { cockpitLifecycle("pause"); foregroundActivity = false; if (diagnostics!=null) diagnostics.pause(); resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
   @Override protected void onStop() { checkAfterBackground=true; if (scanning) { stopSearch(); if (status!=null) status.setText(UiText.get("검색이 중단됐어요. 다시 검색을 눌러 주세요.", "Search paused. Tap Search again.")); } super.onStop(); }
   @Override public void onBackPressed() { if (visionFullscreen != null || visionImmersive) { leaveVisionView(); return; } if(pageLoadFailed){startSearch();return;} if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
   @Override protected void onDestroy() { if (diagnostics!=null) diagnostics.close(); if (speechSetup!=null) speechSetup.close(); if (recovery!=null) recovery.cancel(); stopSearch(); ui.removeCallbacksAndMessages(null); if (updater!=null) updater.close(); if (web!=null) { web.destroy(); web=null; } super.onDestroy(); }

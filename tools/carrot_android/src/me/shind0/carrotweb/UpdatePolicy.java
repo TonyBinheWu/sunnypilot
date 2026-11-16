@@ -4,6 +4,16 @@ import java.net.URI;
 
 public final class UpdatePolicy {
   public static final String MANIFEST = "https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-updates/update.json";
+  public static final String COCKPIT_PACKAGE = "me.shind0.carrotweb.tw.cockpit";
+  public static boolean cockpit(String packageName) { return COCKPIT_PACKAGE.equals(packageName); }
+  public static String manifest(String packageName) {
+    return cockpit(packageName) ? "https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-updates/update.json" : MANIFEST;
+  }
+  public static boolean validFor(String packageName, long current, long next, String version, String url, String hash) {
+    if (!cockpit(packageName)) return "me.shind0.carrotweb.tw".equals(packageName) && valid(current,next,version,url,hash);
+    if (next <= current || next > Integer.MAX_VALUE || version == null || !version.matches("[0-9]+\\.[0-9]+\\.[0-9]+") || hash == null || !hash.matches("[a-fA-F0-9]{64}")) return false;
+    return ("https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v"+version+"/CarrotCockpit-TW-"+version+".apk").equals(url);
+  }
   public static boolean valid(long current, long next, String version, String url, String hash) {
     if (next <= current || next > Integer.MAX_VALUE || version == null || !version.matches("[0-9]+\\.[0-9]+\\.[0-9]+") || hash == null || !hash.matches("[a-fA-F0-9]{64}")) return false;
     return ("https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v"+version+"/CarrotAssist-TW-"+version+".apk").equals(url);

@@ -28,6 +28,8 @@
 
 **[⬇ 下載 CarrotAssist 繁體中文版 0.2.19（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk)**
 
+**[下載 Carrot Cockpit 座艙版 0.1.0（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.1.0/CarrotCockpit-TW-0.1.0.apk)**：中央觸控螢幕式車況／導航分割、道路視覺放大、底部快捷列與 Carrot 駕駛模式卡片。可與原版並存，須更新並重啟 carrot-wip 車機。[操作與實際支援範圍](tools/carrot_android/COCKPIT.md)；尚未完成實體 Android 盒子與實車驗收。
+
 | 項目 | 說明 |
 |---|---|
 | 版本 | **0.2.19**（版本代碼 26） |

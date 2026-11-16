@@ -1,4 +1,4 @@
-name: CarrotAssist Traditional Chinese APK
+name: CarrotAssist APK editions
 
 on:
   push:
@@ -8,15 +8,22 @@ on:
       - 'tools/carrot_android/res/**'
       - 'tools/carrot_android/tests/**'
       - 'tools/carrot_android/AndroidManifest.xml'
+      - 'tools/carrot_android/AndroidManifest.cockpit.xml'
       - 'tools/carrot_android/build.ps1'
       - '.github/workflows/carrot-assist-apk.yaml'
   workflow_dispatch:
+    inputs:
+      edition:
+        type: choice
+        default: standard
+        options: [standard, cockpit]
+        description: APK edition
 
 permissions:
   contents: write
 
 concurrency:
-  group: carrot-assist-tw-release
+  group: carrot-assist-${{ github.event_name == 'push' && 'cockpit' || inputs.edition }}-release
   cancel-in-progress: false
 
 jobs:
@@ -24,6 +31,8 @@ jobs:
     if: github.repository == 'TonyBinheWu/sunnypilot'
     runs-on: windows-2022
     timeout-minutes: 25
+    env:
+      CARROT_EDITION: ${{ github.event_name == 'push' && 'cockpit' || inputs.edition }}
     defaults:
       run:
         shell: pwsh
@@ -51,20 +60,23 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           if (!$env:CARROT_ASSIST_TW_KEYSTORE -or !$env:CARROT_ASSIST_TW_PASSWORD) { throw 'Release signing secrets are missing' }
-          [xml]$manifest = Get-Content tools/carrot_android/AndroidManifest.xml
+          $cockpit = $env:CARROT_EDITION -eq 'cockpit'
+          $manifestFile = if ($cockpit) { 'tools/carrot_android/AndroidManifest.cockpit.xml' } else { 'tools/carrot_android/AndroidManifest.xml' }
+          [xml]$manifest = Get-Content -Encoding utf8 $manifestFile
           $ns = 'http://schemas.android.com/apk/res/android'
           $version = $manifest.manifest.GetAttribute('versionName', $ns)
           $code = [int]$manifest.manifest.GetAttribute('versionCode', $ns)
           if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid release version' }
           $package = $manifest.manifest.package
-          if ($package -ne 'me.shind0.carrotweb.tw') { throw 'Unexpected package identity' }
-          $tag = "carrot-assist-tw-v$version"
-          $name = "CarrotAssist-TW-$version.apk"
+          $expectedPackage = if ($cockpit) { 'me.shind0.carrotweb.tw.cockpit' } else { 'me.shind0.carrotweb.tw' }
+          if ($package -ne $expectedPackage) { throw 'Unexpected package identity' }
+          $tag = if ($cockpit) { "carrot-cockpit-tw-v$version" } else { "carrot-assist-tw-v$version" }
+          $name = if ($cockpit) { "CarrotCockpit-TW-$version.apk" } else { "CarrotAssist-TW-$version.apk" }
           New-Item -ItemType Directory -Force dist | Out-Null
           $key = Join-Path $env:RUNNER_TEMP 'carrotassist-tw.jks'
           try {
             [IO.File]::WriteAllBytes($key, [Convert]::FromBase64String($env:CARROT_ASSIST_TW_KEYSTORE))
-            ./tools/carrot_android/build.ps1 -Sdk $env:CARROT_ANDROID_SDK -Jdk $env:JAVA_HOME -OutputApk "$PWD/dist/$name" -SigningKeystore $key -SigningAlias carrotassist-tw -SigningPasswordEnv CARROT_ASSIST_TW_PASSWORD
+            ./tools/carrot_android/build.ps1 -Cockpit:$cockpit -Sdk $env:CARROT_ANDROID_SDK -Jdk $env:JAVA_HOME -OutputApk "$PWD/dist/$name" -SigningKeystore $key -SigningAlias carrotassist-tw -SigningPasswordEnv CARROT_ASSIST_TW_PASSWORD
             if ($LASTEXITCODE -ne 0) { throw 'APK build failed' }
             & "$env:CARROT_ANDROID_SDK/build-tools/35.0.0/apksigner.bat" verify --verbose --print-certs "dist/$name" | Tee-Object -FilePath dist/signing-certificate.txt
             if ($LASTEXITCODE -ne 0) { throw 'APK signature verification failed' }
@@ -99,6 +111,9 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             if ($existing -ne 'true') { throw 'Published versions are immutable; increase the APK version first' }
           } else {
+            if ($env:CARROT_EDITION -eq 'cockpit') {
+              Get-Content -Raw -Encoding utf8 tools/carrot_android/COCKPIT.md | Set-Content dist/release-notes.md -Encoding utf8
+            } else {
             @'
           CarrotAssist 繁體中文版，使用獨立套件名稱，可與原版並存。
 
@@ -117,7 +132,8 @@ jobs:
           此版本採用 TonyBinheWu/sunnypilot 專用簽章及更新來源。新 App 的連線資料與原版分開，可能需要重新授權 ChatGPT。
           建置完成並驗證 APK 簽章；尚未在實體手機驗證。
           '@ | Set-Content dist/release-notes.md -Encoding utf8
-            & gh release create $env:CARROT_APK_TAG --target $env:GITHUB_SHA --title "CarrotAssist 繁體中文版 $env:CARROT_APK_VERSION" --draft --prerelease --latest=false --notes-file dist/release-notes.md
+            }
+            & gh release create $env:CARROT_APK_TAG --target $env:GITHUB_SHA --title "Carrot $env:CARROT_EDITION 繁體中文版 $env:CARROT_APK_VERSION" --draft --prerelease --latest=false --notes-file dist/release-notes.md
             if ($LASTEXITCODE -ne 0) { throw 'Draft release creation failed' }
           }
           $assets = @(Get-ChildItem dist -File | Where-Object Name -ne 'release-notes.md' | ForEach-Object FullName)

@@ -1,5 +1,21 @@
 # Repository memory
 
+- 2026-11-16 Carrot Cockpit is a separate Android package
+  me.shind0.carrotweb.tw.cockpit (0.1.0/code1), opening /cockpit after the same
+  private-origin verification. Original TW0.2.19 stays immutable. build.ps1
+  -Cockpit selects its manifest; source-push APK workflow builds cockpit and
+  manual dispatch selects standard/cockpit. Independent strict update channel.
+  No new permission/JS interface. Native lifecycle pauses cockpit read streams
+  and leaves Vision; Back restores chrome. Compact services expire separately
+  after1.5s; unclassified radar remains unknown. Existing settings/tools/Vision
+  run in a same-origin frame, isolated light CSS, voice methods forwarded with
+  existing grants. Navigation/favorites reuse /navigation. Profile popup maps
+  only MyDrivingMode1..4 with UI fresh-P/zero-speed/disengaged checks and explicit
+  confirm/readback; original setter admission unchanged, not server-enforced P.
+  Reconnect never replays writes. Initial intro stays visible, not bypassed.
+  Browser fixtures are synthetic; no Android/CarPlay/vehicle acceptance. See
+  tools/carrot_android/COCKPIT.md for actual coverage and limitations.
+
 - 2026-11-16 LowSpeedSteerReserve is default-off and sits directly below
   CustomSteerMax in the shared native/web/APK catalog. Hyundai/Kia CAN-FD torque
   control only: 0.30s near-baseline demand, <=30km/h headroom to409, taper30–40,

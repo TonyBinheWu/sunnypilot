@@ -1,5 +1,7 @@
 # CarrotAssist Android public beta — Traditional Chinese distribution
 
+**Separate cockpit edition:** [Carrot Cockpit 繁中 0.1.0](COCKPIT.md) adds a central touchscreen layout and a separate install/update identity. The existing CarrotAssist APK below remains available. Build it with `build.ps1 -Cockpit`; source pushes build the cockpit edition, while manual workflow dispatch can select `standard` or `cockpit`.
+
 This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.19 (code 26). It can coexist with the upstream app; data and authorizations are separate.
 
 [Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.19)

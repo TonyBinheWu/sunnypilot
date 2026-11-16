@@ -53,7 +53,7 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
   }
 }
 
-export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text}={}) {
+export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo}={}) {
   ctx.clearRect(0,0,width,height);ctx.fillStyle='#f2f3f3';ctx.fillRect(0,0,width,height);
   const project=drivingProjection(width,height),model=scene.model;
   const pathPoints=(path,offset=0)=>{
@@ -91,5 +91,6 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text}={})
   }
   const objects=[...surroundingTargets(scene.radar),...(scene.vision?.objects||[])];
   objects.sort((a,b)=>b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text}));
-  drawSceneObject(ctx,project,{kind:'car',x:0,y:0},{ego:true,text});
+  if(drawEgo)drawEgo(ctx,project);
+  else drawSceneObject(ctx,project,{kind:'car',x:0,y:0},{ego:true,text});
 }

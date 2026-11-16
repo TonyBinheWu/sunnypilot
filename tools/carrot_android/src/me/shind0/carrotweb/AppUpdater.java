@@ -108,11 +108,11 @@ public final class AppUpdater {
     worker.execute(()->{
       JSONObject next=null; String error=null;
       try {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream(); transfer(UpdatePolicy.MANIFEST,bytes,16384);
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream(); transfer(UpdatePolicy.manifest(activity.getPackageName()),bytes,16384);
         JSONObject info = new JSONObject(bytes.toString("UTF-8"));
         if (!activity.getPackageName().equals(info.getString("package"))) throw new Exception("Wrong package");
         if (info.getLong("version_code") > version(installed())) {
-          if (!UpdatePolicy.valid(version(installed()),info.getLong("version_code"),info.getString("version"),info.getString("apk_url"),info.getString("sha256"))) throw new Exception("Invalid update metadata");
+          if (!UpdatePolicy.validFor(activity.getPackageName(),version(installed()),info.getLong("version_code"),info.getString("version"),info.getString("apk_url"),info.getString("sha256"))) throw new Exception("Invalid update metadata");
           next=info;
         }
         preferences.edit().putLong("update_checked",System.currentTimeMillis()).apply();

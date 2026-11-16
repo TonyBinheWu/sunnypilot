@@ -24,7 +24,9 @@
         var miniHudRequested = /(?:^|[?&])mini_hud=(?:auto|force|1)(?:&|$)/.test(window.location.search || "");
         var webSettings = window.__CARROT_BOOTSTRAP__ && window.__CARROT_BOOTSTRAP__.webSettings;
         var setting = (webSettings && webSettings.start_page) || "last";
-        if (miniHudRequested) {
+        if (new URLSearchParams(window.location.search).get('cockpit_embed') === '1') {
+          startPage = 'setting';
+        } else if (miniHudRequested) {
           startPage = "carrot";
         } else if (setting === "last") {
           var lastPage = localStorage.getItem("carrot_web_last_page");

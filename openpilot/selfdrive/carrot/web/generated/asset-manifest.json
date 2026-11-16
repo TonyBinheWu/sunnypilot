@@ -2,6 +2,13 @@
   "schemaVersion": 1,
   "assets": [
     {
+      "id": "app.cockpit",
+      "kind": "bundle",
+      "source": "src/entries/cockpit.js",
+      "path": "js/generated/cockpit.js",
+      "hash": "6038c2417b7721b27b4078269df3293720863f3d70f7b82612a5241bcdae0dd7"
+    },
+    {
       "id": "tools.lane-mapping",
       "kind": "bundle",
       "source": "src/entries/lane_mapping.js",
@@ -27,7 +34,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "656510684fd046b0f296e3faf3599e654fc0dd84e785743eb4e6eb2a7029cb59"
+      "hash": "291aff772b5fc67206618f6628a6efdcb2eb71b1df47d7e1723565929a67740d"
     },
     {
       "id": "replay.runtime",
