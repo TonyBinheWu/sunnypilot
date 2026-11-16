@@ -1,5 +1,17 @@
 # Repository memory
 
+- 2026-11-16 actual C4 gateway logs identify AGNOSSetup-19.8-carrot-bt1,
+  GET / HTTP409 unverified_template; redirect reached gateway successfully.
+  Actual upstream bt1 ELF SHA972678b20da245a1a1f68835b3705233e4ded63077ca610e45ed6bcf242d1fd0,
+  1401224 bytes, differs from compat only in repo/branch slots. Pin separate
+  carrotBt1 profile, preserve its conditional clone branch expression; fallback
+  reconstructs original bytes from compat then verifies exact hash. 11 real ELF
+  tests include live/offline byte equality for actual observed OS. Do not map all
+  19.8 suffixes to generic DRM profile. Application does not log serial, but
+  hosting platform request logs can include headers; do not promise no platform
+  retention. Never commit raw request headers or device IDs. /check only showed
+  download failed on affected C4; use real installer after verifying its exact UA.
+
 - 2026-11-16 third follow-up: official shorthand also returns to Start, no
   Installing; C4 IP/OS unavailable, same C4 previously installed upstream.
   Upstream i.carrotpilot.app selects different ELF by AGNOSSetup-version.

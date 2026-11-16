@@ -35,11 +35,11 @@ python tools/carrot_installer/fetch_profiles.py --output /tmp/carrot-fixtures
 CARROT_INSTALLER_FIXTURES=/tmp/carrot-fixtures node --test tools/carrot_installer/test_gateway.mjs
 ```
 
-9 項案例覆蓋三個真實 ELF 的資料修改邊界、來源不變性、分支處理、快取識別字、
+11 項案例覆蓋四個真實 ELF 的資料修改邊界、來源不變性、分支處理、快取識別字、
 完整性拒絕、請求標頭過濾、併發合併、已知版本備援與只讀診斷。
 測試下載但不執行 ARM64 檔案。CI 每次推送重新抓取並檢查固定來源。
 
-服務使用獨立 Sites 來源倉庫與 ESM Worker；三個固定樣板內嵌於建置產物，
+服務使用獨立 Sites 來源倉庫與 ESM Worker；四個固定樣板內嵌於建置產物，
 來源附原始 SHA-256 與上游 MIT 授權。重新發布必須使用同一個
 `.openai/hosting.json` 的專案 ID，保留存取權限並透過 Sites 流程保存、部署確切提交。
 更新此處 Worker 後，也必須同步服務來源、測試、重建與重新部署；推送車機分支
@@ -49,3 +49,5 @@ CARROT_INSTALLER_FIXTURES=/tmp/carrot-fixtures node --test tools/carrot_installe
 並確認短網址保留 AGNOS 標頭及 `/check` 409 文字。這些都不是 C4 實機驗收。
 目前使用者尚未回報新入口是否出現 Installing；若仍失敗，需實際版本或啟動日誌
 繼續定位，不能宣稱根因已完全排除。
+
+`19.8-carrot-bt1` 的實際上游回應與 compat 僅倉庫及分支欄位不同，SHA-256 固定為 `972678b20da245a1a1f68835b3705233e4ded63077ca610e45ed6bcf242d1fd0`。建置不重複內嵌程式碼，備援由 compat 原始資料重建兩個欄位，再通過相同精確雜湊檢查。獨立案例驗證線上下載與斷線備援逐位元組一致。應用程式不記錄序號，但主機平台的請求日誌可能含標頭；不可宣稱完全無平台紀錄。

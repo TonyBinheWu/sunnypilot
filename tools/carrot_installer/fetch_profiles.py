@@ -8,6 +8,7 @@ import urllib.request
 UPSTREAM = 'https://i.carrotpilot.app/carrot-wip'
 COMPAT = 'https://raw.githubusercontent.com/ajouatom/openpilot-installer-generator/df6f48de28e47afd6662e0a9184ac11d48733f26/agnos_compat/installer-agnos-19.6.3-carrot-base'
 SOURCES = {
+  'carrotBt1': (UPSTREAM, '19.8-carrot-bt1', '972678b20da245a1a1f68835b3705233e4ded63077ca610e45ed6bcf242d1fd0', 1401224),
   'legacy': (UPSTREAM, '19.6.3', 'd0498d7da5458d2c963b2cda8419f6a3490c3a572e5c747d591e3fbde32148d9', 1270680),
   'current': (UPSTREAM, '19.8', 'ee2719d369d287b9f52d81dbd221ec16ab43d148da89d0b9bf2efe1bf52f20eb', 2051392),
   'compat': (COMPAT, '19.6.3-carrot', '85f6d9e54286a3842920d6967b187478b4e43d6171c331d72d3fb3102106e101', 1401224),

@@ -6,8 +6,9 @@ export const PROFILES=Object.freeze({
   legacy:{size:1270680,sha:'d0498d7da5458d2c963b2cda8419f6a3490c3a572e5c747d591e3fbde32148d9',repo:'https://github.com/ajouatom/openpilot.git?'},
   current:{size:2051392,sha:'ee2719d369d287b9f52d81dbd221ec16ab43d148da89d0b9bf2efe1bf52f20eb',repo:'https://github.com/ajouatom/openpilot.git?'},
   compat:{size:1401224,sha:'85f6d9e54286a3842920d6967b187478b4e43d6171c331d72d3fb3102106e101',repo:'https://github.com/commaai/openpilot.git?'},
+  carrotBt1:{size:1401224,sha:'972678b20da245a1a1f68835b3705233e4ded63077ca610e45ed6bcf242d1fd0',repo:'https://github.com/ajouatom/openpilot.git?'},
 });
-const SNAPSHOT={'19.6.3':'legacy','19.8':'current','20.0':'current'};
+const SNAPSHOT={'19.6.3':'legacy','19.8':'current','20.0':'current','19.8-carrot-bt1':'carrotBt1'};
 const LIMIT=2100000,enc=new TextEncoder(),dec=new TextDecoder('latin1');
 const digest=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),n=>n.toString(16).padStart(2,'0')).join('');
 const EMBEDDED = {};
@@ -46,11 +47,19 @@ const common={'Cache-Control':'no-store','Vary':'User-Agent, X-openpilot-device-
 function diagnostic(version,extra='Read-only check. No installer was executed.'){
   return new Response(`AGNOS: ${version||'unknown'}\nDevice: mici\n${extra}\n`,{status:409,headers:{...common,'Content-Type':'text/plain; charset=utf-8'}});
 }
-const guide=`<!doctype html><html lang="zh-TW"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CarrotPilot 安裝相容性</title><style>body{max-width:760px;margin:48px auto;padding:0 24px;font:18px/1.8 system-ui;background:#101a29;color:#edf5ff}a{color:#8bdafa}code{overflow-wrap:anywhere}h1{font-size:1.7em}section{border:1px solid #52667c;border-radius:16px;padding:20px;margin:22px 0}</style><h1>CarrotPilot 繁中分支安裝</h1><p>目標：TonyBinheWu/sunnypilot → carrot-wip</p><section><h2>在 C4 的自訂軟體網址使用</h2><p>本頁網址為安裝入口；加上 <code>/check</code> 則只檢查版本，不執行安裝。</p><p><a href="/manifest">檢視固定樣板與來源</a> · <a href="https://github.com/TonyBinheWu/sunnypilot/tree/carrot-wip/tools/carrot_installer">原始碼</a></p></section><p>服務依 AGNOS 版本選擇已核對雜湊的上游樣板，保留畫面與分支處理，替換目標倉庫；舊版樣板改用獨立快取識別字以重新下載，不修改或搬移工廠快取。19.6.3-carrot 使用上游在該版本驗證過的原生樣板。程式不儲存或轉送裝置序號，不接受任意倉庫、指令或上傳。</p><p>樣板驗證不等於你的 C4 已安裝成功；未知版本或更新的樣板會停止並顯示版本資訊。</p></html>`;
+const guide=`<!doctype html><html lang="zh-TW"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CarrotPilot 安裝相容性</title><style>body{max-width:760px;margin:48px auto;padding:0 24px;font:18px/1.8 system-ui;background:#101a29;color:#edf5ff}a{color:#8bdafa}code{overflow-wrap:anywhere}h1{font-size:1.7em}section{border:1px solid #52667c;border-radius:16px;padding:20px;margin:22px 0}</style><h1>CarrotPilot 繁中分支安裝</h1><p>目標：TonyBinheWu/sunnypilot → carrot-wip</p><section><h2>在 C4 的自訂軟體網址使用</h2><p>本頁網址為安裝入口；加上 <code>/check</code> 則只檢查版本，不執行安裝。</p><p><a href="/manifest">檢視固定樣板與來源</a> · <a href="https://github.com/TonyBinheWu/sunnypilot/tree/carrot-wip/tools/carrot_installer">原始碼</a></p></section><p>服務依 AGNOS 版本選擇已核對雜湊的上游樣板，保留畫面與分支處理，替換目標倉庫；舊版樣板改用獨立快取識別字以重新下載，不修改或搬移工廠快取。19.6.3-carrot 使用上游在該版本驗證過的原生樣板。程式不轉送裝置序號；主機平台可能保留請求標頭紀錄，不接受任意倉庫、指令或上傳。</p><p>樣板驗證不等於你的 C4 已安裝成功；未知版本或更新的樣板會停止並顯示版本資訊。</p></html>`;
 
 export function createGateway({fetchImpl=fetch,embedded=EMBEDDED,now=Date.now,timeoutMs=8000}={}){
   const cache=new Map(),flights=new Map();
   function embeddedRaw(id){
+    // bt1 is byte-identical to compat outside these two configuration slots.
+    // Reconstruct its pinned source to avoid embedding duplicate native code.
+    if(id==='carrotBt1'&&!embedded[id]){
+      const bytes=embeddedRaw('compat');
+      patchSlot(bytes,PROFILES.compat.repo,'https://github.com/ajouatom/openpilot.git');
+      patchSlot(bytes,'release3?',"carrot-wip$([ -d /data/tmppilot ]||echo ' --no-single-branch')");
+      return bytes; // retarget verifies the exact bt1 SHA-256 before delivery.
+    }
     if(!embedded[id])throw Error('template_unavailable');
     const value=atob(embedded[id]),bytes=new Uint8Array(value.length);
     for(let i=0;i<value.length;i++)bytes[i]=value.charCodeAt(i);

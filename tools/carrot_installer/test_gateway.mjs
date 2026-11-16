@@ -9,6 +9,18 @@ const raw=Object.fromEntries(await Promise.all(Object.keys(PROFILES).map(async i
 const embedded=Object.fromEntries(Object.entries(raw).map(([id,data])=>[id,Buffer.from(data).toString('base64')]));
 const req=(version='19.8',path='/c4',headers={})=>new Request('https://install.test'+path,{headers:{'User-Agent':'AGNOSSetup-'+version,'X-openpilot-device-type':'mici',...headers}});
 
+test('observed 19.8-carrot-bt1 succeeds live and with compact pinned fallback',async()=>{
+  const live=createGateway({fetchImpl:async()=>new Response(raw.carrotBt1),embedded});
+  const response=await live(req('19.8-carrot-bt1'));assert.equal(response.status,200);
+  const expected=await retarget(raw.carrotBt1);
+  assert.deepEqual(new Uint8Array(await response.arrayBuffer()),expected.bytes);
+  const compact={...embedded};delete compact.carrotBt1;
+  const offline=createGateway({fetchImpl:async()=>{throw Error('offline');},embedded:compact});
+  const fallback=await offline(req('19.8-carrot-bt1'));assert.equal(fallback.status,200);
+  assert.deepEqual(new Uint8Array(await fallback.arrayBuffer()),expected.bytes);
+  assert.equal(fallback.headers.get('X-Carrot-Profile'),'carrotBt1');
+});
+
 for(const id of Object.keys(PROFILES))test(`actual ${id} ELF changes reserved slots only and retains source bytes`,async()=>{
   const before=raw[id].slice(),value=await retarget(raw[id]);
   assert.equal(value.id,id);assert.deepEqual(raw[id],before);assert.equal(value.bytes.length,before.length);
