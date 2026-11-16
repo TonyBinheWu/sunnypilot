@@ -125,3 +125,31 @@ def test_real_agent_chunk_transport(client):
   upload(Session(),{'origin':ORIGIN,'device_id':d},k,io.BytesIO(data),'report.json','diagnostic',None,lambda:True,Stop())
   rows=c.app.state.support.list(d);assert len(rows)==1 and rows[0]['complete']
   assert c.get('/api/v1/support-files/'+rows[0]['id']).content==data
+
+
+def test_fresh_boot_diagnostics_send_immediately_then_respect_interval(tmp_path,monkeypatch):
+  import sys
+  from types import SimpleNamespace
+  import requests
+  from openpilot.sunnypilot.formosalink import support as module
+  clock=[30.0];sent=[];reports=[]
+  class Stop:
+    steps=0
+    def is_set(self):return self.steps>=3
+    def wait(self,seconds):
+      self.steps+=1
+      clock[0]=[30.,60.,930.,1000.][self.steps]
+  class Session:
+    def __enter__(self):return self
+    def __exit__(self,*args):pass
+  monkeypatch.setitem(sys.modules,'openpilot.common.params',SimpleNamespace(Params=lambda:SimpleNamespace(get_bool=lambda key:True)))
+  monkeypatch.setattr(module,'read',lambda _:({'origin':ORIGIN},None,None))
+  monkeypatch.setattr(module,'call',lambda *args:{'diagnostics':True,'route_job':None})
+  monkeypatch.setattr(module.time,'monotonic',lambda:clock[0])
+  monkeypatch.setattr(requests,'Session',Session)
+  def report():
+    reports.append(clock[0]);return ('{"changed":'+str(len(reports))+'}').encode()
+  monkeypatch.setattr(module,'diagnostic_report',report)
+  monkeypatch.setattr(module,'upload',lambda *args:sent.append(clock[0]))
+  module.run(tmp_path,Stop())
+  assert reports==[30.,930.] and sent==[30.,930.]

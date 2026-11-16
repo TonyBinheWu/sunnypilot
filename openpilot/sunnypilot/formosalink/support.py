@@ -100,14 +100,14 @@ def upload(session, identity, private, stream, name, kind, job, parked, stop):
 def run(directory,stop):
   import requests
   from openpilot.common.params import Params
-  params=Params();last_digest=None;last_sent=0
+  params=Params();last_digest=None;last_sent=None
   parked=lambda:params.get_bool('IsOffroad')
   while not stop.is_set():
     try:
       identity,private,_=read(directory);self_hosted_origin(identity['origin'])
       with requests.Session() as session:
         policy=call(session,identity,private,{'action':'poll'})
-        if parked() and policy.get('diagnostics') is True and time.monotonic()-last_sent>900:
+        if parked() and policy.get('diagnostics') is True and (last_sent is None or time.monotonic()-last_sent>=900):
           data=diagnostic_report()
           # Timestamp is excluded from deduplication; one initial report per boot.
           parsed=json.loads(data);parsed.pop('captured_at',None)

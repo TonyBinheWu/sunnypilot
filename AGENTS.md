@@ -1,5 +1,21 @@
 # Repository memory
 
+- 2026-11-16 live support acceptance: same user's C4P was re-paired under
+  FormosaPilotc4 (do not confuse old offline entry with new online identity).
+  Runtime initially26356f9e lacked support agent despite server being updated.
+  Updated runtime to b54af9e; offroad true, real rlog segment count0, signed
+  route job correctly ended no_completed_route. Do not invent synthetic drives
+  or claim full rlog download passed when no real file exists. Explicit user
+  authorized diagnostics + latest location-bearing rlog, retain30days, restore
+  diagnostics sharing off after test. Manual native production uploader sent
+ 13924-byte real report; automatic first report was delayed until OS uptime900s.
+  Fix last_sent None to send first eligible poll immediately; regression covers
+  fresh uptime30s plus subsequent900s interval. No cloud API change required.
+  IMPORTANT: async Carrot Tools git_pull path in dispatcher calls reset --hard,
+  unlike the other HTTP handler's ff-only path. Do not use it without checking
+  dirty state first; use explicit fetch + ff-only merge after clean-tree checks
+  for future live updates. No evidence about prior device local edits was kept.
+
 - 2026-11-16 FormosaLink support logs: user chose text diagnostics and separately
   consented full driving rlogs, both 30-day retention. New support.py server uses
   separate protected SQLite/file store, default-off owner consent, one-day
