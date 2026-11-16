@@ -12,6 +12,8 @@ FormosaPilot brands the maintained sunnypilot distribution. FormosaLink is its s
 
 FormosaPilot は保守対象の sunnypilot を基盤とするブランドです。FormosaLink はセルフホスト型の連携サービスです。GitHub ログイン、所有者別のデバイス管理、本体の QR 登録、状態送信、停車中の遠隔設定、3 言語のモバイル画面を提供します。既存の運転支援動作は維持します。
 
+[管理者診斷台、30 天保留與完整行車紀錄同意上傳](docs/SUPPORT_LOGS.md)：診斷分享預設關閉，完整 rlog 需逐次同意；安裝前未留下的資料無法補回。
+
 ## Scope / 範圍 / 範囲
 
 - HTTPS origin: `https://formosapilot.dinglu-t.com`

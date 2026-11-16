@@ -1,6 +1,7 @@
 import {initTheme} from './theme.js?v=0.6.0';
+import {supportPanel} from './support.js?v=0.9.0';
 import {healthValue} from './health-ui.js?v=0.6.0';
-import {deviceSettings} from './device-settings.js?v=0.8.5';
+import {deviceSettings} from './device-settings.js?v=0.9.0';
 import {translations} from './i18n.js?v=0.8.5';
 import {isCarrotDevice,carrotUrl} from './carrot-entry.js?v=0.8.5';
 import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.6.0';
@@ -42,13 +43,17 @@ async function api(path, body) {
 }
 function element(tag, text, className) { const node=document.createElement(tag); if(text!==undefined)node.textContent=text;if(className)node.className=className;return node; }
 function metric(container,key,value,unit) {const item=element('div',undefined,'metric');item.append(element('label',t(key)),element('strong',value===null||value===undefined?'—':String(Math.round(value))));if(unit)item.append(element('small',unit));container.append(item);}
-const settings=deviceSettings({api,t,language:()=>language,element,date,notify,getDevices:()=>devices,getAccount:()=>account,onPair:openPair});
+const settings=deviceSettings({api,t,language:()=>language,element,date,notify,getDevices:()=>devices,getAccount:()=>account,onPair:openPair,getSupport:()=>support});
+const support=supportPanel({api,element,language:()=>language,notify});
 function render() {
   $('device-count').textContent=String(devices.filter(d=>d.state==='paired').length);
   $('online-count').textContent=String(devices.filter(d=>d.online&&!networkFailed).length);
   $('empty').hidden=devices.length>0;
   $('refresh-label').textContent=networkFailed?t('offline'):lastRefresh?`${t('updated')} ${date(lastRefresh)}`:t('waiting');
   $('device-grid').replaceChildren();
+  if(account?.id==='local-admin'){
+    const admin=element('button',support.adminLabel(),'secondary');admin.type='button';admin.addEventListener('click',()=>support.open());$('device-grid').append(admin);
+  }
   for(const device of devices) {
     const stale=networkFailed||device.stale, m=device.snapshot?.metrics||{}, hidden=stale||device.state==='revoked';
     const card=element('article',undefined,'device-card'), heading=element('div',undefined,'device-heading'), title=element('div');
@@ -61,6 +66,7 @@ function render() {
     for(const [key,value] of [['info_vehicle_platform',h.vehicle_platform],['vehicleSoc',device.health_fresh&&h.soc_status==='available'?healthValue(h.vehicle_soc_percent,' %'):t(h.soc_status==='unsupported'?(h.soc_detection?'tractionSocUnverified':'socUnsupported'):'unknown')],['egpu',hf?(h.egpu_status==='available'?healthValue(h.egpu_temp_c,' °C'):t('egpu_'+(h.egpu_status||'unknown'))):t('unknown')]])details.append(element('dt',t(key)),element('dd',value||'—'));
     for(const [key,value] of [['version',m.software_version],['branch',m.branch],['commit',m.commit?.slice(0,12)],['thermal',hidden?null:translations[language]['thermal_'+m.thermal_status]],['sampleTime',date(device.snapshot?.sampled_at)]]){details.append(element('dt',t(key)),element('dd',value||'—'));}card.append(details);
     const bottom=element('div',undefined,'card-bottom');bottom.append(element('span',`${t('received')} ${date(device.last_seen)}`));
+    const logs=element('button',support.label(),'secondary');logs.type='button';logs.addEventListener('click',()=>support.open(device));bottom.append(logs);
     if(device.state==='paired'){
       if(isCarrotDevice(device)){
         const carrot=element('a',t('carrotRemote'),'secondary');
@@ -74,7 +80,7 @@ function render() {
       const detail=element('button',t(isCarrotDevice(device)?'carrotDeviceInfo':'deviceSettings'),'secondary');detail.type='button';detail.addEventListener('click',()=>settings.open(device));bottom.append(detail);const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
   }
 }
-function session(value){signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
+function session(value){if(!value)support.close();signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
 async function refresh(){
   if(busy)return;
   busy=true;
@@ -88,7 +94,7 @@ async function refresh(){
       auth={user:{id:'local-admin',name:''},github_enabled:false};
     }
     if(epoch!==authEpoch)return;
-    if(account?.id!==auth.user?.id){settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
+    if(account?.id!==auth.user?.id){support.close();settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
     account=auth.user;githubEnabled=auth.github_enabled;
     $('github-login').disabled=!githubEnabled;
     $('github-note').textContent=t(githubEnabled===null?'waiting':githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');

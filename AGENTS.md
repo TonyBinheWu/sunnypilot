@@ -1,5 +1,21 @@
 # Repository memory
 
+- 2026-11-16 FormosaLink support logs: user chose text diagnostics and separately
+  consented full driving rlogs, both 30-day retention. New support.py server uses
+  separate protected SQLite/file store, default-off owner consent, one-day
+  per-request route jobs, Ed25519/nonce checks per 32KiB chunk, SHA256 before
+  download, owner isolation and local-admin cross-device listing. No unpaired or
+  pre-install coverage claim. Text tails are bounded/redacted heuristically;
+  full rlog includes location, no videos, parked upload only. 64MiB/file,
+  512MiB/128 files per route, 1GiB/device,10GiB/site. Hourly/at-access expiry,
+  partials one day, owner delete-all cancels pending jobs and disables sharing.
+  Web workspace sidebar AND dashboard expose support panel; previous workspace
+  auto-open hides dashboard actions. Local synthetic browser verified cancel
+  dialog and admin download. No real logs used. Independent worker in agent.run,
+  no Params key or vehicle-control changes. IIS share currently inaccessible;
+  create local deploy package and report deployment/hardware acceptance pending.
+  See formosalink/docs/SUPPORT_LOGS.md; never claim all users or all logs collected.
+
 - 2026-11-16 actual C4 gateway logs identify AGNOSSetup-19.8-carrot-bt1,
   GET / HTTP409 unverified_template; redirect reached gateway successfully.
   Actual upstream bt1 ELF SHA972678b20da245a1a1f68835b3705233e4ded63077ca610e45ed6bcf242d1fd0,

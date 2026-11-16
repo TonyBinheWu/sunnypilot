@@ -305,3 +305,5 @@ carrotpilot 的官方公開說明主要以上述使用說明書和 Wiki 為主�
 carrotpilot 基於 comma.ai 和 openpilot 貢獻者開發的 [openpilot](https://github.com/commaai/openpilot)。openpilot 以 MIT License 釋出，部分元件可能適用其他授權條款。詳細資訊請檢視 [LICENSE](LICENSE) 和各元件的授權條款聲明。
 
 “openpilot”與 comma 硬體名稱均屬於其相應權利人。carrotpilot 不屬於 comma.ai 的關聯專案，也未獲得 comma.ai 的背書。
+
+FormosaLink 新增 [管理者診斷台與行車紀錄分享](formosalink/docs/SUPPORT_LOGS.md)：可取得的診斷日誌與另行同意上傳的完整 rlog 都保留 30 天，提供搜尋、下載、停用與刪除。需同時更新車機、網站及 IIS 後端；未配對／未同意者不會自動上傳。

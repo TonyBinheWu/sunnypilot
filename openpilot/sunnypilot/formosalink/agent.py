@@ -75,6 +75,8 @@ def run(directory=None, demo=False, stop=None):
   stop = stop or threading.Event()
   directory = directory or default_directory()
   if not demo:
+    from openpilot.sunnypilot.formosalink.support import start as start_support
+    start_support(directory,stop)
     start_management(directory,stop)
     from openpilot.sunnypilot.formosalink.cameras import start as start_cameras
     start_cameras(directory,stop)

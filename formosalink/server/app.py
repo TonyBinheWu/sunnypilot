@@ -68,7 +68,7 @@ def create_app(data_dir, web_dir=None):
   store = Store(directory / "formosalink.sqlite3")
   github = oauth.settings(directory)
   callback = config["origin"] + "/api/v1/auth/github/callback"
-  app = FastAPI(title="FormosaLink", version="0.8.0", docs_url=None, redoc_url=None, openapi_url=None)
+  app = FastAPI(title="FormosaLink", version="0.9.0", docs_url=None, redoc_url=None, openapi_url=None)
   app.state.store = store
   limiter = Limit()
   connections = {}
@@ -92,7 +92,7 @@ def create_app(data_dir, web_dir=None):
     if request.url.path.startswith("/api/"):
       if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
         return Response(status_code=400)
-      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media", "/api/v1/agent/media/watch"):
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media", "/api/v1/agent/media/watch", "/api/v1/agent/support"):
         if request.headers.get("origin") != config["origin"]:
           return Response(status_code=403)
       try:
@@ -100,6 +100,7 @@ def create_app(data_dir, web_dir=None):
       except ValueError:
         return Response(status_code=400)
       limit = MAX_MEDIA_BYTES if request.url.path == "/api/v1/agent/media" else MAX_MANAGEMENT_BYTES if request.url.path == "/api/v1/agent/sync" else MAX_FRAME_BYTES
+      if request.url.path == '/api/v1/agent/support':limit=65536
       if "/carrot/" in request.url.path:
         from openpilot.sunnypilot.formosalink.remote_web_protocol import MAX_BODY
         limit = MAX_BODY
@@ -128,7 +129,7 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1", "live-camera-stream-v1", "carrot-web-v1"], "database_version": 3}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1", "live-camera-stream-v1", "carrot-web-v1", "support-logs-v1"], "database_version": 3}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):
@@ -394,6 +395,8 @@ def create_app(data_dir, web_dir=None):
   register_streaming(app, store, owner, rate, config['origin'], app.state.media)
   from formosalink.server.remote_web import register as register_remote_web
   register_remote_web(app, store, owner, rate, config["origin"])
+  from formosalink.server.support import register as register_support
+  register_support(app, directory, store, owner, rate)
   web = Path(web_dir) if web_dir else Path(__file__).resolve().parents[1] / "web"
   if web.is_dir():
     app.mount("/", StaticFiles(directory=web, html=True), name="web")
