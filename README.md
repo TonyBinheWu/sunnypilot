@@ -192,7 +192,7 @@ https://is.gd/tonyc4
 
 在 C4「自訂軟體安裝網址」輸入以上網址。此公開入口固定安裝本倉庫 `TonyBinheWu/sunnypilot` 的 `carrot-wip`；不是安裝上游。完整入口為 [CarrotPilot 繁中分支安裝](https://carrot-tw-install.tony-binhe-wu.chatgpt.site)。
 
-若下載後直接回 Start，先在同一欄輸入 `https://is.gd/tonyc4check`。這是**只讀版本檢查**，預期顯示 `AGNOS: 版本` 和 `Device: mici`，不執行安裝器；請記下完整文字後再回到安裝入口。舊版 Setup 是否能顯示 HTTP 409 診斷文字仍需實機確認，未顯示也不代表下載已執行。
+`https://is.gd/tonyc4check` 是**只讀版本檢查**，回傳 HTTP 409 與 `AGNOS: 版本` 文字，不提供安裝檔。受影響 C4 已回報僅顯示 `download failed`，因此不要反覆嘗試檢查入口，直接使用上方正式安裝網址。這個檢查結果不能判定正式安裝成功或失敗；若介面能顯示版本文字，再記下供診斷。
 
 **停止使用 `is.gd/carrotc4`、`is.gd/carrotc4v2` 與 v1/v2 發行檔。** 實機回報這兩版和 `TonyBinheWu/carrot-wip` 官方簡寫仍在 Installing 出現前回 Start，尚無該台 C4 的日誌可確認根因。上游入口會依 Setup 回報的 AGNOS 版本提供不同檔案，不能只按「C4」選一個固定安裝器。新入口保留上游版本選擇與分支處理，核對固定來源的 SHA-256，只修改倉庫／分支預留欄位；不會重新包裝顯示程式。
 
