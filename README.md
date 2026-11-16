@@ -187,8 +187,10 @@ carrotpilot 不是由 comma.ai 開發、審查、批准或正式支援的 openpi
 **C4 新安裝請使用修正版入口：**
 
 ```text
-https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-c4-installer-v1/carrot-c4-installer
+https://is.gd/carrotc4
 ```
+
+此短網址直接轉往已固定版本的 GitHub 安裝檔，已用 C4 的 `AGNOSSetup`／`mici` 請求驗證下載與 SHA-256 一致。[原始長網址備用](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-c4-installer-v1/carrot-c4-installer)。
 
 這個 C4 專用入口會先修正「有原廠快取、尚未完成安裝交接」時的 Git 來源，再執行固定雜湊的 C4 安裝器，下載本倉庫 `carrot-wip`。原廠快取若沿用 comma 倉庫，會因找不到 `carrot-wip` 而退出，可能表現為下載後回到安裝畫面。分支內安裝器也已修正複製快取後的來源設定；單純更新分支無法替換外部服務已提供的舊安裝器。
 
