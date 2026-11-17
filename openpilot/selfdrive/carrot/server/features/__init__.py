@@ -36,6 +36,8 @@ from . import (
 
 
 def register_all(app: web.Application) -> None:
+  from . import training_data
+  training_data.register(app)
   from . import lane_mapping
   lane_mapping.register(app)
   from . import self_diagnostics

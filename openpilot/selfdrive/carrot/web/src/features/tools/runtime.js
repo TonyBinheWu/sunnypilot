@@ -1,4 +1,5 @@
 import {openRecordingQuota} from "./recording_quota.js";
+import {openTrainingData,localizeTrainingData} from "./training_data.js";
 import { localVoice } from './local_voice.js';
 "use strict";
 
@@ -1146,6 +1147,8 @@ function initToolsPage() {
     if (typeof openWebSettingsDialog === "function") openWebSettingsDialog();
   });
   bindOnce("btnToolsAssistant", openAssistantDialog);
+  localizeTrainingData();
+  bindOnce("btnTrainingData", openTrainingData);
   bindOnce("btnRecordingQuota", openRecordingQuota);
   bindOnce("btnSteeringLearning", openSteeringLearning);
   bindOnce("btnSetupAgain", openSetupGuide);

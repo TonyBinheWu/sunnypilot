@@ -36,12 +36,19 @@ def save_state(directory, value):
   os.replace(temporary, path)
 
 
-def choose(enabled, directory=None):
+def consent_revision(state):
+  value={key:state.get(key) for key in ('enabled','revision','pending')}
+  return hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest()
+
+
+def choose(enabled, directory=None, *, expected_revision=None):
   if type(enabled) is not bool:
     raise ValueError("consent must be an explicit boolean")
   directory = directory or default_directory()
   with _LOCK:
     state = local_state(directory)
+    if expected_revision is not None and expected_revision!=consent_revision(state):
+      raise ValueError('consent_changed')
     state["pending"] = {"enabled": enabled, "expected_revision": state["revision"], "policy": POLICY,
                         "id": hashlib.sha256(uuid.uuid4().bytes).hexdigest(), "granted_at": time.time()}
     # A local revocation takes effect before the network acknowledges it.
