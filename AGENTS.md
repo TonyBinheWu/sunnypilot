@@ -1,5 +1,15 @@
 # Repository memory
 
+- 2026-11-17 Cockpit0.1.1/code2 fixes unsupported-dvh body auto-height.
+  Vehicle CSS has html100%, body100%/vh/dvh fallbacks; APK injects idempotent
+  percent-height style only on trusted cockpit package/path, so old439fc3d0
+  vehicle pages also get the outer-layout fix without resetting preferences.
+  No cached pixel heights or resize listeners. Native source b25b8802; SHA256
+  4e836ff95b6dc342b90c2f998481fc222bcd4819fbe826399ca69ef715bbb812.
+  297 JS and6 HTTP tests, synthetic browser no-dvh reproduction/resize checks.
+  Actual Android box acceptance pending; preserve immutable0.1.0 and standard APK.
+
+
 - 2026-11-16 Cockpit0.1.0/code1 published as a prerelease, public APK SHA256
   7497f5fadb1ae76cfdeb403e90bbe6450fc1fd58e7863a83dc290dc3257acd3d.
   Native source2bf69134; vehicle UI requires439fc3d0 or later. Native build inputs
