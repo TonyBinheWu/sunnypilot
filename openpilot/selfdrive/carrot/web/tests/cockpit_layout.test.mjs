@@ -28,7 +28,7 @@ test('APK repair is cockpit-only, idempotent and uses live viewport percentages'
 
 test('native repair is behind the current-device and cockpit-package guards',()=>{
   const activity=readFileSync(new URL('../../../../../tools/carrot_android/src/me/shind0/carrotweb/MainActivity.java',import.meta.url),'utf8');
-  assert.match(activity,/if \(!pageLoadFailed && view.getParent\(\) == content && isCurrent\(Uri.parse\(url\)\)\) \{\s*pageReady = true;\s*if \(UpdatePolicy.cockpit\(getPackageName\(\)\)\)\s*view.evaluateJavascript\(onDevicePage\(CockpitLayout.SCRIPT\), null\)/);
+  assert.match(activity,/if \(!pageLoadFailed && view.getParent\(\) == content && isCurrent\(Uri.parse\(url\)\)\) \{\s*pageReady = true;\s*cancelDeviceReconnect\(\);\s*view.setKeepScreenOn\([^;]+;\s*if \(UpdatePolicy.cockpit\(getPackageName\(\)\)\)\s*view.evaluateJavascript\(onDevicePage\(CockpitLayout.SCRIPT\), null\)/);
 });
 
 

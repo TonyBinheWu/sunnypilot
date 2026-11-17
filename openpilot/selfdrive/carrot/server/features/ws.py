@@ -77,6 +77,10 @@ async def ws_compact_state(request: web.Request) -> web.WebSocketResponse:
   await hub.register_compact_many(services, ws)
   try:
     async for msg in ws:
+      # Browser protocol ping/pong isn't visible to JavaScript. A fixed,
+      # read-only heartbeat also works while parked publishers are absent.
+      if msg.type == WSMsgType.TEXT and msg.data == '{"type":"ping"}':
+        await ws.send_str('{"type":"pong"}')
       if msg.type in (WSMsgType.CLOSE, WSMsgType.CLOSING, WSMsgType.ERROR):
         break
   finally:

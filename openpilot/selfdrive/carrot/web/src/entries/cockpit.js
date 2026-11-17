@@ -9,7 +9,8 @@ installDisplayPreferences(window);
 window.addEventListener('storage',event=>{if(event.key==='carrot_web_text_scale')window.CarrotDisplayPreferences.apply();});
 const $=id=>document.getElementById(id),state=createCockpitState(),ctx=$('scene').getContext('2d');
 const vehicleSkin=createVehicleSkinCache(window);
-let socket=null,retry=null,epoch=0,view='vision',primary='vision',busy=false,currentMode=null,coreReady=false,dismissed=false,hudHadData=false;
+let paused=false;
+let socket=null,retry=null,guard=null,failures=0,transportPhase='connecting',transportReason='',epoch=0,view='vision',primary='vision',busy=false,currentMode=null,coreReady=false,dismissed=false,hudHadData=false;
 const core=$('features'),nav=$('navigation'),titles={navigation:'導航地圖',vision:'Carrot Vision',setting:'控制與設定',tools:'工具／診斷',logs:'行車紀錄'};
 function status(text){$('panelStatus').textContent=text;$('panelStatus').hidden=!text;}
 function coreWindow(){try{return coreReady&&core.contentWindow.location.origin===location.origin?core.contentWindow:null;}catch{return null;}}
@@ -73,18 +74,30 @@ window.CarrotLocalVoice=new Proxy({}, {get(_target,key){
   const api=coreWindow()?.CarrotLocalVoice,fn=api?.[key];if(typeof fn!=='function')return undefined;
   return (...args)=>{if(['findSettings','setValue','setResultValue'].includes(key))panel('setting');return fn.apply(api,args);};
 }});
-function disconnect(){epoch++;clearTimeout(retry);retry=null;const old=socket;socket=null;if(old){old.onclose=null;old.close();}state.clear();}
+function disconnect(){epoch++;clearTimeout(retry);retry=null;guard?.stop();guard=null;const old=socket;socket=null;if(old){old.onclose=null;old.onerror=null;old.onmessage=null;try{old.close();}catch{}}state.clear();}
 function connect(){
-  if(document.hidden||socket)return;const token=epoch;
-  const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws/compact_state?services=${SERVICES.join(',')}`);socket=ws;ws.binaryType='arraybuffer';
-  ws.onmessage=e=>{if(socket!==ws||token!==epoch||document.hidden)return;try{
-    if(typeof e.data==='string'){if(JSON.parse(e.data).mode!=='carrot-state-v1')ws.close();return;}
-    if(e.data.byteLength>1024*1024){ws.close();return;}
+  if(paused||document.hidden||socket||retry)return;const token=epoch;transportPhase='connecting';
+  let ws;try{ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws/compact_state?services=${SERVICES.join(',')}`);}catch{scheduleReconnect('connect-failed');return;}
+  socket=ws;ws.binaryType='arraybuffer';const opened=performance.now();
+  function lost(reason){if(socket!==ws||token!==epoch)return;disconnect();scheduleReconnect(reason);}
+  guard=window.CarrotCompactConnection.watch(ws,lost,{active:()=>socket===ws&&token===epoch&&!paused&&!document.hidden});
+  ws.onmessage=e=>{if(socket!==ws||token!==epoch||paused||document.hidden)return;try{
+    if(typeof e.data==='string'){const hello=JSON.parse(e.data);if(hello.type==='pong')return;if(hello.mode!=='carrot-state-v1')throw Error('protocol');guard.received();transportPhase='connected';return;}
+    if(e.data.byteLength>1024*1024)throw Error('size');
     for(const frame of window.CarrotVisionCompact.decodeFrames(e.data))state.accept(frame);
-  }catch{$('connection').textContent='資料格式錯誤，請更新車機';ws.close();}};
-  ws.onerror=()=>ws.close();ws.onclose=()=>{if(socket!==ws)return;socket=null;state.clear();if(!document.hidden)retry=setTimeout(connect,2000);};
+    guard.received();transportPhase='connected';transportReason='';if(performance.now()-opened>30000)failures=0;
+  }catch{lost('format-error');}};
+  ws.onerror=()=>lost('network-error');ws.onclose=()=>lost('socket-closed');
 }
-document.addEventListener('visibilitychange',()=>{disconnect();if(!document.hidden)connect();});window.addEventListener('pagehide',disconnect);window.addEventListener('pageshow',connect);
+function scheduleReconnect(reason){
+  if(paused||document.hidden||retry)return;transportPhase='retrying';transportReason=reason;failures++;
+  const delay=Math.min(15000,1000*2**Math.min(failures-1,4));
+  retry=setTimeout(()=>{retry=null;connect();},delay);
+}
+function reconnect(){disconnect();failures=0;if(!paused&&!document.hidden)connect();}
+document.addEventListener('visibilitychange',()=>{disconnect();if(!document.hidden&&!paused)connect();});window.addEventListener('pagehide',disconnect);window.addEventListener('pageshow',()=>{if(!paused)connect();});window.addEventListener('online',reconnect);
+$('connection').onclick=()=>{$('connectionDetails').showModal();};
+$('retryConnection').onclick=()=>{reconnect();coreWindow()?.CarrotVisionRaw?.reconnect?.();};
 function render(){
   if(document.hidden)return;vehicleSkin.refresh();const skin=vehicleSkin.current();$('vehicleSkinStatus').textContent=`本車外觀：${skin.identity||'車型未確認'} · ${skin.name}（示意）`;$('skinLabel').textContent=skin.name+' · 示意外觀';const t=telemetry(state),model=state.get('modelV2'),radar=state.get('radarState');
   const frameWindow=coreWindow();
@@ -99,7 +112,7 @@ function render(){
   $('gear').textContent=({park:'P',reverse:'R',neutral:'N',drive:'D',sport:'S'})[t.gear]||'—';
   $('assist').textContent=t.latActive===null||t.longActive===null?'控制狀態待確認':`橫向${t.latActive?'啟用':'關閉'} · 縱向${t.longActive?'啟用':'關閉'}`;
   $('visionGear').textContent=$('gear').textContent;$('visionAssist').textContent=$('assist').textContent;
-  $('connection').textContent=t.gear?'車機已連線':'等待新鮮車況';$('clock').textContent=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});$('alert').textContent=t.alert;$('alert').hidden=!t.alert;
+  $('connection').textContent=t.gear?'車機已連線':transportPhase==='retrying'?'正在重新連線':transportPhase==='connecting'?'正在連線':'已連線 · 車況待更新';$('connection').dataset.state=t.gear?'connected':transportPhase;$('connectionSummary').textContent=transportPhase==='retrying'?'連線中斷，會保留目前裝置並自動重試。':t.gear?'車機資料持續更新。':transportPhase==='connecting'?'正在建立車機資料通道。':'通道已連接，等待車機提供新鮮車況。';$('connectionAttempts').textContent=String(failures);$('connectionReason').textContent=({'connect-timeout':'連線建立逾時','heartbeat-timeout':'通道無回應','network-error':'網路連線中斷','socket-closed':'通道已關閉','format-error':'資料格式不符，請更新車機','connect-failed':'無法建立資料通道'})[transportReason]||'—';$('clock').textContent=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});$('alert').textContent=t.alert;$('alert').hidden=!t.alert;
   $('sceneStatus').textContent=t.parked?'停車車況・車輛為示意繪圖':model?'模型／雷達觀測視覺・非環景實景':'模型資料尚未更新';
   $('lead').textContent=radar?.leadOne?.status&&Number.isFinite(radar.leadOne.dRel)?`前車 ${radar.leadOne.dRel.toFixed(1)} m`:'前車 —';
   const ds=state.get('deviceState'),temps=ds?.cpuTempC?.filter(Number.isFinite)||[];$('temperatures').textContent=temps.length?`車機 ${Math.round(Math.max(...temps))}°C`:'車機 —';$('storage').textContent=Number.isFinite(ds?.freeSpacePercent)?`可用空間 ${Math.round(ds.freeSpacePercent)}%`:'空間 —';
@@ -130,6 +143,5 @@ $('modeApply').onclick=async()=>{
   try{const r=await fetch('/api/param_set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'MyDrivingMode',value:mode,source:'cockpit'})});if(!r.ok)throw Error();await modeRead();$('profileStatus').textContent=currentMode===mode?`已確認儲存：${MODES[mode]}`:'設定結果不一致，請到控制與設定確認。';}
   catch{$('profileStatus').textContent='結果未確認；不會自動重送，請到控制與設定查看。';}finally{busy=false;document.querySelectorAll('[data-mode]').forEach(x=>x.disabled=false);}
 };
-let paused=false;
-window.CarrotCockpit={layoutVersion:3,pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(view==='navigation'?'setting':view);connect();}};
+window.CarrotCockpit={layoutVersion:4,pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(view==='navigation'?'setting':view);connect();}};
 panel(view);connect();setInterval(()=>{if(!paused)render();},100);render();

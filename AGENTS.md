@@ -1,5 +1,17 @@
 # Repository memory
 
+- 2026-11-17 Cockpit0.3.1/code5 requires layoutVersion>=4. Fixed compact
+  read-only ping/pong every5s,12s silence/8s CONNECTING watchdog; detach stale
+  callbacks before close and reconnect even if close never fires. Outer and
+  Vision channels back off1..15s, independent sample expiry/replay guards kept.
+  Native cockpit resume no longer abandons a verified device on one failed
+  fast probe; foreground page failures retry same private address1..30s, cancel
+  on pause/search/destroy, then GET only. Keep screen on only in foreground.
+  No process network binding, new Android permission, setting/control retry or
+  physical network guarantee. Six-hour fake-time test plus real local silent
+  TCP/recovery and idle heartbeat browser checks; physical Android acceptance
+  remains pending. Original standard APK and public0.3.0 stay immutable.
+
 - 2026-11-17 Cockpit0.3.0/code4 requests layoutVersion>=3. Full Vision scene
   defaults with preserved BEV, floating readonly map/tire/route cards and fixed
   dock; vehicle control button toggles category panel back to previous primary.

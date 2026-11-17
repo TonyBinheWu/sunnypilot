@@ -51,6 +51,8 @@ let COMPACT_OVERLAY_READY = false;
 let COMPACT_STATE_SERVICE_SIGNATURE = "";
 let COMPACT_OVERLAY_REQUESTED = false;
 let COMPACT_FIRST_DATA_T = null;
+let COMPACT_LIVENESS = null;
+let COMPACT_RETRY_ATTEMPTS = 0;
 const MODEL_FRAME_HISTORY = [];
 const MODEL_FRAME_HISTORY_LIMIT = 64;
 const ROAD_FRAME_HISTORY = [];
@@ -828,15 +830,16 @@ function _hudStopRenderLoop() {
   _hudRenderDirty = false;
 }
 
-function compactOverlayScheduleReconnect(ms = 1000) {
+function compactOverlayScheduleReconnect(ms = null) {
   if (!compactDesiredServices().length || COMPACT_OVERLAY_RETRY_T) return;
   COMPACT_OVERLAY_RETRY_T = setTimeout(() => {
     COMPACT_OVERLAY_RETRY_T = null;
     if (compactDesiredServices().length) compactOverlayConnect();
-  }, ms);
+  }, ms ?? Math.min(15000, 1000 * 2 ** Math.min(COMPACT_RETRY_ATTEMPTS++, 4)));
 }
 
 function compactOverlayConnect() {
+  if (COMPACT_OVERLAY_RETRY_T) return;
   const services = compactDesiredServices();
   if (!services.length) return;
   const serviceSignature = services.join(",");
@@ -850,7 +853,9 @@ function compactOverlayConnect() {
     try { previous.close(1000, "compact_services_changed"); } catch {}
   }
 
+  COMPACT_LIVENESS?.stop(); COMPACT_LIVENESS = null;
   let firstDataReceived = false;
+  const connectedAt = performance.now();
   const ws = new WebSocket(buildCompactStateUrl(services));
   ws.binaryType = "arraybuffer";
   COMPACT_OVERLAY_WS = ws;
@@ -859,18 +864,34 @@ function compactOverlayConnect() {
   COMPACT_FIRST_DATA_T = setTimeout(() => {
     COMPACT_FIRST_DATA_T = null;
     if (COMPACT_OVERLAY_WS === ws && !firstDataReceived) {
-      try { ws.close(4000, "compact_first_data_timeout"); } catch {}
+      dropCompact("compact_first_data_timeout");
     }
   }, COMPACT_FIRST_DATA_TIMEOUT_MS);
 
+  function dropCompact(reason) {
+    if (COMPACT_OVERLAY_WS !== ws) return;
+    COMPACT_LIVENESS?.stop(); COMPACT_LIVENESS = null;
+    clearCompactFirstDataTimer(); COMPACT_OVERLAY_WS = null;
+    COMPACT_OVERLAY_READY = false; COMPACT_STATE_SERVICE_SIGNATURE = "";
+    ws.onclose = null; ws.onmessage = null; ws.onerror = null;
+    try { ws.close(4000, reason); } catch {}
+    publishCompactState();
+    compactOverlayScheduleReconnect();
+  }
+  COMPACT_LIVENESS = window.CarrotCompactConnection?.watch(ws, dropCompact, {
+    active: () => COMPACT_OVERLAY_WS === ws && compactDesiredServices().length > 0,
+  }) || null;
+  ws.onerror = () => dropCompact("compact_network_error");
   ws.onmessage = async (event) => {
     try {
       // A Blob conversion may complete after replay has started and the socket
       // has been closed. Reject both sides of that async boundary so no late
       // live sample can leak into recorded state.
       if (recordedReplayActive()) return;
+      if (COMPACT_OVERLAY_WS !== ws) return;
       if (typeof event.data === "string") {
         const hello = JSON.parse(event.data);
+        if (hello?.type === "pong") { clearCompactFirstDataTimer(); return; }
         if (hello?.mode !== COMPACT_STATE_MODE) {
           try { ws.close(1002, "compact_bad_hello"); } catch {}
         }
@@ -878,11 +899,14 @@ function compactOverlayConnect() {
       }
       const data = event.data instanceof Blob ? await event.data.arrayBuffer() : event.data;
       if (recordedReplayActive()) return;
+      if (COMPACT_OVERLAY_WS !== ws) return;
       const frames = window.CarrotVisionCompact?.decodeFrames?.(data)
         || [window.CarrotVisionCompact?.decodeFrame?.(data)].filter(Boolean);
       const applied = applyCompactFrames(frames, { reason: "compact websocket batch" });
       if (!applied) return;
       firstDataReceived = true;
+      if (performance.now() - connectedAt > 30000) COMPACT_RETRY_ATTEMPTS = 0;
+      COMPACT_LIVENESS?.received();
       clearCompactFirstDataTimer();
       COMPACT_OVERLAY_READY = true;
       publishCompactState();
@@ -892,14 +916,15 @@ function compactOverlayConnect() {
   };
 
   ws.onclose = () => {
-    clearCompactFirstDataTimer();
     if (COMPACT_OVERLAY_WS !== ws) return;
+    clearCompactFirstDataTimer();
+    COMPACT_LIVENESS?.stop(); COMPACT_LIVENESS = null;
     COMPACT_OVERLAY_WS = null;
     COMPACT_OVERLAY_READY = false;
     COMPACT_STATE_SERVICE_SIGNATURE = "";
     publishCompactState();
     if (!compactDesiredServices().length) return;
-    compactOverlayScheduleReconnect(1000);
+    compactOverlayScheduleReconnect();
   };
 }
 
@@ -925,6 +950,7 @@ async function rawHudDisconnectAll() {
     COMPACT_OVERLAY_RETRY_T = null;
   }
   clearCompactFirstDataTimer();
+  COMPACT_LIVENESS?.stop(); COMPACT_LIVENESS = null;
   const compactWs = COMPACT_OVERLAY_WS;
   COMPACT_OVERLAY_WS = null;
   COMPACT_OVERLAY_READY = false;
@@ -949,6 +975,7 @@ async function rawOverlayDisconnectAll() {
     COMPACT_OVERLAY_RETRY_T = null;
   }
   clearCompactFirstDataTimer();
+  COMPACT_LIVENESS?.stop(); COMPACT_LIVENESS = null;
   const compactWs = COMPACT_OVERLAY_WS;
   COMPACT_OVERLAY_WS = null;
   COMPACT_OVERLAY_READY = false;
@@ -967,6 +994,15 @@ function syncCompactDriveDataActivity() {
 }
 
 window.CarrotVisionRaw = {
+  reconnect() {
+    COMPACT_RETRY_ATTEMPTS = 0;
+    clearTimeout(COMPACT_OVERLAY_RETRY_T); COMPACT_OVERLAY_RETRY_T = null;
+    const ws = COMPACT_OVERLAY_WS; COMPACT_OVERLAY_WS = null;
+    COMPACT_LIVENESS?.stop(); COMPACT_LIVENESS = null; clearCompactFirstDataTimer();
+    COMPACT_OVERLAY_READY = false; COMPACT_STATE_SERVICE_SIGNATURE = "";
+    try { ws?.close(); } catch {}
+    clearCompactState(); publishCompactState(); syncCompactDriveDataActivity();
+  },
   applyCompactFrame,
   applyCompactFrames,
   clearState: clearCompactState,

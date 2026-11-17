@@ -98,7 +98,9 @@ public final class MainActivity extends Activity {
   private CharSequence titleBeforeVoiceCheck;
   private final Runnable voiceTimeout = () -> finishVoiceCheck(ConnectionRecovery.voiceUnavailable());
   private boolean checkAfterBackground;
-  private DeviceProbe resumeProbe;
+  private DeviceProbe resumeProbe, reconnectProbe;
+  private int connectionRetries;
+  private final Runnable retryDevice = this::retryDeviceConnection;
   private static final class Device {
     final String address, name;
     Device(String address, String name) { this.address = address; this.name = name; }
@@ -219,6 +221,7 @@ public final class MainActivity extends Activity {
   private TextView text(String value,int size) { TextView v = new TextView(this); v.setText(value); v.setTextSize(size); v.setTextColor(foreground); return v; }
   private Button button(String label,View.OnClickListener listener) { Button b = new Button(this); b.setText(label); b.setAllCaps(false); b.setTextColor(accent); b.setOnClickListener(listener); return b; }
   private void stopSearch() {
+    cancelDeviceReconnect();
     resetVisionHost();
     stopPhoneVoice(); resumePhoneVoice = false;
     voiceVerifiedUntil = 0;
@@ -476,11 +479,13 @@ public final class MainActivity extends Activity {
         @Override public void onPageFinished(WebView view,String url) {
           if (!pageLoadFailed && view.getParent() == content && isCurrent(Uri.parse(url))) {
             pageReady = true;
+            cancelDeviceReconnect();
+            view.setKeepScreenOn(foregroundActivity && UpdatePolicy.cockpit(getPackageName()));
             if (UpdatePolicy.cockpit(getPackageName()))
               view.evaluateJavascript(onDevicePage(CockpitLayout.SCRIPT), null);
             if (UpdatePolicy.cockpit(getPackageName()) && "/cockpit".equals(Uri.parse(url).getPath())) {
               setVisionImmersive(true);
-              view.evaluateJavascript(onDevicePage("window.CarrotCockpit?.layoutVersion >= 3"), value -> {
+              view.evaluateJavascript(onDevicePage("window.CarrotCockpit?.layoutVersion >= 4"), value -> {
                 if ("false".equals(value) && pageReady && foregroundActivity && url.equals(view.getUrl()))
                   android.widget.Toast.makeText(MainActivity.this,"車機仍提供舊座艙版面。請更新 carrot-wip 車機並重新啟動，才能使用新版操作介面。",android.widget.Toast.LENGTH_LONG).show();
               });
@@ -544,7 +549,8 @@ public final class MainActivity extends Activity {
   }
   private boolean isCurrent(Uri uri) { return currentAddress!=null && "http".equals(uri.getScheme()) && currentAddress.equals(uri.getHost()) && uri.getPort()==7000 && uri.getUserInfo()==null; }
   private void showDeviceConnectionFailure() {
-    pageLoadFailed=true;pageReady=false;resetVisionHost();hideVisionFullscreen();stopPhoneVoice();cancelVoiceCheck();
+    pageLoadFailed=true;pageReady=false;
+    if(web!=null)web.setKeepScreenOn(false);resetVisionHost();hideVisionFullscreen();stopPhoneVoice();cancelVoiceCheck();
     if(web!=null)web.stopLoading();
     if(!foregroundActivity||isFinishing())return;
     content.removeAllViews();
@@ -552,6 +558,36 @@ public final class MainActivity extends Activity {
     error.setPadding(dp(18),dp(18),dp(18),dp(18));content.addView(error);
     content.addView(button("zh-tw".equals(UiText.languageCode())?"連線自我診斷與修復":"Connection diagnosis and repair",v->diagnostics.open()));
     content.addView(button(UiText.get("다시 검색","Search again"),v->startSearch()));
+    if (UpdatePolicy.cockpit(getPackageName()) && currentAddress != null) {
+      content.addView(text("會保留目前裝置並自動重新連線；網路恢復後不必重新搜尋。",16));
+      content.addView(button("立即重新連線",v->{ui.removeCallbacks(retryDevice);retryDeviceConnection();}));
+      ui.removeCallbacks(retryDevice);ui.postDelayed(retryDevice,Math.min(30000L,1000L<<Math.min(connectionRetries,5)));
+    }
+  }
+  private void cancelDeviceReconnect() {
+    ui.removeCallbacks(retryDevice);connectionRetries=0;
+    if(reconnectProbe!=null){reconnectProbe.close();reconnectProbe=null;}
+  }
+  private void retryDeviceConnection() {
+    if(!UpdatePolicy.cockpit(getPackageName())||!foregroundActivity||isFinishing()||!pageLoadFailed
+        ||currentAddress==null||recovering||reconnectProbe!=null)return;
+    final String address=currentAddress;final int token=generation;
+    final DeviceProbe probe=new DeviceProbe(url->(HttpURLConnection)url.openConnection());reconnectProbe=probe;
+    connectionRetries++;
+    new Thread(()->{
+      boolean valid=probe.verify(address);probe.close();
+      ui.post(()->{
+        if(reconnectProbe!=probe)return;reconnectProbe=null;
+        if(!foregroundActivity||token!=generation||!address.equals(currentAddress)||!pageLoadFailed)return;
+        if(valid){
+          if(web==null){openDevice(new Device(address,"Carrot Cockpit"));return;}
+          pageLoadFailed=false;content.removeAllViews();
+          if(web.getParent() instanceof ViewGroup)((ViewGroup)web.getParent()).removeView(web);
+          content.addView(web,new LinearLayout.LayoutParams(-1,-1));
+          web.loadUrl("http://"+address+":7000/cockpit");
+        }else ui.postDelayed(retryDevice,Math.min(30000L,1000L<<Math.min(connectionRetries,5)));
+      });
+    },"carrot-cockpit-reconnect").start();
   }
   private void openDeviceDiagnosis() {
     if(web==null||!pageReady||!foregroundActivity){notice("zh-tw".equals(UiText.languageCode())?"請先恢復車機連線；目前仍可使用 App 的連線及語音檢查。":"Reconnect to the device first; app connection and speech checks remain available.");return;}
@@ -923,8 +959,9 @@ public final class MainActivity extends Activity {
   @Override protected void onResume() {
     super.onResume(); foregroundActivity = true; if (diagnostics!=null) diagnostics.resume(); if (speechSetup!=null) speechSetup.resume(); if (web!=null) web.onResume(); if (updater!=null) updater.resume();
     cockpitLifecycle("resume");
+    if(web!=null)web.setKeepScreenOn(pageReady && UpdatePolicy.cockpit(getPackageName()));
     if(pageLoadFailed)showDeviceConnectionFailure();
-    if (checkAfterBackground && currentAddress!=null && !recovering) {
+    if (checkAfterBackground && currentAddress!=null && !recovering && !UpdatePolicy.cockpit(getPackageName())) {
       final String address=currentAddress; final int token=generation;
       final DeviceProbe probe=new DeviceProbe(url -> (HttpURLConnection)url.openConnection()); resumeProbe=probe;
       new Thread(() -> {
@@ -941,7 +978,7 @@ public final class MainActivity extends Activity {
     if (UpdatePolicy.cockpit(getPackageName()) && web!=null && currentAddress!=null)
       web.evaluateJavascript(onDevicePage("window.CarrotCockpit?."+action+"()"),null);
   }
-  @Override protected void onPause() { cockpitLifecycle("pause"); foregroundActivity = false; if (diagnostics!=null) diagnostics.pause(); resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
+  @Override protected void onPause() { cancelDeviceReconnect(); if(web!=null)web.setKeepScreenOn(false); cockpitLifecycle("pause"); foregroundActivity = false; if (diagnostics!=null) diagnostics.pause(); resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
   @Override protected void onStop() { checkAfterBackground=true; if (scanning) { stopSearch(); if (status!=null) status.setText(UiText.get("검색이 중단됐어요. 다시 검색을 눌러 주세요.", "Search paused. Tap Search again.")); } super.onStop(); }
   @Override public void onBackPressed() {
     if (visionFullscreen != null) { leaveVisionView(); return; }

@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
+const connection=readFileSync(new URL('../js/realtime/compact_connection.js',import.meta.url),'utf8');
 const bundle=readFileSync(new URL('../js/generated/cockpit.js',import.meta.url),'utf8');
 const html=readFileSync(new URL('../cockpit.html',import.meta.url),'utf8');
 function harness(){
-  const nodes=new Map(),writes=[],pages=[],hud=[],intervals=[];let mode=3,clock=0,seq=0,rejectPost=false;
+  const nodes=new Map(),writes=[],pages=[],hud=[],intervals=[],timers=new Map(),events={};let timerId=0;let mode=3,clock=0,seq=0,rejectPost=false;
   function element(id=''){
     const classes=new Set(),listeners={};
     return {id,hidden:false,dataset:{},textContent:'',disabled:false,href:'/css/cockpit-embedded.css',
@@ -30,19 +31,19 @@ function harness(){
   const sockets=[];
   const context={document,location:{origin:'http://fixture',host:'fixture',protocol:'http:'},performance:{now:()=>clock},
     devicePixelRatio:1,console,Date,Proxy,localStorage:{getItem:()=>null,setItem(){}},
-    addEventListener(){},setTimeout:()=>1,clearTimeout(){},setInterval:fn=>(intervals.push(fn),1),
-    WebSocket:class {constructor(){sockets.push(this);}close(){this.onclose?.();}},
+    addEventListener:(name,fn)=>{events[name]=fn;},setTimeout:(fn,ms)=>{const id=++timerId;timers.set(id,{fn,at:clock+ms});return id;},clearTimeout:id=>timers.delete(id),setInterval:fn=>(intervals.push(fn),1),
+    WebSocket:class {readyState=1;listeners={};sent=[];constructor(){sockets.push(this);}addEventListener(n,f){this.listeners[n]=f;}removeEventListener(n){delete this.listeners[n];}send(data){this.sent.push(data);}close(){this.readyState=3;this.onclose?.();}},
     CarrotVisionCompact:{decodeFrames:data=>data.frames},
     async fetch(url,options){
       if(options?.method==='POST'){const body=JSON.parse(options.body);writes.push(body);mode=body.value;if(rejectPost)throw Error('lost response');}
       return {ok:true,json:async()=>({values:{MyDrivingMode:mode,MyDrivingModeAuto:0}})};
     },
     confirm(){throw Error('Native confirm dialogs must not be used');}};
-  context.window=context;vm.runInNewContext(bundle,context);
+  context.window=context;vm.runInNewContext(connection,context);vm.runInNewContext(bundle,context);
   nodes.get('features').emit('load');
-  function send(service,decoded){const data=new Uint8Array(1);data.frames=[{service,decoded,sequence:seq++}];sockets[0].onmessage({data});}
+  function send(service,decoded){const data=new Uint8Array(1);data.frames=[{service,decoded,sequence:seq++}];sockets.at(-1).onmessage({data});}
   function park(){send('carState',{gearShifter:'park',vEgo:0,vEgoCluster:0});send('selfdriveState',{enabled:false});send('carControl',{latActive:false,longActive:false});}
-  return {el:id=>nodes.get(id),mode:n=>buttons[n-1],panel:p=>panels.find(b=>b.dataset.panel===p),writes,pages,send,park,context,
+  return {sockets,events,timers,run(ms){for(let end=clock+ms;clock<end;){clock=Math.min(end,clock+1000);for(const [id,t] of [...timers])if(t.at<=clock){timers.delete(id);t.fn();}}},el:id=>nodes.get(id),mode:n=>buttons[n-1],panel:p=>panels.find(b=>b.dataset.panel===p),writes,pages,send,park,context,
     advance:ms=>{clock+=ms;},tick:()=>intervals.forEach(fn=>fn()),hud,reject:()=>{rejectPost=true;},flush:()=>new Promise(setImmediate)};
 }
 test('camera-independent cockpit sends one explicit expiry and never retains its last speed',()=>{
@@ -92,4 +93,18 @@ test('controls toggles its panel and the app drawer launches existing pages with
   h.panel('logs').onclick();assert.equal(h.el('apps').open,false);assert.equal(h.context.document.body.dataset.panel,'logs');
   h.el('appsButton').onclick();h.panel('tools').onclick();assert.equal(h.el('apps').open,false);
   assert.equal(h.context.document.body.dataset.panel,'tools');assert.equal(h.writes.length,0);
+});
+
+// A half-open WebSocket may never emit close. Recovery must not depend on it.
+test('silent socket is detached and replaced without reloading features or replaying writes',()=>{
+ const h=harness();h.park();const old=h.sockets[0],late=old.onmessage,count=h.pages.length;
+ h.run(14000);assert.equal(h.sockets.length,2);assert.equal(old.readyState,3);assert.equal(old.onmessage,null);
+ assert.equal(h.writes.length,0);assert.equal(h.pages.length,count);
+ const data=new Uint8Array(1);data.frames=[{service:'carState',sequence:999,decoded:{vEgoCluster:99,gearShifter:'drive'}}];late({data});h.tick();assert.equal(h.el('speed').textContent,'—');
+ h.park();h.tick();assert.equal(h.el('gear').textContent,'P');
+});
+test('native pause and online/pageshow events cannot reopen background sockets',()=>{
+ const h=harness();h.context.CarrotCockpit.pause();const count=h.sockets.length;
+ h.events.online();h.events.pageshow();h.run(60000);assert.equal(h.sockets.length,count);assert.equal(h.timers.size,0);
+ h.context.CarrotCockpit.resume();assert.equal(h.sockets.length,count+1);h.park();h.tick();assert.equal(h.el('gear').textContent,'P');assert.equal(h.writes.length,0);
 });
