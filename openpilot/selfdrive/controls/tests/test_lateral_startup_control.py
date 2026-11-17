@@ -1,5 +1,6 @@
 import ast
 import math
+import time
 from functools import partial
 from numbers import Number
 from pathlib import Path
@@ -18,12 +19,13 @@ from opendbc.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.controls.lib.drive_helpers import clip_curvature, get_lag_adjusted_curvature
 from openpilot.selfdrive.controls.lib.latcontrol import MIN_LATERAL_CONTROL_SPEED
 from openpilot.selfdrive.controls.lib.latcontrol_torque import LatControlTorque
+from openpilot.selfdrive.controls.lib.hkg_phase1 import low_speed_response_tau, smooth_curvature
 from openpilot.selfdrive.controls.lib.lateral_readiness import LateralStartupGate, lateral_vehicle_parameters
 from openpilot.selfdrive.controls.lib.steer_ratio import resolve_vehicle_model_steer_ratio
 from openpilot.selfdrive.controls.tests.test_lateral_readiness import Messages
 
 
-def control_fixture():
+def control_fixture(phase1=False):
   # Execute the complete production state_control and actual torque controller,
   # replacing only IPC/settings, the longitudinal loop and hardware construction.
   path = Path(__file__).parents[1] / 'controlsd.py'
@@ -31,7 +33,8 @@ def control_fixture():
   cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == 'Controls')
   names = {'lateral_control_allowed', 'state_control'}
   nodes = [n for n in tree.body + cls.body if isinstance(n, ast.FunctionDef) and n.name in names]
-  ns = {'math': math, 'np': np, 'Number': Number, 'car': car, 'DT_CTRL': DT_CTRL, 'CV': CV,
+  ns = {'math': math, 'time': time, 'np': np, 'Number': Number, 'car': car, 'DT_CTRL': DT_CTRL, 'CV': CV,
+        'smooth_curvature': smooth_curvature, 'low_speed_response_tau': low_speed_response_tau,
         'MIN_LATERAL_CONTROL_SPEED': MIN_LATERAL_CONTROL_SPEED, 'LaneChangeState': log.LaneChangeState,
         'LaneChangeDirection': log.LaneChangeDirection, 'ACTUATOR_FIELDS': tuple(car.CarControl.Actuators.schema.fields),
         'clip_curvature': clip_curvature, 'get_lag_adjusted_curvature': get_lag_adjusted_curvature,
@@ -58,13 +61,14 @@ def control_fixture():
   sm = Messages()
   sm.update(longitudinalPlan=NS(), radarState=NS(), carrotMan=NS(vTurnSpeed=100), liveDelay=NS(lateralDelay=0.1))
   sm.frame = 1
+  sm.recv_time = {'modelV2': time.monotonic()}
   sm.recv_frame = {'longitudinalPlan': 1}
   sm['carState'].gearShifter = 'drive'
   sm['carState'].latEnabled = True
   settings = {'AlwaysLateral': True, 'SteerRatioRate': 88, 'CustomSR': 0, 'LatSmoothSec': 13}
   params = NS(get_float=lambda k: float(settings.get(k, 0)), get_int=lambda k: int(settings.get(k, 0)),
               get_bool=lambda k: bool(settings.get(k, False)))
-  control = NS(CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=LatControlTorque(cp, ci),
+  control = NS(hkg_phase1_enabled=phase1, CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=LatControlTorque(cp, ci),
                LoC=NS(reset=lambda: None, update=lambda *args: (0.0, 0.0, 0.0), long_control_state='off'),
                carrot_controls=NS(lat_suspend_control=lambda cs, active: active), is_vw_meb=False,
                desired_curvature=0.0, lateral_startup=LateralStartupGate(), lateral_started=False,
@@ -159,3 +163,38 @@ def test_lane_tuning_reads_only_when_used_and_remains_live(active, lane, points,
     for key in ('LatSmoothSec', 'SteerActuatorDelay'):
       assert reads.count(key) == int(active and lane and points)
     assert 'SteerRatioRate' in reads and 'CustomSR' in reads
+
+
+@pytest.mark.parametrize('speed,target,faster', [(5., .01, True), (30., .0001, False)])
+def test_phase1_runs_in_complete_control_loop_before_original_limits(speed, target, faster):
+  outputs = []
+  for enabled in (False, True):
+    control, step = control_fixture(phase1=enabled)
+    control.lateral_startup.ready = control.lateral_started = True
+    control.desired_curvature = 0.
+    control.sm['carState'].steeringAngleDeg = 0.
+    control.sm['carState'].vEgo = control.sm['carState'].vEgoRaw = speed
+    control.sm['modelV2'].action.desiredCurvature = target
+    cc, _ = step()
+    assert cc.latActive
+    outputs.append(cc.actuators.curvature)
+  assert (outputs[1] > outputs[0]) == faster
+  assert all(0 < value < target for value in outputs)
+
+
+@pytest.mark.parametrize('veto', ['driver', 'stale'])
+def test_phase1_complete_loop_driver_and_stale_model_use_original_response(veto):
+  outputs = []
+  for enabled in (False, True):
+    control, step = control_fixture(phase1=enabled)
+    control.lateral_startup.ready = control.lateral_started = True
+    control.desired_curvature = 0.
+    control.sm['carState'].steeringAngleDeg = 0.
+    control.sm['carState'].vEgo = control.sm['carState'].vEgoRaw = 30.
+    control.sm['modelV2'].action.desiredCurvature = .0001
+    if veto == 'driver':
+      control.sm['carState'].steeringPressed = True
+    else:
+      control.sm.recv_time['modelV2'] = time.monotonic() - 1.
+    outputs.append(step()[0].actuators.curvature)
+  assert outputs[0] == outputs[1]

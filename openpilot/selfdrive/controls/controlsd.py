@@ -111,6 +111,8 @@ class Controls:
 
   def update(self):
     self.sm.update(15)
+    if self.sm.frame % 50 == 0:
+      self.hkg_phase1_enabled = phase1_enabled(self.CP, self.params)
     if self.sm.updated["liveCalibration"]:
       self.pose_calibrator.feed_live_calib(self.sm['liveCalibration'])
     if self.sm.updated["livePose"]:
@@ -119,8 +121,6 @@ class Controls:
 
   def state_control(self):
     CS = self.sm['carState']
-    if self.sm.frame % 50 == 0:
-      self.hkg_phase1_enabled = phase1_enabled(self.CP, self.params)
     lateral_ready = self.lateral_startup.update(self.sm, CS, 'carState')
 
     # Update VehicleModel

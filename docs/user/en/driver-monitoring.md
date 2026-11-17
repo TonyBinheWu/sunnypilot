@@ -111,3 +111,7 @@ The camera continues running; accumulated warnings and lockout are not cleared. 
 ## FormosaLink live cameras
 
 An authenticated owner viewing lease can start camerad offroad for wide-road or driver video. Driver-monitoring process conditions and driver-view Params retain existing behavior. This is continuous MJPEG (target 8 fps, up to 640x360, no audio), separate from the locally authorized parked-only Carrot web gateway. Physical C3X/C4 cameras and resource usage remain to be verified.
+
+## Four-family steering and curve assist
+
+`HkgPhase1Assist` changes steering target response and optional curve speed planning on supported Hyundai/Kia platforms. It does not change driver-monitoring modes, attention requirements, warning escalation or lockout. See [steering settings](settings.md) for its separate enable and vehicle-validation requirements.

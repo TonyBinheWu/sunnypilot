@@ -19,6 +19,12 @@
   tests are NOT a full native-solver or vehicle closed-loop acceptance. No car
   installed/enabled, no EPS capability or FSD-equivalence claim. See
   docs/HKG_PHASE1_ASSIST.zh-TW.md. Preserve prior full-safety-suite limitations.
+  Full production state_control adds17 passing startup/feature/veto checks;
+  setting poll stays in update(), separate from state_control. Wider replay has
+  52 pre-existing fixture failures (44 missing VM.update_geometry,8 stale stop
+  block extraction), exact same failing test IDs on b77f4702 and current, zero
+  new failures. Preserve this limitation. DM guide cross-links clarify that
+  this feature does not alter monitoring/attention/warning/lockout policy.
 
 - 2026-11-17 Cockpit0.5.0/code7: car-oriented flat composition; one status
   bar and fixed five-item dock, full-width settings, grouped app launcher,
