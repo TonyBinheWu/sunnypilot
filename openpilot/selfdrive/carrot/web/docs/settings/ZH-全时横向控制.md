@@ -13,10 +13,10 @@
 
 `AlwaysLateral`
 
-即使巡航未激活，也允许横向控制。 系统启动后，首次确认所需输入就绪前不执行转向。一旦通过，此启动检查不再阻断；现有行驶中安全处理保持不变。 Tesla 在实际静止时可以转向；低速移动时仍遵守最低转向速度限制。 有车辆 CAN 扩展的 Tesla，每次独立三指触屏立即切换此设置，不再切换实验模式。关闭不等于解除已激活巡航中的转向控制。 确认持续的 CAN 控制器错误或反复出现的 Casper 前方安全系统故障时，会发出警报并停止全时转向；故障解除前不能重新启用。 0: 关闭, 1: 开启
+即使巡航未激活，也允许横向控制。 系统启动后，首次确认所需输入就绪前不执行转向。一旦通过，此启动检查不再阻断；现有行驶中安全处理保持不变。 Tesla 在实际静止时可以转向；低速移动时仍遵守最低转向速度限制。 有车辆 CAN 扩展的 Tesla，每次独立三指触屏立即切换此设置，不再切换实验模式。关闭不等于解除已激活巡航中的转向控制。 确认持续的 CAN 控制器错误或反复出现的 Casper 前方安全系统故障时，会发出警报并停止全时转向；故障解除前不能重新启用。 0: 关闭, 1: 开启 Hyundai／Kia CAN-FD 会在启动时另行载入 Panda 全时横向控制授权。若启动时为关闭，改为开启后须停车重新启动；关闭时主机仍立即停止全时转向。巡航未启用时，Panda 也会确认轮速／驾驶扭力接收资料未超过 100 毫秒。Tesla 的即时切换维持原样。
 
 <!-- CARROT:AUTO:BEGIN AlwaysLateral -->
-<!-- CARROT:AUTO:SOURCE facts="845d4b65e451d5d89f2dc265f9ed474701538fb234f4ddd9b24c3a97472a0c01" semantic="3f6deea9c6bbfe6632488bcb5dfc98a7d569ea9227268d6d99cf4f6fc8019ea0" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="b21c36de8ec26a46af3b24105c8b2fb3376876d951da5cc1bcc72c0a3ceefd3d" semantic="0dd1642d4ae06bd0308b3ae7e3b892138a13022b1d17d05aff0df4a2a40d5c08" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 开关
 - **默认值:** `0`
@@ -26,7 +26,7 @@
 <!-- CARROT:AUTO:END AlwaysLateral -->
 
 <!-- CARROT:MANUAL:BEGIN AlwaysLateral -->
-<!-- CARROT:REVIEW reviewed-for="3f6deea9c6bbfe6632488bcb5dfc98a7d569ea9227268d6d99cf4f6fc8019ea0" reviewed-at="2026-11-09T00:00:00+00:00" -->
+<!-- CARROT:REVIEW reviewed-for="0dd1642d4ae06bd0308b3ae7e3b892138a13022b1d17d05aff0df4a2a40d5c08" reviewed-at="2026-11-17T15:00:00Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 工作方式
 

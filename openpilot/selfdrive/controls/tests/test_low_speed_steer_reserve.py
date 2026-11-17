@@ -18,7 +18,8 @@ def make_controller(monkeypatch, enabled):
   ci = NS(use_nnff=False, use_nnff_lite=False,
           torque_from_lateral_accel=lambda: lambda inputs, *a, **kw: inputs.lateral_acceleration / 3.2)
   lac = latcontrol_torque.LatControlTorque(cp.as_reader(), ci)
-  cs = structs.CarState(vEgo=7, vEgoRaw=7, gearShifter='drive', canValid=True)
+  cs = structs.CarState(vEgo=7, vEgoRaw=7, gearShifter='drive', canValid=True,
+                        wheelSpeeds=dict(fl=7,fr=7,rl=7,rr=7))
   vm = NS(get_steer_from_curvature=lambda *a: 0., calc_curvature=lambda *a: 0.)
   lp = NS(roll=0., angleOffsetDeg=0.)
   cc = structs.CarControl(latActive=True)

@@ -13,10 +13,10 @@
 
 `AlwaysLateral`
 
-크루즈가 켜져있지 않아도 조향제어를 허용합니다. 시스템 시작 후 최초 입력 준비 확인 전에는 조향하지 않습니다. 한 번 통과하면 이 검사는 다시 차단하지 않으며 기존 주행 중 안전 처리는 유지됩니다. Tesla는 실제 정차 시에도 조향할 수 있으며, 저속 이동 중 조향 제한은 유지됩니다. 차량 CAN 확장이 있는 Tesla는 화면의 세 손가락 접촉마다 이 설정을 즉시 전환합니다. 실험 모드는 바뀌지 않습니다. 끄더라도 활성 크루즈의 조향까지 해제하지는 않습니다. 지속적인 CAN 제어기 오류 또는 반복되는 캐스퍼 전방 안전 시스템 오류가 확인되면 경고와 함께 상시 조향도 해제되며, 오류가 해소되기 전에는 다시 켤 수 없습니다. 0: 끄기, 1: 켜기
+크루즈가 켜져있지 않아도 조향제어를 허용합니다. 시스템 시작 후 최초 입력 준비 확인 전에는 조향하지 않습니다. 한 번 통과하면 이 검사는 다시 차단하지 않으며 기존 주행 중 안전 처리는 유지됩니다. Tesla는 실제 정차 시에도 조향할 수 있으며, 저속 이동 중 조향 제한은 유지됩니다. 차량 CAN 확장이 있는 Tesla는 화면의 세 손가락 접촉마다 이 설정을 즉시 전환합니다. 실험 모드는 바뀌지 않습니다. 끄더라도 활성 크루즈의 조향까지 해제하지는 않습니다. 지속적인 CAN 제어기 오류 또는 반복되는 캐스퍼 전방 안전 시스템 오류가 확인되면 경고와 함께 상시 조향도 해제되며, 오류가 해소되기 전에는 다시 켤 수 없습니다. 0: 끄기, 1: 켜기 현대/기아 CAN-FD는 시작 시 Panda 상시 조향 권한을 별도로 읽습니다. 시작할 때 꺼져 있었다면 켠 뒤 주차 상태에서 재시작해야 합니다. 끄면 호스트 상시 조향은 즉시 멈춥니다. 크루즈 제어 외에서는 Panda가 100 ms 이내의 휠 속도/운전자 토크 수신도 확인합니다. Tesla의 즉시 전환은 그대로입니다.
 
 <!-- CARROT:AUTO:BEGIN AlwaysLateral -->
-<!-- CARROT:AUTO:SOURCE facts="a12e05b19d05c7b0de5acfa20761d44df70a871dcf252ccf594a596c44f001a7" semantic="3f6deea9c6bbfe6632488bcb5dfc98a7d569ea9227268d6d99cf4f6fc8019ea0" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="74d178bb0d1f7d0af81b5b219d8ed6ff6eb62055a50d1ea363b71fa0244631f4" semantic="0dd1642d4ae06bd0308b3ae7e3b892138a13022b1d17d05aff0df4a2a40d5c08" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
@@ -26,7 +26,7 @@
 <!-- CARROT:AUTO:END AlwaysLateral -->
 
 <!-- CARROT:MANUAL:BEGIN AlwaysLateral -->
-<!-- CARROT:REVIEW reviewed-for="3f6deea9c6bbfe6632488bcb5dfc98a7d569ea9227268d6d99cf4f6fc8019ea0" reviewed-at="2026-11-09T00:00:00+00:00" -->
+<!-- CARROT:REVIEW reviewed-for="0dd1642d4ae06bd0308b3ae7e3b892138a13022b1d17d05aff0df4a2a40d5c08" reviewed-at="2026-11-17T15:00:00Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 동작
 
@@ -45,6 +45,7 @@
 
 주행 시작부터 조향을 사용하되 크루즈는 수동으로만 켜려면 `AutoEngage=1`, `AlwaysLateral=1`, `AutoCruiseControl=0`을 사용합니다. 변경 후 다음 주행에서 크루즈가 꺼진 상태와 주행 중 브레이크를 밟은 상태의 조향 동작을 각각 확인합니다.
 차량 CAN 확장이 있는 Tesla는 화면의 세 손가락 접촉마다 이 설정을 즉시 전환합니다. 다음 접촉 전 손을 떼어야 하며 유지·중복 눌림은 반복 전환하지 않습니다. 실험/Chill 모드와 확인 상태는 바꾸지 않고 확인도 필요하지 않습니다. 업그레이드 시 기존 저장값은 유지합니다. 비상 해제용 조작이 아닙니다.
+현대/기아 CAN-FD는 시작 시 Panda 상시 조향 권한을 별도로 읽습니다. 시작할 때 꺼져 있었다면 켠 뒤 주차 상태에서 재시작해야 합니다. 끄면 호스트 상시 조향은 즉시 멈춥니다. 크루즈 제어 외에서는 Panda가 100 ms 이내의 휠 속도/운전자 토크 수신도 확인합니다. Tesla의 즉시 전환은 그대로입니다.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->

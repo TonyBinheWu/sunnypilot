@@ -18,6 +18,11 @@ int safety_fwd_hook(int bus_num, int addr) {
   return safety_fwd_hook_packet(&packet);
 }
 
+// Packet-level forwarding is required to test RX-paced command replacement.
+int safety_fwd_hook_packet_test(CANPacket_t *packet) {
+  return safety_fwd_hook_packet(packet);
+}
+
 #include "drivers/can_common.h"
 
 // libsafety stuff

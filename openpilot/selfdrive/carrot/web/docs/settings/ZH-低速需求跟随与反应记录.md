@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-仅 Hyundai/Kia CAN-FD 力矩控制。持续需求 0.30 秒后，≤30 km/h 按需提供最高 409 的余量，30–40 渐退。开启时全速域使用车型默认比例及增减速率，手动值保留；≥40 不再提供余量。只记录反应，不探测或提高硬件上限，需实车验证。
+仅 Hyundai/Kia CAN-FD 力矩控制。持续需求 0.30 秒后，≤30 km/h 按需提供最高 409，指令增加/减少速率依需求最高 4/4（每 10 毫秒）。30–40 渐退；≥40 使用车型默认比例与 2/3。保留手动值与学习参数；记录不会提高上限。需更新 Panda 韧体并重启，尚待实车验证。
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="8f3a089cf0a813230855d3d9e272d4ea3382735c3d6044d41039622dc164553d" semantic="f3e6e9a5914e7a8cb28bed45e8f14db13132a0c4aeea40956275b3c4dffe4bba" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="56fb1c4c72d5f4f2e308e58aca3d3c4e083d905a7f1fce6234dd7619fad8b8ed" semantic="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 开关
 - **默认值:** `0`
@@ -26,23 +26,29 @@
 <!-- CARROT:AUTO:END LowSpeedSteerReserve -->
 
 <!-- CARROT:MANUAL:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:REVIEW reviewed-for="f3e6e9a5914e7a8cb28bed45e8f14db13132a0c4aeea40956275b3c4dffe4bba" reviewed-at="2026-11-17T12:00:00Z" -->
+<!-- CARROT:REVIEW reviewed-for="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" reviewed-at="2026-11-17T15:00:00Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 运作方式
 
-仅支援 Hyundai／Kia CAN-FD 扭力转向。需求接近预设上限并持续 0.30 秒后，≤30 km/h 只依实际需求提供最高 409 的余量；30–40 km/h 上限渐退，≥40 km/h 使用车型预设上限。开启期间全速域采用车型预设换算比例与指令增加／减少速率；储存的 CustomSteerMax 与 CustomSteerDelta 数值暂不参与执行，但不会被覆写。增益与即时扭力学习不变，角度控制车型不增加控制权限。
+仅支援 Hyundai／Kia CAN-FD 扭力转向。需求接近预设上限并持续 0.30 秒后，≤30 km/h 可依需求提供最高 409。控制器也依「允许的需求指令与目前输出之差」选择指令增加／减少速率，从预设 2／3 到最高 4／4 个 CAN 单位／每 10 毫秒；接近目标时回到预设速率。扭力余量与额外速率都在 30–40 km/h 渐退；整数指令采离散级距，≥40 km/h 使用车型预设比例与速率。
+
+储存的 CustomSteerMax 与 CustomSteerDelta 不会被覆写，开启时以车型预设换算比例为基准。关闭后恢复手动值，但超出 Panda 已恢复执行的限制之指令会遭拒绝。本功能不增加控制增益、即时扭力学习值或角度控制权限。
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->
 ### 使用方式
 
-此选用开关仍位于 CustomSteerMax 正下方，约 0.5 秒内读取、不需重新启动；关闭后恢复储存的手动限制。机器「设备 > 转向学习进度」与网页／APK「工具 > 转向学习进度」可查看需求／送出指令、目标／实际方向盘角度、实际角度速率、目前限制，以及左右指令期间的观察峰值。即时状态超过 2 秒标示过期；历史汇总另行标示，仅载入相同车型与控制类型的纪录。只在功能开启时于本机收集汇总，每 60 秒及退出控制／关闭功能时储存；不含位置、行程或云端上传。
+请停车更新并完成重新启动，让新版 Panda 韧体与安全参数载入。选用开关仍位于 CustomSteerMax 下方、预设关闭；完成此次更新后，开关约 0.5 秒内读取，不需再次重新启动。机器「设备 > 转向学习进度」与网页／APK「工具 > 转向学习进度」可查看目前指令、所选速率、目标／实际方向盘角度及转动速率、受限原因与左右指令期间的观察峰值。
+
+即时状态超过 2 秒标示过期。本机历史汇总只载入相同车型／控制类型，每 60 秒或退出时储存；此记录器不收集位置、行程或上传云端。
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->
 ### 补充说明
 
-驾驶接管、CAN 无效、转向故障、倒车／静止、模型过期或退出横向控制会取消余量资格。收回输出仍遵守车型预设变化速率，保留 EPS 转向请求保护与 Panda 安全限制。指令单位是 CAN 数值，不是牛顿米；增加／减少数值表示每 10 毫秒的 CAN 指令变化量，不是方向盘角速度。观察峰值与角度误差无法证明 EPS 硬体极限，不会用来提高控制上限或试探极限。目前只有桌面测试，仍需实车验证。
+驾驶接管、CAN 无效、转向故障、倒车／静止、模型过期或退出横向控制都会取消余量资格。Panda 以独立接收且通过 CRC／计数器检查的新鲜轮速与驾驶资料限制增加速率；缺少／过期资料不能授权额外速率。既有 112 单位／250 毫秒即时变化限制、请求位元及驾驶让步检查均恢复执行，包含接收节奏转送的替代指令；保留接管时迅速释放转向力的路径。
+
+CAN 指令变化率不是牛顿米，也不是实际方向盘角速度。观察峰值不会被当成硬体极限或用来提高上限，也不会试探物理极限。桌面／原生测试不能证明实车能力，请参阅[验证范围与既有测试失败](https://github.com/TonyBinheWu/sunnypilot/blob/carrot-wip/docs/LOW_SPEED_STEERING_SAFETY.zh-TW.md)。
 <!-- CARROT:SECTION:END REFERENCE -->
 
 <!-- CARROT:MANUAL:END LowSpeedSteerReserve -->

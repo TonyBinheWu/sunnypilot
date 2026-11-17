@@ -341,6 +341,10 @@ class CarController(CarControllerBase):
     reserve_max = self.low_speed_steer_reserve.update(
       enabled=self.reserve_enabled, active=CC.latActive, cs=CS.out, base=self.params.STEER_MAX,
       model_frame=CS.modelV2.frameId if CS.modelV2 is not None else None, demand=actuators.torque)
+    if self.reserve_enabled:
+      self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN = self.low_speed_steer_reserve.rates(
+        requested=max(-reserve_max, min(new_torque, reserve_max)), previous=self.apply_torque_last, base=self.params.STEER_MAX,
+        up=self.steerDeltaUpOrg, down=self.steerDeltaDownOrg)
     apply_torque = apply_driver_steer_torque_limits(new_torque, self.apply_torque_last, CS.out.steeringTorque,
                                                    self.params, steer_max=reserve_max)
 

@@ -72,6 +72,8 @@ jobs:
       - name: Bounded low-speed steering and passive response records
         run: |
           python tools/signal_validation/run.py \
+            opendbc_repo/opendbc/safety/tests/test_hyundai_canfd_steering_guard.py \
+            openpilot/selfdrive/car/tests/test_canfd_steering_safety_config.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_low_speed_steer_reserve.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_steering_observations.py \
             openpilot/selfdrive/controls/tests/test_low_speed_steer_reserve.py \
@@ -89,3 +91,20 @@ jobs:
             opendbc_repo/opendbc/car/hyundai/tests/test_stop_object.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_stopping.py \
             openpilot/selfdrive/ui/tests/test_stop_object.py
+  firmware:
+    name: Panda F4 and H7 firmware
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install ARM compiler
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi
+          pip install scons pycryptodome
+      - name: Compile production firmware
+        working-directory: panda
+        run: scons --minimal -j2

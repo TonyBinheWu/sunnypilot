@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-Hyundai/Kia CAN-FD torque control only. After 0.30 s sustained demand, allow only requested headroom up to 409 at ≤30 km/h; taper at 30–40 km/h. When enabled, factory scaling and slew rates apply at all speeds; manual values stay stored. Passive records never raise limits. Vehicle validation required.
+Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested headroom up to 409 at ≤30 km/h and demand-dependent command slew up to 4/4 per 10 ms. Taper at 30–40 km/h; ≥40 uses factory scaling and 2/3. Stored manual values and tuning remain. Records never raise limits. Requires updated Panda firmware, reboot and vehicle validation.
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="d0f0af903bbd1277178b8adefd2bf5bd85fdf15c4f7de067e2f02fa4cfa3183f" semantic="f3e6e9a5914e7a8cb28bed45e8f14db13132a0c4aeea40956275b3c4dffe4bba" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="f5145111d36fb125b70286d917cd39ffb1c1a7d92fd0303643ff0580a90a52f4" semantic="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
@@ -26,23 +26,29 @@ Hyundai/Kia CAN-FD torque control only. After 0.30 s sustained demand, allow onl
 <!-- CARROT:AUTO:END LowSpeedSteerReserve -->
 
 <!-- CARROT:MANUAL:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:REVIEW reviewed-for="f3e6e9a5914e7a8cb28bed45e8f14db13132a0c4aeea40956275b3c4dffe4bba" reviewed-at="2026-11-17T12:00:00Z" -->
+<!-- CARROT:REVIEW reviewed-for="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" reviewed-at="2026-11-17T15:00:00Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### Behavior
 
-Only Hyundai/Kia CAN-FD torque steering is supported. After 0.30 s of sustained near-baseline demand, allow only requested headroom up to 409 at ≤30 km/h; taper the ceiling from 30–40 km/h and use the factory limit at ≥40 km/h. While enabled, factory normalization and factory increase/decrease rates apply at every speed; stored CustomSteerMax and CustomSteerDelta values are ignored during operation but not overwritten. Gains and live torque tuning stay unchanged. Angle-control vehicles receive no additional authority.
+Only Hyundai/Kia CAN-FD torque steering is supported. Sustained near-baseline demand for 0.30 s qualifies additional torque up to 409 at ≤30 km/h. The gap to the bounded requested command also selects host increase/decrease limits from factory 2/3 up to 4/4 CAN units per 10 ms; near the target they return to factory rates. Both headroom and extra slew taper over 30–40 km/h; integer commands use discrete steps, and ≥40 km/h uses factory scaling and rates.
+
+Stored CustomSteerMax and CustomSteerDelta values are not overwritten; while enabled, factory normalization remains the baseline. Turning the mode off restores the manual values, but Panda now rejects commands outside its enforced bounds. Gains, live torque tuning and angle-control behavior are not increased by this feature.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->
 ### Usage
 
-The optional switch remains directly below CustomSteerMax. It is read within about 0.5 s without restarting; turning it off restores the stored manual limits. Device > Steering learning progress and Web/APK > Tools > Steering learning progress show requested/sent commands, target/measured wheel angle, measured angle rate, current restriction, and left/right observed peaks. Fresh status expires after 2 s; saved aggregates are explicitly historical and reload only for a matching vehicle/control type. Only enabled-mode aggregates are collected locally, saved at most once per 60 s and on control/mode exit; no location, route or cloud upload is included.
+Update while parked and complete a restart so the updated Panda firmware and safety parameters load. The optional switch remains below CustomSteerMax and defaults off; after that initial update it is read within about 0.5 s without restarting again. Device > Steering learning progress and Web/APK > Tools > Steering learning progress show current commands, selected slew, target/measured wheel angle and rate, restriction reasons and left/right observed peaks.
+
+Live status expires after 2 s. Saved aggregates are historical, local-only, matched by vehicle/control type and written at most once per 60 s or on exit; no position, route or cloud upload is collected by this recorder.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->
 ### Reference
 
-Driver override, invalid CAN, faults, reverse/standstill, stale model or lateral disengagement cancel extra eligibility. Withdrawal follows factory slew limits; EPS request protection and Panda safety remain unchanged. Commands are CAN units, not Nm; increase/decrease values mean CAN units per 10 ms, not wheel angle speed. Observed peaks and tracking errors do not identify physical EPS limits and never raise control limits or trigger limit probing. This feature has desktop tests only; actual vehicle validation is still required.
+Driver override, invalid CAN, faults, reverse/standstill, stale model or lateral disengagement cancel extra eligibility. Panda independently uses fresh CRC/counter-verified wheel and driver data to bound increases; missing/stale data cannot authorize extra slew. Its original 112-unit/250 ms real-time envelope and request-cut/driver-yield checks remain enforced, including RX-paced replacements. Rapid torque release for driver takeover is preserved.
+
+CAN command slew is neither Nm nor measured wheel angle speed. Observed peaks never become hardware limits or raise control limits; no physical limit probing occurs. Desktop/native checks do not establish vehicle capability. See the [verification scope and remaining baseline failures](https://github.com/TonyBinheWu/sunnypilot/blob/carrot-wip/docs/LOW_SPEED_STEERING_SAFETY.zh-TW.md).
 <!-- CARROT:SECTION:END REFERENCE -->
 
 <!-- CARROT:MANUAL:END LowSpeedSteerReserve -->

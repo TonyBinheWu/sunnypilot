@@ -1,0 +1,280 @@
+"""Exercise production Panda TX/forwarding, not a reimplementation of limits."""
+import pytest
+
+from opendbc.car.hyundai.values import HyundaiSafetyFlags as F
+from opendbc.car.structs import CarParams
+from opendbc.safety.tests.common import CANPackerPanda
+from opendbc.safety.tests.libsafety import libsafety_py
+
+
+class Guard:
+  def __init__(self, param=0):
+    self.s = libsafety_py.libsafety
+    assert self.s.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd, param) == 0
+    self.s.init_tests()
+    self.packer = CANPackerPanda('hyundai_canfd_generated')
+    self.param, self.now, self.counter = param, 1_000_000, 0
+    self.pt = 1 if param & F.CANFD_LKA_STEERING and not param & F.CAMERA_SCC else 0
+    self.s.set_timer(self.now)
+
+  def rx(self, name, values, *, bus=None, corrupt=False):
+    values = dict(values, COUNTER=self.counter % 256)
+    msg = self.packer.make_can_msg_panda(name, self.pt if bus is None else bus, values)
+    if corrupt:
+      msg[0].data[0] ^= 1
+    return self.s.safety_rx_hook(msg)
+
+  def sensors(self, speed=20, driver=0, *, bus=None):
+    self.counter += 1
+    assert self.rx('WHEEL_SPEEDS', {f'WHEEL_SPEED_{p}': speed for p in range(1,5)}, bus=bus)
+    assert self.rx('MDPS', {'STEERING_COL_TORQUE': driver}, bus=bus)
+
+  def seed(self, value=0):
+    self.s.set_desired_torque_last(value)
+    self.s.set_rt_torque_last(value)
+    self.s.set_torque_driver(0,0)
+
+  def command(self, torque, request=True, *, addr='LFA', bus=None, angle_active=0):
+    values = {'TORQUE_REQUEST': torque, 'STEER_REQ': int(request), 'LKAS_ANGLE_ACTIVE': angle_active}
+    return self.packer.make_can_msg_panda(addr, self.pt if bus is None else bus, values)
+
+  def tx(self, torque, **kw):
+    return bool(self.s.safety_tx_hook(self.command(torque, **kw)))
+
+
+@pytest.mark.parametrize('param,addr,bus', [(0,'LFA',0), (int(F.CAMERA_SCC),'LFA',0),
+  (int(F.CANFD_LKA_STEERING),'LKAS',0),
+  (int(F.CANFD_LKA_STEERING|F.CANFD_LKA_STEERING_ALT),'LKAS_ALT',0),
+  (int(F.CANFD_LKA_STEERING|F.LONG),'LFA',1),
+  (int(F.CANFD_LKA_STEERING|F.LONG|F.CAMERA_SCC),'LFA',0)])
+@pytest.mark.parametrize('sign', [-1,1])
+def test_controls_amplitude_rate_driver_and_request_protection(param,addr,bus,sign):
+  g = Guard(param)
+  g.seed()
+  assert not g.tx(sign,addr=addr,bus=bus)  # disabled means disabled without explicit AOL
+  g.s.set_controls_allowed(True)
+  g.seed(512*sign)
+  assert g.tx(512*sign,addr=addr,bus=bus)
+  g.seed(512*sign)
+  assert not g.tx(513*sign,addr=addr,bus=bus)
+  g.seed(100*sign)
+  assert g.tx(102*sign,addr=addr,bus=bus)
+  g.seed(100*sign)
+  assert not g.tx(103*sign,addr=addr,bus=bus)
+  g.seed(100*sign)
+  assert not g.tx(100*sign,request=False,addr=addr,bus=bus)
+  g.s.set_torque_driver(-1000*sign,-1000*sign)
+  g.seed(100*sign)
+  g.s.set_torque_driver(-1000*sign,-1000*sign)
+  assert not g.tx(100*sign,addr=addr,bus=bus)
+
+
+@pytest.mark.parametrize('speed,up,down', [(0,2,3),(20,4,3),(30,4,3),(35,3,3),(40,2,3),(100,2,3)])
+@pytest.mark.parametrize('sign', [-1,1])
+def test_independent_wheel_speed_bounds(speed,up,down,sign):
+  g=Guard()
+  g.sensors(speed)
+  g.s.set_controls_allowed(True)
+  g.seed(100*sign)
+  assert g.tx((100+up)*sign)
+  g.seed(100*sign)
+  assert not g.tx((101+up)*sign)
+  g.seed(100*sign)
+  g.s.set_torque_driver(-1000*sign,-1000*sign)
+  assert g.tx((100-down)*sign)
+  g.seed(100*sign)
+  g.s.set_torque_driver(-1000*sign,-1000*sign)
+  assert not g.tx((101-down)*sign)  # must yield at least the configured decrement
+
+
+@pytest.mark.parametrize('bad', ['stale','wheel_crc','driver_crc','counter','wrong_bus','wheel_spread','reverse','driver'])
+def test_bad_sensor_input_cannot_raise_rate(bad):
+  g=Guard()
+  g.sensors()
+  if bad=='stale':
+    g.now+=100001;g.s.set_timer(g.now)
+  elif bad in ('wheel_crc','driver_crc'):
+    name='WHEEL_SPEEDS' if bad=='wheel_crc' else 'MDPS'
+    g.rx(name,{},corrupt=True)
+  elif bad=='counter':
+    for _ in range(8):g.rx('WHEEL_SPEEDS',{})
+  elif bad=='wrong_bus':
+    g=Guard(int(F.CANFD_LKA_STEERING|F.CAMERA_SCC))
+    g.sensors(bus=1)
+  elif bad=='reverse':
+    g.rx('WHEEL_SPEEDS',dict(WHEEL_SPEED_1=20,WHEEL_SPEED_2=20,WHEEL_SPEED_3=20,WHEEL_SPEED_4=20,MOVING_BACKWARD=1))
+  elif bad=='driver':
+    g.s.set_torque_driver(251,251)
+  else:
+    g.rx('WHEEL_SPEEDS',dict(WHEEL_SPEED_1=20,WHEEL_SPEED_2=20,WHEEL_SPEED_3=20,WHEEL_SPEED_4=35))
+  g.s.set_controls_allowed(True)
+  g.seed(100)
+  if bad=='driver':g.s.set_torque_driver(251,251)
+  assert not g.tx(104)
+
+
+def test_aol_is_explicit_fresh_and_reset_with_safety_mode():
+  g=Guard(int(F.CANFD_ALWAYS_LATERAL))
+  g.sensors()
+  g.seed()
+  assert not g.s.get_controls_allowed()
+  assert g.tx(4)
+  g.now+=100001;g.s.set_timer(g.now)
+  assert not g.tx(4)
+  g=Guard()
+  g.sensors()
+  assert not g.tx(2)
+
+
+def test_bad_tx_crc_cannot_advance_history_or_fill_forward_cache():
+  g=Guard(int(F.CAMERA_SCC))
+  g.s.set_controls_allowed(True)
+  msg=g.command(2)
+  msg[0].data[0]^=1
+  assert not g.s.safety_tx_hook(msg)
+  assert not g.tx(4)  # invalid CRC did not advance the factory-rate history
+  assert g.tx(2)
+  assert not g.tx(200)
+
+
+def test_rt_envelope_is_still_112_per_250ms():
+  g=Guard()
+  g.sensors()
+  g.s.set_controls_allowed(True)
+  g.s.set_desired_torque_last(112)
+  g.s.set_rt_torque_last(0)
+  assert not g.tx(113)
+
+
+def test_wrong_bus_and_angle_format_cannot_bypass_torque_checks():
+  g=Guard(int(F.CANFD_LKA_STEERING|F.LONG))
+  g.s.set_controls_allowed(True)
+  assert not g.tx(1,addr='LKAS',bus=1)
+  assert not g.tx(1,addr='LKAS_ALT',bus=0)
+  assert not g.tx(0,addr='LFA',bus=1,angle_active=2)
+
+
+def test_redundant_output_histories_and_89_2_request_cuts_are_independent():
+  g=Guard(int(F.CANFD_LKA_STEERING|F.LONG))
+  g.s.set_controls_allowed(True)
+  for n in range(100):
+    g.now+=10000;g.s.set_timer(g.now)
+    value=min(100,2*n)
+    assert g.tx(value,addr='LFA',bus=1)
+    assert g.tx(value,addr='LKAS',bus=0)
+  for _ in range(2):
+    g.now+=10000;g.s.set_timer(g.now)
+    assert g.tx(100,request=False,addr='LFA',bus=1)
+    assert g.tx(100,request=False,addr='LKAS',bus=0)
+  assert not g.tx(100,request=False,addr='LFA',bus=1)
+  assert not g.tx(100,request=False,addr='LKAS',bus=0)
+
+
+def forwarded(g, stock_torque=0, *, advance=True):
+  msg=g.command(stock_torque,bus=2,request=False)
+  if advance:g.now+=10000
+  g.s.set_timer(g.now)
+  destination=g.s.safety_fwd_hook_packet_test(msg)
+  data=bytes(msg[0].data)
+  torque=(((data[6]&15)<<7)|(data[5]>>1))-1024
+  return destination,torque
+
+
+def test_buffered_outputs_are_rechecked_on_disengagement_driver_and_stale_speed():
+  for reason in ('disengage','driver','speed'):
+    g=Guard(int(F.CAMERA_SCC))
+    g.sensors()
+    g.s.set_controls_allowed(True)
+    assert g.tx(4)
+    assert g.tx(8)
+    assert forwarded(g)==(0,4)
+    if reason=='disengage':g.s.set_controls_allowed(False)
+    elif reason=='driver':g.s.set_torque_driver(-1000,-1000)
+    else:
+      g.now+=100001;g.s.set_timer(g.now)
+    # Not copied from the queue: original packet remains untouched.
+    assert forwarded(g)==(-1,0)
+
+
+def test_reuse_does_not_extend_a_request_cut_beyond_two_physical_frames():
+  g=Guard(int(F.CAMERA_SCC))
+  g.s.set_controls_allowed(True)
+  assert g.tx(2)
+  assert g.tx(4)
+  for _ in range(100):
+    assert forwarded(g)==(0,2 if _==0 else 4)
+    assert g.tx(4)
+  assert g.tx(4,request=False)
+  assert g.tx(4,request=False)
+  # Drain queued valid-request frames before the two request-cut frames.
+  results=[forwarded(g) for _ in range(7)]
+  assert any(result==(-1,0) for result in results)
+
+
+@pytest.mark.parametrize('aol', [False,True])
+def test_existing_angle_format_requires_explicit_control_type_and_admission(aol):
+  param=int(F.CANFD_ANGLE_CONTROL | (F.CANFD_ALWAYS_LATERAL if aol else 0))
+  g=Guard(param)
+  g.sensors()
+  values=dict(LKAS_ANGLE_ACTIVE=2,LKAS_ANGLE_CMD=20,LKAS_ANGLE_MAX_TORQUE=25)
+  packet=lambda:g.packer.make_can_msg_panda('LFA_ALT',0,values)
+  assert bool(g.s.safety_tx_hook(packet())) is aol
+  g.s.set_controls_allowed(True)
+  assert g.s.safety_tx_hook(packet())
+  values['LKAS_ANGLE_MAX_TORQUE']=251
+  assert not g.s.safety_tx_hook(packet())
+
+
+def test_oem_emergency_angle_requires_matching_fresh_physical_camera_fields():
+  g=Guard(int(F.CANFD_ANGLE_CONTROL))
+  values=dict(COUNTER=1,LKAS_ANGLE_ACTIVE=3,LKAS_ANGLE_CMD=20,LKAS_ANGLE_MAX_TORQUE=255)
+  packet=lambda bus:g.packer.make_can_msg_panda('LFA_ALT',bus,values)
+  assert not g.s.safety_tx_hook(packet(0))
+  assert g.s.safety_rx_hook(packet(2))
+  assert g.s.safety_tx_hook(packet(0))
+  values['LKAS_ANGLE_CMD']=21
+  assert not g.s.safety_tx_hook(packet(0))
+  values['LKAS_ANGLE_CMD']=20
+  g.now+=100001;g.s.set_timer(g.now)
+  assert not g.s.safety_tx_hook(packet(0))
+
+
+def test_legacy_disabled_lfa_sentinel_is_specific_to_angle_control():
+  g=Guard(int(F.CANFD_ANGLE_CONTROL|F.CAMERA_SCC))
+  assert g.tx(-1024,request=False)
+  assert not g.tx(-1024,request=True)
+  g=Guard(int(F.CAMERA_SCC))
+  assert not g.tx(-1024,request=False)
+
+
+@pytest.mark.parametrize('camera', [False,True])
+@pytest.mark.parametrize('sign', [-1,1])
+def test_real_controller_stream_passes_production_panda_and_rx_paced_forwarding(monkeypatch,camera,sign):
+  from opendbc.car.hyundai.tests.test_low_speed_steer_reserve import torque_fixture
+  from opendbc.car.hyundai.tests.test_steering_handover_controller import step
+  from opendbc.car.hyundai.values import HyundaiFlags
+  controller,cs,cc,settings=torque_fixture(monkeypatch)
+  if camera:controller.CP.flags |= int(HyundaiFlags.CAMERA_SCC)
+  g=Guard(int(F.CANFD_ALWAYS_LATERAL|(F.CAMERA_SCC if camera else 0)))
+  prior=0
+  for n in range(750):
+    speed=25 if n<250 else 35 if n<300 else 40 if n<350 else 100 if n<400 else 25
+    cs.out.vEgo=cs.out.vEgoRaw=speed/3.6
+    cc.actuators.torque=sign*(.5 if n<80 else 2. if n<550 else 1.)
+    cs.out.steeringAngleDeg=85 if 100<=n<250 else 0
+    cs.out.steeringPressed=600<=n<650
+    cs.out.steeringTorque=-sign*1000 if cs.out.steeringPressed else 0
+    cc.latActive=n<700
+    g.now+=10000;g.s.set_timer(g.now)
+    g.sensors(speed,cs.out.steeringTorque)
+    g.s.set_controls_allowed(cc.latActive)
+    output,messages=step(controller,cs,cc)
+    for addr,data,bus in messages:
+      if addr in (0x12A,0x50,0x110,0xCB):
+        msg=libsafety_py.make_CANPacket(addr,bus,data)
+        assert g.s.safety_tx_hook(msg), (n,output.torqueOutputCan,prior)
+    if camera:
+      # Startup waits for two enqueued packets; subsequent output is RX-paced.
+      dest,command=forwarded(g,advance=False)
+      assert dest==0, (n,command,output.torqueOutputCan)
+    prior=output.torqueOutputCan

@@ -13,10 +13,10 @@
 
 `AlwaysLateral`
 
-Allow lateral control even when cruise is not active. Steering waits for initial input readiness after system startup. Once passed, this check does not block again; existing runtime safety handling remains unchanged. Tesla can steer at true standstill; minimum steering-speed limits still apply while moving. On Tesla with the vehicle CAN extension, each distinct three-finger screen contact toggles this setting live, not Experimental Mode. OFF does not disengage steering under active cruise. Confirmed persistent CAN-controller errors or recurring Casper front-safety-system faults trigger an alert and disable always-on steering too; re-engagement is blocked until the fault clears. 0: OFF, 1: ON
+Allow lateral control even when cruise is not active. Steering waits for initial input readiness after system startup. Once passed, this check does not block again; existing runtime safety handling remains unchanged. Tesla can steer at true standstill; minimum steering-speed limits still apply while moving. On Tesla with the vehicle CAN extension, each distinct three-finger screen contact toggles this setting live, not Experimental Mode. OFF does not disengage steering under active cruise. Confirmed persistent CAN-controller errors or recurring Casper front-safety-system faults trigger an alert and disable always-on steering too; re-engagement is blocked until the fault clears. 0: OFF, 1: ON Hyundai/Kia CAN-FD loads a separate Panda Always Lateral authorization at startup. If it was OFF at startup, reboot while parked after turning it ON. Turning it OFF still stops host always-on steering immediately. Outside active cruise, Panda also requires wheel/driver-torque RX data no older than 100 ms. Tesla live toggling is unchanged.
 
 <!-- CARROT:AUTO:BEGIN AlwaysLateral -->
-<!-- CARROT:AUTO:SOURCE facts="58bac5b7ae7b433fb1127b814ed884efdbf9068bef65be3d4b54feffdc6a06d7" semantic="3f6deea9c6bbfe6632488bcb5dfc98a7d569ea9227268d6d99cf4f6fc8019ea0" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="25148a3b6feeac977d9e6de7c5576b25e8912191caecdbebd287713030ed4ce3" semantic="0dd1642d4ae06bd0308b3ae7e3b892138a13022b1d17d05aff0df4a2a40d5c08" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
@@ -26,7 +26,7 @@ Allow lateral control even when cruise is not active. Steering waits for initial
 <!-- CARROT:AUTO:END AlwaysLateral -->
 
 <!-- CARROT:MANUAL:BEGIN AlwaysLateral -->
-<!-- CARROT:REVIEW reviewed-for="3f6deea9c6bbfe6632488bcb5dfc98a7d569ea9227268d6d99cf4f6fc8019ea0" reviewed-at="2026-11-09T00:00:00+00:00" -->
+<!-- CARROT:REVIEW reviewed-for="0dd1642d4ae06bd0308b3ae7e3b892138a13022b1d17d05aff0df4a2a40d5c08" reviewed-at="2026-11-17T15:00:00Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### Behavior
 
@@ -45,6 +45,7 @@ Confirmed persistent CAN-controller errors or recurring Casper front-safety-syst
 
 To start with steering available while keeping cruise manual, use `AutoEngage=1`, `AlwaysLateral=1`, and `AutoCruiseControl=0`. On the next drive, check steering once with cruise off and once while pressing the brake during motion.
 Tesla with the vehicle CAN extension can toggle this setting live with each distinct three-finger infotainment contact. Release before repeating; held or duplicate presses do not repeat. Experimental/Chill mode and its confirmation are not changed or required. Existing saved values are preserved during upgrade. This is not an emergency disengagement gesture.
+Hyundai/Kia CAN-FD loads a separate Panda Always Lateral authorization at startup. If it was OFF at startup, reboot while parked after turning it ON. Turning it OFF still stops host always-on steering immediately. Outside active cruise, Panda also requires wheel/driver-torque RX data no older than 100 ms. Tesla live toggling is unchanged.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->

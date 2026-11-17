@@ -1,5 +1,26 @@
 # Repository memory
 
+- 2026-11-17 User explicitly authorized Panda torque protection repair before
+  low-speed dynamic slew, superseding the factory-slew-only mode in2de5aa07.
+  CAN-FD torque TX no longer ignores violations/shadows limits with10/10;
+  independent LFA/LKAS bus histories and RX-paced forwarding/reuse rechecks,
+  route/length/CRC checks and actual wheel/driver freshness guard extra slew.
+  Existing hard512 boundary is not increased; host feature still max409.
+  LowSpeedSteerReserve qualifies0.30s, uses fastest actual wheel as well as
+  ego/raw speed, valid coherent wheels; host2/3..4/4 by bounded command gap,
+  discrete taper30–40, factory>=40. Driver/reversal/fault/stale cancels extra.
+  Panda's down parameter stays3: it is required driver withdrawal, not host's
+  normal maximum decrement. Never raise it to4 (would conflict with override).
+  Explicit safety bits1024 AlwaysLateral and32768 angle protocol preserve existing
+  modes; off-at-start CAN-FD AOL needs parked reboot after enabling, off still
+  stops host immediately. Angle disabled-LFA -1024 sentinel must remain legal
+  ONLY for explicit angle mode/no request/no authority; fresh OEM emergency
+  angle passthrough matches physical CAM control fields, never invented by host.
+  Native regression124 +1978/362subtests +418 and34 Wiki/299 web settings pass
+  locally. Legacy full CANFD suite325->199 failures, no new failures; preserve
+  this limitation, do not claim entire suite passed. See public verification
+  guide. No physical CAN/flash/vehicle validation. Native APK inputs unchanged.
+
 - 2026-11-17 User chose bounded low-speed demand follow + passive response
   records, not on-road EPS limit probing. LowSpeedSteerReserve keeps its ID,
   default off and position below CustomSteerMax; title is now demand follow.

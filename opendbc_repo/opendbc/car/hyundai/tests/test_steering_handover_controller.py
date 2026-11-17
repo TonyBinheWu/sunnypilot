@@ -2,7 +2,7 @@ from types import SimpleNamespace as NS
 
 import pytest
 
-from opendbc.car import Bus, structs
+from opendbc.car import Bus, structs, get_safety_config
 from opendbc.car.hyundai import carcontroller, hyundaicanfd
 from opendbc.car.hyundai.values import CAR, HyundaiFlags
 
@@ -30,6 +30,7 @@ def setup_controller(monkeypatch, *, mode=None, angle=True, camera=True):
   if camera:
     flags |= HyundaiFlags.CAMERA_SCC
   cp = structs.CarParams(carFingerprint=CAR.KIA_EV6, flags=int(flags), wheelbase=3.0, steerRatio=14.26)
+  cp.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.hyundaiCanfd)]
   controller = carcontroller.CarController({Bus.pt: "hyundai_canfd_generated"}, cp)
   controller.lkas_max_torque = 25
   cs = NS(out=structs.CarState(canValid=True, steeringPressed=True, steeringTorque=300, vEgoRaw=15),
