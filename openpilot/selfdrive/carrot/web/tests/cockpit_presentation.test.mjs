@@ -22,13 +22,13 @@ function canvas(){
   return {ctx,commands};
 }
 const project=(x,y,z=0)=>[320+y*8,240-x*3-z*12];
-test('six detected classes have finite, distinct original mesh silhouettes',()=>{
+test('fifteen grounded classes have finite, distinct original mesh silhouettes',()=>{
   const signatures=[];
-  for(const kind of ['car','bus','truck','person','motorcycle','bicycle']){
+  for(const kind of ['car','bus','truck','person','motorcycle','bicycle','cat','dog','horse','sheep','cow','elephant','bear','zebra','giraffe']){
     const {ctx,commands}=canvas();drawDetectedMesh(ctx,project,{x:15,y:2,kind});
     assert.ok(commands.some(c=>c[0]==='fill'));signatures.push(JSON.stringify(commands));
   }
-  assert.equal(new Set(signatures).size,6);
+  assert.equal(new Set(signatures).size,15);
 });
 test('unknown radar targets remain neutral and invalid positions do not create a mesh',()=>{
   const a=canvas();drawSceneObject(a.ctx,project,{x:15,y:2,kind:'unknown'});

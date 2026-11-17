@@ -1,5 +1,22 @@
 # Repository memory
 
+- 2026-11-17 Cockpit0.2.0/code3 native source8df33f29 owns fullscreen on
+  verified /cockpit independent of Vision dismissal; Back opens device menu.
+  layoutVersion>=2 check warns if vehicle UI is old. APK SHA256
+  b0f34c5720707540801046e91bbf0cefa2d42b9b4b697319fb24a9d88c50b888.
+  Adaptive workspace, app drawer, toggled controls, full description disclosures;
+  no new setters. Full-frame Vision removes duplicate outer readouts, transient
+  presentation override preserves BEV and regular web preferences. Original
+  class-specific meshes render detected traffic/animals; radar unknown stays
+  neutral. Pinned EfficientDet labels verified: nine ground animals plus bird,
+  traffic light, stop sign. Last three are image-only notices, no ground depth,
+  distance or light colour; 1.2s expiry and opt-in unchanged. Cones, crosswalk,
+  scooter waiting areas and stop lines have NO detector and need new licensed
+  weights/data/validation. No control integration or real-world accuracy claim.
+  306 focused JS and6 HTTP tests; synthetic browser checks only, Android box
+  acceptance pending. Further web classes do not change native build inputs.
+
+
 - 2026-11-17 Cockpit0.1.1/code2 fixes unsupported-dvh body auto-height.
   Vehicle CSS has html100%, body100%/vh/dvh fallbacks; APK injects idempotent
   percent-height style only on trusted cockpit package/path, so old439fc3d0

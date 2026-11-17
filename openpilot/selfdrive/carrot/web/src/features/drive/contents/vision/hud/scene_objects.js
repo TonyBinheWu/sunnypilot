@@ -1,6 +1,7 @@
 // Display-only observations. Never infer a class from an unclassified radar echo.
+import {ROAD_CLASSES,IMAGE_ONLY_CLASSES} from './object_classes.js';
+export {ROAD_CLASSES} from './object_classes.js';
 const finite = n => typeof n === 'number' && Number.isFinite(n);
-export const ROAD_CLASSES = Object.freeze(['person','bicycle','car','motorcycle','bus','truck']);
 
 export function surroundingTargets(radar, range=75) {
   const out=[];
@@ -65,4 +66,17 @@ export function cameraTargets(detections, geometry, range=75) {
       groundTruth:false,reviewed:false});
   }
   return result;
+}
+
+export function imageTargets(detections,width,height){
+  if(!finite(width)||!finite(height)||width<2||height<2)return [];
+  return (Array.isArray(detections)?detections:[]).slice(0,24).flatMap((item,i)=>{
+    const c=item?.categories?.[0],b=item?.boundingBox;
+    if(!IMAGE_ONLY_CLASSES.includes(c?.categoryName)||!finite(c.score)||c.score<.5||c.score>1
+      ||!b||![b.originX,b.originY,b.width,b.height].every(finite)||b.width<=1||b.height<=1
+      ||b.originX<0||b.originY<0||b.originX+b.width>width+1||b.originY+b.height>height+1)return [];
+    return [{id:`image-${i}`,kind:c.categoryName,probability:c.score,
+      box:[b.originX/width,b.originY/height,b.width/width,b.height/height],
+      origin:'image_detection_only',position:null,distance:null,signalState:null}];
+  });
 }

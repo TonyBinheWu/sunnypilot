@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {surroundingTargets,cameraGeometry,groundPoint,cameraTargets} from '../src/features/drive/contents/vision/hud/scene_objects.js';
+import {surroundingTargets,cameraGeometry,groundPoint,cameraTargets,imageTargets} from '../src/features/drive/contents/vision/hud/scene_objects.js';
 import {drivingProjection} from '../src/features/drive/contents/vision/hud/driving_scene.js';
 import {bevSnapshot} from '../src/features/drive/contents/vision/hud/bev_annotations.js';
 import {createObjectPerception,DETECTION_TTL_MS} from '../src/features/drive/contents/vision/hud/object_perception.js';
@@ -34,10 +34,10 @@ test('image classes and confidence come only from validated camera output; expor
   const g=cameraGeometry(state(),672,380),box={originX:330,originY:210,width:20,height:40};
   const det=(kind,score)=>({categories:[{categoryName:kind,score}],boundingBox:box});
   const objects=cameraTargets([det('person',.9),det('motorcycle',.8),det('car',.7),det('dog',.9),det('person',true),det('person',.1)],g);
-  assert.deepEqual(objects.map(o=>o.kind),['person','motorcycle','car']);
+  assert.deepEqual(objects.map(o=>o.kind),['person','motorcycle','car','dog']);
   assert.equal(cameraTargets([det('person',.99)],null).length,0);
   const data=bevSnapshot({vision:{status:'ready',objects,capturedAt:400,videoTime:3}});
-  assert.equal(data.objects.length,3);assert.equal(data.objects[0].classification,'person');
+  assert.equal(data.objects.length,4);assert.equal(data.objects[0].classification,'person');
   assert.equal(data.objects[0].positionMethod,'flat_ground_projection');assert.equal(data.objects[0].dimensions,null);
   assert.equal(data.synchronization.frameSynchronized,false);assert.equal(data.groundTruth,false);
 });
@@ -85,4 +85,27 @@ test('unavailable worker support and timeouts fail closed until an explicit off/
   assert.equal(g.perception.scene().status,'load_error');g.perception.update();assert.equal(g.workers.length,1);
   g.target.CarrotWebSettingsState.vision_object_detection=false;g.perception.update();
   g.target.CarrotWebSettingsState.vision_object_detection=true;g.perception.update();assert.equal(g.workers.length,2);
+});
+
+
+test('animals use the same bounded approximate ground admission; elevated signs/lights and birds never get invented depth',()=>{
+  const box={originX:330,originY:210,width:20,height:40},det=kind=>({categories:[{categoryName:kind,score:.9}],boundingBox:box});
+  const g=cameraGeometry(state(),672,380);
+  assert.deepEqual(cameraTargets([det('dog'),det('cat'),det('horse')],g).map(o=>o.kind),['dog','cat','horse']);
+  assert.equal(cameraTargets([det('traffic light'),det('stop sign'),det('bird')],g).length,0);
+  const images=imageTargets([det('traffic light'),det('stop sign'),det('bird')],672,380);
+  assert.equal(images.length,3);assert.ok(images.every(o=>o.position===null&&o.distance===null&&o.signalState===null));
+  assert.equal(imageTargets([det('traffic cone'),det('crosswalk'),det('stop line'),det('scooter waiting area')],672,380).length,0);
+  assert.equal(cameraTargets([det('traffic cone'),det('crosswalk')],g).length,0);
+  assert.equal(imageTargets([det('stop sign')],0,380).length,0);
+  assert.equal(imageTargets([{...det('stop sign'),boundingBox:{...box,width:Infinity}}],672,380).length,0);
+});
+
+test('image-only observations expire and pause with the original single-frame pipeline',async()=>{
+  const f=fixture();f.perception.update();const w=f.workers[0];w.reply({type:'ready'});f.perception.update();await Promise.resolve();
+  const frame=w.messages.find(m=>m.type==='frame');
+  w.reply({type:'result',id:frame.id,durationMs:20,detections:[{categories:[{categoryName:'stop sign',score:.9}],boundingBox:{originX:10,originY:10,width:25,height:25}}]});
+  assert.equal(f.perception.scene().imageObjects.length,1);assert.equal(f.perception.scene().objects.length,0);
+  f.setClock(5001+DETECTION_TTL_MS);assert.equal(f.perception.scene().imageObjects.length,0);
+  f.perception.update({active:false});assert.equal(f.perception.scene().imageObjects.length,0);assert.equal(w.terminated,true);
 });

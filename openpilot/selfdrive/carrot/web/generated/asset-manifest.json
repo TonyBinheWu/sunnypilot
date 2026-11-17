@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "be601b3b8a2847aea736ca23cabf952c23117a4110a4ad2239dacc0e32ee4327"
+      "hash": "39a2bfc50c045506c0f2c4faa66d73283fbfe2d18e59f33627132e8a6a6efd96"
     },
     {
       "id": "tools.lane-mapping",
@@ -34,7 +34,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "1dd0e89d7c54c3578cc859fa3231ba87f366f85d2ae1b393f5fa23c11abd0e32"
+      "hash": "989d13f4c6614c772640a37fb32ae767ed125b1be27f0fb8d104adb4a28917c4"
     },
     {
       "id": "replay.runtime",
@@ -173,7 +173,7 @@
       "id": "vision.object-detector-worker",
       "kind": "worker",
       "path": "js/generated/bev-detector-worker.js",
-      "hash": "135f47e60ebc8888b0a5bf7dd2e331f23375cf05fed381a54564a9016cc5961d"
+      "hash": "cf3d69fb354c30e8c8ff960637adda7ae44bb5b957810e6c25546f8b5e2feafe"
     },
     {
       "id": "vision.webgl2.worker",

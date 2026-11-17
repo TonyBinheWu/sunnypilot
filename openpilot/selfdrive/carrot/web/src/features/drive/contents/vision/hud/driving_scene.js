@@ -1,4 +1,5 @@
 import {drawDetectedMesh} from './object_mesh.js';
+import {ANIMALS} from './object_classes.js';
 import {surroundingTargets} from './scene_objects.js';
 
 // Original vector artwork. Symbol dimensions are illustrative, not inferred sizes.
@@ -21,7 +22,10 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
     ctx.ellipse(p[0],p[1],flat?5:7,flat?5:3,0,0,Math.PI*2);ctx.stroke();return;
   }
   const person=kind==='person',twoWheel=['motorcycle','bicycle'].includes(kind);
-  if(!flat&&['car','bus','truck','person','motorcycle','bicycle'].includes(kind)){
+  if(flat&&ANIMALS.includes(kind)){
+    const p=project(x,y);if(!p)return;ctx.fillStyle='#96aebd';ctx.beginPath();ctx.ellipse(p[0],p[1],5,9,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(p[0],p[1]-9,3.5,0,Math.PI*2);ctx.fill();
+  }else if(!flat&&['car','bus','truck','person','motorcycle','bicycle',...ANIMALS].includes(kind)){
     drawDetectedMesh(ctx,project,object);
   }else if(person){
     const feet=project(x,y,0),head=project(x,y,1.65),hip=project(x,y,.7);if(!feet||!head||!hip)return;
@@ -48,7 +52,7 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
     polygon([[-roofL,-roofW,z],[-halfL*.85,-halfW*.88,z*.65],[-halfL*.85,halfW*.88,z*.65],[-roofL,roofW,z]],'#4b5966d9');
     for(const sign of [-1,1])polygon([[-halfL-.02,sign*halfW*.85,z*.45],[-halfL-.02,sign*halfW*.5,z*.45],[-halfL-.02,sign*halfW*.5,z*.57],[-halfL-.02,sign*halfW*.85,z*.57]],'#d95e62');
   }
-  if(!ego&&['person','motorcycle','bicycle','bus','truck'].includes(kind)){
+  if(!ego&&['person','motorcycle','bicycle','bus','truck',...ANIMALS].includes(kind)){
     const p=project(x,y,kind==='person'?2:1.8);if(!p)return;
     const label=text(`scene_kind_${kind}`,kind);ctx.font='11px system-ui';ctx.textAlign='center';
     const tw=ctx.measureText(label).width+10;ctx.fillStyle=flat?'#10202ee8':'#ffffffdd';ctx.fillRect(p[0]-tw/2,p[1]-18,tw,16);

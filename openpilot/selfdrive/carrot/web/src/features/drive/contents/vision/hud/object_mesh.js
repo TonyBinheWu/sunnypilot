@@ -1,3 +1,4 @@
+import {ANIMALS} from './object_classes.js';
 // Original closed sedan mesh. Dimensions and styling are illustrative, never inferred.
 export function drawVehicleMesh(ctx,project,{view=[-8,0,6],ego=true}={}){
   const faces=[];
@@ -46,6 +47,18 @@ export function drawDetectedMesh(ctx,project,object){
   };
   const disc=(cx,z,r,color)=>{const center=p(cx,0,z),edge=p(cx,0,z+r);if(!center||!edge)return;ctx.beginPath();ctx.arc(center[0],center[1],Math.max(1,Math.hypot(center[0]-edge[0],center[1]-edge[1])),0,Math.PI*2);ctx.fillStyle=color;ctx.fill();};
   if(kind==='car'){drawVehicleMesh(ctx,p,{ego:false});return;}
+  if(ANIMALS.includes(kind)){
+    const scale=({cat:.45,dog:.65,horse:1.2,sheep:.8,cow:1.2,elephant:2.3,bear:1.1,zebra:1.2,giraffe:1.5})[kind];
+    const color=kind==='zebra'?'#b6c1cb':kind==='bear'?'#697c8d':'#93a7b8';
+    box(0,0,.65*scale,.65*scale,.23*scale,.42*scale,color);
+    for(const dx of [-.45,.45])for(const dy of [-.18,.18])box(dx*scale,dy*scale,.05*scale,.065*scale,.065*scale,.62*scale,'#768b9c');
+    const neck=kind==='giraffe'?1.5:kind==='horse'||kind==='zebra'?.55:.2;
+    box(.52*scale,0,.85*scale,.12*scale,.14*scale,neck*scale,color);
+    box(.7*scale,0,(.9+neck)*scale,.23*scale,.17*scale,.24*scale,'#aab9c5');
+    if(kind==='elephant')box(.92*scale,0,.35*scale,.08*scale,.1*scale,.85*scale,'#8298aa');
+    if(kind==='zebra')for(const dx of [-.45,-.15,.15,.45])box(dx*scale,.235*scale,.7*scale,.03*scale,.012*scale,.33*scale,'#596e80');
+    return;
+  }
   if(kind==='bus'||kind==='truck'){
     if(kind==='bus'){
       box(0,0,.3,4,1.05,2.35,'#a8b4c0');

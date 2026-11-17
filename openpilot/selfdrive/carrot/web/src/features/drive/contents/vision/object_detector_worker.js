@@ -1,4 +1,5 @@
 import { FilesetResolver, ObjectDetector } from '../../../../../vendor/bev-detector/vision_bundle.mjs';
+import {DETECTOR_CLASSES} from './hud/object_classes.js';
 
 // A classic worker is intentional: MediaPipe's pinned WASM loader uses importScripts.
 // All assets are served locally; image pixels never leave the viewing device.
@@ -11,7 +12,7 @@ self.onmessage=async({data})=>{
       detector=await ObjectDetector.createFromOptions(files,{
         baseOptions:{modelAssetPath:`${root}efficientdet_lite0.tflite`,delegate:'CPU'},
         runningMode:'IMAGE',maxResults:24,scoreThreshold:.5,
-        categoryAllowlist:['person','bicycle','car','motorcycle','bus','truck'],
+        categoryAllowlist:[...DETECTOR_CLASSES],
       });
       self.postMessage({type:'ready'});
     }catch{self.postMessage({type:'error',stage:'load'});}
