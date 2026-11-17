@@ -12,7 +12,7 @@ function harness(){
     return {id,hidden:false,dataset:{},textContent:'',disabled:false,href:'/css/cockpit-embedded.css',
       classList:{contains:x=>classes.has(x),toggle(x,force){const next=force??!classes.has(x);if(next)classes.add(x);else classes.delete(x);return next;},add:x=>classes.add(x),remove:x=>classes.delete(x)},
       addEventListener:(name,fn)=>{listeners[name]=fn;},emit:name=>listeners[name]?.(),append(){},focus(){},
-      showModal(){this.open=true;},getBoundingClientRect:()=>({width:480,height:320}),getContext:()=>new Proxy({measureText:()=>({width:20})},{get:(t,k)=>t[k]??(()=>{}),set:(t,k,v)=>(t[k]=v,true)})};
+      close(){this.open=false;listeners.close?.();},showModal(){this.open=true;},getBoundingClientRect:()=>({width:480,height:320}),getContext:()=>new Proxy({measureText:()=>({width:20})},{get:(t,k)=>t[k]??(()=>{}),set:(t,k,v)=>(t[k]=v,true)})};
   }
   for(const [,id] of html.matchAll(/id="([^"]+)"/g))nodes.set(id,element(id));
   const buttons=[1,2,3,4].map(mode=>Object.assign(element(),{dataset:{mode:String(mode)}}));
@@ -23,6 +23,7 @@ function harness(){
   const innerDocument={...document,documentElement:{...element(),hasAttribute:()=>true}};
   nodes.get('features').contentWindow={location:{origin:'http://fixture'},document:innerDocument,showPage:p=>pages.push(p),
     CarrotLocalVoice:{findSettings:(...a)=>a.join('|'),cruise:(...a)=>a.join('|'),result:id=>id}};
+  for(const p of panels)if(['logs','tools'].includes(p.dataset.panel))p.closest=()=>nodes.get('apps');
   nodes.get('navigation').contentWindow={location:{origin:'http://fixture'}};
   nodes.get('navigation').contentDocument=innerDocument;
   const sockets=[];
@@ -66,4 +67,14 @@ test('existing feature pages and the complete native voice API stay routed to th
   assert.equal(h.context.CarrotLocalVoice.findSettings('速度','id'),'速度|id');
   assert.equal(h.context.CarrotLocalVoice.cruise('set',80),'set|80');
   assert.equal(h.context.CarrotLocalVoice.result('id'),'id');
+});
+
+
+test('controls toggles its panel and the app drawer launches existing pages without settings writes',()=>{
+  const h=harness();h.panel('setting').onclick();assert.equal(h.context.document.body.dataset.panel,'setting');
+  h.panel('setting').onclick();assert.equal(h.context.document.body.dataset.panel,'navigation');
+  h.el('appsButton').onclick();assert.equal(h.el('apps').open,true);
+  h.panel('logs').onclick();assert.equal(h.el('apps').open,false);assert.equal(h.context.document.body.dataset.panel,'logs');
+  h.el('appsButton').onclick();h.panel('tools').onclick();assert.equal(h.el('apps').open,false);
+  assert.equal(h.context.document.body.dataset.panel,'tools');assert.equal(h.writes.length,0);
 });

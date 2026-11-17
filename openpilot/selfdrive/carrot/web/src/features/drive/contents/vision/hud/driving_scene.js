@@ -1,3 +1,4 @@
+import {drawDetectedMesh} from './object_mesh.js';
 import {surroundingTargets} from './scene_objects.js';
 
 // Original vector artwork. Symbol dimensions are illustrative, not inferred sizes.
@@ -20,7 +21,9 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
     ctx.ellipse(p[0],p[1],flat?5:7,flat?5:3,0,0,Math.PI*2);ctx.stroke();return;
   }
   const person=kind==='person',twoWheel=['motorcycle','bicycle'].includes(kind);
-  if(person){
+  if(!flat&&['car','bus','truck','person','motorcycle','bicycle'].includes(kind)){
+    drawDetectedMesh(ctx,project,object);
+  }else if(person){
     const feet=project(x,y,0),head=project(x,y,1.65),hip=project(x,y,.7);if(!feet||!head||!hip)return;
     const radius=Math.max(2,Math.min(6,Math.abs(feet[1]-head[1])*.12));
     ctx.fillStyle=flat?'#c4b2e6':'#65727d';ctx.beginPath();ctx.arc(head[0],head[1],radius,0,Math.PI*2);ctx.fill();

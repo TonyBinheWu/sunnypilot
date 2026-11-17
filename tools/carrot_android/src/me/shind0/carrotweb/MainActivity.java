@@ -254,6 +254,14 @@ public final class MainActivity extends Activity {
     if (voiceOverlay != null) voiceOverlay.setVisibility(enabled ? View.GONE : View.VISIBLE);
     if (!enabled && visionFullscreen != null) previousSystemUi = visionHostSystemUi;
     getWindow().getDecorView().setSystemUiVisibility(enabled || visionFullscreen != null ? immersiveFlags() : visionHostSystemUi);
+    if (UpdatePolicy.cockpit(getPackageName()) && android.os.Build.VERSION.SDK_INT >= 30) {
+      android.view.WindowInsetsController controller = getWindow().getDecorView().getWindowInsetsController();
+      if (controller != null) {
+        controller.setSystemBarsBehavior(android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        if (enabled) controller.hide(WindowInsets.Type.systemBars());
+        else controller.show(WindowInsets.Type.systemBars());
+      }
+    }
     root.requestApplyInsets();
   }
   private void resetVisionHost() {
@@ -268,6 +276,13 @@ public final class MainActivity extends Activity {
     }
     final int epoch = visionHostEpoch;
     final String url = web.getUrl();
+    // Cockpit owns its whole verified viewport. Do not depend on a page's
+    // Vision preference, JS timing or a previous Back/exit dismissal.
+    if (UpdatePolicy.cockpit(getPackageName()) && "/cockpit".equals(Uri.parse(url).getPath())) {
+      setVisionImmersive(true);
+      ui.postDelayed(pollVision,500);
+      return;
+    }
     web.evaluateJavascript(onDevicePage("!!window.CarrotAndroidVision?.sync(true)"), value -> {
       if (epoch != visionHostEpoch || !foregroundActivity || !pageReady || web == null || !url.equals(web.getUrl())) return;
       setVisionImmersive("true".equals(value) && hasWindowFocus() && (speechSetup == null || !speechSetup.showing()));
@@ -463,6 +478,13 @@ public final class MainActivity extends Activity {
             pageReady = true;
             if (UpdatePolicy.cockpit(getPackageName()))
               view.evaluateJavascript(onDevicePage(CockpitLayout.SCRIPT), null);
+            if (UpdatePolicy.cockpit(getPackageName()) && "/cockpit".equals(Uri.parse(url).getPath())) {
+              setVisionImmersive(true);
+              view.evaluateJavascript(onDevicePage("window.CarrotCockpit?.layoutVersion >= 2"), value -> {
+                if ("false".equals(value) && pageReady && foregroundActivity && url.equals(view.getUrl()))
+                  android.widget.Toast.makeText(MainActivity.this,"車機仍提供舊座艙版面。請更新 carrot-wip 車機並重新啟動，才能使用新版操作介面。",android.widget.Toast.LENGTH_LONG).show();
+              });
+            }
             ui.removeCallbacks(pollVision); ui.post(pollVision);
             scheduleAutoVoice();
           }
@@ -921,6 +943,15 @@ public final class MainActivity extends Activity {
   }
   @Override protected void onPause() { cockpitLifecycle("pause"); foregroundActivity = false; if (diagnostics!=null) diagnostics.pause(); resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
   @Override protected void onStop() { checkAfterBackground=true; if (scanning) { stopSearch(); if (status!=null) status.setText(UiText.get("검색이 중단됐어요. 다시 검색을 눌러 주세요.", "Search paused. Tap Search again.")); } super.onStop(); }
-  @Override public void onBackPressed() { if (visionFullscreen != null || visionImmersive) { leaveVisionView(); return; } if(pageLoadFailed){startSearch();return;} if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed(); }
+  @Override public void onBackPressed() {
+    if (visionFullscreen != null) { leaveVisionView(); return; }
+    if (UpdatePolicy.cockpit(getPackageName()) && pageReady && web != null && web.getUrl() != null
+        && isCurrent(Uri.parse(web.getUrl())) && "/cockpit".equals(Uri.parse(web.getUrl()).getPath())) {
+      title.performClick(); return; // Device menu provides discovery and updates; retain cockpit chrome.
+    }
+    if (visionImmersive) { leaveVisionView(); return; }
+    if(pageLoadFailed){startSearch();return;}
+    if (web!=null && currentAddress!=null && web.canGoBack()) web.goBack(); else if (currentAddress!=null) startSearch(); else super.onBackPressed();
+  }
   @Override protected void onDestroy() { if (diagnostics!=null) diagnostics.close(); if (speechSetup!=null) speechSetup.close(); if (recovery!=null) recovery.cancel(); stopSearch(); ui.removeCallbacksAndMessages(null); if (updater!=null) updater.close(); if (web!=null) { web.destroy(); web=null; } super.onDestroy(); }
 }

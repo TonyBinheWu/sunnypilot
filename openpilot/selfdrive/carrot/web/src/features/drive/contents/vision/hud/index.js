@@ -1,3 +1,4 @@
+import {visionPresentation} from '../../../../cockpit/presentation.js';
 "use strict";
 
 /* 신규 Carrot HUD 오버레이(클러스터 룩) 조립·마운트.
@@ -107,11 +108,11 @@ export function createHudOverlay(doc) {
   let teslaMetric = true;
   const renderTesla = () => tesla?.render(lastData, teslaUpdatedAt == null || (target.CarrotVisionReplay?.status?.()?.active !== true && (target.performance?.now?.() ?? Date.now()) - teslaUpdatedAt > 2000), teslaMetric === false ? "mph" : "km/h", live?.isSpeedVisible?.() ?? true, active && !destroyed && suppressions.size===0 && !root.hidden);
   function syncPresentation() {
-    if (!tesla && (['tesla','bev'].includes(target.CarrotWebSettingsState?.vision_presentation) || target.CarrotWebSettingsState?.vision_custom_metrics === true)) {
+    if (!tesla && (['tesla','bev'].includes(visionPresentation(target)) || target.CarrotWebSettingsState?.vision_custom_metrics === true)) {
       tesla = createTeslaView(doc, target);root.appendChild(tesla.canvas);root.appendChild(tesla.root);
     }
-    presentation = target.CarrotAndroidVision?.isImmersive?.() || target.CarrotWebSettingsState?.vision_presentation === "live_view" ? "live_view" : "carrot";
-    if (['tesla','bev'].includes(target.CarrotWebSettingsState?.vision_presentation)) presentation = target.CarrotWebSettingsState.vision_presentation;
+    presentation = target.CarrotAndroidVision?.isImmersive?.() || visionPresentation(target) === "live_view" ? "live_view" : "carrot";
+    if (['tesla','bev'].includes(visionPresentation(target))) presentation = visionPresentation(target);
     const livePresentation = presentation !== 'carrot';
     root.classList.toggle("is-live-view", livePresentation);
     live.root.hidden = !livePresentation;
@@ -303,6 +304,7 @@ export function createHudOverlay(doc) {
     layoutObserver = null;
     syncVisibility();
     target.removeEventListener?.("carrot:websettingschange", syncPresentation);
+    target.removeEventListener?.("carrot:cockpitpanelchange", syncPresentation);
     target.removeEventListener?.("carrot:androidvisionchange", syncPresentation);
     target.removeEventListener?.("carrot:languagechange", live.render);
     tesla?.destroy();
@@ -311,6 +313,7 @@ export function createHudOverlay(doc) {
   }
 
   target.addEventListener?.("carrot:websettingschange", syncPresentation);
+  target.addEventListener?.("carrot:cockpitpanelchange", syncPresentation);
   target.addEventListener?.("carrot:androidvisionchange", syncPresentation);
   target.addEventListener?.("carrot:languagechange", live.render);
   syncVisibility();

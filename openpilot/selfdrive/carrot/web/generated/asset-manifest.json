@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "e6208f19d520a27aa60e4fe1759bc76e787bba71decb4171db4196b7e808ab5e"
+      "hash": "be601b3b8a2847aea736ca23cabf952c23117a4110a4ad2239dacc0e32ee4327"
     },
     {
       "id": "tools.lane-mapping",
@@ -34,7 +34,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "291aff772b5fc67206618f6628a6efdcb2eb71b1df47d7e1723565929a67740d"
+      "hash": "1dd0e89d7c54c3578cc859fa3231ba87f366f85d2ae1b393f5fa23c11abd0e32"
     },
     {
       "id": "replay.runtime",

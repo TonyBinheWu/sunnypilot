@@ -11,7 +11,7 @@ test('viewport has a definite percentage and vh fallback when dvh is unsupported
   const legacy=css.replace(/[^{};]+:[^{};]*dvh[^{};]*;?/g,'');
   assert.match(legacy,/html\{height:100%;overflow:hidden\}/);
   assert.match(legacy,/body\{[^}]*height:100%;height:100vh;min-height:0;/);
-  assert.match(legacy,/grid-template-rows:42px minmax\(0,1fr\) 70px/);
+  assert.match(legacy,/grid-template-rows:calc\(var\(--status-size\)[^;]+minmax\(0,1fr\)[^;]+var\(--dock-size\)/);
 });
 
 test('APK repair is cockpit-only, idempotent and uses live viewport percentages',()=>{
@@ -29,4 +29,13 @@ test('APK repair is cockpit-only, idempotent and uses live viewport percentages'
 test('native repair is behind the current-device and cockpit-package guards',()=>{
   const activity=readFileSync(new URL('../../../../../tools/carrot_android/src/me/shind0/carrotweb/MainActivity.java',import.meta.url),'utf8');
   assert.match(activity,/if \(!pageLoadFailed && view.getParent\(\) == content && isCurrent\(Uri.parse\(url\)\)\) \{\s*pageReady = true;\s*if \(UpdatePolicy.cockpit\(getPackageName\(\)\)\)\s*view.evaluateJavascript\(onDevicePage\(CockpitLayout.SCRIPT\), null\)/);
+});
+
+
+test('cockpit host owns fullscreen independently of Vision JS dismissal',()=>{
+  const activity=readFileSync(new URL('../../../../../tools/carrot_android/src/me/shind0/carrotweb/MainActivity.java',import.meta.url),'utf8');
+  const poll=activity.slice(activity.indexOf('private void pollVisionHost()'),activity.indexOf('private void leaveVisionView()'));
+  assert.ok(poll.indexOf('setVisionImmersive(true)')<poll.indexOf('web.evaluateJavascript'));
+  assert.match(poll,/UpdatePolicy.cockpit\(getPackageName\(\)\) && "\/cockpit".equals/);
+  assert.match(activity,/title.performClick\(\); return; \/\/ Device menu/);
 });
