@@ -7,8 +7,6 @@
   const traditional = /^zh-(tw|hk|mo|hant|cht)(-|$)/.test(language);
   const tr = (k, e) => traditional ? (globalThis.CarrotNavigationZhTw[e] || e) : language.startsWith("ko") ? k : e;
   let viewVisible=true;
-  const navText=(tw,en)=>traditional?tw:en;
-  const legacyNote=navText('此最愛只有舊版地點 ID；請用 Mapbox 重新搜尋、選取地址並儲存後再導航。原有名稱會保留。','This favorite has a legacy place ID. Search with Mapbox, select and save its address before navigating. Your name is preserved.');
   if(typeof IntersectionObserver==='function')new IntersectionObserver(entries=>{viewVisible=entries[0]?.isIntersecting===true;}).observe(document.querySelector('main'));
   document.documentElement.lang = traditional ? "zh-Hant" : language.startsWith("ko") ? "ko" : "en";
   $("title").textContent = tr("Carrot 내비게이션", "Carrot Navigation");
@@ -30,134 +28,130 @@
     }
     return value;
   }
-  let currentPlace = null, savedPlaces = [], editingId = null, editorPlace = null, deletePending = null;
-  let searchingEditor = false, savingEditor = false, editorVersion = 0;
+  let currentPlace = null, savedPlaces = [], editingId = null, deletePending = null;
+  let savingEditor = false, searchVersion = 0, currentSearchQuery = '';
   const labels = {
-    favoritesTitle: ["즐겨찾기", "Favorites"], addFavorite: ["즐겨찾기 추가", "Add favorite"],
-    saveCurrent: ["현재 목적지 저장", "Save current destination"], nameLabel: ["이름", "Name"],
-    addressLabel: ["주소 또는 장소", "Address or place"], favoriteSearch: ["주소 검색", "Search address"],
-    saveFavorite: ["저장", "Save"], cancelFavorite: ["취소", "Cancel"], retryFavorites: ["다시 시도", "Retry"],
+    favoritesTitle: ['즐겨찾기', 'Favorites'], addFavorite: ['즐겨찾기 추가', 'Add favorite'],
+    saveCurrent: ['현재 검색어 저장', 'Save current search'], nameLabel: ['이름', 'Name'],
+    addressLabel: ['저장할 주소 또는 검색어', 'Address or search text to save'],
+    saveFavorite: ['저장', 'Save'], cancelFavorite: ['취소', 'Cancel'], retryFavorites: ['다시 시도', 'Retry'],
+    searchRegionLabel: ['검색 범위', 'Search region'],
   };
   for (const [id, words] of Object.entries(labels)) $(id).textContent = tr(...words);
-  $("favoritesNote").textContent = tr("즐겨찾기는 차량에 저장되어 앱과 웹에서 함께 사용합니다. 이름을 누르면 바로 목적지로 설정합니다.", "Favorites are saved on this vehicle and shared by the app and web. Tap a name to navigate.");
-  $("storageNote").textContent = tr("주소 저장 검색은 Mapbox 영구 지오코딩을 사용합니다. 계정에서 지원해야 하며 Mapbox 요금이 적용됩니다. 이름만 수정할 때는 다시 검색하지 않아도 됩니다.", "Saving an address uses Mapbox permanent geocoding. Your account must support it and Mapbox charges apply. Renaming an existing favorite does not require another search.");
+  $('searchRegion').value = traditional && !/^zh-(hk|mo)/.test(language) ? 'tw' : '';
+  $('searchRegion').options[0].textContent = tr('대만', 'Taiwan');
+  $('searchRegion').options[1].textContent = tr('전 세계', 'Worldwide');
+  $('favoritesNote').textContent = tr('이름과 직접 입력한 주소만 저장합니다. 즐겨찾기를 누르면 검색 결과에서 위치를 선택한 후 안내를 시작합니다.', 'Save a name and your own address text. Tap a favorite, then select a search result to navigate.');
+  $('storageNote').textContent = tr('저장과 편집은 주소 API를 호출하지 않습니다. 안내할 때만 임시 검색을 사용합니다. 무료 한도 초과 시 요금이 발생할 수 있습니다. 영구 지오코딩은 사용하지 않습니다.', 'Saving and editing do not call an address API. Temporary search runs only when navigating. Usage above the free allowance may be billed. Permanent geocoding is disabled.');
+  $('favoriteSearch').hidden = true;
   function current(value) {
     currentPlace = value.destination || null;
-    $("current").textContent = currentPlace?.place_name || tr("현재 목적지 없음", "No current destination");
-    $("saveCurrent").disabled = !currentPlace;
+    $('current').textContent = currentPlace?.place_name || tr('현재 목적지 없음', 'No current destination');
+    $('saveCurrent').disabled = !currentPlace;
   }
   function button(text, action) {
-    const element = document.createElement("button"); element.type = "button"; element.textContent = text;
-    element.addEventListener("click", async () => {
+    const element = document.createElement('button'); element.type = 'button'; element.textContent = text;
+    element.addEventListener('click', async () => {
       element.disabled = true;
-      try { await action(); } catch (error) { $("status").textContent = error.message; }
+      try { await action(); } catch (error) { $('status').textContent = error.message; }
       finally { element.disabled = false; }
     });
     return element;
   }
-  async function navigate(path, place) {
-    current(await api(path, { method: "POST", headers: {"Content-Type":"application/json"}, ...(place ? {body:JSON.stringify(place)} : {}) }));
-    $("status").textContent = tr("현재 주행 목적지로 설정했습니다. GPS와 지도 수신을 기다립니다.", "Destination set for this drive. Waiting for GPS and map data.");
+  async function navigate(place, query) {
+    current(await api('destination', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(place)}));
+    currentSearchQuery = query;
+    $('status').textContent = tr('현재 주행 목적지로 설정했습니다. GPS와 지도 수신을 기다립니다.', 'Destination set for this drive. Waiting for GPS and map data.');
   }
-  function renderResults(places, target, choose) {
-    target.replaceChildren();
+  function quality(place) {
+    if (place.feature_type && place.feature_type !== 'address')
+      return tr('도로 또는 지역 결과: 정확한 문패 위치가 아닐 수 있습니다.', 'Road or area result: this may not be an exact street address.');
+    if (['low','medium'].includes(place.match_confidence) || ['interpolated','approximate'].includes(place.accuracy))
+      return tr('추정 위치: 번지와 지도 위치를 확인하세요.', 'Approximate location: check the street number and map position.');
+    return tr('문패와 실제 진입 위치를 확인한 후 선택하세요.', 'Check the street address and actual entrance before selecting.');
+  }
+  function renderResults(places, query) {
+    $('results').replaceChildren();
     for (const place of places) {
-      const row = document.createElement("li");
-      row.append(button(place.place_name, () => choose(place)));
-      if (target === $("results")) row.append(button(tr("즐겨찾기 저장", "Save to favorites"), () => openEditor(null, place)));
-      target.append(row);
+      const row = document.createElement('li'), note = document.createElement('small');
+      note.textContent = quality(place);row.append(button(place.place_name, () => navigate(place, query)),note);
+      // Only the user's query is persisted, never temporary returned coordinates
+      // or a returned standardized address, even from this shortcut.
+      row.append(button(tr('검색어를 즐겨찾기에 저장', 'Save search text to favorites'), () => openEditor(null, {query})));
+      $('results').append(row);
     }
   }
-  $("form").addEventListener("submit", async (event) => {
-    event.preventDefault(); $("search").disabled = true; $("results").replaceChildren();
-    $("status").textContent = tr("검색 중…", "Searching…");
+  async function runSearch(query) {
+    query = String(query || '').trim();
+    if (query.length < 2 || query.length > 200) { $('status').textContent=tr('2–200자를 입력하세요.', 'Enter 2–200 characters.');return; }
+    const version = ++searchVersion;$('query').value = query;$('search').disabled = true;$('results').replaceChildren();
+    $('status').textContent = tr('검색 중…', 'Searching…');
+    const suffix = `&country=${encodeURIComponent($('searchRegion').value)}&language=${traditional?'zh-Hant':language.startsWith('ko')?'ko':'en'}`;
     try {
-      const value = await api(`search?q=${encodeURIComponent($("query").value.trim())}`);
-      renderResults(value.results, $("results"), place => navigate("destination", place));
-      $("status").textContent = value.results.length ? tr("목적지를 선택하세요.", "Select a destination.") : tr("검색 결과 없음", "No results.");
-    } catch (error) { $("status").textContent = error.message; }
-    finally { $("search").disabled = false; }
+      const value = await api(`search?q=${encodeURIComponent(query)}${suffix}`);
+      if (version !== searchVersion) return;
+      renderResults(value.results, query);
+      $('status').textContent = value.results.length ? tr('결과를 선택하면 안내를 시작합니다.', 'Select a result to start navigation.') : tr('검색 결과 없음', 'No results.');
+    } catch (error) { if (version === searchVersion) $('status').textContent = error.message; }
+    finally { if (version === searchVersion) $('search').disabled = false; }
+  }
+  $('form').addEventListener('submit', async event => {event.preventDefault();await runSearch($('query').value);});
+  $('searchRegion').addEventListener('change',()=>{searchVersion++;$('search').disabled=false;$('results').replaceChildren();$('status').textContent=tr('범위 변경 후 다시 검색하세요.','Search again after changing region.');});
+  $('clear').addEventListener('click', async () => {
+    $('clear').disabled = true;
+    try { current(await api('destination', {method:'DELETE'}));currentSearchQuery='';$('status').textContent = tr('이 페이지의 내비게이션을 종료했습니다. 외부 내비게이션은 해당 앱에서 종료하세요.', 'Navigation from this page has ended. End external navigation in its source app.'); }
+    catch (error) { $('status').textContent = error.message; }
+    finally { $('clear').disabled = false; }
   });
-  $("clear").addEventListener("click", async () => {
-    $("clear").disabled = true;
-    try { current(await api("destination", {method:"DELETE"})); $("status").textContent = tr("이 페이지의 내비게이션을 종료했습니다. 외부 내비게이션은 해당 앱에서 종료하세요.", "Navigation from this page has ended. End external navigation in its source app."); }
-    catch (error) { $("status").textContent = error.message; }
-    finally { $("clear").disabled = false; }
-  });
-  api("destination").then(current).catch((error) => { $("status").textContent = error.message; });
   function renderFavorites(value) {
-    savedPlaces = value.favorites; $("favorites").replaceChildren(); $("retryFavorites").hidden = true;
-    $("favoritesStatus").textContent = savedPlaces.length ? "" : tr("즐겨찾기가 없습니다. 주소를 검색하여 추가하세요.", "No favorites yet. Search for an address to add one.");
+    if (!Array.isArray(value.favorites)) throw new Error(tr('즐겨찾기를 불러올 수 없습니다.', 'Favorites are unavailable.'));
+    savedPlaces = value.favorites;$('favorites').replaceChildren();$('retryFavorites').hidden = true;
+    $('favoritesStatus').textContent = savedPlaces.length ? '' : tr('즐겨찾기가 없습니다. 주소를 입력하여 추가하세요.', 'No favorites yet. Add your address text.');
     for (const place of savedPlaces) {
-      const row = document.createElement("li"); row.className = "favorite-row";
-      const go = button(place.name, () => {
-        if(place.provider==='google'){openEditor(place.id,place);$('status').textContent=legacyNote;return;}
-        return navigate(`favorites/${encodeURIComponent(place.id)}/destination`);
-      }); go.className = "go";
-      const address = document.createElement("small"); address.textContent = place.provider==='google'?navText('舊版最愛 · 需重新選定地址','Legacy favorite · Reselect its address'):place.place_name;
-      const actions = document.createElement("div"); actions.className = "actions";
-      actions.append(button(tr("편집", "Edit"), () => openEditor(place.id, place)));
-      actions.append(button(deletePending === place.id ? tr("삭제 확인", "Confirm delete") : tr("삭제", "Delete"), async () => {
-        if (deletePending !== place.id) { deletePending = place.id; renderFavorites({favorites:savedPlaces}); return; }
-        renderFavorites(await api(`favorites/${encodeURIComponent(place.id)}`, {method:"DELETE"})); deletePending = null;
+      const row = document.createElement('li');row.className = 'favorite-row';
+      const go = button(place.name, async () => {
+        if (place.provider === 'google') {openEditor(place.id,place);$('status').textContent=tr('이 즐겨찾기에 주소나 검색어를 입력하세요.', 'Enter an address or search text for this legacy favorite.');return;}
+        const request=await api(`favorites/${encodeURIComponent(place.id)}/query`);
+        if(request.requires_selection!==true||typeof request.query!=='string')throw Error(tr('내비게이션을 새로 고침하세요.', 'Reload navigation.'));
+        await runSearch(request.query);$('query').focus();$('results').scrollIntoView?.({block:'nearest'});
+      });go.className = 'go';
+      const address = document.createElement('small');address.textContent=place.query||place.place_name||tr('주소 입력 필요', 'Address text needed');
+      const actions = document.createElement('div');actions.className = 'actions';
+      actions.append(button(tr('편집', 'Edit'),()=>openEditor(place.id,place)));
+      actions.append(button(deletePending===place.id?tr('삭제 확인','Confirm delete'):tr('삭제','Delete'),async()=>{
+        if(deletePending!==place.id){deletePending=place.id;renderFavorites({favorites:savedPlaces});return;}
+        renderFavorites(await api(`favorites/${encodeURIComponent(place.id)}`,{method:'DELETE'}));deletePending=null;
       }));
-      if (deletePending === place.id) actions.append(button(tr("취소", "Cancel"), () => { deletePending = null; renderFavorites({favorites:savedPlaces}); }));
-      row.append(go, address, actions); $("favorites").append(row);
+      if(deletePending===place.id)actions.append(button(tr('취소','Cancel'),()=>{deletePending=null;renderFavorites({favorites:savedPlaces});}));
+      row.append(go,address,actions);$('favorites').append(row);
     }
   }
-  async function loadFavorites() {
-    try { renderFavorites(await api("favorites")); }
-    catch (error) { $("favoritesStatus").textContent = error.message; $("retryFavorites").hidden = false; }
+  async function loadFavorites(){try{renderFavorites(await api('favorites'));}catch(error){$('favoritesStatus').textContent=error.message;$('retryFavorites').hidden=false;}}
+  function syncEditor(){const q=$('favoriteQuery').value.trim(),name=$('favoriteName').value.trim();$('saveFavorite').disabled=savingEditor||q.length<2||q.length>200||!name||name.length>80;}
+  function openEditor(id,place){
+    if(savingEditor)return;editingId=id;$('favoriteForm').hidden=false;
+    $('editorTitle').textContent=id?tr('즐겨찾기 편집','Edit favorite'):tr('즐겨찾기 추가','Add favorite');
+    const query=place?.query||place?.place_name||'';
+    $('favoriteName').value=place?.name||query.slice(0,80);$('favoriteQuery').value=query;$('favoriteQuery').required=true;$('favoriteResults').replaceChildren();
+    $('editorStatus').textContent=tr('직접 입력한 주소나 검색어를 저장합니다. 위치는 안내할 때 선택하세요.', 'Save your own address or search text. Select a location when navigating.');
+    syncEditor();$('favoriteName').focus();
   }
-  function syncEditor() { $("saveFavorite").disabled = !editorPlace || searchingEditor || savingEditor; }
-  function openEditor(id, place) {
-    if (savingEditor) return;
-    editorVersion++; editingId = id; editorPlace = place && (id || place.permanent) ? {...place} : null;
-    $("favoriteForm").hidden = false; $("editorTitle").textContent = id ? tr("즐겨찾기 편집", "Edit favorite") : tr("즐겨찾기 추가", "Add favorite");
-    $("favoriteName").value = place?.name || place?.place_name?.slice(0,80) || "";
-    $("favoriteQuery").value = place?.place_name || place?.name || "";$("favoriteQuery").required=place?.provider!=='google'; $("favoriteResults").replaceChildren();
-    $("editorStatus").textContent = place?.provider==='google'?legacyNote:editorPlace ? "" : tr("주소를 검색하고 저장할 위치를 선택하세요.", "Search the address and select the location to save.");
-    syncEditor(); $("favoriteName").focus();
-  }
-  $("addFavorite").addEventListener("click", () => openEditor(null, null));
-  $("saveCurrent").addEventListener("click", () => { if (currentPlace) openEditor(null, currentPlace); });
-  $("cancelFavorite").addEventListener("click", () => { if (!savingEditor) { editorVersion++; $("favoriteForm").hidden = true; } });
-  $("favoriteQuery").addEventListener("input", () => { editorVersion++; editorPlace = null; syncEditor(); });
-  $("favoriteSearch").addEventListener("click", async () => {
-    const query = $("favoriteQuery").value.trim(), version = editorVersion;
-    if (query.length < 2 || query.length > 200 || searchingEditor) { $("editorStatus").textContent = tr("2–200자를 입력하세요.", "Enter 2–200 characters."); return; }
-    searchingEditor = true; $("favoriteSearch").disabled = true; syncEditor();
-    $("editorStatus").textContent = tr("검색 중…", "Searching…");
-    try {
-      const value = await api(`search?q=${encodeURIComponent(query)}&permanent=true`);
-      if (version !== editorVersion) return;
-      renderResults(value.results, $("favoriteResults"), place => {
-        editorPlace = place; $("favoriteQuery").value = place.place_name; $("favoriteResults").replaceChildren();
-        $("editorStatus").textContent = tr("주소를 선택했습니다. 이름을 확인하고 저장하세요.", "Address selected. Check the name and save."); syncEditor();
-      });
-      $("editorStatus").textContent = value.results.length ? tr("목적지를 선택하세요.", "Select a destination.") : tr("검색 결과 없음", "No results.");
-    } catch (error) { if (version === editorVersion) $("editorStatus").textContent = error.message; }
-    finally { searchingEditor = false; $("favoriteSearch").disabled = false; syncEditor(); }
+  $('addFavorite').addEventListener('click',()=>openEditor(null,null));
+  $('saveCurrent').addEventListener('click',()=>openEditor(null,{query:currentSearchQuery}));
+  $('cancelFavorite').addEventListener('click',()=>{if(!savingEditor)$('favoriteForm').hidden=true;});
+  $('favoriteQuery').addEventListener('input',syncEditor);$('favoriteName').addEventListener('input',syncEditor);
+  $('favoriteForm').addEventListener('submit',async event=>{
+    event.preventDefault();if(savingEditor)return;
+    const name=$('favoriteName').value.trim(),query=$('favoriteQuery').value.trim();
+    if(!name||name.length>80||query.length<2||query.length>200){syncEditor();return;}
+    savingEditor=true;syncEditor();$('cancelFavorite').disabled=true;$('favoriteName').disabled=true;$('favoriteQuery').disabled=true;
+    try{
+      renderFavorites(await api(editingId?`favorites/${encodeURIComponent(editingId)}`:'favorites',{method:editingId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:'query',name,query})}));
+      $('favoriteForm').hidden=true;$('status').textContent=tr('즐겨찾기를 저장했습니다.','Favorite saved.');
+    }catch(error){$('editorStatus').textContent=error.message;}
+    finally{savingEditor=false;$('cancelFavorite').disabled=false;$('favoriteName').disabled=false;$('favoriteQuery').disabled=false;syncEditor();}
   });
-  $("favoriteForm").addEventListener("submit", async event => {
-    event.preventDefault(); if (!editorPlace || savingEditor || searchingEditor) return;
-    const name = $("favoriteName").value.trim();
-    if (!name || name.length > 80) { $("editorStatus").textContent = tr("이름을 1–80자로 입력하세요.", "Enter a name of 1–80 characters."); return; }
-    savingEditor = true; syncEditor(); $("cancelFavorite").disabled = true;
-    $("favoriteName").disabled = true; $("favoriteQuery").disabled = true; $("favoriteSearch").disabled = true;
-    try {
-      renderFavorites(await api(editingId ? `favorites/${encodeURIComponent(editingId)}` : "favorites", {
-        method:editingId ? "PUT" : "POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(editorPlace.provider==='google'?{provider:'google',google_place_id:editorPlace.google_place_id,name}:{...editorPlace, name}),
-      }));
-      $("favoriteForm").hidden = true; $("status").textContent = tr("즐겨찾기를 저장했습니다.", "Favorite saved.");
-    } catch (error) { $("editorStatus").textContent = error.message; }
-    finally {
-      savingEditor = false; $("cancelFavorite").disabled = false;
-      $("favoriteName").disabled = false; $("favoriteQuery").disabled = false; $("favoriteSearch").disabled = false; syncEditor();
-    }
-  });
-  $("retryFavorites").addEventListener("click", loadFavorites);
-  loadFavorites();
+  $('retryFavorites').addEventListener('click',loadFavorites);loadFavorites();
   let imageUrl;
   function waiting(message) {
     $("map").hidden = true; $("map").removeAttribute("src");

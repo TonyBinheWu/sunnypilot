@@ -676,6 +676,7 @@ window.CarrotTranslations.register("zh-tw", {
     bev_kind_road_edge: "道路邊界",
     bev_kind_model_path: "模型路徑",
     bev_kind_lead_target: "前車目標",
+    vision_orbit_hint: "拖曳旋轉視角；方向鍵調整；Home 回正",
     vision_tesla_name: "特斯拉風格俯視視覺",
     vision_tesla_notice: "模型俯視圖 · 非環景攝影 · 僅顯示已收到的車道與前車",
     vision_tesla_wait: "等待有效模型資料（非環景攝影）",

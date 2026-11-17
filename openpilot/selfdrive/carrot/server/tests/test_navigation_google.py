@@ -61,10 +61,10 @@ def test_legacy_google_favorites_can_be_renamed_or_explicitly_migrated_without_n
       assert (await client.put(f'/api/navigation/favorites/{identifier}', json=body)).status == 200
       body['google_place_id'] = '../bad'
       assert (await client.put(f'/api/navigation/favorites/{identifier}', json=body)).status == 400
-      replacement = dict(name='新名稱', place_name='重新搜尋的地址', latitude=24., longitude=120., permanent=True)
+      replacement = dict(provider='query', name='新名稱', query='使用者輸入的地址')
       assert (await client.put(f'/api/navigation/favorites/{identifier}', json=replacement)).status == 200
       converted = (await (await client.get('/api/navigation/favorites')).json())['favorites']
-      assert converted == [old, {k: v for k, v in dict(replacement, id=identifier).items() if k != 'permanent'}]
+      assert converted == [old, dict(replacement, id=identifier)]
       assert (await client.delete(f'/api/navigation/favorites/{identifier}')).status == 200
       assert (await (await client.get('/api/navigation/favorites')).json())['favorites'] == [old]
   asyncio.run(run())

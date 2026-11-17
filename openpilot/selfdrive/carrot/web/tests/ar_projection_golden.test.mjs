@@ -35,7 +35,16 @@ test("projection fixture stays generated from canonical openpilot Python transfo
     encoding: "utf8",
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.deepEqual(JSON.parse(result.stdout), fixture);
+  // Python/NumPy math can differ at the last binary digit across platforms.
+  // Preserve exact structure/metadata and the same 1e-9 numeric tolerance used below.
+  const canonical = (actual, expected) => {
+    if (typeof expected === 'number') return nearlyEqual(actual, expected);
+    if (expected && typeof expected === 'object') {
+      assert.deepEqual(Object.keys(actual), Object.keys(expected));
+      for (const key of Object.keys(expected)) canonical(actual[key], expected[key]);
+    } else assert.deepEqual(actual, expected);
+  };
+  canonical(JSON.parse(result.stdout), fixture);
   assert.equal(fixture.schemaVersion, 1);
   assert.deepEqual(fixture.coordinateContract.frdFromFlu, [
     [1, 0, 0],

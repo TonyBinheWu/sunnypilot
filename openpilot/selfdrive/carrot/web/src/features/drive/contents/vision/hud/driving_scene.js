@@ -3,12 +3,20 @@ import {ANIMALS} from './object_classes.js';
 import {surroundingTargets} from './scene_objects.js';
 
 // Original vector artwork. Symbol dimensions are illustrative, not inferred sizes.
-export function drivingProjection(width,height) {
-  const s=Math.sin(25*Math.PI/180),c=Math.cos(25*Math.PI/180),f=height*.96;
-  return (x,y,z=0)=>{
-    const depth=(x+9)*c+(8-z)*s;
-    return depth>.1?[width/2+f*y/depth,height*.46+f*((8-z)*c-(x+9)*s)/depth]:null;
+export function drivingProjection(width,height,camera=null) {
+  const pitch=Number.isFinite(camera?.pitch)?Math.max(18,Math.min(60,camera.pitch)):25;
+  const yaw=Number.isFinite(camera?.yaw)?camera.yaw*Math.PI/180:0;
+  const s=Math.sin(pitch*Math.PI/180),c=Math.cos(pitch*Math.PI/180),f=height*.96;
+  const distance=Number.isFinite(camera?.distance)?Math.max(9,Math.min(16,camera.distance)):9;
+  const elevation=Number.isFinite(camera?.height)?Math.max(6,Math.min(12,camera.height)):8;
+  const origin=Number.isFinite(camera?.anchorY)?height*Math.max(.72,Math.min(.88,camera.anchorY))-f*(elevation*c-distance*s)/(distance*c+elevation*s):height*.46;
+  const project=(x,y,z=0)=>{
+    const along=x*Math.cos(yaw)+y*Math.sin(yaw),side=y*Math.cos(yaw)-x*Math.sin(yaw);
+    const depth=(along+distance)*c+(elevation-z)*s;
+    return depth>.1?[width/2+f*side/depth,origin+f*((elevation-z)*c-(along+distance)*s)/depth]:null;
   };
+  if(camera){project.view=[-distance*Math.cos(yaw),-distance*Math.sin(yaw),elevation];project.depth=(x,y,z=0)=>(x*Math.cos(yaw)+y*Math.sin(yaw)+distance)*c+(elevation-z)*s;}
+  return project;
 }
 export function drawSceneObject(ctx,project,object,{ego=false,flat=false,night=false,text=(k,f)=>f}={}) {
   const {x,y,kind}=object;
@@ -63,10 +71,11 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,night=f
   }
 }
 
-export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo,night=false,lift=0}={}) {
+export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo,night=false,lift=0,camera=null}={}) {
   ctx.clearRect(0,0,width,height);ctx.fillStyle=night?'#101114':'#f2f3f3';ctx.fillRect(0,0,width,height);
-  const base=drivingProjection(width,height),shift=Number.isFinite(lift)?Math.max(0,Math.min(height*.3,lift)):0;
+  const base=drivingProjection(width,height,camera),shift=Number.isFinite(lift)?Math.max(0,Math.min(height*.3,lift)):0;
   const project=(x,y,z=0)=>{const p=base(x,y,z);return p?[p[0],p[1]-shift]:null;},model=scene.model;
+  if(base.view){project.view=base.view;project.depth=base.depth;}
   const pathPoints=(path,offset=0)=>{
     const points=[];
     for(let i=0;i<Math.min(path?.x?.length||0,path?.y?.length||0,256);i++){
@@ -101,7 +110,7 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     else ribbon(model.position,-.75,.75,night?'#168bffdc':'#69b7ecb0');
   }
   const objects=[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
-  objects.sort((a,b)=>b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text,night}));
+  objects.sort((a,b)=>project.depth?project.depth(b.x,b.y)-project.depth(a.x,a.y):b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text,night}));
   if(drawEgo)drawEgo(ctx,project);
   else drawSceneObject(ctx,project,{kind:'car',x:0,y:0},{ego:true,text});
 }

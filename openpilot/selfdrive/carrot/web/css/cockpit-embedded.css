@@ -5,6 +5,7 @@ body{background:var(--md-surface)!important;color:var(--md-on-surface)!important
 /* The Vision page owns its one set of live instruments; the outer duplicate is hidden. */
 body[data-cockpit-panel="vision"] #pageCarrot,body[data-cockpit-panel="vision"] #carrotStage{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;max-width:none!important;transform:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important}
 body[data-cockpit-panel="vision"] .page-header,body[data-cockpit-panel="vision"] #driveHudCard{display:none!important}
+body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .bev-workbench{display:none!important}
 body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .clive-rail,body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .clive-tools-toggle,body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .tesla-edit{display:none!important}
 body[data-cockpit-panel="vision"].cockpit-vision-tools .clive-rail{display:flex!important}
 

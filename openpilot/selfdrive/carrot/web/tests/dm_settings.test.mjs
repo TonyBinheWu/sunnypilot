@@ -32,6 +32,8 @@ test("Carrot Vision accepts typed booleans from Params and raw legacy values", (
   const start = runtime.indexOf("function normalizeRuntimeBool(");
   const end = runtime.indexOf("let _carrotVisionEnvironmentSignature", start);
   const context = vm.createContext({ CARROT_DEVICE_RUNTIME_STATE: {}, window: {} });
+  const parkedStart = runtime.indexOf('function isCarrotVisionParked()');
+  vm.runInContext(runtime.slice(parkedStart, runtime.indexOf('function getCarrotVisionRealtimeBlockReason', parkedStart)), context);
   vm.runInContext(runtime.slice(start, end), context);
   for (const value of [true, 1, "1", "true"]) {
     context.updateCarrotDeviceRuntimeState({ carrotVisionEnabled: value });

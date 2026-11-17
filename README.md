@@ -32,7 +32,7 @@
 
 **[⬇ 下載 CarrotAssist 繁體中文版 0.2.19（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk)**
 
-**[下載 Carrot Cockpit 座艙版 0.5.0（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.5.0/CarrotCockpit-TW-0.5.0.apk)**：以車載操作重新編排，固定狀態列／底列、全寬設定、大型按鈕、分組應用程式與可收合分類。修正大字模式重複放大，支援超寬、16:9、4:3與Full HD，保留所有功能、繁中搜尋／詳細說明、物件辨識、連線恢復與原有設定。[操作與驗證範圍](tools/carrot_android/COCKPIT.md)。先更新並重啟 carrot-wip 車機再覆蓋安裝；可與原版並存。已完成瀏覽器版面驗證，尚未完成實體 Android 盒子與實車驗收；既有[真實影片動態分類驗證](tools/carrot_android/COCKPIT_VALIDATION.zh-TW.md)仍可參考。
+**[下載 Carrot Cockpit 座艙版 0.5.0（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.5.0/CarrotCockpit-TW-0.5.0.apk)**：以車載操作重新編排，固定狀態列／底列、全寬設定、大型按鈕、分組應用程式與可收合分類。修正大字模式重複放大，支援超寬、16:9、4:3與Full HD，保留所有功能、繁中搜尋／詳細說明、物件辨識、連線恢復與原有設定。[操作與驗證範圍](tools/carrot_android/COCKPIT.md)。 已補上 [1920×720／4:3、大字、全螢幕與動態分類驗收](tools/carrot_android/COCKPIT_0.5.0_ACCEPTANCE.zh-TW.md)：依車速縮放、拖曳視角、EV6／Sorento／Sportage／Carnival／EV9 本車外觀及煞車／方向燈同步。更新車機即可套用，APK 維持 0.5.0。先更新並重啟 carrot-wip 車機再覆蓋安裝；可與原版並存。已完成瀏覽器版面驗證，尚未完成實體 Android 盒子與實車驗收；既有[真實影片動態分類驗證](tools/carrot_android/COCKPIT_VALIDATION.zh-TW.md)仍可參考。
 
 | 項目 | 說明 |
 |---|---|

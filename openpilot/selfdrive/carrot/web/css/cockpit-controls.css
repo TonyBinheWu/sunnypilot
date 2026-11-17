@@ -56,3 +56,15 @@ html.cockpit-controls-mode body[data-cockpit-panel="setting"] .cockpit-controls[
 .cockpit-control-pane .setting-context-panel :is(p,li,pre){font-size:calc(17px * var(--carrot-text-scale,1));line-height:1.8;overflow-wrap:anywhere}
 .cockpit-control-pane .setting-context-panel [role="tab"]{min-height:52px;font-size:calc(17px * var(--carrot-text-scale-chrome))}
 @media(min-width:1600px) and (min-height:710px){.cockpit-control-header h2{font-size:calc(34px * var(--carrot-text-scale-chrome))}.cockpit-control-search-slot input,.cockpit-control-nav-list button,.cockpit-control-tabs button{font-size:calc(22px * var(--carrot-text-scale-chrome))!important}}
+
+@media(min-width:1600px) and (min-height:420px) and (max-height:709px){
+ .cockpit-controls{grid-template-columns:248px minmax(0,1fr);--control-font:22px}
+ .cockpit-control-nav-list button,.cockpit-control-tabs button,.cockpit-control-search-slot input{font-size:calc(21px * var(--carrot-text-scale-chrome))!important;min-height:60px}
+ .cockpit-control-header h2{font-size:calc(28px * var(--carrot-text-scale-chrome))}
+ .cockpit-control-main .ctrl button,.cockpit-control-main .ctrl select{min-height:60px!important}
+}
+@media(max-height:300px) and (min-width:740px){
+ .cockpit-controls{--carrot-text-scale-chrome:clamp(1,var(--carrot-text-scale,1),1.15)}
+ .cockpit-control-pane{padding-top:8px}.cockpit-control-header{min-height:52px;margin-bottom:8px;flex-wrap:nowrap;gap:8px}.cockpit-control-header h2{display:none}
+ .cockpit-control-search-slot{flex-basis:auto;order:0}.cockpit-control-tabs{padding-bottom:8px}.cockpit-control-tabs button{min-height:48px;padding:8px 16px}
+}

@@ -85,6 +85,7 @@ export function mapPayload(p = {}) {
     steerOutput: num(p.steerOutput),
     leftBlinker: p.leftBlinker === true,
     rightBlinker: p.rightBlinker === true,
+    brakeLights: p.brakeLights === true,
     fuelGauge: num(p.fuelGauge),
     ureaGauge: num(p.ureaGauge),
     tpms: p.tpms && typeof p.tpms === "object" ? p.tpms : null,

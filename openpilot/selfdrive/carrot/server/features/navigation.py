@@ -5,13 +5,14 @@ import math
 from dataclasses import dataclass, field
 from pathlib import Path
 import time
+import unicodedata
 
 import aiohttp
 from aiohttp import web
 
 from openpilot.common.params import Params
 from ..config import WEB_DIR, CARROT_NAVIGATION_FAVORITES_PATH
-from ..services.navigation_favorites import FavoritesFull, NavigationFavorites, google_reference
+from ..services.navigation_favorites import FavoritesFull, NavigationFavorites, google_reference, query_reference
 from ..services.static_assets import fingerprint_static_asset
 from ..services.params import get_param_value, set_param_value
 from openpilot.selfdrive.navigation.preview import PREVIEW_PATH, VIEW_PATH, WEB_DEMAND_PATH, preview_fresh, preview_reason
@@ -67,9 +68,15 @@ async def route_view(_request):
 
 
 async def search(request):
-  query = request.query.get('q', '').strip()
+  # Explicitly reject paid permanent requests, including old cached clients.
+  if request.query.get('permanent', 'false').lower() not in ('false', '0', ''):
+    return web.json_response({'error': 'Permanent geocoding is disabled. Reload navigation.'}, status=400)
+  query = unicodedata.normalize('NFKC', request.query.get('q', '')).strip()
   if not 2 <= len(query) <= 200:
     return web.json_response({'error': 'Enter 2–200 characters.'}, status=400)
+  country, language = request.query.get('country', ''), request.query.get('language', '')
+  if country not in ('', 'tw') or language not in ('', 'en', 'ko', 'zh', 'zh-Hant'):
+    return web.json_response({'error': 'Invalid search region or language.'}, status=400)
   token = str(get_param_value('MapboxPublicKey', '') or '').strip()
   if not token:
     return web.json_response({'error': 'Set the Mapbox Public key in Settings → Network.'}, status=409)
@@ -79,8 +86,11 @@ async def search(request):
   async with state.lock:
     state.next_request = time.monotonic() + 1.
     try:
-      permanent = request.query.get('permanent') == 'true'
-      params = {'q': query, 'access_token': token, 'limit': '5', 'autocomplete': 'false', 'permanent': str(permanent).lower()}
+      params = {'q': query, 'access_token': token, 'limit': '5', 'autocomplete': 'false', 'permanent': 'false'}
+      if country:
+        params['country'] = country
+      if language:
+        params['language'] = language
       async with request.app['http'].get('https://api.mapbox.com/search/geocode/v6/forward', params=params,
                                          timeout=aiohttp.ClientTimeout(total=8)) as response:
         if response.status != 200:
@@ -94,8 +104,12 @@ async def search(request):
         for feature in json.loads(body).get('features', [])[:5]:
           lon, lat = feature['geometry']['coordinates'][:2]
           properties = feature.get('properties', {})
+          metadata = {'feature_type': str(properties.get('feature_type', ''))[:32],
+                      'accuracy': str((properties.get('coordinates') or {}).get('accuracy', ''))[:32],
+                      'match_confidence': str((properties.get('match_code') or {}).get('confidence', ''))[:32]}
           results.append(dict(destination({'latitude': lat, 'longitude': lon,
-                                           'place_name': properties.get('full_address') or properties.get('name') or query}), permanent=permanent))
+                                           'place_name': properties.get('full_address') or properties.get('name') or query}),
+                              permanent=False, **metadata))
         return web.json_response({'results': results}, headers={'Cache-Control': 'no-store'})
     except (aiohttp.ClientError, TimeoutError, ValueError, KeyError, TypeError, IndexError, AttributeError):
       return web.json_response({'error': 'Mapbox search is unavailable.'}, status=502)
@@ -131,52 +145,52 @@ def activate_destination(value):
 async def favorites(request):
   store = request.app[FAVORITES]
   identifier = request.match_info.get('identifier')
-  value = None
-  if request.method in ('POST', 'PUT') and not request.path.endswith('/destination'):
-    try:
-      body = await request.json()
-      value = google_reference(body) if isinstance(body, dict) and body.get('provider') == 'google' else destination(body)
-      if value.get('provider') == 'google':
-        # Keep old names editable, but accept no new Google references. Replacing
-        # an address requires an explicit Mapbox permanent search in the UI.
-        try:
-          previous = next((item for item in store.read() if item['id'] == identifier), None) if identifier else None
-        except (OSError, ValueError, KeyError, TypeError):
-          return web.json_response({'error': 'Favorites are unavailable. Please try again.'}, status=503)
-        if previous is None or previous.get('provider') != 'google' or value['google_place_id'] != previous['google_place_id']:
-          raise ValueError('Google references are retired')
-      name = body.get('name')
-      if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
-        raise ValueError('invalid name')
-      if value.get('provider') != 'google' and (not isinstance(body.get('place_name'), str) or not 1 <= len(body['place_name'].strip()) <= 256):
-        raise ValueError('invalid address')
-      if value.get('provider') != 'google' and any(type(body.get(key)) not in (int, float) for key in ('latitude', 'longitude')):
-        raise ValueError('invalid coordinates')
-      value.update(name=name.strip())
-      if value.get('provider') != 'google':
-        value['place_name'] = body['place_name'].strip()
-    except (ValueError, KeyError, TypeError, OverflowError):
-      return web.json_response({'error': 'Invalid favorite.'}, status=400)
   try:
-    # Existing saved coordinates may be renamed without another geocode.
-    if value is not None and value.get('provider') != 'google' and body.get('permanent') is not True:
-      previous = next((item for item in store.read() if item['id'] == identifier), None) if identifier else None
-      if previous is None or any(value[key] != previous[key] for key in ('latitude', 'longitude', 'place_name')):
-        return web.json_response({'error': 'Invalid favorite.'}, status=400)
     if request.path.endswith('/destination'):
+      # Cached older pages must not show "destination set" for a query shortcut.
+      return web.json_response({'error': 'Select a search result first. Reload navigation.'}, status=409)
+    if request.path.endswith('/query'):
       saved = next((item for item in store.read() if item['id'] == identifier), None)
       if saved is None:
         raise KeyError(identifier)
       if saved.get('provider') == 'google':
-        return web.json_response({'error': 'Reselect this legacy favorite with Mapbox before navigating.'}, status=409)
-      target = destination(saved)
-      activate_destination(target)
-      result = {'destination': target}
-    elif request.method == 'GET':
+        return web.json_response({'error': 'Enter an address or search text for this legacy favorite.'}, status=409)
+      # A favorite is a query shortcut, never an implicit destination command.
+      # Legacy permanent coordinates remain on disk until explicitly edited;
+      # their original address is searched again before the user selects a point.
+      return web.json_response({'query': saved.get('query') or saved['place_name'], 'requires_selection': True},
+                               headers={'Cache-Control': 'no-store'})
+    if request.method == 'GET':
       result = {'favorites': store.read()}
     elif request.method == 'DELETE':
       result = {'favorites': store.delete(identifier)}
     else:
+      try:
+        body = await request.json()
+        if not isinstance(body, dict):
+          raise ValueError('invalid favorite')
+        if body.get('provider') == 'query':
+          value = query_reference(body)
+        else:
+          # Existing records may still be renamed by an older client. Never
+          # accept a new coordinate/Google record or an address replacement.
+          previous = next((item for item in store.read() if item['id'] == identifier), None) if identifier else None
+          if previous is None:
+            raise ValueError('query favorites required')
+          if body.get('provider') == 'google':
+            value = google_reference(body)
+            if previous.get('provider') != 'google' or value['google_place_id'] != previous['google_place_id']:
+              raise ValueError('invalid legacy reference')
+          else:
+            value = destination(body)
+            if any(value[key] != previous.get(key) for key in ('latitude', 'longitude', 'place_name')):
+              raise ValueError('query favorites required')
+            name = body.get('name')
+            if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
+              raise ValueError('invalid name')
+            value['name'] = name.strip()
+      except (ValueError, KeyError, TypeError, OverflowError):
+        return web.json_response({'error': 'Save a name and address text. Coordinate favorites are no longer created.'}, status=400)
       result = {'favorites': store.save(value, identifier)}
     return web.json_response(result, headers={'Cache-Control': 'no-store'})
   except KeyError:
@@ -220,4 +234,5 @@ def register(app):
   app.router.add_put('/api/navigation/favorites/{identifier}', favorites)
   app.router.add_delete('/api/navigation/favorites/{identifier}', favorites)
   app.router.add_post('/api/navigation/favorites/{identifier}/destination', favorites)
+  app.router.add_get('/api/navigation/favorites/{identifier}/query', favorites)
   app.router.add_get('/api/navigation/map.png', preview)

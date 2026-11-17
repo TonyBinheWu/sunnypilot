@@ -1,6 +1,9 @@
 import {drawCockpitVehicle,createVehicleSkinCache,VEHICLE_SKINS} from '../../../../cockpit/vehicle.js';
 import {OBJECT_NAMES} from './object_classes.js';
 import {visionPresentation,cockpitTelemetryStale} from '../../../../cockpit/presentation.js';
+import {createSpeedZoom,sceneSpeedKph} from '../../../../cockpit/speed_zoom.js';
+import {createViewOrbit,orbitCamera} from '../../../../cockpit/view_orbit.js';
+import {vehicleLamps} from '../../../../cockpit/vehicle_lamps.js';
 import {bevProjection} from "./bev_annotations.js";
 import {createBevWorkbench,BEV_CSS} from "./bev_workbench.js";
 import {el, setText} from './dom.js';
@@ -87,6 +90,25 @@ export function createTeslaView(doc,target) {
   const metrics=el(doc,'div',{class:'tesla-metrics'});
   const imageObservations=el(doc,'div',{class:'tesla-image-observations',attrs:{role:'status'}});
   let imageSignature=null;
+  const speedZoom=createSpeedZoom();
+  const orbit=createViewOrbit();
+  let orbitEnabled=false;
+  const refreshOrbit=()=>{lastSignature='';render(data,stale,unit,metricVisible,viewActive);};
+  const orbitDown=e=>{if(!orbitEnabled||e.button!==0)return;const r=canvas.getBoundingClientRect();if(orbit.begin(e.pointerId,e.clientX,e.clientY,r.width,r.height)){e.preventDefault();e.stopPropagation();canvas.setPointerCapture?.(e.pointerId);canvas.focus?.({preventScroll:true});}};
+  const orbitMove=e=>{if(!orbitEnabled)return;if(orbit.move(e.pointerId,e.clientX,e.clientY)){e.preventDefault();e.stopPropagation();refreshOrbit();}};
+  const orbitEnd=e=>{orbit.end(e.pointerId);if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture?.(e.pointerId);};
+  const orbitKey=e=>{if(orbitEnabled&&orbit.key(e.key)){e.preventDefault();e.stopPropagation();refreshOrbit();}};
+  const orbitClick=e=>{if(orbitEnabled)e.stopPropagation();};
+  const orbitEvents={pointerdown:orbitDown,pointermove:orbitMove,pointerup:orbitEnd,pointercancel:orbitEnd,lostpointercapture:orbitEnd,keydown:orbitKey,click:orbitClick};
+  for(const [name,handler] of Object.entries(orbitEvents))canvas.addEventListener(name,handler);
+  const viewControls=Object.freeze({reset(){orbit.reset();refreshOrbit();}});target.CarrotVisionView=viewControls;
+  let zoomFrame=null,zoomPaintedAt=-Infinity,destroyed=false;
+  const stopZoomAnimation=()=>{if(zoomFrame!==null)target.cancelAnimationFrame?.(zoomFrame);zoomFrame=null;};
+  const animateZoom=()=>{if(zoomFrame!==null||!target.requestAnimationFrame||destroyed)return;zoomFrame=target.requestAnimationFrame(stamp=>{
+    zoomFrame=null;if(destroyed||doc.hidden||!viewActive)return;
+    if(stamp-zoomPaintedAt>=40){zoomPaintedAt=stamp;render(data,stale,unit,metricVisible,viewActive);}else animateZoom();
+  });};
+  const visibility=()=>{if(doc.hidden)stopZoomAnimation();};doc.addEventListener?.('visibilitychange',visibility);
   const editor=el(doc,'div',{class:'tesla-editor'});editor.hidden=true;
   const toggle=el(doc,'button',{class:'tesla-edit',attrs:{type:'button'}});
   let layout=metricLayout(target.CarrotWebSettingsState?.vision_metric_layout),editing=false,dirty=false,saving=false;
@@ -147,7 +169,7 @@ export function createTeslaView(doc,target) {
   toggle.addEventListener('click',e=>{e.stopPropagation();if(!canEditMetrics(target,now()))return;
     if(editing){layout=metricLayout(target.CarrotWebSettingsState?.vision_metric_layout);dirty=false;}
     editing=!editing;editor.hidden=!editing;size.value=String(layout[selected][2]);render(data,stale,unit);});
-  const bev=createBevWorkbench(doc,target,canvas,{canEdit:()=>canEditMetrics(target,now()),refresh:()=>{lastSignature='';render(data,stale,unit);},getHud:()=>({data:{speed:data.speed,setSpeed:data.setSpeed,speedLimit:data.speedLimit},stale,unit})});
+  const bev=createBevWorkbench(doc,target,canvas,{canEdit:()=>canEditMetrics(target,now()),refresh:()=>{lastSignature='';render(data,stale,unit);},getHud:()=>({data:{speed:data.speed,setSpeed:data.setSpeed,speedLimit:data.speedLimit,brakeLights:data.brakeLights,leftBlinker:data.leftBlinker,rightBlinker:data.rightBlinker},stale,unit,lampTime:now()})});
   const perception=createObjectPerception(doc,target,{onChange:()=>{lastSignature='';render(data,stale,unit);}});
   const vehicleSkin=createVehicleSkinCache(target,()=>{lastSignature='';render(data,stale,unit);});
   const roadPerception=createObjectPerception(doc,target,{road:true,onChange:()=>{lastSignature='';render(data,stale,unit);}});
@@ -167,7 +189,7 @@ export function createTeslaView(doc,target) {
     const settings=target.CarrotWebSettingsState||{},isBev=visionPresentation(target)==='bev',tesla=['tesla','bev'].includes(visionPresentation(target));
     const custom=settings.vision_custom_metrics===true||tesla;
     if(tesla&&viewActive)vehicleSkin.refresh();
-    const skin=(target.CarrotVisionReplay?.isActive?.()||target.CarrotVisionReplay?.status?.()?.active===true)?VEHICLE_SKINS.generic:vehicleSkin.current(),drawEgo=(context,project)=>drawCockpitVehicle(context,project,{skin});
+    const skin=(target.CarrotVisionReplay?.isActive?.()||target.CarrotVisionReplay?.status?.()?.active===true)?VEHICLE_SKINS.generic:vehicleSkin.current();
     const night=doc.documentElement?.classList.contains('cockpit-night')===true;
     canvas.setAttribute('aria-label',text(isBev?'bev_name':'vision_tesla_name',isBev?'BEV annotation view':'Bird’s-eye view'));
     root.hidden=!custom&&!tesla;canvas.hidden=!tesla;notice.hidden=!tesla;metrics.hidden=!custom||!visible;toggle.hidden=!custom||!visible;
@@ -204,6 +226,22 @@ export function createTeslaView(doc,target) {
     if(imageCounts.size)imageObservations.appendChild(el(doc,'small',{text:text('scene_image_observations','Image observations · no 3D position')}));
     }
     const frozenHud=bev.frozenHud,displayData=frozenHud?.data||data,displayStale=(frozenHud?.stale??stale)||(!frozenHud&&cockpitTelemetryStale(target)),displayUnit=frozenHud?.unit||unit;
+    const zoomEnabled=doc.body.dataset.cockpitPanel==='vision'&&!isBev;
+    orbitEnabled=zoomEnabled&&viewActive&&!editing&&!bev.frozen;
+    if(!orbitEnabled)orbit.cancel();
+    if(!isBev){canvas.style.pointerEvents=orbitEnabled?'auto':'none';canvas.style.touchAction=orbitEnabled?'none':'';}
+    canvas.tabIndex=orbitEnabled?0:-1;
+    canvas.title=orbitEnabled?text('vision_orbit_hint','Drag to rotate; arrow keys adjust the view; Home resets'):'';
+    const lamps=vehicleLamps(displayData,displayStale,frozenHud?.lampTime??now());
+    const drawEgo=(context,project)=>drawCockpitVehicle(context,project,{skin,lamps});
+    const zoom=speedZoom.update(sceneSpeedKph(displayData,displayUnit,displayStale),now(),{
+      active:zoomEnabled&&viewActive&&!doc.hidden&&!editing&&!bev.frozen,
+      source:target.CarrotVisionReplay?.status?.()?.active===true?'replay':'live'});
+    canvas.dataset.speedZoom=zoomEnabled?zoom.progress.toFixed(3):'manual';
+    canvas.dataset.cameraDistance=zoomEnabled?zoom.camera.distance.toFixed(3):'default';
+    canvas.dataset.viewYaw=String(orbit.pose.yaw);canvas.dataset.viewPitch=String(orbit.pose.pitch);
+    canvas.dataset.vehicleSkin=skin.id;canvas.dataset.brakeLamp=String(lamps.brake);canvas.dataset.leftLamp=String(lamps.left);canvas.dataset.rightLamp=String(lamps.right);
+    if(zoom.moving)animateZoom();else stopZoomAnimation();
     for(const [key,card] of Object.entries(cards)){
       const v=displayData[{speed:'speed',set:'setSpeed',limit:'speedLimit'}[key]];
       setText(card.parts.title,text(labels[key],key));setText(card.parts.value,!displayStale&&Number.isFinite(v)?String(v):'—');
@@ -218,15 +256,15 @@ export function createTeslaView(doc,target) {
       const w=Math.max(1,Math.round(vw*factor)),h=Math.max(1,Math.round(vh*factor));
       const stamp=target.CarrotStateReceivedAtMonotonic?.modelV2??target.CarrotStateUpdatedAt?.modelV2;
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
-      const signature=`${w}:${h}:${skin.id}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}`;
+      const signature=`${w}:${h}:${skin.id}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}:${zoomEnabled?zoom.progress.toFixed(3):'manual'}:${orbit.pose.yaw}:${orbit.pose.pitch}:${lamps.brake}:${lamps.left}:${lamps.right}`;
       if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
-        const ctx=canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range,drawEgo});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text,night,drawEgo,lift:doc.body.dataset.cockpitPanel==='vision'&&vw>740?h*.06:0});}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
+        const ctx=canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range,drawEgo});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text,night,drawEgo,camera:zoomEnabled?orbitCamera(zoom.camera,orbit.pose):null,lift:!zoomEnabled&&doc.body.dataset.cockpitPanel==='vision'&&vw>740?h*.06:0});}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
     }
     lastMode=tesla;
   }
   const observer=typeof target.ResizeObserver==='function'?new target.ResizeObserver(()=>{lastSignature='';render(data,stale,unit);}):null;
   observer?.observe(root);
-  return {root,canvas,render,destroy(){viewActive=false;if(target.CarrotVisionPerception===diagnostics)delete target.CarrotVisionPerception;perception.destroy();roadPerception.destroy();vehicleSkin.destroy();bev.destroy();observer?.disconnect();canvas.remove();root.remove();}};
+  return {root,canvas,render,destroy(){destroyed=true;viewActive=false;stopZoomAnimation();orbit.cancel();for(const [name,handler] of Object.entries(orbitEvents))canvas.removeEventListener(name,handler);if(target.CarrotVisionView===viewControls)delete target.CarrotVisionView;doc.removeEventListener?.('visibilitychange',visibility);if(target.CarrotVisionPerception===diagnostics)delete target.CarrotVisionPerception;perception.destroy();roadPerception.destroy();vehicleSkin.destroy();bev.destroy();observer?.disconnect();canvas.remove();root.remove();}};
 }
 export const TESLA_VIEW_CSS=`
 .tesla-view{position:absolute;inset:0;pointer-events:none;z-index:4;color:#fff;font-family:system-ui,sans-serif}.tesla-view[hidden],.tesla-view [hidden]{display:none!important}

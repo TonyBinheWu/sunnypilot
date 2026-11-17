@@ -10,6 +10,18 @@ import uuid
 MAX_FAVORITES = 100
 
 
+def query_reference(value):
+  """Store end-user text, never a temporary geocoder result or coordinates."""
+  if not isinstance(value, dict) or value.get('provider') != 'query':
+    raise ValueError('invalid query favorite')
+  name, query = value.get('name'), value.get('query')
+  if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
+    raise ValueError('invalid name')
+  if not isinstance(query, str) or not 2 <= len(query.strip()) <= 200:
+    raise ValueError('invalid query')
+  return {'provider': 'query', 'name': name.strip(), 'query': query.strip()}
+
+
 def google_reference(value):
   """Persist only a Google place ID and an end-user name, never coordinates."""
   if not isinstance(value, dict) or value.get('provider') != 'google':
@@ -45,6 +57,11 @@ class NavigationFavorites:
       if not isinstance(identifier, str) or len(identifier) != 32 or any(c not in '0123456789abcdef' for c in identifier) or identifier in identifiers:
         raise ValueError('invalid favorite identifier')
       identifiers.add(identifier)
+      if item.get('provider') == 'query':
+        if set(item) != {'id', 'provider', 'name', 'query'}:
+          raise ValueError('invalid query favorite')
+        query_reference(item)
+        continue
       if item.get('provider') == 'google':
         if set(item) != {'id', 'provider', 'name', 'google_place_id'}:
           raise ValueError('invalid Google favorite')

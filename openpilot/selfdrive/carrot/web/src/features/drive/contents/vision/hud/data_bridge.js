@@ -333,6 +333,7 @@ export function deriveVehicleHudPayload(state = {}) {
     ),
     leftBlinker: Boolean(carState.leftBlinker),
     rightBlinker: Boolean(carState.rightBlinker),
+    brakeLights: carState.brakeLights === true,
     fuelGauge: level(carState.fuelGauge),
     ureaGauge: level(carState.ureaGauge),
     tpms: tpmsPayload(carState.tpms),

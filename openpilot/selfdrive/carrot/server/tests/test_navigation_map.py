@@ -67,7 +67,7 @@ def test_favorite_limit_and_stale_id_do_not_overwrite_other_favorites(monkeypatc
   async def run():
     app = web.Application(); navigation.register(app)
     async with TestClient(TestServer(app)) as client:
-      new = dict(name='新最愛', place_name='地址', latitude=25., longitude=121., permanent=True)
+      new = dict(provider='query', name='新最愛', query='地址')
       assert (await client.post('/api/navigation/favorites', json=new)).status == 409
       assert json.loads(path.read_text(encoding='utf-8')) == existing
       assert (await client.put('/api/navigation/favorites/missing', json=new)).status == 404
@@ -102,32 +102,47 @@ def test_missing_preview_explains_service_state(monkeypatch, tmp_path, onroad, r
   assert demand.exists()
 
 
-@pytest.mark.parametrize('permanent', [False, True])
-def test_search_reads_fragmented_response_and_keeps_token_server_side(monkeypatch, permanent):
+@pytest.mark.parametrize('country', ['', 'tw'])
+def test_search_reads_fragmented_response_and_keeps_token_server_side(monkeypatch, country):
   monkeypatch.setattr(navigation, 'get_param_value', lambda key, default: 'pk.private-test')
-  payload = json.dumps({'features': [{'geometry': {'coordinates': [127., 37.]},
-                                     'properties': {'full_address': 'Test destination'}}]}).encode()
+  payload = json.dumps({'features': [{'geometry': {'coordinates': [121., 25.]},
+    'properties': {'full_address': 'Test destination', 'feature_type': 'address',
+                   'coordinates': {'accuracy': 'interpolated'}, 'match_code': {'confidence': 'medium'}}}]}).encode()
   async def chunks(_):
     for i in range(0, len(payload), 7):
       yield payload[i:i + 7]
   @asynccontextmanager
   async def get(url, **kwargs):
     assert url == 'https://api.mapbox.com/search/geocode/v6/forward'
-    assert kwargs['params']['access_token'] == 'pk.private-test'
-    assert kwargs['params']['permanent'] == str(permanent).lower()
+    params = kwargs['params']
+    assert params['access_token'] == 'pk.private-test' and params['permanent'] == 'false'
+    assert params['autocomplete'] == 'false'
+    assert params['q'] == '臺北測試路1號'
+    assert params.get('country', '') == country
+    assert params['language'] == 'zh-Hant'
     yield NS(status=200, content=NS(iter_chunked=chunks))
   async def run():
-    app = web.Application()
-    app['http'] = NS(get=get)
-    navigation.register(app)
+    app = web.Application(); app['http'] = NS(get=get); navigation.register(app)
     async with TestClient(TestServer(app)) as client:
-      response = await client.get('/api/navigation/search?q=Seoul' + ('&permanent=true' if permanent else ''))
+      response = await client.get('/api/navigation/search', params={'q':'臺北測試路１號','country':country,'language':'zh-Hant'})
       body = await response.text()
       assert response.status == 200 and 'pk.private-test' not in body
       assert response.headers['Cache-Control'] == 'no-store'
-      assert json.loads(body)['results'][0]['latitude'] == 37.
-      assert json.loads(body)['results'][0]['permanent'] is permanent
+      result = json.loads(body)['results'][0]
+      assert result['latitude'] == 25. and result['permanent'] is False
+      assert result['feature_type'] == 'address' and result['accuracy'] == 'interpolated' and result['match_confidence'] == 'medium'
       assert (await client.get('/api/navigation/search?q=Seoul')).status == 429
+  asyncio.run(run())
+
+
+def test_paid_and_invalid_queries_never_read_credentials_or_call_an_upstream(monkeypatch):
+  def forbidden(*args): raise AssertionError('credentials/network must not be reached')
+  monkeypatch.setattr(navigation, 'get_param_value', forbidden)
+  async def run():
+    app = web.Application();navigation.register(app)
+    async with TestClient(TestServer(app)) as client:
+      for params in [{'q':'臺北','permanent':'true'}, {'q':'臺北','permanent':'1'}, {'q':'臺北','country':'bad'}, {'q':'臺北','language':'bad'}, {'q':'x'}]:
+        assert (await client.get('/api/navigation/search',params=params)).status == 400
   asyncio.run(run())
 
 
@@ -139,27 +154,33 @@ def test_favorites_crud_persistence_and_navigation(monkeypatch, tmp_path, tempor
     app = web.Application(); navigation.register(app)
     async with TestClient(TestServer(app)) as client:
       assert (await (await client.get('/api/navigation/favorites')).json()) == {'favorites': []}
-      place = {'name': '家 🏠', 'place_name': '臺北市測試路', 'latitude': 25., 'longitude': 121., 'permanent': True}
+      place = {'provider':'query', 'name': '家 🏠', 'query':'臺北市測試路', 'latitude':25., 'longitude':121., 'permanent':False}
       response = await client.post('/api/navigation/favorites', json=place)
       assert response.status == 200 and response.headers['Cache-Control'] == 'no-store'
       identifier = (await response.json())['favorites'][0]['id']
       assert not temporary_params  # Saving does not start navigation.
-      renamed = dict(place, name='公司', permanent=False)
+      renamed = dict(place, name='公司')
       assert (await client.put('/api/navigation/favorites/' + identifier, json=renamed)).status == 200
-      changed = dict(place, name='公司', latitude=24., place_name='新竹市新地址')
+      changed = dict(place, name='公司', query='新竹市新地址')
       assert (await client.put('/api/navigation/favorites/' + identifier, json=changed)).status == 200
       assert not temporary_params
+      assert 'latitude' not in path.read_text() and 'longitude' not in path.read_text() and 'permanent' not in path.read_text()
     # A new application instance reads the same persisted favorite.
     app = web.Application(); navigation.register(app)
     async with TestClient(TestServer(app)) as client:
       saved = (await (await client.get('/api/navigation/favorites')).json())['favorites']
-      assert len(saved) == 1 and saved[0]['name'] == '公司' and saved[0]['latitude'] == 24.
-      assert (await client.post('/api/navigation/favorites/' + identifier + '/destination')).status == 200
+      assert len(saved) == 1 and saved[0]['name'] == '公司' and saved[0]['query'] == '新竹市新地址'
+      assert (await client.post('/api/navigation/favorites/' + identifier + '/destination')).status == 409
+      assert not temporary_params
+      response = await client.get('/api/navigation/favorites/' + identifier + '/query')
+      assert response.status == 200 and await response.json() == {'query':'新竹市新地址','requires_selection':True}
+      assert not temporary_params  # Opening a favorite cannot activate navigation.
+      assert (await client.post('/api/navigation/destination',json={'latitude':24.,'longitude':120.,'place_name':'新竹市新地址'})).status == 200
       active = json.loads(temporary_params['NavDestinationTemporary'])
       assert active['latitude'] == 24. and active['place_name'] == '新竹市新地址'
       assert (await client.delete('/api/navigation/favorites/' + identifier)).status == 200
       assert json.loads(temporary_params['NavDestinationTemporary']) == active  # Deleting a favorite does not end a drive.
-      assert (await client.post('/api/navigation/favorites/' + identifier + '/destination')).status == 404
+      assert (await client.get('/api/navigation/favorites/' + identifier + '/query')).status == 404
       assert (await client.delete('/api/navigation/destination')).status == 200
       assert not temporary_params
       assert (await (await client.get('/api/navigation/favorites')).json()) == {'favorites': []}
@@ -172,9 +193,8 @@ def test_favorites_reject_bad_input_and_preserve_file_on_failure(monkeypatch, tm
   async def run():
     app = web.Application(); navigation.register(app)
     async with TestClient(TestServer(app)) as client:
-      valid = {'name': '家', 'place_name': '測試地址', 'latitude': 25., 'longitude': 121., 'permanent': True}
-      for updates in ({'name': ''}, {'name': 'x' * 81}, {'latitude': True}, {'longitude': 181},
-                      {'latitude': None}, {'place_name': ''}, {'permanent': False}):
+      valid = {'provider':'query','name':'家','query':'測試地址'}
+      for updates in ({'name':''}, {'name':'x'*81}, {'query':''}, {'query':'x'}, {'query':'x'*201}, {'query':None}, {'provider':'invalid'}):
         assert (await client.post('/api/navigation/favorites', json=dict(valid, **updates))).status == 400
       assert (await client.post('/api/navigation/favorites', data='{', headers={'Content-Type':'application/json'})).status == 400
       assert not path.exists()

@@ -1,0 +1,2081 @@
+{
+  "date": "2026-11-18",
+  "environment": "Windows Chromium browser; no Android or physical vehicle",
+  "telemetry": "synthetic compact protocol; no vehicle IPC",
+  "layout": [
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 100,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 64,
+          "left": 0,
+          "right": 960,
+          "top": 296,
+          "width": 960,
+          "x": 0,
+          "y": 296
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "vision",
+        "scale": "100",
+        "width": 960
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 100,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 64,
+          "left": 0,
+          "right": 960,
+          "top": 296,
+          "width": 960,
+          "x": 0,
+          "y": 296
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "100",
+        "width": 960
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 100,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 64,
+          "left": 0,
+          "right": 960,
+          "top": 296,
+          "width": 960,
+          "x": 0,
+          "y": 296
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "setting",
+        "scale": "100",
+        "width": 960
+      },
+      "controls": {
+        "hostHeight": 193,
+        "overflowingControls": 0,
+        "scrollWidth": 950,
+        "titleFont": "18px",
+        "width": 950
+      }
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 100,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 64,
+          "left": 0,
+          "right": 960,
+          "top": 296,
+          "width": 960,
+          "x": 0,
+          "y": 296
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "tools",
+        "scale": "100",
+        "width": 960
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 100,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 64,
+          "left": 0,
+          "right": 960,
+          "top": 296,
+          "width": 960,
+          "x": 0,
+          "y": 296
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "logs",
+        "scale": "100",
+        "width": 960
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 200,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 86.390625,
+          "left": 0,
+          "right": 960,
+          "top": 273.609375,
+          "width": 960,
+          "x": 0,
+          "y": 273.609375
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "vision",
+        "scale": "200",
+        "width": 960
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 200,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 86.390625,
+          "left": 0,
+          "right": 960,
+          "top": 273.609375,
+          "width": 960,
+          "x": 0,
+          "y": 273.609375
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "200",
+        "width": 960
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 200,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 86.390625,
+          "left": 0,
+          "right": 960,
+          "top": 273.609375,
+          "width": 960,
+          "x": 0,
+          "y": 273.609375
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "setting",
+        "scale": "200",
+        "width": 960
+      },
+      "controls": {
+        "hostHeight": 193,
+        "overflowingControls": 0,
+        "scrollWidth": 950,
+        "titleFont": "36px",
+        "width": 950
+      }
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 200,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 86.390625,
+          "left": 0,
+          "right": 960,
+          "top": 273.609375,
+          "width": 960,
+          "x": 0,
+          "y": 273.609375
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "tools",
+        "scale": "200",
+        "width": 960
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        960,
+        360
+      ],
+      "font": 200,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 360,
+          "height": 86.390625,
+          "left": 0,
+          "right": 960,
+          "top": 273.609375,
+          "width": 960,
+          "x": 0,
+          "y": 273.609375
+        },
+        "fullscreen": false,
+        "height": 360,
+        "issues": [],
+        "panel": "logs",
+        "scale": "200",
+        "width": 960
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 100,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 96,
+          "left": 0,
+          "right": 1920,
+          "top": 624,
+          "width": 1920,
+          "x": 0,
+          "y": 624
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "vision",
+        "scale": "100",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 100,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 96,
+          "left": 0,
+          "right": 1920,
+          "top": 624,
+          "width": 1920,
+          "x": 0,
+          "y": 624
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "100",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 100,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 96,
+          "left": 0,
+          "right": 1920,
+          "top": 624,
+          "width": 1920,
+          "x": 0,
+          "y": 624
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "setting",
+        "scale": "100",
+        "width": 1920
+      },
+      "controls": {
+        "hostHeight": 385,
+        "overflowingControls": 0,
+        "scrollWidth": 1920,
+        "titleFont": "22px",
+        "width": 1920
+      }
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 100,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 96,
+          "left": 0,
+          "right": 1920,
+          "top": 624,
+          "width": 1920,
+          "x": 0,
+          "y": 624
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "tools",
+        "scale": "100",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 100,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 96,
+          "left": 0,
+          "right": 1920,
+          "top": 624,
+          "width": 1920,
+          "x": 0,
+          "y": 624
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "logs",
+        "scale": "100",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 200,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "vision",
+        "scale": "200",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 200,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "200",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 200,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "setting",
+        "scale": "200",
+        "width": 1920
+      },
+      "controls": {
+        "hostHeight": 326.328125,
+        "overflowingControls": 0,
+        "scrollWidth": 1920,
+        "titleFont": "44px",
+        "width": 1920
+      }
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 200,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "tools",
+        "scale": "200",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 200,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "logs",
+        "scale": "200",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 100,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 76,
+          "left": 0,
+          "right": 800,
+          "top": 524,
+          "width": 800,
+          "x": 0,
+          "y": 524
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "vision",
+        "scale": "100",
+        "width": 800
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 100,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 76,
+          "left": 0,
+          "right": 800,
+          "top": 524,
+          "width": 800,
+          "x": 0,
+          "y": 524
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "100",
+        "width": 800
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 100,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 76,
+          "left": 0,
+          "right": 800,
+          "top": 524,
+          "width": 800,
+          "x": 0,
+          "y": 524
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "setting",
+        "scale": "100",
+        "width": 800
+      },
+      "controls": {
+        "hostHeight": 267,
+        "overflowingControls": 0,
+        "scrollWidth": 800,
+        "titleFont": "18px",
+        "width": 800
+      }
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 100,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 76,
+          "left": 0,
+          "right": 800,
+          "top": 524,
+          "width": 800,
+          "x": 0,
+          "y": 524
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "tools",
+        "scale": "100",
+        "width": 800
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 100,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 76,
+          "left": 0,
+          "right": 800,
+          "top": 524,
+          "width": 800,
+          "x": 0,
+          "y": 524
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "logs",
+        "scale": "100",
+        "width": 800
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 200,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 102.59375,
+          "left": 0,
+          "right": 800,
+          "top": 497.40625,
+          "width": 800,
+          "x": 0,
+          "y": 497.40625
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "vision",
+        "scale": "200",
+        "width": 800
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 200,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 102.59375,
+          "left": 0,
+          "right": 800,
+          "top": 497.40625,
+          "width": 800,
+          "x": 0,
+          "y": 497.40625
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "200",
+        "width": 800
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 200,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 102.59375,
+          "left": 0,
+          "right": 800,
+          "top": 497.40625,
+          "width": 800,
+          "x": 0,
+          "y": 497.40625
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "setting",
+        "scale": "200",
+        "width": 800
+      },
+      "controls": {
+        "hostHeight": 219.875,
+        "overflowingControls": 0,
+        "scrollWidth": 800,
+        "titleFont": "36px",
+        "width": 800
+      }
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 200,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 102.59375,
+          "left": 0,
+          "right": 800,
+          "top": 497.40625,
+          "width": 800,
+          "x": 0,
+          "y": 497.40625
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "tools",
+        "scale": "200",
+        "width": 800
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "font": 200,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 600,
+          "height": 102.59375,
+          "left": 0,
+          "right": 800,
+          "top": 497.40625,
+          "width": 800,
+          "x": 0,
+          "y": 497.40625
+        },
+        "fullscreen": false,
+        "height": 600,
+        "issues": [],
+        "panel": "logs",
+        "scale": "200",
+        "width": 800
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 125,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 120,
+          "left": 0,
+          "right": 1920,
+          "top": 600,
+          "width": 1920,
+          "x": 0,
+          "y": 600
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "vision",
+        "scale": "125",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 125,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 120,
+          "left": 0,
+          "right": 1920,
+          "top": 600,
+          "width": 1920,
+          "x": 0,
+          "y": 600
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "125",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 125,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 120,
+          "left": 0,
+          "right": 1920,
+          "top": 600,
+          "width": 1920,
+          "x": 0,
+          "y": 600
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "setting",
+        "scale": "125",
+        "width": 1920
+      },
+      "controls": {
+        "hostHeight": 315,
+        "overflowingControls": 0,
+        "scrollWidth": 1920,
+        "titleFont": "27.5px",
+        "width": 1920
+      }
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 125,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 120,
+          "left": 0,
+          "right": 1920,
+          "top": 600,
+          "width": 1920,
+          "x": 0,
+          "y": 600
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "tools",
+        "scale": "125",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 125,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 120,
+          "left": 0,
+          "right": 1920,
+          "top": 600,
+          "width": 1920,
+          "x": 0,
+          "y": 600
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "logs",
+        "scale": "125",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 150,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "vision",
+        "scale": "150",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 150,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "150",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 150,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "setting",
+        "scale": "150",
+        "width": 1920
+      },
+      "controls": {
+        "hostHeight": 290.828125,
+        "overflowingControls": 0,
+        "scrollWidth": 1920,
+        "titleFont": "33px",
+        "width": 1920
+      }
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 150,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "tools",
+        "scale": "150",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "font": 150,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 720,
+          "height": 129.59375,
+          "left": 0,
+          "right": 1920,
+          "top": 590.40625,
+          "width": 1920,
+          "x": 0,
+          "y": 590.40625
+        },
+        "fullscreen": false,
+        "height": 720,
+        "issues": [],
+        "panel": "logs",
+        "scale": "150",
+        "width": 1920
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 100,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 68,
+          "left": 0,
+          "right": 1280,
+          "top": 412,
+          "width": 1280,
+          "x": 0,
+          "y": 412
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "vision",
+        "scale": "100",
+        "width": 1280
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 100,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 68,
+          "left": 0,
+          "right": 1280,
+          "top": 412,
+          "width": 1280,
+          "x": 0,
+          "y": 412
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "100",
+        "width": 1280
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 100,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 68,
+          "left": 0,
+          "right": 1280,
+          "top": 412,
+          "width": 1280,
+          "x": 0,
+          "y": 412
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "setting",
+        "scale": "100",
+        "width": 1280
+      },
+      "controls": {
+        "hostHeight": 192,
+        "overflowingControls": 0,
+        "scrollWidth": 1280,
+        "titleFont": "18px",
+        "width": 1280
+      }
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 100,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 68,
+          "left": 0,
+          "right": 1280,
+          "top": 412,
+          "width": 1280,
+          "x": 0,
+          "y": 412
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "tools",
+        "scale": "100",
+        "width": 1280
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 100,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 68,
+          "left": 0,
+          "right": 1280,
+          "top": 412,
+          "width": 1280,
+          "x": 0,
+          "y": 412
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "logs",
+        "scale": "100",
+        "width": 1280
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 200,
+      "page": "vision",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 91.796875,
+          "left": 0,
+          "right": 1280,
+          "top": 388.203125,
+          "width": 1280,
+          "x": 0,
+          "y": 388.203125
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "vision",
+        "scale": "200",
+        "width": 1280
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 200,
+      "page": "navigation",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 91.796875,
+          "left": 0,
+          "right": 1280,
+          "top": 388.203125,
+          "width": 1280,
+          "x": 0,
+          "y": 388.203125
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "navigation",
+        "scale": "200",
+        "width": 1280
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 200,
+      "page": "setting",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 91.796875,
+          "left": 0,
+          "right": 1280,
+          "top": 388.203125,
+          "width": 1280,
+          "x": 0,
+          "y": 388.203125
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "setting",
+        "scale": "200",
+        "width": 1280
+      },
+      "controls": {
+        "hostHeight": 125.875,
+        "overflowingControls": 0,
+        "scrollWidth": 1280,
+        "titleFont": "36px",
+        "width": 1280
+      }
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 200,
+      "page": "tools",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 91.796875,
+          "left": 0,
+          "right": 1280,
+          "top": 388.203125,
+          "width": 1280,
+          "x": 0,
+          "y": 388.203125
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "tools",
+        "scale": "200",
+        "width": 1280
+      },
+      "controls": null
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "font": 200,
+      "page": "logs",
+      "shell": {
+        "dock": {
+          "bottom": 480,
+          "height": 91.796875,
+          "left": 0,
+          "right": 1280,
+          "top": 388.203125,
+          "width": 1280,
+          "x": 0,
+          "y": 388.203125
+        },
+        "fullscreen": false,
+        "height": 480,
+        "issues": [],
+        "panel": "logs",
+        "scale": "200",
+        "width": 1280
+      },
+      "controls": null
+    }
+  ],
+  "fullscreen_observations": [
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 480,
+        "height": 91.796875,
+        "left": 0,
+        "right": 1280,
+        "top": 388.203125,
+        "width": 1280,
+        "x": 0,
+        "y": 388.203125
+      },
+      "fullscreen": true,
+      "height": 480,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 1280
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 480,
+        "height": 91.796875,
+        "left": 0,
+        "right": 1280,
+        "top": 388.203125,
+        "width": 1280,
+        "x": 0,
+        "y": 388.203125
+      },
+      "fullscreen": true,
+      "height": 480,
+      "issues": [],
+      "panel": "setting",
+      "scale": "200",
+      "width": 1280
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 480,
+        "height": 91.796875,
+        "left": 0,
+        "right": 1280,
+        "top": 388.203125,
+        "width": 1280,
+        "x": 0,
+        "y": 388.203125
+      },
+      "fullscreen": true,
+      "height": 480,
+      "issues": [],
+      "panel": "navigation",
+      "scale": "200",
+      "width": 1280
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 480,
+        "height": 91.796875,
+        "left": 0,
+        "right": 1280,
+        "top": 388.203125,
+        "width": 1280,
+        "x": 0,
+        "y": 388.203125
+      },
+      "fullscreen": true,
+      "height": 480,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 1280
+    },
+    {
+      "expected": [
+        1280,
+        480
+      ],
+      "phase": "exit",
+      "dock": {
+        "bottom": 480,
+        "height": 91.796875,
+        "left": 0,
+        "right": 1280,
+        "top": 388.203125,
+        "width": 1280,
+        "x": 0,
+        "y": 388.203125
+      },
+      "fullscreen": false,
+      "height": 480,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 1280
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 720,
+        "height": 129.59375,
+        "left": 0,
+        "right": 1920,
+        "top": 590.40625,
+        "width": 1920,
+        "x": 0,
+        "y": 590.40625
+      },
+      "fullscreen": true,
+      "height": 720,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 1920
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 720,
+        "height": 129.59375,
+        "left": 0,
+        "right": 1920,
+        "top": 590.40625,
+        "width": 1920,
+        "x": 0,
+        "y": 590.40625
+      },
+      "fullscreen": true,
+      "height": 720,
+      "issues": [],
+      "panel": "setting",
+      "scale": "200",
+      "width": 1920
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 720,
+        "height": 129.59375,
+        "left": 0,
+        "right": 1920,
+        "top": 590.40625,
+        "width": 1920,
+        "x": 0,
+        "y": 590.40625
+      },
+      "fullscreen": true,
+      "height": 720,
+      "issues": [],
+      "panel": "navigation",
+      "scale": "200",
+      "width": 1920
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 720,
+        "height": 129.59375,
+        "left": 0,
+        "right": 1920,
+        "top": 590.40625,
+        "width": 1920,
+        "x": 0,
+        "y": 590.40625
+      },
+      "fullscreen": true,
+      "height": 720,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 1920
+    },
+    {
+      "expected": [
+        1920,
+        720
+      ],
+      "phase": "exit",
+      "dock": {
+        "bottom": 720,
+        "height": 129.59375,
+        "left": 0,
+        "right": 1920,
+        "top": 590.40625,
+        "width": 1920,
+        "x": 0,
+        "y": 590.40625
+      },
+      "fullscreen": false,
+      "height": 720,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 1920
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 600,
+        "height": 102.59375,
+        "left": 0,
+        "right": 800,
+        "top": 497.40625,
+        "width": 800,
+        "x": 0,
+        "y": 497.40625
+      },
+      "fullscreen": true,
+      "height": 600,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 800
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 600,
+        "height": 102.59375,
+        "left": 0,
+        "right": 800,
+        "top": 497.40625,
+        "width": 800,
+        "x": 0,
+        "y": 497.40625
+      },
+      "fullscreen": true,
+      "height": 600,
+      "issues": [],
+      "panel": "setting",
+      "scale": "200",
+      "width": 800
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 600,
+        "height": 102.59375,
+        "left": 0,
+        "right": 800,
+        "top": 497.40625,
+        "width": 800,
+        "x": 0,
+        "y": 497.40625
+      },
+      "fullscreen": true,
+      "height": 600,
+      "issues": [],
+      "panel": "navigation",
+      "scale": "200",
+      "width": 800
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 600,
+        "height": 102.59375,
+        "left": 0,
+        "right": 800,
+        "top": 497.40625,
+        "width": 800,
+        "x": 0,
+        "y": 497.40625
+      },
+      "fullscreen": true,
+      "height": 600,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 800
+    },
+    {
+      "expected": [
+        800,
+        600
+      ],
+      "phase": "exit",
+      "dock": {
+        "bottom": 600,
+        "height": 102.59375,
+        "left": 0,
+        "right": 800,
+        "top": 497.40625,
+        "width": 800,
+        "x": 0,
+        "y": 497.40625
+      },
+      "fullscreen": false,
+      "height": 600,
+      "issues": [],
+      "panel": "vision",
+      "scale": "200",
+      "width": 800
+    },
+    {
+      "expected": [
+        1280,
+        720
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 1080,
+        "height": 96,
+        "left": 0,
+        "right": 1920,
+        "top": 984,
+        "width": 1920,
+        "x": 0,
+        "y": 984
+      },
+      "fullscreen": true,
+      "height": 1080,
+      "issues": [],
+      "panel": "vision",
+      "scale": "100",
+      "width": 1920
+    },
+    {
+      "expected": [
+        1280,
+        720
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 1080,
+        "height": 96,
+        "left": 0,
+        "right": 1920,
+        "top": 984,
+        "width": 1920,
+        "x": 0,
+        "y": 984
+      },
+      "fullscreen": true,
+      "height": 1080,
+      "issues": [],
+      "panel": "setting",
+      "scale": "100",
+      "width": 1920
+    },
+    {
+      "expected": [
+        1280,
+        720
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 1080,
+        "height": 96,
+        "left": 0,
+        "right": 1920,
+        "top": 984,
+        "width": 1920,
+        "x": 0,
+        "y": 984
+      },
+      "fullscreen": true,
+      "height": 1080,
+      "issues": [],
+      "panel": "navigation",
+      "scale": "100",
+      "width": 1920
+    },
+    {
+      "expected": [
+        1280,
+        720
+      ],
+      "phase": "inside",
+      "dock": {
+        "bottom": 1080,
+        "height": 96,
+        "left": 0,
+        "right": 1920,
+        "top": 984,
+        "width": 1920,
+        "x": 0,
+        "y": 984
+      },
+      "fullscreen": true,
+      "height": 1080,
+      "issues": [],
+      "panel": "vision",
+      "scale": "100",
+      "width": 1920
+    },
+    {
+      "expected": [
+        1280,
+        720
+      ],
+      "phase": "exit",
+      "dock": {
+        "bottom": 1080,
+        "height": 96,
+        "left": 0,
+        "right": 1920,
+        "top": 984,
+        "width": 1920,
+        "x": 0,
+        "y": 984
+      },
+      "fullscreen": false,
+      "height": 1080,
+      "issues": [],
+      "panel": "vision",
+      "scale": "100",
+      "width": 1920
+    }
+  ],
+  "settings": {
+    "final": {
+      "MyDrivingMode": 3,
+      "SoundLanguageVolume": 100
+    },
+    "writes": [
+      {
+        "path": "/api/param_set",
+        "body": {
+          "name": "SoundLanguageVolume",
+          "value": 101,
+          "source": "web_ui"
+        }
+      },
+      {
+        "path": "/api/param_set",
+        "body": {
+          "name": "SoundLanguageVolume",
+          "value": 100,
+          "source": "web_ui"
+        }
+      }
+    ]
+  },
+  "navigation": {
+    "search_calls": [
+      {
+        "q": "台北市信義區信義路五段7號",
+        "country": "tw",
+        "language": "zh-Hant",
+        "permanent": "false"
+      }
+    ],
+    "final": {
+      "NavDestination": "",
+      "NavDestinationWaypoints": ""
+    },
+    "real_provider_calls": 0
+  },
+  "video": {
+    "initial_summary": {
+      "source": "traffic",
+      "videoTime": 22.355151,
+      "videoPaused": false,
+      "width": 1280,
+      "height": 720,
+      "fullscreen": false,
+      "panel": "vision",
+      "parentOnly": false,
+      "perception": {
+        "objects": {
+          "status": "ready",
+          "count": 0,
+          "positioned": 0,
+          "classes": {},
+          "revision": 231,
+          "videoTime": 22.224268
+        },
+        "road": {
+          "status": "off",
+          "count": 0,
+          "positioned": 0,
+          "classes": {},
+          "revision": 0,
+          "videoTime": null
+        }
+      },
+      "evidence": {
+        "results": 210,
+        "classes": {
+          "person": {
+            "frames": 162,
+            "differentBoxes": 100
+          },
+          "car": {
+            "frames": 22,
+            "differentBoxes": 22
+          },
+          "motorcycle": {
+            "frames": 67,
+            "differentBoxes": 63
+          },
+          "bicycle": {
+            "frames": 2,
+            "differentBoxes": 2
+          }
+        },
+        "latest": [],
+        "workerStarts": 7,
+        "workerStops": 6,
+        "durationMs": 89.2000000178814
+      }
+    },
+    "after_fullscreen": {
+      "source": "motorcycles",
+      "videoTime": 14.865494,
+      "videoPaused": false,
+      "width": 1280,
+      "height": 720,
+      "fullscreen": false,
+      "panel": "vision",
+      "parentOnly": false,
+      "perception": {
+        "objects": {
+          "status": "ready",
+          "count": 1,
+          "positioned": 1,
+          "classes": {
+            "motorcycle": 1
+          },
+          "revision": 489,
+          "videoTime": 14.52075
+        },
+        "road": {
+          "status": "off",
+          "count": 0,
+          "positioned": 0,
+          "classes": {},
+          "revision": 0,
+          "videoTime": null
+        }
+      },
+      "evidence": {
+        "results": 458,
+        "classes": {
+          "person": {
+            "frames": 537,
+            "differentBoxes": 100
+          },
+          "motorcycle": {
+            "frames": 268,
+            "differentBoxes": 100
+          },
+          "bicycle": {
+            "frames": 19,
+            "differentBoxes": 12
+          },
+          "car": {
+            "frames": 24,
+            "differentBoxes": 12
+          }
+        },
+        "latest": [
+          {
+            "kind": "motorcycle",
+            "score": 0.5703125,
+            "box": {
+              "originX": 216,
+              "originY": 206,
+              "width": 59,
+              "height": 59,
+              "angle": 0
+            }
+          }
+        ],
+        "workerStarts": 10,
+        "workerStops": 9,
+        "durationMs": 118.7000000178814
+      }
+    },
+    "positioned_observations": {
+      "person": 289,
+      "motorcycle": 157,
+      "car": 17,
+      "bicycle": 10
+    },
+    "source": "real local clips, actual EfficientDet-Lite0; synthetic calibration"
+  },
+  "lamps": {
+    "final_ev6": {
+      "brakeLamp": "true",
+      "cameraDistance": "9.000",
+      "leftLamp": "true",
+      "rightLamp": "false",
+      "speedZoom": "0.000",
+      "vehicleSkin": "ev6",
+      "viewPitch": "30",
+      "viewYaw": "30"
+    },
+    "stale": {
+      "brakeLamp": "false",
+      "cameraDistance": "16.000",
+      "leftLamp": "false",
+      "rightLamp": "false",
+      "speedZoom": "1.000",
+      "vehicleSkin": "ev9",
+      "viewPitch": "25",
+      "viewYaw": "10"
+    }
+  },
+  "native_apk": {
+    "version": "0.5.0",
+    "sha256": "d5739ffae92087b8821f3d710bfca6ed39f9884124f268892ffccf93ebdc4941",
+    "changed": false
+  },
+  "limits": [
+    "No physical Android/head unit or touch testing",
+    "No real Mapbox geocoder/routing accuracy or cost benchmark",
+    "Vehicle meshes are original illustrative art, not OEM CAD",
+    "Camera-only objects do not provide 360-degree surroundings",
+    "Blinker animation follows activation state, not the exact physical lamp phase"
+  ]
+}
