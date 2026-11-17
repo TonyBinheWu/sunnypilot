@@ -7,11 +7,11 @@ from opendbc.car.hyundai.values import HyundaiFlags
 from openpilot.selfdrive.controls.lib import latcontrol_torque
 
 
-def make_controller(monkeypatch, enabled):
-  settings = {'LowSpeedSteerReserve': enabled, 'CustomSteerMax': 0}
+def make_controller(monkeypatch, enabled, fingerprint="", phase1=False):
+  settings = {'LowSpeedSteerReserve': enabled, 'CustomSteerMax': 0, 'HkgPhase1Assist': phase1}
   monkeypatch.setattr(latcontrol_torque, 'Params', lambda: NS(
     get_bool=lambda k: bool(settings.get(k, 0)), get_int=lambda k: settings.get(k, 0)))
-  cp = structs.CarParams(brand='hyundai', flags=int(HyundaiFlags.CANFD), steerControlType='torque', steerLimitTimer=.4)
+  cp = structs.CarParams(carFingerprint=fingerprint, brand='hyundai', flags=int(HyundaiFlags.CANFD), steerControlType='torque', steerLimitTimer=.4)
   cp.lateralTuning.init('torque')
   cp.lateralTuning.torque = dict(kp=1, ki=0, kf=1, useSteeringAngle=True, latAccelFactor=3.2)
   # Controlled geometry/torque mapping isolates the real controller/PID clipping.
@@ -69,3 +69,17 @@ def test_manual_max_does_not_change_enabled_factory_normalization(monkeypatch):
   f[-1]['LowSpeedSteerReserve'] = False
   run(f, .04, 100)
   assert f[0].reserve_base == 409
+
+
+@pytest.mark.parametrize('fingerprint', ['KIA_EV6', 'HYUNDAI_IONIQ_5', 'KIA_CARNIVAL_4TH_GEN', 'KIA_SORENTO_4TH_GEN'])
+def test_phase1_switch_uses_existing_real_pid_headroom_and_live_off(monkeypatch, fingerprint):
+  f = make_controller(monkeypatch, False, fingerprint, True)
+  assert abs(run(f, .04)[-1]) == pytest.approx(409 / 270)
+  assert f[0].reserve_base == 270
+  f[-1]['HkgPhase1Assist'] = False
+  assert abs(run(f, .04, 100)[-1]) == 1
+
+
+def test_phase1_does_not_enable_reserve_on_other_platform(monkeypatch):
+  f = make_controller(monkeypatch, False, 'HYUNDAI_TUCSON_4TH_GEN', True)
+  assert abs(run(f, .04)[-1]) == 1

@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested headroom up to 409 at ≤30 km/h and demand-dependent command slew up to 4/4 per 10 ms. Taper at 30–40 km/h; ≥40 uses factory scaling and 2/3. Stored manual values and tuning remain. Records never raise limits. Requires updated Panda firmware, reboot and vehicle validation.
+Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested headroom up to 409 at ≤30 km/h and demand-dependent command slew up to 4/4 per 10 ms. Taper at 30–40 km/h; ≥40 uses factory scaling and 2/3. Stored manual values and tuning remain. Records never raise limits. Requires updated Panda firmware, reboot and vehicle validation. For supported EV6/Ioniq 5/Carnival/Sorento variants, HkgPhase1Assist also enables this bounded low-speed path. Turn both switches off to restore stored manual limits.
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="f5145111d36fb125b70286d917cd39ffb1c1a7d92fd0303643ff0580a90a52f4" semantic="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="7574906d6f95bcb6980402a26f5226d08f30779e7d9ef6805e01b284cc0e3eae" semantic="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
@@ -26,7 +26,7 @@ Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested h
 <!-- CARROT:AUTO:END LowSpeedSteerReserve -->
 
 <!-- CARROT:MANUAL:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:REVIEW reviewed-for="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" reviewed-at="2026-11-17T15:00:00Z" -->
+<!-- CARROT:REVIEW reviewed-for="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" reviewed-at="2026-11-18T00:00:00+08:00" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### Behavior
 
@@ -41,6 +41,7 @@ Stored CustomSteerMax and CustomSteerDelta values are not overwritten; while ena
 Update while parked and complete a restart so the updated Panda firmware and safety parameters load. The optional switch remains below CustomSteerMax and defaults off; after that initial update it is read within about 0.5 s without restarting again. Device > Steering learning progress and Web/APK > Tools > Steering learning progress show current commands, selected slew, target/measured wheel angle and rate, restriction reasons and left/right observed peaks.
 
 Live status expires after 2 s. Saved aggregates are historical, local-only, matched by vehicle/control type and written at most once per 60 s or on exit; no position, route or cloud upload is collected by this recorder.
+For supported EV6/Ioniq 5/Carnival/Sorento variants, HkgPhase1Assist also enables this bounded low-speed path. Turn both switches off to restore stored manual limits.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->

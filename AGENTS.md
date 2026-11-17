@@ -1,5 +1,25 @@
 # Repository memory
 
+- 2026-11-18 HkgPhase1Assist default OFF scopes exact registered EV6/Ioniq5/
+  Carnival/Sorento platforms, preserving fingerprint/HDA/control protocol. The
+  lane-less model target reduces same-direction low-speed turn-in tau by up to
+  40%, taper30–40; custom lane-plan filter/delay stay unchanged. Small highway
+  curvature corrections add <=0.08s tau, larger changes less. Existing final
+  curvature, actuator, driver and Panda guards remain authoritative. Supported
+  CANFD torque uses the existing low-speed reserve when EITHER switch is ON;
+  disable both to restore stored manual limits. Angle/classic Sorento gain no
+  extra actuator authority. Fresh consecutive model frames qualify a near4s
+  model-geometry curve speed envelope in direct-long ACC + active lateral only;
+  real recv_time guards handle radar/model polling. Apply optional ceiling AFTER
+  Carrot's MPC cruise reassignment; lower stop/speed targets win. Block coasting
+  and lead acceleration preview from relaxing curve braking while constrained.
+  New curve code never requests a stop, no emergency/U-turn/full-lock addition.
+  hkg_phase1_curve diagnostics max1Hz, no location. 417 controller/planner,
+  47 native Panda,299 settings JS,34 Wiki pass; isolated IPC/Params and MPC-input
+  tests are NOT a full native-solver or vehicle closed-loop acceptance. No car
+  installed/enabled, no EPS capability or FSD-equivalence claim. See
+  docs/HKG_PHASE1_ASSIST.zh-TW.md. Preserve prior full-safety-suite limitations.
+
 - 2026-11-17 Cockpit0.5.0/code7: car-oriented flat composition; one status
   bar and fixed five-item dock, full-width settings, grouped app launcher,
   <=820px category drawer, independent scrolling and per-section tab memory.

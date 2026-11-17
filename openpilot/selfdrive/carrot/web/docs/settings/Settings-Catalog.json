@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "4fa1dada1b5b3f6278ec17c2b9c33a9816cd9e32",
-  "contentHash": "5874e53495de811517a2e1f82092255e92ba8966b15e8faaa243db25d0f00a83",
-  "generatedAt": "2026-11-17T14:45:59Z",
+  "catalogCommit": "b77f4702eebd8770f600608680f10623838d9b57",
+  "contentHash": "4e3f335585476294b7b3dc46180c118851c6c8c5d7463905b64d0494146866b9",
+  "generatedAt": "2026-11-17T16:45:55Z",
   "locales": [
     "ko",
     "en",
@@ -385,6 +385,10 @@
       "bytes": 2174,
       "hash": "c259263b066ff8622f805521d3fa729514c5f8e1b948a8d4dfabbe76ef622750"
     },
+    "EN-Hyundai-Kia-four-family-steering-and-curve-assist.md": {
+      "bytes": 4824,
+      "hash": "608ef7edc181935b7b4369571c11a7a716b76d9ed65246c4862fae2d9a7bac99"
+    },
     "EN-LATMPC.AccelCost(120).md": {
       "bytes": 2169,
       "hash": "b9c69b3512601dca7c4dfbf4d2ba603268a57fb57f4dfacc4d4ecffc3b86b3d2"
@@ -482,8 +486,8 @@
       "hash": "b5523344a4795db00ab320c59287f5cb0dd5b1a1f047526b49e79ed41b848e52"
     },
     "EN-Low-speed-demand-follow-and-response-records.md": {
-      "bytes": 4271,
-      "hash": "9d14475c14c17e9bd7f3a2bda4523f268fd99e2f0ff5b7c7cf9d07f3101a2209"
+      "bytes": 4610,
+      "hash": "2bef7816701372d9f79a77463dd3694aa503af69249d6db8118a27b4ff301d4e"
     },
     "EN-Manual-lane-change-indicator-(trial).md": {
       "bytes": 5060,
@@ -1506,8 +1510,8 @@
       "hash": "98010b69e61dd9d2fbc9f2f47b201082a5939619975f340c58247746f20f193a"
     },
     "KO-저속-요구-추종·응답-기록.md": {
-      "bytes": 4689,
-      "hash": "31d258469ba33b862d6a363980cce1efe8ea1610bef1791c3eb92ab7ac44cb60"
+      "bytes": 5048,
+      "hash": "a596f461b702f2c7394071087df91283b7bf29effd1727c94740b9d4f39b29aa"
     },
     "KO-저속조향제한해제.md": {
       "bytes": 2188,
@@ -1733,13 +1737,17 @@
       "bytes": 2194,
       "hash": "218029d27f32811bdf611ebd37608ab9c8908c960eb55ceea70092e1cccdefff"
     },
+    "KO-현대·기아-4차종-조향·커브-보조.md": {
+      "bytes": 4967,
+      "hash": "730c78802a49fd26e34f5bd6419747fe90f1cbe60a1256ad7300c0ee36ad71b5"
+    },
     "KO-후면단속-통과-후-유지-거리(m).md": {
       "bytes": 3477,
       "hash": "c36b52d2f81711770bb6532877ab8c359e6f5d670cc0ff058db0b0c834b7e810"
     },
     "Settings-Catalog.md": {
-      "bytes": 145535,
-      "hash": "84a5477fd06dc2fa59fc1a9b891c8adaa1ec737f9bf29b07c046851894a1a5aa"
+      "bytes": 146440,
+      "hash": "1e380708759185c082aad80a73670daa04a0bc276d3dcf4db28b364f319b8ccb"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -1938,8 +1946,8 @@
       "hash": "2278d4866eecf73ec1b9d6067ef62195945a4b3e78e743cd66e19e70de9b67cd"
     },
     "ZH-TW-低速需求跟隨與反應記錄.md": {
-      "bytes": 4159,
-      "hash": "cc1de15fbbf645476937a904c6b02621f0c5bd9e47de53713b2e2e2382c9378e"
+      "bytes": 4464,
+      "hash": "616a7fa30a74a2ed10025753393da93f86f290e07814c064fb2528f283ac1391"
     },
     "ZH-TW-使用-HDP-(CCNC).md": {
       "bytes": 1730,
@@ -2320,6 +2328,10 @@
     "ZH-TW-現代-攝影機-SCC-(0).md": {
       "bytes": 3917,
       "hash": "7bc8d8c62d3b937a99e38ef30a25b03951b3159870ca13b2394b6ca9facec34a"
+    },
+    "ZH-TW-現代起亞四車系轉向與彎道輔助.md": {
+      "bytes": 4153,
+      "hash": "56d3beea67730e027a7bafd927404e973c833299b12eedefdfc014aff1a271f9"
     },
     "ZH-TW-盲區保持時間.md": {
       "bytes": 1621,
@@ -2710,8 +2722,8 @@
       "hash": "aaecc6b34b45bf9bf598a228f0b40733fd2a9abf1c530256afb7abd95501f287"
     },
     "ZH-低速需求跟随与反应记录.md": {
-      "bytes": 4148,
-      "hash": "fca04c8fcf44e83150ea3587d3355f37b40105b70db31c4df96575233426b1bd"
+      "bytes": 4453,
+      "hash": "442a2829595649fcffab48ab11a1a74ee70d83ca51a4b9c5a90f499fdd574f1d"
     },
     "ZH-使用-HDP-(CCNC).md": {
       "bytes": 1054,
@@ -3205,6 +3217,10 @@
       "bytes": 2046,
       "hash": "11ac43f86930cca3e85332819e415927c7133b3d3c73161bfefcc75d5d03d88d"
     },
+    "ZH-现代起亚四车系转向与弯道辅助.md": {
+      "bytes": 4152,
+      "hash": "a40517dcb01085a950945013d1acea0a90d09e4bd61bebb6fbdf430f10386f1b"
+    },
     "ZH-盲区保持时间.md": {
       "bytes": 1618,
       "hash": "9cbdad852036463f4681fad3f5573007f271321994103c4f8d7925a92a707676"
@@ -3471,7 +3487,7 @@
     }
   },
   "review": {
-    "current": 47,
+    "current": 48,
     "needs_review": 169
   },
   "schemaVersion": 1,
@@ -6452,6 +6468,37 @@
       "reviewStatus": "needs_review",
       "semanticHash": "1d1f4a2f5d6f90a2445f2e04e4f643f09e565be8708d71ac3d2190980ba0455c"
     },
+    "HkgPhase1Assist": {
+      "group": "STEER_FEEL",
+      "locales": {
+        "en": {
+          "anchor": "HkgPhase1Assist",
+          "factsHash": "a22be7dc124e3b5829b190a6c3ccdb467cd20bed2ac8da13cafc35ae866f23f3",
+          "page": "EN-Hyundai-Kia-four-family-steering-and-curve-assist.md",
+          "reviewStatus": "current"
+        },
+        "ko": {
+          "anchor": "HkgPhase1Assist",
+          "factsHash": "302e6748e18a7083e043a54f47220ff1b49e6ae80778ea24e113ed557167ade2",
+          "page": "KO-현대·기아-4차종-조향·커브-보조.md",
+          "reviewStatus": "current"
+        },
+        "zh": {
+          "anchor": "HkgPhase1Assist",
+          "factsHash": "d661b1f6f8871a26792cac2b9e6522525f958e96c606b40dd4c2f37458f44936",
+          "page": "ZH-现代起亚四车系转向与弯道辅助.md",
+          "reviewStatus": "current"
+        },
+        "zh-tw": {
+          "anchor": "HkgPhase1Assist",
+          "factsHash": "527533dbc49133dd2ba8619e49a61cc786027a1915fb52a70dc4bb8cce4307f7",
+          "page": "ZH-TW-現代起亞四車系轉向與彎道輔助.md",
+          "reviewStatus": "current"
+        }
+      },
+      "reviewStatus": "current",
+      "semanticHash": "1c9c7c054bb743a7a9af0906faec089755f21f0f914e02d4a5b7addd3c56d7c2"
+    },
     "HotspotOnBoot": {
       "group": "SYS_NET",
       "locales": {
@@ -7542,31 +7589,31 @@
       "locales": {
         "en": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "f5145111d36fb125b70286d917cd39ffb1c1a7d92fd0303643ff0580a90a52f4",
+          "factsHash": "7574906d6f95bcb6980402a26f5226d08f30779e7d9ef6805e01b284cc0e3eae",
           "page": "EN-Low-speed-demand-follow-and-response-records.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "1b8748d3c1f306b1fe9c1dadaaebe40db5436a4f3850122028407669d08028f7",
+          "factsHash": "34b4d740533cf94066d7a8cc5f5b6a35012619f566bee55dc64f01f6559d8713",
           "page": "KO-저속-요구-추종·응답-기록.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "56fb1c4c72d5f4f2e308e58aca3d3c4e083d905a7f1fce6234dd7619fad8b8ed",
+          "factsHash": "a77175bb3adecabdf299a0866b0dbbf3522114f58115fa903e9bcafe39511461",
           "page": "ZH-低速需求跟随与反应记录.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "dde8f5f52f60aca68026b8d701d363ec3eb5acb86937605c88fc7b6b4ab6ea5b",
+          "factsHash": "cf8ebd287c6ef981e39228336221bde40ad8a9e40204b78d4fece85d493eea50",
           "page": "ZH-TW-低速需求跟隨與反應記錄.md",
           "reviewStatus": "current"
         }
       },
       "reviewStatus": "current",
-      "semanticHash": "861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700"
+      "semanticHash": "05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca"
     },
     "ManualLaneChangeIndicator": {
       "group": "STEER_LANECHANGE",

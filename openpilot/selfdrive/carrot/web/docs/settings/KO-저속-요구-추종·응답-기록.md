@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-현대/기아 CAN-FD 토크 전용. 0.30초 지속 요구 후 ≤30 km/h에서 필요한 출력만 최대 409, 명령 증가/감소율은 최대 4/4(10 ms당)까지 조정합니다. 30–40 km/h에서 감쇠하고 ≥40은 공장 기본 비율과 2/3을 사용합니다. 수동 값과 학습값은 보존하며 기록으로 한계를 높이지 않습니다. Panda 업데이트와 재시작 및 실차 검증이 필요합니다.
+현대/기아 CAN-FD 토크 전용. 0.30초 지속 요구 후 ≤30 km/h에서 필요한 출력만 최대 409, 명령 증가/감소율은 최대 4/4(10 ms당)까지 조정합니다. 30–40 km/h에서 감쇠하고 ≥40은 공장 기본 비율과 2/3을 사용합니다. 수동 값과 학습값은 보존하며 기록으로 한계를 높이지 않습니다. Panda 업데이트와 재시작 및 실차 검증이 필요합니다. 지원 EV6/Ioniq 5/Carnival/Sorento에서는 HkgPhase1Assist도 이 저속 경로를 켭니다. 저장된 수동 한계를 복원하려면 두 스위치를 모두 끄십시오.
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="1b8748d3c1f306b1fe9c1dadaaebe40db5436a4f3850122028407669d08028f7" semantic="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="34b4d740533cf94066d7a8cc5f5b6a35012619f566bee55dc64f01f6559d8713" semantic="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
@@ -26,7 +26,7 @@
 <!-- CARROT:AUTO:END LowSpeedSteerReserve -->
 
 <!-- CARROT:MANUAL:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:REVIEW reviewed-for="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" reviewed-at="2026-11-17T15:00:00Z" -->
+<!-- CARROT:REVIEW reviewed-for="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" reviewed-at="2026-11-18T00:00:00+08:00" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 동작
 
@@ -41,6 +41,7 @@
 주차 상태에서 업데이트한 뒤 재시작하여 새 Panda 펌웨어와 안전 파라미터를 읽어야 합니다. 선택 스위치는 CustomSteerMax 아래에 있으며 기본은 꺼짐입니다. 최초 업데이트 후에는 약 0.5초 안에 설정을 읽으므로 다시 시작할 필요가 없습니다. 장치 > 조향 학습 진행 및 웹/APK > 도구 > 조향 학습 진행에서 현재 명령, 선택된 변화율, 목표/실제 핸들 각도와 각속도, 제한 원인 및 좌우 명령 관찰 최대값을 확인합니다.
 
 실시간 상태는 2초 뒤 만료됩니다. 과거 통계는 같은 차량/제어 방식에만 복원하고 로컬에서 60초 간격 또는 종료 시 저장하며 이 기록기는 위치, 경로 또는 클라우드 전송을 수집하지 않습니다.
+지원 EV6/Ioniq 5/Carnival/Sorento에서는 HkgPhase1Assist도 이 저속 경로를 켭니다. 저장된 수동 한계를 복원하려면 두 스위치를 모두 끄십시오.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->

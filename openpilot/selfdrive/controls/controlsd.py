@@ -15,6 +15,8 @@ from collections import deque
 
 from opendbc.car.car_helpers import interfaces
 from opendbc.car.vehicle_model import VehicleModel
+from opendbc.car.hyundai.phase1 import phase1_enabled
+from openpilot.selfdrive.controls.lib.hkg_phase1 import low_speed_response_tau, smooth_curvature
 from opendbc.car.hyundai.stop_object import signal_stop_object_requested
 from opendbc.car.volkswagen.values import MEB_CURVATURE_PID_KP, MEB_CURVATURE_PID_KI, MEB_CURVATURE_PID_KF, MEB_CURVATURE_MAX
 
@@ -58,6 +60,7 @@ def lateral_control_allowed(selfdrive_active: bool, always_lateral: bool, lat_en
 class Controls:
   def __init__(self) -> None:
     self.params = Params()
+    self.hkg_phase1_enabled = False
     cloudlog.info("controlsd is waiting for CarParams")
     self.CP = messaging.log_from_bytes(self.params.get("CarParams", block=True), car.CarParams)
     cloudlog.info("controlsd got CarParams")
@@ -116,6 +119,8 @@ class Controls:
 
   def state_control(self):
     CS = self.sm['carState']
+    if self.sm.frame % 50 == 0:
+      self.hkg_phase1_enabled = phase1_enabled(self.CP, self.params)
     lateral_ready = self.lateral_startup.update(self.sm, CS, 'carState')
 
     # Update VehicleModel
@@ -199,7 +204,15 @@ class Controls:
       if steer_actuator_delay == 0.0:
         steer_actuator_delay = self.sm['liveDelay'].lateralDelay
     
+    hkg_assist_active = (
+      self.hkg_phase1_enabled and CC.latActive and CS.canValid and not CS.canTimeout
+      and not CS.steeringPressed and not CS.steerFaultTemporary and not CS.steerFaultPermanent
+      and self.sm.all_checks(['carState', 'modelV2', 'liveParameters'])
+      and 0. <= time.monotonic() - self.sm.recv_time['modelV2'] <= .25)
+
     def smooth_value(val, prev_val, tau):
+      if hkg_assist_active:
+        return smooth_curvature(val, prev_val, CS.vEgo, DT_CTRL, tau)
       alpha = 1 - np.exp(-DT_CTRL / tau) if tau > 0 else 1
       return alpha * val + (1 - alpha) * prev_val
 
@@ -221,9 +234,13 @@ class Controls:
       else:
         curvature = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures, steer_actuator_delay + lat_smooth_seconds, lat_plan.distances)
         new_desired_curvature = smooth_value(curvature, self.desired_curvature, lat_smooth_seconds)
-    else:      
-      new_desired_curvature = smooth_value(model_v2.action.desiredCurvature, self.desired_curvature, 0.1)
+    else:
+      # Preserve custom lane-planner filter and its delay compensation. Only
+      # the model-target branch uses faster low-speed same-direction turn-in.
+      tau = low_speed_response_tau(model_v2.action.desiredCurvature, self.desired_curvature, CS.vEgo, .1) if hkg_assist_active else .1
+      new_desired_curvature = smooth_value(model_v2.action.desiredCurvature, self.desired_curvature, tau)
 
+    # Both response changes stay upstream of the original physical limits.
     self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll)
 
     actuators.curvature = float(self.desired_curvature)

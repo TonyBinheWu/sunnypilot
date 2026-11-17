@@ -418,7 +418,8 @@ class LongitudinalMpc:
              lead_track_frames=(0, 0),
              measured_a_ego=0.0,
              cutout_relief_enabled=False,
-             tesla_stop_distance=None):
+             tesla_stop_distance=None,
+             curve_speed_ceiling=None):
     tesla_stop_active = (tesla_stop_distance is not None and not reset_state
                          and math.isfinite(tesla_stop_distance) and 0 <= tesla_stop_distance < 255)
     if tesla_stop_active:
@@ -445,6 +446,13 @@ class LongitudinalMpc:
     else:
       v_cruise, stop_x = carrot.v_cruise, carrot.stop_dist
       mode = 'acc' if tesla_stop_active else carrot.mode
+
+    # Carrot supplies its own cruise target above. Apply the optional curve
+    # ceiling AFTER that assignment, otherwise it is silently overwritten.
+    # It can only reduce speed; lead and traffic-stop obstacles remain intact.
+    if (mode == 'acc' and not reset_state and curve_speed_ceiling is not None
+        and math.isfinite(curve_speed_ceiling) and curve_speed_ceiling > 0.):
+      v_cruise = min(v_cruise, curve_speed_ceiling)
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance

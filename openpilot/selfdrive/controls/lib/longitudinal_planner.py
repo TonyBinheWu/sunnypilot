@@ -27,6 +27,8 @@ from openpilot.selfdrive.controls.lib.turn_accel import get_future_curvature, li
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.params import Params
+from opendbc.car.hyundai.phase1 import phase1_enabled
+from openpilot.selfdrive.controls.lib.hkg_phase1 import CurveSpeedEnvelope
 from openpilot.common.stopping_params import get_stopping_speed
 from openpilot.selfdrive.carrot.carrot_man_input import get_carrot_man
 from openpilot.selfdrive.carrot.signal_stop_prepare import PrepareAccel
@@ -90,6 +92,10 @@ class LongitudinalPlanner:
     self.v_cruise_kph = 0.0
 
     self.params = Params()
+    self.hkg_curve = CurveSpeedEnvelope()
+    self.hkg_curve_ceiling = None
+    self.hkg_phase1_enabled = False
+    self.hkg_curve_log_time = 0.
     self.coasting = CruiseCoastingPlan()
     self.coasting_percent = 0
     self.coasting_param_time = 1.0
@@ -164,11 +170,28 @@ class LongitudinalPlanner:
       throttle_prob = 1.0
     return x, v, a, j, throttle_prob
 
+  def update_hkg_curve_speed(self, sm, cruise, reset_state):
+    self.hkg_curve_ceiling = None
+    if not self.hkg_phase1_enabled:
+      self.hkg_curve.reset()
+      return cruise
+    fresh = (sm.all_checks(['carState', 'carControl', 'selfdriveState', 'controlsState', 'modelV2'])
+             and 0. <= time.monotonic() - sm.recv_time['modelV2'] <= .2)
+    target = self.hkg_curve.update(
+      sm['carState'], sm['modelV2'], cruise, enabled=True, fresh=fresh,
+      active=(self.CP.openpilotLongitudinalControl and not reset_state and self.mpc.mode == 'acc'
+              and sm['carControl'].longActive and sm['carControl'].latActive
+              and sm['selfdriveState'].enabled), dt=self.dt)
+    if target < cruise:
+      self.hkg_curve_ceiling = target
+    return target
+
   def update(self, sm, carrot):
     self.coasting_param_time += self.dt
     if self.coasting_param_time >= 1.0:
       self.coasting_param_time = 0.0
       self.coasting_percent = coasting_percent(self.params.get_int('CruiseCoastingPercent'))
+      self.hkg_phase1_enabled = phase1_enabled(self.CP, self.params)
     self.mpc.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
     if len(sm['carControl'].orientationNED) == 3:
@@ -203,6 +226,12 @@ class LongitudinalPlanner:
       if self.tesla_traffic_decision.active:
         self.mpc.mode = 'acc'
 
+    v_cruise = self.update_hkg_curve_speed(sm, v_cruise, reset_state)
+    if self.hkg_phase1_enabled and time.monotonic() - self.hkg_curve_log_time >= 1.:
+      self.hkg_curve_log_time = time.monotonic()
+      cloudlog.event('hkg_phase1_curve', reason=self.hkg_curve.reason,
+                     ceiling=self.hkg_curve_ceiling, cruise=v_cruise, speed=v_ego)
+
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
@@ -220,7 +249,8 @@ class LongitudinalPlanner:
       accel_limits = [ACCEL_MIN, ACCEL_MAX]
       accel_limits_turns = [ACCEL_MIN, ACCEL_MAX]
 
-    coasting_turn_blocked = accel_limits_turns[1] < accel_limits[1] - 0.05
+    coasting_turn_blocked = (accel_limits_turns[1] < accel_limits[1] - 0.05
+                             or getattr(self, 'hkg_curve_ceiling', None) is not None)
 
     if reset_state:
       self.v_desired_filter.x = v_ego
@@ -302,6 +332,7 @@ class LongitudinalPlanner:
       ),
       lead_track_frames=lead_track_frames,
       measured_a_ego=sm['carState'].aEgo,
+      curve_speed_ceiling=getattr(self, 'hkg_curve_ceiling', None),
       tesla_stop_distance=(
         max(0.0, self.tesla_traffic_decision.distance - STOP_BUFFER)
         if self.tesla_traffic_decision is not None and self.tesla_traffic_decision.active else None
@@ -351,6 +382,7 @@ class LongitudinalPlanner:
     preview_enabled = (
       self.mpc.mode == 'acc'
       and not reset_state
+      and getattr(self, 'hkg_curve_ceiling', None) is None
       and not sm['carState'].gasPressed
       and not sm['carState'].brakePressed
       and not (getattr(self, 'tesla_traffic_decision', None) and self.tesla_traffic_decision.active)

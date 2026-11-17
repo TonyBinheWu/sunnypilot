@@ -198,3 +198,26 @@ def test_fastest_wheel_cannot_be_hidden_by_filtered_or_rescaled_ego_speed():
   assert helper.rates(requested=400,previous=100,base=270,up=2,down=3)==(2,3)
   cs.wheelSpeeds=dict(fl=7,fr=7,rl=7,rr=8)
   assert set(warm(helper,cs))=={270}  # inconsistent wheel speed cannot grant headroom
+
+
+@pytest.mark.parametrize('fingerprint', ['KIA_EV6', 'HYUNDAI_IONIQ_5', 'KIA_CARNIVAL_4TH_GEN', 'KIA_SORENTO_4TH_GEN'])
+def test_phase1_selects_same_bounded_can_path_and_keeps_driver_withdrawal(monkeypatch, fingerprint):
+  controller, cs, cc, settings = torque_fixture(monkeypatch, enabled=False)
+  controller.CP.brand = 'hyundai'
+  controller.CP.carFingerprint = fingerprint
+  controller.CP.steerControlType = 'torque'
+  settings['HkgPhase1Assist'] = 1
+  settings['CustomSteerMax'] = 409
+  settings['CustomSteerDeltaUp'] = 10
+  trace = [step(controller, cs, cc)[0].torqueOutputCan for _ in range(300)]
+  assert trace[-1] == 405
+  assert controller.params.STEER_MAX == 270
+  assert max(abs(b-a) for a,b in zip(trace,trace[1:])) <= 4
+  cs.out.steeringPressed = True
+  cs.out.steeringTorque = -2000
+  withdrawn = [step(controller, cs, cc)[0].torqueOutputCan for _ in range(200)]
+  assert withdrawn[-1] == 0
+  assert controller.low_speed_steer_reserve.reason == 'driver'
+  # User settings remain stored; disabling both modes restores their selection.
+  assert settings['CustomSteerMax'] == 409
+  assert settings['CustomSteerDeltaUp'] == 10

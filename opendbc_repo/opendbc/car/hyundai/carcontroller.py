@@ -10,6 +10,7 @@ from opendbc.car.hyundai.carstate import CarState
 from opendbc.car.hyundai.stopping import CanfdStopping
 from opendbc.car.hyundai.steering_handover import SteeringHandover
 from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
+from opendbc.car.hyundai.phase1 import phase1_enabled
 from opendbc.car.hyundai.steering_observations import SteeringObservations
 from opendbc.car.carlog import carlog
 from opendbc.car.hyundai.hyundaicanfd import CanBus
@@ -278,7 +279,7 @@ class CarController(CarControllerBase):
       params = Params()
       self.max_angle_frames = params.get_int("MaxAngleFrames")
       steerMax = params.get_int("CustomSteerMax")
-      self.reserve_enabled = self.reserve_supported and params.get_bool("LowSpeedSteerReserve")
+      self.reserve_enabled = self.reserve_supported and (params.get_bool("LowSpeedSteerReserve") or phase1_enabled(self.CP, params))
       steerDeltaUp = params.get_int("CustomSteerDeltaUp")
       steerDeltaDown = params.get_int("CustomSteerDeltaDown")
       steerDeltaUpLC = params.get_int("CustomSteerDeltaUpLC")

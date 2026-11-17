@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-仅 Hyundai/Kia CAN-FD 力矩控制。持续需求 0.30 秒后，≤30 km/h 按需提供最高 409，指令增加/减少速率依需求最高 4/4（每 10 毫秒）。30–40 渐退；≥40 使用车型默认比例与 2/3。保留手动值与学习参数；记录不会提高上限。需更新 Panda 韧体并重启，尚待实车验证。
+仅 Hyundai/Kia CAN-FD 力矩控制。持续需求 0.30 秒后，≤30 km/h 按需提供最高 409，指令增加/减少速率依需求最高 4/4（每 10 毫秒）。30–40 渐退；≥40 使用车型默认比例与 2/3。保留手动值与学习参数；记录不会提高上限。需更新 Panda 韧体并重启，尚待实车验证。 支援的 EV6／Ioniq 5／Carnival／Sorento 也可由 HkgPhase1Assist 启用此低速路径；两个开关都关闭后才恢复已存手动限制。
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="56fb1c4c72d5f4f2e308e58aca3d3c4e083d905a7f1fce6234dd7619fad8b8ed" semantic="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="a77175bb3adecabdf299a0866b0dbbf3522114f58115fa903e9bcafe39511461" semantic="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 开关
 - **默认值:** `0`
@@ -26,7 +26,7 @@
 <!-- CARROT:AUTO:END LowSpeedSteerReserve -->
 
 <!-- CARROT:MANUAL:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:REVIEW reviewed-for="861e9b50486d57aed386bb0c56462a4991e79e31206164c4e0af7c8737bc3700" reviewed-at="2026-11-17T15:00:00Z" -->
+<!-- CARROT:REVIEW reviewed-for="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" reviewed-at="2026-11-18T00:00:00+08:00" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 运作方式
 
@@ -41,6 +41,7 @@
 请停车更新并完成重新启动，让新版 Panda 韧体与安全参数载入。选用开关仍位于 CustomSteerMax 下方、预设关闭；完成此次更新后，开关约 0.5 秒内读取，不需再次重新启动。机器「设备 > 转向学习进度」与网页／APK「工具 > 转向学习进度」可查看目前指令、所选速率、目标／实际方向盘角度及转动速率、受限原因与左右指令期间的观察峰值。
 
 即时状态超过 2 秒标示过期。本机历史汇总只载入相同车型／控制类型，每 60 秒或退出时储存；此记录器不收集位置、行程或上传云端。
+支援的 EV6／Ioniq 5／Carnival／Sorento 也可由 HkgPhase1Assist 启用此低速路径；两个开关都关闭后才恢复已存手动限制。
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->

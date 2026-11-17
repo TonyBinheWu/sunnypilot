@@ -10,6 +10,7 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 
 from opendbc.car.interfaces import LatControlInputs
 from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
+from opendbc.car.hyundai.phase1 import supports_phase1
 from opendbc.car.hyundai.values import CarControllerParams
 from opendbc.car.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
@@ -80,6 +81,7 @@ class LatControlTorque(LatControl):
     # carrot
     self.frame = 0
     self.params = Params()
+    self.phase1_supported = supports_phase1(CP)
     self.reserve_supported = supports_reserve(CP)
     self.reserve = LowSpeedSteerReserve()
     self.reserve_enabled = False
@@ -148,7 +150,8 @@ class LatControlTorque(LatControl):
   def update(self, active, CS, VM, params, steer_limited_by_controls, desired_curvature, CC, curvature_limited, model_data=None):
     self.frame += 1
     if self.frame == 1 or self.frame % 50 == 0:
-      self.reserve_enabled = self.reserve_supported and self.params.get_bool("LowSpeedSteerReserve")
+      self.reserve_enabled = self.reserve_supported and (
+        self.params.get_bool("LowSpeedSteerReserve") or (self.phase1_supported and self.params.get_bool("HkgPhase1Assist")))
       if self.reserve_supported:
         custom_max = self.params.get_int("CustomSteerMax")
         self.reserve_base = custom_max if custom_max > 0 and not self.reserve_enabled else self.reserve_default_base
