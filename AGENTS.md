@@ -13,6 +13,10 @@
   retains CPU/TTL/backpressure guards. Neutral native circles remain unclassified.
   988 web tests:986 pass, same2 baseline failures;3 HTTP pass. Synthetic1280x480
   and390x844 checks only; actual Android/night-road acceptance remains pending.
+  Published0.4.0 native source9c179b55; CI44067294920 passed v2/v3 verification.
+  SHA256 a406e93ba24e7497bf09f40153147d3c40f1eb086bb26cfba68b6dffb6e9bf95.
+  APK signing-block v2 certificate independently matches90e20971...051a8;
+  anonymous download/update feed verified. Published binaries stay immutable.
 
 - 2026-11-17 Cockpit0.3.1/code5 requires layoutVersion>=4. Fixed compact
   read-only ping/pong every5s,12s silence/8s CONNECTING watchdog; detach stale
