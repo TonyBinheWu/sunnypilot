@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "runtime": "onnxruntime-web@1.22.0",
+  "hash_runtime": "@noble/hashes@1.8.0 (crypto import changed to relative browser module)",
+  "models": [
+    {
+      "id": "cone",
+      "file": "cone.onnx",
+      "sha256": "1d5f3cf69883e89ba6e2b3836a0b21623044e9a682f1f00dfbacac97b99baf94",
+      "bytes": 12245828,
+      "format": "yolov8",
+      "input": "images",
+      "output": "output0",
+      "shape": [
+        1,
+        14,
+        8400
+      ],
+      "classIndex": 6,
+      "label": "traffic cone",
+      "resize": "stretch",
+      "source": "https://huggingface.co/mancalazure/construction-ppe-safety/tree/70cc801710f246765f70ada7248d9560ec749bb2",
+      "license": "AGPL-3.0 (embedded metadata); model card also declares CC-BY-4.0",
+      "inputSize": 640
+    },
+    {
+      "id": "crosswalk",
+      "file": "crosswalk.onnx",
+      "sha256": "9434014d541488e423e8b4d2f951d4151bf8ce24619a034e5ae988ad183f5ff7",
+      "bytes": 49442842,
+      "format": "yolov5",
+      "input": "images",
+      "output": "output0",
+      "shape": [
+        1,
+        6375,
+        8
+      ],
+      "classIndex": 0,
+      "label": "crosswalk",
+      "resize": "letterbox",
+      "source": "https://github.com/kairess/crosswalk-traffic-light-detection-yolov5/tree/5ba1e01d946e1a5cc9dcf396b3b8fc62ae2666d5",
+      "source_weights_sha256": "7eb9e22c31e6eef68dce2cfd656fa27614e21203371cdf9255d942c86e29f127",
+      "license": "GPL-3.0",
+      "inputSize": 320
+    }
+  ],
+  "files": [
+    {
+      "path": "CC-BY-4.0.txt",
+      "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411",
+      "bytes": 18657
+    },
+    {
+      "path": "cone.onnx",
+      "sha256": "1d5f3cf69883e89ba6e2b3836a0b21623044e9a682f1f00dfbacac97b99baf94",
+      "bytes": 12245828
+    },
+    {
+      "path": "CROSSWALK-GPL-3.0.txt",
+      "sha256": "7fa7e56c0db71105f4b59a6a0ac40225eb059876f85cd380383f7d7a066e68be",
+      "bytes": 35127
+    },
+    {
+      "path": "crosswalk.onnx",
+      "sha256": "9434014d541488e423e8b4d2f951d4151bf8ce24619a034e5ae988ad183f5ff7",
+      "bytes": 49442842
+    },
+    {
+      "path": "hashes/_assert.js",
+      "sha256": "585646805722868c1c5c77de653cd0f1c60f58a06cbd90d8fa9bf9f6fda34287",
+      "bytes": 562
+    },
+    {
+      "path": "hashes/_md.js",
+      "sha256": "6cbfbd56cbdd57a38de9c2e374c3033596ccc830a8910377def1b4da97c12eb5",
+      "bytes": 6346
+    },
+    {
+      "path": "hashes/_u64.js",
+      "sha256": "35517c9daf974e4be446b8306fe77e538da53549e02e980d1be0d2a60ca93b29",
+      "bytes": 3147
+    },
+    {
+      "path": "hashes/crypto.js",
+      "sha256": "de86b0c4495906ad10cc32c77146ac70fb94b1ee892a73b628ee3b7959b4471e",
+      "bytes": 147
+    },
+    {
+      "path": "hashes/sha2.js",
+      "sha256": "e729088b82e5450bff54c3a0013582aa42e1fe8f58dd31f5967f6ebe34c52299",
+      "bytes": 16832
+    },
+    {
+      "path": "hashes/sha256.js",
+      "sha256": "19ea3be65eec4a032bf54f77bc3e23e2b2fad24c3792b98f8dbd7d164c1bd10f",
+      "bytes": 890
+    },
+    {
+      "path": "hashes/utils.js",
+      "sha256": "ed75ba4a12f3a90be75de29e29c1b0a6fa0bce6470ffdfd8a43401f0ffa31d6a",
+      "bytes": 10809
+    },
+    {
+      "path": "HASHES-LICENSE",
+      "sha256": "4f221aee6e072336700c408c68ab3b96a3fc09f6aebe6f48f1bd99e5ef13faec",
+      "bytes": 1109
+    },
+    {
+      "path": "NOTICE.md",
+      "sha256": "4565a5293df8ae862b05e2bf22739f9650e5de0485a75722b855897b98a78f81",
+      "bytes": 5827
+    },
+    {
+      "path": "ort/ort-wasm-simd-threaded.mjs",
+      "sha256": "30dd851d9c00622940500f71ddd2ff8820c5cb65270816080175b958705385a8",
+      "bytes": 20856
+    },
+    {
+      "path": "ort/ort-wasm-simd-threaded.wasm",
+      "sha256": "71aef04959c5c1b6de461b6538e2058e306610034a85aad2742d0c7fd4533fe4",
+      "bytes": 11210254
+    },
+    {
+      "path": "ort/ort.wasm.min.js",
+      "sha256": "65e09376df69107e881b5c34d2d37aed333a366b6d941073ec518168e269b87d",
+      "bytes": 48327
+    },
+    {
+      "path": "ORT-LICENSE",
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "bytes": 1073
+    },
+    {
+      "path": "ORT-ThirdPartyNotices.txt",
+      "sha256": "e9e90971a8e75a9a8ac0c6412e29c1202d079998389915aa485f46c816c3b4cc",
+      "bytes": 326866
+    },
+    {
+      "path": "source/cone-best.pt",
+      "sha256": "4d07bbd92ca30d5c12dd67ccf52b2f54f533c9ccfef534284124682ef9f56129",
+      "bytes": 6251955
+    },
+    {
+      "path": "source/cone-data.yaml",
+      "sha256": "6321903dd94782c4c474691c9b53e65dadec35fb15c42e373472c8e57d70fe91",
+      "bytes": 474
+    },
+    {
+      "path": "source/cone-labels.txt",
+      "sha256": "84b6098956285389964a05ca8d0283409190e2e501049978a544e518c1565847",
+      "bytes": 96
+    },
+    {
+      "path": "source/cone-README.md",
+      "sha256": "bfb6bbb21120c746a2efd0051d6f93bc52d71de9012534675d4be14367f3e0ac",
+      "bytes": 5357
+    },
+    {
+      "path": "source/crosswalk-best.pt",
+      "sha256": "7eb9e22c31e6eef68dce2cfd656fa27614e21203371cdf9255d942c86e29f127",
+      "bytes": 25069461
+    },
+    {
+      "path": "source/crosswalk-source.zip",
+      "sha256": "d2d72fd82acfeaca4aaaf582c4d309b67ec929b3c0961a9b2e0bf75a5b6123e1",
+      "bytes": 216091
+    },
+    {
+      "path": "source/ultralytics-8.4.114.tar.gz",
+      "sha256": "d6351aec0ef2a256cfad7693b745cf1224398d30bf32e1ff1ddd6441ac0f31c0",
+      "bytes": 1209877
+    },
+    {
+      "path": "ULTRALYTICS-AGPL-3.0.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523
+    }
+  ],
+  "unsupported": [
+    "stop line",
+    "motorcycle waiting area"
+  ]
+}

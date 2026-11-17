@@ -54,11 +54,11 @@ export function groundPoint(box, geometry, range=75) {
   return finite(x)&&finite(lat)&&x>=1&&x<=range&&Math.abs(lat)<=20?[x,lat]:null;
 }
 
-export function cameraTargets(detections, geometry, range=75) {
+export function cameraTargets(detections, geometry, range=75, classes=ROAD_CLASSES) {
   const result=[];
   for(const [i,item] of (Array.isArray(detections)?detections:[]).slice(0,24).entries()){
     const category=item?.categories?.[0],kind=category?.categoryName,score=category?.score;
-    if(!ROAD_CLASSES.includes(kind)||!finite(score)||score<.5||score>1)continue;
+    if(!classes.includes(kind)||!finite(score)||score<.5||score>1)continue;
     const point=groundPoint(item.boundingBox,geometry,range);
     if(!point)continue;
     result.push({id:`camera-${i}`,source:'browser.efficientdet_lite0',kind,x:point[0],y:point[1],probability:score,
@@ -68,11 +68,11 @@ export function cameraTargets(detections, geometry, range=75) {
   return result;
 }
 
-export function imageTargets(detections,width,height){
+export function imageTargets(detections,width,height,classes=IMAGE_ONLY_CLASSES){
   if(!finite(width)||!finite(height)||width<2||height<2)return [];
   return (Array.isArray(detections)?detections:[]).slice(0,24).flatMap((item,i)=>{
     const c=item?.categories?.[0],b=item?.boundingBox;
-    if(!IMAGE_ONLY_CLASSES.includes(c?.categoryName)||!finite(c.score)||c.score<.5||c.score>1
+    if(!classes.includes(c?.categoryName)||!finite(c.score)||c.score<.5||c.score>1
       ||!b||![b.originX,b.originY,b.width,b.height].every(finite)||b.width<=1||b.height<=1
       ||b.originX<0||b.originY<0||b.originX+b.width>width+1||b.originY+b.height>height+1)return [];
     return [{id:`image-${i}`,kind:c.categoryName,probability:c.score,
@@ -80,3 +80,10 @@ export function imageTargets(detections,width,height){
       origin:'image_detection_only',position:null,distance:null,signalState:null}];
   });
 }
+
+export const roadCameraTargets=(detections,geometry)=>cameraTargets(detections,geometry,75,['traffic cone'])
+  .map(o=>({...o,id:'road-'+o.id,source:'browser.ppe_cone_yolov8'}));
+// Crosswalk bounding boxes do not provide its actual ground contour. Do not
+// turn the image rectangle into a fictitious measured crosswalk polygon.
+export const roadImageTargets=(detections,width,height)=>imageTargets(detections,width,height,['crosswalk','traffic cone'])
+  .map(o=>({...o,id:'road-'+o.id,source:o.kind==='crosswalk'?'browser.crosswalk_yolov5':'browser.ppe_cone_yolov8'}));

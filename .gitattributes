@@ -8,6 +8,7 @@ tools/jetlink/*.py text eol=lf
 *.onnx -diff -merge -text
 # Pinned local browser inference artifacts must retain their published bytes.
 openpilot/selfdrive/carrot/web/vendor/bev-detector/** -filter -text
+openpilot/selfdrive/carrot/web/vendor/road-detector/** -filter -text -whitespace
 openpilot/system/hardware/tici/updater -diff -merge -text
 
 # Image / font / sound types are shipped as REAL blobs in this fork. Declaring

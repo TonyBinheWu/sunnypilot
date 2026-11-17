@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "39a2bfc50c045506c0f2c4faa66d73283fbfe2d18e59f33627132e8a6a6efd96"
+      "hash": "68d24f8bea95a89fe1e335330561a308af651ac2ae3fbfd085dd8ce99ee83f57"
     },
     {
       "id": "tools.lane-mapping",
@@ -34,7 +34,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "989d13f4c6614c772640a37fb32ae767ed125b1be27f0fb8d104adb4a28917c4"
+      "hash": "b6e2a9b5af90db32e98d0f083ac5640c7e52ae3f6e0ecae6e78816e1faa4c68e"
     },
     {
       "id": "replay.runtime",
@@ -55,7 +55,7 @@
       "kind": "bundle",
       "source": "src/entries/tools.js",
       "path": "js/generated/tools.js",
-      "hash": "26cc903abef932669ff46cb33edf32cf982d2802673da3f60abdcc67bb5f39ea"
+      "hash": "f4e76064deeb47d4f7975839c51eff0df415e5519ac10654abf235985fb2162e"
     },
     {
       "id": "logs.runtime",
@@ -168,6 +168,12 @@
       "source": "src/entries/intro.css",
       "path": "css/generated/intro.css",
       "hash": "f4dfadc44115c1df243eaade83192aac63adcfe881f13d521742386895d5b48e"
+    },
+    {
+      "id": "vision.road-detector-worker",
+      "kind": "worker",
+      "path": "js/generated/road-detector-worker.js",
+      "hash": "f509da13efe0c7bed705e313b59c74235ce71fa82f38ba2fda521f7d45b7fa98"
     },
     {
       "id": "vision.object-detector-worker",

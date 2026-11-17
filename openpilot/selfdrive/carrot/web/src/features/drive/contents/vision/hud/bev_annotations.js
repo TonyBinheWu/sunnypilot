@@ -40,11 +40,11 @@ export function bevObjects(scene,range=50) {
       radarUsed:target.radarUsed,nativeTrackId:target.trackId,
       dimensions:null,provenance:'model_assisted',reviewed:false});
   }
-  for(const target of (scene.vision?.objects||[]).slice(0,24)){
+  for(const target of [...(scene.vision?.objects||[]),...(scene.road?.objects||[])].slice(0,48)){
     if(!finite(target.x)||!finite(target.y)||target.x<1||target.x>range||Math.abs(target.y)>20)continue;
     objects.push({id:target.id,kind:'camera_target',classification:target.kind,source:target.source,origin:target.origin,
       geometry:{type:'Point',coordinates:[target.x,target.y]},probability:probability(target.probability),
-      positionMethod:'flat_ground_projection',dimensions:null,heading:null,
+      positionMethod:'flat_ground_projection',capturedMonotonicMs:target.capturedAt??null,videoTimeSeconds:target.videoTime??null,dimensions:null,heading:null,
       provenance:'model_assisted',reviewed:false,groundTruth:false});
   }
   return objects;
@@ -59,6 +59,7 @@ export function bevSnapshot(scene,{range=50,now=Date.now(),replay=false,sourceTi
       frameSynchronized:false},
     rangeM:range,groundTruth:false,reviewed:false,containsCameraImage:false,
     perception:{source:scene.vision?.capturedAt!=null?'browser.efficientdet_lite0':null,
+      road:{source:scene.road?.capturedAt!=null?'browser.road_yolo':null,status:scene.road?.status||'off',capturedMonotonicMs:scene.road?.capturedAt??null,videoTimeSeconds:scene.road?.videoTime??null,frameSynchronized:false},
       status:scene.vision?.status||'off',capturedMonotonicMs:scene.vision?.capturedAt??null,
       videoTimeSeconds:scene.vision?.videoTime??null,positionMethod:'flat_ground_projection',frameSynchronized:false},
     unavailableCapabilities:['occupancy','surround_camera_coverage','traffic_sign_detection','lane_connectivity','fleet_mapping'],

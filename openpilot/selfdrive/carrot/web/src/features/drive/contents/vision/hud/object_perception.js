@@ -1,7 +1,7 @@
-import {cameraGeometry,cameraTargets,imageTargets} from './scene_objects.js';
+import {cameraGeometry,cameraTargets,imageTargets,roadCameraTargets,roadImageTargets} from './scene_objects.js';
 
 export const DETECTION_TTL_MS=1200;
-export function createObjectPerception(doc,target,{onChange=()=>{}}={}) {
+export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={}) {
   let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,lastAttempt=-Infinity;
   let lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
   let state={status:'off',objects:[],imageObjects:[],count:0,capturedAt:null,revision};
@@ -18,7 +18,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{}}={}) {
     if(typeof target.Worker!=='function'||typeof target.WebAssembly!=='object'||typeof target.createImageBitmap!=='function'||typeof target.OffscreenCanvas!=='function'){
       fail('unsupported');return;
     }
-    const url=target.CarrotAssetUrl?.resolve?.('vision.object-detector-worker');
+    const url=target.CarrotAssetUrl?.resolve?.(road?'vision.road-detector-worker':'vision.object-detector-worker');
     if(!url){fail('load_error');return;}
     try{
       worker=new target.Worker(url);const current=generation;
@@ -33,10 +33,11 @@ export function createObjectPerception(doc,target,{onChange=()=>{}}={}) {
         const captured=request;request=null;
         interval=Math.min(1200,Math.max(250,Number(data.durationMs||0)*3));
         if(now()-captured.capturedAt>DETECTION_TTL_MS){publish('stale');return;}
-        const objects=cameraTargets(data.detections,captured.geometry);
+        const objects=(road?roadCameraTargets:cameraTargets)(data.detections,captured.geometry)
+          .map(o=>({...o,capturedAt:captured.capturedAt,videoTime:captured.videoTime}));
         publish(captured.geometry?'ready':'calibration',{
           objects,count:Array.isArray(data.detections)?data.detections.length:0,capturedAt:captured.capturedAt,
-          imageObjects:imageTargets(data.detections,captured.width,captured.height),
+          imageObjects:(road?roadImageTargets:imageTargets)(data.detections,captured.width,captured.height),
           videoTime:captured.videoTime,durationMs:data.durationMs,camera:captured.geometry?.sensor||null,
         });
       };
@@ -45,7 +46,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{}}={}) {
     }catch{fail('load_error');}
   }
   function update({active=true,frozen=false}={}){
-    const enabled=target.CarrotWebSettingsState?.vision_object_detection===true;
+    const enabled=target.CarrotWebSettingsState?.[road?'vision_road_detection':'vision_object_detection']===true;
     if(!enabled){failed=false;wasEnabled=false;stop();return;}
     if(!wasEnabled){failed=false;wasEnabled=true;}
     if(!active||frozen||doc.hidden){if(!failed)stop('paused');return;}

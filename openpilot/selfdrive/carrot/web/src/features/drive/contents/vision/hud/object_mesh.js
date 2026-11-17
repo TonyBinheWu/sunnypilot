@@ -46,6 +46,14 @@ export function drawDetectedMesh(ctx,project,object){
     poly([[cx-l,cy-w,z+h],[cx+l,cy-w,z+h],[cx+l,cy+w,z+h],[cx-l,cy+w,z+h]],'#c4cdd5');
   };
   const disc=(cx,z,r,color)=>{const center=p(cx,0,z),edge=p(cx,0,z+r);if(!center||!edge)return;ctx.beginPath();ctx.arc(center[0],center[1],Math.max(1,Math.hypot(center[0]-edge[0],center[1]-edge[1])),0,Math.PI*2);ctx.fillStyle=color;ctx.fill();};
+  if(kind==='traffic cone'){
+    box(0,0,.01,.3,.3,.05,'#626f7c');
+    poly([[-.23,-.23,.06],[.23,-.23,.06],[0,0,.8]],'#ef9d55');
+    poly([[.23,-.23,.06],[.23,.23,.06],[0,0,.8]],'#da7b36');
+    poly([[.23,.23,.06],[-.23,.23,.06],[0,0,.8]],'#ef914b');
+    poly([[-.23,.23,.06],[-.23,-.23,.06],[0,0,.8]],'#f0a365');
+    poly([[-.15,.15,.32],[-.15,-.15,.32],[-.1,-.1,.48],[-.1,.1,.48]],'#f6f6ef');return;
+  }
   if(kind==='car'){drawVehicleMesh(ctx,p,{ego:false});return;}
   if(ANIMALS.includes(kind)){
     const scale=({cat:.45,dog:.65,horse:1.2,sheep:.8,cow:1.2,elephant:2.3,bear:1.1,zebra:1.2,giraffe:1.5})[kind];

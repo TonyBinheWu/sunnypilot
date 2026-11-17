@@ -1,0 +1,12 @@
+nc: 10
+names: ['Hardhat', 'Mask', 'NO-Hardhat', 'NO-Mask', 'NO-Safety Vest', 'Person', 'Safety Cone', 'Safety Vest', 'machinery', 'vehicle']
+
+# Index order is authoritative and comes from labels.txt as emitted by the
+# exporter, not from the upstream project's README. Getting it wrong does not
+# raise an error, it silently mislabels every detection.
+
+roboflow:
+  workspace: roboflow-universe-projects
+  project: construction-site-safety
+  version: 28
+  license: CC BY 4.0

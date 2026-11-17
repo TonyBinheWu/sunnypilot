@@ -52,6 +52,13 @@ def create_static_cache_middleware(web_dir: str) -> Middleware:
       await asyncio.to_thread(_refresh_requested_gzip, web_dir, path)
 
     response = await handler(request)
+    # Windows registry MIME mappings can identify .mjs as text/plain. Browsers
+    # reject ORT's dynamic module import in that case, even when download works.
+    if is_static_method and path.startswith('/vendor/road-detector/ort/') and response.status == 200:
+      if path.endswith('.mjs'):
+        response.headers['Content-Type'] = 'text/javascript'
+      elif path.endswith('.wasm'):
+        response.headers['Content-Type'] = 'application/wasm'
     if is_static_request:
       versions = request.query.getall("v", [])
       is_vendor = any(path.startswith(prefix) for prefix in _VENDOR_STATIC_PREFIXES)

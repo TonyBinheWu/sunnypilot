@@ -1,5 +1,19 @@
 # Repository memory
 
+- 2026-11-17 Optional vision_road_detection is separate/default-off. Bundled
+  pinned YOLOv8 Safety Cone class6 (640 stretch) and GPL YOLOv5s6 crosswalk
+  class0 (320 letterbox, obj*class) run in one ORT Web1.22 WASM single-thread
+  worker, model SHA verification via noble hash on LAN HTTP. Cones have image
+  notices and calibrated approximate ROAD ground meshes; crosswalks image-only.
+  Stop lines/motor waiting zones remain unsupported: RLMD defines them but no
+  released licensed checkpoint. Do not invent them from geometry/other labels.
+  Source weights/code/licenses bundled, cone card CC-BY4 vs embedded AGPL3 both
+  retained. Export safe_globals/weights_only=True; reproduce SHA9434014d.
+  Independent original detector, 1.2s TTL, freeze/background/source guards kept.
+  Browser real positive +blank smoke ~580-650ms on desktop, not Android/road
+  validation;37 focused JS +4HTTP/preferences passed. See road-model guide.
+
+
 - 2026-11-17 Cockpit0.2.0/code3 native source8df33f29 owns fullscreen on
   verified /cockpit independent of Vision dismissal; Back opens device menu.
   layoutVersion>=2 check warns if vehicle UI is old. APK SHA256

@@ -22,10 +22,12 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
     ctx.ellipse(p[0],p[1],flat?5:7,flat?5:3,0,0,Math.PI*2);ctx.stroke();return;
   }
   const person=kind==='person',twoWheel=['motorcycle','bicycle'].includes(kind);
-  if(flat&&ANIMALS.includes(kind)){
+  if(flat&&kind==='traffic cone'){
+    polygon([[-.5,-.35,0],[.5,0,0],[-.5,.35,0]],'#ed914b');
+  }else if(flat&&ANIMALS.includes(kind)){
     const p=project(x,y);if(!p)return;ctx.fillStyle='#96aebd';ctx.beginPath();ctx.ellipse(p[0],p[1],5,9,0,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(p[0],p[1]-9,3.5,0,Math.PI*2);ctx.fill();
-  }else if(!flat&&['car','bus','truck','person','motorcycle','bicycle',...ANIMALS].includes(kind)){
+  }else if(!flat&&['car','bus','truck','person','motorcycle','bicycle','traffic cone',...ANIMALS].includes(kind)){
     drawDetectedMesh(ctx,project,object);
   }else if(person){
     const feet=project(x,y,0),head=project(x,y,1.65),hip=project(x,y,.7);if(!feet||!head||!hip)return;
@@ -52,9 +54,9 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
     polygon([[-roofL,-roofW,z],[-halfL*.85,-halfW*.88,z*.65],[-halfL*.85,halfW*.88,z*.65],[-roofL,roofW,z]],'#4b5966d9');
     for(const sign of [-1,1])polygon([[-halfL-.02,sign*halfW*.85,z*.45],[-halfL-.02,sign*halfW*.5,z*.45],[-halfL-.02,sign*halfW*.5,z*.57],[-halfL-.02,sign*halfW*.85,z*.57]],'#d95e62');
   }
-  if(!ego&&['person','motorcycle','bicycle','bus','truck',...ANIMALS].includes(kind)){
+  if(!ego&&['person','motorcycle','bicycle','bus','truck','traffic cone',...ANIMALS].includes(kind)){
     const p=project(x,y,kind==='person'?2:1.8);if(!p)return;
-    const label=text(`scene_kind_${kind}`,kind);ctx.font='11px system-ui';ctx.textAlign='center';
+    const label=text(`scene_kind_${kind.replaceAll(' ','_')}`,kind);ctx.font='11px system-ui';ctx.textAlign='center';
     const tw=ctx.measureText(label).width+10;ctx.fillStyle=flat?'#10202ee8':'#ffffffdd';ctx.fillRect(p[0]-tw/2,p[1]-18,tw,16);
     ctx.fillStyle=flat?'#d9e4f2':'#53616f';ctx.fillText(label,p[0],p[1]-6);ctx.textAlign='left';
   }
@@ -96,7 +98,7 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(model.position,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}
     else ribbon(model.position,-.75,.75,'#69b7ecb0');
   }
-  const objects=[...surroundingTargets(scene.radar),...(scene.vision?.objects||[])];
+  const objects=[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
   objects.sort((a,b)=>b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text}));
   if(drawEgo)drawEgo(ctx,project);
   else drawSceneObject(ctx,project,{kind:'car',x:0,y:0},{ego:true,text});
