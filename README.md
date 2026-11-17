@@ -32,7 +32,7 @@
 
 **[⬇ 下載 CarrotAssist 繁體中文版 0.2.19（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk)**
 
-**[下載 Carrot Cockpit 座艙版 0.4.0（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.4.0/CarrotCockpit-TW-0.4.0.apk)**：重排為全寬設定、大型操作列與五項主要底列；主畫面集中儀表，車況／胎壓點開查看，無導航時隱藏空白地圖。修正座艙模型／雷達資料訂閱，新增視覺辨識狀態、鏡頭連線與模型重試入口。保留長時間連線恢復、日夜／字體、本車示意皮膚及所有既有功能。可與原版並存，須更新並重啟 carrot-wip 車機。[操作與實際支援範圍](tools/carrot_android/COCKPIT.md)；尚未完成實體 Android 盒子與實車驗收。
+**[下載 Carrot Cockpit 座艙版 0.4.0（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.4.0/CarrotCockpit-TW-0.4.0.apk)**：重排為全寬設定、大型操作列與五項主要底列；主畫面集中儀表，車況／胎壓點開查看，無導航時隱藏空白地圖。修正座艙模型／雷達資料訂閱，新增視覺辨識狀態、鏡頭連線與模型重試入口。支援16:9／4:3及高解析度自動放大；已完成[真實影片動態分類與切換驗證](tools/carrot_android/COCKPIT_VALIDATION.zh-TW.md)。保留長時間連線恢復、日夜／字體、本車示意皮膚及所有既有功能。可與原版並存，須更新並重啟 carrot-wip 車機。[操作與實際支援範圍](tools/carrot_android/COCKPIT.md)；尚未完成實體 Android 盒子與實車驗收。
 
 | 項目 | 說明 |
 |---|---|

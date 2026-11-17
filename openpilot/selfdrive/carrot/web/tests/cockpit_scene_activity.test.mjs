@@ -34,3 +34,12 @@ test('classification status distinguishes off, missing video, loading, failure a
   for(status of ['unsupported','load_error','inference_error','stale'])assert.equal(cockpitPerceptionReport(frame).objects.status,status);
   status='ready';assert.equal(cockpitPerceptionReport(frame).objects.count,0);assert.match(cockpitPerceptionReport(frame).summary,/0/);
 });
+
+test('positioned class diagnostics name only fresh classified camera objects',()=>{
+  let status='ready';const frame={CarrotWebSettingsState:{vision_object_detection:true},
+    CarrotVisionPerception:{snapshot:()=>({objects:{status,count:3,positioned:3,classes:{person:1,car:1,motorcycle:1,unknown:2,truck:-1}}})}};
+  assert.equal(cockpitPerceptionReport(frame).objects.classes,'行人 1、汽車 1、機車 1');
+  status='stale';assert.equal(cockpitPerceptionReport(frame).objects.classes,'');
+  status='ready';frame.CarrotWebSettingsState.vision_object_detection=false;
+  assert.equal(cockpitPerceptionReport(frame).objects.classes,'');
+});

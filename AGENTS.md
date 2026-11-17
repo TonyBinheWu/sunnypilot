@@ -1,5 +1,20 @@
 # Repository memory
 
+- 2026-11-17 Cockpit actual-video/browser acceptance: pinned EfficientDet CPU,
+  public motorcycle/Intel clips; synthetic telemetry/calibration only, no Android
+  or RTC acceptance (user requested video/layout first). Real raw boxes change
+  and person/car/motorcycle reach class meshes;573 main-video inferences,4 page
+  returns plus4 settled fullscreen checks. Do not equate samples with accuracy,
+  unique objects, tracking IDs or true distance. Snapshot now exposes fresh
+  positioned class counts/revision/videoTime, localized in perception sheet.
+  Six16:9/4:3 viewports1920x1080..800x600 measured without horizontal overflow.
+  Full-HD parent >=1600x850 enlarges controls; child threshold710 excludes shell.
+  Old embedded body[data-cockpit-panel=setting] .setting .title specificity
+  overrode controls with16px: scope it to html:not(.cockpit-controls-mode).
+  Verified17px normal/23px large; native inputs unchanged from APK0.4.0 source.
+  31 focused JS,989/991 full(same2 baseline),3 HTTP pass. Report/JSON and original
+  browser screenshots in tools/carrot_android/COCKPIT_VALIDATION.zh-TW.md.
+
 - 2026-11-17 Cockpit0.4.0/code6 requires layoutVersion>=5. Full-width controls,
   tools/logs, five-item dock, explicit vehicle/perception sheets, one instrument
   group, no empty map/card clutter. Advanced original HUD layouts remain stored.

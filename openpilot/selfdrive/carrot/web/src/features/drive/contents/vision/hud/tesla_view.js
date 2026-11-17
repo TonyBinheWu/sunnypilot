@@ -153,7 +153,9 @@ export function createTeslaView(doc,target) {
   const roadPerception=createObjectPerception(doc,target,{road:true,onChange:()=>{lastSignature='';render(data,stale,unit);}});
   const diagnostics=Object.freeze({
     snapshot(){
-      const describe=detector=>{const s=detector.scene();return {status:s.status,count:s.count,positioned:s.objects.length};};
+      const describe=detector=>{const s=detector.scene(),classes={};
+        for(const object of s.objects)classes[object.kind]=(classes[object.kind]||0)+1;
+        return {status:s.status,count:s.count,positioned:s.objects.length,classes,revision:s.revision,videoTime:s.videoTime??null};};
       return {objects:describe(perception),road:describe(roadPerception)};
     },
     retry(){perception.retry();roadPerception.retry();},

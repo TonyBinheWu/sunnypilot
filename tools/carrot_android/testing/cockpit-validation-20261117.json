@@ -1,0 +1,304 @@
+{
+  "date": "2026-11-17",
+  "apk": "Carrot Cockpit TW 0.4.0 (native inputs unchanged)",
+  "scope": "Desktop browser, actual video and pinned CPU worker; synthetic vehicle telemetry/calibration; no Android hardware or RTC transport acceptance.",
+  "modelSha256": "0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb",
+  "scoreThreshold": 0.5,
+  "motorcycleClip": {
+    "url": "https://github.com/agung-madani/yolov8-motorcycle-counting/blob/b545170c583c2085b015569546c1d7ff2fcaa3b2/gerbanguin.mp4",
+    "sha256": "30f57b1600a362086cd64cfc187f1fdd0f8d181320672c72ff674cddc56306d3"
+  },
+  "trafficClip": {
+    "url": "https://github.com/intel-iot-devkit/sample-videos/blob/57978890822836f2b4743852f04f62fc511757e4/person-bicycle-car-detection.mp4",
+    "sha256": "452b11b7e0efbd019f1d9570d0c790e90416ad4ad29eec6003872d08443140ef"
+  },
+  "layout": [
+    {
+      "bodyHeight": 1080,
+      "bodyWidth": 1920,
+      "dockBottom": 1080,
+      "dockHeight": 88,
+      "height": 1080,
+      "width": 1920,
+      "inner": {
+        "bodyWidth": 1920,
+        "frameWidth": 1920,
+        "titleFont": "23px"
+      }
+    },
+    {
+      "bodyHeight": 900,
+      "bodyWidth": 1600,
+      "dockBottom": 900,
+      "dockHeight": 88,
+      "height": 900,
+      "width": 1600,
+      "inner": {
+        "bodyWidth": 1600,
+        "frameWidth": 1600,
+        "titleFont": "23px"
+      }
+    },
+    {
+      "bodyHeight": 720,
+      "bodyWidth": 1280,
+      "dockBottom": 720,
+      "dockHeight": 68,
+      "height": 720,
+      "width": 1280,
+      "inner": {
+        "bodyWidth": 1280,
+        "frameWidth": 1280,
+        "titleFont": "17px"
+      }
+    },
+    {
+      "bodyHeight": 540,
+      "bodyWidth": 960,
+      "dockBottom": 540,
+      "dockHeight": 68,
+      "height": 540,
+      "width": 960,
+      "inner": {
+        "bodyWidth": 960,
+        "frameWidth": 960,
+        "titleFont": "17px"
+      }
+    },
+    {
+      "bodyHeight": 768,
+      "bodyWidth": 1024,
+      "dockBottom": 768,
+      "dockHeight": 68,
+      "height": 768,
+      "width": 1024,
+      "inner": {
+        "bodyWidth": 1024,
+        "frameWidth": 1024,
+        "titleFont": "17px"
+      }
+    },
+    {
+      "bodyHeight": 600,
+      "bodyWidth": 800,
+      "dockBottom": 600,
+      "dockHeight": 68,
+      "height": 600,
+      "width": 800,
+      "inner": {
+        "bodyWidth": 800,
+        "frameWidth": 800,
+        "titleFont": "17px"
+      }
+    }
+  ],
+  "pageReturns": [
+    {
+      "cycle": 1,
+      "from": "控制與設定",
+      "panel": "vision",
+      "parentOnly": false,
+      "status": "影像辨識 · 5 個結果"
+    },
+    {
+      "cycle": 1,
+      "from": "導航",
+      "panel": "vision",
+      "parentOnly": false,
+      "status": "影像辨識 · 1 個結果"
+    },
+    {
+      "cycle": 2,
+      "from": "控制與設定",
+      "panel": "vision",
+      "parentOnly": false,
+      "status": "影像辨識 · 2 個結果"
+    },
+    {
+      "cycle": 2,
+      "from": "導航",
+      "panel": "vision",
+      "parentOnly": false,
+      "status": "影像辨識 · 1 個結果"
+    }
+  ],
+  "fullscreenTransitions": [
+    {
+      "cycle": 1,
+      "expected": true,
+      "fullscreen": true,
+      "videoTime": 12.604994,
+      "results": 392,
+      "perception": {
+        "status": "ready",
+        "count": 2,
+        "positioned": 2,
+        "classes": {
+          "bicycle": 1,
+          "person": 1
+        },
+        "revision": 431,
+        "videoTime": 12.400183
+      }
+    },
+    {
+      "cycle": 1,
+      "expected": false,
+      "fullscreen": false,
+      "videoTime": 14.112157,
+      "results": 397,
+      "perception": {
+        "status": "ready",
+        "count": 1,
+        "positioned": 1,
+        "classes": {
+          "motorcycle": 1
+        },
+        "revision": 436,
+        "videoTime": 13.900129
+      }
+    },
+    {
+      "cycle": 2,
+      "expected": true,
+      "fullscreen": true,
+      "videoTime": 15.604807,
+      "results": 401,
+      "perception": {
+        "status": "ready",
+        "count": 2,
+        "positioned": 2,
+        "classes": {
+          "motorcycle": 1,
+          "person": 1
+        },
+        "revision": 440,
+        "videoTime": 15.300063
+      }
+    },
+    {
+      "cycle": 2,
+      "expected": false,
+      "fullscreen": false,
+      "videoTime": 17.104032,
+      "results": 406,
+      "perception": {
+        "status": "ready",
+        "count": 1,
+        "positioned": 1,
+        "classes": {
+          "motorcycle": 1
+        },
+        "revision": 445,
+        "videoTime": 16.800367
+      }
+    }
+  ],
+  "motorClipInferences": 573,
+  "rawClassObservations": {
+    "person": {
+      "frames": 644,
+      "differentBoxes": 100
+    },
+    "motorcycle": {
+      "frames": 332,
+      "differentBoxes": 100
+    },
+    "car": {
+      "frames": 29,
+      "differentBoxes": 10
+    },
+    "bicycle": {
+      "frames": 17,
+      "differentBoxes": 10
+    },
+    "truck": {
+      "frames": 1,
+      "differentBoxes": 1
+    }
+  },
+  "positionedObservations": [
+    {
+      "source": "motorcycles",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "fullscreen": false,
+      "panel": "vision",
+      "samples": 347,
+      "positionedClassSamples": {
+        "motorcycle": 154,
+        "person": 209,
+        "car": 19,
+        "bicycle": 9
+      },
+      "differentVideoTimes": 336
+    },
+    {
+      "source": "motorcycles",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "fullscreen": false,
+      "panel": "setting",
+      "samples": 12,
+      "positionedClassSamples": {},
+      "differentVideoTimes": 0
+    },
+    {
+      "source": "motorcycles",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "fullscreen": false,
+      "panel": "navigation",
+      "samples": 13,
+      "positionedClassSamples": {},
+      "differentVideoTimes": 0
+    },
+    {
+      "source": "motorcycles",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "fullscreen": true,
+      "panel": "vision",
+      "samples": 10,
+      "positionedClassSamples": {
+        "motorcycle": 5,
+        "person": 6,
+        "bicycle": 2,
+        "truck": 1
+      },
+      "differentVideoTimes": 10
+    }
+  ],
+  "secondVideoObservations": [
+    {
+      "source": "traffic",
+      "viewport": [
+        1024,
+        768
+      ],
+      "fullscreen": false,
+      "panel": "vision",
+      "samples": 250,
+      "positionedClassSamples": {
+        "person": 16,
+        "car": 16
+      },
+      "differentVideoTimes": 250
+    }
+  ],
+  "units": "Class sample counts are positive 500 ms observations, not unique objects, recall or accuracy.",
+  "regression": {
+    "webTotal": 991,
+    "webPassed": 989,
+    "webExistingFailures": 2,
+    "httpPassed": 3
+  }
+}

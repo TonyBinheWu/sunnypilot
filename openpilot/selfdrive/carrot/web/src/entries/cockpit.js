@@ -150,7 +150,7 @@ function render(){
   $('visionCameraStatus').textContent=report.camera?'已取得影像；辨識結果仍依下列模型狀態更新。':cameraButton?.disabled?(cameraButton.title||'車機尚未啟用 Carrot Vision，請至工具／診斷確認。'):cameraProgress||'尚未取得前鏡頭影像。請先按「連接前鏡頭」。';
   $('connectVision').disabled=!cameraButton||cameraButton.disabled||report.camera;
   $('connectVision').textContent=report.camera?'影像已連接':'連接前鏡頭';
-  $('objectDetectionStatus').textContent=report.objects.text+(report.objects.count?` · 模型回報 ${report.objects.count} 項，其中 ${report.objects.positioned} 項可定位`: '');
+  $('objectDetectionStatus').textContent=report.objects.text+(report.objects.count?` · 模型回報 ${report.objects.count} 項，其中 ${report.objects.positioned} 項可定位`: '')+(report.objects.classes?`（${report.objects.classes}）`:'');
   $('roadDetectionStatus').textContent=report.road.text+(report.road.count?` · 模型回報 ${report.road.count} 項`: '');
   if(!savingVision){$('detectionObjects').checked=report.objects.enabled===true;$('detectionRoad').checked=report.road.enabled===true;$('detectionObjects').disabled=report.objects.enabled===null;$('detectionRoad').disabled=report.road.enabled===null;}
   $('retryDetection').disabled=!report.objects.enabled&&!report.road.enabled;

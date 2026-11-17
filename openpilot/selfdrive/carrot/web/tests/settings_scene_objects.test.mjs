@@ -71,15 +71,15 @@ test('recognition owns one in-flight frame, expires paused video results and ter
   f.perception.update({active:false});assert.equal(worker.terminated,true);assert.equal(f.timers.size,0);
 });
 
-test('fresh camera people and cars keep their meshes beside unknown radar targets and update with new frames',async()=>{
+test('fresh camera people, cars and motorcycles keep their meshes beside unknown radar targets and update with new frames',async()=>{
   const f=fixture();f.perception.update();const worker=f.workers[0];worker.reply({type:'ready'});
   const detect=async shift=>{
     f.perception.update();await Promise.resolve();const frame=worker.messages.filter(m=>m.type==='frame').at(-1);
-    worker.reply({type:'result',id:frame.id,durationMs:40,detections:['person','car'].map((kind,i)=>({
+    worker.reply({type:'result',id:frame.id,durationMs:40,detections:['person','car','motorcycle'].map((kind,i)=>({
       categories:[{categoryName:kind,score:.9}],boundingBox:{originX:270+i*70+shift,originY:190,width:20,height:40}}))});
     return f.perception.scene();
   };
-  const first=await detect(0);assert.deepEqual(first.objects.map(o=>o.kind),['person','car']);
+  const first=await detect(0);assert.deepEqual(first.objects.map(o=>o.kind),['person','car','motorcycle']);
   const commands=[];const ctx=new Proxy({measureText:()=>({width:20})},{get:(t,k)=>t[k]??((...v)=>commands.push([k,...v])),set:(t,k,v)=>(t[k]=v,true)});
   const radar={leadOne:lead(25,0,2)};
   drawDrivingScene(ctx,1280,480,{radar,vision:first},{drawEgo:()=>{}});
