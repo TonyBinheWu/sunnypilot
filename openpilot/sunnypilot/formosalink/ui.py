@@ -121,6 +121,8 @@ class FormosaPairingDialog(Widget):
     self._remote = Button(lambda: text("remote_on" if ui_state.params.get_bool(REMOTE_KEY) else "remote_off"), self._toggle_remote,
                           font_size=34 if big else 11, text_padding=padding)
     self._remote.set_enabled(ui_state.is_offroad)
+    from openpilot.sunnypilot.formosalink.training_ui import open_training
+    self._training = Button(lambda: {"zh-TW": "訓練授權", "en": "Training data", "ja": "学習データ"}[language()], open_training, button_style=ButtonStyle.NORMAL)
 
   def show_event(self):
     super().show_event()
@@ -244,6 +246,8 @@ class FormosaPairingDialog(Widget):
     self._close._label.set_font_size(17*scale)
     if not self.embedded:
       self._close.render(rl.Rectangle(rect.x+rect.width-margin-80*scale, rect.y+8*scale, 80*scale, button_height))
+    self._training._label.set_font_size(15*scale)
+    self._training.render(rl.Rectangle(rect.x+rect.width-margin-205*scale, rect.y+8*scale, 118*scale, 35*scale))
 
     body_top = rect.y + 54*scale
     body_bottom = bottom - (button_height+gap) - 6*scale

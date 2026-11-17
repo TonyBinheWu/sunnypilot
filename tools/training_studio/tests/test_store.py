@@ -1,0 +1,76 @@
+import hashlib
+from pathlib import Path
+import tempfile
+import unittest
+
+from tools.training_studio.server import initialize
+from tools.training_studio.store import Store, read_json, split_for, write_json
+from openpilot.sunnypilot.formosalink.training_protocol import POLICY, digest_file
+
+
+class StoreTest(unittest.TestCase):
+  def setUp(self):
+    self.temp=tempfile.TemporaryDirectory()
+    self.addCleanup(self.temp.cleanup)
+    self.root=Path(self.temp.name)
+    self.inbox=self.root/"inbox"
+    self.inbox.mkdir()
+    self.store=initialize(self.root/"studio",[str(self.inbox)])
+
+  def add(self,split):
+    number=0
+    while True:
+      group=hashlib.sha256((split+str(number)).encode()).hexdigest()
+      if split_for(group)==split:
+        break
+      number+=1
+    path=self.inbox/(split+str(number))
+    path.mkdir()
+    entries=[]
+    for name in ("rlog.zst","fcamera.hevc","ecamera.hevc"):
+      file=path/name
+      file.write_bytes((name+split).encode())
+      entries.append({"filename":name,"size":file.stat().st_size,"sha256":digest_file(file)})
+    write_json(path/"complete.json",{"policy":POLICY,"route_group":group,"files":entries})
+    return path
+
+  def test_no_job_until_all_route_splits_exist_and_no_duplicate_optimizer(self):
+    self.add("train")
+    self.assertEqual(self.store.discover(),1)
+    self.assertIsNone(self.store.enqueue())
+    self.add("validation")
+    self.add("test")
+    self.assertEqual(self.store.discover(),2)
+    job=self.store.enqueue()
+    self.assertIsNotNone(job)
+    self.assertIsNone(self.store.enqueue(force=True))
+    self.store.update(job,"completed","awaiting_device_acceptance")
+    self.assertIsNone(self.store.enqueue())
+    self.assertEqual(self.store.discover(),0)
+    next_job=self.store.enqueue(force=True)
+    self.assertNotEqual(job,next_job)
+    self.assertEqual(read_json(self.store.root/"runs"/next_job/"plan.json")["parent"],job)
+
+  def test_mutation_after_import_does_not_change_snapshot(self):
+    source=self.add("train")
+    self.store.discover()
+    with self.store.db() as db:
+      row=db.execute("SELECT * FROM datasets").fetchone()
+    original=(Path(row["path"])/"fcamera.hevc").read_bytes()
+    (source/"fcamera.hevc").write_bytes(b"changed")
+    self.assertEqual((Path(row["path"])/"fcamera.hevc").read_bytes(),original)
+
+  def test_tampered_or_cabin_data_rejected(self):
+    source=self.add("train")
+    (source/"fcamera.hevc").write_bytes(b"tamper")
+    self.assertEqual(self.store.discover(),0)
+    self.assertEqual(self.store.state()["datasets"],[])
+
+  def test_group_assignment_stable(self):
+    group="a"*64
+    self.assertEqual(split_for(group),split_for(group))
+    self.assertIn(split_for(group),("train","validation","test"))
+
+
+if __name__=="__main__":
+  unittest.main()

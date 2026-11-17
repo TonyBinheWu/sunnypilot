@@ -20,3 +20,10 @@ if [ -z "$AGNOS_VERSION" ]; then
 fi
 
 export STAGING_ROOT="/data/safe_staging"
+
+# A manually selected, verified Studio release takes effect only on the next boot.
+if [ -z "${CARROT_BIG_MODEL_MANIFEST:-}" ]; then
+  studio_manifest="$(python3 -m openpilot.sunnypilot.formosalink.training_models manifest-url 2>/dev/null)"
+  if [ -n "$studio_manifest" ]; then export CARROT_BIG_MODEL_MANIFEST="$studio_manifest"; fi
+  unset studio_manifest
+fi

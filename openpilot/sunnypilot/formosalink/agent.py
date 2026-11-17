@@ -80,6 +80,8 @@ def run(directory=None, demo=False, stop=None):
     start_management(directory,stop)
     from openpilot.sunnypilot.formosalink.cameras import start as start_cameras
     start_cameras(directory,stop)
+    from openpilot.sunnypilot.formosalink.training_upload import start as start_training_upload
+    start_training_upload(directory,stop)
     from openpilot.sunnypilot.formosalink.profile import CARROT
     if CARROT:
       from openpilot.sunnypilot.formosalink.remote_web import start as start_web

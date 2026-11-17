@@ -1,3 +1,4 @@
+import {contributionDialog} from './training-data.js?v=1';
 import {initTheme} from './theme.js?v=0.6.0';
 import {supportPanel} from './support.js?v=0.9.0';
 import {healthValue} from './health-ui.js?v=0.6.0';
@@ -77,7 +78,7 @@ function render() {
         bottom.append(carrotSettings);carrotSettings.title=t('carrotSettingsHelp');
         const live=element('button',t('carrotLive'),'secondary');live.type='button';live.addEventListener('click',()=>settings.open(device,'live'));bottom.append(live);
       }
-      const detail=element('button',t(isCarrotDevice(device)?'carrotDeviceInfo':'deviceSettings'),'secondary');detail.type='button';detail.addEventListener('click',()=>settings.open(device));bottom.append(detail);const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
+      const detail=element('button',t(isCarrotDevice(device)?'carrotDeviceInfo':'deviceSettings'),'secondary');detail.type='button';detail.addEventListener('click',()=>settings.open(device));bottom.append(detail);const contribute=element("button",({"zh-TW":"訓練資料授權",en:"Training data",ja:"学習データ提供"}[language]),"secondary");contribute.type="button";contribute.addEventListener("click",()=>contributionDialog(device,api,language).catch(e=>notify(e.key||"serverError",true)));bottom.append(contribute);const revoke=element('button',t('revoke'),'quiet revoke');revoke.type='button';revoke.addEventListener('click',async()=>{if(!confirm(t('confirmRevoke')))return;revoke.disabled=true;try{await api('/devices/'+encodeURIComponent(device.id)+'/revoke',{});notify('revoked');await refresh();}catch(e){notify(e.key||'serverError',true);}finally{revoke.disabled=false;}});bottom.append(revoke);}card.append(bottom);$('device-grid').append(card);
   }
 }
 function session(value){if(!value)support.close();signedIn=value;$('login-view').hidden=value;$('dashboard').hidden=!value;$('logout').hidden=!value;$('public-nav').hidden=value;$('nav-signin').hidden=value;if(!value){settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();$('pair-dialog').close();}}
