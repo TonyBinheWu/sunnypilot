@@ -1708,3 +1708,158 @@ msgstr "彩虹道路（SP 风格）"
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
 msgstr "横向控制启用时，在预测路径显示动态彩虹。仅改变显示，无需重启即可应用。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Low-speed demand follow · observed response"
+msgstr "低速需求跟随・反应纪录"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Hyundai/Kia CAN-FD torque control only. Command units are not Nm; up/down is CAN units per 10 ms. Observed peaks are not hardware limits and never increase control limits. No physical limit probing."
+msgstr "仅 Hyundai／Kia CAN-FD 扭力控制。指令单位不是牛顿米；增／减速率是每 10 毫秒的 CAN 指令增减量。观察峰值不是硬体极限，也不会用来提高控制上限。不会试探车辆极限。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Requested / sent torque command"
+msgstr "需求／送出扭力指令"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Target / measured steering angle"
+msgstr "目标／实际方向盘角度"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Measured steering angle rate"
+msgstr "实际方向盘转动速率"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Factory baseline / available ceiling"
+msgstr "车型预设／可用上限"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command increase / decrease per 10 ms"
+msgstr "每 10 毫秒指令增加／减少"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Left-command observed peaks"
+msgstr "左转指令期间观察峰值"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Right-command observed peaks"
+msgstr "右转指令期间观察峰值"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Samples (not learning progress)"
+msgstr "有效样本数（不是学习进度）"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command / angle / angle rate"
+msgstr "指令／角度／角度速率"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Enabled"
+msgstr "已开启"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Disabled"
+msgstr "已关闭"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Current restriction / phase"
+msgstr "目前限制／阶段"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Mode disabled"
+msgstr "功能关闭"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Lateral control inactive"
+msgstr "横向控制未启用"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "CAN unavailable"
+msgstr "CAN 资料无效"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering fault"
+msgstr "转向系统异常"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Driver takeover"
+msgstr "驾驶接管"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Stationary"
+msgstr "停车状态"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Not in Drive"
+msgstr "非 D 档"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Factory limit at 40 km/h or above"
+msgstr "40 km/h 以上使用车型预设"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Model data missing or expired"
+msgstr "模型资料缺少或过期"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Invalid data or configuration"
+msgstr "资料或配置无效"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Within baseline demand"
+msgstr "需求在预设范围内"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Confirming sustained demand (0.30 s)"
+msgstr "持续需求确认中（0.30 秒）"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Following demand within limits"
+msgstr "在限制内跟随需求"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "30–40 km/h taper"
+msgstr "30–40 km/h 余量渐退"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Demand exceeds available software ceiling"
+msgstr "需求超过可用软体上限"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Existing steering request inhibition"
+msgstr "既有转向请求保护"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command rate limit or steering yield"
+msgstr "指令速率限制或转向让步"

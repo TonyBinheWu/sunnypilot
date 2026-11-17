@@ -1,5 +1,24 @@
 # Repository memory
 
+- 2026-11-17 User chose bounded low-speed demand follow + passive response
+  records, not on-road EPS limit probing. LowSpeedSteerReserve keeps its ID,
+  default off and position below CustomSteerMax; title is now demand follow.
+  Hyundai/Kia CAN-FD torque only, original 0.30s qualification/health/freshness
+  guards, requested headroom capped409 <=30km/h, taper30–40, factory >=40.
+  Enabled mode uses factory normalization AND slew at all speeds, ignoring but
+  preserving stored CustomSteerMax/Delta values; off restores manual values.
+  Never change EPS/Panda protections or infer verified hardware capability.
+  Independent SteeringObservations records commands, measured wheel angle/rate,
+  reasons and signed-command peaks; no recorded data feeds control. Bounded
+  profile keyed by fingerprint/control/schema; asynchronous tmpfs status1Hz,
+  persistent aggregates60s/exit, both DONT_LOG. No positions or cloud uploader.
+  Existing machine Device and web/APK Tools steering-learning views display
+  records, current factory/cap/slew and freshness; stale after2s, cached distinct.
+  Four locales and reviewed detailed setting guides updated. 87 control/CAN/view
+  checks,89 schema/reader checks,299 settings JS and34 Wiki tests passed locally;
+  browser synthetic status/expiry verified, no physical vehicle acceptance.
+  Native APK inputs unchanged; update vehicle branch and reopen existing apps.
+
 - 2026-11-17 User replaced Google navigation work with Mapbox/OpenStreetMap.
   Do not continue pending Google Cloud provisioning. Navigation HTML no longer
   loads Google SDK/key controls; legacy helper is a no-network retirement stub.

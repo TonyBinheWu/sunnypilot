@@ -31,6 +31,18 @@ def test_native_missing_progress_and_stale_source_are_unambiguous():
   assert '80%' in text and 'Data expired (last received)' in text
 
 
+def test_native_passive_observations_show_commands_rates_and_restrictions():
+  snapshot = {'delay': section('liveDelay'), 'torque': section('liveTorqueParameters'),
+              'lowSpeed': {'source': 'cached', 'enabled': False,
+                           'current': {'reason': 'driver', 'requested': 400, 'command': 100, 'angle': 20,
+                                       'targetAngle': 30, 'angleRate': 10, 'base': 270, 'ceiling': 409, 'up': 2, 'down': 3},
+                           'stats': {'samples': 50, 'left': dict(command=200, angle=30, angleRate=10),
+                                     'right': dict(command=100, angle=20, angleRate=5)}}}
+  text = panel_scope()['learning_html'](snapshot)
+  assert 'Driver takeover' in text and '2.0 / 3.0' in text and '400.0 / 100.0' in text
+  assert 'not hardware limits' in text and 'not live' in text
+
+
 @pytest.mark.parametrize('width,height', [(536, 240), (536, 220)])
 def test_c4_panel_scrolls_and_clips_within_its_small_canvas(monkeypatch, width, height):
   calls = []

@@ -151,7 +151,7 @@ class LatControlTorque(LatControl):
       self.reserve_enabled = self.reserve_supported and self.params.get_bool("LowSpeedSteerReserve")
       if self.reserve_supported:
         custom_max = self.params.get_int("CustomSteerMax")
-        self.reserve_base = custom_max if custom_max > 0 else self.reserve_default_base
+        self.reserve_base = custom_max if custom_max > 0 and not self.reserve_enabled else self.reserve_default_base
     # Extend only the clipping boundary, keeping the baseline normalization,
     # gains, feedforward and learned parameters unchanged. Use pre-clip demand.
     if self.reserve_supported:

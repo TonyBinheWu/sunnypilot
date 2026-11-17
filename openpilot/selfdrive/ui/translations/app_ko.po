@@ -1827,3 +1827,158 @@ msgstr "무지개 도로 (SP 스타일)"
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
 msgstr "횡방향 제어 중 예측 경로를 움직이는 무지개로 표시합니다. 표시 전용이며 재시작 없이 적용됩니다。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Low-speed demand follow · observed response"
+msgstr "저속 요구 추종 · 응답 기록"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Hyundai/Kia CAN-FD torque control only. Command units are not Nm; up/down is CAN units per 10 ms. Observed peaks are not hardware limits and never increase control limits. No physical limit probing."
+msgstr "현대/기아 CAN-FD 토크 제어 전용입니다. 명령 단위는 Nm가 아니며 증가/감소율은 10 ms당 CAN 명령 변화량입니다. 관찰 최대값은 하드웨어 한계가 아니며 제어 한계를 높이는 데 사용하지 않습니다. 물리 한계를 시험하지 않습니다."
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Requested / sent torque command"
+msgstr "요구 / 전송 토크 명령"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Target / measured steering angle"
+msgstr "목표 / 실제 핸들 각도"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Measured steering angle rate"
+msgstr "실제 핸들 각속도"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Factory baseline / available ceiling"
+msgstr "공장 기본 / 사용 가능 한계"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command increase / decrease per 10 ms"
+msgstr "10 ms당 명령 증가 / 감소"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Left-command observed peaks"
+msgstr "좌측 명령 중 관찰 최대값"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Right-command observed peaks"
+msgstr "우측 명령 중 관찰 최대값"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Samples (not learning progress)"
+msgstr "유효 표본 수 (학습 진행률 아님)"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command / angle / angle rate"
+msgstr "명령 / 각도 / 각속도"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Enabled"
+msgstr "켜짐"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Disabled"
+msgstr "꺼짐"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Current restriction / phase"
+msgstr "현재 제한 / 단계"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Mode disabled"
+msgstr "기능 꺼짐"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Lateral control inactive"
+msgstr "횡방향 제어 비활성"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "CAN unavailable"
+msgstr "CAN 데이터 무효"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering fault"
+msgstr "조향 오류"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Driver takeover"
+msgstr "운전자 개입"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Stationary"
+msgstr "정차 중"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Not in Drive"
+msgstr "D단 아님"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Factory limit at 40 km/h or above"
+msgstr "40 km/h 이상 공장 기본 한계"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Model data missing or expired"
+msgstr "모델 데이터 없음 또는 만료"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Invalid data or configuration"
+msgstr "잘못된 데이터 또는 구성"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Within baseline demand"
+msgstr "기본 범위 내 요구"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Confirming sustained demand (0.30 s)"
+msgstr "지속 요구 확인 중 (0.30 s)"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Following demand within limits"
+msgstr "한계 내 요구 추종"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "30–40 km/h taper"
+msgstr "30–40 km/h 여유 감쇠"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Demand exceeds available software ceiling"
+msgstr "사용 가능 소프트웨어 한계 초과"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Existing steering request inhibition"
+msgstr "기존 조향 요청 차단"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command rate limit or steering yield"
+msgstr "명령 변화율 제한 또는 조향 양보"

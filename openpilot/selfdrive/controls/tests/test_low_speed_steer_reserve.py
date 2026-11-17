@@ -55,3 +55,16 @@ def test_real_pid_speed_exit_and_setting_off(monkeypatch):
   assert abs(run(f, .04)[-1]) > 1
   f[-1]['LowSpeedSteerReserve'] = False
   assert abs(run(f, .04, 100)[-1]) == 1
+
+
+def test_manual_max_does_not_change_enabled_factory_normalization(monkeypatch):
+  f = make_controller(monkeypatch, True)
+  f[-1]['CustomSteerMax'] = 409
+  assert abs(run(f, .04)[-1]) == pytest.approx(409 / 270)
+  assert f[0].reserve_base == 270
+  f[1].vEgo = f[1].vEgoRaw = 100 / 3.6
+  assert abs(run(f, .04)[-1]) <= 1
+  assert f[0].reserve_base == 270
+  f[-1]['LowSpeedSteerReserve'] = False
+  run(f, .04, 100)
+  assert f[0].reserve_base == 409

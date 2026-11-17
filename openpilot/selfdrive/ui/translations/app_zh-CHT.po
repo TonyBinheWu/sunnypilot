@@ -2351,3 +2351,158 @@ msgstr "彩虹道路（SP 風格）"
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
 msgstr "橫向控制啟用時，在預測路徑顯示動態彩虹。僅改變顯示，設定不必重新啟動即可套用。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Low-speed demand follow · observed response"
+msgstr "低速需求跟隨・反應紀錄"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Hyundai/Kia CAN-FD torque control only. Command units are not Nm; up/down is CAN units per 10 ms. Observed peaks are not hardware limits and never increase control limits. No physical limit probing."
+msgstr "僅 Hyundai／Kia CAN-FD 扭力控制。指令單位不是牛頓米；增／減速率是每 10 毫秒的 CAN 指令增減量。觀察峰值不是硬體極限，也不會用來提高控制上限。不會試探車輛極限。"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Requested / sent torque command"
+msgstr "需求／送出扭力指令"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Target / measured steering angle"
+msgstr "目標／實際方向盤角度"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Measured steering angle rate"
+msgstr "實際方向盤轉動速率"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Factory baseline / available ceiling"
+msgstr "車型預設／可用上限"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command increase / decrease per 10 ms"
+msgstr "每 10 毫秒指令增加／減少"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Left-command observed peaks"
+msgstr "左轉指令期間觀察峰值"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Right-command observed peaks"
+msgstr "右轉指令期間觀察峰值"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Samples (not learning progress)"
+msgstr "有效樣本數（不是學習進度）"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command / angle / angle rate"
+msgstr "指令／角度／角度速率"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Enabled"
+msgstr "已開啟"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Disabled"
+msgstr "已關閉"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Current restriction / phase"
+msgstr "目前限制／階段"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Mode disabled"
+msgstr "功能關閉"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Lateral control inactive"
+msgstr "橫向控制未啟用"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "CAN unavailable"
+msgstr "CAN 資料無效"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering fault"
+msgstr "轉向系統異常"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Driver takeover"
+msgstr "駕駛接管"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Stationary"
+msgstr "停車狀態"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Not in Drive"
+msgstr "非 D 檔"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Factory limit at 40 km/h or above"
+msgstr "40 km/h 以上使用車型預設"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Model data missing or expired"
+msgstr "模型資料缺少或過期"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Invalid data or configuration"
+msgstr "資料或配置無效"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Within baseline demand"
+msgstr "需求在預設範圍內"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Confirming sustained demand (0.30 s)"
+msgstr "持續需求確認中（0.30 秒）"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Following demand within limits"
+msgstr "在限制內跟隨需求"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "30–40 km/h taper"
+msgstr "30–40 km/h 餘量漸退"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Demand exceeds available software ceiling"
+msgstr "需求超過可用軟體上限"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Existing steering request inhibition"
+msgstr "既有轉向請求保護"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command rate limit or steering yield"
+msgstr "指令速率限制或轉向讓步"

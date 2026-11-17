@@ -1580,3 +1580,158 @@ msgstr "Rainbow Road (SP style)"
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
 msgstr "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Low-speed demand follow · observed response"
+msgstr "Low-speed demand follow · observed response"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Hyundai/Kia CAN-FD torque control only. Command units are not Nm; up/down is CAN units per 10 ms. Observed peaks are not hardware limits and never increase control limits. No physical limit probing."
+msgstr "Hyundai/Kia CAN-FD torque control only. Command units are not Nm; up/down is CAN units per 10 ms. Observed peaks are not hardware limits and never increase control limits. No physical limit probing."
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Requested / sent torque command"
+msgstr "Requested / sent torque command"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Target / measured steering angle"
+msgstr "Target / measured steering angle"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Measured steering angle rate"
+msgstr "Measured steering angle rate"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Factory baseline / available ceiling"
+msgstr "Factory baseline / available ceiling"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command increase / decrease per 10 ms"
+msgstr "Command increase / decrease per 10 ms"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Left-command observed peaks"
+msgstr "Left-command observed peaks"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Right-command observed peaks"
+msgstr "Right-command observed peaks"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Samples (not learning progress)"
+msgstr "Samples (not learning progress)"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command / angle / angle rate"
+msgstr "Command / angle / angle rate"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Enabled"
+msgstr "Enabled"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Disabled"
+msgstr "Disabled"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Current restriction / phase"
+msgstr "Current restriction / phase"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Mode disabled"
+msgstr "Mode disabled"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Lateral control inactive"
+msgstr "Lateral control inactive"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "CAN unavailable"
+msgstr "CAN unavailable"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Steering fault"
+msgstr "Steering fault"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Driver takeover"
+msgstr "Driver takeover"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Stationary"
+msgstr "Stationary"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Not in Drive"
+msgstr "Not in Drive"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Factory limit at 40 km/h or above"
+msgstr "Factory limit at 40 km/h or above"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Model data missing or expired"
+msgstr "Model data missing or expired"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Invalid data or configuration"
+msgstr "Invalid data or configuration"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Within baseline demand"
+msgstr "Within baseline demand"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Confirming sustained demand (0.30 s)"
+msgstr "Confirming sustained demand (0.30 s)"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Following demand within limits"
+msgstr "Following demand within limits"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "30–40 km/h taper"
+msgstr "30–40 km/h taper"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Demand exceeds available software ceiling"
+msgstr "Demand exceeds available software ceiling"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Existing steering request inhibition"
+msgstr "Existing steering request inhibition"
+
+
+#: openpilot/selfdrive/ui/widgets/steering_learning.py
+msgid "Command rate limit or steering yield"
+msgstr "Command rate limit or steering yield"

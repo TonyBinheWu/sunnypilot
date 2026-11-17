@@ -10,6 +10,7 @@ from opendbc.car.hyundai.carstate import CarState
 from opendbc.car.hyundai.stopping import CanfdStopping
 from opendbc.car.hyundai.steering_handover import SteeringHandover
 from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
+from opendbc.car.hyundai.steering_observations import SteeringObservations
 from opendbc.car.carlog import carlog
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags
@@ -188,6 +189,12 @@ class CarController(CarControllerBase):
     self.low_speed_steer_reserve = LowSpeedSteerReserve()
     self.reserve_supported = supports_reserve(CP)
     self.reserve_enabled = False
+    self.steering_observations = None
+    if self.reserve_supported:
+      try:
+        self.steering_observations = SteeringObservations(CP.carFingerprint, Params(), Params('/dev/shm/params'))
+      except Exception:
+        pass  # Optional diagnostics must never affect control availability.
     self.packer = CANPacker(dbc_names[Bus.pt])
     self.angle_limit_counter = 0
 
@@ -276,6 +283,10 @@ class CarController(CarControllerBase):
       steerDeltaDown = params.get_int("CustomSteerDeltaDown")
       steerDeltaUpLC = params.get_int("CustomSteerDeltaUpLC")
       steerDeltaDownLC = params.get_int("CustomSteerDeltaDownLC")
+      # Demand-follow mode always uses factory mapping/slew, including highway.
+      # Keep the stored manual settings untouched for when this mode is disabled.
+      if self.reserve_enabled:
+        steerMax = steerDeltaUp = steerDeltaDown = steerDeltaUpLC = steerDeltaDownLC = 0
       if steerMax > 0:
         self.params.STEER_MAX = steerMax
       else:
@@ -700,6 +711,22 @@ class CarController(CarControllerBase):
     new_actuators.steeringAngleDeg = float(apply_angle)
     new_actuators.accel = accel
     new_actuators.stopObjectActive = bool(self.canfd_stopping is not None and self.canfd_stopping.stop_object_active)
+
+    if self.steering_observations is not None:
+      try:
+        reason = self.low_speed_steer_reserve.reason
+        if self.reserve_enabled and CC.latActive and reason in ('demand', 'qualifying', 'following', 'taper', 'ceiling', 'factory'):
+          if not apply_steer_req:
+            reason = 'request_cut'
+          elif abs(new_torque - apply_torque) > 1 and abs(new_torque) <= reserve_max:
+            reason = 'rate_or_yield'
+        self.steering_observations.update(
+          now=now_nanos * 1e-9, enabled=self.reserve_enabled, active=CC.latActive, cs=CS.out,
+          requested=new_torque, command=apply_torque, target_angle=actuators.steeringAngleDeg,
+          base=self.params.STEER_MAX, ceiling=reserve_max,
+          up=self.params.STEER_DELTA_UP, down=self.params.STEER_DELTA_DOWN, reason=reason)
+      except Exception:
+        pass  # No observed value is fed back into control or safety limits.
 
     self.frame += 1
     return new_actuators, can_sends

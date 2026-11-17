@@ -13,7 +13,7 @@ def state(**kw):
 
 
 def warm(helper, cs=None, **kw):
-  args = dict(enabled=True, active=True, cs=cs or state(), base=270, demand=1.2)
+  args = dict(enabled=True, active=True, cs=cs or state(), base=270, demand=2.)
   args.update(kw)
   return [helper.update(model_frame=n // 5, **args) for n in range(100)]
 
@@ -23,7 +23,7 @@ def warm(helper, cs=None, **kw):
 def test_speed_ceiling_and_sustained_demand(speed, ceiling, sign):
   cs = state()
   cs.vEgo = cs.vEgoRaw = speed / 3.6
-  trace = warm(LowSpeedSteerReserve(), cs, demand=sign * 1.2)
+  trace = warm(LowSpeedSteerReserve(), cs, demand=sign * 2.)
   assert trace[:29] == [270] * 29
   assert trace[-1] == ceiling
 
@@ -128,3 +128,29 @@ def test_support_scope():
   cp.brand = 'toyota'
   cp.flags = int(HyundaiFlags.CANFD)
   assert not supports_reserve(cp)
+
+
+@pytest.mark.parametrize('demand,expected', [(1., 270), (1.1, 297), (1.2, 324), (1.5, 405), (2., 409)])
+def test_only_requested_headroom_is_available(demand, expected):
+  assert warm(LowSpeedSteerReserve(), demand=demand)[-1] == expected
+
+
+def test_enabled_mode_uses_factory_max_and_slew_even_with_manual_values(monkeypatch):
+  controller, cs, cc, settings = torque_fixture(monkeypatch)
+  settings.update(CustomSteerMax=409, CustomSteerDeltaUp=20, CustomSteerDeltaDown=30,
+                  CustomSteerDeltaUpLC=25, CustomSteerDeltaDownLC=35)
+  cc.hudControl.modelDesire = 3
+  cc.actuators.torque = 2.
+  trace = [step(controller, cs, cc)[0].torqueOutputCan for _ in range(300)]
+  assert trace[-1] == 409 and max(abs(b-a) for a,b in zip(trace, trace[1:])) <= 2
+  cs.out.vEgo = cs.out.vEgoRaw = 100 / 3.6
+  trace = [step(controller, cs, cc)[0].torqueOutputCan for _ in range(100)]
+  assert trace[-1] == 270 and max(abs(b-a) for a,b in zip(trace, trace[1:])) <= 3
+  assert controller.params.STEER_MAX == 270
+  assert (controller.params.STEER_DELTA_UP, controller.params.STEER_DELTA_DOWN) == (2, 3)
+  assert settings['CustomSteerMax'] == 409 and settings['CustomSteerDeltaUpLC'] == 25
+  settings['LowSpeedSteerReserve'] = 0
+  for _ in range(100):
+    step(controller, cs, cc)
+  assert controller.params.STEER_MAX == 409
+  assert (controller.params.STEER_DELTA_UP, controller.params.STEER_DELTA_DOWN) == (25, 35)

@@ -110,3 +110,44 @@ def test_cache_checks_vehicle_and_torque_identity():
   result = LearningReader(params, now=lambda: 100.).snapshot(Sm(False))
   assert result['delay']['source'] == 'cached'
   assert result['torque']['source'] == 'unavailable'
+
+
+def test_low_speed_live_stale_cached_identity_and_read_only():
+  import json
+  from openpilot.cereal import car
+  from opendbc.car.hyundai.values import HyundaiFlags
+  from opendbc.car.hyundai.steering_observations import SteeringObservations, PROFILE_KEY, STATUS_KEY
+  from opendbc.car.hyundai.tests.test_steering_observations import Memory, observe
+  cp = car.CarParams.new_message()
+  cp.brand, cp.carFingerprint, cp.flags, cp.steerControlType = 'hyundai', 'KIA_EV6', int(HyundaiFlags.CANFD), 'torque'
+  cp.lateralTuning.init('torque')
+  disk, runtime = Memory(), Memory()
+  recorder = SteeringObservations(cp.carFingerprint, disk, runtime)
+  observe(recorder, 100.)
+  # Read-only wrappers have no write/reset API.
+  params = Params(CarParams=cp.to_bytes(), LowSpeedSteerObservations=disk[PROFILE_KEY])
+  shared = Params(LowSpeedSteerStatus=runtime[STATUS_KEY])
+  clock = [100.5]
+  reader = LearningReader(params, runtime_params=shared, now=lambda: clock[0], cache_loader=lambda: {})
+  low = reader.snapshot(Sm())['lowSpeed']
+  assert low['source'] == 'live' and low['current']['reason'] == 'rate_or_yield'
+  assert low['current']['up'] == 2 and low['stats']['samples'] == 1
+  assert 'fingerprint' not in low
+  clock[0] = 103.
+  assert reader.snapshot(Sm())['lowSpeed']['source'] == 'stale'
+  clock[0] = 1.  # old boot's monotonic timestamp cannot be live
+  assert reader.snapshot(Sm())['lowSpeed']['source'] == 'cached'
+  clock[0] = 100.5
+  broken = json.loads(shared[STATUS_KEY])
+  broken['current']['angleRate'] = float('nan')
+  shared[STATUS_KEY] = json.dumps(broken)
+  assert reader.snapshot(Sm())['lowSpeed']['source'] == 'cached'
+  cp.carFingerprint = 'OTHER'
+  cp.clear_write_flag()
+  params['CarParams'] = cp.to_bytes()
+  assert reader.snapshot(Sm())['lowSpeed']['source'] == 'unavailable'
+  cp.carFingerprint = 'KIA_EV6'
+  cp.flags |= int(HyundaiFlags.ANGLE_CONTROL)
+  cp.clear_write_flag()
+  params['CarParams'] = cp.to_bytes()
+  assert reader.snapshot(Sm())['lowSpeed']['source'] == 'unavailable'

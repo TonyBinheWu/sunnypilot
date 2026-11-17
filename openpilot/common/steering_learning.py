@@ -57,11 +57,50 @@ def extract(message, kind):
 
 class LearningReader:
   """Uses an existing SubMaster. Cache reads are throttled and never written."""
-  def __init__(self, params, *, now=time.monotonic, cache_loader=None):
+  def __init__(self, params, *, now=time.monotonic, cache_loader=None, runtime_params=None):
     self.params, self.now = params, now
     self.cache_loader = cache_loader or self._load_cache
     self.cached = {}
     self.next_cache = 0.
+    self.runtime_params = runtime_params
+    if runtime_params is None:
+      try:
+        from openpilot.common.params import Params
+        self.runtime_params = Params('/dev/shm/params')
+      except Exception:
+        pass
+
+  def low_speed_snapshot(self):
+    from opendbc.car.hyundai.steering_observations import decode, PROFILE_KEY, STATUS_KEY, REASONS
+    empty = {'source': 'unavailable', 'ageSeconds': None, 'enabled': None, 'current': None, 'stats': None}
+    try:
+      from openpilot.cereal import car
+      from opendbc.car.hyundai.low_speed_steer_reserve import supports_reserve
+      raw_cp = self._get('CarParams') or self._get('CarParamsPersistent')
+      if not raw_cp:
+        return empty
+      with car.CarParams.from_bytes(raw_cp) as cp:
+        if not supports_reserve(cp):
+          return empty
+        fingerprint = cp.carFingerprint
+      raw = self.runtime_params.get(STATUS_KEY) if self.runtime_params else None
+      data = decode(raw, fingerprint)
+      if data:
+        age = self.now() - data.get('monotonic', float('nan'))
+        current = data.get('current', {})
+        fields = ('requested', 'command', 'targetAngle', 'angle', 'base', 'ceiling', 'up', 'down')
+        valid = (type(data.get('enabled')) is bool and current.get('reason') in REASONS and
+                 all(number(current.get(k), -100000, 100000) is not None for k in fields) and
+                 (current.get('angleRate') is None or number(current['angleRate'], -100000, 100000) is not None))
+        if valid and math.isfinite(age) and age >= 0:
+          return {'source': 'live' if age < FRESH_SECONDS else 'stale', 'ageSeconds': age,
+                  'enabled': data['enabled'], 'current': current, 'stats': data['stats']}
+      saved = decode(self._get(PROFILE_KEY), fingerprint)
+      if saved:
+        return dict(empty, source='cached', stats=saved['stats'])
+    except Exception:
+      pass
+    return empty
 
   def _get(self, name):
     try:
@@ -129,4 +168,5 @@ class LearningReader:
         if data:
           source = 'cached'
       snapshots[kind] = section(kind, data, source=source, age=age, overrides=overrides)
-    return {'ok': True, 'delay': snapshots['liveDelay'], 'torque': snapshots['liveTorqueParameters']}
+    return {'ok': True, 'delay': snapshots['liveDelay'], 'torque': snapshots['liveTorqueParameters'],
+            'lowSpeed': self.low_speed_snapshot()}

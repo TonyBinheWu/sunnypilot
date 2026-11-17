@@ -9,13 +9,25 @@ const FALLBACK = {
   samples: 'Collected samples', custom: 'Custom tuning is active; learned values do not override it.',
   help: 'Progress measures data coverage, not driving time. Similar straight-road samples may not advance it. This view does not reset or change tuning.',
   connection: 'Connection interrupted; showing previous data.',
+  lowSpeed: 'Low-speed demand follow · observed response',
+  lowHelp: 'Hyundai/Kia CAN-FD torque control only. Command units are not Nm; up/down is CAN units per 10 ms. Observed peaks are not hardware limits and never increase control limits. No physical limit probing.',
+  requested: 'Requested / sent torque command', angle: 'Target / measured steering angle', angleRate: 'Measured steering angle rate',
+  cap: 'Factory baseline / available ceiling', slew: 'Command increase / decrease per 10 ms',
+  left: 'Left-command observed peaks', right: 'Right-command observed peaks', observed: 'Samples (not learning progress)',
+  peaks: 'Command / angle / angle rate', on: 'Enabled', off: 'Disabled', reason: 'Current restriction / phase',
+  reason_off: 'Mode disabled', reason_inactive: 'Lateral control inactive', reason_can: 'CAN unavailable',
+  reason_fault: 'Steering fault', reason_driver: 'Driver takeover', reason_stationary: 'Stationary',
+  reason_gear: 'Not in Drive', reason_factory: 'Factory limit at 40 km/h or above', reason_model: 'Model data missing or expired',
+  reason_invalid: 'Invalid data or configuration', reason_demand: 'Within baseline demand', reason_qualifying: 'Confirming sustained demand (0.30 s)',
+  reason_following: 'Following demand within limits', reason_taper: '30–40 km/h taper', reason_ceiling: 'Demand exceeds available software ceiling',
+  reason_request_cut: 'Existing steering request inhibition', reason_rate_or_yield: 'Command rate limit or steering yield',
 };
 const text = key => globalThis.getUIText?.(`steering_learning_${key}`, FALLBACK[key]) || FALLBACK[key] || key;
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const number = (value, digits=0) => typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : '—';
 
 export function expireSnapshot(snapshot) {
-  return Object.fromEntries(['delay','torque'].map(key => {
+  return Object.fromEntries(['delay','torque','lowSpeed'].map(key => {
     const state = snapshot?.[key] || {source:'unavailable',status:'unavailable',progress:null};
     return [key,{...state,source:state.source==='live' ? 'stale' : state.source}];
   }));
@@ -42,7 +54,26 @@ export function learningHtml(snapshot, disconnected=false) {
     }
     parts.push('</section>');
   }
-  parts.push(`<p class="steering-learning__help">${esc(text('help'))}</p>`);
+  const low=snapshot?.lowSpeed || {source:'unavailable'};
+  const row=(label,value)=>`<div class="steering-learning__row"><dt>${esc(text(label))}</dt><dd>${esc(value)}</dd></div>`;
+  parts.push(`<section class="steering-learning__section" data-source="${esc(low.source)}"><h3>${esc(text('lowSpeed'))}</h3><p>${esc(text(low.source))}</p>`);
+  if (typeof low.enabled==='boolean') parts.push(`<p>${esc(text(low.enabled?'on':'off'))}</p>`);
+  if (low.current) {
+    const c=low.current;
+    parts.push(`<p>${esc(text('reason'))}: ${esc(text(`reason_${c.reason}`))}</p><dl>`,
+      row('requested',`${number(c.requested)} / ${number(c.command)}`),row('angle',`${number(c.targetAngle,1)} / ${number(c.angle,1)} °`),
+      row('angleRate',`${number(c.angleRate,1)} °/s`),row('cap',`${number(c.base)} / ${number(c.ceiling)}`),
+      row('slew',`${number(c.up)} / ${number(c.down)}`),'</dl>');
+  }
+  if (low.stats) {
+    parts.push('<dl>',row('observed',number(low.stats.samples)));
+    for (const side of ['left','right']) {
+      const p=low.stats[side] || {};
+      parts.push(row(side,`${number(p.command)} / ${number(p.angle,1)} ° / ${number(p.angleRate,1)} °/s`));
+    }
+    parts.push('</dl>',`<p>${esc(text('peaks'))}</p>`);
+  }
+  parts.push(`<p>${esc(text('lowHelp'))}</p></section><p class="steering-learning__help">${esc(text('help'))}</p>`);
   return parts.join('');
 }
 
@@ -66,7 +97,7 @@ export async function openSteeringLearning() {
       const snapshot=await response.json();
       if (snapshot.ok!==true) throw new Error('status unavailable');
       const transit=(performance.now()-started)/1000;
-      for (const key of ['delay','torque']) {
+      for (const key of ['delay','torque','lowSpeed']) {
         const state=snapshot[key];
         if (state?.source==='live' && typeof state.ageSeconds==='number' && state.ageSeconds+transit>=2)
           state.source='stale';
@@ -74,7 +105,7 @@ export async function openSteeringLearning() {
       last=snapshot;
       if (!stopped && root.isConnected) root.innerHTML=learningHtml(snapshot);
       clearTimeout(expiry);
-      const remaining=['delay','torque'].filter(key=>snapshot[key]?.source==='live')
+      const remaining=['delay','torque','lowSpeed'].filter(key=>snapshot[key]?.source==='live')
         .map(key=>Math.max(0,2000-(snapshot[key].ageSeconds||0)*1000-transit*1000));
       if (remaining.length) expiry=setTimeout(()=>{
         if (!stopped && root.isConnected) {last=expireSnapshot(last);root.innerHTML=learningHtml(last,true);}

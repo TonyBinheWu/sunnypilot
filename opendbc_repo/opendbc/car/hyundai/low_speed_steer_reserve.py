@@ -26,6 +26,7 @@ class LowSpeedSteerReserve:
     self.model_age = MODEL_MAX_AGE_FRAMES + 1
     self.demand_frames = 0
     self.direction = 0
+    self.reason = 'off'
 
   def update(self, *, enabled, active, cs, base, model_frame, demand):
     if model_frame is not None and model_frame != self.model_frame:
@@ -43,6 +44,15 @@ class LowSpeedSteerReserve:
                 and math.isfinite(cs.vEgo) and math.isfinite(cs.vEgoRaw)
                 and 0.3 <= speed < END_SPEED and min(cs.vEgo, cs.vEgoRaw) >= 0
                 and model_frame is not None and self.model_age <= MODEL_MAX_AGE_FRAMES and math.isfinite(demand))
+    self.reason = ('off' if not enabled else 'inactive' if not active else
+                   'can' if not cs.canValid or cs.canTimeout else
+                   'fault' if cs.steerFaultTemporary or cs.steerFaultPermanent else
+                   'driver' if cs.steeringPressed or abs(cs.steeringTorque) > 250 else
+                   'stationary' if cs.standstill or speed < 0.3 else
+                   'gear' if cs.gearShifter != 'drive' else
+                   'factory' if speed >= END_SPEED else
+                   'model' if model_frame is None or self.model_age > MODEL_MAX_AGE_FRAMES else
+                   'invalid' if not eligible else 'demand' if abs(demand) < .99 else 'qualifying')
     direction = 1 if demand > 0 else -1
     if eligible and abs(demand) >= 0.99:
       self.demand_frames = self.demand_frames + 1 if direction == self.direction else 1
@@ -54,4 +64,7 @@ class LowSpeedSteerReserve:
       return base
 
     weight = min(1.0, (END_SPEED - speed) / (END_SPEED - FULL_SPEED))
-    return int(base + (RESERVE_MAX - base) * weight)
+    ceiling = int(base + (RESERVE_MAX - base) * weight)
+    requested = max(base, math.ceil(abs(demand) * base))
+    self.reason = 'ceiling' if requested > ceiling else 'taper' if weight < 1 else 'following'
+    return min(ceiling, requested)
