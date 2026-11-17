@@ -1,5 +1,19 @@
 # Repository memory
 
+- 2026-11-17 Cockpit0.4.0/code6 requires layoutVersion>=5. Full-width controls,
+  tools/logs, five-item dock, explicit vehicle/perception sheets, one instrument
+  group, no empty map/card clutter. Advanced original HUD layouts remain stored.
+  Camera-off scene now acquires exactly one child HUD+overlay lease for model,
+  radar/calibration; release on hidden/paused/replay/frame replacement/nonvision.
+  Never start camera or grant access from this lease. Strict browser fixtures
+  must filter requested services: old all-service fixtures masked this defect.
+  Perception report reads real preferences/video/worker snapshots; distinguishes
+  unknown/off/wait/loading/failure/zero/stale/calibration, no fabricated meshes.
+  Explicit local retry resets only enabled worker failures, rejects late results,
+  retains CPU/TTL/backpressure guards. Neutral native circles remain unclassified.
+  988 web tests:986 pass, same2 baseline failures;3 HTTP pass. Synthetic1280x480
+  and390x844 checks only; actual Android/night-road acceptance remains pending.
+
 - 2026-11-17 Cockpit0.3.1/code5 requires layoutVersion>=4. Fixed compact
   read-only ping/pong every5s,12s silence/8s CONNECTING watchdog; detach stale
   callbacks before close and reconnect even if close never fires. Outer and

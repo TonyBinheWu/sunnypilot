@@ -35,3 +35,12 @@ body[data-cockpit-panel="vision"] #visionStartOverlay{inset:auto 12px 146px auto
 :root{--md-surface:#f4f4f4!important;--md-surface-cont:#f4f4f4!important;--md-surface-cont-h:#e8e8e8!important;--md-surface-cont-hh:#dedede!important;--md-on-surface:#171a20!important;--md-on-surface-var:#63666b!important;--md-outline-var:#dedede!important;--md-primary:#3e6ae1!important}
 html.cockpit-night{--md-surface:#202124!important;--md-surface-cont:#202124!important;--md-surface-cont-l:#303134!important;--md-surface-cont-h:#303134!important;--md-surface-cont-hh:#3b3c3f!important;--md-on-surface:#f4f4f4!important;--md-on-surface-var:#a2a3a5!important;--md-outline-var:#3c3d40!important;--md-primary:#83adff!important}
 body[data-cockpit-panel="setting"] #btnSettingSearch{background:transparent!important;color:var(--md-on-surface-var)!important;border:0!important;box-shadow:none!important}
+
+/* The cockpit supplies one coherent instrument cluster; original editing is
+   still available in Advanced tools without overwriting the saved HUD layout. */
+body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .tesla-metrics,
+body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .tesla-notice,
+body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .tesla-perception,
+body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .clive-state,
+body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .clive-health,
+body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) #visionStartOverlay{display:none!important}

@@ -87,6 +87,16 @@ test('unavailable worker support and timeouts fail closed until an explicit off/
   g.target.CarrotWebSettingsState.vision_object_detection=true;g.perception.update();assert.equal(g.workers.length,2);
 });
 
+test('explicit model retry replaces a failed worker without changing preferences or accepting old callbacks',()=>{
+  const f=fixture();f.perception.update();const old=f.workers[0];
+  old.reply({type:'error',stage:'load'});assert.equal(f.perception.scene().status,'load_error');
+  f.perception.update();assert.equal(f.workers.length,1);
+  f.perception.retry();f.perception.update();assert.equal(f.workers.length,2);assert.equal(old.terminated,true);
+  old.reply({type:'ready'});assert.equal(f.perception.scene().status,'loading');
+  assert.equal(f.target.CarrotWebSettingsState.vision_object_detection,true);
+  f.perception.destroy();assert.equal(f.timers.size,0);assert.equal(f.workers[1].terminated,true);
+});
+
 
 test('animals use the same bounded approximate ground admission; elevated signs/lights and birds never get invented depth',()=>{
   const box={originX:330,originY:210,width:20,height:40},det=kind=>({categories:[{categoryName:kind,score:.9}],boundingBox:box});

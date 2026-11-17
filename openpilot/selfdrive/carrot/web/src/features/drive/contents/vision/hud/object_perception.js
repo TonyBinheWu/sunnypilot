@@ -81,6 +81,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     }).catch(()=>{if(current===generation)fail('unsupported');});
   }
   return {update,
+    retry(){failed=false;stop(wasEnabled?'waiting':'off');},
     scene(){
       if(state.capturedAt!==null&&now()-state.capturedAt>DETECTION_TTL_MS)
         return {...state,status:'stale',objects:[],imageObjects:[],count:0};

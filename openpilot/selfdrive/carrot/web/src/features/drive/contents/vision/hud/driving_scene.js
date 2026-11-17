@@ -10,7 +10,7 @@ export function drivingProjection(width,height) {
     return depth>.1?[width/2+f*y/depth,height*.46+f*((8-z)*c-(x+9)*s)/depth]:null;
   };
 }
-export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k,f)=>f}={}) {
+export function drawSceneObject(ctx,project,object,{ego=false,flat=false,night=false,text=(k,f)=>f}={}) {
   const {x,y,kind}=object;
   const polygon=(points,color)=>{
     const p=points.map(([dx,dy,z])=>project(x+dx,y+dy,z));if(p.some(v=>!v))return;
@@ -18,8 +18,9 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
   };
   if(kind==='unknown'){
     const p=project(x,y,.1);if(!p)return;
-    ctx.strokeStyle=flat?'#8cabbc':'#8796a2';ctx.lineWidth=1.4;ctx.beginPath();
-    ctx.ellipse(p[0],p[1],flat?5:7,flat?5:3,0,0,Math.PI*2);ctx.stroke();return;
+    ctx.strokeStyle=flat||night?'#b1beca':'#4f606d';ctx.lineWidth=1.8;ctx.beginPath();
+    ctx.ellipse(p[0],p[1],flat?6:9,flat?6:5,0,0,Math.PI*2);ctx.stroke();
+    if(!flat){ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillStyle=ctx.strokeStyle;ctx.fillText(`${Math.round(x)} m`,p[0],p[1]-11);ctx.textAlign='left';}return;
   }
   const person=kind==='person',twoWheel=['motorcycle','bicycle'].includes(kind);
   if(flat&&kind==='traffic cone'){
@@ -100,7 +101,7 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     else ribbon(model.position,-.75,.75,night?'#168bffdc':'#69b7ecb0');
   }
   const objects=[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
-  objects.sort((a,b)=>b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text}));
+  objects.sort((a,b)=>b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text,night}));
   if(drawEgo)drawEgo(ctx,project);
   else drawSceneObject(ctx,project,{kind:'car',x:0,y:0},{ego:true,text});
 }

@@ -43,7 +43,7 @@ function harness(){
   nodes.get('features').emit('load');
   function send(service,decoded){const data=new Uint8Array(1);data.frames=[{service,decoded,sequence:seq++}];sockets.at(-1).onmessage({data});}
   function park(){send('carState',{gearShifter:'park',vEgo:0,vEgoCluster:0});send('selfdriveState',{enabled:false});send('carControl',{latActive:false,longActive:false});}
-  return {sockets,events,timers,run(ms){for(let end=clock+ms;clock<end;){clock=Math.min(end,clock+1000);for(const [id,t] of [...timers])if(t.at<=clock){timers.delete(id);t.fn();}}},el:id=>nodes.get(id),mode:n=>buttons[n-1],panel:p=>panels.find(b=>b.dataset.panel===p),writes,pages,send,park,context,
+  return {frame:nodes.get('features').contentWindow,register:(id,node)=>nodes.set(id,node),sockets,events,timers,run(ms){for(let end=clock+ms;clock<end;){clock=Math.min(end,clock+1000);for(const [id,t] of [...timers])if(t.at<=clock){timers.delete(id);t.fn();}}},el:id=>nodes.get(id),mode:n=>buttons[n-1],panel:p=>panels.find(b=>b.dataset.panel===p),writes,pages,send,park,context,
     advance:ms=>{clock+=ms;},tick:()=>intervals.forEach(fn=>fn()),hud,reject:()=>{rejectPost=true;},flush:()=>new Promise(setImmediate)};
 }
 test('camera-independent cockpit sends one explicit expiry and never retains its last speed',()=>{
@@ -107,4 +107,17 @@ test('native pause and online/pageshow events cannot reopen background sockets',
  const h=harness();h.context.CarrotCockpit.pause();const count=h.sockets.length;
  h.events.online();h.events.pageshow();h.run(60000);assert.equal(h.sockets.length,count);assert.equal(h.timers.size,0);
  h.context.CarrotCockpit.resume();assert.equal(h.sockets.length,count+1);h.park();h.tick();assert.equal(h.el('gear').textContent,'P');assert.equal(h.writes.length,0);
+});
+
+test('object detection settings require explicit action and never start a camera or write driving parameters',async()=>{
+ const h=harness(),saved=[];let cameraStarts=0;
+ h.frame.CarrotWebSettingsState={vision_object_detection:false,vision_road_detection:false};
+ h.frame.setWebSettingByKey=async(key,value)=>{saved.push([key,value]);h.frame.CarrotWebSettingsState[key]=value;return value;};
+ const camera={disabled:false,click:()=>{cameraStarts++;}};h.register('btnStartVision',camera);
+ h.tick();assert.equal(cameraStarts,0);assert.equal(saved.length,0);assert.match(h.el('visionTools').textContent,/未啟用/);
+ h.el('detectionObjects').checked=true;await h.el('detectionObjects').onchange();h.tick();
+ assert.deepEqual(saved,[['vision_object_detection',true]]);assert.equal(cameraStarts,0);assert.match(h.el('visionDiagnostic').textContent,/等待前鏡頭/);
+ h.el('connectVision').onclick();assert.equal(cameraStarts,1);
+ camera.disabled=true;h.el('connectVision').onclick();assert.equal(cameraStarts,1);
+ h.el('detectionObjects').checked=false;await h.el('detectionObjects').onchange();assert.equal(h.writes.length,0);
 });
