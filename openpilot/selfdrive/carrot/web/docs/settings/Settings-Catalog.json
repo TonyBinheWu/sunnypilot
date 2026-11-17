@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "b77f4702eebd8770f600608680f10623838d9b57",
-  "contentHash": "4e3f335585476294b7b3dc46180c118851c6c8c5d7463905b64d0494146866b9",
-  "generatedAt": "2026-11-17T16:45:55Z",
+  "catalogCommit": "50886f191a78c49f14db7994be4c6ed3dfa7dd7b",
+  "contentHash": "9f905aca73d8f65ae0f8a09568de84b89e351547820d311bcfa954d5cba66db8",
+  "generatedAt": "2026-11-17T16:52:11Z",
   "locales": [
     "ko",
     "en",
@@ -10220,5 +10220,5 @@
       "semanticHash": "b3ca6436f7051d2fd82ae24a9dc3974abf6b5ee32c633d085c3eb4bee630c364"
     }
   },
-  "wikiCommit": "84c9662e801971d80d064f7f88b207a34d00e851"
+  "wikiCommit": "f80a09a581ba7ad2bd1cbb76ff7c5387bd9cd1aa"
 }
