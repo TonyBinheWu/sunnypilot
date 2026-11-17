@@ -7,7 +7,7 @@ from opendbc.car.hyundai import carcontroller, hyundaicanfd
 from opendbc.car.hyundai.values import CAR, HyundaiFlags
 
 
-def setup_controller(monkeypatch, *, mode=None, angle=True, camera=True):
+def setup_controller(monkeypatch, *, mode=None, angle=True, camera=True, cp_override=None):
   settings = {"MaxAngleFrames": 89}
   if mode is not None:
     settings["SteerHandoverMode"] = mode  # leftover value on an upgraded device
@@ -30,6 +30,8 @@ def setup_controller(monkeypatch, *, mode=None, angle=True, camera=True):
   if camera:
     flags |= HyundaiFlags.CAMERA_SCC
   cp = structs.CarParams(carFingerprint=CAR.KIA_EV6, flags=int(flags), wheelbase=3.0, steerRatio=14.26)
+  if cp_override is not None:
+    cp = cp_override
   cp.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.hyundaiCanfd)]
   controller = carcontroller.CarController({Bus.pt: "hyundai_canfd_generated"}, cp)
   controller.lkas_max_torque = 25

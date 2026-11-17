@@ -25,7 +25,7 @@ from openpilot.selfdrive.controls.lib.steer_ratio import resolve_vehicle_model_s
 from openpilot.selfdrive.controls.tests.test_lateral_readiness import Messages
 
 
-def control_fixture(phase1=False):
+def control_fixture(phase1=False, cp_override=None):
   # Execute the complete production state_control and actual torque controller,
   # replacing only IPC/settings, the longitudinal loop and hardware construction.
   path = Path(__file__).parents[1] / 'controlsd.py'
@@ -54,7 +54,7 @@ def control_fixture(phase1=False):
   torque.latAccelFactor = 2.963873863
   torque.friction = 0.07813665
   torque.useSteeringAngle = True
-  cp = cp.as_reader()
+  cp = cp.as_reader() if cp_override is None else cp_override
   ci = NS(use_nnff=False, use_nnff_lite=False,
           torque_from_lateral_accel=lambda: partial(CarInterfaceBase.torque_from_lateral_accel_linear, None),
           get_pid_accel_limits=lambda *args: (-3.0, 2.0))
@@ -68,7 +68,12 @@ def control_fixture(phase1=False):
   settings = {'AlwaysLateral': True, 'SteerRatioRate': 88, 'CustomSR': 0, 'LatSmoothSec': 13}
   params = NS(get_float=lambda k: float(settings.get(k, 0)), get_int=lambda k: int(settings.get(k, 0)),
               get_bool=lambda k: bool(settings.get(k, False)))
-  control = NS(hkg_phase1_enabled=phase1, CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=LatControlTorque(cp, ci),
+  if cp.steerControlType == 'angle':
+    from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle
+    lateral = LatControlAngle(cp, ci)
+  else:
+    lateral = LatControlTorque(cp, ci)
+  control = NS(hkg_phase1_enabled=phase1, CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=lateral,
                LoC=NS(reset=lambda: None, update=lambda *args: (0.0, 0.0, 0.0), long_control_state='off'),
                carrot_controls=NS(lat_suspend_control=lambda cs, active: active), is_vw_meb=False,
                desired_curvature=0.0, lateral_startup=LateralStartupGate(), lateral_started=False,

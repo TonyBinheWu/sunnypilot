@@ -1,5 +1,24 @@
 # Repository memory
 
+- 2026-11-18 Follow-up fixes the prior52 fixture failures: add and assert VM
+  update_geometry in44 cases; isolate the actual MPC/model stop-selection If
+  instead of executing its unbounded suffix in8 cases, plus Tesla blended
+  combinations (80 tests in those3 files). 1060 merged control/planner tests
+  pass without failures/skips; combined with native79 in one CI-selection run
+  gives1139 pass/0 fail/0 skip. Includes182 four-family matrix cases using
+  actual platform params and native angle selection on EV6PE/Ioniq5PE.
+  Fresh OFF traces match before/after ON; live OFF preserves PID history and
+  exits low-speed mode under existing polling/slew. Driver/stale/CAN/fault
+  gates, lower targets, stock-long/blended and angle protocol are covered.
+  Native Panda79 pass incl32 new four-family ON/OFF/camera/sign streams,
+  24000 cycles. At abrupt35->40 speed transition, existing3-unit withdrawal
+  remains gradual; do not change safety to force immediate270. Float32 wire
+  curvature must be checked separately from the double precision limiter.
+  10 production/control/safety source hashes unchanged from4ff6cfb9. Only
+  tests/fixtures/docs/CI changed; build_release now runs the regression files
+  and builds real C Panda. This supersedes the unresolved52 statement below,
+  NOT the older full CANFD suite limitations. No hardware/solver/road claim.
+
 - 2026-11-18 HkgPhase1Assist default OFF scopes exact registered EV6/Ioniq5/
   Carnival/Sorento platforms, preserving fingerprint/HDA/control protocol. The
   lane-less model target reduces same-direction low-speed turn-in tau by up to

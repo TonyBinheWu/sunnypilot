@@ -28,7 +28,9 @@ def run_lateral_gate(*, brand="tesla", supported=True, speed=0.0, stopped=True, 
   controls.params = SimpleNamespace(get_float=lambda _key: 0.0, get_bool=lambda _key: always_lateral)
   controls.is_vw_meb = False
   controls.lateral_startup = SimpleNamespace(ready=True, update=lambda *_args: True)
-  controls.VM = SimpleNamespace(update_params=lambda *_args: None, calc_curvature=lambda *_args: 0.0)
+  geometry_updates = []
+  controls.VM = SimpleNamespace(update_geometry=geometry_updates.append,
+                               update_params=lambda *_args: None, calc_curvature=lambda *_args: 0.0)
   state = car.CarState.new_message(vEgo=speed, standstill=stopped, gearShifter=gear, latEnabled=lat_enabled,
                                    steerFaultTemporary=temporary_fault, steerFaultPermanent=permanent_fault)
   controls.sm = {
@@ -50,6 +52,7 @@ def run_lateral_gate(*, brand="tesla", supported=True, speed=0.0, stopped=True, 
   controls.carrot_controls = SimpleNamespace(lat_suspend_control=capture)
   with pytest.raises(ReachedLateralGate):
     controls.state_control()
+  assert geometry_updates == [0.0]
   return result[0]
 
 

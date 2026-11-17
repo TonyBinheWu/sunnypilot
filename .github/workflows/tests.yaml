@@ -154,6 +154,29 @@ jobs:
         run: python -m pytest -o addopts='' -q openpilot/selfdrive/ui/tests/test_font_coverage.py
       - name: Check Sorento non-HDA-II vehicle selection and capability routing
         run: python -m pytest -o addopts='' -q opendbc_repo/opendbc/car/hyundai/tests/test_sorento_2024.py
+      - name: Check four-family steering switches and control regressions
+        run: |
+          gcc -shared -fPIC -O1 -Wall -Werror -nostdlib -fno-builtin -std=gnu11 -Wfatal-errors -Wno-pointer-to-int-cast \
+            -Iopendbc_repo/opendbc/safety -Iopendbc_repo/opendbc/safety/board \
+            opendbc_repo/opendbc/safety/tests/libsafety/safety.c \
+            -o opendbc_repo/opendbc/safety/tests/libsafety/libsafety.so
+          python -m pytest -o addopts='' -q \
+            openpilot/selfdrive/controls/tests/test_hkg_phase1.py \
+            openpilot/selfdrive/controls/tests/test_hkg_phase1_regression.py \
+            openpilot/selfdrive/controls/tests/test_low_speed_steer_reserve.py \
+            opendbc_repo/opendbc/car/hyundai/tests/test_low_speed_steer_reserve.py \
+            openpilot/selfdrive/controls/tests/test_turn_accel.py \
+            opendbc_repo/opendbc/car/hyundai/tests/test_steering_handover.py \
+            opendbc_repo/opendbc/car/hyundai/tests/test_steering_handover_controller.py \
+            openpilot/selfdrive/controls/tests/test_cruise_coasting.py \
+            openpilot/selfdrive/controls/tests/test_lateral_startup_control.py \
+            openpilot/selfdrive/controls/tests/test_controlsd.py \
+            openpilot/selfdrive/controls/tests/test_steer_ratio.py \
+            openpilot/selfdrive/controls/tests/test_longitudinal_gap_recovery.py \
+            openpilot/selfdrive/controls/tests/test_longitudinal_preview.py \
+            openpilot/selfdrive/controls/tests/test_longitudinal_preview_release.py \
+            openpilot/selfdrive/controls/tests/test_longitudinal_stopping.py \
+            opendbc_repo/opendbc/safety/tests/test_hyundai_canfd_steering_guard.py
       - name: Check navigation voice PCM gain and protected warnings
         run: python -m pytest -o addopts='' -q openpilot/selfdrive/ui/tests/test_soundd.py openpilot/selfdrive/carrot/tests/test_sound_volume.py
       - name: Check Tesla stop solver, gesture and shared defaults

@@ -250,10 +250,20 @@ def test_legacy_disabled_lfa_sentinel_is_specific_to_angle_control():
 @pytest.mark.parametrize('camera', [False,True])
 @pytest.mark.parametrize('sign', [-1,1])
 def test_real_controller_stream_passes_production_panda_and_rx_paced_forwarding(monkeypatch,camera,sign):
+  controller_stream(monkeypatch, camera, sign)
+
+
+def controller_stream(monkeypatch, camera, sign, *, fingerprint=None, phase1=None):
   from opendbc.car.hyundai.tests.test_low_speed_steer_reserve import torque_fixture
   from opendbc.car.hyundai.tests.test_steering_handover_controller import step
   from opendbc.car.hyundai.values import HyundaiFlags
-  controller,cs,cc,settings=torque_fixture(monkeypatch)
+  controller,cs,cc,settings=torque_fixture(monkeypatch, enabled=phase1 is None)
+  if fingerprint is not None:
+    controller.CP.brand = 'hyundai'
+    controller.CP.carFingerprint = fingerprint
+    controller.CP.steerControlType = 'torque'
+    settings['HkgPhase1Assist'] = int(phase1)
+  trace = []
   if camera:controller.CP.flags |= int(HyundaiFlags.CAMERA_SCC)
   g=Guard(int(F.CANFD_ALWAYS_LATERAL|(F.CAMERA_SCC if camera else 0)))
   prior=0
@@ -278,3 +288,20 @@ def test_real_controller_stream_passes_production_panda_and_rx_paced_forwarding(
       dest,command=forwarded(g,advance=False)
       assert dest==0, (n,command,output.torqueOutputCan)
     prior=output.torqueOutputCan
+    trace.append(prior)
+  return trace
+
+
+@pytest.mark.parametrize('fingerprint', ['KIA_EV6', 'HYUNDAI_IONIQ_5', 'KIA_CARNIVAL_4TH_GEN', 'KIA_SORENTO_4TH_GEN'])
+@pytest.mark.parametrize('enabled', [False, True])
+@pytest.mark.parametrize('camera', [False, True])
+@pytest.mark.parametrize('sign', [-1, 1])
+def test_four_families_switch_stream_retains_panda_and_forwarding_guards(monkeypatch, fingerprint, enabled, camera, sign):
+  trace = controller_stream(monkeypatch, camera, sign, fingerprint=fingerprint, phase1=enabled)
+  assert max(map(abs, trace)) <= (409 if enabled else 270)
+  assert (max(map(abs, trace[80:250])) > 270) == enabled
+  # A synthetic 35->40 km/h one-frame jump must unwind the old torque under
+  # the existing 3-unit withdrawal guard, not abruptly cut it to the new cap.
+  assert all(0 <= abs(a) - abs(b) <= 3 for a, b in zip(trace[299:325], trace[300:326], strict=True))
+  assert max(map(abs, trace[325:400])) <= 270  # factory target reached before the 100 km/h segment
+  assert trace[-1] == 0  # disengagement still removes authority
