@@ -351,6 +351,11 @@ def _normalize_stripped(value: Any) -> str:
   return str(value or "").strip()
 
 
+def _normalize_google_browser_key(value: Any) -> str:
+  value = str(value or '').strip()
+  return value if re.fullmatch(r'[A-Za-z0-9_-]{20,128}', value) else ''
+
+
 def _normalize_drive_split_ratio(value: Any, fallback: float) -> str:
   try:
     ratio = float(value)
@@ -441,6 +446,10 @@ WEB_SETTINGS_SPEC: List[_Field] = [
   _Field("web_sound_volume", "str", "1.00", normalize=_normalize_web_sound_volume, hidden=True),
   _Field("web_language", "str", "", normalize=_normalize_language),
   _Field("web_text_scale", "enum", "100", choices={"80", "90", "100", "110", "125", "150", "175", "200"}),
+  # Public, referrer-restricted browser key. Navigation owns this UI; it never
+  # replaces MapboxPublicKey or any driving/model setting.
+  _Field("navigation_map_provider", "enum", "mapbox", choices={"mapbox", "google"}, hidden=True),
+  _Field("navigation_google_key", "str", "", normalize=_normalize_google_browser_key, hidden=True),
   _Field("web_lab_enabled", "bool", False),
   _Field("vision_presentation", "enum", "carrot", choices={"carrot", "live_view", "tesla", "bev"}),
   _Field("vision_custom_metrics", "bool", False),

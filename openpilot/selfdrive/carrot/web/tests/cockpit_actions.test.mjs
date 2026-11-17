@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const bundle=readFileSync(new URL('../js/generated/cockpit.js',import.meta.url),'utf8');
 const html=readFileSync(new URL('../cockpit.html',import.meta.url),'utf8');
 function harness(){
-  const nodes=new Map(),writes=[],pages=[];let mode=3,clock=0,seq=0,rejectPost=false;
+  const nodes=new Map(),writes=[],pages=[],hud=[],intervals=[];let mode=3,clock=0,seq=0,rejectPost=false;
   function element(id=''){
     const classes=new Set(),listeners={};
     return {id,hidden:false,dataset:{},textContent:'',disabled:false,href:'/css/cockpit-embedded.css',
@@ -22,6 +22,7 @@ function harness(){
     addEventListener(){},createElement:()=>element()};
   const innerDocument={...document,documentElement:{...element(),hasAttribute:()=>true}};
   nodes.get('features').contentWindow={location:{origin:'http://fixture'},document:innerDocument,showPage:p=>pages.push(p),
+    DriveVisionHudContent:{update:p=>hud.push(p)},
     CarrotLocalVoice:{findSettings:(...a)=>a.join('|'),cruise:(...a)=>a.join('|'),result:id=>id}};
   for(const p of panels)if(['logs','tools'].includes(p.dataset.panel))p.closest=()=>nodes.get('apps');
   nodes.get('navigation').contentWindow={location:{origin:'http://fixture'}};
@@ -29,7 +30,7 @@ function harness(){
   const sockets=[];
   const context={document,location:{origin:'http://fixture',host:'fixture',protocol:'http:'},performance:{now:()=>clock},
     devicePixelRatio:1,console,Date,Proxy,localStorage:{getItem:()=>null,setItem(){}},
-    addEventListener(){},setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,
+    addEventListener(){},setTimeout:()=>1,clearTimeout(){},setInterval:fn=>(intervals.push(fn),1),
     WebSocket:class {constructor(){sockets.push(this);}close(){this.onclose?.();}},
     CarrotVisionCompact:{decodeFrames:data=>data.frames},
     async fetch(url,options){
@@ -42,8 +43,20 @@ function harness(){
   function send(service,decoded){const data=new Uint8Array(1);data.frames=[{service,decoded,sequence:seq++}];sockets[0].onmessage({data});}
   function park(){send('carState',{gearShifter:'park',vEgo:0,vEgoCluster:0});send('selfdriveState',{enabled:false});send('carControl',{latActive:false,longActive:false});}
   return {el:id=>nodes.get(id),mode:n=>buttons[n-1],panel:p=>panels.find(b=>b.dataset.panel===p),writes,pages,send,park,context,
-    advance:ms=>{clock+=ms;},reject:()=>{rejectPost=true;},flush:()=>new Promise(setImmediate)};
+    advance:ms=>{clock+=ms;},tick:()=>intervals.forEach(fn=>fn()),hud,reject:()=>{rejectPost=true;},flush:()=>new Promise(setImmediate)};
 }
+test('camera-independent cockpit sends one explicit expiry and never retains its last speed',()=>{
+  const h=harness();h.send('carState',{gearShifter:'drive',vEgoCluster:10,vCruiseCluster:90});h.tick();
+  assert.equal(h.hud.at(-1).vEgoKph,36);
+  h.advance(1600);h.tick();assert.equal(h.hud.at(-1).sourceStale,true);assert.equal(h.hud.at(-1).vEgoKph,undefined);
+  const count=h.hud.length;h.tick();assert.equal(h.hud.length,count);
+  h.send('carState',{gearShifter:'park',vEgoCluster:0,vCruiseCluster:90});h.tick();assert.equal(h.hud.at(-1).vEgoKph,0);assert.equal(h.hud.at(-1).sourceStale,undefined);
+});
+test('leaving navigation closes its search sheet before it becomes a mini map',()=>{
+  const h=harness(),body=h.el('navigation').contentDocument.body;
+  body.classList.add('search-open');h.panel('vision').onclick();
+  assert.equal(body.classList.contains('search-open'),false);assert.equal(h.writes.length,0);
+});
 test('profile selection stages, cancel does not write, apply verifies one absolute existing setting',async()=>{
   const h=harness();h.park();h.el('profile').onclick();await h.flush();h.mode(1).onclick();
   assert.equal(h.el('modeConfirm').hidden,false);assert.equal(h.writes.length,0);

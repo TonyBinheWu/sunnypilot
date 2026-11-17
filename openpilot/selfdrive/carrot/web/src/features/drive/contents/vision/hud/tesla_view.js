@@ -1,6 +1,6 @@
 import {drawCockpitVehicle,createVehicleSkinCache,VEHICLE_SKINS} from '../../../../cockpit/vehicle.js';
 import {OBJECT_NAMES} from './object_classes.js';
-import {visionPresentation} from '../../../../cockpit/presentation.js';
+import {visionPresentation,cockpitTelemetryStale} from '../../../../cockpit/presentation.js';
 import {bevProjection} from "./bev_annotations.js";
 import {createBevWorkbench,BEV_CSS} from "./bev_workbench.js";
 import {el, setText} from './dom.js';
@@ -193,7 +193,7 @@ export function createTeslaView(doc,target) {
     }
     if(imageCounts.size)imageObservations.appendChild(el(doc,'small',{text:text('scene_image_observations','Image observations · no 3D position')}));
     }
-    const frozenHud=bev.frozenHud,displayData=frozenHud?.data||data,displayStale=frozenHud?.stale??stale,displayUnit=frozenHud?.unit||unit;
+    const frozenHud=bev.frozenHud,displayData=frozenHud?.data||data,displayStale=(frozenHud?.stale??stale)||(!frozenHud&&cockpitTelemetryStale(target)),displayUnit=frozenHud?.unit||unit;
     for(const [key,card] of Object.entries(cards)){
       const v=displayData[{speed:'speed',set:'setSpeed',limit:'speedLimit'}[key]];
       setText(card.parts.title,text(labels[key],key));setText(card.parts.value,!displayStale&&Number.isFinite(v)?String(v):'—');
@@ -210,7 +210,7 @@ export function createTeslaView(doc,target) {
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
       const signature=`${w}:${h}:${skin.id}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}`;
       if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
-        const ctx=canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range,drawEgo});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text,night,drawEgo});}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
+        const ctx=canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range,drawEgo});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text,night,drawEgo,lift:doc.body.dataset.cockpitPanel==='vision'&&vw>740?h*.24:0});}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
     }
     lastMode=tesla;
   }

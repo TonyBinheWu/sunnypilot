@@ -16,6 +16,7 @@ async function page(responses, language = "en", handleApi = null) {
       replaceChildren(...children) { this.children = children; }, append(...children) { this.children.push(...children); }, focus() {},
       async trigger(name) { await this.handlers[name]?.({preventDefault() {}}); await settle(); },
       removeAttribute(name) { delete this[name]; },
+      setAttribute(name, value) { this[name] = value; },
     });
   const element = (id) => {
     if (!elements.has(id)) elements.set(id, makeElement());
@@ -27,6 +28,7 @@ async function page(responses, language = "en", handleApi = null) {
     URL: { createObjectURL: () => `blob:${++blobs}`, revokeObjectURL: (url) => revoked.push(url) },
     setTimeout: (callback) => timers.push(callback),
     fetch: async (url, options) => {
+      if (url.endsWith('/config')) return {ok:true,json:async()=>({provider:'mapbox',google_key:''})};
       if (handleApi && !url.endsWith('map.png')) {
         const result = await handleApi(url, options || {});
         return {ok: !result.error, json: async () => result};

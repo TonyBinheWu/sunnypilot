@@ -2,11 +2,24 @@
 import json
 import math
 import os
+import re
 from pathlib import Path
 import tempfile
 import uuid
 
 MAX_FAVORITES = 100
+
+
+def google_reference(value):
+  """Persist only a Google place ID and an end-user name, never coordinates."""
+  if not isinstance(value, dict) or value.get('provider') != 'google':
+    raise ValueError('invalid Google reference')
+  name, place_id = value.get('name'), value.get('google_place_id')
+  if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
+    raise ValueError('invalid name')
+  if not isinstance(place_id, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,256}', place_id):
+    raise ValueError('invalid place ID')
+  return {'provider': 'google', 'name': name.strip(), 'google_place_id': place_id}
 
 
 class FavoritesFull(Exception):
@@ -26,12 +39,19 @@ class NavigationFavorites:
       raise ValueError('invalid favorites file')
     identifiers = set()
     for item in value:
-      if not isinstance(item, dict) or set(item) != {'id', 'name', 'place_name', 'latitude', 'longitude'}:
+      if not isinstance(item, dict):
         raise ValueError('invalid favorite')
       identifier = item['id']
       if not isinstance(identifier, str) or len(identifier) != 32 or any(c not in '0123456789abcdef' for c in identifier) or identifier in identifiers:
         raise ValueError('invalid favorite identifier')
       identifiers.add(identifier)
+      if item.get('provider') == 'google':
+        if set(item) != {'id', 'provider', 'name', 'google_place_id'}:
+          raise ValueError('invalid Google favorite')
+        google_reference(item)
+        continue
+      if set(item) != {'id', 'name', 'place_name', 'latitude', 'longitude'}:
+        raise ValueError('invalid favorite')
       for key, limit in (('name', 80), ('place_name', 256)):
         if not isinstance(item[key], str) or not 1 <= len(item[key].strip()) <= limit:
           raise ValueError('invalid favorite text')

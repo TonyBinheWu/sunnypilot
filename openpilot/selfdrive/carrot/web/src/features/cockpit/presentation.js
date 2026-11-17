@@ -6,3 +6,8 @@ export function visionPresentation(target){
     ? saved==='bev'?'bev':'tesla'
     : saved;
 }
+export function cockpitTelemetryStale(target) {
+  const source=target?.document?.body?.dataset;
+  return source?.cockpitPanel==='vision'&&source.cockpitTelemetryFresh==='false'
+    && !target.CarrotVisionReplay?.isActive?.() && target.CarrotVisionReplay?.status?.()?.active!==true;
+}

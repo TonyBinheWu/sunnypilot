@@ -224,7 +224,7 @@ export function createHudOverlay(doc) {
     const data = mapPayload(payload);
     lastData = data;
     live.update(data, payload);
-    teslaUpdatedAt = target.performance?.now?.() ?? Date.now();teslaMetric = payload.isMetric !== false;renderTesla();
+    teslaUpdatedAt = payload.sourceStale === true ? null : (target.performance?.now?.() ?? Date.now());teslaMetric = payload.isMetric !== false;renderTesla();
     for (const w of widgets) w.update(data);
     const nextVisibilitySignature = [
       data.speedLimit != null && data.speedLimit > 0,

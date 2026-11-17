@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {visionPresentation} from '../src/features/cockpit/presentation.js';
+import {visionPresentation,cockpitTelemetryStale} from '../src/features/cockpit/presentation.js';
 import {drawDetectedMesh} from '../src/features/drive/contents/vision/hud/object_mesh.js';
 import {drawSceneObject} from '../src/features/drive/contents/vision/hud/driving_scene.js';
 import {installCockpitHelp} from '../src/features/cockpit/embedded.js';
@@ -14,6 +14,13 @@ test('cockpit presentation is transient, preserves BEV and never rewrites regula
     target.document.body.dataset.cockpitPanel='setting';assert.equal(visionPresentation(target),saved);
     assert.equal(target.CarrotWebSettingsState.vision_presentation,saved);
   }
+});
+test('source expiry gates live cockpit instruments even when another HUD publisher replays old values',()=>{
+  const target={document:{body:{dataset:{cockpitPanel:'vision',cockpitTelemetryFresh:'false'}}}};
+  assert.equal(cockpitTelemetryStale(target),true);
+  target.document.body.dataset.cockpitTelemetryFresh='true';assert.equal(cockpitTelemetryStale(target),false);
+  target.document.body.dataset.cockpitTelemetryFresh='false';target.CarrotVisionReplay={isActive:()=>true};assert.equal(cockpitTelemetryStale(target),false);
+  delete target.CarrotVisionReplay;target.document.body.dataset.cockpitPanel='setting';assert.equal(cockpitTelemetryStale(target),false);
 });
 
 function canvas(){

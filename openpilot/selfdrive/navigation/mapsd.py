@@ -8,7 +8,7 @@ import numpy as np
 from openpilot.selfdrive.navigation.helpers import ParkedPosition
 from openpilot.selfdrive.navigation.jetlink_demand import jetlink_map_demand
 from openpilot.selfdrive.navigation.pmtiles import PMTiles
-from openpilot.selfdrive.navigation.preview import write_preview, preview_fresh, WEB_DEMAND_PATH
+from openpilot.selfdrive.navigation.preview import write_preview, write_navigation_view, preview_fresh, WEB_DEMAND_PATH
 from openpilot.selfdrive.navigation.renderer import SIZE, MapRenderer, Position
 from openpilot.selfdrive.navigation.route import RouteTracker, route_coordinates
 
@@ -49,7 +49,7 @@ def main():
   diagnostics = RuntimeDiagnostics('mapsd', cloudlog.event, interval=5.)
   rk = Ratekeeper(10., print_delay_threshold=None)
   route, tracker, archive, renderer = np.empty((0, 2)), None, None, None
-  retry_at = next_render = next_preview = 0.
+  retry_at = next_render = next_preview = next_view = 0.
   was_ready = False
   route_id = 0
   image = np.zeros((SIZE, SIZE), np.uint8)
@@ -63,6 +63,13 @@ def main():
         tracker = RouteTracker(route) if route_id and 2 <= len(route) <= 4096 and np.isfinite(route).all() else None
         next_render = 0.
       gps = position.update(sm)
+      if demand and now >= next_view:
+        # A separate UI-only route copy; route/model rendering below is intact.
+        try:
+          write_navigation_view(route, gps, route_id if tracker is not None else 0)
+        except (OSError, ValueError, TypeError):
+          pass
+        next_view = now + 1.
       fresh_tbt = sm.valid['navInstructionCarrot'] and 0 <= now - sm.recv_time['navInstructionCarrot'] < 2.
       # Navigation without usable position/instruction immediately publishes black.
       if now >= demand_checked:

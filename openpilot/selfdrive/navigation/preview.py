@@ -8,6 +8,22 @@ PREVIEW_PATH = Path('/dev/shm/carrot_nav_map.png')
 PREVIEW_MAX_AGE = 2.
 WEB_DEMAND_PATH = Path('/dev/shm/carrot_nav_web')
 STATUS_PATH = Path('/dev/shm/carrot_nav_status.json')
+VIEW_PATH = Path('/dev/shm/carrot_nav_view.json')
+
+
+def write_navigation_view(route, gps, route_id, *, path=VIEW_PATH, now=None):
+  """Read-only UI copy of the exact active navRoute, never a model input.
+
+  Keep it in tmpfs; no Google imagery/content enters mapsd or the model.
+  Called at most once a second, independently of tile availability.
+  """
+  now = time.time() if now is None else now
+  position = None if gps is None else {'lat': gps.latitude, 'lng': gps.longitude}
+  payload = {'generated_at': now, 'route_id': int(route_id), 'position': position,
+             'coordinates': [[float(lon), float(lat)] for lon, lat in route] if route_id else []}
+  temporary = path.with_suffix('.tmp')
+  temporary.write_text(json.dumps(payload, allow_nan=False, separators=(',', ':')), encoding='utf-8')
+  os.replace(temporary, path)
 
 
 def preview_fresh(path=PREVIEW_PATH):

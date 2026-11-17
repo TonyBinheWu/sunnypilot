@@ -1,3 +1,4 @@
+import {installCockpitControlLayout} from '../features/cockpit/control_layout.js';
 import {nightAppearance,readAppearance,setCockpitTextScale,tireLabels} from '../features/cockpit/appearance.js';
 import {drawDrivingScene} from '../features/drive/contents/vision/hud/driving_scene.js';
 import {createCockpitState,telemetry,cockpitHudPayload,SERVICES,MODES} from '../features/cockpit/state.js';
@@ -8,13 +9,14 @@ installDisplayPreferences(window);
 window.addEventListener('storage',event=>{if(event.key==='carrot_web_text_scale')window.CarrotDisplayPreferences.apply();});
 const $=id=>document.getElementById(id),state=createCockpitState(),ctx=$('scene').getContext('2d');
 const vehicleSkin=createVehicleSkinCache(window);
-let socket=null,retry=null,epoch=0,view='vision',primary='vision',busy=false,currentMode=null,coreReady=false,dismissed=false;
+let socket=null,retry=null,epoch=0,view='vision',primary='vision',busy=false,currentMode=null,coreReady=false,dismissed=false,hudHadData=false;
 const core=$('features'),nav=$('navigation'),titles={navigation:'導航地圖',vision:'Carrot Vision',setting:'控制與設定',tools:'工具／診斷',logs:'行車紀錄'};
 function status(text){$('panelStatus').textContent=text;$('panelStatus').hidden=!text;}
 function coreWindow(){try{return coreReady&&core.contentWindow.location.origin===location.origin?core.contentWindow:null;}catch{return null;}}
 function selectCore(next){const w=coreWindow();if(!w||typeof w.showPage!=='function')return false;w.document.body.dataset.cockpitPanel=next;w.showPage(next==='vision'?'carrot':next,false);w.CarrotVisionRaw?.syncDataActivity?.();w.CarrotVisionRaw?.markHudDirty?.();w.dispatchEvent?.(new w.Event('carrot:cockpitpanelchange'));return true;}
 function panel(next){
   if(!titles[next])return;if(['navigation','vision'].includes(next))primary=next;view=next;document.body.dataset.panel=next;document.body.classList.remove('scene-full');nav.hidden=next!=='navigation';core.hidden=next==='navigation';$('searchNav').hidden=next!=='navigation';$('visionTools').hidden=next!=='vision';$('panelTitle').textContent=titles[next];$('closePanel').hidden=['navigation','vision'].includes(next);$('miniNav').hidden=next!=='vision';
+  if(next!=='navigation')try{nav.contentDocument?.body.classList.remove('search-open');}catch{}
   document.querySelectorAll('[data-panel]').forEach(b=>b.classList.toggle('selected',b.dataset.panel===next));
   if(next!=='navigation')status(selectCore(next)?'':'正在載入現有功能；若持續無法開啟，請更新並重新啟動車機。');else{selectCore('setting');status('');}
 }
@@ -25,10 +27,11 @@ core.addEventListener('load',()=>{
       if(w.__CARROT_BOOTSTRAP__?.intro?.shouldShow){view='setting';nav.hidden=true;core.hidden=false;$('panelTitle').textContent='首次引導設定';setTimeout(ready,500);return;}
       if(++attempts<40)setTimeout(ready,250);return;
     }
-    coreReady=true;installCockpitHelp(w.document);selectCore(view==='navigation'?'setting':view);status('');
+    coreReady=true;installCockpitHelp(w.document);installCockpitControlLayout(w.document,w);selectCore(view==='navigation'?'setting':view);status('');
     if(!w.document.getElementById('cockpitEmbeddedTheme')){
       const link=w.document.createElement('link');link.id='cockpitEmbeddedTheme';link.rel='stylesheet';link.href=$('embeddedStyle').href;w.document.head.append(link);
     }
+    if(!w.document.getElementById('cockpitControlsTheme')){const link=w.document.createElement('link');link.id='cockpitControlsTheme';link.rel='stylesheet';link.href=$('controlsStyle').href;w.document.head.append(link);}
     w.document.documentElement.classList.toggle('cockpit-night',document.body.classList.contains('night'));
   }catch{status('無法載入功能面板，請重新連線。');}};ready();
 });
@@ -88,7 +91,9 @@ function render(){
   if(view==='vision'&&!frameWindow?.CarrotVisionReplay?.isActive?.()&&frameWindow?.CarrotVisionReplay?.status?.()?.active!==true){
     const metric=frameWindow?.CarrotLiveRuntimeState?.runtime?.params?.IsMetric;
     const payload=cockpitHudPayload(state,metric==null?true:Boolean(Number(metric)),frameWindow?.CarrotHudDataBridge);
-    if(payload)frameWindow?.DriveVisionHudContent?.update?.(payload);
+    if(frameWindow)frameWindow.document.body.dataset.cockpitTelemetryFresh=String(Boolean(payload));
+    if(payload){frameWindow?.DriveVisionHudContent?.update?.(payload);hudHadData=true;}
+    else if(hudHadData){frameWindow?.DriveVisionHudContent?.update?.({sourceStale:true,isMetric:metric==null?true:Boolean(Number(metric))});hudHadData=false;}
   }
   $('speed').textContent=t.speed??'—';$('limit').textContent=t.limit??'—';$('setSpeed').textContent=t.setSpeed>0&&t.setSpeed<250?t.setSpeed:'—';
   $('gear').textContent=({park:'P',reverse:'R',neutral:'N',drive:'D',sport:'S'})[t.gear]||'—';
@@ -106,7 +111,7 @@ function render(){
     ctx.clearRect(0,0,r.width,r.height);ctx.fillStyle=document.body.classList.contains('night')?'#101114':'#f3f4f5';ctx.fillRect(0,0,r.width,r.height);
     const unit=Math.min(r.width*.17,r.height*.17);
     drawCockpitVehicle(ctx,(x,y,z)=>[r.width*.5+(x*.48+y*.88)*unit,r.height*.66+(-x*.28-y*.16-z)*unit],{view:[-5,8,6],skin});
-  }else drawDrivingScene(ctx,r.width,r.height,{model,radar},{night:document.body.classList.contains('night'),drawEgo:(context,project)=>drawCockpitVehicle(context,project,{skin}),text:(k,f)=>({scene_kind_person:'行人',scene_kind_motorcycle:'機車',scene_kind_bicycle:'自行車',scene_kind_bus:'公車',scene_kind_truck:'貨車'})[k]||f});
+  }else drawDrivingScene(ctx,r.width,r.height,{model,radar},{night:document.body.classList.contains('night'),lift:view==='vision'?r.height*.24:0,drawEgo:(context,project)=>drawCockpitVehicle(context,project,{skin}),text:(k,f)=>({scene_kind_person:'行人',scene_kind_motorcycle:'機車',scene_kind_bicycle:'自行車',scene_kind_bus:'公車',scene_kind_truck:'貨車'})[k]||f});
 }
 async function modeRead(){try{const r=await fetch('/api/params_bulk?names=MyDrivingMode,MyDrivingModeAuto',{cache:'no-store'});if(!r.ok)throw Error();const d=await r.json();currentMode=Number(d.values?.MyDrivingMode);document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('current',Number(b.dataset.mode)===currentMode));$('profileStatus').textContent=Number(d.values?.MyDrivingModeAuto)>0?'自動駕駛模式目前開啟，實際模式可能依路況切換。':'選擇後會先確認；此處只在停車 P 檔開放修改。';}catch{$('profileStatus').textContent='無法讀取模式，請確認車機連線。';currentMode=null;}}
 let pendingMode=null;

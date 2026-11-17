@@ -1,4 +1,5 @@
 import { el, setText } from "./dom.js";
+import {cockpitTelemetryStale} from '../../../../cockpit/presentation.js';
 import { createLiveFrameHealth } from "./live_health.js";
 import { visionEventSnapshot } from "./live_events.js";
 
@@ -133,7 +134,7 @@ export function createLiveView(doc, target, actions) {
     if (root.hidden) return;
     subscribe();
     const replay = target.CarrotVisionReplay?.status?.()?.active === true;
-    const stale = lastUpdate == null || (!replay && now() - lastUpdate > 2000);
+    const stale = cockpitTelemetryStale(target) || lastUpdate == null || (!replay && now() - lastUpdate > 2000);
     const model = liveViewData(last, { stale, metric: isMetric });
     const stream = health.snapshot({ now: now(), wallNow: Date.now(), replay, perf: target.CarrotRtcPerf });
     setText(speed, model.speed); setText(max, model.max); setText(limit, model.limit); setText(unit, model.unit);
@@ -174,7 +175,7 @@ export function createLiveView(doc, target, actions) {
   }
   return {
     root, render, setActive, toggleTools, setTeslaMode, isSpeedVisible: () => speedVisible,
-    update(data, payload) { last = data; isMetric = payload.isMetric !== false; lastUpdate = now(); render(); },
+    update(data, payload) { last = data; isMetric = payload.isMetric !== false; lastUpdate = payload.sourceStale === true ? null : now(); render(); },
     reset() { last = {}; lastUpdate = null; health.reset(); render(); },
   };
 }

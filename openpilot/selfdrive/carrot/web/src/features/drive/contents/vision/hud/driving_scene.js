@@ -62,9 +62,10 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
   }
 }
 
-export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo,night=false}={}) {
+export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo,night=false,lift=0}={}) {
   ctx.clearRect(0,0,width,height);ctx.fillStyle=night?'#101114':'#f2f3f3';ctx.fillRect(0,0,width,height);
-  const project=drivingProjection(width,height),model=scene.model;
+  const base=drivingProjection(width,height),shift=Number.isFinite(lift)?Math.max(0,Math.min(height*.3,lift)):0;
+  const project=(x,y,z=0)=>{const p=base(x,y,z);return p?[p[0],p[1]-shift]:null;},model=scene.model;
   const pathPoints=(path,offset=0)=>{
     const points=[];
     for(let i=0;i<Math.min(path?.x?.length||0,path?.y?.length||0,256);i++){

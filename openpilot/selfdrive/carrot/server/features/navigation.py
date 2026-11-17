@@ -11,10 +11,11 @@ from aiohttp import web
 
 from openpilot.common.params import Params
 from ..config import WEB_DIR, CARROT_NAVIGATION_FAVORITES_PATH
-from ..services.navigation_favorites import FavoritesFull, NavigationFavorites
+from ..services.navigation_favorites import FavoritesFull, NavigationFavorites, google_reference
 from ..services.static_assets import fingerprint_static_asset
 from ..services.params import get_param_value, set_param_value
-from openpilot.selfdrive.navigation.preview import PREVIEW_PATH, WEB_DEMAND_PATH, preview_fresh, preview_reason
+from ..services.web_settings import read_web_settings
+from openpilot.selfdrive.navigation.preview import PREVIEW_PATH, VIEW_PATH, WEB_DEMAND_PATH, preview_fresh, preview_reason
 
 MAX_RESPONSE = 1024 * 1024
 
@@ -40,11 +41,31 @@ def destination(value):
 
 async def page(request):
   html = Path(WEB_DIR, 'navigation.html').read_text(encoding='utf-8')
-  for asset in ('/js/pages/navigation_zh_tw.js', '/js/pages/navigation_map.js'):
+  for asset in ('/js/pages/navigation_zh_tw.js', '/js/pages/navigation_map.js', '/js/pages/navigation_google.js'):
     fingerprint = fingerprint_static_asset(WEB_DIR, asset)
     if fingerprint:
       html = html.replace(f'src="{asset}"', f'src="{asset}?v={fingerprint}"')
   return web.Response(text=html, content_type='text/html', headers={'Cache-Control': 'no-store'})
+
+
+async def map_config(_request):
+  settings = read_web_settings()
+  return web.json_response({'provider': settings['navigation_map_provider'],
+                            'google_key': settings['navigation_google_key'], 'routing': 'mapbox'},
+                           headers={'Cache-Control': 'no-store'})
+
+
+async def route_view(_request):
+  try:
+    WEB_DEMAND_PATH.touch()
+    if VIEW_PATH.stat().st_size > 512 * 1024:
+      raise ValueError('oversized view')
+    value = json.loads(VIEW_PATH.read_text(encoding='utf-8'))
+    if not isinstance(value, dict) or not 0 <= time.time() - float(value['generated_at']) < 3.:
+      raise ValueError('stale view')
+  except (OSError, ValueError, KeyError, TypeError, OverflowError):
+    value = {'position': None, 'coordinates': [], 'route_id': 0}
+  return web.json_response(value, headers={'Cache-Control': 'no-store'})
 
 
 async def search(request):
@@ -116,20 +137,22 @@ async def favorites(request):
   if request.method in ('POST', 'PUT') and not request.path.endswith('/destination'):
     try:
       body = await request.json()
-      value = destination(body)
+      value = google_reference(body) if isinstance(body, dict) and body.get('provider') == 'google' else destination(body)
       name = body.get('name')
       if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
         raise ValueError('invalid name')
-      if not isinstance(body.get('place_name'), str) or not 1 <= len(body['place_name'].strip()) <= 256:
+      if value.get('provider') != 'google' and (not isinstance(body.get('place_name'), str) or not 1 <= len(body['place_name'].strip()) <= 256):
         raise ValueError('invalid address')
-      if any(type(body.get(key)) not in (int, float) for key in ('latitude', 'longitude')):
+      if value.get('provider') != 'google' and any(type(body.get(key)) not in (int, float) for key in ('latitude', 'longitude')):
         raise ValueError('invalid coordinates')
-      value.update(name=name.strip(), place_name=body['place_name'].strip())
+      value.update(name=name.strip())
+      if value.get('provider') != 'google':
+        value['place_name'] = body['place_name'].strip()
     except (ValueError, KeyError, TypeError, OverflowError):
       return web.json_response({'error': 'Invalid favorite.'}, status=400)
   try:
     # Existing saved coordinates may be renamed without another geocode.
-    if value is not None and body.get('permanent') is not True:
+    if value is not None and value.get('provider') != 'google' and body.get('permanent') is not True:
       previous = next((item for item in store.read() if item['id'] == identifier), None) if identifier else None
       if previous is None or any(value[key] != previous[key] for key in ('latitude', 'longitude', 'place_name')):
         return web.json_response({'error': 'Invalid favorite.'}, status=400)
@@ -137,6 +160,8 @@ async def favorites(request):
       saved = next((item for item in store.read() if item['id'] == identifier), None)
       if saved is None:
         raise KeyError(identifier)
+      if saved.get('provider') == 'google':
+        return web.json_response({'error': 'Refresh this place with Google before navigating.'}, status=409)
       target = destination(saved)
       activate_destination(target)
       result = {'destination': target}
@@ -177,6 +202,8 @@ def register(app):
   app[SEARCH_STATE] = SearchState()
   app[FAVORITES] = NavigationFavorites(CARROT_NAVIGATION_FAVORITES_PATH)
   app.router.add_get('/navigation', page)
+  app.router.add_get('/api/navigation/config', map_config)
+  app.router.add_get('/api/navigation/route_view', route_view)
   app.router.add_get('/api/navigation/search', search)
   app.router.add_get('/api/navigation/destination', get_destination)
   app.router.add_post('/api/navigation/destination', set_destination)
