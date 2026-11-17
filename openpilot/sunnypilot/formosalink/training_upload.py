@@ -57,7 +57,7 @@ def choose(enabled, directory=None, *, expected_revision=None):
   return state
 
 
-def eligible_segments(log_root, granted, now=None):
+def eligible_segments(log_root, granted, now=None, counts=None):
   now = time.time() if now is None else now
   root = Path(log_root).resolve()
   for folder in sorted(root.iterdir()):
@@ -65,13 +65,28 @@ def eligible_segments(log_root, granted, now=None):
       continue
     # loggerd holds lock files while a segment is being written.
     if list(folder.glob("*.lock")):
+      if counts is not None: counts['recording'] += 1
       continue
     files = {path.name: path for path in folder.iterdir() if path.name in FILES and path.is_file() and not path.is_symlink()}
     if not {"fcamera.hevc", "ecamera.hevc"} <= files.keys() or not files.keys() & {"rlog", "rlog.zst", "rlog.bz2"}:
+      if counts is not None: counts['incomplete'] += 1
       continue
-    if any(path.stat().st_mtime > now - 120 or path.stat().st_mtime < granted for path in files.values()):
+    if any(path.stat().st_mtime < granted for path in files.values()):
+      if counts is not None: counts['before_consent'] += 1
+      continue
+    if any(path.stat().st_mtime > now - 120 for path in files.values()):
+      if counts is not None: counts['settling'] += 1
       continue
     yield folder, files
+
+
+def upload_status(directory, state, **fields):
+  """Operational status only: never persist exception messages, identities or route names."""
+  path=Path(directory)/'training-upload-status.json'
+  path.parent.mkdir(parents=True,exist_ok=True)
+  temporary=path.with_suffix('.tmp')
+  temporary.write_text(json.dumps({'state':state,'updated':time.time(),**fields}))
+  os.replace(temporary,path)
 
 
 def segment_started_at(rlog):
@@ -134,30 +149,44 @@ class Uploader:
   def once(self):
     consent = self.sync()
     revision = consent["revision"]
-    if not self.allowed(revision) or not self.log_root.is_dir():
+    if not self.allowed(revision):
+      reason='waiting_parked' if consent.get('enabled') else 'waiting_consent'
+      upload_status(self.directory,reason)
       return
-    for folder, files in eligible_segments(self.log_root, consent["granted"]):
+    if not self.log_root.is_dir():
+      upload_status(self.directory,'missing_logs')
+      return
+    counts=dict.fromkeys(('recording','incomplete','before_consent','settling','completed','invalid_log'),0)
+    for folder, files in eligible_segments(self.log_root, consent["granted"],counts=counts):
       # Bind split grouping to device + complete route, never adjacent segment IDs.
       route = folder.name.rsplit("--", 1)[0]
       group = hashlib.sha256((self.identity["device_id"] + route).encode()).hexdigest()
       segment = hashlib.sha256((self.identity["device_id"] + folder.name).encode()).hexdigest()
       if segment in self.completed:
+        counts['completed'] += 1
         continue
       if folder.name not in self.segment_times:
         rlog=next(path for name,path in files.items() if name in ("rlog","rlog.zst","rlog.bz2"))
-        self.segment_times[folder.name]=segment_started_at(rlog)
+        try:
+          self.segment_times[folder.name]=segment_started_at(rlog)
+        except Exception:
+          counts['invalid_log'] += 1
+          continue  # one unreadable recording must not block every later segment
       if self.segment_times[folder.name]<consent["granted"]:
+        counts['before_consent'] += 1
         continue  # exclude pre-authorization frames, including a segment spanning the choice
       for name, path in sorted(files.items()):
         if not self.allowed(revision):
           return
         stamp = (path.stat().st_size, path.stat().st_mtime_ns)
+        upload_status(self.directory,'hashing',filename=name,total=stamp[0])
         checksum = digest_file(path)
         declaration = {"segment": segment, "filename": name, "sha256": checksum, "size": stamp[0], "consent_revision": revision}
         result = self.call("begin", file=declaration)
         upload_id = result["upload_id"]
         with path.open("rb") as stream:
           offset = result["offset"]
+          last_status=0
           while not result["complete"]:
             # Refresh server-side revocations between bounded chunks.
             consent = self.sync()
@@ -172,6 +201,9 @@ class Uploader:
             result = self.call("chunk", chunk={"upload_id": upload_id, "offset": offset,
               "data": base64.b64encode(raw).decode(), "sha256": hashlib.sha256(raw).hexdigest(), "consent_revision": revision})
             offset = result["offset"]
+            if time.monotonic()-last_status>=2 or result['complete']:
+              upload_status(self.directory,'uploading',filename=name,bytes=offset,total=stamp[0])
+              last_status=time.monotonic()
             if self.stop.wait(0.2):
               return
         # Completion is acknowledged by the server, not by local file reads.
@@ -183,7 +215,9 @@ class Uploader:
       temporary = self.journal.with_suffix(".tmp")
       temporary.write_text(json.dumps(self.completed))
       os.replace(temporary, self.journal)
+      upload_status(self.directory,'completed')
       return  # one closed segment per sweep, with backpressure
+    upload_status(self.directory,'waiting_recordings',counts=counts)
 
 
 def run(directory, stop):
@@ -202,6 +236,8 @@ def run(directory, stop):
           client.once()
           stop.wait(30)
     except Exception as exc:
+      code=getattr(getattr(exc,'response',None),'status_code',None)
+      upload_status(directory,'error',error_type=type(exc).__name__,http_status=code)
       logging.getLogger("formosalink").info("Training upload waiting (%s)", type(exc).__name__)
       stop.wait(30)
 

@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {openTrainingData,trainingConsentHtml,trainingText} from '../src/features/tools/training_data.js';
+import {openTrainingData,trainingConsentHtml,trainingText,trainingProgressHtml} from '../src/features/tools/training_data.js';
+
+test('uploader progress explains exclusions, stale heartbeat and acknowledged bytes',()=>{
+  assert.match(trainingProgressHtml({fresh:true,state:'uploading',bytes:1048576,total:2097152},'zh-tw'),/1.0 \/ 2.0 MiB/);
+  assert.match(trainingProgressHtml({fresh:true,state:'waiting_recordings',counts:{before_consent:3,incomplete:2}},'zh-tw'),/授權前 3／缺少 rlog 或雙鏡頭 2/);
+  assert.match(trainingProgressHtml({fresh:false,state:'uploading'},'zh-tw'),/尚無近期上傳器狀態/);
+});
 
 test('consent view shows actual pending and completed values and escapes server text',()=>{
   const html=trainingConsentHtml({pending_enabled:true,enabled:false,configured:true,offroad:true,

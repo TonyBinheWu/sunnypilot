@@ -1,6 +1,7 @@
 """Explicit Carrot-web consent for the existing FormosaLink driving-data uploader."""
 import asyncio
 import json
+import time
 from pathlib import Path
 
 from aiohttp import web
@@ -38,10 +39,16 @@ def snapshot(app):
   except (OSError,ValueError):
     count=0
   pending=state.get('pending')
+  try:
+    progress=json.loads((root/'training-upload-status.json').read_text())
+    progress={key:value for key,value in progress.items() if key in ('state','updated','filename','bytes','total','counts','error_type','http_status')}
+    progress['fresh']=0<=time.time()-progress.get('updated',0)<100
+  except (OSError,ValueError,TypeError,AttributeError):
+    progress={'state':'unknown','fresh':False}
   return {'ok':True,'policy':POLICY,'notice':NOTICE,'configured':configured,'receiver':origin,
     'offroad':parked(app),'can_enable':configured and parked(app),'enabled':state.get('enabled') is True,
     'pending_enabled':pending.get('enabled') if isinstance(pending,dict) else None,
-    'revision':consent_revision(state),'uploaded_segments':count}
+    'revision':consent_revision(state),'uploaded_segments':count,'upload':progress}
 
 
 async def status(request):

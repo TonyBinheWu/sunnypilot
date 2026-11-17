@@ -8,11 +8,22 @@ const MESSAGES={
 export function trainingText(locale){return MESSAGES[String(locale||'').toLowerCase()]||MESSAGES.en;}
 const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 function locale(){return globalThis.CarrotWebSettingsState?.web_language||globalThis.document?.documentElement.lang||'en';}
+export function trainingProgressHtml(upload,language){
+  const zh=String(language).toLowerCase().startsWith('zh');
+  const names=zh?{waiting_parked:'等待停車',waiting_consent:'等待同步有效授權',missing_logs:'找不到行車記錄目錄',hashing:'正在計算檔案校驗碼',uploading:'正在上傳',completed:'上一個片段已完成上傳',waiting_recordings:'等待符合條件的新錄影',error:'上傳器錯誤，稍後自動重試'}:{waiting_parked:'Waiting until parked',waiting_consent:'Waiting for valid consent',missing_logs:'Recording directory unavailable',hashing:'Verifying file',uploading:'Uploading',completed:'Last segment uploaded',waiting_recordings:'Waiting for eligible new recordings',error:'Upload error; retrying automatically'};
+  const state=upload?.fresh?names[upload.state]:(zh?'尚無近期上傳器狀態，請確認已更新並重啟車機':'No recent uploader status; update and restart the device');
+  const counts=upload?.counts;
+  const detail=counts?(zh?`錄影中 ${counts.recording||0}／等待結束滿 2 分鐘 ${counts.settling||0}／授權前 ${counts.before_consent||0}／缺少 rlog 或雙鏡頭 ${counts.incomplete||0}／無法解析記錄 ${counts.invalid_log||0}`:`Recording ${counts.recording||0}; settling for 2 minutes ${counts.settling||0}; before consent ${counts.before_consent||0}; missing log/cameras ${counts.incomplete||0}; unreadable logs ${counts.invalid_log||0}`):'';
+  const bytes=Number.isFinite(upload?.bytes)&&Number.isFinite(upload?.total)?`${(upload.bytes/1048576).toFixed(1)} / ${(upload.total/1048576).toFixed(1)} MiB`:'';
+  const error=upload?.fresh&&upload.state==='error'?`${upload.error_type||''} ${upload.http_status||''}`:'';
+  const note=zh?'只收授權後的新行車片段；停車且片段結束滿 2 分鐘後自動上傳。「紀錄 → 手動傳送」是原有分享服務，不會送進訓練資料庫。重新開啟此視窗可更新進度。':'Only new recordings after consent qualify. Automatic upload starts while parked, 2 minutes after a segment closes. Logs → manual send uses the separate sharing service. Reopen this dialog to refresh progress.';
+  return `<p>${escape(state||upload?.state||'')}</p><p>${escape([upload?.filename,bytes,error].filter(Boolean).join(' · '))}</p>${detail?`<p>${escape(detail)}</p>`:''}<p>${escape(note)}</p>`;
+}
 export function trainingConsentHtml(status,language){
   const text=trainingText(language);
   const state=status.pending_enabled===true?text.pendingOn:status.pending_enabled===false?text.pendingOff:status.enabled?text.on:text.off;
   const notice=status.notice?.[String(language).toLowerCase()==='zh-tw'?'zh-TW':language]||status.notice?.en||'';
-  return `<p><strong>${escape(state)}</strong></p><p>${escape(notice)}</p><p>${escape(text.receiver)}: ${escape(status.receiver||'FormosaLink')}</p><p>${escape(text.completed)}: ${Number.isInteger(status.uploaded_segments)?status.uploaded_segments:0}</p>${!status.configured?`<p>${escape(text.pair)}</p>`:!status.offroad&&!status.enabled?`<p>${escape(text.park)}</p>`:''}`;
+  return `<p><strong>${escape(state)}</strong></p><p>${escape(notice)}</p><p>${escape(text.receiver)}: ${escape(status.receiver||'FormosaLink')}</p><p>${escape(text.completed)}: ${Number.isInteger(status.uploaded_segments)?status.uploaded_segments:0}</p>${trainingProgressHtml(status.upload,language)}${!status.configured?`<p>${escape(text.pair)}</p>`:!status.offroad&&!status.enabled?`<p>${escape(text.park)}</p>`:''}`;
 }
 export async function trainingRequest(body){
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),7000);

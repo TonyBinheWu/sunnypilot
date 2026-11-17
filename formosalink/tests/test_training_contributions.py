@@ -140,6 +140,42 @@ class ContributionTest(unittest.TestCase):
     with store.db() as db:
       self.assertEqual(db.execute('SELECT COUNT(*) FROM uploads').fetchone()[0],3)
       self.assertEqual(db.execute('SELECT COUNT(*) FROM datasets').fetchone()[0],1)
+    # A corrupt first segment must not starve valid later recordings.
+    bad=logs/'aaa--0'
+    bad.mkdir()
+    for name in ('rlog.zst','fcamera.hevc','ecamera.hevc'):
+      (bad/name).write_bytes(b'bad')
+      os.utime(bad/name,(now-300,now-300))
+    good=logs/'zzz--0'
+    good.mkdir()
+    for name in ('rlog.zst','fcamera.hevc','ecamera.hevc'):
+      (good/name).write_bytes(b'good')
+      os.utime(good/name,(now-300,now-300))
+    def recording_time(path):
+      if path.parent==bad: raise ValueError('unreadable')
+      return now-300
+    with patch('openpilot.sunnypilot.formosalink.training_upload.segment_started_at',side_effect=recording_time):
+      Client(directory,logs,lambda:True,stop,None).once()
+    with store.db() as db:
+      self.assertEqual(db.execute('SELECT COUNT(*) FROM datasets').fetchone()[0],2)
+    status=json.loads((directory/'training-upload-status.json').read_text())
+    self.assertEqual(status['state'],'completed')
+
+  def test_waiting_status_distinguishes_preconsent_missing_and_settling(self):
+    logs=self.root/'status-logs'
+    now=time.time()
+    for segment,stamp,names in (
+      ('old--0',now-900,('rlog.zst','fcamera.hevc','ecamera.hevc')),
+      ('new--0',now,('rlog.zst','fcamera.hevc','ecamera.hevc')),
+      ('missing--0',now-300,('rlog.zst','fcamera.hevc'))):
+      folder=logs/segment
+      folder.mkdir(parents=True)
+      for name in names:
+        (folder/name).write_bytes(b'fixture')
+        os.utime(folder/name,(stamp,stamp))
+    counts=dict.fromkeys(('recording','incomplete','before_consent','settling'),0)
+    self.assertEqual(list(eligible_segments(logs,now-600,now,counts)),[])
+    self.assertEqual(counts,{'recording':0,'incomplete':1,'before_consent':1,'settling':1})
 
 
 if __name__=="__main__":
