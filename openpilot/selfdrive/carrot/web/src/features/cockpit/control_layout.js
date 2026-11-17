@@ -59,29 +59,34 @@ export function installCockpitControlLayout(doc,target=doc.defaultView){
   nav.setAttribute('aria-label','座艙設定分類');
   const navTitle=create('div','cockpit-control-brand','CARROT'),navList=create('div','cockpit-control-nav-list');nav.append(navTitle,navList);
   const header=create('header','cockpit-control-header'),heading=create('h2','','控制'),searchSlot=create('div','setting-inline-search-slot cockpit-control-search-slot');
+  const categoryToggle=create('button','cockpit-category-toggle','☰ 分類');categoryToggle.type='button';categoryToggle.setAttribute('aria-label','開啟設定分類');categoryToggle.setAttribute('aria-expanded','false');
+  const dismissNav=create('button','cockpit-nav-dismiss');dismissNav.type='button';dismissNav.setAttribute('aria-label','關閉設定分類');
+  const setNav=open=>{const wasOpen=shell.dataset.navOpen==='true';shell.dataset.navOpen=String(open);categoryToggle.setAttribute('aria-expanded',String(open));pane.inert=open;
+    if(open)(navList.querySelector('.selected')||navList.querySelector('button'))?.focus();else if(wasOpen)categoryToggle.focus();};
+  categoryToggle.onclick=()=>setNav(shell.dataset.navOpen!=='true');dismissNav.onclick=()=>setNav(false);
+  target.matchMedia?.('(max-width: 820px)').addEventListener?.('change',()=>setNav(false));
+  shell.addEventListener('keydown',event=>{if(event.key==='Escape'&&shell.dataset.navOpen==='true'){setNav(false);categoryToggle.focus();event.stopPropagation();}});
   const back=create('button','cockpit-control-back','‹');back.type='button';back.hidden=true;back.setAttribute('aria-label','返回設定列表');back.onclick=()=>target.history.back();
   const searchForm=doc.getElementById('settingInlineSearch');if(searchForm)searchSlot.append(searchForm);
   const menu=doc.getElementById('btnSettingSearch')||create('button','cockpit-control-menu','⋯');menu.classList.add('cockpit-control-menu');menu.type='button';menu.setAttribute('aria-label','設定檔、收藏與其他操作');
-  header.append(back,heading,searchSlot,menu);
-  const shortcuts=create('div','cockpit-control-shortcuts');
-  for(const [text,id] of [['駕駛模式','profile'],['外觀與字體','theme'],['導航與最愛','routeOpen']]){
-    const button=create('button','',text);button.type='button';button.onclick=()=>{try{if(target.parent.location.origin===target.location.origin)target.parent.document.getElementById(id)?.click();}catch{}};shortcuts.append(button);
-  }
+  header.append(categoryToggle,back,heading,searchSlot,menu);
   const tabs=create('div','cockpit-control-tabs'),results=create('div','cockpit-control-results'),message=create('p','cockpit-control-message');
   results.hidden=true;message.setAttribute('role','status');
   const device=doc.getElementById('deviceTabContent'),deviceNav=create('div','cockpit-control-device');if(device)deviceNav.append(device);
-  pane.append(header,shortcuts,tabs,message,results,deviceNav,host);shell.append(nav,pane);page.prepend(shell);doc.documentElement.classList.add('cockpit-controls-mode');
-  let catalog=null,sections=[],current=null,loading=false;
+  pane.append(header,tabs,message,results,deviceNav,host);shell.append(dismissNav,nav,pane);page.prepend(shell);doc.documentElement.classList.add('cockpit-controls-mode');
+  let catalog=null,sections=[],current=null,loading=false,selection=0;
+  const lastGroups=new Map();
   const clearSearch=()=>{target.exitSettingInlineSearchSurface?.();results.hidden=true;host.hidden=false;};
   async function selectGroup(group){
-    clearSearch();shell.dataset.device='false';searchSlot.hidden=false;await target.switchSettingTab?.('carrot');target.selectGroup?.(group.id,false);
+    const token=++selection;clearSearch();setNav(false);shell.dataset.device='false';searchSlot.hidden=false;await target.switchSettingTab?.('carrot');if(token!==selection)return;
+    if(current)lastGroups.set(current.id,group.id);target.selectGroup?.(group.id,false);
     tabs.querySelectorAll('button').forEach(b=>{const active=b.dataset.group===group.id;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});
   }
   function choose(section){
-    current=section;heading.textContent=section.title;shortcuts.hidden=section.id!=='controls'&&section.id!=='display';tabs.replaceChildren();
+    current=section;setNav(false);heading.textContent=section.title;tabs.replaceChildren();
     navList.querySelectorAll('button').forEach(b=>{const active=b.dataset.section===section.id;b.classList.toggle('selected',active);b.setAttribute('aria-current',active?'page':'false');});
     for(const group of section.groups){const button=create('button','',group.label);button.type='button';button.dataset.group=group.id;button.onclick=()=>{void selectGroup(group);};tabs.append(button);}
-    if(section.groups[0])void selectGroup(section.groups[0]);
+    const group=section.groups.find(g=>g.id===lastGroups.get(section.id))||section.groups[0];if(group)void selectGroup(group);
   }
   function renderNav(){
     navList.replaceChildren();
@@ -90,10 +95,10 @@ export function installCockpitControlLayout(doc,target=doc.defaultView){
       const svg=doc.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');const path=doc.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',section.icon);svg.append(path);
       button.append(svg,create('span','',section.title));button.onclick=()=>choose(section);navList.append(button);
     }
-    const favorite=create('button','','收藏');favorite.type='button';favorite.onclick=()=>choose({id:'favorites',title:'收藏',groups:[{id:'__setting_favorites__',label:'收藏設定'}]});navList.append(favorite);
+    const favorite=create('button','','收藏');favorite.type='button';favorite.dataset.section='favorites';favorite.onclick=()=>choose({id:'favorites',title:'收藏',groups:[{id:'__setting_favorites__',label:'收藏設定'}]});navList.append(favorite);
     const deviceButton=create('button','','裝置');deviceButton.type='button';deviceButton.onclick=async()=>{
-      clearSearch();shell.dataset.device='true';searchSlot.hidden=true;heading.textContent='裝置';tabs.replaceChildren();shortcuts.hidden=true;
-      navList.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));deviceButton.classList.add('selected');await target.switchSettingTab?.('device');
+      const token=++selection;clearSearch();setNav(false);shell.dataset.device='true';searchSlot.hidden=true;heading.textContent='裝置';tabs.replaceChildren();
+      navList.querySelectorAll('button').forEach(b=>{b.classList.remove('selected');b.setAttribute('aria-current','false');});deviceButton.classList.add('selected');deviceButton.setAttribute('aria-current','page');await target.switchSettingTab?.('device');if(token!==selection)return;
       doc.querySelector('#deviceGroupList button')?.click();
     };navList.append(deviceButton);
   }

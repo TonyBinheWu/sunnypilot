@@ -19,7 +19,7 @@ function harness(){
   const buttons=[1,2,3,4].map(mode=>Object.assign(element(),{dataset:{mode:String(mode)}}));
   const panels=['navigation','vision','logs','setting','tools'].map(panel=>Object.assign(element(),{dataset:{panel}}));
   const document={hidden:false,body:element(),documentElement:{...element(),style:{setProperty(){}}},head:element(),
-    getElementById:id=>nodes.get(id),querySelectorAll:s=>s==='[data-mode]'?buttons:s==='[data-panel]'?panels:[],
+    getElementById:id=>nodes.get(id),querySelector:()=>null,querySelectorAll:s=>s==='[data-mode]'?buttons:s==='[data-panel]'?panels:[],
     addEventListener(){},createElement:()=>element()};
   const innerDocument={...document,documentElement:{...element(),hasAttribute:()=>true}};
   nodes.get('features').contentWindow={location:{origin:'http://fixture'},document:innerDocument,showPage:p=>pages.push(p),
@@ -136,4 +136,17 @@ test('object detection settings require explicit action and never start a camera
  h.el('connectVision').onclick();assert.equal(cameraStarts,1);
  camera.disabled=true;h.el('connectVision').onclick();assert.equal(cameraStarts,1);
  h.el('detectionObjects').checked=false;await h.el('detectionObjects').onchange();assert.equal(h.writes.length,0);
+});
+
+test('font storage updates reach the same-origin navigation frame without writes',()=>{
+  const h=harness(),applied=[];h.el('navigation').contentWindow.CarrotDisplayPreferences={apply:value=>applied.push(value.web_text_scale)};
+  h.context.localStorage.getItem=key=>key==='carrot_web_text_scale'?'125':null;
+  h.events.storage({key:'carrot_web_text_scale'});assert.deepEqual(applied,[125]);assert.equal(h.writes.length,0);
+  h.el('navigation').contentWindow.location.origin='https://other.example';h.events.storage({key:'carrot_web_text_scale'});assert.deepEqual(applied,[125]);
+});
+
+test('tools navigation returns to the cockpit while modified link clicks keep native behavior',()=>{
+  const h=harness(),link={};h.frame.document.querySelector=selector=>selector==='#toolsPrimaryActions a[href="/navigation"]'?link:null;h.el('features').emit('load');
+  let prevented=0;link.onclick({button:0,preventDefault(){prevented++;}});assert.equal(prevented,1);assert.equal(h.context.document.body.dataset.panel,'navigation');
+  h.panel('tools').onclick();link.onclick({button:0,metaKey:true,preventDefault(){prevented++;}});assert.equal(prevented,1);assert.equal(h.context.document.body.dataset.panel,'tools');assert.equal(h.writes.length,0);
 });

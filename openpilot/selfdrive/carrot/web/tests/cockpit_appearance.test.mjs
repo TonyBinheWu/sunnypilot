@@ -1,5 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
+import {scaledFontSize} from '../src/shared/web/display_preferences.js';
 import {nightAppearance,readAppearance,setCockpitTextScale,tireLabels} from '../src/features/cockpit/appearance.js';
 import {drawDrivingScene} from '../src/features/drive/contents/vision/hud/driving_scene.js';
 test('appearance migrates existing day/night preferences and automatic hours are bounded',()=>{
@@ -28,4 +29,9 @@ test('night palette is a supplied presentation option; the regular light rendere
     const fills=[];const ctx=new Proxy({},{get:(t,k)=>t[k]??((...args)=>{if(k==='fillRect')fills.push([t.fillStyle,...args]);}),set:(t,k,v)=>(t[k]=v,true)});
     drawDrivingScene(ctx,800,400,{}, {night,drawEgo:()=>{}});assert.equal(fills[0][0],color);
   }
+});
+test('cockpit body and chrome font formulas are scaled exactly once',()=>{
+  assert.equal(scaledFontSize('calc(var(--control-font) * var(--carrot-text-scale,1))'),null);
+  assert.equal(scaledFontSize('calc(15px * var(--carrot-text-scale-chrome))'),null);
+  assert.equal(scaledFontSize('calc(15px * clamp(.9,var(--carrot-text-scale,1),1.05))'),null);
 });

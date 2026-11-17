@@ -1,0 +1,45 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {installCockpitControlLayout} from '../src/features/cockpit/control_layout.js';
+
+// Isolated DOM adapter; selectGroup is the real integration boundary. No
+// driving parameters or browser storage are written by this composition.
+async function fixture(){
+  const ids=new Map(),selected=[],media=[];
+  const doc={body:{dataset:{cockpitPanel:'setting'}},getElementById:id=>ids.get(id),querySelector:()=>null};
+  class Node{
+    constructor(tag){this.tag=tag;this.nodeType=1;this.ownerDocument=doc;this.children=[];this.dataset={};this.attrs={};this.className='';this.classList={add:c=>{this.className+=' '+c;},contains:c=>this.className.split(' ').includes(c),remove:c=>{this.className=this.className.split(' ').filter(x=>x!==c).join(' ');},toggle:(c,on)=>on?this.classList.add(c):this.classList.remove(c)};}
+    append(...nodes){for(const n of nodes){if(n.parentElement)n.parentElement.children=n.parentElement.children.filter(x=>x!==n);n.parentElement=this;this.children.push(n);}}
+    prepend(n){this.children.unshift(n);n.parentElement=this;}
+    replaceChildren(...nodes){this.children=[];this.append(...nodes);}
+    setAttribute(k,v){this.attrs[k]=v;}addEventListener(){}focus(){doc.focused=this;}
+    matches(selector){return selector[0]==='.'?this.classList.contains(selector.slice(1)):this.tag===selector;}
+    querySelectorAll(selector){return this.children.flatMap(n=>[...(n.matches(selector)?[n]:[]),...n.querySelectorAll(selector)]);}
+    querySelector(selector){return this.querySelectorAll(selector)[0]||null;}
+  }
+  doc.createElement=tag=>new Node(tag);doc.createElementNS=(_ns,tag)=>new Node(tag);doc.documentElement=new Node('html');
+  for(const id of ['pageSetting','settingScreenHost'])ids.set(id,new Node('div'));
+  const target={AbortController,setTimeout,clearTimeout,MutationObserver:class{observe(){}},addEventListener(){},matchMedia:()=>({addEventListener:(_name,fn)=>media.push(fn)}),
+    fetch:async()=>({ok:true,json:async()=>({categories:[{groups:[{id:'START_AUTO'},{id:'BUTTON_PRESET'},{id:'SYS_SOUND'}]}]})}),
+    switchSettingTab:async()=>{},selectGroup:id=>selected.push(id)};
+  const api=installCockpitControlLayout(doc,target);await new Promise(setImmediate);
+  return {doc,target,api,selected,media};
+}
+
+test('category changes preserve each last tab and dismiss the narrow navigation without writes',async()=>{
+  const {api,selected,doc,media}=await fixture(),shell=api.shell;
+  const byClass=cls=>shell.querySelector('.'+cls),section=id=>byClass('cockpit-control-nav-list').children.find(n=>n.dataset.section===id);
+  byClass('cockpit-category-toggle').onclick();assert.equal(shell.dataset.navOpen,'true');assert.equal(byClass('cockpit-control-pane').inert,true);assert.equal(doc.focused,section('controls'));
+  byClass('cockpit-control-tabs').children[1].onclick();await new Promise(setImmediate);assert.equal(selected.at(-1),'BUTTON_PRESET');assert.equal(shell.dataset.navOpen,'false');assert.equal(byClass('cockpit-control-pane').inert,false);
+  section('sound').onclick();await new Promise(setImmediate);assert.equal(selected.at(-1),'SYS_SOUND');
+  section('controls').onclick();await new Promise(setImmediate);assert.equal(selected.at(-1),'BUTTON_PRESET');
+  byClass('cockpit-category-toggle').onclick();media[0]();assert.equal(shell.dataset.navOpen,'false');assert.equal(byClass('cockpit-control-pane').inert,false);
+});
+
+test('a delayed tab switch cannot overwrite a newer category selection',async()=>{
+  const {api,target,selected}=await fixture();const pending=[];target.switchSettingTab=()=>new Promise(resolve=>pending.push(resolve));
+  const nav=api.shell.querySelector('.cockpit-control-nav-list');
+  nav.children.find(n=>n.dataset.section==='sound').onclick();nav.children.find(n=>n.dataset.section==='controls').onclick();
+  pending[1]();await new Promise(setImmediate);assert.equal(selected.at(-1),'START_AUTO');const count=selected.length;
+  pending[0]();await new Promise(setImmediate);assert.equal(selected.length,count);assert.equal(api.shell.querySelector('h2').textContent,'控制');
+});

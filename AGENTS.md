@@ -1,5 +1,19 @@
 # Repository memory
 
+- 2026-11-17 Cockpit0.5.0/code7: car-oriented flat composition; one status
+  bar and fixed five-item dock, full-width settings, grouped app launcher,
+  <=820px category drawer, independent scrolling and per-section tab memory.
+  Keep original inputs/guards/readback/details and class-aware Vision lifecycle.
+  Async category switch tokens reject obsolete selection. Chrome scale is bounded;
+  body title scale must include --carrot-text-scale explicitly, not a pre-scaled
+  --control-font alone (shared scanner otherwise multiplies twice:200%=72px).
+  Navigation frame receives verified font updates and load/storage sync;100->200
+  ->100 gives18->36->18px without reload. Tools notifications use original
+  expanded/attention state as overlay, never a permanent blank desktop column.
+  All eight tested1280x480..390x844 geometries fit;43 cockpit and2 HTTP pass,
+  full997/999 same2 baseline failures. Synthetic browser only, not Android/device
+  validation. APK minimum layoutVersion6; package/signing/channel stay separate.
+
 - 2026-11-17 User explicitly authorized Panda torque protection repair before
   low-speed dynamic slew, superseding the factory-slew-only mode in2de5aa07.
   CAN-FD torque TX no longer ignores violations/shadows limits with10/10;

@@ -44,3 +44,26 @@ body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .tesla-perception,
 body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .clive-state,
 body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .clive-health,
 body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) #visionStartOverlay{display:none!important}
+
+/* Cockpit-wide flat surfaces and reading sizes. Never loaded by standard UI. */
+:root{--md-surface:#f3f4f6!important;--md-surface-cont:#f3f4f6!important;--md-surface-cont-h:#e8ecf2!important;--md-on-surface:#161b24!important;--md-on-surface-var:#586170!important;--md-primary:#245dce!important;--md-on-primary:#fff!important}
+html.cockpit-night{--md-surface:#1c232d!important;--md-surface-cont:#1c232d!important;--md-surface-cont-h:#2c3746!important;--md-on-surface:#f2f5fa!important;--md-on-surface-var:#b2bdcb!important;--md-outline-var:#35404f!important;--md-primary:#99bdff!important;--md-on-primary:#14233f!important}
+body:is([data-cockpit-panel="tools"],[data-cockpit-panel="logs"]) .page{padding:20px 28px!important}
+body:is([data-cockpit-panel="tools"],[data-cockpit-panel="logs"]) :is(button,.btn,select){min-height:56px;font-size:17px;border-radius:6px;box-shadow:none}
+body:is([data-cockpit-panel="tools"],[data-cockpit-panel="logs"]) :is(.section,.card,.tools-group){border-radius:6px;box-shadow:none}
+body[data-cockpit-panel="tools"] .ui-action-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+body[data-cockpit-panel="tools"] .tools-group__toggle{padding:16px;min-height:64px}
+body:is([data-cockpit-panel="tools"],[data-cockpit-panel="logs"]) .section-title{font-size:20px}
+@media(max-width:600px){body:is([data-cockpit-panel="tools"],[data-cockpit-panel="logs"]) .page{padding:16px!important}}
+
+/* Notifications keep their existing attention/expand state, but do not reserve
+   a permanent empty desktop column on a car display. */
+body[data-cockpit-panel="tools"] #pageTools{display:flex!important;flex-direction:column;height:100%!important;min-height:0!important;max-height:100%!important;background:var(--md-surface)!important;overflow:hidden!important;--tools-console-bg:var(--md-surface);--tools-console-current:var(--md-on-surface);--tools-console-history:var(--md-on-surface-var)}
+body[data-cockpit-panel="tools"] #toolsMeta{height:56px;min-height:56px;max-height:56px;flex-shrink:0;grid-template-columns:minmax(0,1fr);margin-bottom:12px}
+body[data-cockpit-panel="tools"] .tools-meta__status{touch-action:manipulation;width:fit-content;min-height:52px;padding:12px 16px;border:1px solid var(--md-outline-var);border-radius:6px;color:var(--md-on-surface);font-size:16px}
+body[data-cockpit-panel="tools"] .tools-meta__status::after{content:"通知與操作結果 ▾";margin-left:10px}
+body[data-cockpit-panel="tools"] .tools-scroll-stack{width:100%;flex:1;min-height:0;overflow-y:auto;grid-area:auto}
+body[data-cockpit-panel="tools"] #pageTools>.tools-console-dock{display:none!important;position:absolute;inset:80px 20px 20px;max-height:none;margin:0;z-index:120}
+body[data-cockpit-panel="tools"] #pageTools.tools-log-expanded>.tools-console-dock{display:flex!important;opacity:1;pointer-events:auto;transform:none}
+body[data-cockpit-panel="tools"] .tools-console-shell{border-radius:6px!important;box-shadow:none!important;background:var(--md-surface)!important}
+body[data-cockpit-panel="tools"] #pageTools .tools-console-log{background:var(--md-surface)!important;color:var(--md-on-surface)!important}
