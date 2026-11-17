@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "e568be571eff0b9abfd5011e70267ffcf045e5094c3303f62f3b2f438af6d084"
+      "hash": "e906dab92d54abe4775be56e9173e8a63248de25a0726c64733d5533401993b5"
     },
     {
       "id": "tools.lane-mapping",

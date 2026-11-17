@@ -18,6 +18,14 @@
 
 已通過六小時模擬時間心跳測試、無關閉事件的停滯／重連、取消與背景保護、舊回呼丟棄及實際本機 WebSocket 心跳測試。瀏覽器以合成車況驗證中斷時清空舊速度、恢復後自動繼續，沒有重送設定。這些測試不等於實體 Android 盒子、Wi-Fi 或實車的長時間驗收。
 
+0.3.1 驗證：28項連線／座艙 JS 測試、3項 WebSocket／頁面 HTTP 測試通過；完整網頁983項中981通過，另2項為既有投影浮點數末位及 Vision 測試缺少相依函式。原生 CI [44055120639](https://github.com/TonyBinheWu/sunnypilot/actions/runs/44055120639) 編譯及 v2／v3 簽章驗證通過，憑證與舊版相同。APK SHA-256：`88d35c4ab62818059369bd2cc54b572c591c4df10241c8029f89ccb294e0dcb5`；原生來源 `bed35abf736874be0a5ff8c466b1672bbcc25b5a`。後續版面／說明更新未變更 APK 原生輸入。
+
+以下為桌面瀏覽器合成車況；並非實體 Android／實車驗收。寬螢幕1280×480與直向390×844均核對底列貼齊視窗，繁中搜尋與完整說明可開啟；小地圖依剩餘空間排版，保留來源標示。
+
+![0.3.1 控制面板，合成資料](screenshots/cockpit-0.3.1-controls.jpg)
+
+![0.3.1 座艙道路畫面，合成資料](screenshots/cockpit-0.3.1-drive.jpg)
+
 ## 0.3.0 全景座艙與車型外觀
 
 操作參考使用者提供的 [Tesla Model Y 設定影片](https://www.youtube.com/watch?v=6bPomDyG3A8) 與深色全景截圖，映射至現有 Carrot 功能，沒有取得或使用 Tesla 專有程式與模型。
