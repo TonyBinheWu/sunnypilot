@@ -23,6 +23,8 @@
 
 驗證：43項座艙測試與2項頁面HTTP測試通過；完整網頁999項中997通過，另2項為既有投影浮點數末位與 Vision fixture 缺少 `isCarrotVisionParked`。隔離資料實測語音播報音量100→101→100並回讀，繁中搜尋、功能說明、詳細指南、分類、應用程式、通知與導航入口可用。導航字級200%→100%無需重載，實際欄位36px→18px。沒有測試真實地圖API、鏡頭、Android觸控或實車連線穩定性。
 
+原生CI [44117337061](https://github.com/TonyBinheWu/sunnypilot/actions/runs/44117337061)編譯、原生檢查與v2／v3簽章驗證通過；APK來源 `edd8c005470be3a346a2506ff7e46f7305750ded`。另獨立核對ZIP CRC、DEX版面檢查、SHA-256與既有v2簽章憑證一致，公開免登入下載與座艙更新來源均已驗證。0.5.0 APK SHA-256：`d5739ffae92087b8821f3d710bfca6ed39f9884124f268892ffccf93ebdc4941`。原有已發布APK保持不變。
+
 以下為瀏覽器合成資料預覽：
 
 ![0.5.0 全寬設定](screenshots/cockpit-0.5.0-controls.jpg)

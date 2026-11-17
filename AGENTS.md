@@ -13,6 +13,9 @@
   All eight tested1280x480..390x844 geometries fit;43 cockpit and2 HTTP pass,
   full997/999 same2 baseline failures. Synthetic browser only, not Android/device
   validation. APK minimum layoutVersion6; package/signing/channel stay separate.
+  Published0.5.0 sourceedd8c005; CI44117337061 v2/v3 pass; independentZIP/DEX
+  +v2 cert match, anonymousAPK/feed verified. SHA256d5739ffae92087b8821f3d710b
+  fca6ed39f9884124f268892ffccf93ebdc4941. Published APKs remain immutable.
 
 - 2026-11-17 User explicitly authorized Panda torque protection repair before
   low-speed dynamic slew, superseding the factory-slew-only mode in2de5aa07.
