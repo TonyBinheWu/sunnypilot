@@ -11,7 +11,12 @@
   unknown/off/wait/loading/failure/zero/stale/calibration, no fabricated meshes.
   Explicit local retry resets only enabled worker failures, rejects late results,
   retains CPU/TTL/backpressure guards. Neutral native circles remain unclassified.
-  988 web tests:986 pass, same2 baseline failures;3 HTTP pass. Synthetic1280x480
+  Road shortcuts/preview expansion must call panel('vision'), never parent-only
+  scene-full (that renderer has no camera classification and drops the meshes).
+  All entries share the original classified scene; preserve opt-in/BEV/camera.
+  Camera-result-to-mesh regression checks people/cars moving across frames beside
+  neutral native radar and expiry. 990 web:988 pass, same2 baseline;3 HTTP pass.
+  Synthetic1280x480
   and390x844 checks only; actual Android/night-road acceptance remains pending.
   Published0.4.0 native source9c179b55; CI44067294920 passed v2/v3 verification.
   SHA256 a406e93ba24e7497bf09f40153147d3c40f1eb086bb26cfba68b6dffb6e9bf95.

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {surroundingTargets,cameraGeometry,groundPoint,cameraTargets,imageTargets} from '../src/features/drive/contents/vision/hud/scene_objects.js';
-import {drivingProjection} from '../src/features/drive/contents/vision/hud/driving_scene.js';
+import {drivingProjection,drawDrivingScene} from '../src/features/drive/contents/vision/hud/driving_scene.js';
 import {bevSnapshot} from '../src/features/drive/contents/vision/hud/bev_annotations.js';
 import {createObjectPerception,DETECTION_TTL_MS} from '../src/features/drive/contents/vision/hud/object_perception.js';
 const lead=(d,y,id)=>({status:true,dRel:d,yRel:y,vRel:-1,radar:true,radarTrackId:id});
@@ -69,6 +69,27 @@ test('recognition owns one in-flight frame, expires paused video results and ter
   assert.equal(f.perception.scene().status,'ready');assert.equal(f.perception.scene().objects.length,1);
   f.setClock(5001+DETECTION_TTL_MS);assert.equal(f.perception.scene().status,'stale');assert.equal(f.perception.scene().objects.length,0);
   f.perception.update({active:false});assert.equal(worker.terminated,true);assert.equal(f.timers.size,0);
+});
+
+test('fresh camera people and cars keep their meshes beside unknown radar targets and update with new frames',async()=>{
+  const f=fixture();f.perception.update();const worker=f.workers[0];worker.reply({type:'ready'});
+  const detect=async shift=>{
+    f.perception.update();await Promise.resolve();const frame=worker.messages.filter(m=>m.type==='frame').at(-1);
+    worker.reply({type:'result',id:frame.id,durationMs:40,detections:['person','car'].map((kind,i)=>({
+      categories:[{categoryName:kind,score:.9}],boundingBox:{originX:270+i*70+shift,originY:190,width:20,height:40}}))});
+    return f.perception.scene();
+  };
+  const first=await detect(0);assert.deepEqual(first.objects.map(o=>o.kind),['person','car']);
+  const commands=[];const ctx=new Proxy({measureText:()=>({width:20})},{get:(t,k)=>t[k]??((...v)=>commands.push([k,...v])),set:(t,k,v)=>(t[k]=v,true)});
+  const radar={leadOne:lead(25,0,2)};
+  drawDrivingScene(ctx,1280,480,{radar,vision:first},{drawEgo:()=>{}});
+  assert.equal(commands.filter(c=>c[0]==='ellipse').length,1); // Only unknown radar is a circle.
+  assert.ok(commands.filter(c=>c[0]==='fill').length>10); // Actual class meshes remain.
+  assert.ok(commands.some(c=>c[0]==='fillText'&&c[1]==='person'));
+  f.setClock(5500);f.video.currentTime=2;const next=await detect(20);
+  assert.notEqual(next.objects[0].y,first.objects[0].y);
+  f.setClock(5501+DETECTION_TTL_MS);assert.equal(f.perception.scene().objects.length,0);
+  f.perception.destroy();
 });
 test('bitmap creation races are closed after a source switch or freeze; old worker callbacks cannot republish',async()=>{
   const f=fixture();let resolveBitmap;

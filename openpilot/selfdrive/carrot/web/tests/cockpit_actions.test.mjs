@@ -58,6 +58,22 @@ test('leaving navigation closes its search sheet before it becomes a mini map',(
   body.classList.add('search-open');h.panel('vision').onclick();
   assert.equal(body.classList.contains('search-open'),false);assert.equal(h.writes.length,0);
 });
+
+test('road shortcuts and preview expansion retain the classified Vision renderer and its preferences',()=>{
+  const h=harness();
+  h.frame.CarrotWebSettingsState={vision_object_detection:true,vision_presentation:'bev'};
+  let cameraStarts=0;h.register('btnStartVision',{disabled:false,click:()=>cameraStarts++});
+  for(const entry of ['expand','sceneMode']){
+    h.panel('navigation').onclick();h.el('appsButton').onclick();h.el(entry).onclick();h.tick();
+    assert.equal(h.context.document.body.dataset.panel,'vision');
+    assert.equal(h.context.document.body.classList.contains('scene-full'),false);
+    assert.equal(h.el('features').hidden,false);assert.equal(h.pages.at(-1),'carrot');
+    assert.equal(h.el('apps').open,false);
+    assert.equal(h.frame.CarrotWebSettingsState.vision_object_detection,true);
+    assert.equal(h.frame.CarrotWebSettingsState.vision_presentation,'bev');
+  }
+  assert.equal(h.writes.length,0);assert.equal(cameraStarts,0);
+});
 test('profile selection stages, cancel does not write, apply verifies one absolute existing setting',async()=>{
   const h=harness();h.park();h.el('profile').onclick();await h.flush();h.mode(1).onclick();
   assert.equal(h.el('modeConfirm').hidden,false);assert.equal(h.writes.length,0);

@@ -81,7 +81,9 @@ for(const [id,key] of [['detectionObjects','vision_object_detection'],['detectio
 $('searchNav').onclick=()=>{try{nav.contentDocument.body.classList.toggle('search-open');nav.contentDocument.getElementById('query').focus();}catch{status('請先等待導航頁載入。');}};
 $('appsButton').onclick=()=>$('apps').showModal();
 document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{const next=b.dataset.panel;const fromApps=b.closest?.('#apps');if(fromApps)$('apps').close();panel(!fromApps&&next==='setting'&&view==='setting'?primary:next);});
-function expand(){$('apps').close();document.body.classList.toggle('scene-full');$('sceneMode').classList.toggle('selected',document.body.classList.contains('scene-full'));}
+// Every road-view entry uses the same camera/classification renderer. The old
+// parent-only expansion had model/radar data but no classified camera objects.
+function expand(){$('apps').close();panel('vision');}
 $('expand').onclick=expand;$('sceneMode').onclick=expand;
 let appearance=readAppearance(localStorage),appliedAppearance=null,appliedNight=null;
 function applyAppearance(){
