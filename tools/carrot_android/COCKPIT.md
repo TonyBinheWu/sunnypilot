@@ -6,6 +6,8 @@
 
 先更新並重新啟動 TonyBinheWu/sunnypilot 的 carrot-wip 車機，再讓 Android 裝置與車機連上同一 Wi-Fi／熱點。首次開啟重新選擇裝置；新套件的連線資料、麥克風權限與授權獨立，原版資料不會被匯入或覆寫。尚未支援遠端 FormosaLink 在這個 LAN 版本中直接啟動座艙。
 
+導航現已統一使用[Mapbox／OpenStreetMap](../../docs/NAVIGATION_MAPBOX_OSM.zh-TW.md)，移除Google圖層、搜尋與金鑰入口；舊最愛保留名稱並可重新選址。更新車機即可套用，APK沿用0.4.0。
+
 ## 0.4.0 短螢幕操作與物件辨識引導
 
 已補上[真實影片、16:9與4:3驗證記錄](COCKPIT_VALIDATION.zh-TW.md)：行人、汽車、機車均取得動態分類與立體圖形；設定／導航返回及實際進出全螢幕後持續更新。支援六種可用尺寸，Full HD自動放大操作尺寸，並修正舊樣式將設定文字壓小的問題。辨識頁可查看各類可定位數量。此項為車機網頁更新，APK沿用0.4.0；尚未完成實體Android／車用盒子驗收。
@@ -88,7 +90,7 @@
 
 0.3.0 APK versionCode4，原套件與簽章延續，請覆蓋安裝；**車機也必須更新 carrot-wip 並重新啟動**。原生頁面檢查 layoutVersion≥3，舊車機會顯示更新提示。原版 CarrotAssist0.2.19保持可下載與獨立更新。桌面瀏覽器／合成資料檢查不等同實體 Android 盒子、CarPlay 接收器或實車驗收。
 
-0.3.0 APK SHA-256：`ae9482a302bdbee0faa28cd9afdb27c0228ee94e599dd47dd590bedd5b76eeb3`，原生建置來源 `7917c0bd857e39957fd01633ff8fe1d1bfd540d0`，CI 44036930047 已確認 v2／v3 簽章及既有簽章憑證。後續控制面板重排與 Google 導航選項由更新車機提供，原生建置輸入未變更。[Google 顯示／搜尋與 Mapbox 路徑設定](../../docs/NAVIGATION_GOOGLE.zh-TW.md)。
+0.3.0 APK SHA-256：`ae9482a302bdbee0faa28cd9afdb27c0228ee94e599dd47dd590bedd5b76eeb3`，原生建置來源 `7917c0bd857e39957fd01633ff8fe1d1bfd540d0`，CI 44036930047 已確認 v2／v3 簽章及既有簽章憑證。後續控制面板與導航調整由更新車機提供，原生建置輸入未變更；曾提供的Google導航選項現已改為[Mapbox／OpenStreetMap](../../docs/NAVIGATION_MAPBOX_OSM.zh-TW.md)。
 
 0.3.0 驗證：完整網頁測試977項中975通過，2項既有失敗仍為投影浮點數末位及 Vision 測試缺少相依函式；導航／設定／頁面25項 Python 測試通過。寬螢幕1280×480確認功能列底緣等於視窗底緣；390×844檢查搜尋／詳細頁，修正雙列表重疊。隔離資料上將語音播報音量100→101→100，確認回讀及繁中指南。無鏡頭時的儀表在來源逾期後另送明確清除，避免停留在最後速度。以下截圖使用**桌面瀏覽器合成資料**，不是實車或 Android 車載驗收。
 

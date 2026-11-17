@@ -141,3 +141,24 @@ test("favorite navigation uses its ID and deletion requires an explicit second c
   assert.equal(p.element('favorites').children.length, 0);
   assert.match(p.element('favoritesStatus').textContent, /尚未加入最愛/);
 });
+
+test('legacy Google favorite opens explicit address migration and replaces it with a Mapbox selection',async()=>{
+  const old={id:'c'.repeat(32),provider:'google',google_place_id:'legacy_id',name:'我的家'},requests=[];
+  const selected={latitude:25,longitude:121,place_name:'臺北測試地址',permanent:true};
+  const p=await page([{status:204,reason:'offroad'}],'zh-TW',async(url,options)=>{
+    requests.push({url,options});
+    if(url.includes('/search?'))return {results:[selected]};
+    if(url.endsWith('/destination'))return {destination:null};
+    return {favorites:[old]};
+  });
+  await p.element('favorites').children[0].children[0].trigger('click');
+  assert.equal(p.element('favoriteForm').hidden,false);assert.equal(p.element('favoriteName').value,'我的家');
+  assert.match(p.element('editorStatus').textContent,/重新搜尋/);
+  assert.equal(requests.some(r=>r.options.method==='POST'),false);
+  await p.element('favoriteSearch').trigger('click');
+  await p.element('favoriteResults').children[0].children[0].trigger('click');
+  await p.element('favoriteForm').trigger('submit');
+  const update=requests.find(r=>r.options.method==='PUT'),body=JSON.parse(update.options.body);
+  assert.equal(body.name,'我的家');assert.equal(body.latitude,25);assert.equal(body.permanent,true);
+  assert.equal(body.provider,undefined);assert.equal(body.google_place_id,undefined);
+});

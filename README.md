@@ -81,7 +81,7 @@ APK 經建置、測試與簽章驗證；尚未在實體手機或實車驗證。i
 
 APK 與網頁的「導航地圖／Navigation」支援命名最愛、地址新增／編輯／刪除及點一下名稱導航。最愛儲存在車機，重新啟動與一般更新後保留；「清除 Mapbox 目的地」已改為 **結束當前導航**。更新車機並重新開啟導航頁即可使用，既有 0.2.16 APK 可沿用。[繁中操作指南與 Mapbox 地址儲存條件](docs/CARROT_MOBILE.zh-TW.md#導航地圖與目的地)。
 
-可選 **Google 圖層／Places UI Kit 手動搜尋＋Mapbox 路徑／導航模型**；圖層按需載入，同頁重用地圖，Google 最愛只存地點 ID 與命名。須自行設定受限制的瀏覽器金鑰、帳單及配額；車載嵌入使用另須確認適用 Google 授權。預設保留 Mapbox，尚未使用真實 Google 金鑰驗收。[繁中設定、成本估算與限制](docs/NAVIGATION_GOOGLE.zh-TW.md)。
+導航統一採用 **Mapbox 搜尋／路徑＋車機 Mapbox／OpenStreetMap·Protomaps 地圖**，與導航模型共用既有 mapsd 預覽；Google 圖層、Places 搜尋及金鑰入口已移除。舊 Google 最愛保留名稱，可明確重新搜尋並選定地址。[繁中設定與舊最愛轉換指南](docs/NAVIGATION_MAPBOX_OSM.zh-TW.md)。
 
 ## 繁體中文語音指令
 

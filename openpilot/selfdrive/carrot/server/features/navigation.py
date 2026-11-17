@@ -14,7 +14,6 @@ from ..config import WEB_DIR, CARROT_NAVIGATION_FAVORITES_PATH
 from ..services.navigation_favorites import FavoritesFull, NavigationFavorites, google_reference
 from ..services.static_assets import fingerprint_static_asset
 from ..services.params import get_param_value, set_param_value
-from ..services.web_settings import read_web_settings
 from openpilot.selfdrive.navigation.preview import PREVIEW_PATH, VIEW_PATH, WEB_DEMAND_PATH, preview_fresh, preview_reason
 
 MAX_RESPONSE = 1024 * 1024
@@ -41,7 +40,7 @@ def destination(value):
 
 async def page(request):
   html = Path(WEB_DIR, 'navigation.html').read_text(encoding='utf-8')
-  for asset in ('/js/pages/navigation_zh_tw.js', '/js/pages/navigation_map.js', '/js/pages/navigation_google.js'):
+  for asset in ('/js/pages/navigation_zh_tw.js', '/js/pages/navigation_map.js'):
     fingerprint = fingerprint_static_asset(WEB_DIR, asset)
     if fingerprint:
       html = html.replace(f'src="{asset}"', f'src="{asset}?v={fingerprint}"')
@@ -49,9 +48,8 @@ async def page(request):
 
 
 async def map_config(_request):
-  settings = read_web_settings()
-  return web.json_response({'provider': settings['navigation_map_provider'],
-                            'google_key': settings['navigation_google_key'], 'routing': 'mapbox'},
+  return web.json_response({'provider': 'mapbox', 'basemaps': ['mapbox', 'openstreetmap'],
+                            'search': 'mapbox', 'routing': 'mapbox', 'model': 'mapsd'},
                            headers={'Cache-Control': 'no-store'})
 
 
@@ -138,6 +136,15 @@ async def favorites(request):
     try:
       body = await request.json()
       value = google_reference(body) if isinstance(body, dict) and body.get('provider') == 'google' else destination(body)
+      if value.get('provider') == 'google':
+        # Keep old names editable, but accept no new Google references. Replacing
+        # an address requires an explicit Mapbox permanent search in the UI.
+        try:
+          previous = next((item for item in store.read() if item['id'] == identifier), None) if identifier else None
+        except (OSError, ValueError, KeyError, TypeError):
+          return web.json_response({'error': 'Favorites are unavailable. Please try again.'}, status=503)
+        if previous is None or previous.get('provider') != 'google' or value['google_place_id'] != previous['google_place_id']:
+          raise ValueError('Google references are retired')
       name = body.get('name')
       if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
         raise ValueError('invalid name')
@@ -161,7 +168,7 @@ async def favorites(request):
       if saved is None:
         raise KeyError(identifier)
       if saved.get('provider') == 'google':
-        return web.json_response({'error': 'Refresh this place with Google before navigating.'}, status=409)
+        return web.json_response({'error': 'Reselect this legacy favorite with Mapbox before navigating.'}, status=409)
       target = destination(saved)
       activate_destination(target)
       result = {'destination': target}

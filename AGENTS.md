@@ -1,5 +1,18 @@
 # Repository memory
 
+- 2026-11-17 User replaced Google navigation work with Mapbox/OpenStreetMap.
+  Do not continue pending Google Cloud provisioning. Navigation HTML no longer
+  loads Google SDK/key controls; legacy helper is a no-network retirement stub.
+  navigation_map_provider normalizes old google to mapbox; deprecated browser
+  key absent from schema/config output. Native mapsd Mapbox-token / hosted
+  OSM-Protomaps path unchanged, not new public OSM/Nominatim services or search.
+  Search/routes remain Mapbox; both APKs reuse vehicle navigation page.
+  Preserve old Google favorites IDs/names; allow existing-ID rename only, reject
+  new Google refs, explicit permanent Mapbox selection replaces address sameID.
+  Browser real backend + fake upstream verified migration/navigation/end; no
+  device/key/route access.10 JS+23 Python pass;987/989 full,same2 baseline.
+  docs/NAVIGATION_MAPBOX_OSM.zh-TW.md is current; Google guide retired.
+
 - 2026-11-17 Cockpit actual-video/browser acceptance: pinned EfficientDet CPU,
   public motorcycle/Intel clips; synthetic telemetry/calibration only, no Android
   or RTC acceptance (user requested video/layout first). Real raw boxes change
