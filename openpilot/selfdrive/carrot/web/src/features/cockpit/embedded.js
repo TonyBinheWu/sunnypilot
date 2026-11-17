@@ -2,7 +2,7 @@ const installed=new WeakSet();
 // Reuse the actual setting controls and their guards. Only disclose their
 // existing full description on demand; never duplicate setters or omit text.
 export function installCockpitHelp(doc){
-  if(installed.has(doc)||!doc.defaultView?.MutationObserver)return;
+  if(installed.has(doc)||!doc.body||!doc.defaultView?.MutationObserver)return;
   installed.add(doc);
   const wrap=()=>{
     const heading=doc.getElementById?.('itemsTitle');if(heading?.textContent==='項')heading.textContent='控制與設定';

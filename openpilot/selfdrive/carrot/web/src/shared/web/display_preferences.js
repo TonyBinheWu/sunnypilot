@@ -58,7 +58,9 @@ export function installDisplayPreferences(target = globalThis) {
   const observer = target.MutationObserver && new target.MutationObserver((records) => {
     for (const record of records) for (const node of record.addedNodes) inspect(node);
   });
-  observer?.observe(doc.documentElement, { childList: true, subtree: true });
+  const observe = () => { if (doc.documentElement) observer?.observe(doc.documentElement, { childList: true, subtree: true }); };
+  if (doc.documentElement) observe();
+  else doc.addEventListener('DOMContentLoaded', observe, { once: true });
   const api = Object.freeze({ apply });
   target.CarrotDisplayPreferences = api;
   return api;

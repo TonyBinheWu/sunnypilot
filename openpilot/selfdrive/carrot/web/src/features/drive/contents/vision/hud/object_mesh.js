@@ -1,15 +1,17 @@
 import {ANIMALS} from './object_classes.js';
 // Original closed sedan mesh. Dimensions and styling are illustrative, never inferred.
-export function drawVehicleMesh(ctx,project,{view=[-8,0,6],ego=true}={}){
+export function drawVehicleMesh(ctx,project,{view=[-8,0,6],ego=true,body=null}={}){
   const faces=[];
-  const face=(points,color)=>faces.push({points,color,depth:points.reduce((sum,p)=>sum+p.reduce((n,v,i)=>n+v*view[i],0),0)/points.length});
+  const scale=body?.scale||[1,1,1],roofShape=body?.roof||[-.65,.65,1.42];
+  const transform=p=>p.map((v,i)=>v*scale[i]);
+  const face=(points,color)=>{points=points.map(transform);faces.push({points,color,depth:points.reduce((sum,p)=>sum+p.reduce((n,v,i)=>n+v*view[i],0),0)/points.length});};
   const ring=(z,length,width)=>[[-length,-width,z],[length,-width,z],[length,width,z],[-length,width,z]];
   const lower=ring(.26,2.18,.88),belt=ring(.82,2.08,.94);
   for(let i=0;i<4;i++)face([lower[i],lower[(i+1)%4],belt[(i+1)%4],belt[i]],(ego?['#adb8c4','#c9d1d9','#dbe1e7','#b9c3ce']:['#7d8a98','#94a1af','#b2bdc8','#8c9aaa'])[i]);
   face([[-2.08,-.94,.82],[-1.22,-.82,.89],[-1.22,.82,.89],[-2.08,.94,.82]],'#e2e7ec');
   face([[1.35,-.82,.89],[2.08,-.94,.82],[2.08,.94,.82],[1.35,.82,.89]],'#edf0f3');
   const cabin=[[-1.22,-.82,.89],[1.35,-.82,.89],[1.35,.82,.89],[-1.22,.82,.89]];
-  const roof=[[-.65,-.69,1.42],[.65,-.69,1.42],[.65,.69,1.42],[-.65,.69,1.42]];
+  const roof=[[roofShape[0],-.69,roofShape[2]],[roofShape[1],-.69,roofShape[2]],[roofShape[1],.69,roofShape[2]],[roofShape[0],.69,roofShape[2]]];
   for(let i=0;i<4;i++)face([cabin[i],cabin[(i+1)%4],roof[(i+1)%4],roof[i]],i%2?'#344454':'#455869');
   face(roof,ego?'#d5dce4':'#9ba8b6');
   for(const side of [-1,1]){
@@ -24,7 +26,7 @@ export function drawVehicleMesh(ctx,project,{view=[-8,0,6],ego=true}={}){
     face([[-2.19,y-.18,.59],[-2.19,y+.18,.59],[-2.09,y+.18,.7],[-2.09,y-.18,.7]],'#d04b50');
     face([[2.19,y-.18,.59],[2.19,y+.18,.59],[2.09,y+.18,.7],[2.09,y-.18,.7]],'#f4fbff');
   }
-  const shadow=ring(.02,2.3,1.02).map(p=>project(...p));ctx.save();
+  const shadow=ring(.02,2.3,1.02).map(p=>project(...transform(p)));ctx.save();
   if(shadow.every(Boolean)){ctx.beginPath();shadow.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fillStyle='#50607020';ctx.fill();}
   for(const f of faces.sort((a,b)=>a.depth-b.depth)){
     const p=f.points.map(v=>project(...v));if(p.some(v=>!v))continue;

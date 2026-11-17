@@ -1,3 +1,4 @@
+import {drawCockpitVehicle,createVehicleSkinCache,VEHICLE_SKINS} from '../../../../cockpit/vehicle.js';
 import {OBJECT_NAMES} from './object_classes.js';
 import {visionPresentation} from '../../../../cockpit/presentation.js';
 import {bevProjection} from "./bev_annotations.js";
@@ -37,7 +38,7 @@ export function canEditMetrics(target, now) {
   const car=target.CarrotHudState?.carState;
   return serviceFresh(target,'carState',now)&&car?.gearShifter==='park'&&Number.isFinite(car?.vEgo)&&Math.abs(car.vEgo)<.1;
 }
-export function drawBirdScene(ctx,w,h,scene,{rainbow=false,projection=null,maxDistance=75}={}) {
+export function drawBirdScene(ctx,w,h,scene,{rainbow=false,projection=null,maxDistance=75,drawEgo=null}={}) {
   ctx.clearRect(0,0,w,h);ctx.fillStyle='#171c23';ctx.fillRect(0,0,w,h);
   const model=scene.model;
   // Model y is right-positive; native lead yRel is left-positive.
@@ -74,7 +75,7 @@ export function drawBirdScene(ctx,w,h,scene,{rainbow=false,projection=null,maxDi
   const flatProject=(x,y)=>px(x,y);
   for(const object of surroundingTargets(scene.radar,maxDistance))drawSceneObject(ctx,flatProject,object,{flat:true});
   for(const object of [...(scene.vision?.objects||[]),...(scene.road?.objects||[])])if(object.x<=maxDistance)drawSceneObject(ctx,flatProject,object,{flat:true,text:scene.text});
-  vehicle(0,0,'#397fdf',true);
+  if(drawEgo)drawEgo(ctx,(x,y)=>px(x,y));else vehicle(0,0,'#397fdf',true);
 }
 
 export function createTeslaView(doc,target) {
@@ -148,12 +149,16 @@ export function createTeslaView(doc,target) {
     editing=!editing;editor.hidden=!editing;size.value=String(layout[selected][2]);render(data,stale,unit);});
   const bev=createBevWorkbench(doc,target,canvas,{canEdit:()=>canEditMetrics(target,now()),refresh:()=>{lastSignature='';render(data,stale,unit);},getHud:()=>({data:{speed:data.speed,setSpeed:data.setSpeed,speedLimit:data.speedLimit},stale,unit})});
   const perception=createObjectPerception(doc,target,{onChange:()=>{lastSignature='';render(data,stale,unit);}});
+  const vehicleSkin=createVehicleSkinCache(target,()=>{lastSignature='';render(data,stale,unit);});
   const roadPerception=createObjectPerception(doc,target,{road:true,onChange:()=>{lastSignature='';render(data,stale,unit);}});
   root.append(notice,perceptionStatus,imageObservations,metrics,toggle,editor,bev.root);
   function render(next={},isStale=true,units='km/h',visible=metricVisible,active=viewActive){
     data=next||{};stale=isStale;unit=units;metricVisible=visible;viewActive=active;
     const settings=target.CarrotWebSettingsState||{},isBev=visionPresentation(target)==='bev',tesla=['tesla','bev'].includes(visionPresentation(target));
     const custom=settings.vision_custom_metrics===true||tesla;
+    if(tesla&&viewActive)vehicleSkin.refresh();
+    const skin=(target.CarrotVisionReplay?.isActive?.()||target.CarrotVisionReplay?.status?.()?.active===true)?VEHICLE_SKINS.generic:vehicleSkin.current(),drawEgo=(context,project)=>drawCockpitVehicle(context,project,{skin});
+    const night=doc.documentElement?.classList.contains('cockpit-night')===true;
     canvas.setAttribute('aria-label',text(isBev?'bev_name':'vision_tesla_name',isBev?'BEV annotation view':'Bird’s-eye view'));
     root.hidden=!custom&&!tesla;canvas.hidden=!tesla;notice.hidden=!tesla;metrics.hidden=!custom||!visible;toggle.hidden=!custom||!visible;
     root.parentElement?.classList.toggle('has-custom-metrics',custom);
@@ -203,15 +208,15 @@ export function createTeslaView(doc,target) {
       const w=Math.max(1,Math.round(vw*factor)),h=Math.max(1,Math.round(vh*factor));
       const stamp=target.CarrotStateReceivedAtMonotonic?.modelV2??target.CarrotStateUpdatedAt?.modelV2;
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
-      const signature=`${w}:${h}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}`;
+      const signature=`${w}:${h}:${skin.id}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}`;
       if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
-        const ctx=canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text});}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
+        const ctx=canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range,drawEgo});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text,night,drawEgo});}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
     }
     lastMode=tesla;
   }
   const observer=typeof target.ResizeObserver==='function'?new target.ResizeObserver(()=>{lastSignature='';render(data,stale,unit);}):null;
   observer?.observe(root);
-  return {root,canvas,render,destroy(){viewActive=false;perception.destroy();roadPerception.destroy();bev.destroy();observer?.disconnect();canvas.remove();root.remove();}};
+  return {root,canvas,render,destroy(){viewActive=false;perception.destroy();roadPerception.destroy();vehicleSkin.destroy();bev.destroy();observer?.disconnect();canvas.remove();root.remove();}};
 }
 export const TESLA_VIEW_CSS=`
 .tesla-view{position:absolute;inset:0;pointer-events:none;z-index:4;color:#fff;font-family:system-ui,sans-serif}.tesla-view[hidden],.tesla-view [hidden]{display:none!important}

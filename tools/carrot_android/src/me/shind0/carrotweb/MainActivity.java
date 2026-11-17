@@ -480,7 +480,7 @@ public final class MainActivity extends Activity {
               view.evaluateJavascript(onDevicePage(CockpitLayout.SCRIPT), null);
             if (UpdatePolicy.cockpit(getPackageName()) && "/cockpit".equals(Uri.parse(url).getPath())) {
               setVisionImmersive(true);
-              view.evaluateJavascript(onDevicePage("window.CarrotCockpit?.layoutVersion >= 2"), value -> {
+              view.evaluateJavascript(onDevicePage("window.CarrotCockpit?.layoutVersion >= 3"), value -> {
                 if ("false".equals(value) && pageReady && foregroundActivity && url.equals(view.getUrl()))
                   android.widget.Toast.makeText(MainActivity.this,"車機仍提供舊座艙版面。請更新 carrot-wip 車機並重新啟動，才能使用新版操作介面。",android.widget.Toast.LENGTH_LONG).show();
               });

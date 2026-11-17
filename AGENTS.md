@@ -1,5 +1,21 @@
 # Repository memory
 
+- 2026-11-17 Cockpit0.3.0/code4 requests layoutVersion>=3. Full Vision scene
+  defaults with preserved BEV, floating readonly map/tire/route cards and fixed
+  dock; vehicle control button toggles category panel back to previous primary.
+  Appearance light/dark/auto migrates old preference; text size reuses original
+  setter/readback and binds only button[data-text-scale], never the root's
+  display preference attribute. All previous controls/permissions retained.
+  Parent's fresh compact telemetry feeds existing HUD before camera start;
+  expired carState stops publishing; replay guard blocks live instrument writes.
+  Stable real HUD updates refresh at750ms, no independent keepalive timer.
+  Automatic own-vehicle silhouettes read CarName then CarSelected3 every30s max,
+  GET-only/5s abort; EV6/IONIQ5/Sorento/Model3/Y and generic SUV/sedan, original
+  illustrative shapes, never external URLs or detected-neighbour remapping.
+  Replay without verified identity uses generic. 967 JS:965 pass, same2 baseline
+  failures;4 HTTP/preferences pass. Physical Android acceptance remains pending.
+
+
 - 2026-11-17 Optional vision_road_detection is separate/default-off. Bundled
   pinned YOLOv8 Safety Cone class6 (640 stretch) and GPL YOLOv5s6 crosswalk
   class0 (320 letterbox, obj*class) run in one ORT Web1.22 WASM single-thread

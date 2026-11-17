@@ -405,6 +405,17 @@ function clearCompactState(options = {}) {
   }
 }
 
+// Stable measurements still need a heartbeat so a stopped car does not become
+// stale merely because its speed/limits are unchanged. Called only by the
+// existing live/replay data path; no independent timer can keep lost data alive.
+let LAST_HUD_PUBLISHED_AT = -Infinity;
+function shouldPublishHudPayload(signature, now) {
+  if (signature === LAST_HUD_PAYLOAD_SIGNATURE && now - LAST_HUD_PUBLISHED_AT < 750) return false;
+  LAST_HUD_PAYLOAD_SIGNATURE = signature;
+  LAST_HUD_PUBLISHED_AT = now;
+  return true;
+}
+
 function drivingHudUpdateFromCarPayload(j) {
   if (!j) return;
 
@@ -513,8 +524,7 @@ function drivingHudUpdateFromCarPayload(j) {
     payload.speedLimitBlink ? 1 : 0,
     payload.apm ?? "-",
   ].join("|");
-  if (payloadSignature === LAST_HUD_PAYLOAD_SIGNATURE) return;
-  LAST_HUD_PAYLOAD_SIGNATURE = payloadSignature;
+  if (!shouldPublishHudPayload(payloadSignature, performance.now())) return;
   // DriveVisionHudContent owns the visible HUD lifecycle. The direct overlay
   // fallback is only for a partial/failed platform bootstrap.
   try {

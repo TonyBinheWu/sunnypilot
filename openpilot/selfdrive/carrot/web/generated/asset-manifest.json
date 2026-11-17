@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "68d24f8bea95a89fe1e335330561a308af651ac2ae3fbfd085dd8ce99ee83f57"
+      "hash": "c1ac61e6e81971cde70aff90ab5007f8e308bc2e1dd91f2af2be5798e6ae3393"
     },
     {
       "id": "tools.lane-mapping",
@@ -20,21 +20,21 @@
       "kind": "bundle",
       "source": "src/entries/display_preferences.js",
       "path": "js/generated/display-preferences.js",
-      "hash": "9843eed2f5c6c2b357d2ac111a2d67ed0de96e703e6824771f9584124bb05b04"
+      "hash": "4abbff33876900848f9e66ed584c5630d16bb7476cd02c76a8a88c1915e5af38"
     },
     {
       "id": "app.asset-url",
       "kind": "bundle",
       "source": "src/entries/app.js",
       "path": "js/generated/app.js",
-      "hash": "7f9a99baf2e7a1fedf8c3ee3586fce1babc164691e16db6abc0863ffa818e161"
+      "hash": "37c22178240d304518fd26c2bfbb89088c353b52e73bd7e1939b7ca2ff229076"
     },
     {
       "id": "drive.runtime",
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "b6e2a9b5af90db32e98d0f083ac5640c7e52ae3f6e0ecae6e78816e1faa4c68e"
+      "hash": "71f3e48c1658ed2ade44e8f876473a6deca51ff0e47b9251a22ad41153f5584c"
     },
     {
       "id": "replay.runtime",

@@ -62,8 +62,8 @@ export function drawSceneObject(ctx,project,object,{ego=false,flat=false,text=(k
   }
 }
 
-export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo}={}) {
-  ctx.clearRect(0,0,width,height);ctx.fillStyle='#f2f3f3';ctx.fillRect(0,0,width,height);
+export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo,night=false}={}) {
+  ctx.clearRect(0,0,width,height);ctx.fillStyle=night?'#101114':'#f2f3f3';ctx.fillRect(0,0,width,height);
   const project=drivingProjection(width,height),model=scene.model;
   const pathPoints=(path,offset=0)=>{
     const points=[];
@@ -87,16 +87,16 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
   };
   if(model){
     const edges=model.roadEdges||[],left=pathPoints(edges[0]),right=pathPoints(edges[1]);
-    ctx.fillStyle='#e8eaec';
+    ctx.fillStyle=night?'#202329':'#e8eaec';
     for(let i=1;i<Math.min(left.length,right.length);i++){
       if(!left[i-1]||!left[i]||!right[i]||!right[i-1]
         ||Math.abs(edges[0].x[i]-edges[1].x[i])>.5||Math.abs(edges[0].x[i-1]-edges[1].x[i-1])>.5)continue;
       ctx.beginPath();ctx.moveTo(...left[i-1]);ctx.lineTo(...left[i]);ctx.lineTo(...right[i]);ctx.lineTo(...right[i-1]);ctx.closePath();ctx.fill();
     }
-    (model.roadEdges||[]).slice(0,2).forEach(line=>stroke(line,'#c7cdd1',2.5));
-    (model.laneLines||[]).slice(0,4).forEach((line,i)=>{if((model.laneLineProbs?.[i]??0)>.3)stroke(line,'#b9c1c8',1.6);});
+    (model.roadEdges||[]).slice(0,2).forEach(line=>stroke(line,night?'#737b86':'#c7cdd1',2.5));
+    (model.laneLines||[]).slice(0,4).forEach((line,i)=>{if((model.laneLineProbs?.[i]??0)>.3)stroke(line,night?'#e0e5ee':'#b9c1c8',1.6);});
     if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(model.position,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}
-    else ribbon(model.position,-.75,.75,'#69b7ecb0');
+    else ribbon(model.position,-.75,.75,night?'#168bffdc':'#69b7ecb0');
   }
   const objects=[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
   objects.sort((a,b)=>b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text}));

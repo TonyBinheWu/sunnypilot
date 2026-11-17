@@ -72,7 +72,9 @@ test('existing feature pages and the complete native voice API stay routed to th
 
 test('controls toggles its panel and the app drawer launches existing pages without settings writes',()=>{
   const h=harness();h.panel('setting').onclick();assert.equal(h.context.document.body.dataset.panel,'setting');
-  h.panel('setting').onclick();assert.equal(h.context.document.body.dataset.panel,'navigation');
+  h.panel('setting').onclick();assert.equal(h.context.document.body.dataset.panel,'vision');
+  h.panel('navigation').onclick();h.panel('setting').onclick();h.el('closePanel').onclick();
+  assert.equal(h.context.document.body.dataset.panel,'navigation');
   h.el('appsButton').onclick();assert.equal(h.el('apps').open,true);
   h.panel('logs').onclick();assert.equal(h.el('apps').open,false);assert.equal(h.context.document.body.dataset.panel,'logs');
   h.el('appsButton').onclick();h.panel('tools').onclick();assert.equal(h.el('apps').open,false);

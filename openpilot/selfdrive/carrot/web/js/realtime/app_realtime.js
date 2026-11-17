@@ -106,6 +106,7 @@ function shouldRunCarrotHudRealtime() {
   if (isCarrotRecordedReplayActive()) return false;
   return !document.hidden && (
     (isCarrotPageActive() && isCarrotVisionContentRuntimeWanted())
+    || document.body?.dataset?.cockpitPanel === "vision"
     || Boolean(window.CarrotMiniHudMode?.isActive?.())
   );
 }

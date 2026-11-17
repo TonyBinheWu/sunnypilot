@@ -19,3 +19,12 @@ export function telemetry(state){
     parked:Boolean(cs&&cs.gearShifter==='park'&&Number.isFinite(cs.vEgo)&&cs.vEgo>=0&&cs.vEgo<.1
       &&sd?.enabled===false&&cc?.latActive===false&&cc?.longActive===false)};
 }
+
+// The cockpit already owns a compact telemetry subscription independently of
+// the camera session. Publish instruments through the existing HUD renderer.
+export function cockpitHudPayload(state,isMetric=true,bridge=null){
+  const carState=state.get('carState');if(!carState)return null;
+  const t=telemetry(state),raw={carState,carControl:state.get('carControl'),selfdriveState:state.get('selfdriveState'),carrotMan:state.get('carrotMan')};
+  const fields=bridge?.deriveVehicleHudPayload?.(raw)||{};
+  return {...fields,isMetric,vEgoKph:t.speed,vSetKph:t.setSpeed,speedLimitKph:t.limit,gear:fields.gear||({park:'P',drive:'D',reverse:'R',neutral:'N',sport:'S'})[t.gear]||null,lfaActive:t.latActive,tpms:carState.tpms};
+}
