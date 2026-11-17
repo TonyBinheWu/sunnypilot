@@ -1,8 +1,8 @@
-# Carrot Cockpit 繁中 0.1.0
+# Carrot Cockpit 繁中 0.1.1
 
 獨立的 Android 座艙版，套件 `me.shind0.carrotweb.tw.cockpit`，可與 CarrotAssist 繁中並存。Android 8.0 以上；原生中文語音需要 Android 12 以上及可用的裝置端語音模型。介面參考中央觸控螢幕的車況／導航分割、底部快捷列與模式卡片，沿用 Carrot 現有功能，車輛及圖示使用本專案原創繪圖，沒有 Tesla 程式、標誌或車輛模型。
 
-[下載 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.1.0/CarrotCockpit-TW-0.1.0.apk)
+[下載 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.1.1/CarrotCockpit-TW-0.1.1.apk)
 
 先更新並重新啟動 TonyBinheWu/sunnypilot 的 carrot-wip 車機，再讓 Android 裝置與車機連上同一 Wi-Fi／熱點。首次開啟重新選擇裝置；新套件的連線資料、麥克風權限與授權獨立，原版資料不會被匯入或覆寫。尚未支援遠端 FormosaLink 在這個 LAN 版本中直接啟動座艙。
 
@@ -24,7 +24,15 @@ APK 由既有受保護簽章建置，使用獨立 carrot-cockpit-tw-updates 更�
 
 桌面模擬畫面及自動測試與實體 Android／WebView／車機驗證分開；尚未完成實體 Android 盒子、CarPlay 接收器及實車驗收。
 
-## 發行驗證
+## 0.1.1 車機大螢幕高度修正
+
+修正舊版 Android WebView 不支援 `dvh` 時，底部功能列往上移動、下方留白或超出畫面的問題。網頁加入百分比／`vh` 高度備援；APK 也在已驗證的車機座艙頁套用百分比高度修正，因此即使車機仍使用 0.1.0 時的座艙頁，安裝新版 APK 後重新連線即可套用外框修正。高度隨 WebView 的旋轉、全螢幕及鍵盤縮放重新排版，不快取固定像素；字體比例維持原有偏好。
+
+直接覆蓋安裝 0.1.1（versionCode 2），不需要移除 0.1.0 或清除設定。仍需車機具備 `439fc3d0` 或更新版本的 `/cockpit` 頁面；建議車機一併更新以取得導航頁高度備援。此修正不代表其他舊 WebView 功能皆已支援。
+
+297 項相關 JS 測試通過，包含 APK 相容腳本的頁面範圍／重複載入與網頁高度備援。以本機合成資料及停用 `dvh` 的樣式重現錯誤，驗證新版 APK 相容腳本與網頁備援；不是實體車機或廠商 WebView 驗收。
+
+## 0.1.0 歷史發行驗證
 
 APK SHA-256：`7497f5fadb1ae76cfdeb403e90bbe6450fc1fd58e7863a83dc290dc3257acd3d`。建置來源 `2bf69134b6450935c7795777e0a41bd2d68d3c66`；確認框與畫面修正由更新後的車機網頁提供。v2／v3 簽章驗證通過，簽章憑證與原版 TW 相同；套件與更新來源仍彼此獨立。Android 盒子需具備更新的 Android System WebView（Chromium 100 以上）；系統版本符合最低要求不代表廠商 WebView 一定支援。
 

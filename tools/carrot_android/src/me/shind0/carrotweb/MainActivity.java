@@ -461,6 +461,8 @@ public final class MainActivity extends Activity {
         @Override public void onPageFinished(WebView view,String url) {
           if (!pageLoadFailed && view.getParent() == content && isCurrent(Uri.parse(url))) {
             pageReady = true;
+            if (UpdatePolicy.cockpit(getPackageName()))
+              view.evaluateJavascript(onDevicePage(CockpitLayout.SCRIPT), null);
             ui.removeCallbacks(pollVision); ui.post(pollVision);
             scheduleAutoVoice();
           }

@@ -44,6 +44,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Check cockpit viewport compatibility
+        run: node --test openpilot/selfdrive/carrot/web/tests/cockpit_layout.test.mjs
       - name: Prepare Android SDK
         run: |
           $ErrorActionPreference = 'Stop'
