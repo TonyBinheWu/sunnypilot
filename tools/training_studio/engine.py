@@ -92,7 +92,8 @@ def teacher(folder):
       or provenance.get("weights_verified") is not True or provenance.get("camera_ids")!=[1,6]):
     raise ValueError("pinned Alpamayo 2 Edge teacher unavailable")
   qualification = read_json(config.get("teacher_qualification","")) if config.get("teacher_qualification") else None
-  if not qualification or qualification.get("passed") is not True or qualification.get("provenance") != provenance:
+  from tools.training_studio.teacher_control import qualified
+  if not qualified(qualification,health):
     raise ValueError("this exact front-only teacher requires a matching closed-loop qualification receipt")
   if qualification.get("input_profile") != "experimental_front_only" or not qualification.get("cases"):
     raise ValueError("front-only teacher qualification is incomplete")
@@ -232,6 +233,11 @@ def worker(root, stop=None):
               collector_error=str(exc)
         heartbeat(state='importing')
         store.discover()
+        from tools.training_studio.teacher_control import training_ready
+        if not training_ready(store):
+          heartbeat(state='waiting_teacher')
+          stop.wait(3)
+          continue
         store.enqueue()
         with store.db() as db:
           db.execute("BEGIN IMMEDIATE")

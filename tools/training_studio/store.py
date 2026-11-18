@@ -30,17 +30,27 @@ def write_json(path, value):
       json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
       stream.flush()
       os.fsync(stream.fileno())
-    os.replace(temporary, path)
+    for attempt in range(8):
+      try:
+        os.replace(temporary, path)
+        break
+      except PermissionError:
+        if os.name!='nt' or attempt==7: raise
+        time.sleep(.01*(attempt+1))  # Windows readers can briefly deny rename sharing.
   finally:
     if os.path.exists(temporary):
       os.unlink(temporary)
 
 
 def read_json(path, default=None):
-  try:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
-  except FileNotFoundError:
-    return default
+  for attempt in range(8):
+    try:
+      return json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+      return default
+    except PermissionError:
+      if os.name!='nt' or attempt==7: raise
+      time.sleep(.01*(attempt+1))
 
 
 def split_for(group):
@@ -170,12 +180,20 @@ class Store:
       route_counts={row['split']:row['count'] for row in db.execute('SELECT split,COUNT(DISTINCT route_group) count FROM datasets GROUP BY split')}
     missing=[name for name in ('train','validation','test') if not route_counts.get(name)]
     config=self.config()
-    qualified=bool(config.get('teacher_qualification') and Path(config['teacher_qualification']).is_file())
+    from tools.training_studio.teacher_control import training_ready
+    qualified=training_ready(self)
+    teacher_health=read_json(self.root/'teacher-health.json',{})
+    teacher_progress=read_json(self.root/'teacher-qualification-progress.json',{})
     blockers=[]
     if missing:
       blockers.append('缺少獨立行程資料組：'+', '.join(missing)+'；同一行程的片段不會拆到不同資料組。')
     if not qualified:
-      blockers.append('尚未設定有效的雙前鏡頭教師資格報告；教師標註與蒸餾尚未開始。')
+      if teacher_progress.get('state')=='failed':
+        blockers.append('教師資格未通過：'+teacher_progress.get('scenario','')+' / '+', '.join(teacher_progress.get('failures',[])))
+      elif teacher_progress.get('state')=='running':
+        blockers.append('教師資格驗證中：'+teacher_progress.get('scenario','')+'；通過全部關卡後才能自動蒸餾。')
+      else:
+        blockers.append('尚未取得與線上教師權重一致的完整資格報告；教師標註與蒸餾尚未開始。')
     for job in jobs:
       folder = self.root / "runs" / job["id"]
       job["progress"] = read_json(folder / "progress.json", {})
@@ -189,8 +207,9 @@ class Store:
       "collection":read_json(self.root/"collection.json",{}),
       "collection_progress":read_json(self.root/'collector-progress.json',{}),
       "pipeline":{"missing_splits":missing,"route_counts":route_counts,"blockers":blockers},
+      "teacher":{**teacher_health,'qualification':teacher_progress},
       "readiness":{"collector_configured":bool(self.config().get("collector")),
-        "teacher_qualified":bool(self.config().get("teacher_qualification") and Path(self.config()["teacher_qualification"]).is_file()),
+        "teacher_qualified":qualified,
         "dgx":read_json(self.root/"worker-readiness.json",{}),"compiler_configured":bool(self.config().get("compiler_command"))},
       "worker": read_json(self.root / "worker.json", {})}
 

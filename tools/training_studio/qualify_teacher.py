@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import time
 from pathlib import Path
 
 from tools.training_studio.store import read_json,write_json
@@ -30,12 +31,14 @@ def qualify(batch,output):
       raise ValueError('teacher used diagnostic/reference input')
     provenance=recorded
     scenarios.add(result['scenario'])
-    cases.append({'scenario':result['scenario'],'evidence_sha256':digest_file(path),'passed':True})
+    cases.append({'scenario':result['scenario'],'seed':result.get('seed'),'evidence_sha256':digest_file(path),'passed':True})
   required={'lane_center','red_light','pedestrian','left_turn','right_turn','yield_left','yield_right','left_arrow','right_arrow'}
   if not required<=scenarios:
     raise ValueError('teacher curriculum incomplete: '+','.join(sorted(required-scenarios)))
+  if not {300,301,302}<={case['seed'] for case in cases if case['scenario']=='red_light'}:
+    raise ValueError('three independent red-light holdout cases are required')
   receipt={'passed':True,'input_profile':'experimental_front_only','provenance':provenance,'cases':cases,
-    'qualification_sha256':digest_file(batch/'qualification.json')}
+    'qualification_sha256':digest_file(batch/'qualification.json'),'completed_at':time.time()}
   write_json(output,receipt)
   return receipt
 

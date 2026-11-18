@@ -18,6 +18,9 @@ if [[ -f "$studio_root/server.json" ]]; then
     if kill -0 "$studio_old_pid" 2>/dev/null; then echo 'Owned Studio server did not stop; inspect its log' >&2; exit 1; fi
   fi
 fi
+if [[ "${STUDIO_FOREGROUND:-0}" == "1" ]]; then
+  exec "$studio_python" -u -m tools.training_studio.server --root "$studio_root" --port "$studio_port"
+fi
 nohup "$studio_python" -m tools.training_studio.server --root "$studio_root" --port "$studio_port" > "$studio_root/server.log" 2>&1 < /dev/null &
 studio_pid=$!
 for attempt in {1..50}; do

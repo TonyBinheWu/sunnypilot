@@ -22,9 +22,29 @@ if ($FetchModel) {
   & wsl.exe -d $Distribution --cd $workspace -- build/official-sim/venv/bin/python -m tools.training_studio.engine fetch-model --root build/training-studio
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
-if ($Restart) {
-  & wsl.exe -d $Distribution --cd $workspace -- env STUDIO_RESTART=1 bash tools/training_studio/start.sh build/training-studio $Port
-} else {
-  & wsl.exe -d $Distribution --cd $workspace -- bash tools/training_studio/start.sh build/training-studio $Port
+# Keep wsl.exe alive for the server lifetime: its interop environment is required by
+# the existing Windows TCP proxy used to reach the DGX from WSL NAT networking.
+$launchArgs = @('-d', $Distribution, '--cd', $workspace, '--', 'env', 'STUDIO_FOREGROUND=1')
+if ($Restart) { $launchArgs += 'STUDIO_RESTART=1' }
+$launchArgs += @('bash', 'tools/training_studio/start.sh', 'build/training-studio', [string]$Port)
+$launchId = [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfff')
+$previousWorker = $null
+try { $previousWorker = (Invoke-RestMethod -Uri "http://127.0.0.1:$Port/api/state" -TimeoutSec 2).worker.pid } catch { }
+$hostLog = Join-Path $projectRoot "build/training-studio-host-$launchId.log"
+$hostError = Join-Path $projectRoot "build/training-studio-host-$launchId.err.log"
+$launcher = Start-Process -FilePath 'wsl.exe' -ArgumentList $launchArgs -WindowStyle Hidden -PassThru -RedirectStandardOutput $hostLog -RedirectStandardError $hostError
+for ($attempt = 0; $attempt -lt 80; $attempt++) {
+  Start-Sleep -Milliseconds 500
+  $launcher.Refresh()
+  if ($launcher.HasExited -and $launcher.ExitCode -ne 0) {
+    throw "Studio launcher failed. Inspect $hostLog and $hostError"
+  }
+  try {
+    $ready = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/api/state" -TimeoutSec 2
+    if ($ready.worker.fresh -and (!$Restart -or $ready.worker.pid -ne $previousWorker)) {
+      Write-Host "Training Studio ready: http://127.0.0.1:$Port"
+      exit 0
+    }
+  } catch { }
 }
-exit $LASTEXITCODE
+throw "Studio startup timed out. Inspect $hostLog and $hostError"
