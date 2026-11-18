@@ -14,6 +14,7 @@ class TeacherLearningTest(unittest.TestCase):
     from tools.training_studio.teacher_train import valid_stopped_trajectory,stop_zone_loss
     xyz=torch.zeros(1,64,3);velocity=torch.zeros_like(xyz)
     self.assertFalse(bool(valid_stopped_trajectory(xyz,velocity,5.1)))
+    self.assertFalse(bool(valid_stopped_trajectory(xyz,velocity,5.)))
     self.assertTrue(bool(valid_stopped_trajectory(xyz,velocity,4.9)))
     advanced=xyz.clone();advanced[...,0]=.2
     self.assertTrue(bool(valid_stopped_trajectory(advanced,velocity,5.1)))

@@ -66,7 +66,7 @@ def stop_zone_loss(xyz,target,held,front_distance):
   """Penalize stopping short only where the reference has reached the valid zone."""
   import torch
   reference_front=front_distance-target[...,0]
-  valid_reference=held*((reference_front>=0)&(reference_front<=5)).to(held.dtype)
+  valid_reference=held*((reference_front>=0)&(reference_front<5)).to(held.dtype)
   shortfall=torch.relu(front_distance-xyz[...,0]-5)
   return 30*(shortfall.square()*valid_reference).sum()/valid_reference.sum().clamp_min(1)
 
@@ -76,7 +76,7 @@ def valid_stopped_trajectory(xyz,velocity,front_distance):
   import torch
   final_front=front_distance-xyz[...,-10:,0]
   speed=torch.linalg.vector_norm(velocity,dim=-1)
-  return ((xyz[...,0].amax(dim=-1)<=front_distance)&((final_front>=0)&(final_front<=5)).all(dim=-1)&(speed[...,-10:].amax(dim=-1)<.15)).all()
+  return ((xyz[...,0].amax(dim=-1)<=front_distance)&((final_front>=0)&(final_front<5)).all(dim=-1)&(speed[...,-10:].amax(dim=-1)<.15)).all()
 
 
 def rollout(model,item,*,grad,seed=42):
