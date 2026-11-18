@@ -8,4 +8,12 @@
     <item name="android:windowActionModeOverlay">true</item>
     <item name="android:windowBackground">#10151C</item>
   </style>
+  <style name="CockpitTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+    <item name="android:fontFamily">sans</item>
+    <item name="android:colorAccent">#2867D9</item>
+    <item name="android:windowLightStatusBar">true</item>
+    <item name="android:statusBarColor">#F5F5F5</item>
+    <item name="android:navigationBarColor">#090B0F</item>
+    <item name="android:windowBackground">#F5F5F5</item>
+  </style>
 </resources>

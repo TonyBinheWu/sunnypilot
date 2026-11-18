@@ -4,7 +4,7 @@ import {installCockpitControlLayout} from '../src/features/cockpit/control_layou
 
 // Isolated DOM adapter; selectGroup is the real integration boundary. No
 // driving parameters or browser storage are written by this composition.
-async function fixture(){
+async function fixture(options={}){
   const ids=new Map(),selected=[],media=[];
   const doc={body:{dataset:{cockpitPanel:'setting'}},getElementById:id=>ids.get(id),querySelector:()=>null};
   class Node{
@@ -22,7 +22,7 @@ async function fixture(){
   const target={AbortController,setTimeout,clearTimeout,MutationObserver:class{observe(){}},addEventListener(){},matchMedia:()=>({addEventListener:(_name,fn)=>media.push(fn)}),
     fetch:async()=>({ok:true,json:async()=>({categories:[{groups:[{id:'START_AUTO'},{id:'BUTTON_PRESET'},{id:'SYS_SOUND'}]}]})}),
     switchSettingTab:async()=>{},selectGroup:id=>selected.push(id)};
-  const api=installCockpitControlLayout(doc,target);await new Promise(setImmediate);
+  const api=installCockpitControlLayout(doc,target,options);await new Promise(setImmediate);
   return {doc,target,api,selected,media};
 }
 
@@ -42,4 +42,12 @@ test('a delayed tab switch cannot overwrite a newer category selection',async()=
   nav.children.find(n=>n.dataset.section==='sound').onclick();nav.children.find(n=>n.dataset.section==='controls').onclick();
   pending[1]();await new Promise(setImmediate);assert.equal(selected.at(-1),'START_AUTO');const count=selected.length;
   pending[0]();await new Promise(setImmediate);assert.equal(selected.length,count);assert.equal(api.shell.querySelector('h2').textContent,'控制');
+});
+
+test('touchscreen quick controls route only explicit actions and retain access to all settings',async()=>{
+ const actions=[];const {api,selected}=await fixture({onAction:action=>actions.push(action)}),shell=api.shell;
+ assert.equal(shell.dataset.overview,'true');const quick=shell.querySelector('.cockpit-quick-controls');assert.equal(quick.hidden,false);assert.equal(quick.children.length,7);
+ quick.children[0].onclick();assert.deepEqual(actions,['profile']);assert.equal(selected.at(-1),'START_AUTO');
+ quick.children[6].onclick();await new Promise(setImmediate);assert.equal(shell.dataset.overview,'false');assert.equal(quick.hidden,true);assert.equal(selected.at(-1),'START_AUTO');
+ api.selectSection('sound');await new Promise(setImmediate);assert.equal(selected.at(-1),'SYS_SOUND');
 });

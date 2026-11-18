@@ -50,7 +50,7 @@ export function composeCockpitControl(row,target){
   return true;
 }
 const installed=new WeakMap();
-export function installCockpitControlLayout(doc,target=doc.defaultView){
+export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction}={}){
   if(installed.has(doc))return installed.get(doc);
   const page=doc.getElementById('pageSetting'),host=doc.getElementById('settingScreenHost');
   if(!page||!host||doc.documentElement?.nodeType!==1)return null;
@@ -71,13 +71,18 @@ export function installCockpitControlLayout(doc,target=doc.defaultView){
   const menu=doc.getElementById('btnSettingSearch')||create('button','cockpit-control-menu','⋯');menu.classList.add('cockpit-control-menu');menu.type='button';menu.setAttribute('aria-label','設定檔、收藏與其他操作');
   header.append(categoryToggle,back,heading,searchSlot,menu);
   const tabs=create('div','cockpit-control-tabs'),results=create('div','cockpit-control-results'),message=create('p','cockpit-control-message');
+  const overview=create('section','cockpit-quick-controls');overview.hidden=true;overview.setAttribute('aria-label','常用控制');
+  const quick=[['profile','駕駛模式','選擇既有行車模式','M4 18a8 8 0 1 1 16 0M12 14l4-5'],['vision','鏡頭與辨識','連線與辨識狀態','M3 5h18v14H3ZM16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z'],['vehicle','車況','胎壓與目前導航','M3 15V9l3-4h12l3 4v6M3 12h18M6 15v4m12-4v4'],['display','顯示','外觀與文字大小','M3 4h18v13H3Zm5 17h8m-4-4v4'],['connection','連線','裝置狀態與重新連線','M3 9a14 14 0 0 1 18 0M6 12a9 9 0 0 1 12 0m-8 4a3 3 0 0 1 4 0M12 20h.01'],['diagnostics','診斷與工具','檢查問題與服務','M4 20l8-8m-1-8a6 6 0 0 0 8 8l-4-4 3-4a6 6 0 0 0-7 0Z']];
+  if(onAction)for(const [action,title,subtitle,path] of quick){const b=create('button','cockpit-quick-control');b.type='button';b.setAttribute('aria-label',title);const svg=doc.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');const p=doc.createElementNS(svg.namespaceURI,'path');p.setAttribute('d',path);svg.append(p);b.append(svg,create('strong','',title),create('small','',subtitle));b.onclick=()=>onAction(action);overview.append(b);}
+  const start=create('button','cockpit-quick-settings','啟動與按鈕設定　›');start.type='button';start.onclick=()=>{const group=current?.groups[0];if(group)void selectGroup(group);};overview.append(start);
   results.hidden=true;message.setAttribute('role','status');
   const device=doc.getElementById('deviceTabContent'),deviceNav=create('div','cockpit-control-device');if(device)deviceNav.append(device);
-  pane.append(header,tabs,message,results,deviceNav,host);shell.append(dismissNav,nav,pane);page.prepend(shell);doc.documentElement.classList.add('cockpit-controls-mode');
-  let catalog=null,sections=[],current=null,loading=false,selection=0;
+  pane.append(header,tabs,message,results,overview,deviceNav,host);shell.append(dismissNav,nav,pane);page.prepend(shell);doc.documentElement.classList.add('cockpit-controls-mode');
+  let catalog=null,sections=[],current=null,loading=false,selection=0,pendingSection=null;
   const lastGroups=new Map();
   const clearSearch=()=>{target.exitSettingInlineSearchSurface?.();results.hidden=true;host.hidden=false;};
   async function selectGroup(group){
+    shell.dataset.overview='false';overview.hidden=true;
     const token=++selection;clearSearch();setNav(false);shell.dataset.device='false';searchSlot.hidden=false;await target.switchSettingTab?.('carrot');if(token!==selection)return;
     if(current)lastGroups.set(current.id,group.id);target.selectGroup?.(group.id,false);
     tabs.querySelectorAll('button').forEach(b=>{const active=b.dataset.group===group.id;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});
@@ -87,6 +92,7 @@ export function installCockpitControlLayout(doc,target=doc.defaultView){
     navList.querySelectorAll('button').forEach(b=>{const active=b.dataset.section===section.id;b.classList.toggle('selected',active);b.setAttribute('aria-current',active?'page':'false');});
     for(const group of section.groups){const button=create('button','',group.label);button.type='button';button.dataset.group=group.id;button.onclick=()=>{void selectGroup(group);};tabs.append(button);}
     const group=section.groups.find(g=>g.id===lastGroups.get(section.id))||section.groups[0];if(group)void selectGroup(group);
+    if(section.id==='controls'&&onAction){shell.dataset.overview='true';overview.hidden=false;}
   }
   function renderNav(){
     navList.replaceChildren();
@@ -108,7 +114,7 @@ export function installCockpitControlLayout(doc,target=doc.defaultView){
     try{
       const response=await target.fetch('/api/settings',{cache:'no-store',credentials:'same-origin',signal:controller.signal});if(!response.ok)throw Error();
       catalog=await response.json();sections=cockpitControlSections(catalog);renderNav();message.textContent='';
-      if(sections.length)choose(sections[0]);else message.textContent='車機尚未提供可用設定。';
+      if(sections.length)choose(sections.find(s=>s.id===pendingSection)||sections[0]);else message.textContent='車機尚未提供可用設定。';pendingSection=null;
     }catch{message.textContent='無法讀取設定分類，請確認車機連線後重新開啟控制面板。';}
     finally{target.clearTimeout(timer);loading=false;}
   }
@@ -121,9 +127,10 @@ export function installCockpitControlLayout(doc,target=doc.defaultView){
     back.hidden=!detail;
     const inline=!detail&&doc.getElementById('carrotTabContent')?.classList.contains('is-inline-search')===true;
     shell.dataset.search=String(inline);if(nativeResults)nativeResults.hidden=!inline;
+    overview.hidden=shell.dataset.overview!=='true'||inline||detail;
   };
   const decorate=node=>{if(node.nodeType!==1)return;if(node.matches('.setting'))composeCockpitControl(node,target);for(const row of node.querySelectorAll('.setting'))composeCockpitControl(row,target);};
   const observer=new target.MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)decorate(node);syncSearch();});observer.observe(host,{childList:true,subtree:true});const nativeSearch=doc.getElementById('carrotTabContent');if(nativeSearch)observer.observe(nativeSearch,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});const itemsScreen=doc.getElementById('settingScreenItems');if(itemsScreen)observer.observe(itemsScreen,{attributes:true,attributeFilter:['class']});decorate(host);syncSearch();
   const active=()=>{if(doc.body.dataset.cockpitPanel==='setting')void load();};target.addEventListener('carrot:cockpitpanelchange',active);active();
-  const api={shell,refresh:active};installed.set(doc,api);return api;
+  const api={shell,refresh:active,selectSection(id){const section=sections.find(s=>s.id===id);if(section)choose(section);else pendingSection=id;}};installed.set(doc,api);target.CarrotCockpitControls=api;return api;
 }
