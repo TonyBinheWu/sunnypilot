@@ -44,7 +44,7 @@ def main():
       fixtures += [(scenario,'crossing_25',-25,0,4,0),(scenario,'crossing_50',-14,0,2,0),
         (scenario,'crossing_75',-6.5,0,0,0),(scenario,'crossing_94',-5,0,0,0),
         (scenario,'brake_crossing_75',-9.5,0,3.2,0),(scenario,'clear_go',-6.5,0,0,0),
-        (scenario,'clear_go',7,0,3,0)]
+        (scenario,'clear_go',7,0,3,0),(scenario,'clear_go',-5,0,0,0)]
     else:
       fixtures += [(scenario,'hold',-6.5,0,0,0),(scenario,'approach',-25,0,3,0),
         (scenario,'go',-6.5,0,0,0),(scenario,'go',-15,0,3,0)]

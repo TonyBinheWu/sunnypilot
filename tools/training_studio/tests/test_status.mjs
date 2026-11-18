@@ -23,6 +23,9 @@ test('teacher validation failure and inference progress are explicit, without fa
   assert.match(text.progress,/資格未通過/);
   assert.match(text.progress,/22 次模型推論/);
   assert.match(text.progress,/red_stop_not_sustained/);
+  value.teacher.qualification.batch='/teacher-cycles/cycle-008/qualification-balanced';
+  value.teacher_training={cycle:9,phase:'generating'};
+  assert.match(teacherMessage(value).progress,/第 8 輪 · 綜合損失候選/);
   value.time=200;
   assert.match(teacherMessage(value).connection,/過期/);
 });
