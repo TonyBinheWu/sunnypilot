@@ -37,7 +37,9 @@ def main():
     ('red_light','brake_approach',-13,0,3,0),('red_light','brake_hold',-9,0,1.5,0),
     ('red_light','green_transition',-6.5,0,0,0),('red_light','accelerating_go',-6.5,0,0,0),
     ('red_light','drift_go',7,.5,3,0),('red_light','drift_go',7,-.5,3,0),
-    ('red_light','brake_to_hold',-9.5,0,3.2,0),('red_light','gentle_brake_hold',-9,0,3,0)]
+    ('red_light','brake_to_hold',-9.5,0,3.2,0),('red_light','gentle_brake_hold',-9,0,3,0),
+    ('red_light','recover_near_stop',-7.5,0,0,0),('red_light','recover_near_stop',-8,0,0,0),
+    ('red_light','hold_near_boundary',-7,0,0,0)]
   scenarios=sorted(({args.scenario}|set(filter(None,args.rehearsal.split(','))))-{'red_light'})
   for scenario in scenarios:
     if scenario=='pedestrian':

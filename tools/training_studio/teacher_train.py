@@ -62,6 +62,23 @@ def held_command_loss(action,space,history_xyz):
   return 200*executed.square().amax()+50*executed.square().mean()
 
 
+def stop_zone_loss(xyz,target,held,front_distance):
+  """Penalize stopping short only where the reference has reached the valid zone."""
+  import torch
+  reference_front=front_distance-target[...,0]
+  valid_reference=held*((reference_front>=0)&(reference_front<=5)).to(held.dtype)
+  shortfall=torch.relu(front_distance-xyz[...,0]-5)
+  return 30*(shortfall.square()*valid_reference).sum()/valid_reference.sum().clamp_min(1)
+
+
+def valid_stopped_trajectory(xyz,velocity,front_distance):
+  """Offline selection must honor the existing zero-to-five-metre stop zone."""
+  import torch
+  final_front=front_distance-xyz[...,-1,0]
+  speed=torch.linalg.vector_norm(velocity,dim=-1)
+  return ((xyz[...,0].amax(dim=-1)<=front_distance)&(final_front>=0)&(final_front<=5)&(speed[...,-10:].amax(dim=-1)<.15)).all()
+
+
 def rollout(model,item,*,grad,seed=42):
   import torch
   from torch.utils.checkpoint import checkpoint
@@ -201,6 +218,7 @@ def main():
     loss=loss+4*(velocity[:,:20]-ref_velocity[:,:20]).square().mean()+50*(rot-item['target_rot'].cuda()).square().mean()
     if item['row']['stop_required']:
       held=(torch.linalg.vector_norm(ref_velocity,dim=-1)<.15).float()
+      loss=loss+stop_zone_loss(xyz,target,held,item['row']['front_distance_m'])
       loss=loss+50*(velocity.square().sum(-1)*held).sum()/held.sum().clamp_min(1)
       loss=loss+200*(velocity.square().sum(-1)*held).amax()
       accel_std=model.expert.action_space.accel_std.to(action.device)
@@ -220,9 +238,9 @@ def main():
         lateral.append(float((xyz-item['target'].cuda())[...,1].square().mean()))
         if item['row']['stop_required']:
           speed=torch.linalg.vector_norm(velocity,dim=-1)
-          red+=int(bool((xyz[...,0].max()<=item['row']['front_distance_m']) & (speed[:,-10:].max()<.15)))
+          red+=int(bool(valid_stopped_trajectory(xyz,velocity,item['row']['front_distance_m'])))
           hold.append(float(speed[:,-10:].square().mean()))
-    return {'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral))}
+    return {'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral)),'stop_metric':'valid_stop_zone_v2'}
   baseline=validate()
   best_metrics,best_epoch=baseline,0
   balanced_metrics,balanced_epoch=baseline,0

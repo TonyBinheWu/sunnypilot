@@ -9,6 +9,27 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_stop_selection_and_loss_reject_stopping_just_outside_original_zone(self):
+    import torch
+    from tools.training_studio.teacher_train import valid_stopped_trajectory,stop_zone_loss
+    xyz=torch.zeros(1,64,3);velocity=torch.zeros_like(xyz)
+    self.assertFalse(bool(valid_stopped_trajectory(xyz,velocity,5.1)))
+    self.assertTrue(bool(valid_stopped_trajectory(xyz,velocity,4.9)))
+    advanced=xyz.clone();advanced[...,0]=.2
+    self.assertTrue(bool(valid_stopped_trajectory(advanced,velocity,5.1)))
+    overshot=xyz.clone();overshot[...,0]=5.2
+    self.assertFalse(bool(valid_stopped_trajectory(overshot,velocity,5.1)))
+    moving=velocity.clone();moving[:,-1,0]=.2
+    self.assertFalse(bool(valid_stopped_trajectory(advanced,moving,5.1)))
+    held=torch.ones(1,64)
+    prediction=xyz.clone().requires_grad_()
+    loss=stop_zone_loss(prediction,advanced,held,5.1)
+    self.assertGreater(float(loss.detach()),0.)
+    loss.backward()
+    self.assertTrue(bool((prediction.grad[...,0]<0).all()))
+    self.assertEqual(float(stop_zone_loss(advanced,advanced,held,5.1)),0.)
+    self.assertEqual(float(stop_zone_loss(xyz,xyz,held,9.)),0.)
+
   def test_stop_command_loss_catches_positive_pulses_even_when_signed_speed_later_cancels(self):
     import torch
     from tools.training_studio.teacher_train import held_command_loss
