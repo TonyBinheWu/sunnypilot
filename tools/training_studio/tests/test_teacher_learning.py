@@ -67,6 +67,31 @@ class TeacherLearningTest(unittest.TestCase):
     torch.testing.assert_close(a,b)
     torch.testing.assert_close(expected,model.expert.expert.linear.weight.grad)
     self.assertGreater(float(expected.abs().max()),0)
+    from tools.training_studio.teacher_train import spill_prefix,load_prefix
+    with tempfile.TemporaryDirectory() as directory:
+      spilled=spill_prefix(item,Path(directory)/'prefix.pt')
+      model.expert.expert.zero_grad()
+      c,xyz,_=rollout(model,spilled,grad=True)
+      xyz.square().mean().backward()
+      torch.testing.assert_close(a,c,rtol=0,atol=0)
+      torch.testing.assert_close(expected,model.expert.expert.linear.weight.grad,rtol=0,atol=0)
+      load_prefix.cache_clear()
+
+  def test_disk_prefix_cache_keeps_only_one_context_and_preserves_kv(self):
+    import torch
+    from tools.training_studio.teacher_train import spill_prefix,load_prefix
+    with tempfile.TemporaryDirectory() as directory:
+      for index in range(20):
+        keys=torch.full((1,2,3),float(index))
+        item={'cache':SimpleNamespace(layers=[SimpleNamespace(keys=keys,values=keys+1)]),
+          'positions':torch.tensor([index]),'mask':torch.ones(1),'row':{'index':index}}
+        spilled=spill_prefix(item,Path(directory)/f'{index}.pt')
+        self.assertNotIn('cache',spilled)
+        restored=load_prefix(spilled['prefix_path'])
+        torch.testing.assert_close(restored['cache'].layers[0].keys,keys,rtol=0,atol=0)
+        torch.testing.assert_close(restored['cache'].layers[0].values,keys+1,rtol=0,atol=0)
+        self.assertEqual(load_prefix.cache_info().currsize,1)
+      load_prefix.cache_clear()
 
   def test_expansion_is_initially_identity_and_preserves_frozen_base_on_reload(self):
     import torch

@@ -1,12 +1,14 @@
 """Train the actual Edge expert through the same ten Euler steps used at inference."""
 import argparse
 import copy
+from functools import lru_cache
 import hashlib
 import json
 import os
 from pathlib import Path
 import signal
 import threading
+import tempfile
 import time
 
 IMPLEMENTATION_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -24,6 +26,21 @@ def cache_copy(source,device):
       value=getattr(layer,name,None)
       if value is not None: setattr(layer,name,value.detach().to(device=device,copy=True))
   return result
+
+
+def spill_prefix(item,path):
+  """Keep generated frozen VLM contexts on disk, not one CPU copy per sample."""
+  import torch
+  torch.save({key:item[key] for key in ('cache','positions','mask')},path)
+  return {**{key:value for key,value in item.items() if key not in ('cache','positions','mask')},'prefix_path':str(path)}
+
+
+@lru_cache(maxsize=1)
+def load_prefix(path):
+  import torch
+  # These are private artifacts created by spill_prefix in this invocation,
+  # never uploaded model/data files. Preserve the pinned HF cache class exactly.
+  return torch.load(path,map_location='cpu',mmap=True,weights_only=False)
 
 
 def held_command_loss(action,space,history_xyz):
@@ -49,7 +66,8 @@ def rollout(model,item,*,grad,seed=42):
   import torch
   from torch.utils.checkpoint import checkpoint
   device=item.get('device','cuda')
-  cache,positions,mask=item['cache'],item['positions'],item['mask']
+  context=load_prefix(item['prefix_path']) if 'prefix_path' in item else item
+  cache,positions,mask=context['cache'],context['positions'],context['mask']
   positions,mask=positions.to(device),mask.to(device)
   noise=torch.randn((1,64,2),device=device,generator=torch.Generator(device=device).manual_seed(seed))
   times=torch.linspace(0,1,11,device=device)
@@ -101,6 +119,8 @@ def main():
   from tools.training_studio.teacher_lora import install,load,expand
   from tools.training_studio.store import write_json
   args.output.mkdir(parents=True,exist_ok=False)
+  prefix_directory=tempfile.TemporaryDirectory(prefix='prefix-',dir=args.output)
+  prefix_root=Path(prefix_directory.name)
   torch.cuda.set_per_process_memory_fraction(.35)
   torch.manual_seed(42)
   model,_=load_model('/teacher/model',device='cuda',dtype='bfloat16',attn_implementation='sdpa')
@@ -158,9 +178,15 @@ def main():
       if difference>.02: raise RuntimeError(f'differentiable sampling disagrees with official inference: {difference}')
       emit('prefill',sample=index+1,samples=len(rows),official_sampling_max_error=difference)
     else: emit('prefill',sample=index+1,samples=len(rows))
+    spilled=spill_prefix(item,prefix_root/f'{index:06d}.pt')
+    if index==0:
+      with torch.no_grad(): disk_action,_,_=rollout(model,spilled,grad=False)
+      disk_difference=float((disk_action.cpu()-captured['action']).abs().max())
+      if disk_difference>.02: raise RuntimeError(f'disk context sampling disagrees with official inference: {disk_difference}')
+      emit('prefill',sample=index+1,samples=len(rows),official_sampling_max_error=difference,disk_sampling_max_error=disk_difference)
     captured.pop('action',None)
-    prepared.append(item)
-    del inputs,cache
+    prepared.append(spilled)
+    del inputs,cache,item
   train=[r for r in prepared if r['row']['split']=='train']
   validation=[r for r in prepared if r['row']['split']=='validation']
   if not train or not validation: raise ValueError('training and validation samples required')
@@ -246,8 +272,11 @@ def main():
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
-    'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error})
+    'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
+    'disk_sampling_max_error':disk_difference})
   emit('completed',epoch=args.epochs,baseline=baseline)
+  load_prefix.cache_clear()
+  prefix_directory.cleanup()
 
 
 if __name__=='__main__': main()
