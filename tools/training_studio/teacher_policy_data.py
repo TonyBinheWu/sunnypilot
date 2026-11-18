@@ -15,7 +15,7 @@ def check_source(result,health,split):
   provenance=health.get('provenance',{})
   fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
   if not valid_seed: raise ValueError('policy supervision must use separate training/validation seeds')
-  if (result.get('backend')!='nvidia_alpamayo2_edge' or result.get('revision')!=MODEL_REVISION
+  if (result.get('scenario')!='red_light' or result.get('backend')!='nvidia_alpamayo2_edge' or result.get('revision')!=MODEL_REVISION
       or result.get('scripted_fallback') is not False or result.get('model_inputs_include_signal_ground_truth') is not False
       or result.get('model_provenance_sha256')!=fingerprint or provenance.get('weights_verified') is not True
       or provenance.get('revision')!=MODEL_REVISION or provenance.get('camera_ids')!=[1,6]):
@@ -66,9 +66,11 @@ def reference(episode,index,output,split,assets):
     # Red observations must not learn an unobserved future permission change.
     if blocked: scene.green_at=1e6
     scene.update_actors();xyz=[];rot=[]
+    latched_stop=maintain
     for step in range(128):
+      latched_stop=latched_stop or (scene.blocked() and scene.stopped)
       action=scene.expert()
-      if maintain: action[1]=np.clip(-1.5*scene.state()[-1],-3.5,0.)
+      if latched_stop and scene.blocked(): action[1]=np.clip(-1.5*scene.state()[-1],-3.5,0.)
       scene.step(action)
       if step%2==1:
         xyz.append((np.array([*scene.vehicle.position,0])-origin)@orientation)

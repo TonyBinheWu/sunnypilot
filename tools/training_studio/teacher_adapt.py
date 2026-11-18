@@ -21,8 +21,10 @@ def closed_loop_score(batch):
   if not rows: return (-1,)*8
   failures={failure for row in rows for failure in row.get('failures',[])}
   red=[row.get('red_wait_audit',{}).get('longest_contiguous_red_stop_s',0.) for row in rows if row.get('scenario')=='red_light']
-  return (int('collision' not in failures),int('crossed_before_permission' not in failures),int('out_of_road' not in failures),
-    sum(row.get('status')=='pass' and not row.get('failures') for row in rows),
+  # Qualification fails fast. An untested later case is not evidence that an
+  # earlier-failing parent is safer. Preserve actual passed-prefix progress.
+  return (sum(row.get('status')=='pass' and not row.get('failures') for row in rows),
+    int('collision' not in failures),int('crossed_before_permission' not in failures),int('out_of_road' not in failures),
     int('lane_envelope' not in failures),int(not failures.intersection({'red_hold_not_maintained','red_stop_not_sustained'})),min(red,default=0.),
     -max((row.get('max_center_error_m',0.) for row in rows),default=0.))
 
@@ -32,7 +34,7 @@ def restore_parent_ranking(store,state):
 
   This does not issue qualification: only the original complete suite may do so.
   """
-  if state.get('ranking_version')==2: return
+  if state.get('ranking_version')==3: return
   best=(-1,)*8
   for batch in sorted((store.root/'teacher-cycles').glob('cycle-*/qualification-*')):
     if not batch.is_dir(): continue
@@ -49,7 +51,7 @@ def restore_parent_ranking(store,state):
     if score>best:
       best=score
       state.update(parent=adapter,scenario=rows[-1]['scenario'])
-  state.update(best_closed_loop=best,ranking_version=2)
+  state.update(best_closed_loop=best,ranking_version=3)
 
 
 def main():
@@ -155,6 +157,11 @@ def main():
               data.rename(folder/f'data-incomplete-{int(time.time())}')
             run_local('tools.training_studio.teacher_data',['--cycle',cycle,'--scenario',state['scenario'],'--rehearsal',','.join(state.get('rehearsal',[])),'--output',data],folder/'data.log',data/'generation-progress.json')
           destination=remote.root+f'/teacher/cycle-{cycle:03d}'
+          replay=store.config().get('teacher_adaptation',{}).get('supervision_replay_manifest')
+          if replay:
+            from tools.training_studio.teacher_replay import append_replay
+            added=append_replay(data,replay)
+            if added: store.event(f'教師監督重播：第 {cycle} 輪加入 {added} 筆已驗證修正樣本')
           report('transfer',cycle=cycle,samples=len(read_json(data/'manifest.json')['samples']))
           call(['mkdir','-p',destination+'/data'])
           # Use a tar stream, so nested packet paths are preserved without shell interpolation.

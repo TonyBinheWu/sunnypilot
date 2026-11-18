@@ -15,12 +15,13 @@ class TeacherDataPolicyTest(unittest.TestCase):
   def test_on_policy_labels_require_observed_source_identity_and_separate_seeds(self):
     provenance={'revision':MODEL_REVISION,'camera_ids':[1,6],'weights_verified':True,'adapter_sha256':'a'*64}
     fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
-    result={'seed':1027,'backend':'nvidia_alpamayo2_edge','revision':MODEL_REVISION,'scripted_fallback':False,
+    result={'seed':1027,'scenario':'red_light','backend':'nvidia_alpamayo2_edge','revision':MODEL_REVISION,'scripted_fallback':False,
       'model_inputs_include_signal_ground_truth':False,'model_provenance_sha256':fingerprint,
       'status':'fail','failures':['red_hold_not_maintained']}
     self.assertEqual(check_source(result,{'provenance':provenance},'train'),fingerprint)
     for changed,split in (({**result,'seed':300},'train'),(result,'validation'),
-      ({**result,'model_inputs_include_signal_ground_truth':True},'train'),({**result,'model_provenance_sha256':'b'*64},'train')):
+      ({**result,'model_inputs_include_signal_ground_truth':True},'train'),({**result,'model_provenance_sha256':'b'*64},'train'),
+      ({**result,'scenario':'pedestrian'},'train')):
       with self.assertRaises(ValueError): check_source(changed,{'provenance':provenance},split)
 
   def test_training_never_reuses_qualification_seeds_or_validation_seed_range(self):
@@ -59,6 +60,14 @@ class TeacherDataPolicyTest(unittest.TestCase):
         'failures':['lane_envelope','red_hold_not_maintained'],'max_center_error_m':1.14,
         'red_wait_audit':{'longest_contiguous_red_stop_s':2.3}})
       self.assertGreater(closed_loop_score(root/'centered'),closed_loop_score(root/'drifting'))
+
+  def test_training_parent_does_not_reward_risk_absent_only_because_later_cases_were_untested(self):
+    with tempfile.TemporaryDirectory() as directory:
+      root=Path(directory)
+      write_json(root/'advanced'/'red'/'result.json',{'scenario':'red_light','status':'pass','failures':[]})
+      write_json(root/'advanced'/'pedestrian'/'result.json',{'scenario':'pedestrian','status':'fail','failures':['crossed_before_permission']})
+      write_json(root/'early'/'red'/'result.json',{'scenario':'red_light','status':'fail','failures':['red_hold_not_maintained']})
+      self.assertGreater(closed_loop_score(root/'advanced'),closed_loop_score(root/'early'))
 
 
 if __name__=='__main__': unittest.main()
