@@ -1,5 +1,17 @@
 # Repository memory
 
+- 2026-11-18 Cockpit layoutVersion11: web-only vision_vehicle_color persists
+  nine fixed paint IDs, shared by cockpit and canonical Canvas/WebGL skins.
+  Kia/Hyundai official pages are appearance references, NOT imported CAD assets
+  or proof of platform/control support. Scene camera orbits a fixed ego pivot,
+  fits the complete vehicle envelope across aspect/pitch/zoom extremes, and
+  shares its basis with Canvas. Pointer pinch/wheel and +/- retain bounded zoom;
+  Home resets it. Native brakeLights/blinker freshness remains authoritative;
+  active lamp vertices emit and released/stale lamps go dark. Vehicle templates
+  use a bounded32-entry LRU with disposal. 1049 web and6 preferences tests pass.
+  Public scope/usage: tools/carrot_android/VEHICLE_DISPLAY.zh-TW.md. Existing
+  APK0.6 remains immutable; viewer changes load from the updated vehicle.
+
 - 2026-11-18 Cockpit layoutVersion9 phone live acceptance: <=600 portrait and
   <=1100x500 short landscape retain four primary dock destinations; logs/sound/
   mode/vehicle/fullscreen stay in Apps, reset-view stays in Vision settings.

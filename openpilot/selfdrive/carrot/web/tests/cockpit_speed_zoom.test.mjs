@@ -38,12 +38,13 @@ test('default projection remains compatible, high-speed camera shows wider scene
   assert.ok(far(15,3)[0]-w/2<near(15,3)[0]-w/2);
 });
 
-test('every supported own-vehicle skin stays visible near the bottom across aspect ratios',()=>{
+test('every supported own-vehicle skin remains fully framed around the fixed pivot across aspect ratios',()=>{
   const ctx=new Proxy({},{get:()=>()=>{}});
   for(const [w,h] of [[1920,1080],[1280,720],[800,600],[1280,364]])for(const skin of Object.values(VEHICLE_SKINS))for(const camera of [{distance:9,height:6,anchorY:.78},{distance:16,height:12,anchorY:.85}]){
     const points=[],projection=drivingProjection(w,h,camera);
     drawCockpitVehicle(ctx,(...args)=>{const p=projection(...args);if(p)points.push(p);return p;},{skin});
     assert.ok(points.length>20);assert.ok(points.every(p=>p.every(Number.isFinite)));
-    const bottom=Math.max(...points.map(p=>p[1]));assert.ok(bottom>h*.87&&bottom<h*.99,`${skin.id} bottom ${bottom/h}`);
+    const bottom=Math.max(...points.map(p=>p[1]));assert.ok(bottom>h*.55&&bottom<h*.95,`${skin.id} bottom ${bottom/h}`);
+    assert.ok(points.every(([x,y])=>x>w*.04&&x<w*.96&&y>h*.04&&y<h*.96),skin.id);
   }
 });

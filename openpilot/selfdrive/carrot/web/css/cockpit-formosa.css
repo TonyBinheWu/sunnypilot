@@ -6,13 +6,16 @@ body{background:linear-gradient(120deg,#f5f7fc,#e2e6f0);color:var(--ink)}
 body.night{--bg:#121925;--surface:#1c2635;--ink:#edf2fa;--muted:#adb9ca;--line:#354357;background:#111722}
 .top{background:transparent;gap:16px}.top strong{font-size:calc(18px * var(--carrot-text-scale-chrome));letter-spacing:.025em;color:var(--ink);font-weight:600}.top #shellPageName{font-size:calc(15px * var(--carrot-text-scale-chrome));font-weight:600;color:var(--ink)}
 .top #clock{font-weight:600;letter-spacing:-.025em}.top #connection{color:var(--muted)}
-.dock button,.dock a{font-weight:600}.dock .selected{background:#087bff;color:#fff;box-shadow:inset 0 0 0 1px #ffffff80,0 4px 10px #087bff25}
+.dock button,.dock a{font-weight:600}.dock button.selected,.dock button.selected:hover,.dock button.selected:active{background:#087bff;color:#fff;box-shadow:inset 0 0 0 1px #ffffff80,0 4px 10px #087bff25}
+body:has(#apps[open]) .dock button.selected:not(#appsButton){background:transparent;color:var(--muted);box-shadow:none}body:has(#apps[open]) .dock #appsButton{background:#087bff;color:#fff}
 .workspace{background:var(--surface)}.instrument-speed>b{font-weight:600;letter-spacing:-.065em}.gear-strip{font-weight:600;letter-spacing:.10em}.instrument-state{font-weight:600}
 #vehicleDock{display:none}
 body:not(.night)[data-panel="vision"] .vision-instruments{color:var(--ink);text-shadow:none}body:not(.night)[data-panel="vision"] .instrument-speed>span,body:not(.night)[data-panel="vision"] .instrument-state,body:not(.night)[data-panel="vision"] .instrument-limits small{color:var(--muted)}
 body:not(.night)[data-panel="vision"] .top{background:transparent;color:var(--ink)}
 body:not(.night)[data-panel="vision"] #driveStatusPill{background:#f6f8fddd;border-color:#d4dbeb;color:#286ead}
 dialog{border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 48px #14274730;background:var(--surface)}
+.display-sheet p,.display-sheet .vehicle-paint-label{font-size:calc(14px * var(--carrot-text-scale-chrome));line-height:1.5;margin:12px 0}.display-sheet .vehicle-paint-label{display:block;color:var(--muted)}
+.display-sheet .segments button,.display-sheet select{font-size:calc(16px * var(--carrot-text-scale-chrome));min-height:48px;padding:10px 14px}.display-sheet select{max-width:100%;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
 .cockpit-dialog-head{border-color:var(--line)}
 @media(min-width:900px) and (min-height:501px){
  :root{--rail:104px;--status-size:48px;--dock-size:0px}

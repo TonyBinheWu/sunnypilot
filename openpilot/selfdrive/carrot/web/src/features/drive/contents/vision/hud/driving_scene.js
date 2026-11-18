@@ -1,9 +1,11 @@
 import {drawDetectedMesh} from './object_mesh.js';
 import {ANIMALS} from './object_classes.js';
 import {surroundingTargets} from './scene_objects.js';
+import {sceneProjection} from '../../../../cockpit/scene_camera.js';
 
 // Original vector artwork. Symbol dimensions are illustrative, not inferred sizes.
 export function drivingProjection(width,height,camera=null) {
+  if(camera)return sceneProjection(width,height,camera);
   const pitch=Number.isFinite(camera?.pitch)?Math.max(18,Math.min(60,camera.pitch)):25;
   const yaw=Number.isFinite(camera?.yaw)?camera.yaw*Math.PI/180:0;
   const s=Math.sin(pitch*Math.PI/180),c=Math.cos(pitch*Math.PI/180),f=Math.min(height*.96,width*1.35);

@@ -1,11 +1,12 @@
 import * as T from 'three';
+import {toCreasedNormals} from 'three/addons/utils/BufferGeometryUtils.js';
 import {drawVehicleMesh} from './object_mesh.js';
 import {ANIMALS} from './object_classes.js';
 
 // Original illustrative geometry, not manufacturer CAD or estimated dimensions.
 // Coordinates: x forward, y right, z up. Never feed this artwork to control.
 export function createSceneModels(){
-  const materials=new Map(),templates=new Map(),geometries=new Set();
+  const materials=new Map(),templates=new Map(),geometries=new Set(),vehicleResources=new Map();let vehicleSerial=0;
   const mat=(color)=>{if(!materials.has(color))materials.set(color,new T.MeshPhongMaterial({color,shininess:45}));return materials.get(color);};
   const geometry=g=>{geometries.add(g);return g;};
   const box=geometry(new T.BoxGeometry(1,1,1)),sphere=geometry(new T.SphereGeometry(1,16,10));
@@ -16,15 +17,21 @@ export function createSceneModels(){
   const tube=(g,p,s,c)=>part(g,cylinder,c,p,s,[Math.PI/2,0,0]);
   function vehicle(skin,lamps){
     // Reuse the canonical skin/lamps mesh so both rendering backends stay alike.
-    const positions=[],colors=[];let polygon=[],color='#fff';
+    const positions=[],colors=[],emission=[];let polygon=[],color='#fff';
     const capture={save(){},restore(){},beginPath(){polygon=[];},moveTo(...p){polygon.push(p);},lineTo(...p){polygon.push(p);},closePath(){},stroke(){},fill(){
       if(color==='#50607020')return;const c=new T.Color(color);
-      for(let i=1;i<polygon.length-1;i++)for(const p of [polygon[0],polygon[i],polygon[i+1]]){positions.push(...p.slice(0,3));colors.push(c.r,c.g,c.b);}
+      for(let i=1;i<polygon.length-1;i++)for(const p of [polygon[0],polygon[i],polygon[i+1]]){positions.push(...p.slice(0,3));colors.push(c.r,c.g,c.b);emission.push(color==='#ff343d'||color==='#ffb126'?1:0);}
     },set fillStyle(c){color=c;}};
     const project=(x,y,z)=>[x,y,z];project.view=[-8,0,6];drawVehicleMesh(capture,project,{body:skin,lamps,ego:true});
     const g=new T.Group(),buffer=geometry(new T.BufferGeometry());
-    buffer.setAttribute('position',new T.Float32BufferAttribute(positions,3));buffer.setAttribute('color',new T.Float32BufferAttribute(colors,3));buffer.computeVertexNormals();
-    const paint=new T.MeshPhongMaterial({vertexColors:true,side:T.DoubleSide,shininess:75});materials.set('vehicle-'+templates.size,paint);g.add(new T.Mesh(buffer,paint));
+    buffer.setAttribute('position',new T.Float32BufferAttribute(positions,3));buffer.setAttribute('color',new T.Float32BufferAttribute(colors,3));buffer.setAttribute('formosaLamp',new T.Float32BufferAttribute(emission,1));buffer.computeVertexNormals();toCreasedNormals(buffer,Math.PI/4);
+    const paint=new T.MeshPhongMaterial({vertexColors:true,side:T.DoubleSide,shininess:75});
+    paint.onBeforeCompile=shader=>{
+      shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float formosaLamp; varying float vFormosaLamp;').replace('#include <begin_vertex>','#include <begin_vertex>\nvFormosaLamp = formosaLamp;');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float vFormosaLamp;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance += vFormosaLamp * vColor.rgb * 0.7;');
+    };
+    paint.customProgramCacheKey=()=> 'formosa-vehicle-lamps-v1';
+    const materialKey='vehicle-'+vehicleSerial++;materials.set(materialKey,paint);vehicleResources.set(g,{buffer,paint,materialKey});g.add(new T.Mesh(buffer,paint));
     return g;
   }
   function make(kind,skin,lamps){
@@ -95,7 +102,11 @@ export function createSceneModels(){
     const result=new T.Group();result.add(new T.Mesh(g,materials.get('combined')));return result;
   }
   return {get(kind,{skin,lamps={}}={}){
-    const key=kind==='ego'?`ego:${skin?.id||'generic'}:${!!lamps.brake}:${!!lamps.left}:${!!lamps.right}`:kind;
-    if(!templates.has(key))templates.set(key,combine(make(kind,skin,lamps)));return templates.get(key).clone(true);
-  },dispose(){for(const g of geometries)g.dispose();for(const m of materials.values())m.dispose();templates.clear();},stats:()=>({templates:templates.size,geometries:geometries.size})};
+    const key=kind==='ego'?`ego:${skin?.id||'generic'}:${skin?.paint||'default'}:${!!lamps.brake}:${!!lamps.left}:${!!lamps.right}`:kind;
+    if(!templates.has(key))templates.set(key,combine(make(kind,skin,lamps)));
+    else if(kind==='ego'){const value=templates.get(key);templates.delete(key);templates.set(key,value);}
+    const egoKeys=[...templates.keys()].filter(key=>key.startsWith('ego:'));
+    while(egoKeys.length>32){const oldest=egoKeys.shift(),template=templates.get(oldest),resource=vehicleResources.get(template);templates.delete(oldest);if(resource){resource.buffer.dispose();resource.paint.dispose();geometries.delete(resource.buffer);materials.delete(resource.materialKey);vehicleResources.delete(template);}}
+    return templates.get(key).clone(true);
+  },dispose(){for(const g of geometries)g.dispose();for(const m of materials.values())m.dispose();templates.clear();vehicleResources.clear();},stats:()=>({templates:templates.size,geometries:geometries.size})};
 }

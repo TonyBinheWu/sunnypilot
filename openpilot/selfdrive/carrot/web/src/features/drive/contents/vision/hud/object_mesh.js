@@ -2,13 +2,16 @@ import {ANIMALS} from './object_classes.js';
 // Original closed sedan mesh. Dimensions and styling are illustrative, never inferred.
 export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=true,body=null,lamps={},outline=null}={}){
   const faces=[];
+  const paint=ego&&/^#[0-9a-f]{6}$/i.test(body?.paint||'')?body.paint:null;
+  const coatings=new Set(['#a7b2be','#b9c4ce','#cbd4dc','#d3dce4','#dce3ea','#c8d2dc','#aebbc8','#9baab9','#c7d2de','#d9e1e9','#eaf0f5','#f1f5f9','#f6f8fb','#e5ebf1','#cfdae4','#bdcad7','#dce4ec','#edf2f7','#e1e6ec','#c5d1dd','#e4ebf2','#c4ced9','#b5c0cb']);
+  const tint=color=>!paint?color:'#'+[1,3,5].map(i=>Math.round(parseInt(paint.slice(i,i+2),16)*(.65+.35*parseInt(color.slice(i,i+2),16)/255)).toString(16).padStart(2,'0')).join('');
   const scale=body?.scale||[1,1,1],roofShape=body?.roof||[-.65,.65,1.42];
   const transform=p=>p.map((v,i)=>v*scale[i]);
-  const face=(points,color)=>{points=points.map(transform);faces.push({points,color,depth:points.reduce((sum,p)=>sum+p.reduce((n,v,i)=>n+v*view[i],0),0)/points.length});};
+  const face=(points,color)=>{points=points.map(transform);const coated=!!paint&&coatings.has(color);faces.push({points,color:coated?tint(color):color,coated,depth:points.reduce((sum,p)=>sum+p.reduce((n,v,i)=>n+v*view[i],0),0)/points.length});};
   const ring=(z,length,width)=>[[-length,-width,z],[length,-width,z],[length,width,z],[-length,width,z]];
   const roundedRing=(z,length,width,cut)=>[[-length,-width+cut,z],[-length+cut,-width,z],[length-cut,-width,z],[length,-width+cut,z],[length,width-cut,z],[length-cut,width,z],[-length+cut,width,z],[-length,width-cut,z]];
   const lower=roundedRing(.26,2.10,.84,.22),shoulder=roundedRing(.61,2.18,.94,.22),belt=roundedRing(.82,2.04,.90,.24),style=body?.style||'sedan';
-  const suv=['sorento','sportage','carnival','ev9'].includes(style),rear=suv?-1.65:-1.22;
+  const suv=['sorento','sportage','carnival','ev9','ev3','ev5','niro','seltos','tucson','santafe','kona','palisade','staria','custin','venue','inster','mufasa'].includes(style),rear=suv?-1.85:['ev6','ioniq5'].includes(style)?-1.65:-1.22;
   for(let i=0;i<8;i++){
     const j=(i+1)%8;
     face([lower[i],lower[j],shoulder[j],shoulder[i]],(ego?['#a7b2be','#b9c4ce','#cbd4dc','#d3dce4','#dce3ea','#c8d2dc','#aebbc8','#9baab9']:['#7d8a98','#8794a2','#94a1af','#a6b1bc','#b2bdc8','#9daab6','#8c9aaa','#81909e'])[i]);
@@ -38,6 +41,7 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
     face([[.95,side*.82,.91],[1.18,side*.82,.91],[1.15,side*1.08,.97],[.9,side*1.08,.97]],'#9aa7b5');
     for(const x of [-1.4,1.35]){
       face(Array.from({length:20},(_,i)=>{const a=i*Math.PI/10;return[x+Math.cos(a)*.36,side*.96,.36+Math.sin(a)*.36];}),'#252d36');
+      for(let i=0;i<20;i++){const a=i*Math.PI/10,b=(i+1)*Math.PI/10;face([[x+Math.cos(a)*.36,side*.86,.36+Math.sin(a)*.36],[x+Math.cos(b)*.36,side*.86,.36+Math.sin(b)*.36],[x+Math.cos(b)*.36,side*.96,.36+Math.sin(b)*.36],[x+Math.cos(a)*.36,side*.96,.36+Math.sin(a)*.36]],'#252d36');}
       face(Array.from({length:16},(_,i)=>{const a=i*Math.PI/8;return[x+Math.cos(a)*.22,side*.97,.36+Math.sin(a)*.22];}),'#9aa7b5');
       for(let spoke=0;spoke<5;spoke++){const a=spoke*Math.PI*.4;face([[x,side*.975,.36],[x+Math.cos(a)*.21,side*.975,.36+Math.sin(a)*.21],[x+Math.cos(a+.22)*.21,side*.975,.36+Math.sin(a+.22)*.21]],'#dce3eb');}
     }
@@ -50,18 +54,24 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
     tail(-.35,.35,.83,.88,'#b5c0cb');
   }
   if(style==='ev6'){
-    tail(-.84,.84,.71,.76,red);tail(-.9,-.7,.62,.76,red);tail(.7,.9,.62,.76,red);
-  }else if(['sorento','carnival','ev9'].includes(style)){
+    for(let i=0;i<16;i++){const y=-.84+i*.105,z=.69+.12*(1-(y/.9)**2);tail(y,y+.105,z,z+.045,red);}tail(-.9,-.7,.62,.76,red);tail(.7,.9,.62,.76,red);
+  }else if(['sorento','carnival','ev9','ev3','ev5','palisade','staria'].includes(style)){
     for(const side of [-1,1])for(const offset of [0,.13])tail(side*(.7+offset)-.035,side*(.7+offset)+.035,.46,.82,red);
     if(style!=='sorento')tail(-.82,.82,.78,.82,red);
-  }else if(style==='sportage'){
+  }else if(['sportage','tucson','niro','seltos','custin','kona','k5','ioniq6','mufasa'].includes(style)){
     tail(-.82,.82,.72,.75,red);for(const side of [-1,1])tail(side*.72-.1,side*.72+.1,.59,.74,red);
+  }else if(style==='santafe'){
+    for(const side of [-1,1])for(const y of [side*.55,side*.82])tail(y-.04,y+.04,.46,.74,red);tail(-.86,.86,.58,.62,red);
+  }else if(style==='ioniq5'){
+    for(const side of [-1,1])for(let x=0;x<5;x++)tail(side*.53+(x-2)*.065-.023,side*.53+(x-2)*.065+.023,.64,.70,red);
   }else for(const y of [-.68,.68])tail(y-.18,y+.18,.59,.7,red);
-  if(brake)tail(-.28,.28,1.05,1.09,'#ff343d');
+  if(ego)face([[roofShape[0]-.01,-.27,roofShape[2]],[roofShape[0]-.01,.27,roofShape[2]],[roofShape[0]-.01,.27,roofShape[2]+.035],[roofShape[0]-.01,-.27,roofShape[2]+.035]],red);
   for(const side of [-1,1]){
     const y=side*.68;
     front(y-.18,y+.18,.59,.7,'#edf7ff');
-    if(ego&&['ev9','sportage'].includes(style))front(y-.04,y+.04,.45,.81,'#edf7ff');
+    if(ego&&['ev9','ev3','ev5','sportage','sorento','carnival','palisade'].includes(style))front(y-.04,y+.04,.45,.81,'#edf7ff');
+    if(ego&&style==='ioniq5')for(let p=0;p<4;p++)front(y-.12+p*.065,y-.075+p*.065,.62,.68,'#edf7ff');
+    if(ego&&['kona','staria','santafe'].includes(style))front(-.82,.82,.79,.815,'#edf7ff');
     const amber=ego&&(side<0?lamps.left:lamps.right)===true?'#ffb126':'#65513b';
     if(ego){tail(y-.13,y+.13,.51,.57,amber);front(y-.13,y+.13,.53,.58,amber);face([[.9,side*1.085,.94],[1.13,side*1.085,.94],[1.13,side*1.085,.97],[.9,side*1.085,.97]],amber);}
   }
@@ -70,7 +80,7 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
   for(const f of faces.sort((a,b)=>a.depth-b.depth)){
     const p=f.points.map(v=>project(...v));if(p.some(v=>!v))continue;
     ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.fillStyle=f.color;
-    if(ego&&['#f6f8fb','#e5ebf1','#cfdae4','#e1e6ec','#34414e','#344454','#455869'].includes(f.color)){
+    if(ego&&(f.coated||['#f6f8fb','#e5ebf1','#cfdae4','#e1e6ec','#34414e','#344454','#455869'].includes(f.color))){
       const ys=p.map(v=>v[1]),g=ctx.createLinearGradient?.(0,Math.min(...ys),0,Math.max(...ys)+1);
       if(g?.addColorStop){g.addColorStop(0,f.color);g.addColorStop(1,['#34414e','#344454','#455869'].includes(f.color)?'#101b29':'#a5b2c0');ctx.fillStyle=g;}
     }

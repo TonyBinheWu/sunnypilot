@@ -6,6 +6,17 @@ def test_existing_clients_keep_existing_display_defaults():
   assert settings['web_text_scale'] == '100'
   assert settings['vision_stream_resolution'] == 'standard'
   assert settings['vision_render_quality'] == 'auto'
+  assert settings['vision_vehicle_color'] == 'white'
+
+
+def test_vehicle_paint_is_display_only_validated_and_persisted(tmp_path, monkeypatch):
+  monkeypatch.setattr(web_settings,'CARROT_WEB_SETTINGS_PATH',str(tmp_path/'web_settings.json'))
+  before=web_settings.sanitize_web_settings({})
+  changed=web_settings.update_web_settings({'vision_vehicle_color':'blue'})
+  assert changed['vision_vehicle_color']=='blue'
+  assert web_settings.read_web_settings()['vision_vehicle_color']=='blue'
+  assert all(changed[key]==value for key,value in before.items() if key!='vision_vehicle_color')
+  assert web_settings.sanitize_web_settings({'vision_vehicle_color':'url(https://bad)'})['vision_vehicle_color']=='white'
 
 
 def test_display_choices_are_validated_and_persist_independently(tmp_path, monkeypatch):
