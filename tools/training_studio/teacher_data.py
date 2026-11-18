@@ -8,7 +8,7 @@ import subprocess
 import sys
 import time
 
-GO_MODES=frozenset(('go','green_transition','accelerating_go','drift_go','clear_go'))
+GO_MODES=frozenset(('go','green_transition','accelerating_go','drift_go','clear_go','braking_clear_go'))
 STOP_SCENARIOS=frozenset(('red_light','pedestrian','yield_left','yield_right','left_arrow','right_arrow'))
 
 
@@ -46,7 +46,10 @@ def main():
       fixtures += [(scenario,'crossing_25',-25,0,4,0),(scenario,'crossing_50',-14,0,2,0),
         (scenario,'crossing_75',-6.5,0,0,0),(scenario,'crossing_94',-5,0,0,0),
         (scenario,'brake_crossing_75',-9.5,0,3.2,0),(scenario,'clear_go',-6.5,0,0,0),
-        (scenario,'clear_go',7,0,3,0),(scenario,'clear_go',-5,0,0,0)]
+        (scenario,'clear_go',7,0,3,0),(scenario,'clear_go',-5,0,0,0),
+        (scenario,'clear_go',1.5,0,0,0),(scenario,'clear_go',-1,0,2,0),
+        (scenario,'braking_clear_go',-9.5,0,3.2,0),(scenario,'crossing_67',-6.5,0,0,0),
+        (scenario,'brake_crossing_67',-9.5,0,3.2,0)]
     else:
       fixtures += [(scenario,'hold',-6.5,0,0,0),(scenario,'approach',-25,0,3,0),
         (scenario,'go',-6.5,0,0,0),(scenario,'go',-15,0,3,0)]
@@ -109,15 +112,15 @@ def main():
         if scenario=='pedestrian' and 'crossing_' in mode:
           scene.green_at=10.
           scene.t=float(mode.rsplit('_',1)[-1])/100*scene.green_at-2
-        elif scenario=='pedestrian' and mode=='clear_go':
-          scene.green_at=10.;scene.t=10.1 if offset>0 else 8.1
+        elif scenario=='pedestrian' and mode in ('clear_go','braking_clear_go'):
+          scene.green_at=10.;scene.t=10.1 if offset+scene.vehicle.LENGTH/2>=0 else 8.1
         scene.update_actors()
         history=EdgeHistory()
         for step in range(41):
           if step%2==0: history.record(scene)
           if step<40:
             action=np.zeros(2,np.float32)
-            if mode in ('brake_to_hold','gentle_brake_hold','brake_crossing_75'):
+            if mode in ('brake_to_hold','gentle_brake_hold','brake_crossing_75','brake_crossing_67','braking_clear_go'):
               duration=1.7 if mode=='brake_to_hold' else 1.8
               desired=speed*max(0.,1-(step+1)*.05/duration)
               action[1]=np.clip(4*(desired-scene.state()[-1]),-3.5,0.)

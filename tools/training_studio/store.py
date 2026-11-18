@@ -60,13 +60,15 @@ def split_for(group):
 
 
 def teacher_runs(root):
-  paths=[path for path in (Path(root)/'teacher-cycles').glob('cycle-*/result.json') if path.parent.name.split('-')[-1].isdigit()]
+  records={path.parent.name:path for name in ('interrupted.json','result.json')
+    for path in (Path(root)/'teacher-cycles').glob('cycle-*/'+name) if path.parent.name.split('-')[-1].isdigit()}
+  paths=list(records.values())
   paths=sorted(paths,key=lambda path:int(path.parent.name.split('-')[-1]),reverse=True)
   rows=[]
   for path in paths[:20]:
     result=read_json(path,{})
     rows.append({'id':path.parent.name,'cycle':int(path.parent.name.split('-')[-1]),'history':result.get('history',[]),
-      'best_epoch':result.get('best_epoch'),'adapter_saved':result.get('adapter_saved',False)})
+      'best_epoch':result.get('best_epoch'),'adapter_saved':result.get('adapter_saved',False),'completed':path.name=='result.json'})
   return rows
 
 

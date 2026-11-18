@@ -5,11 +5,25 @@ import unittest
 import time
 
 from tools.training_studio.server import initialize
-from tools.training_studio.store import Store, read_json, split_for, write_json
+from tools.training_studio.store import Store, read_json, split_for, write_json, teacher_runs
 from openpilot.sunnypilot.formosalink.training_protocol import POLICY, digest_file
 
 
 class StoreTest(unittest.TestCase):
+  def test_partial_teacher_history_is_retained_without_claiming_training_completed(self):
+    with tempfile.TemporaryDirectory() as directory:
+      cycle=Path(directory)/'teacher-cycles'/'cycle-011'
+      write_json(cycle/'interrupted.json',{'history':[{'epoch':8,'train_loss':1.}], 'reason':'training correction'})
+      rows=teacher_runs(directory)
+      self.assertEqual(len(rows),1)
+      self.assertFalse(rows[0]['completed'])
+      self.assertEqual(rows[0]['history'][0]['epoch'],8)
+      write_json(cycle/'result.json',{'history':[{'epoch':24,'train_loss':.5}]})
+      rows=teacher_runs(directory)
+      self.assertEqual(len(rows),1)
+      self.assertTrue(rows[0]['completed'])
+      self.assertEqual(rows[0]['history'][0]['epoch'],24)
+
   def setUp(self):
     self.temp=tempfile.TemporaryDirectory()
     self.addCleanup(self.temp.cleanup)

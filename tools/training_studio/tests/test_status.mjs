@@ -35,6 +35,8 @@ test('previous real losses stay clearly labeled while a new round has no optimiz
   const value={teacher_training:{phase:'generating',cycle:4},teacher_runs:[{cycle:3,history:[{train_loss:2,validation_loss:3}]}]};
   assert.match(teacherLossHistory(value).label,/第 3 輪已完成/);
   assert.equal(teacherLossHistory(value).history[0].train_loss,2);
+  value.teacher_runs[0].completed=false;
+  assert.match(teacherLossHistory(value).label,/中斷前的實際 loss/);
   value.teacher_training.history=[{train_loss:1,validation_loss:2}];
   assert.match(teacherLossHistory(value).label,/第 4 輪實際/);
 });
