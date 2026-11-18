@@ -28,6 +28,8 @@ test('teacher validation failure and inference progress are explicit, without fa
   assert.match(teacherMessage(value).progress,/第 8 輪 · 綜合損失候選/);
   value.teacher.qualification.batch='/teacher-cycles/cycle-011/qualification-safety-early-epoch006';
   assert.match(teacherMessage(value).progress,/第 11 輪 · 安全優先候選 · Epoch 6 固定快照/);
+  value.teacher.qualification.batch='/teacher-cycles/cycle-013/qualification-balanced-early-epoch004-policy-crossing-v1';
+  assert.match(teacherMessage(value).progress,/第 13 輪 · 綜合損失候選 · Epoch 4 固定快照 · 行人全程停讓指令/);
   value.teacher.qualification.failures=['insufficient_progress'];
   assert.match(teacherMessage(value).progress,/行駛進度不足/);
   value.time=200;

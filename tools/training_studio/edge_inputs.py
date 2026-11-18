@@ -41,6 +41,11 @@ def validate_front_sample(data, timestamp_tolerance_us=0):
     raise ValueError('A nonempty lane-follow or navigation driving instruction is required')
 
 
+CROSSING_POLICY_PROFILE='full_crossing_clear_v1'
+CROSSING_POLICY=('Wait before entering a pedestrian crossing until all pedestrians have completely exited the roadway. '
+                 'Remain stopped until the entire crossing is clear, even if the ego lane is already clear.')
+
+
 def prepare_front_inputs(data,model_config,tokenizer,*,processor=None,timestamp_tolerance_us=0):
   """Use official Edge image normalization and prompt building for ten real images.
 
@@ -57,6 +62,9 @@ def prepare_front_inputs(data,model_config,tokenizer,*,processor=None,timestamp_
   if model_config.history_num_steps!=20 or model_config.tokens_per_history_traj!=57:
     raise ValueError('Unsupported Edge ego-history configuration')
   canonical = dict(data)
+  # One unconditional driving instruction, shared by training and inference.
+  # No actor state, permission time, scenario or scorer output enters the prompt.
+  canonical['nav_text']=[instruction+' '+CROSSING_POLICY for instruction in data['nav_text']]
   for key in ('image_frames','camera_indices','absolute_timestamps','ego_history_xyz','ego_history_rot'):
     canonical[key] = torch.from_numpy(np.ascontiguousarray(data[key]))
   canonical['camera_pixel_bounds'] = dict.fromkeys(CAMERA_IDS,(163840,196608))
