@@ -304,7 +304,7 @@ public final class MainActivity extends Activity {
     resetVisionHost(); hideVisionFullscreen();
     if (foregroundActivity) ui.postDelayed(pollVision,500);
   }
-  private void startSearch() {
+  private void prepareSearchScreen() {
     hideVisionFullscreen();
     if (recovery != null) { recovery.cancel(); recovery = null; }
     recovering = false;
@@ -312,16 +312,23 @@ public final class MainActivity extends Activity {
     if (web != null) { web.stopLoading(); web.loadUrl("about:blank"); }
     content.removeAllViews(); title.setText(UiText.get("당근 기기 찾기", "Find Carrot"));
     LinearLayout panel = column(); panel.setPadding(dp(22),dp(28),dp(22),dp(16));
-    panel.addView(text(UiText.get("당근을 찾고 있어요", "Looking for Carrot"),26));
-    TextView help = text(UiText.get("같은 Wi-Fi 또는 휴대폰 핫스팟에 연결해 주세요.\n5초 동안 한 대만 찾으면 자동으로 열립니다.", "Connect to the same Wi-Fi or phone hotspot.\nOne device found within five seconds opens automatically."),16); help.setPadding(0,dp(14),0,dp(16)); panel.addView(help);
-    status = text(UiText.get("검색 준비 중…", "Preparing search…"),16); panel.addView(status);
-    progress = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal); progress.setIndeterminate(true); panel.addView(progress);
-    devices = column(); ScrollView list = new ScrollView(this); list.addView(devices); panel.addView(list,new LinearLayout.LayoutParams(-1,0,1));
+    LinearLayout results = column();
+    ScrollView list = new ScrollView(this);
+    list.addView(results);
+    panel.addView(list,new LinearLayout.LayoutParams(-1,0,1));
+    results.addView(text(UiText.get("당근을 찾고 있어요", "Looking for Carrot"),26));
+    TextView help = text(UiText.get("같은 Wi-Fi 또는 휴대폰 핫스팟에 연결해 주세요.\n5초 동안 한 대만 찾으면 자동으로 열립니다.", "Connect to the same Wi-Fi or phone hotspot.\nOne device found within five seconds opens automatically."),16); help.setPadding(0,dp(14),0,dp(16)); results.addView(help);
+    status = text(UiText.get("검색 준비 중…", "Preparing search…"),16); results.addView(status);
+    progress = new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal); progress.setIndeterminate(true); results.addView(progress);
+    devices = column(); results.addView(devices);
     LinearLayout actions = new LinearLayout(this);
     actions.addView(button(UiText.get("다시 검색", "Search again"),v -> startSearch()),new LinearLayout.LayoutParams(0,fontRowHeight(52),1));
     actions.addView(button(UiText.get("주소 직접 입력", "Enter IP address"),v -> manualAddress()),new LinearLayout.LayoutParams(0,fontRowHeight(52),1)); panel.addView(actions);
     panel.addView(button(UiText.get("검색 중단", "Stop search"),v -> { stopSearch(); status.setText(UiText.get("검색을 중단했습니다. 발견된 기기를 선택할 수 있어요.", "Search stopped. You can select a device already found.")); progress.setVisibility(View.GONE); }));
     content.addView(panel,new LinearLayout.LayoutParams(-1,-1));
+  }
+  private void startSearch() {
+    prepareSearchScreen();
     List<Target> targets = targets();
     if (targets.isEmpty()) { status.setText(UiText.get("검색할 Wi-Fi를 찾지 못했어요. 연결을 확인하거나 주소를 입력해 주세요.", "No Wi-Fi network found. Check the connection or enter an IP address.")); progress.setVisibility(View.GONE); return; }
     started = SystemClock.elapsedRealtime(); scanning = true; final int token = generation;
@@ -407,18 +414,47 @@ public final class MainActivity extends Activity {
     for (String ip : DiscoveryPolicy.targets(self,prefix,preferences.getString("last_address",""))) if (!out.containsKey(ip)) out.put(ip,new Target(ip,probe));
   }
   private void manualAddress() {
-    stopSearch(); EditText input = new EditText(this); input.setSingleLine(true); input.setHint("192.168.0.178"); input.setText(preferences.getString("last_address",""));
+    boolean resumeScanOnCancel = scanning;
+    if (scanning) stopSearch();
+    EditText input = new EditText(this);
+    input.setSingleLine(true);
     input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
-    new AlertDialog.Builder(this).setTitle(UiText.get("당근 기기 IP 주소", "Carrot device IP address")).setView(input).setNegativeButton(UiText.get("취소", "Cancel"),null).setPositiveButton(UiText.get("확인", "OK"),(dialog,which) -> {
+    input.setHint("192.168.0.178");
+    input.setText(preferences.getString("last_address",""));
+    input.setSelectAllOnFocus(true);
+    input.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);
+    AlertDialog dialog = new AlertDialog.Builder(this)
+      .setTitle(UiText.get("당근 기기 IP 주소", "Carrot device IP address"))
+      .setView(input)
+      .setNegativeButton(UiText.get("취소", "Cancel"), (d,which) -> d.cancel())
+      .setPositiveButton(UiText.get("확인", "OK"), null)
+      .setOnCancelListener(d -> { if (resumeScanOnCancel && foregroundActivity) startSearch(); })
+      .create();
+    dialog.show();
+    Button confirm = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+    confirm.setOnClickListener(v -> {
       String address = input.getText().toString().trim();
-      if (!DiscoveryPolicy.local(address)) { notice(UiText.get("같은 네트워크의 IP 주소만 입력해 주세요. 포트는 7000번을 사용합니다.", "Enter an IP address on your local network. Carrot Web uses port 7000.")); return; }
+      if (!DiscoveryPolicy.local(address)) {
+        input.setError(UiText.get("같은 네트워크의 IP 주소만 입력해 주세요. 포트는 7000번을 사용합니다.", "Enter an IP address on your local network. Carrot Web uses port 7000."));
+        input.requestFocus();
+        return;
+      }
+      dialog.dismiss();
+      if (status == null || !status.isAttachedToWindow()) prepareSearchScreen();
+      else stopSearch();
+      progress.setVisibility(View.VISIBLE);
       status.setText(UiText.get("당근웹인지 확인 중…", "Checking for Carrot Web…")); final int token = generation;
       DeviceProbe probe = new DeviceProbe(url -> (HttpURLConnection)url.openConnection()); probes.add(probe);
       workers = Executors.newSingleThreadExecutor(); workers.execute(() -> {
         boolean valid = probe.verify(address);
-        ui.post(() -> { if (token != generation) return; if (valid) openDevice(new Device(address,UiText.get("당근파일럿", "CarrotPilot"))); else { stopSearch(); status.setText(UiText.get("해당 주소에서 당근웹을 확인하지 못했어요. IP와 Wi-Fi 연결을 확인해 주세요.", "Carrot Web was not found at that address. Check the IP address and Wi-Fi connection.")); } });
+        ui.post(() -> { if (token != generation) return; if (valid) openDevice(new Device(address,UiText.get("당근파일럿", "CarrotPilot"))); else { stopSearch(); progress.setVisibility(View.GONE); status.setText(UiText.get("해당 주소에서 당근웹을 확인하지 못했어요. IP와 Wi-Fi 연결을 확인해 주세요.", "Carrot Web was not found at that address. Check the IP address and Wi-Fi connection.")); } });
       });
-    }).show();
+    });
+    input.setOnEditorActionListener((field,action,event) -> {
+      if (action != android.view.inputmethod.EditorInfo.IME_ACTION_DONE) return false;
+      confirm.performClick();
+      return true;
+    });
   }
   @android.annotation.SuppressLint("SetJavaScriptEnabled")
   private void openDevice(Device device) {
