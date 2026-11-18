@@ -154,13 +154,15 @@ jobs:
         run: scons
       - name: Ensure real codec regression tools
         run: |
-          if ! command -v ffmpeg >/dev/null; then
+          if [ ! -x /usr/bin/ffmpeg ] || [ ! -x /usr/bin/ffprobe ]; then
             sudo apt-get update -qq
             sudo apt-get install -y ffmpeg
           fi
       - name: Check embedded driving data and SIM hotspot policy
         env:
           CARROT_REQUIRE_SEI_CODECS: '1'
+          SEI_FFMPEG_TEST_BINARY: /usr/bin/ffmpeg
+          SEI_FFPROBE_TEST_BINARY: /usr/bin/ffprobe
         run: >-
           python -m pytest -o addopts='' -q
           tools/carrot_android/tests/test_sei_video.py

@@ -17,6 +17,9 @@
   Release FFmpeg is STATIC: sei_reader must reuse loggerd's complete libs and
   platform frameworks. A system dynamic-FFmpeg g++ check alone misses transitive
   x264/swresample/VAAPI dependencies; the default native CI build catches them.
+  CI PATH also has a reduced FFmpeg executable without lavfi/x265. Codec tests
+  explicitly select distro /usr/bin/ffmpeg and ffprobe; require both and fail
+  rather than skip in release CI. Do not change playback's no-CLI contract.
 
 - 2026-11-18 Parking worker belongs in build.mjs workerDefinitions, never
   bundleDefinitions. A worker with bundle-only source metadata makes the strict

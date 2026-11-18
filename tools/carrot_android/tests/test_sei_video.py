@@ -10,11 +10,13 @@ from openpilot.selfdrive.carrot.server.services.driving_sei import timeline_from
 
 ROOT=Path(__file__).resolve().parents[3]
 READER=Path(os.environ.get('SEI_READER_TEST_BINARY',ROOT/'openpilot/system/loggerd/sei_reader'))
+FFMPEG=os.environ.get('SEI_FFMPEG_TEST_BINARY') or shutil.which('ffmpeg')
+FFPROBE=os.environ.get('SEI_FFPROBE_TEST_BINARY') or shutil.which('ffprobe')
 
 
 @pytest.fixture(scope='module')
 def codec_tools(tmp_path_factory):
-  ready=READER.is_file() and shutil.which('ffmpeg') and shutil.which('g++')
+  ready=READER.is_file() and FFMPEG and FFPROBE and shutil.which('g++')
   if not ready:
     if os.environ.get('CARROT_REQUIRE_SEI_CODECS')=='1':pytest.fail('Native SEI reader, ffmpeg and g++ are required')
     pytest.skip('Run after building the native reader with FFmpeg test tools')
@@ -25,7 +27,10 @@ def codec_tools(tmp_path_factory):
 
 
 def run(*args):
-  return subprocess.check_output([str(a) for a in args],stderr=subprocess.PIPE,timeout=30)
+  command=[str(a) for a in args]
+  if command[0] in ('ffmpeg','ffprobe'):
+    command[0]=FFMPEG if command[0]=='ffmpeg' else FFPROBE
+  return subprocess.check_output(command,stderr=subprocess.PIPE,timeout=30)
 
 
 @pytest.mark.parametrize('codec,encoder,setting',[('h264','libx264','x264-params'),('hevc','libx265','x265-params')])
