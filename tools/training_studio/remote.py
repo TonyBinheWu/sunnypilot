@@ -41,7 +41,7 @@ class Remote:
     root=Path(__file__).resolve().parents[2]
     buffer=io.BytesIO()
     files=["tools/training_studio/__init__.py","tools/training_studio/head.py","tools/training_studio/plan_head.py","tools/training_studio/store.py",
-           "tools/training_studio/remote_head.py","tools/training_studio/teacher_train.py","tools/training_studio/teacher_lora.py",
+           "tools/training_studio/remote_head.py","tools/training_studio/teacher_reasoning_train.py","tools/training_studio/teacher_train.py","tools/training_studio/teacher_lora.py",
            "tools/training_studio/teacher_service.py","tools/training_studio/teacher_motion.py","tools/training_studio/edge_inputs.py","openpilot/sunnypilot/formosalink/training_protocol.py"]
     fingerprint=hashlib.sha256()
     with tarfile.open(fileobj=buffer,mode="w:gz") as archive:

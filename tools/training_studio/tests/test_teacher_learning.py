@@ -9,6 +9,20 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_first_decision_error_cannot_hide_behind_correct_template_completion(self):
+    import torch
+    from tools.training_studio.teacher_reasoning_train import decision_objective
+    target=torch.zeros(1,20,dtype=torch.long)
+    early=torch.zeros(1,20,2);early[...,0]=6;early[:,0,0]=0;early[:,0,1]=6
+    late=torch.zeros_like(early);late[...,0]=6;late[:,-1,0]=0;late[:,-1,1]=6
+    first,mean_first,_=decision_objective(early,target);last,mean_last,_=decision_objective(late,target)
+    torch.testing.assert_close(mean_first,mean_last)
+    self.assertGreater(float(first),10*float(last))
+    early.requires_grad_();loss,_,_=decision_objective(early,target);loss.backward()
+    self.assertTrue(torch.isfinite(early.grad).all())
+    self.assertLess(float(early.grad[0,0,0]),0.)
+    self.assertGreater(float(early.grad[0,0].abs().sum()),100*float(early.grad[0,1].abs().sum()))
+
   def test_restart_supervision_prioritizes_executed_commands_over_equally_wrong_later_commands(self):
     import torch
     from tools.training_studio.teacher_train import restart_command_loss

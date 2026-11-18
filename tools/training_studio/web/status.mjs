@@ -59,5 +59,5 @@ export function reasoningSummary(value){
   const fresh=Number.isFinite(p.updated)&&Math.abs(value.time-p.updated)<120;
   const counter=Number.isFinite(p.batch)&&p.phase==='training'?`batch ${p.batch} / ${p.batches}`:Number.isFinite(p.sample)?`樣本 ${p.sample} / ${p.samples}`:'';
   const loss=Number.isFinite(last?.ce)?`獨立驗證 CE ${last.ce.toFixed(5)}`:'尚無完整獨立驗證結果';
-  return `隔離視覺決策實驗 · ${phase} · Epoch ${p.epoch||0} / 6 · ${counter} · ${loss}${!fresh&&p.phase!=='completed'?' · 回報已過期':''} · 此處不是完整行車資格結果`;
+  return `隔離視覺決策實驗 · ${phase} · Epoch ${p.epoch||0} / ${p.epochs||'—'} · ${counter} · ${loss}${Number.isFinite(last?.decision_correct)?` · 首決策正確 ${last.decision_correct} / ${last.decision_samples} · 決策 CE ${last.decision_ce.toFixed(5)}`:''}${!fresh&&p.phase!=='completed'?' · 回報已過期':''} · 此處不是完整行車資格結果`;
 }
