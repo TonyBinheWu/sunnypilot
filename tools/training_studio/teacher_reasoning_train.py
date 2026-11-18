@@ -109,7 +109,7 @@ def main():
         losses.append(values[0]);ces.append(values[1]);decisions.append(values[2]);correct+=right
         key=row['scenario']+('_stop' if row['stop_required'] else '_go');c=classes.setdefault(key,{'correct':0,'samples':0,'decision_ce_sum':0.});c['correct']+=right;c['samples']+=1;c['decision_ce_sum']+=values[2]
         del loss,ce,decision;torch.cuda.empty_cache();emit('validation',epoch=epoch,sample=index+1,samples=len(validation))
-    return {'validation_loss':float(np.mean(losses)),'ce':float(np.mean(ces)),'decision_ce':float(np.mean(decisions)),'decision_correct':correct,'decision_samples':len(validation),'classes':{k:{'correct':v['correct'],'samples':v['samples'],'decision_ce':v['decision_ce_sum']/v['samples']} for k,v in classes.items()}}
+    return {'validation_loss':float(np.mean(losses)),'ce':float(np.mean(ces)),'decision_ce':float(np.mean(decisions)),'decision_correct':correct,'decision_samples':len(validation),'decision_metric':'exact_first_target_token_v1','classes':{k:{'correct':v['correct'],'samples':v['samples'],'decision_ce':v['decision_ce_sum']/v['samples']} for k,v in classes.items()}}
   def generation(epoch):
     selected=[]
     for key in sorted({(r['scenario'],r['stop_required']) for r in validation}): selected.extend([r for r in validation if (r['scenario'],r['stop_required'])==key][:2])

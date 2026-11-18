@@ -59,7 +59,7 @@ test('visual decision experiment remains distinct from actual driving qualificat
   assert.equal(reasoningSummary({}),null);
   const value={time:100,teacher_reasoning:{experiment_only:true,updated:99,phase:'training',epoch:4,epochs:6,batch:12,batches:188,history:[{epoch:3,ce:1.23456}]}};
   assert.match(reasoningSummary(value),/隔離視覺決策實驗/);assert.match(reasoningSummary(value),/Epoch 4 \/ 6/);assert.match(reasoningSummary(value),/1.23456/);assert.match(reasoningSummary(value),/不是完整行車資格結果/);
-  value.teacher_reasoning.history[0]={ce:.5,decision_correct:98,decision_samples:100,decision_ce:.25};assert.match(reasoningSummary(value),/首決策正確 98 \/ 100/);
+  value.teacher_reasoning.history[0]={ce:.5,decision_correct:98,decision_samples:100,decision_ce:.25};assert.match(reasoningSummary(value),/首決策 token 命中 98 \/ 100/);
   value.time=500;assert.match(reasoningSummary(value),/回報已過期/);
   value.teacher_reasoning.phase='completed';assert.doesNotMatch(reasoningSummary(value),/回報已過期/);
 });
