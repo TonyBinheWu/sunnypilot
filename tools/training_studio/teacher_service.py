@@ -22,7 +22,7 @@ def main():
   from alpamayo2_edge.checkpoint import load_model
   from alpamayo2_edge.helper import get_processor,to_device
   from alpamayo2_edge.inference import predict,validate_predictions
-  from tools.training_studio.edge_inputs import MODEL_REVISION,prepare_front_inputs,CROSSING_POLICY_PROFILE
+  from tools.training_studio.edge_inputs import MODEL_REVISION,prepare_front_inputs
   from openpilot.sunnypilot.formosalink.training_protocol import digest_file
   model_path=args.model.resolve()
   receipt=json.loads(args.receipt.read_text())
@@ -60,7 +60,6 @@ def main():
   settings={'seed':42,'num_traj_sets':1,'num_traj_samples':1,'top_p':.98,'top_k':None,'temperature':.6,
     'max_generation_length':256,'diffusion_kwargs':{'inference_step':10}}
   provenance={**receipt,'input_profile':'experimental_front_only','camera_ids':[1,6],'precision':'BF16',
-    'crossing_policy_profile':CROSSING_POLICY_PROFILE,
     'cuda_memory_budget_gib':cuda_fraction*cuda_total/1024**3,
     'gpu':torch.cuda.get_device_name(0),'server_script_sha256':digest_file(Path(__file__)),
     'input_adapter_sha256':digest_file(Path(__file__).with_name('edge_inputs.py')),
