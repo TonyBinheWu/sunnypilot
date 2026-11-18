@@ -5,6 +5,7 @@
 #include <poll.h>
 
 #include "system/loggerd/encoder/v4l_encoder.h"
+#include "system/loggerd/vision_resolution.h"
 #include "common/util.h"
 #include "common/timing.h"
 
@@ -150,8 +151,9 @@ V4LEncoder::V4LEncoder(const EncoderInfo &encoder_info, int in_width, int in_hei
     : VideoEncoder(encoder_info, in_width, in_height) {
   const bool carrot_livestream_road = strcmp(encoder_info.publish_name, "livestreamRoadEncodeData") == 0;
   if (carrot_livestream_road && encoder_info.frame_width <= 0 && encoder_info.frame_height <= 0) {
-    out_width = 964;
-    out_height = 604;
+    const auto resolution = carrot_vision_resolution("standard", in_width, in_height, 0);
+    out_width = resolution.width;
+    out_height = resolution.height;
   }
 
   fd = HANDLE_EINTR(open("/dev/v4l/by-path/platform-aa00000.qcom_vidc-video-index1", O_RDWR|O_NONBLOCK));

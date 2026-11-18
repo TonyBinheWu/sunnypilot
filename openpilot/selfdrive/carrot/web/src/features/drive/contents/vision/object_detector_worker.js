@@ -14,7 +14,7 @@ self.onmessage=async({data})=>{
         runningMode:'IMAGE',maxResults:24,scoreThreshold:.5,
         categoryAllowlist:[...DETECTOR_CLASSES],
       });
-      self.postMessage({type:'ready'});
+      self.postMessage({type:'ready',delegate:'CPU'});
     }catch{self.postMessage({type:'error',stage:'load'});}
     return;
   }
@@ -22,7 +22,7 @@ self.onmessage=async({data})=>{
   try{
     if(!detector)throw new Error('not ready');
     const started=performance.now(),result=detector.detect(data.bitmap);
-    self.postMessage({type:'result',id:data.id,detections:result.detections,durationMs:performance.now()-started});
+    self.postMessage({type:'result',id:data.id,detections:result.detections,durationMs:performance.now()-started,delegate:'CPU'});
   }catch{self.postMessage({type:'error',stage:'inference'});}
   finally{data.bitmap?.close();}
 };

@@ -1,5 +1,21 @@
 # Repository memory
 
+- 2026-11-18 Object-display investigation: C4 OS04C10 is1344x760; the old
+  standard964x604 live encoder stretched its aspect and cameraGeometry correctly
+  rejected it. Standard on-demand ROAD encoding now explicitly selects half
+  source dimensions (C4 672x380; AR/OX964x604 unchanged), including the V4L
+  fallback. Keep aspect admission strict. Missing ground geometry retains real
+  image-only road classifications, never fabricated depth. Report geometry
+  failure reasons and slow inference separately. Cold first inference may finish
+  within20s; subsequent timeout4s and capture TTL1.2s remain independent. Keep
+  the pinned CPU detector: an experimental GPU delegate returned empty output
+  on a car frame that CPU recognized and was removed, not shipped. Guide:
+  tools/carrot_android/OBJECT_DISPLAY_RECOVERY.zh-TW.md. Actual public-video CPU
+  classes and page-return recovery were observed with synthetic calibration;
+  this is not a vehicle/Android-box acceptance or N16 navigation fix. Support
+  logs and consented training uploads are separate. Check recorded clocks,
+  not received_at, before attributing uploaded data to a reported incident.
+
 - 2026-11-18 User explicitly requested GitHub APK delivery after shared UI work.
   Published Formosa cockpit0.6.1/code9 and standard CarrotAssist0.2.20/code27,
   source ae7beb7cd32a171e9cf8b250ee5e04e73135bf17. Native CI44283979374 and

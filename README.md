@@ -26,6 +26,8 @@
 
 ## 道路辨識（網頁／APK）
 
+修正 C4 標準前鏡頭串流比例造成的「3D 定位資料不足／影像規格不符」，並分開提示辨識運算過慢、校正缺失與資料過期。定位不足時保留真實影像分類，不虛構物件距離。既有 APK 可沿用，須停車更新並重啟車機的原生編碼器。[修正原因與繁中檢查方式](tools/carrot_android/OBJECT_DISPLAY_RECOVERY.zh-TW.md)。此修正不代表 N16 導航偏移已通過實車驗證。
+
 座艙依提供的示意圖改為[Formosa 分區與字體排版](tools/carrot_android/FORMOSA_REFERENCE_LAYOUT.zh-TW.md)，駕駛視覺下方已移除重複的聲音卡片。觀看地圖採 [OSM、搜尋／模型維持 Mapbox](docs/NAVIGATION_MAPBOX_OSM.zh-TW.md)；新錄製的攝影機 H.264／HEVC 影片加入[同步車況 SEI](tools/carrot_android/DRIVING_SEI.zh-TW.md)，既有 0.6.0 APK 可沿用。
 
 網頁與 APK 的行車記錄回放可直接顯示 SEI 車況，跟隨影片時間同步；播放控制列閒置時自動收起，輕觸即可叫出。啟用 [`HotspotOnBoot`（SIM 行動網路分享）](docs/HOTSPOT_ON_BOOT.zh-TW.md)後，SIM 數據連線就緒時自動啟動既有熱點，供已連線裝置上網。

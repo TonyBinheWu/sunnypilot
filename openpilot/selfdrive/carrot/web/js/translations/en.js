@@ -50,6 +50,7 @@ window.CarrotTranslations.register("en", {
     scene_status_ready: "Front camera recognition · approximate ground positions",
     scene_status_calibration: "Recognition available; fresh calibration / camera height required for positioning",
     scene_status_stale: "Recognition expired; waiting for a new camera frame",
+    scene_status_slow: "Recognition exceeded its deadline; turn off additional road detection and other busy apps",
     scene_status_paused: "Recognition paused",
     scene_status_unsupported: "This browser / WebView lacks required image-processing support; update it or disable recognition",
     scene_status_load_error: "Model could not load; update the vehicle / WebView, then switch recognition off and on",

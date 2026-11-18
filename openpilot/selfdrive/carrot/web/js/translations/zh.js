@@ -50,6 +50,7 @@ window.CarrotTranslations.register("zh", {
     scene_status_ready: "前方影像辨識 · 地面位置為估算",
     scene_status_calibration: "已可辨識；需要新鮮的相機校正／高度資料才能定位",
     scene_status_stale: "辨識資料已過期，等待新影格",
+    scene_status_slow: "辨识运算超过时限；请先关闭道路附加辨识与其他高负载 App",
     scene_status_paused: "影像辨識已暫停",
     scene_status_unsupported: "瀏覽器／WebView 缺少影像處理能力；請更新，或關閉影像辨識",
     scene_status_load_error: "模型載入失敗；請更新車機／WebView，再關閉重開影像辨識",

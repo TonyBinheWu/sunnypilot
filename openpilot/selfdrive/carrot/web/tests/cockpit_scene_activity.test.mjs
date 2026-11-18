@@ -43,3 +43,11 @@ test('positioned class diagnostics name only fresh classified camera objects',()
   status='ready';frame.CarrotWebSettingsState.vision_object_detection=false;
   assert.equal(cockpitPerceptionReport(frame).objects.classes,'');
 });
+
+test('calibration diagnostics retain real classifications and tell C4 stream mismatch from stale metadata',()=>{
+  let reason='profile';const frame={CarrotWebSettingsState:{vision_object_detection:true},
+    CarrotVisionPerception:{snapshot:()=>({objects:{status:'calibration',geometryReason:reason,count:2,positioned:0,classes:{person:1,motorcycle:1}}})}};
+  assert.equal(cockpitPerceptionReport(frame).objects.classes,'行人 1、機車 1');
+  assert.match(cockpitPerceptionReport(frame).objects.text,/串流比例/);
+  reason='telemetry';assert.match(cockpitPerceptionReport(frame).objects.text,/資料未更新/);
+});

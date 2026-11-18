@@ -81,6 +81,14 @@ export function imageTargets(detections,width,height,classes=IMAGE_ONLY_CLASSES)
   });
 }
 
+// Classification is still real when ground projection is unavailable. Retain
+// image observations without assigning an invented range or 3D position.
+export function unpositionedTargets(detections,geometry,width,height){
+  return imageTargets(detections,width,height,[...ROAD_CLASSES,...IMAGE_ONLY_CLASSES])
+    .filter(o=>!ROAD_CLASSES.includes(o.kind)||!groundPoint({originX:o.box[0]*width,originY:o.box[1]*height,
+      width:o.box[2]*width,height:o.box[3]*height},geometry));
+}
+
 export const roadCameraTargets=(detections,geometry)=>cameraTargets(detections,geometry,75,['traffic cone'])
   .map(o=>({...o,id:'road-'+o.id,source:'browser.ppe_cone_yolov8'}));
 // Crosswalk bounding boxes do not provide its actual ground contour. Do not

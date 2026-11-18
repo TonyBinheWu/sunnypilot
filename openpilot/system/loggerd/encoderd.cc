@@ -91,7 +91,7 @@ void encoder_thread(EncoderdState *s, const LogCameraInfo &cam_info, bool encode
 
       for (const auto &encoder_info : cam_info.encoder_infos) {
         EncoderInfo selected_info = encoder_info;
-        if (encode_on_demand && vision_profile != "standard") {
+        if (encode_on_demand) {
           auto settings = encoder_info.get_settings(buf_info.width);
           const auto resolution = carrot_vision_resolution(vision_profile, buf_info.width, buf_info.height, settings.bitrate);
           selected_info.frame_width = settings.frame_width = resolution.width;

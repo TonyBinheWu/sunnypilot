@@ -199,8 +199,9 @@ export function createTeslaView(doc,target) {
   const diagnostics=Object.freeze({
     snapshot(){
       const describe=detector=>{const s=detector.scene(),classes={};
-        for(const object of s.objects)classes[object.kind]=(classes[object.kind]||0)+1;
-        return {status:s.status,count:s.count,positioned:s.objects.length,classes,revision:s.revision,videoTime:s.videoTime??null};};
+        for(const object of [...s.objects,...s.imageObjects])classes[object.kind]=(classes[object.kind]||0)+1;
+        return {status:s.status,count:s.count,positioned:s.objects.length,classes,revision:s.revision,videoTime:s.videoTime??null,
+          geometryReason:s.geometryReason??null,frameSize:s.frameSize??null,durationMs:s.durationMs??null,delegate:s.delegate??null};};
       return {objects:describe(perception),road:describe(roadPerception)};
     },
     retry(){perception.retry();roadPerception.retry();},
@@ -244,8 +245,8 @@ export function createTeslaView(doc,target) {
     for(const [kind,count] of imageCounts){
       const badge=el(doc,'span',{class:'tesla-image-object'});
       badge.dataset.classification=kind;
-      badge.dataset.kind=kind==='stop sign'?'stop':kind==='traffic light'?'signal':kind==='crosswalk'?'crosswalk':kind==='traffic cone'?'cone':'bird';
-      const icon=el(doc,'b',{attrs:{'aria-hidden':'true'},text:kind==='stop sign'?'STOP':kind==='traffic light'?'● ● ●':kind==='crosswalk'?'▥':kind==='traffic cone'?'▲':'◈'});
+      badge.dataset.kind=kind==='stop sign'?'stop':kind==='traffic light'?'signal':kind==='crosswalk'?'crosswalk':kind==='traffic cone'?'cone':'object';
+      const icon=el(doc,'b',{attrs:{'aria-hidden':'true'},text:kind==='stop sign'?'STOP':kind==='traffic light'?'● ● ●':kind==='crosswalk'?'▥':kind==='traffic cone'?'▲':''});
       const label=el(doc,'span',{text:`${text('scene_kind_'+kind.replaceAll(' ','_'),OBJECT_NAMES[kind]||kind)}${count>1?' ×'+count:''}`});
       badge.append(icon,label);imageObservations.appendChild(badge);
     }

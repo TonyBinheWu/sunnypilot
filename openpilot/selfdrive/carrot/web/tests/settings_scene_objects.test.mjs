@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {surroundingTargets,cameraGeometry,groundPoint,cameraTargets,imageTargets} from '../src/features/drive/contents/vision/hud/scene_objects.js';
+import {surroundingTargets,cameraGeometry,groundPoint,cameraTargets,imageTargets,unpositionedTargets} from '../src/features/drive/contents/vision/hud/scene_objects.js';
 import {drivingProjection,drawDrivingScene} from '../src/features/drive/contents/vision/hud/driving_scene.js';
 import {bevSnapshot} from '../src/features/drive/contents/vision/hud/bev_annotations.js';
 import {createObjectPerception,DETECTION_TTL_MS} from '../src/features/drive/contents/vision/hud/object_perception.js';
@@ -30,6 +30,20 @@ test('ground-ray inverse follows metres and right-positive sign; excludes horizo
   for(const box of [{originX:100,originY:0,width:30,height:40},{originX:100,originY:300,width:30,height:80},
     {originX:NaN,originY:230,width:20,height:50}])assert.equal(groundPoint(box,g),null);
 });
+
+test('C4 default full-frame stream preserves geometry; legacy stretched stream is rejected',()=>{
+  const good=cameraGeometry(state(),672,380);
+  assert.ok(good);assert.equal(good.fx,1141.5/2);assert.equal(good.fy,1141.5/2);
+  assert.equal(cameraGeometry(state(),964,604),null);
+});
+
+test('unpositioned road classes remain classified image observations, never fabricated 3D targets',()=>{
+  const detections=['person','car','motorcycle','traffic light'].map(kind=>({categories:[{categoryName:kind,score:.9}],boundingBox:{originX:330,originY:210,width:20,height:40}}));
+  const unplaced=unpositionedTargets(detections,null,672,380);
+  assert.equal(unplaced.length,4);assert.ok(unplaced.every(o=>o.position===null&&o.distance===null));
+  const valid=unpositionedTargets(detections,cameraGeometry(state(),672,380),672,380);
+  assert.deepEqual(valid.map(o=>o.kind),['traffic light']);
+});
 test('image classes and confidence come only from validated camera output; exports keep approximation and provenance',()=>{
   const g=cameraGeometry(state(),672,380),box={originX:330,originY:210,width:20,height:40};
   const det=(kind,score)=>({categories:[{categoryName:kind,score}],boundingBox:box});
@@ -48,7 +62,7 @@ test('perspective places right targets right, far targets nearer horizon and tal
 
 function fixture(){
   let clock=5000,bitmapCloses=0;
-  const workers=[],timers=new Map();let timerId=0;
+  const workers=[],timers=new Map(),delays=[];let timerId=0;
   const video={readyState:2,videoWidth:1344,videoHeight:760,currentTime:1,src:'road.mp4',seeking:false};
   const doc={hidden:false,getElementById:()=>video};
   class Worker {constructor(url){this.url=url;this.messages=[];workers.push(this);}postMessage(m){this.messages.push(m);}terminate(){this.terminated=true;}reply(data){this.onmessage({data});}}
@@ -56,9 +70,9 @@ function fixture(){
     CarrotAssetUrl:{resolve:()=>'/js/generated/bev-detector-worker.js'},CarrotOverlayState:state(),
     CarrotStateReceivedAtMonotonic:{liveCalibration:5000,roadCameraState:5000},
     createImageBitmap:async()=>({width:640,height:362,close(){bitmapCloses++;}}),
-    setTimeout:(fn)=>{timers.set(++timerId,fn);return timerId;},clearTimeout:id=>timers.delete(id)};
+    setTimeout:(fn,ms)=>{delays.push(ms);timers.set(++timerId,fn);return timerId;},clearTimeout:id=>timers.delete(id)};
   const perception=createObjectPerception(doc,target);
-  return {target,doc,video,workers,perception,timers,setClock:n=>{clock=n;},closed:()=>bitmapCloses};
+  return {target,doc,video,workers,perception,timers,delays,setClock:n=>{clock=n;},closed:()=>bitmapCloses};
 }
 test('recognition owns one in-flight frame, expires paused video results and terminates on leave',async()=>{
   const f=fixture();f.perception.update();assert.equal(f.workers.length,1);
@@ -139,4 +153,32 @@ test('image-only observations expire and pause with the original single-frame pi
   assert.equal(f.perception.scene().imageObjects.length,1);assert.equal(f.perception.scene().objects.length,0);
   f.setClock(5001+DETECTION_TTL_MS);assert.equal(f.perception.scene().imageObjects.length,0);
   f.perception.update({active:false});assert.equal(f.perception.scene().imageObjects.length,0);assert.equal(w.terminated,true);
+});
+
+test('slow inference reports its cause and never re-dates expired objects as current',async()=>{
+  const f=fixture();f.perception.update();const w=f.workers[0];w.reply({type:'ready'});f.perception.update();await Promise.resolve();
+  const frame=w.messages.find(m=>m.type==='frame');f.setClock(5001+DETECTION_TTL_MS);
+  w.reply({type:'result',id:frame.id,durationMs:1300,delegate:'CPU',detections:[{categories:[{categoryName:'car',score:.9}],boundingBox:{originX:310,originY:190,width:20,height:40}}]});
+  assert.equal(f.perception.scene().status,'slow');assert.equal(f.perception.scene().durationMs,1300);assert.equal(f.perception.scene().delegate,'CPU');
+  assert.deepEqual(f.perception.scene().objects,[]);assert.deepEqual(f.perception.scene().imageObjects,[]);
+});
+
+test('one cold inference has a warm-up budget but old output still expires; warm deadlines stay short',async()=>{
+  const f=fixture();f.perception.update();const w=f.workers[0];w.reply({type:'ready'});f.perception.update();await Promise.resolve();
+  assert.equal(f.delays.at(-1),20000);
+  const frame=w.messages.find(m=>m.type==='frame');f.setClock(6500);
+  w.reply({type:'result',id:frame.id,durationMs:1500,detections:[]});
+  assert.equal(f.perception.scene().status,'slow');
+  f.video.currentTime=2;f.perception.update();await Promise.resolve();assert.equal(f.delays.at(-1),4000);
+  f.perception.destroy();assert.equal(f.timers.size,0);
+});
+
+test('missing geometry retains actual road classifications and the precise diagnostic reason',async()=>{
+  const f=fixture();f.video.videoWidth=964;f.video.videoHeight=604;
+  f.target.createImageBitmap=async()=>({width:640,height:401,close(){}});
+  f.perception.update();const w=f.workers[0];w.reply({type:'ready'});f.perception.update();await Promise.resolve();
+  const frame=w.messages.find(m=>m.type==='frame');
+  w.reply({type:'result',id:frame.id,durationMs:40,detections:['person','car','motorcycle'].map(kind=>({categories:[{categoryName:kind,score:.9}],boundingBox:{originX:310,originY:190,width:20,height:40}}))});
+  const result=f.perception.scene();assert.equal(result.status,'calibration');assert.equal(result.geometryReason,'profile');assert.equal(result.objects.length,0);
+  assert.deepEqual(result.imageObjects.map(o=>o.kind),['person','car','motorcycle']);
 });

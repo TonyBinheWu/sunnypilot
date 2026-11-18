@@ -1,15 +1,15 @@
-import {cameraGeometry,cameraTargets,imageTargets,roadCameraTargets,roadImageTargets} from './scene_objects.js';
+import {cameraGeometry,cameraTargets,unpositionedTargets,roadCameraTargets,roadImageTargets} from './scene_objects.js';
 
 export const DETECTION_TTL_MS=1200;
 export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={}) {
-  let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,lastAttempt=-Infinity;
+  let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,warmed=false,lastAttempt=-Infinity;
   let lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
   let state={status:'off',objects:[],imageObjects:[],count:0,capturedAt:null,revision};
   const now=()=>target.performance?.now?.()??Date.now();
   const clearTimeout=()=>{if(timeout!==null)target.clearTimeout(timeout);timeout=null;};
   const publish=(status,extra={})=>{state={status,objects:[],imageObjects:[],count:0,capturedAt:null,...extra,revision:++revision};onChange();};
   function stop(status='off'){
-    generation++;worker?.terminate();worker=null;ready=false;busy=false;request=null;clearTimeout();
+    generation++;worker?.terminate();worker=null;ready=false;busy=false;warmed=false;request=null;clearTimeout();
     lastTime=null;lastSource=null;lastReplay=null;lastAttempt=-Infinity;interval=250;
     if(state.status!==status||state.objects.length||state.imageObjects.length)publish(status);
   }
@@ -29,16 +29,20 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
         if(data.type==='ready'){ready=true;publish('waiting');return;}
         if(data.type==='error'){fail(data.stage==='load'?'load_error':'inference_error');return;}
         if(data.type!=='result'||!request||data.id!==request.id)return;
-        busy=false;
+        busy=false;warmed=true;
         const captured=request;request=null;
         interval=Math.min(1200,Math.max(250,Number(data.durationMs||0)*3));
-        if(now()-captured.capturedAt>DETECTION_TTL_MS){publish('stale');return;}
+        if(now()-captured.capturedAt>DETECTION_TTL_MS){publish('slow',{
+          durationMs:data.durationMs,delegate:data.delegate||null,geometryReason:captured.geometryReason,
+        });return;}
         const objects=(road?roadCameraTargets:cameraTargets)(data.detections,captured.geometry)
           .map(o=>({...o,capturedAt:captured.capturedAt,videoTime:captured.videoTime}));
         publish(captured.geometry?'ready':'calibration',{
           objects,count:Array.isArray(data.detections)?data.detections.length:0,capturedAt:captured.capturedAt,
-          imageObjects:(road?roadImageTargets:imageTargets)(data.detections,captured.width,captured.height),
+          imageObjects:road?roadImageTargets(data.detections,captured.width,captured.height)
+            :unpositionedTargets(data.detections,captured.geometry,captured.width,captured.height),
           videoTime:captured.videoTime,durationMs:data.durationMs,camera:captured.geometry?.sensor||null,
+          delegate:data.delegate||null,geometryReason:captured.geometryReason,frameSize:[captured.width,captured.height],
         });
       };
       timeout=target.setTimeout(()=>fail('load_error'),90000);
@@ -68,8 +72,15 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     // A replay source is historical by design. Live calibration/profile must be fresh.
     const fresh=key=>replay||Number.isFinite(stamps[key])&&capturedAt-stamps[key]>=0&&capturedAt-stamps[key]<2000;
     const geometry=fresh('liveCalibration')&&fresh('roadCameraState')?cameraGeometry(raw,width,height):null;
-    request={id:revision+1,capturedAt,geometry,videoTime,width,height};
-    timeout=target.setTimeout(()=>fail('inference_error'),4000);
+    const geometryReason=geometry?null:!fresh('liveCalibration')||!fresh('roadCameraState')?'telemetry'
+      :!['calibrated',1].includes(raw.liveCalibration?.calStatus)?'calibration'
+      :!Number.isFinite(raw.liveCalibration?.height?.[0])||raw.liveCalibration.height[0]<.5||raw.liveCalibration.height[0]>3?'height'
+      :!['os04c10','ar0231','ox03c10'].includes(String(raw.roadCameraState?.sensor||'').toLowerCase())?'sensor':'profile';
+    request={id:revision+1,capturedAt,geometry,geometryReason,videoTime,width,height};
+    // First use can initialize kernels after createFromOptions resolves.
+    // Let that one warm-up finish; the original capture TTL STILL rejects its
+    // old result. Subsequent frames retain the bounded inference deadline.
+    timeout=target.setTimeout(()=>fail('inference_error'),warmed?4000:20000);
     let capture;
     try{capture=target.createImageBitmap(video,{resizeWidth:width,resizeHeight:height,resizeQuality:'low'});}
     catch{fail('unsupported');return;}

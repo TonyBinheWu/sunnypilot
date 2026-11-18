@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "1719973358cc18bc583922cf7bfda5802fe6c35bc5cf7a8dd21100fff3ba3e17"
+      "hash": "6909e597f0b52bb05661ecadf4fff1f6a05570f571badbe2ce72a417f9f47d61"
     },
     {
       "id": "tools.lane-mapping",
@@ -34,7 +34,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "aecc70eab9f7f88b8e086ba4553075703e20c057f404dd0474600301c6bbeda4"
+      "hash": "106348a9fa911570118c1bfd9b3e7cb47160497fd14362370443e5f6616b55db"
     },
     {
       "id": "replay.runtime",
@@ -173,7 +173,7 @@
       "id": "vision.parking-detector-worker",
       "kind": "worker",
       "path": "js/generated/parking-detector-worker.js",
-      "hash": "668cb987faae570bd0df62d4c2a4672bba8af4a1ffee7506cbde83180f6ef5fd"
+      "hash": "3edbd29e7acf371913a6e616371f052451d477f98cc426ce25f7eede562ff9df"
     },
     {
       "id": "vision.road-detector-worker",
@@ -185,7 +185,7 @@
       "id": "vision.object-detector-worker",
       "kind": "worker",
       "path": "js/generated/bev-detector-worker.js",
-      "hash": "cf3d69fb354c30e8c8ff960637adda7ae44bb5b957810e6c25546f8b5e2feafe"
+      "hash": "c94a7b1ee519cf3f400237c1c699182e3edfbc625a2a4bc23456ca01ddf13b84"
     },
     {
       "id": "vision.webgl2.worker",

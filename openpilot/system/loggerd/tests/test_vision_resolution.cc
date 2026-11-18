@@ -5,10 +5,12 @@
 int main() {
   for (auto mode : {"standard", "bad", ""}) {
     auto size = carrot_vision_resolution(mode, 1344, 760, 600000);
-    assert(size.width == 964 && size.height == 604 && size.bitrate == 600000);
+    assert(size.width == 672 && size.height == 380 && size.bitrate == 600000);
   }
+  auto original = carrot_vision_resolution("standard", 1928, 1208, 600000);
+  assert(original.width == 964 && original.height == 604);
   for (auto source : {std::pair{1344, 760}, std::pair{1928, 1208}, std::pair{640, 480}}) {
-    for (auto mode : {"360", "540", "720"}) {
+    for (auto mode : {"standard", "360", "540", "720"}) {
       auto size = carrot_vision_resolution(mode, source.first, source.second, 600000);
       assert(size.width <= source.first && size.height <= source.second);
       assert(size.width % 4 == 0 && size.height % 4 == 0);
