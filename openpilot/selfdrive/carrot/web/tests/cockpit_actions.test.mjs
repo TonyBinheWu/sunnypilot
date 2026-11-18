@@ -7,7 +7,7 @@ const connection=readFileSync(new URL('../js/realtime/compact_connection.js',imp
 const bundle=readFileSync(new URL('../js/generated/cockpit.js',import.meta.url),'utf8');
 const html=readFileSync(new URL('../cockpit.html',import.meta.url),'utf8');
 function harness(){
-  const nodes=new Map(),writes=[],pages=[],hud=[],intervals=[],timers=new Map(),events={};let timerId=0;let mode=3,clock=0,seq=0,rejectPost=false;
+  const nodes=new Map(),writes=[],pages=[],hud=[],intervals=[],timers=new Map(),events={},docEvents={};let timerId=0;let mode=3,clock=0,seq=0,rejectPost=false;
   function element(id=''){
     const classes=new Set(),listeners={};
     return {id,hidden:false,dataset:{},textContent:'',disabled:false,href:'/css/cockpit-embedded.css',
@@ -20,7 +20,7 @@ function harness(){
   const panels=['navigation','vision','logs','setting','tools'].map(panel=>Object.assign(element(),{dataset:{panel}}));
   const document={hidden:false,body:element(),documentElement:{...element(),style:{setProperty(){}}},head:element(),
     getElementById:id=>nodes.get(id),querySelector:()=>null,querySelectorAll:s=>s==='[data-mode]'?buttons:s==='[data-panel]'?panels:[],
-    addEventListener(){},createElement:()=>element()};
+    addEventListener:(name,fn)=>{docEvents[name]=fn;},createElement:()=>element()};
   const innerDocument={...document,documentElement:{...element(),hasAttribute:()=>true}};
   nodes.get('features').contentWindow={location:{origin:'http://fixture'},document:innerDocument,showPage:p=>pages.push(p),
     DriveVisionHudContent:{update:p=>hud.push(p)},
@@ -43,7 +43,7 @@ function harness(){
   nodes.get('features').emit('load');
   function send(service,decoded){const data=new Uint8Array(1);data.frames=[{service,decoded,sequence:seq++}];sockets.at(-1).onmessage({data});}
   function park(){send('carState',{gearShifter:'park',vEgo:0,vEgoCluster:0});send('selfdriveState',{enabled:false});send('carControl',{latActive:false,longActive:false});}
-  return {frame:nodes.get('features').contentWindow,register:(id,node)=>nodes.set(id,node),sockets,events,timers,run(ms){for(let end=clock+ms;clock<end;){clock=Math.min(end,clock+1000);for(const [id,t] of [...timers])if(t.at<=clock){timers.delete(id);t.fn();}}},el:id=>nodes.get(id),mode:n=>buttons[n-1],panel:p=>panels.find(b=>b.dataset.panel===p),writes,pages,send,park,context,
+  return {docEvents,frame:nodes.get('features').contentWindow,register:(id,node)=>nodes.set(id,node),sockets,events,timers,run(ms){for(let end=clock+ms;clock<end;){clock=Math.min(end,clock+1000);for(const [id,t] of [...timers])if(t.at<=clock){timers.delete(id);t.fn();}}},el:id=>nodes.get(id),mode:n=>buttons[n-1],panel:p=>panels.find(b=>b.dataset.panel===p),writes,pages,send,park,context,
     advance:ms=>{clock+=ms;},tick:()=>intervals.forEach(fn=>fn()),hud,reject:()=>{rejectPost=true;},flush:()=>new Promise(setImmediate)};
 }
 test('camera-independent cockpit sends one explicit expiry and never retains its last speed',()=>{
@@ -137,7 +137,7 @@ test('object detection settings require explicit action and never start a camera
  h.frame.CarrotWebSettingsState={vision_object_detection:false,vision_road_detection:false};
  h.frame.setWebSettingByKey=async(key,value)=>{saved.push([key,value]);h.frame.CarrotWebSettingsState[key]=value;return value;};
  const camera={disabled:false,click:()=>{cameraStarts++;}};h.register('btnStartVision',camera);
- h.tick();assert.equal(cameraStarts,0);assert.equal(saved.length,0);assert.match(h.el('visionTools').textContent,/未啟用/);
+ h.tick();assert.equal(cameraStarts,0);assert.equal(saved.length,0);assert.equal(h.el('visionTools').textContent,'視覺設定');assert.match(h.el('visionTools')['aria-label'],/未啟用/);
  h.el('detectionObjects').checked=true;await h.el('detectionObjects').onchange();h.tick();
  assert.deepEqual(saved,[['vision_object_detection',true]]);assert.equal(cameraStarts,0);assert.match(h.el('visionDiagnostic').textContent,/等待前鏡頭/);
  h.el('connectVision').onclick();assert.equal(cameraStarts,1);
@@ -156,4 +156,38 @@ test('tools navigation returns to the cockpit while modified link clicks keep na
   const h=harness(),link={};h.frame.document.querySelector=selector=>selector==='#toolsPrimaryActions a[href="/navigation"]'?link:null;h.el('features').emit('load');
   let prevented=0;link.onclick({button:0,preventDefault(){prevented++;}});assert.equal(prevented,1);assert.equal(h.context.document.body.dataset.panel,'navigation');
   h.panel('tools').onclick();link.onclick({button:0,metaKey:true,preventDefault(){prevented++;}});assert.equal(prevented,1);assert.equal(h.context.document.body.dataset.panel,'tools');assert.equal(h.writes.length,0);
+});
+
+
+test('Back consumes an embedded drawer/detail before leaving controls',()=>{
+ const h=harness();let pending=2;h.frame.CarrotCockpitControls={back:()=>pending-->0};h.panel('setting').onclick();
+ assert.equal(h.context.CarrotCockpit.back(),true);assert.equal(h.context.document.body.dataset.panel,'setting');
+ assert.equal(h.context.CarrotCockpit.back(),true);assert.equal(h.context.document.body.dataset.panel,'setting');
+ assert.equal(h.context.CarrotCockpit.back(),true);assert.equal(h.context.document.body.dataset.panel,'vision');assert.equal(h.writes.length,0);
+});
+test('a parked confirmation is visibly withdrawn as soon as telemetry expires',()=>{
+ const h=harness();h.park();h.mode(1).onclick();assert.equal(h.el('modeConfirm').hidden,false);h.advance(1501);h.tick();
+ assert.equal(h.el('modeConfirm').hidden,true);assert.match(h.el('profileStatus').textContent,/已取消/);assert.equal(h.writes.length,0);
+});
+test('navigation card awaits the real end result and does not infer destination from a save button',async()=>{
+ const h=harness();let finish;const api={snapshot:()=>({known:true,busy:false,active:true,label:'現有目的地'}),end:()=>new Promise(r=>finish=r)};
+ h.el('navigation').contentWindow.CarrotNavigationView=api;h.tick();assert.equal(h.el('routeName').textContent,'現有目的地');assert.equal(h.el('routeEnd').disabled,false);
+ const request=h.el('routeEnd').onclick();assert.match(h.el('routeFeedback').textContent,/正在結束/);finish({ended:true});await request;assert.match(h.el('routeFeedback').textContent,/已結束/);
+ api.end=async()=>{throw Error('連線中斷');};await h.el('routeEnd').onclick();assert.match(h.el('routeFeedback').textContent,/未確認結束：連線中斷/);assert.equal(h.writes.length,0);
+ api.snapshot=()=>({known:true,busy:true,active:true,label:'現有目的地'});h.tick();assert.equal(h.el('routeEnd').disabled,true);assert.equal(h.context.document.body.dataset.hasRoute,'true');
+});
+test('full screen labels reflect the current browser state and waiting telemetry is not green',()=>{
+ const h=harness();assert.equal(h.el('fullscreenLabel').textContent,'全螢幕');
+ h.context.document.fullscreenElement={};h.docEvents.fullscreenchange();assert.equal(h.el('fullscreenLabel').textContent,'離開全螢幕');assert.equal(h.el('fullscreen')['aria-pressed'],'true');
+ h.context.document.fullscreenElement=null;h.docEvents.fullscreenchange();assert.equal(h.el('fullscreenLabel').textContent,'全螢幕');
+ h.sockets[0].onmessage({data:JSON.stringify({mode:'carrot-state-v1'})});h.tick();assert.equal(h.el('connection').dataset.state,'waiting');assert.equal(h.writes.length,0);
+});
+
+
+test('feature bootstrap timeout exposes a read-only retry and first-run setup owns the layout',()=>{
+ const h=harness();h.frame.showPage=undefined;h.el('features').emit('load');h.run(41000);
+ assert.equal(h.el('retryPanel').hidden,false);assert.match(h.el('panelStatusText').textContent,/尚未就緒/);
+ h.panel('tools').onclick();assert.equal(h.el('retryPanel').hidden,false);assert.equal(h.writes.length,0);
+ h.el('features').src='http://fixture/?cockpit_embed=1';h.el('retryPanel').onclick();assert.equal(h.el('features').src,'http://fixture/?cockpit_embed=1');assert.equal(h.writes.length,0);
+ h.frame.__CARROT_BOOTSTRAP__={intro:{shouldShow:true}};h.el('features').emit('load');assert.equal(h.context.document.body.dataset.panel,'setting');assert.equal(h.el('panelStatus').hidden,true);assert.equal(h.el('panelTitle').textContent,'首次引導設定');
 });

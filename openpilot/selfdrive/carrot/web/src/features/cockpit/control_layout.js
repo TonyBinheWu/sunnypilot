@@ -77,7 +77,8 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
   const start=create('button','cockpit-quick-settings','啟動與按鈕設定　›');start.type='button';start.onclick=()=>{const group=current?.groups[0];if(group)void selectGroup(group);};overview.append(start);
   results.hidden=true;message.setAttribute('role','status');
   const device=doc.getElementById('deviceTabContent'),deviceNav=create('div','cockpit-control-device');if(device)deviceNav.append(device);
-  pane.append(header,tabs,message,results,overview,deviceNav,host);shell.append(dismissNav,nav,pane);page.prepend(shell);doc.documentElement.classList.add('cockpit-controls-mode');
+  const retry=create('button','cockpit-control-retry','重新讀取設定');retry.type='button';retry.hidden=true;retry.onclick=()=>void load();
+  pane.append(header,tabs,message,retry,results,overview,deviceNav,host);shell.append(dismissNav,nav,pane);page.prepend(shell);doc.documentElement.classList.add('cockpit-controls-mode');
   let catalog=null,sections=[],current=null,loading=false,selection=0,pendingSection=null;
   const lastGroups=new Map();
   const clearSearch=()=>{target.exitSettingInlineSearchSurface?.();results.hidden=true;host.hidden=false;};
@@ -109,13 +110,13 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
     };navList.append(deviceButton);
   }
   async function load(){
-    if(loading||catalog)return;loading=true;message.textContent='正在讀取可用設定…';
+    if(loading||catalog)return;loading=true;retry.hidden=true;message.textContent='正在讀取可用設定…';
     const controller=new target.AbortController(),timer=target.setTimeout(()=>controller.abort(),5000);
     try{
       const response=await target.fetch('/api/settings',{cache:'no-store',credentials:'same-origin',signal:controller.signal});if(!response.ok)throw Error();
       catalog=await response.json();sections=cockpitControlSections(catalog);renderNav();message.textContent='';
       if(sections.length)choose(sections.find(s=>s.id===pendingSection)||sections[0]);else message.textContent='車機尚未提供可用設定。';pendingSection=null;
-    }catch{message.textContent='無法讀取設定分類，請確認車機連線後重新開啟控制面板。';}
+    }catch{message.textContent='無法讀取設定分類，請確認車機連線後重試。';retry.hidden=false;}
     finally{target.clearTimeout(timer);loading=false;}
   }
   // Keep the canonical search form/input and its voice/search state. On narrow
@@ -132,5 +133,10 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
   const decorate=node=>{if(node.nodeType!==1)return;if(node.matches('.setting'))composeCockpitControl(node,target);for(const row of node.querySelectorAll('.setting'))composeCockpitControl(row,target);};
   const observer=new target.MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)decorate(node);syncSearch();});observer.observe(host,{childList:true,subtree:true});const nativeSearch=doc.getElementById('carrotTabContent');if(nativeSearch)observer.observe(nativeSearch,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});const itemsScreen=doc.getElementById('settingScreenItems');if(itemsScreen)observer.observe(itemsScreen,{attributes:true,attributeFilter:['class']});decorate(host);syncSearch();
   const active=()=>{if(doc.body.dataset.cockpitPanel==='setting')void load();};target.addEventListener('carrot:cockpitpanelchange',active);active();
-  const api={shell,refresh:active,selectSection(id){const section=sections.find(s=>s.id===id);if(section)choose(section);else pendingSection=id;}};installed.set(doc,api);target.CarrotCockpitControls=api;return api;
+  const api={shell,refresh:active,back(){
+    if(shell.dataset.navOpen==='true'){setNav(false);return true;}
+    if(doc.getElementById('settingScreenItems')?.classList.contains('setting-screen-items--detail')){target.history.back();return true;}
+    if(doc.getElementById('carrotTabContent')?.classList.contains('is-inline-search')){clearSearch();return true;}
+    return false;
+  },selectSection(id){const section=sections.find(s=>s.id===id);if(section)choose(section);else pendingSection=id;}};installed.set(doc,api);target.CarrotCockpitControls=api;return api;
 }

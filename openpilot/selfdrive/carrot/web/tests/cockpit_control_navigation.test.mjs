@@ -4,7 +4,7 @@ import {installCockpitControlLayout} from '../src/features/cockpit/control_layou
 
 // Isolated DOM adapter; selectGroup is the real integration boundary. No
 // driving parameters or browser storage are written by this composition.
-async function fixture(options={}){
+async function fixture(options={},environment={}){
   const ids=new Map(),selected=[],media=[];
   const doc={body:{dataset:{cockpitPanel:'setting'}},getElementById:id=>ids.get(id),querySelector:()=>null};
   class Node{
@@ -21,7 +21,7 @@ async function fixture(options={}){
   for(const id of ['pageSetting','settingScreenHost'])ids.set(id,new Node('div'));
   const target={AbortController,setTimeout,clearTimeout,MutationObserver:class{observe(){}},addEventListener(){},matchMedia:()=>({addEventListener:(_name,fn)=>media.push(fn)}),
     fetch:async()=>({ok:true,json:async()=>({categories:[{groups:[{id:'START_AUTO'},{id:'BUTTON_PRESET'},{id:'SYS_SOUND'}]}]})}),
-    switchSettingTab:async()=>{},selectGroup:id=>selected.push(id)};
+    switchSettingTab:async()=>{},selectGroup:id=>selected.push(id),...environment};
   const api=installCockpitControlLayout(doc,target,options);await new Promise(setImmediate);
   return {doc,target,api,selected,media};
 }
@@ -50,4 +50,21 @@ test('touchscreen quick controls route only explicit actions and retain access t
  quick.children[0].onclick();assert.deepEqual(actions,['profile']);assert.equal(selected.at(-1),'START_AUTO');
  quick.children[6].onclick();await new Promise(setImmediate);assert.equal(shell.dataset.overview,'false');assert.equal(quick.hidden,true);assert.equal(selected.at(-1),'START_AUTO');
  api.selectSection('sound');await new Promise(setImmediate);assert.equal(selected.at(-1),'SYS_SOUND');
+});
+
+
+test('Back closes a category drawer, then detail, then search without changing settings',async()=>{
+ const {api,doc,target,selected}=await fixture();let detail=true,search=true,backs=0,clears=0;
+ const oldGet=doc.getElementById;doc.getElementById=id=>id==='settingScreenItems'?{classList:{contains:()=>detail}}:id==='carrotTabContent'?{classList:{contains:()=>search}}:oldGet(id);
+ target.history={back(){backs++;detail=false;}};target.exitSettingInlineSearchSurface=()=>{search=false;clears++;};const count=selected.length;
+ api.shell.querySelector('.cockpit-category-toggle').onclick();assert.equal(api.back(),true);assert.equal(backs,0);assert.equal(api.shell.dataset.navOpen,'false');
+ assert.equal(api.back(),true);assert.equal(backs,1);assert.equal(api.back(),true);assert.equal(clears,1);assert.equal(api.back(),false);assert.equal(selected.length,count);
+});
+
+
+test('a failed catalog offers a read-only retry without leaving the control page',async()=>{
+ let calls=0;const {api,target,selected}=await fixture({}, {fetch:async()=>{calls++;throw Error('offline');}});
+ const retry=api.shell.querySelector('.cockpit-control-retry');assert.equal(retry.hidden,false);assert.equal(selected.length,0);
+ target.fetch=async()=>{calls++;return {ok:true,json:async()=>({categories:[{groups:[{id:'SYS_SOUND'}]}]})};};retry.onclick();await new Promise(setImmediate);
+ assert.equal(calls,2);assert.equal(retry.hidden,true);assert.equal(selected.at(-1),'SYS_SOUND');
 });

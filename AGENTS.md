@@ -1,5 +1,19 @@
 # Repository memory
 
+- 2026-11-18 Cockpit interaction audit, layoutVersion8: final chrome CSS must
+  override plain-px media rules (shared font scaler otherwise doubles them).
+  Sticky dialog headers move original h2/form nodes and retain cancel handlers.
+  <=1100 CSS px settings/tools/logs use full width even after Android insets.
+  Back cancels canonical child dialogs, category/detail/search before parent.
+  Bootstrap/catalog retries are explicit, read-only; first-run guide owns layout.
+  Navigation hydrates existing destination, refreshes on open/visible, serializes
+  writes, ignores older GETs and reconciles unknown results by GET, never replay.
+  CarrotNavigationView exposes state/end/refresh; request deadline10s. Mode stage
+  cancels immediately when parked telemetry expires. 1038 JS and2 isolated HTTP
+  pass; Samsung Android14/0.6 ADB synthetic navigation/mode/Back/fullscreen plus
+  phone and wm1920x720/4:3 at200%. No real car writes/maps/RTC/endurance. Public
+  evidence: tools/carrot_android/INTERFACE_AUDIT.zh-TW.md. APK unchanged/immutable.
+
 - 2026-11-18 Phone-primary cockpit support: raw cockpit-mobile.css follows
   cockpit-tesla.css, full-width phone apps/navigation, bounded date/dock chrome,
   stacked portrait instruments, category drawer on short landscape. Long setting

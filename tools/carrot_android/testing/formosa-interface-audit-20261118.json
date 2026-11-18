@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-18",
+  "apk": "Formosa Cockpit 0.6.0 / versionCode 8 unchanged",
+  "webLayoutVersion": 8,
+  "testHost": "Samsung SM-A146P / Android 14 / USB ADB",
+  "data": "Isolated synthetic state and in-memory navigation. No vehicle IPC, real map API or vehicle-setting writes.",
+  "displayNote": "1920x720 and 1024x768 are wm display overrides; measured CSS widths exclude Android insets. Not physical head-unit acceptance.",
+  "webTests": {
+    "passed": 1038,
+    "failed": 0
+  },
+  "httpTests": {
+    "passed": 2,
+    "failed": 0
+  },
+  "cases": [
+    {
+      "id": "accepted-wide-controls-200",
+      "width": 1877,
+      "height": 720,
+      "fontPercent": 200,
+      "panel": "setting",
+      "fullscreen": false,
+      "outerOverflow": false,
+      "embeddedOverflow": false,
+      "dockBottom": 720,
+      "allDockLabelsFit": true,
+      "topItemsFit": true,
+      "scriptError": null
+    },
+    {
+      "id": "accepted-four-three-controls-200",
+      "width": 978,
+      "height": 768,
+      "fontPercent": 200,
+      "panel": "setting",
+      "fullscreen": false,
+      "outerOverflow": false,
+      "embeddedOverflow": false,
+      "dockBottom": 768,
+      "allDockLabelsFit": true,
+      "topItemsFit": true,
+      "scriptError": null
+    },
+    {
+      "id": "accepted-phone-controls-200",
+      "width": 380,
+      "height": 825,
+      "fontPercent": 200,
+      "panel": "setting",
+      "fullscreen": false,
+      "outerOverflow": false,
+      "embeddedOverflow": false,
+      "dockBottom": 825.73,
+      "allDockLabelsFit": true,
+      "topItemsFit": true,
+      "scriptError": null
+    },
+    {
+      "id": "accepted-phone-controls-100",
+      "width": 380,
+      "height": 825,
+      "fontPercent": 100,
+      "panel": "setting",
+      "fullscreen": false,
+      "outerOverflow": false,
+      "embeddedOverflow": false,
+      "dockBottom": 825.73,
+      "allDockLabelsFit": true,
+      "topItemsFit": true,
+      "scriptError": null
+    },
+    {
+      "id": "accepted-landscape-apps-scroll-200",
+      "width": 825,
+      "height": 380,
+      "fontPercent": 200,
+      "panel": "setting",
+      "fullscreen": false,
+      "outerOverflow": false,
+      "embeddedOverflow": false,
+      "dockBottom": 380.62,
+      "allDockLabelsFit": true,
+      "topItemsFit": true,
+      "scriptError": null
+    }
+  ],
+  "navigationEnd": {
+    "destinationCleared": true,
+    "drivingWrites": 0,
+    "geocoderRequests": 0
+  },
+  "modeCancel": {
+    "staged": true,
+    "canceledOnDrive": true,
+    "applyVisibleAfterDrive": false,
+    "nativeMenuAfterBack": true
+  },
+  "fullscreen": {
+    "requestVerified": true,
+    "activeLabelVerified": true,
+    "exitVerified": true,
+    "backWhileAppSheetOpenPreservesLivePage": true
+  }
+}

@@ -22,7 +22,7 @@ async function page(responses, language = "en", handleApi = null) {
     if (!elements.has(id)) elements.set(id, makeElement());
     return elements.get(id);
   };
-  vm.runInNewContext(traditionalSource + "\n" + source, {
+  const target = {
     document: { documentElement: {}, hidden: false, getElementById: element, createElement: makeElement },
     localStorage: { getItem: () => language }, navigator: {},
     URL: { createObjectURL: () => `blob:${++blobs}`, revokeObjectURL: (url) => revoked.push(url) },
@@ -40,9 +40,10 @@ async function page(responses, language = "en", handleApi = null) {
       assert.ok(response, "unexpected map request");
       return { status: response.status, headers: { get: () => response.reason }, blob: async () => ({}) };
     },
-  });
+  };
+  vm.runInNewContext(traditionalSource + "\n" + source, target);
   await settle();
-  return { element, revoked, blobs: () => blobs, next: async () => { await timers.shift()(); } };
+  return { target, element, revoked, blobs: () => blobs, next: async () => { await timers.shift()(); } };
 }
 
 test("keys without a route show destination instructions instead of a black image", async () => {
@@ -164,4 +165,35 @@ test('a late search cannot replace newer results or a changed search region',asy
   pending[0]({results:[{place_name:'舊結果'}]});await first;
   assert.equal(p.element('results').children[0].children[0].textContent,'新結果');
   p.element('searchRegion').value='';await p.element('searchRegion').trigger('change');assert.equal(p.element('results').children.length,0);
+});
+
+
+test('opening navigation restores an existing destination and ending reports the actual response',async()=>{
+ const place={place_name:'既有目的地',latitude:25,longitude:121},calls=[];
+ const p=await page([{status:204,reason:'offroad'}],'zh-TW',async(url,options)=>{
+  if(url.endsWith('favorites'))return {favorites:[]};calls.push(options.method||'GET');return {destination:options.method==='DELETE'?null:place};
+ });
+ const api=p.target.CarrotNavigationView;assert.equal(api.snapshot().active,true);assert.equal(api.snapshot().label,'既有目的地');assert.equal(p.element('clear').disabled,false);
+ assert.equal((await api.end()).ended,true);assert.equal(api.snapshot().active,false);assert.equal(p.element('clear').disabled,true);assert.match(p.element('status').textContent,/已結束/);assert.deepEqual(calls,['GET','DELETE']);
+});
+
+test('late initial read cannot overwrite a new destination and duplicate writes are blocked',async()=>{
+ let read,write;const calls=[],old={place_name:'舊位置'},place={place_name:'新位置',latitude:25,longitude:121};
+ const p=await page([{status:204,reason:'offroad'}],'zh-TW',async(url,options)=>{
+  if(url.endsWith('favorites'))return {favorites:[]};if(url.includes('/search?'))return {results:[place]};
+  calls.push(options.method||'GET');if(options.method==='POST')return await new Promise(r=>write=r);return await new Promise(r=>read=r);
+ });
+ p.element('query').value='自填地址';await p.element('query').trigger('input');await p.element('form').trigger('submit');
+ const request=p.element('results').children[0].children[0].trigger('click');await settle();assert.equal(p.target.CarrotNavigationView.snapshot().busy,true);
+ await assert.rejects(p.target.CarrotNavigationView.end());read({destination:old});await settle();assert.equal(p.target.CarrotNavigationView.snapshot().known,false);
+ write({destination:place});await request;assert.equal(p.target.CarrotNavigationView.snapshot().label,'新位置');assert.deepEqual(calls,['GET','POST']);
+});
+
+test('lost end response is unknown, never automatically replayed, and can be reconciled with a read',async()=>{
+ let destination={place_name:'測試目的地'},writes=0;
+ const p=await page([{status:204,reason:'offroad'}],'zh-TW',async(url,options)=>{
+  if(url.endsWith('favorites'))return {favorites:[]};if(options.method==='DELETE'){writes++;destination=null;throw Error('lost');}return {destination};
+ });
+ const api=p.target.CarrotNavigationView;await assert.rejects(api.end());assert.equal(api.snapshot().known,false);assert.equal(p.element('clear').disabled,false);assert.equal(p.element('clear').textContent,'重新讀取導航狀態');
+ await assert.rejects(api.end());assert.equal(writes,1);await p.element('clear').trigger('click');assert.equal(api.snapshot().known,true);assert.equal(api.snapshot().active,false);assert.equal(writes,1);
 });

@@ -105,3 +105,5 @@ html.cockpit-night .cockpit-controls{--md-surface:#202124;--md-surface-cont-h:#3
  .cockpit-control-header .cockpit-category-toggle{display:block!important;min-height:48px;font-size:calc(14px * var(--carrot-text-scale-chrome));padding:8px 12px}
  .cockpit-control-header h2{font-size:calc(18px * var(--carrot-text-scale-chrome))}.cockpit-control-search-slot{flex-basis:auto;order:0}
 }
+
+.cockpit-control-retry{align-self:flex-start;min-height:48px;margin:8px 20px;padding:10px 20px;background:var(--md-surface-container);border:1px solid var(--md-outline-var);border-radius:6px}

@@ -987,6 +987,8 @@ window.CarrotTranslations.register("zh-tw", {
     reboot_failed: "重新啟動失敗: ",
     set_failed: "設定失敗: ",
     setting_value_edit: "編輯值",
+    setting_value_previous: "上一個值",
+    setting_value_next: "下一個值",
     setting_value_title: "編輯值",
     setting_value_prompt: "請輸入 {name} 的值\n範圍: {min} - {max}",
     setting_value_invalid: "請輸入有效數字。",

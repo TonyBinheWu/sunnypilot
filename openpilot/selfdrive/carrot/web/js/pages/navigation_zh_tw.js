@@ -1,5 +1,8 @@
 "use strict";
 globalThis.CarrotNavigationZhTw = Object.freeze({
+  "Refresh navigation state": "重新讀取導航狀態",
+  "A navigation request is already in progress.": "正在處理導航要求，請稍候。",
+  "Read the navigation state again before ending navigation.": "導航狀態尚未確認，請先重新讀取。",
   "Map sources and search": "地圖與搜尋來源",
   "Search and routes use Mapbox. The map shares the vehicle’s Mapbox / OpenStreetMap–Protomaps preview with the navigation model. Set your Mapbox Public key in Settings → Network.": "搜尋與路徑由 Mapbox 提供；地圖共用車機的 Mapbox／OpenStreetMap·Protomaps 預覽，與導航模型使用相同來源。請在「設定 → 網路」填入 Mapbox 公開金鑰。",
   "Reselect this legacy favorite with Mapbox before navigating.": "請先用 Mapbox 重新搜尋並儲存此舊版最愛的地址，再開始導航。",
