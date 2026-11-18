@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {createSceneModels} from './scene_3d_models.js';
 import {surroundingTargets} from './scene_objects.js';
+import {paintStripes} from './road_paint.js';
 import {ROAD_CLASSES} from './object_classes.js';
 
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
@@ -49,7 +50,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       hud=new T.Scene();hud.add(new T.HemisphereLight('#eff8ff','#556c88',2));hudCamera=new T.OrthographicCamera(0,1,1,0,1,1000);hudCamera.position.z=500;
       ground=new T.Mesh(new T.PlaneGeometry(600,600),new T.MeshBasicMaterial({color:'#e8edf5'}));ground.position.set(70,0,-.04);ground.userData.owned=true;scene.add(ground);
       // Fixed reusable geometry; no per-frame GPU allocations or shadow maps.
-      for(let i=0;i<12;i++){
+      for(let i=0;i<14;i++){
         const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(new Float32Array(256*18),3).setUsage(T.DynamicDrawUsage));geometry.setDrawRange(0,0);
         const mesh=new T.Mesh(geometry,new T.MeshBasicMaterial({color:'#ffffff',side:T.DoubleSide,depthWrite:false,transparent:true,opacity:.9}));mesh.frustumCulled=false;mesh.renderOrder=i;world.add(mesh);ribbons.push(mesh);
       }
@@ -75,7 +76,11 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       const model=data.model;
       if(model){
         (model.roadEdges||[]).slice(0,2).forEach((p,i)=>ribbon(i,p,-.07,.07,night?'#7b8a9e':'#637283',true));
-        (model.laneLines||[]).slice(0,4).forEach((p,i)=>{if((model.laneLineProbs?.[i]??0)>.3)ribbon(i+2,p,-.045,.045,night?'#d4e0ef':'#ffffff',true);});
+        (model.laneLines||[]).slice(0,4).forEach((p,i)=>{
+          if((model.laneLineProbs?.[i]??0)<=.3)return;
+          const paint=paintStripes(data.paint?.[i],i,night?'#d4e0ef':'#ffffff');
+          paint.offsets.forEach((offset,j)=>ribbon(j?11+i:i+2,p,offset-.045,offset+.045,paint.color,true));
+        });
         if(rainbow)['#ff4c72','#ffad35','#f8e45d','#43dda1','#22baff','#8c74ff'].forEach((c,i)=>ribbon(i+6,model.position,-.83+i*1.66/6,-.83+(i+1)*1.66/6,c,false));
         else ribbon(6,model.position,-.83,.83,'#008dff',false);
       }

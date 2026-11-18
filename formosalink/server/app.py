@@ -92,7 +92,7 @@ def create_app(data_dir, web_dir=None):
     if request.url.path.startswith("/api/"):
       if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
         return Response(status_code=400)
-      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media", "/api/v1/agent/media/watch", "/api/v1/agent/training", "/api/v1/training-worker", "/api/v1/agent/support"):
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media", "/api/v1/agent/media/watch", "/api/v1/agent/training", "/api/v1/agent/road-scenes", "/api/v1/training-worker", "/api/v1/agent/support"):
         if request.headers.get("origin") != config["origin"]:
           return Response(status_code=403)
       try:
@@ -100,6 +100,9 @@ def create_app(data_dir, web_dir=None):
       except ValueError:
         return Response(status_code=400)
       limit = 768 * 1024 if request.url.path == "/api/v1/agent/training" else MAX_MEDIA_BYTES if request.url.path == "/api/v1/agent/media" else MAX_MANAGEMENT_BYTES if request.url.path == "/api/v1/agent/sync" else MAX_FRAME_BYTES
+      if request.url.path == '/api/v1/agent/road-scenes':
+        from formosalink.server.road_scenes import LIMIT_BYTES
+        limit = LIMIT_BYTES
       if request.url.path == '/api/v1/agent/support':limit=65536
       if "/carrot/" in request.url.path:
         from openpilot.sunnypilot.formosalink.remote_web_protocol import MAX_BODY
@@ -129,7 +132,7 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1", "live-camera-stream-v1", "carrot-web-v1", "support-logs-v1"], "database_version": 3}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1", "live-camera-stream-v1", "carrot-web-v1", "support-logs-v1", "road-scenes-v1"], "database_version": 3}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):
@@ -390,6 +393,8 @@ def create_app(data_dir, web_dir=None):
         connections.pop(device_id, None)
 
   from formosalink.server.media import register as register_media
+  from formosalink.server.road_scenes import attach as attach_road_scenes
+  attach_road_scenes(app, directory, store, owner, rate)
   from formosalink.server.training import attach as attach_training
   attach_training(app, directory, store, owner, rate)
   register_media(app, store, owner, rate)

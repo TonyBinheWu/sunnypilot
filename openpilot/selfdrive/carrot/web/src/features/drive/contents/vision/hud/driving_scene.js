@@ -1,3 +1,4 @@
+import {paintStripes} from './road_paint.js';
 import {drawDetectedMesh} from './object_mesh.js';
 import {ANIMALS} from './object_classes.js';
 import {surroundingTargets} from './scene_objects.js';
@@ -90,9 +91,9 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     }
     return points;
   };
-  const stroke=(path,color,width)=>{
+  const stroke=(path,color,width,offset=0)=>{
     ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();let started=false;
-    for(const p of pathPoints(path)){if(!p){started=false;continue;}if(started)ctx.lineTo(...p);else{ctx.moveTo(...p);started=true;}}
+    for(const p of pathPoints(path,offset)){if(!p){started=false;continue;}if(started)ctx.lineTo(...p);else{ctx.moveTo(...p);started=true;}}
     ctx.stroke();
   };
   const ribbon=(path,left,right,color)=>{
@@ -111,7 +112,11 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
       ctx.beginPath();ctx.moveTo(...left[i-1]);ctx.lineTo(...left[i]);ctx.lineTo(...right[i]);ctx.lineTo(...right[i-1]);ctx.closePath();ctx.fill();
     }
     (model.roadEdges||[]).slice(0,2).forEach(line=>stroke(line,night?'#737b86':'#c7cdd1',2.5));
-    (model.laneLines||[]).slice(0,4).forEach((line,i)=>{if((model.laneLineProbs?.[i]??0)>.3)stroke(line,night?'#e0e5ee':'#b9c1c8',1.6);});
+    (model.laneLines||[]).slice(0,4).forEach((line,i)=>{
+      if((model.laneLineProbs?.[i]??0)<=.3)return;
+      const paint=paintStripes(scene.paint?.[i],i,night?'#e0e5ee':'#b9c1c8');
+      for(const offset of paint.offsets)stroke(line,paint.color,1.6,offset);
+    });
     if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(model.position,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}
     else ribbon(model.position,-.75,.75,night?'#0589fff0':'#178fffd9');
   }

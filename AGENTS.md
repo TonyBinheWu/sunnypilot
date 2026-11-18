@@ -1,5 +1,7 @@
 # Repository memory
 
+- 2026-11-18 Road scene research uses independent per-owner/device opt-in and signed sparse scene uploads. Preserve source frame/EOF, calibration, GNSS quality, and OEM paint time. Never turn image-only boxes or OSM into observed geometry, moving tracks into static landmarks, or research data into a control input. Taiwan PBF/index, raw captures, and research weights stay outside git. See docs/ROAD_SCENE_RESEARCH.zh-TW.md for collection and the held-out KITTI results.
+
 - 2026-11-18 Lane-change notices: display-only forecasts use existing meta
   indicatorPrepare fields independently of lamp permissions; never assign desire,
   indicator or CAN commands from a forecast. Near exits are guidance, not proof

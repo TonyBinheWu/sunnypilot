@@ -192,6 +192,8 @@ C3X／C4 共用的文字排版已加入快取，滑動只改變位置時不再�
 
 ## FormosaLink 雲端操作與 LIVE
 
+已配對車主可以在「道路環境研究」分享前方車道、道路邊緣、物件與定位，查看台灣 OSM 道路疊圖，並下載自己的場景。支援的車型可記錄原廠雙黃線分類。[繁中操作指南與佔用模型實測](docs/ROAD_SCENE_RESEARCH.zh-TW.md)
+
 本分支支援 [FormosaLink](https://formosapilot.dinglu-t.com)：配對裝置後，可選「遠端 Carrot 網頁」進入原生網頁操作設定，或選「雙鏡頭 LIVE」觀看前廣角／車內鏡頭。
 
 C3X 在「裝置 → FormosaLink」、C4 在「設定 → FormosaLink」掃描 QR 配對。完整網頁需在車機另開「遠端 Carrot 網頁」權限，且保持停車熄火與網路連線；開始行車或停用授權會中斷通道。LIVE 沿用所有者短效觀看租約，目標 8 fps、最大 640×360，不含音訊。

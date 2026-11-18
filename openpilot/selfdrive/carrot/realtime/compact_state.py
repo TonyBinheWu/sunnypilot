@@ -229,6 +229,7 @@ SERVICE_SCHEMAS: dict[str, tuple[int, tuple[tuple[Any, ...], ...]]] = {
     ("canValid", "bool"),
     ("canTimeout", "bool"),
     ("steeringPressed", "bool"),
+    ("laneLineInfoMonoTime", "u64"),
   )),
   "controlsState": (2, (
     ("enabled", "bool", ("deprecated", "enabled")),

@@ -21,7 +21,7 @@ const arContract = {
     // Appended for the cluster-parity EV telltale (kept at the end).
     "evModeValid", "evModeActive",
     "lightingStateValid", "lowBeamOn", "highBeamOn", "doorOpen",
-    "canValid", "canTimeout", "steeringPressed",
+    "canValid", "canTimeout", "steeringPressed", "laneLineInfoMonoTime",
   ]],
   selfdriveState: [6, [
     "enabled", "personality", "alertStatus", "alertSize", "alertType", "alertText1", "alertText2",

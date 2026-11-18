@@ -28,4 +28,5 @@ def test_real_native_encoder_preserves_notice_health_and_takeover_gates(can_vali
   cs = event.init('carState')
   cs.canValid, cs.canTimeout, cs.steeringPressed = can_valid, timeout, pressed
   cs.gearShifter, cs.vEgo = 'drive', 30.
+  cs.laneLineInfoMonoTime = 123456789012 if can_valid else 0
   assert encode_frame('carState', event.to_bytes(), 17) == encode_carrot_state_frame('carState', cs, 17)

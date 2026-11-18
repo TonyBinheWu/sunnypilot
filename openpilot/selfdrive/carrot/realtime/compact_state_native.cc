@@ -614,6 +614,7 @@ void encode_car_state(std::string &out, const DynamicReader &value) {
   append_bool(out, value, "canValid");
   append_bool(out, value, "canTimeout");
   append_bool(out, value, "steeringPressed");
+  append_u64(out, value, "laneLineInfoMonoTime");
 }
 
 void encode_controls_state(std::string &out, const DynamicReader &value) {

@@ -69,6 +69,7 @@ function publishPresentedFrame(detail = {}) {
     frameId: Number.isFinite(PRESENTED_VIDEO_FRAME_ID) ? PRESENTED_VIDEO_FRAME_ID : null,
     cameraTimestampEof: frame?.timestampEof ?? null,
     clockMappingConfidence: frame?.confidence ?? "unmapped",
+    imageMapping: LAST_PRESENTED_RTP_TIMESTAMP !== null && RTP_FRAME_HISTORY.get(LAST_PRESENTED_RTP_TIMESTAMP) === PRESENTED_VIDEO_FRAME_ID ? "rtp" : "approximate",
   }) || null;
 }
 

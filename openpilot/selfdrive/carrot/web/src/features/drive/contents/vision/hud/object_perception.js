@@ -1,10 +1,13 @@
 import {cameraGeometry,cameraTargets,unpositionedTargets,roadCameraTargets,roadImageTargets} from './scene_objects.js';
 
+import {captureIdentity,sceneContributor} from './scene_contribution.js';
+
 export const DETECTION_TTL_MS=1200;
 export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={}) {
   let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,warmed=false,lastAttempt=-Infinity;
   let lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
   let state={status:'off',objects:[],imageObjects:[],count:0,capturedAt:null,revision};
+  const contribute=sceneContributor(target,road?'road':'efficientdet');
   const now=()=>target.performance?.now?.()??Date.now();
   const clearTimeout=()=>{if(timeout!==null)target.clearTimeout(timeout);timeout=null;};
   const publish=(status,extra={})=>{state={status,objects:[],imageObjects:[],count:0,capturedAt:null,...extra,revision:++revision};onChange();};
@@ -44,6 +47,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
           videoTime:captured.videoTime,durationMs:data.durationMs,camera:captured.geometry?.sensor||null,
           delegate:data.delegate||null,geometryReason:captured.geometryReason,frameSize:[captured.width,captured.height],
         });
+        void contribute(captured.identity,state,now());
       };
       timeout=target.setTimeout(()=>fail('load_error'),90000);
       worker.postMessage({type:'init'});publish('loading');
@@ -76,7 +80,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
       :!['calibrated',1].includes(raw.liveCalibration?.calStatus)?'calibration'
       :!Number.isFinite(raw.liveCalibration?.height?.[0])||raw.liveCalibration.height[0]<.5||raw.liveCalibration.height[0]>3?'height'
       :!['os04c10','ar0231','ox03c10'].includes(String(raw.roadCameraState?.sensor||'').toLowerCase())?'sensor':'profile';
-    request={id:revision+1,capturedAt,geometry,geometryReason,videoTime,width,height};
+    request={identity:captureIdentity(target,replay),id:revision+1,capturedAt,geometry,geometryReason,videoTime,width,height};
     // First use can initialize kernels after createFromOptions resolves.
     // Let that one warm-up finish; the original capture TTL STILL rejects its
     // old result. Subsequent frames retain the bounded inference deadline.

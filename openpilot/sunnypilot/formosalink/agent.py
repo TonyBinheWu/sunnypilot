@@ -84,6 +84,8 @@ def run(directory=None, demo=False, stop=None):
     start_training_upload(directory,stop)
     from openpilot.sunnypilot.formosalink.profile import CARROT
     if CARROT:
+      from openpilot.sunnypilot.formosalink.scene_agent import start as start_scenes
+      start_scenes(directory, stop)
       from openpilot.sunnypilot.formosalink.remote_web import start as start_web
       start_web(directory, stop)
   from openpilot.sunnypilot.formosalink.telemetry import DemoSampler, OpenpilotSampler

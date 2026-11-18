@@ -2,6 +2,10 @@
 
 [한국어](../ko/settings.md)
 
+## Road scene research
+
+In FormosaLink, choose your paired Carrot device, open **Road scene research**, and select **Start sharing**. The portal shows recent road geometry and nearby OpenStreetMap roads. Stop sharing, erase the data, or download your observations from the same panel. Camera classifications require a connected viewer with detection enabled. [Data fields and evaluation](../../ROAD_SCENE_RESEARCH.zh-TW.md)
+
 ## Carrot Vision object display
 
 The object detector needs a connected front-camera image and fresh calibration. The standard live stream now preserves the full source aspect: C4 uses 672×380; C3/C3X retain 964×604. Update and rebuild the vehicle, reboot while parked, then reconnect the existing APK.

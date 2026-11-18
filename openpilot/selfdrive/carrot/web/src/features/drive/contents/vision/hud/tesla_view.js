@@ -13,6 +13,8 @@ import {el, setText} from './dom.js';
 import {surroundingTargets} from './scene_objects.js';
 import {drawDrivingScene,drawSceneObject} from './driving_scene.js';
 import {createObjectPerception} from './object_perception.js';
+import {researchMap} from './research_map.js';
+import {lanePaint,paintStripes} from './road_paint.js';
 import {createDrivingScene3D} from './scene_3d.js';
 
 export const METRIC_DEFAULTS = Object.freeze({speed:[.04,.04,1.2],limit:[.04,.43,1],set:[.04,.80,1]});
@@ -57,18 +59,30 @@ export function drawBirdScene(ctx,w,h,scene,{rainbow=false,projection=null,maxDi
   const model=scene.model;
   // Model y is right-positive; native lead yRel is left-positive.
   const px=projection?.project||((x,y)=>[w*.5+y*w/22,h*.85-x*h/90]);
-  const line=(path,color,width)=>{
+  const line=(path,color,width,offset=0)=>{
     if(!Array.isArray(path?.x)||!Array.isArray(path?.y))return;
     ctx.beginPath();let started=false;
     for(let i=0;i<Math.min(path.x.length,path.y.length);i++){
       const x=path.x[i],y=path.y[i];if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>maxDistance||Math.abs(y)>100){started=false;continue;}
-      const p=px(x,y);if(!started){ctx.moveTo(...p);started=true;}else ctx.lineTo(...p);
+      const p=px(x,y+offset);if(!started){ctx.moveTo(...p);started=true;}else ctx.lineTo(...p);
     }
     ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
   };
   if(model){
+    for(const [a,b] of scene.mapLines||[]){
+      if(Math.min(a[0],b[0])>maxDistance)continue;
+      const atHorizon=(p,q)=>p[0]<=maxDistance?p:
+        [maxDistance,p[1]+(q[1]-p[1])*(maxDistance-p[0])/(q[0]-p[0])];
+      const start=atHorizon(a,b),end=atHorizon(b,a);
+      line({x:[start[0],end[0]],y:[start[1],end[1]]},'#41556a',1);
+    }
+    if(scene.mapLines?.length){ctx.fillStyle='#b2c0cb';ctx.font='12px sans-serif';ctx.fillText('© OpenStreetMap contributors',8,h-8);}
     (model.roadEdges||[]).slice(0,2).forEach(p=>line(p,'#5e6671',3));
-    (model.laneLines||[]).slice(0,4).forEach((p,i)=>{if((model.laneLineProbs?.[i]??0)>.3)line(p,'#c2cad4',2);});
+    (model.laneLines||[]).slice(0,4).forEach((p,i)=>{
+      if((model.laneLineProbs?.[i]??0)<=.3)return;
+      const paint=paintStripes(scene.paint?.[i],i,'#c2cad4');
+      for(const offset of paint.offsets)line(p,paint.color,2,offset);
+    });
     if(rainbow){
       const colors=['#f15c66','#ffad55','#ffe773','#79e5a1','#63cafa','#a18af5','#e88cdb'];
       colors.forEach((c,i)=>line({x:model.position?.x,y:model.position?.y?.map(y=>y+(i-3)*.17)},c,Math.max(2,w/140)));
@@ -95,6 +109,7 @@ export function drawBirdScene(ctx,w,h,scene,{rainbow=false,projection=null,maxDi
 export function createTeslaView(doc,target) {
   const text=(key,fallback)=>target.getUIText?.(key,fallback)||fallback;
   const root=el(doc,'div',{class:'tesla-view'});
+  const research=researchMap(target);
   const canvas=el(doc,'canvas',{class:'tesla-scene',attrs:{'aria-label':text('vision_tesla_name','Bird’s-eye view')}});
   const notice=el(doc,'div',{class:'tesla-notice'});
   const perceptionStatus=el(doc,'div',{class:'tesla-perception',attrs:{role:'status'}});
@@ -230,6 +245,8 @@ export function createTeslaView(doc,target) {
     perception.update({active:tesla&&viewActive,frozen:bev.frozen});
     roadPerception.update({active:tesla&&viewActive,frozen:bev.frozen});
     const vision=perception.scene(),road=roadPerception.scene(),liveScene=tesla?{...birdScene(target,now()),vision,road}:{};
+    const map=research.read(isBev&&viewActive&&!doc.hidden&&!bev.frozen&&target.CarrotVisionReplay?.status?.()?.active!==true,now());
+    if(tesla){liveScene.paint=lanePaint(target,now());liveScene.mapLines=map.lines;}
     const scene=bev.prepare(liveScene);scene.text=text;
     perceptionStatus.hidden=!tesla;
     setText(perceptionStatus,settings.vision_object_detection===true
@@ -303,7 +320,7 @@ export function createTeslaView(doc,target) {
       const {width:w,height:h,factor}=sceneRenderSize(vw,vh,settings.vision_render_quality);
       const stamp=target.CarrotStateReceivedAtMonotonic?.modelV2??target.CarrotStateUpdatedAt?.modelV2;
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
-      const signature=`${w}:${h}:${skin.id}:${skin.paint}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}:${zoomEnabled?zoom.progress.toFixed(3):'manual'}:${orbit.pose.yaw}:${orbit.pose.pitch}:${orbit.zoom}:${lamps.brake}:${lamps.left}:${lamps.right}:${lamps.lowBeam}:${lamps.highBeam}:${parking.overhead}:${parking.yaw}:${paint.revision}:${lot.status}`;
+      const signature=`${w}:${h}:${skin.id}:${skin.paint}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${map.revision}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}:${zoomEnabled?zoom.progress.toFixed(3):'manual'}:${orbit.pose.yaw}:${orbit.pose.pitch}:${orbit.zoom}:${lamps.brake}:${lamps.left}:${lamps.right}:${lamps.lowBeam}:${lamps.highBeam}:${parking.overhead}:${parking.yaw}:${paint.revision}:${lot.status}`;
       const obstruction=parseFloat(target.getComputedStyle?.(doc.documentElement)?.getPropertyValue('--cockpit-bottom-obstruction'))||0;
       const bottomFraction=Math.min(.45,(obstruction+parkingPanel.getBoundingClientRect().height+24)/Math.max(1,vh));
       const drivingCamera=orbitCamera({...zoom.camera,skinScale:skin.scale},orbit.pose,orbit.zoom);
