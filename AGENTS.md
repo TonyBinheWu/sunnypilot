@@ -11,6 +11,9 @@
   Native/Web notices require fresh4-service state, CANvalid, D, lateral active,
   >=30km/h and no existing alert. Compact appends meta AND CAN health/takeover
   fields in Python/native/JS matching order. Browser alertSize is numeric0.
+  Visible notices own an existing HUD+overlay data lease: standard camera/HUD
+  mode otherwise lacks model metadata. Guard synchronous lease reentrancy, late
+  publisher installation and release on deactivate/destroy. No camera request.
   Guide: docs/LANE_CHANGE_NOTICES.zh-TW.md. Simulated UI and recorded fixed-input
   replay are not actual model/road acceptance. No native APK change.
 

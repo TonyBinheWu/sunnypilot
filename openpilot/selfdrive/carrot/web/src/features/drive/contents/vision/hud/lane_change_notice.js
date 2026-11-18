@@ -28,13 +28,26 @@ export function createLaneChangeNotice(doc,target){
   const arrow=el(doc,'span',{class:'chud-lane-notice-arrow',attrs:{'aria-hidden':'true'}});
   const title=el(doc,'strong'),detail=el(doc,'span');
   root.appendChild(arrow);root.appendChild(el(doc,'div',{},[title,detail]));root.hidden=true;
-  let timer=null,active=false,destroyed=false;
+  let timer=null,active=false,destroyed=false,lease=null,acquiring=false;
   const text=(key,fallback)=>target.getUIText?.(key,fallback)||fallback;
+  function releaseData(){const previous=lease;lease=null;previous?.release?.();}
+  function ensureData(){
+    if(doc.hidden){releaseData();return;}
+    if(!active||destroyed||lease||acquiring||target.document!==doc||!target.CarrotDriveDataActivity?.acquire)return;
+    acquiring=true;
+    try{
+      // HUD-only camera mode does not otherwise subscribe to model metadata.
+      // This is the existing display-data lease, never a camera/control request.
+      const next=target.CarrotDriveDataActivity.acquire({owner:'lane_change_notice',hud:true,overlay:true});
+      if(active&&!destroyed)lease=next;else next?.release?.();
+    }finally{acquiring=false;}
+  }
   function render(){
+    ensureData();
     const now=target.performance?.now?.()??Date.now();
     const fresh=service=>{const t=target.CarrotStateReceivedAtMonotonic?.[service];return Number.isFinite(t)&&now>=t&&now-t<500;};
     const hud=target.CarrotHudState||{},overlay=target.CarrotOverlayState||{};
-    const value=active&&!destroyed?laneChangeNotice(overlay.modelV2?.meta,{
+    const value=active&&!destroyed&&!doc.hidden?laneChangeNotice(overlay.modelV2?.meta,{
       ready:['carState','carControl','modelV2','selfdriveState'].every(fresh),car:hud.carState,
       latActive:overlay.carControl?.latActive,alertSize:hud.selfdriveState?.alertSize,
       offroad:target.CarrotDeviceRuntimeState?.isOffroad===true,replay:target.CarrotVisionReplay?.status?.()?.active===true}):null;
@@ -47,11 +60,17 @@ export function createLaneChangeNotice(doc,target){
     const key=['completed','cancelled','unverified'].includes(kind)?'watch':kind==='exit'?'exit_detail':lampOn?'lamp_on':'signal';
     setText(detail,text(`lane_notice_${key}`,'Check traffic; operate indicators yourself'));
   }
+  function syncTimer(){
+    if(timer!=null)target.clearInterval?.(timer);
+    timer=active&&!destroyed&&!doc.hidden&&target.document===doc?target.setInterval?.(render,100)??null:null;timer?.unref?.();
+  }
+  const onVisibility=()=>{if(doc.hidden)releaseData();syncTimer();render();};
+  doc.addEventListener?.('visibilitychange',onVisibility);
   return {el:root,render,setActive(value){
     active=Boolean(value)&&!destroyed;
-    if(timer!=null)target.clearInterval?.(timer);
-    timer=active&&target.document===doc?target.setInterval?.(render,100)??null:null;timer?.unref?.();render();
-  },destroy(){destroyed=true;active=false;if(timer!=null)target.clearInterval?.(timer);timer=null;root.remove?.();}};
+    if(!active)releaseData();
+    syncTimer();render();
+  },destroy(){destroyed=true;active=false;releaseData();syncTimer();doc.removeEventListener?.('visibilitychange',onVisibility);root.remove?.();}};
 }
 
 export const LANE_NOTICE_CSS=`
