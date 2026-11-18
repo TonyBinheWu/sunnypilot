@@ -18,12 +18,38 @@ from tools.training_studio.store import Store,exclusive_worker,read_json,write_j
 
 def closed_loop_score(batch):
   rows=[read_json(path) for path in Path(batch).glob('*/result.json')]
-  if not rows: return (-1,-1,-1,-1,-1.,-1.)
+  if not rows: return (-1,)*8
   failures={failure for row in rows for failure in row.get('failures',[])}
   red=[row.get('red_wait_audit',{}).get('longest_contiguous_red_stop_s',0.) for row in rows if row.get('scenario')=='red_light']
   return (int('collision' not in failures),int('crossed_before_permission' not in failures),int('out_of_road' not in failures),
-    sum(row.get('status')=='pass' and not row.get('failures') for row in rows),min(red,default=0.),
+    sum(row.get('status')=='pass' and not row.get('failures') for row in rows),
+    int('lane_envelope' not in failures),int(not failures.intersection({'red_hold_not_maintained','red_stop_not_sustained'})),min(red,default=0.),
     -max((row.get('max_center_error_m',0.) for row in rows),default=0.))
+
+
+def restore_parent_ranking(store,state):
+  """Re-rank recorded candidates after changing the training-parent heuristic.
+
+  This does not issue qualification: only the original complete suite may do so.
+  """
+  if state.get('ranking_version')==2: return
+  best=(-1,)*8
+  for batch in sorted((store.root/'teacher-cycles').glob('cycle-*/qualification-*')):
+    if not batch.is_dir(): continue
+    report=read_json(batch/'qualification.json',{})
+    rows=report.get('results',[])
+    paths=sorted(batch.glob('*/provenance.json'))
+    if not rows or not paths: continue
+    provenance=read_json(paths[0]).get('provenance',{})
+    fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
+    adapter=provenance.get('action_expert_adapter') or {}
+    if not adapter.get('path','').startswith('/studio/teacher/cycle-') or not adapter.get('sha256'): continue
+    if any(row.get('model_provenance_sha256')!=fingerprint for row in rows): continue
+    score=closed_loop_score(batch)
+    if score>best:
+      best=score
+      state.update(parent=adapter,scenario=rows[-1]['scenario'])
+  state.update(best_closed_loop=best,ranking_version=2)
 
 
 def main():
@@ -102,6 +128,7 @@ def main():
   loop_root=store.root/'teacher-adaptation'
   loop_root.mkdir(exist_ok=True)
   state=read_json(loop_root/'state.json',{'cycle':2,'parent':settings['initial_parent'],'scenario':'red_light'})
+  restore_parent_ranking(store,state)
   gate_files=('scene.py','edge_stop_audit.py','edge_experiment.py','nvidia_plan.py')
   gates={name:hashlib.sha256((Path(config['qualification_checkout'])/'openpilot/tools/sim/training'/name).read_bytes()).hexdigest() for name in gate_files}
   if state.get('acceptance') and state['acceptance']!=gates: raise RuntimeError('qualification/tracker implementation changed; refusing silent gate changes')

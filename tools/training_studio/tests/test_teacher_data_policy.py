@@ -34,5 +34,16 @@ class TeacherDataPolicyTest(unittest.TestCase):
       self.assertGreater(closed_loop_score(root/'safe'),closed_loop_score(root/'unsafe'))
       self.assertLess(closed_loop_score(root/'empty'),closed_loop_score(root/'unsafe'))
 
+  def test_training_parent_preserves_fixed_lane_tracking_before_longer_but_failed_hold(self):
+    with tempfile.TemporaryDirectory() as directory:
+      root=Path(directory)
+      write_json(root/'centered'/'red'/'result.json',{'scenario':'red_light','status':'fail',
+        'failures':['red_hold_not_maintained'],'max_center_error_m':.17,
+        'red_wait_audit':{'longest_contiguous_red_stop_s':1.8}})
+      write_json(root/'drifting'/'red'/'result.json',{'scenario':'red_light','status':'fail',
+        'failures':['lane_envelope','red_hold_not_maintained'],'max_center_error_m':1.14,
+        'red_wait_audit':{'longest_contiguous_red_stop_s':2.3}})
+      self.assertGreater(closed_loop_score(root/'centered'),closed_loop_score(root/'drifting'))
+
 
 if __name__=='__main__': unittest.main()

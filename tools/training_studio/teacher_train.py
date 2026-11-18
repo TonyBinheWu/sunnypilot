@@ -124,6 +124,12 @@ def main():
     item={'cache':cache_copy(cache,'cpu'),'positions':positions.detach().cpu().clone(),'mask':mask.detach().cpu().clone(),
       'ego_history_xyz':inputs['ego_history_xyz'][:,-1].detach().cpu().clone(),'ego_history_rot':inputs['ego_history_rot'][:,-1].detach().cpu().clone(),
       'target':torch.from_numpy(sample['future_xyz']),'target_rot':torch.from_numpy(sample['future_rot']),'row':row}
+    # Official inverse dynamics supplies acceleration targets from the same
+    # observed history and label-only reference future. Average position loss
+    # alone can hide a positive first-step acceleration pulse while parked.
+    target_action=model.expert.action_space.traj_to_action(item['ego_history_xyz'].cuda(),item['ego_history_rot'].cuda(),
+      item['target'].cuda(),item['target_rot'].cuda())
+    item['target_action']=target_action.detach().cpu().clone()
     if index==0:
       with torch.no_grad(): action,_,_=rollout(model,item,grad=False)
       difference=float((action.cpu()-captured['action']).abs().max())
@@ -149,6 +155,10 @@ def main():
     if item['row']['stop_required']:
       held=(torch.linalg.vector_norm(ref_velocity,dim=-1)<.15).float()
       loss=loss+50*(velocity.square().sum(-1)*held).sum()/held.sum().clamp_min(1)
+      loss=loss+200*(velocity.square().sum(-1)*held).amax()
+      accel_std=model.expert.action_space.accel_std.to(action.device)
+      accel_error=(action[...,0]-item['target_action'].to(action.device)[...,0])*accel_std
+      loss=loss+50*(accel_error[:,:20].square()*held[:,:20]).sum()/held[:,:20].sum().clamp_min(1)
       loss=loss+30*torch.relu(xyz[...,0]-item['row']['front_distance_m']+.2).square().mean()
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
