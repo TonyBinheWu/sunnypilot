@@ -36,11 +36,20 @@ export function teacherMessage(value){
 }
 
 export function teacherValidationSummary(value){
-  const row=value.teacher_training?.history?.at(-1);
-  if(!row)return '';
+  const progress=value.teacher_training||{},row=progress.history?.at(-1);
   const parts=[];
-  if(row.stop_metric==='valid_stop_zone_v2'&&Number.isFinite(row.red_safe_count)&&Number.isFinite(row.red_samples))parts.push(`停止區樣本 ${row.red_safe_count} / ${row.red_samples}`);
-  if(Number.isFinite(row.go_velocity_mse))parts.push(`放行速度 MSE ${row.go_velocity_mse.toFixed(4)}`);
+  if(row?.stop_metric==='valid_stop_zone_v2'&&Number.isFinite(row.red_safe_count)&&Number.isFinite(row.red_samples))parts.push(`停止區樣本 ${row.red_safe_count} / ${row.red_samples}`);
+  if(Number.isFinite(row?.go_velocity_mse))parts.push(`放行速度 MSE ${row.go_velocity_mse.toFixed(4)}`);
+  if(progress.optimization_profile==='paired_stop_go_pcgrad_sgd_v1'){
+    parts.push('停止／通行成對最佳化');
+    if(progress.phase==='training'&&progress.stage!=='validation'&&Number.isFinite(progress.stop_loss_before_step)&&Number.isFinite(progress.go_loss_before_step)){
+      parts.push(`本對停止 loss ${progress.stop_loss_before_step.toFixed(3)} → ${progress.stop_loss.toFixed(3)}`);
+      parts.push(`本對通行 loss ${progress.go_loss_before_step.toFixed(3)} → ${progress.go_loss.toFixed(3)}`);
+      if(Number.isFinite(progress.step_scale))parts.push(progress.step_scale===0?'本次更新已撤回':`採用步幅 ${progress.step_scale}`);
+    }
+  }
+  const qualified=progress.qualified_candidate;
+  if(progress.phase==='qualified'&&qualified)parts.push(`採用第 ${qualified.cycle} 輪 Epoch ${qualified.training_epoch} 固定快照 · 最佳化實際完成 ${progress.optimizer_completed_epochs} 個 epoch`);
   return parts.join(' · ');
 }
 
