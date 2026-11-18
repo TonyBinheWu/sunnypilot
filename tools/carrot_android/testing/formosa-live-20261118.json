@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-18",
+  "ui_commit": "58e81ee8",
+  "layout_version": 9,
+  "android": {"device_model": "Samsung SM-A146P", "version": 14, "apk_version": "0.6.0", "version_code": 8, "transport": "USB ADB", "native_apk_changed": false},
+  "live_vehicle": {"mode": "offroad", "asset_byte_checks": ["js/generated/cockpit.js", "css/cockpit-mobile.css", "css/cockpit-controls.css"], "driving_parameter_writes": false},
+  "phone_observations": {
+    "text_scales": [100, 200],
+    "orientations": ["portrait", "landscape"],
+    "four_primary_destinations": true,
+    "settings_navigation_vision_apps_switches": true,
+    "sound_shortcut": true,
+    "parameter_key_search": "SoundLanguageVolume",
+    "traditional_chinese_search_result_and_detail": true,
+    "chinese_query_input_tested": false,
+    "android_back_from_details_and_category": true,
+    "fullscreen_active_label_observed": true,
+    "fullscreen_vision_and_settings_roundtrip": true,
+    "fullscreen_exit_label_observed": true,
+    "portrait_return_after_fullscreen": true,
+    "parked_control_axes": "no data"
+  },
+  "browser_observations": {
+    "synthetic_telemetry": true,
+    "real_vehicle_connection": false,
+    "outer_viewports_at_200_percent_without_horizontal_overflow": [[1920,720],[1280,720],[1024,768],[380,825],[825,380]],
+    "phone_parameter_heading_css_px_at_200_percent": 27,
+    "all_inner_pages_exhaustively_tested": false
+  },
+  "restored": {"vehicle_web_text_scale": 90,"android_accelerometer_rotation": 1,"android_user_rotation": 0,"physical_display": [1080,2408],"density_override": 454,"sampled_driving_settings_unchanged": ["CustomSteerMax","MyDrivingMode","SoundLanguageVolume","SoundVolumeAdjust"]},
+  "automated_checks": {"web_passed": 1039,"web_failed": 0,"isolated_http_passed": 2},
+  "not_validated": ["real 12.3-inch head unit","real 4:3 head unit","long-duration connection endurance","onroad object detection or distance","WebRTC live video","vehicle control performance"]
+}

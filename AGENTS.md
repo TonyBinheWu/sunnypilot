@@ -1,5 +1,22 @@
 # Repository memory
 
+- 2026-11-18 Cockpit layoutVersion9 phone live acceptance: <=600 portrait and
+  <=1100x500 short landscape retain four primary dock destinations; logs/sound/
+  mode/vehicle/fullscreen stay in Apps, reset-view stays in Vision settings.
+  Flat phone quick lists and short-landscape Apps rows replace large cards.
+  Shared scaler recognizes --carrot-text-scale-controls; other invented variable
+  names can double-scale (200% title54px instead of bounded27px). Samsung
+  Android14/APK0.6 tested actual parked vehicle assets,100/200,rotation,parameter
+  key search/TW result/details/Back and fullscreen enter/page return/exit. Web
+  1039 and isolated HTTP2 pass. Restore actual original font90,rotation1/0 and
+  display/density. Read-only baseline checks are not exhaustive Param auditing.
+  Safe maintenance uses synchronous /api/tools git_pull (ff-only), NOT async
+  /api/tools/start whose dispatcher hard-resets; verify offroad before update
+  and reboot. Runtime GitCommit updates on reboot; disk HEAD alone is insufficient.
+  Local interactive1920x720/16:9/4:3/phone preview uses isolated synthetic data.
+  No head-unit/road/RTC/endurance acceptance. Native APK unchanged/immutable.
+  Report: tools/carrot_android/LIVE_DEVICE_ACCEPTANCE.zh-TW.md.
+
 - 2026-11-18 Cockpit interaction audit, layoutVersion8: final chrome CSS must
   override plain-px media rules (shared font scaler otherwise doubles them).
   Sticky dialog headers move original h2/form nodes and retain cancel handlers.
