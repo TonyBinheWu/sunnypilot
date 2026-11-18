@@ -1863,3 +1863,75 @@ msgstr "既有转向请求保护"
 #: openpilot/selfdrive/ui/widgets/steering_learning.py
 msgid "Command rate limit or steering yield"
 msgstr "指令速率限制或转向让步"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Model anticipates a left lane change"
+msgstr "模型预计向左变道"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Model anticipates a right lane change"
+msgstr "模型预计向右变道"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Prepare to change left"
+msgstr "准备向左变道"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Prepare to change right"
+msgstr "准备向右变道"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane-change procedure active"
+msgstr "左变道流程进行中"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane-change procedure active"
+msgstr "右变道流程进行中"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left exit ahead"
+msgstr "前方左侧出口"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right exit ahead"
+msgstr "前方右侧出口"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change completed"
+msgstr "左变道已完成"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change completed"
+msgstr "右变道已完成"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change cancelled"
+msgstr "左变道已取消"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change cancelled"
+msgstr "右变道已取消"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change ended; completion unconfirmed"
+msgstr "左变道流程结束；完成未确认"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change ended; completion unconfirmed"
+msgstr "右变道流程结束；完成未确认"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Keep watching the road and surrounding traffic"
+msgstr "请持续注意道路及周围车况"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Check your lane; operate the indicator yourself if needed"
+msgstr "请提前确认车道；需要变道时自行打灯"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Check traffic and operate the indicator yourself"
+msgstr "请确认车况并自行操作转向灯"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Indicator on; check surrounding traffic"
+msgstr "转向灯已开启，请确认周围车况"

@@ -32,6 +32,7 @@ from openpilot.selfdrive.modeld.camera_sync import FrameMeta
 from openpilot.selfdrive.modeld.camera_gap import CameraGapTrace
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan
 from openpilot.selfdrive.navigation.map_client import MapInput
+from openpilot.selfdrive.modeld.lane_change_advisory import LaneChangeAdvisory
 from openpilot.selfdrive.modeld.signal_shadow import ShadowClient
 from openpilot.selfdrive.modeld.helpers import (get_tg_input_devices, load_oob, modeld_pkl_path,
                                                 refresh_usbgpu_device_cache, select_vision_streams, usbgpu_compiled_path,
@@ -422,6 +423,7 @@ def main(demo=False):
                     boundary_indicator_supported=CP.carFingerprint == 'HYUNDAI_IONIQ_5_PE')
   boundary_observer = BoundaryObserver(cloudlog.event) if DH.boundary_indicator_supported else None
   nav_input = MapInput()
+  lane_advisory = LaneChangeAdvisory()
 
 
   frame = 0
@@ -628,8 +630,24 @@ def main(demo=False):
         preparation = (DH.boundary_indicator.episode['direction'], 'manual')
       if DH.manual_turn_indicator_enabled and DH.model_indicator.manual_turn.candidate:
         preparation = DH.model_indicator.manual_turn.candidate
-      modelv2_send.modelV2.meta.indicatorPrepareDirection = preparation[0] if preparation and not observation else 0
-      modelv2_send.modelV2.meta.indicatorPrepareSource = preparation[1] if preparation and not observation else ''
+      # Independent display metadata: AutoBlinkerControl/lamp permissions do not
+      # gate advance notices, and these fields are never signal/desire requests.
+      advisory = lane_advisory.update(indicator_now, modelv2_send.modelV2, sm['carState'],
+        valid=indicator_valid and DH.lane_change_state == log.LaneChangeState.off,
+        lateral_active=sm['carControl'].latActive,
+        curvature=sm['carControl'].actuators.curvature,
+        navigation=sm['navInstructionCarrot'] if sm.valid['navInstructionCarrot'] and
+        sm.alive['navInstructionCarrot'] and 0 <= indicator_now-sm.recv_time['navInstructionCarrot'] < 2 else None)
+      if preparation is None:
+        preparation = advisory
+      if DH.lane_change_state == log.LaneChangeState.preLaneChange and DH.next_lane_change:
+        preparation = (DH.lane_change_direction, 'lane_waiting_driver')
+      if (indicator_valid and DH.lane_notice_direction and 0 <= indicator_now-DH.lane_notice_at < 2 and
+          DH.lane_change_state in (log.LaneChangeState.off, log.LaneChangeState.preLaneChange)):
+        preparation = (DH.lane_notice_direction, DH.lane_notice_source)
+      show_preparation = preparation and (not observation or preparation[1].startswith('lane_'))
+      modelv2_send.modelV2.meta.indicatorPrepareDirection = preparation[0] if show_preparation else 0
+      modelv2_send.modelV2.meta.indicatorPrepareSource = preparation[1] if show_preparation else ''
       if boundary_observer is not None:
         # Read-only experiment: independent of navigation freshness, no request/desire assignment.
         boundary_observer.observe(indicator_now, sm['carState'], modelv2_send.modelV2,

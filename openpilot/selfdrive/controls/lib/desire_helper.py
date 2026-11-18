@@ -12,6 +12,7 @@ from openpilot.selfdrive.controls.lib.desire_lib.boundary_lane import MANUAL_IND
 from openpilot.selfdrive.controls.lib.desire_lib.indicator_observer import ModelIndicator
 from openpilot.selfdrive.controls.lib.desire_lib.assistant_lane import AssistantLane
 from openpilot.selfdrive.controls.lib.desire_lib.tesla_turn import TeslaTurnJourney
+from openpilot.selfdrive.controls.lib.desire_lib.lane_change_completion import LaneChangeCompletion
 
 from openpilot.selfdrive.controls.lib.desire_lib.constants import (
   LaneChangeState, LaneChangeDirection, TurnDirection,
@@ -89,6 +90,10 @@ class DesireHelper:
     self.lever_wait = LeverRequestWait()
     self.lever_forced_turn = LeverForcedTurn()
     self.crossing = LaneCrossing()
+    self.lane_completion = LaneChangeCompletion()
+    self.lane_notice_direction = LaneChangeDirection.none
+    self.lane_notice_source = ''
+    self.lane_notice_at = 0.
     self.auto_turn_signal = LaneChangeDirection.none
     self.auto_turn_signal_lane_change = False
     self.blinker_hold_direction = LaneChangeDirection.none  # modelV2.meta.laneChangeBlinkerHold
@@ -420,6 +425,11 @@ class DesireHelper:
     trailer_maneuver_blocked = carstate.trailerConnected
 
     prev_lane_change_state = self.lane_change_state
+    completion_direction = self.lane_change_direction
+    completion_confirmed = self.lane_completion.update(time.monotonic(), modeldata, carstate,
+      completion_direction, active=lateral_active and self.desire_disable_count == 0 and
+      self.lane_change_state in (LaneChangeState.laneChangeStarting, LaneChangeState.laneChangeFinishing),
+      valid=indicator_valid)
     lever_decided_turn = False
 
     # per-side compute (좌/우 모두)
@@ -751,6 +761,21 @@ class DesireHelper:
             else:
               self.lane_change_state = LaneChangeState.off
 
+    if completion_confirmed:
+      self.lane_notice_direction = completion_direction
+      self.lane_notice_source = 'lane_completed'
+      self.lane_notice_at = time.monotonic()
+      self.lane_change_ll_prob = 1.
+      self.lane_change_direction = LaneChangeDirection.none
+      self.lane_change_state = LaneChangeState.preLaneChange if desire_enabled else LaneChangeState.off
+      self.next_lane_change = not (driver_enabled and self.queued_lane_change == blinker_state)
+      self.queued_wait = 0.
+      self.desireLog += "lane_center_confirmed, "
+    elif ((self.lane_change_state == LaneChangeState.laneChangeStarting and prev_lane_change_state == LaneChangeState.preLaneChange) or
+          (self.lane_change_state == LaneChangeState.preLaneChange and
+           (prev_lane_change_state == LaneChangeState.off or stalk_press != BLINKER_NONE))):
+      self.lane_notice_direction = LaneChangeDirection.none
+
     # timer
     if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
       self.lane_change_timer = 0.0
@@ -778,6 +803,11 @@ class DesireHelper:
       self.lane_change_state = LaneChangeState.off
       self.blinker_ignore = True
       self.desireLog += "driver_opposite_cancel, "
+    if (not completion_confirmed and prev_lane_change_state in (LaneChangeState.laneChangeStarting,
+        LaneChangeState.laneChangeFinishing) and self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange)):
+      self.lane_notice_direction = completion_direction
+      self.lane_notice_source = 'lane_cancelled' if steering_pressed_cancel else 'lane_unverified'
+      self.lane_notice_at = time.monotonic()
 
     if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
       self.crossing = LaneCrossing()

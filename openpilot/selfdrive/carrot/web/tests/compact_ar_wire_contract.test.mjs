@@ -21,6 +21,7 @@ const arContract = {
     // Appended for the cluster-parity EV telltale (kept at the end).
     "evModeValid", "evModeActive",
     "lightingStateValid", "lowBeamOn", "highBeamOn", "doorOpen",
+    "canValid", "canTimeout", "steeringPressed",
   ]],
   selfdriveState: [6, [
     "enabled", "personality", "alertStatus", "alertSize", "alertType", "alertText1", "alertText2",
@@ -35,7 +36,7 @@ const arContract = {
   modelV2: [9, [
     "frameId", "frameIdExtra", "position", "velocity", "laneLines", "laneLineProbs",
     "roadEdges", "roadEdgeStds", "leadsV3", "laneLineStds", "frameAge",
-    "frameDropPerc", "modelExecutionTime",
+    "frameDropPerc", "modelExecutionTime", "meta",
   ]],
   liveCalibration: [10, ["calStatus", "calCycle", "calPerc", "validBlocks", "rpyCalib", "height"]],
   roadCameraState: [11, ["frameId", "sensor", "timestampEof"]],

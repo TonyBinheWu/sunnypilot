@@ -1982,3 +1982,75 @@ msgstr "기존 조향 요청 차단"
 #: openpilot/selfdrive/ui/widgets/steering_learning.py
 msgid "Command rate limit or steering yield"
 msgstr "명령 변화율 제한 또는 조향 양보"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Model anticipates a left lane change"
+msgstr "모델의 좌측 차로 변경 예상"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Model anticipates a right lane change"
+msgstr "모델의 우측 차로 변경 예상"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Prepare to change left"
+msgstr "좌측 차로 변경 준비"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Prepare to change right"
+msgstr "우측 차로 변경 준비"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane-change procedure active"
+msgstr "좌측 차로 변경 절차 진행 중"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane-change procedure active"
+msgstr "우측 차로 변경 절차 진행 중"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left exit ahead"
+msgstr "전방 좌측 출구"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right exit ahead"
+msgstr "전방 우측 출구"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change completed"
+msgstr "좌측 차로 변경 완료"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change completed"
+msgstr "우측 차로 변경 완료"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change cancelled"
+msgstr "좌측 차로 변경 취소"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change cancelled"
+msgstr "우측 차로 변경 취소"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change ended; completion unconfirmed"
+msgstr "좌측 차로 변경 종료 · 완료 미확인"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change ended; completion unconfirmed"
+msgstr "우측 차로 변경 종료 · 완료 미확인"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Keep watching the road and surrounding traffic"
+msgstr "도로와 주변 교통 상황을 계속 확인하세요"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Check your lane; operate the indicator yourself if needed"
+msgstr "차로를 미리 확인하고 필요한 경우 직접 방향지시등을 켜세요"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Check traffic and operate the indicator yourself"
+msgstr "주변을 확인하고 직접 방향지시등을 조작하세요"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Indicator on; check surrounding traffic"
+msgstr "방향지시등 켜짐 · 주변을 확인하세요"

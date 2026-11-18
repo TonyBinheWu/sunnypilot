@@ -611,6 +611,9 @@ void encode_car_state(std::string &out, const DynamicReader &value) {
   append_bool(out, value, "lowBeamOn");
   append_bool(out, value, "highBeamOn");
   append_bool(out, value, "doorOpen");
+  append_bool(out, value, "canValid");
+  append_bool(out, value, "canTimeout");
+  append_bool(out, value, "steeringPressed");
 }
 
 void encode_controls_state(std::string &out, const DynamicReader &value) {
@@ -720,6 +723,10 @@ void encode_model_v2(std::string &out, const DynamicReader &value) {
   append_i32(out, value, "frameAge");
   append_f32(out, value, "frameDropPerc");
   append_f32(out, value, "modelExecutionTime");
+  append_enum(out, value, "meta", "laneChangeState");
+  append_enum(out, value, "meta", "laneChangeDirection");
+  append_enum(out, value, "meta", "indicatorPrepareDirection");
+  append_text(out, value, "meta", "indicatorPrepareSource");
 }
 
 void encode_live_calibration(std::string &out, const DynamicReader &value) {

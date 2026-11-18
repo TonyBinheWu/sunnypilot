@@ -25,6 +25,12 @@ window.CarrotVisionCompact = (() => {
     ["z", "i16mmlist"],
   ];
   const velocity = [["x", "i16cmlist"]];
+  const modelNotice = [
+    ["laneChangeState", "enumname", ["off", "preLaneChange", "laneChangeStarting", "laneChangeFinishing"]],
+    ["laneChangeDirection", "enumname", ["none", "left", "right"]],
+    ["indicatorPrepareDirection", "enumname", ["none", "left", "right"]],
+    ["indicatorPrepareSource", "text"],
+  ];
   // y/v arrive as single-sample lists (see MODEL_LEAD_SCHEMA); the wire shape
   // is identical to any other f32 list, so "f32list" reads them unchanged.
   const modelLead = [
@@ -110,6 +116,9 @@ window.CarrotVisionCompact = (() => {
       ["lowBeamOn", "bool"],
       ["highBeamOn", "bool"],
       ["doorOpen", "bool"],
+      ["canValid", "bool"],
+      ["canTimeout", "bool"],
+      ["steeringPressed", "bool"],
     ]]],
     [2, ["controlsState", [
       ["enabled", "bool"], ["vCruiseCluster", "f32"], ["activeLaneLine", "bool"],
@@ -160,6 +169,7 @@ window.CarrotVisionCompact = (() => {
       ["roadEdgeStds", "f32list"], ["leadsV3", "structlist", modelLead],
       ["laneLineStds", "f32list"], ["frameAge", "i32"],
       ["frameDropPerc", "f32"], ["modelExecutionTime", "f32"],
+      ["meta", "struct", modelNotice],
     ]]],
     [10, ["liveCalibration", [
       ["calStatus", "enumname", ["uncalibrated", "calibrated", "invalid", "recalibrating"]],

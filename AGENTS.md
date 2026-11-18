@@ -1,5 +1,19 @@
 # Repository memory
 
+- 2026-11-18 Lane-change notices: display-only forecasts use existing meta
+  indicatorPrepare fields independently of lamp permissions; never assign desire,
+  indicator or CAN commands from a forecast. Near exits are guidance, not proof
+  of current-lane need. Completion needs selected-boundary approach, coherent
+  inner-line relabeling and stable target center for0.6s; invalid/duplicate frames
+  or takeover cannot confirm. End current FSM desire only, preserve explicit
+  queued requests; no neural retraining/hidden-state reset. End results expire2s.
+  Held lamp waiting must not become another preparation warning; keep BSD alerts.
+  Native/Web notices require fresh4-service state, CANvalid, D, lateral active,
+  >=30km/h and no existing alert. Compact appends meta AND CAN health/takeover
+  fields in Python/native/JS matching order. Browser alertSize is numeric0.
+  Guide: docs/LANE_CHANGE_NOTICES.zh-TW.md. Simulated UI and recorded fixed-input
+  replay are not actual model/road acceptance. No native APK change.
+
 - 2026-11-18 Lane-change takeover: active starting/finishing FSM direction
   outlives a one-touch lamp. Cancellation used neutral current blinker_state
   and missed opposite driver torque; use retained maneuver direction, preserve

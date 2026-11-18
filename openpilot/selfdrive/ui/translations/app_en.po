@@ -1735,3 +1735,75 @@ msgstr "Existing steering request inhibition"
 #: openpilot/selfdrive/ui/widgets/steering_learning.py
 msgid "Command rate limit or steering yield"
 msgstr "Command rate limit or steering yield"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Model anticipates a left lane change"
+msgstr "Model anticipates a left lane change"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Model anticipates a right lane change"
+msgstr "Model anticipates a right lane change"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Prepare to change left"
+msgstr "Prepare to change left"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Prepare to change right"
+msgstr "Prepare to change right"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane-change procedure active"
+msgstr "Left lane-change procedure active"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane-change procedure active"
+msgstr "Right lane-change procedure active"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left exit ahead"
+msgstr "Left exit ahead"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right exit ahead"
+msgstr "Right exit ahead"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change completed"
+msgstr "Left lane change completed"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change completed"
+msgstr "Right lane change completed"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change cancelled"
+msgstr "Left lane change cancelled"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change cancelled"
+msgstr "Right lane change cancelled"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Left lane change ended; completion unconfirmed"
+msgstr "Left lane change ended; completion unconfirmed"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Right lane change ended; completion unconfirmed"
+msgstr "Right lane change ended; completion unconfirmed"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Keep watching the road and surrounding traffic"
+msgstr "Keep watching the road and surrounding traffic"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Check your lane; operate the indicator yourself if needed"
+msgstr "Check your lane; operate the indicator yourself if needed"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Check traffic and operate the indicator yourself"
+msgstr "Check traffic and operate the indicator yourself"
+
+#: openpilot/selfdrive/ui/lane_change_notice.py
+msgid "Indicator on; check surrounding traffic"
+msgstr "Indicator on; check surrounding traffic"

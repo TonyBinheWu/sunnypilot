@@ -30,6 +30,8 @@
 
 導航模型底圖失效時，現在立即撤銷底圖與路線有效標記，並拒收舊版的全黑失效影像。另修正單觸方向燈熄滅後，反向施力可能無法取消進行中變道的缺陷。[修正與驗證範圍](docs/NAVIGATION_MAP_VALIDITY.zh-TW.md)。CAN 錯誤退出與個別導航偏移仍須依當次紀錄分別判斷。
 
+車機與網頁／APK 駕駛視覺新增變道預告、進度及完成狀態。觀察跨線並在目標車道穩定置中後，結束此次模型變道意圖；資料不足則標示「完成未確認」。預告不代打方向燈或啟動轉向。[繁中詳細說明與確認條件](docs/LANE_CHANGE_NOTICES.zh-TW.md)。
+
 座艙依提供的示意圖改為[Formosa 分區與字體排版](tools/carrot_android/FORMOSA_REFERENCE_LAYOUT.zh-TW.md)，駕駛視覺下方已移除重複的聲音卡片。觀看地圖採 [OSM、搜尋／模型維持 Mapbox](docs/NAVIGATION_MAPBOX_OSM.zh-TW.md)；新錄製的攝影機 H.264／HEVC 影片加入[同步車況 SEI](tools/carrot_android/DRIVING_SEI.zh-TW.md)，既有 0.6.0 APK 可沿用。
 
 網頁與 APK 的行車記錄回放可直接顯示 SEI 車況，跟隨影片時間同步；播放控制列閒置時自動收起，輕觸即可叫出。啟用 [`HotspotOnBoot`（SIM 行動網路分享）](docs/HOTSPOT_ON_BOOT.zh-TW.md)後，SIM 數據連線就緒時自動啟動既有熱點，供已連線裝置上網。

@@ -183,6 +183,13 @@ TPMS_SCHEMA = (
   ("rr", "f32"),
 )
 
+MODEL_NOTICE_SCHEMA = (
+  ("laneChangeState", ("enum", ("off", "preLaneChange", "laneChangeStarting", "laneChangeFinishing"))),
+  ("laneChangeDirection", ("enum", ("none", "left", "right"))),
+  ("indicatorPrepareDirection", ("enum", ("none", "left", "right"))),
+  ("indicatorPrepareSource", "text"),
+)
+
 
 # This is deliberately a display schema, not a second cereal transport. Every
 # field consumed by Carrot Vision is retained, while unused model tensors and
@@ -219,6 +226,9 @@ SERVICE_SCHEMAS: dict[str, tuple[int, tuple[tuple[Any, ...], ...]]] = {
     ("lowBeamOn", "bool"),
     ("highBeamOn", "bool"),
     ("doorOpen", "bool"),
+    ("canValid", "bool"),
+    ("canTimeout", "bool"),
+    ("steeringPressed", "bool"),
   )),
   "controlsState": (2, (
     ("enabled", "bool", ("deprecated", "enabled")),
@@ -325,6 +335,8 @@ SERVICE_SCHEMAS: dict[str, tuple[int, tuple[tuple[Any, ...], ...]]] = {
     ("frameAge", "i32"),
     ("frameDropPerc", "f32"),
     ("modelExecutionTime", "f32"),
+    # Display-only maneuver metadata. Append for older compact recordings.
+    ("meta", ("struct", MODEL_NOTICE_SCHEMA)),
   )),
   "liveCalibration": (10, (
     ("calStatus", ("enum", ("uncalibrated", "calibrated", "invalid", "recalibrating"))),

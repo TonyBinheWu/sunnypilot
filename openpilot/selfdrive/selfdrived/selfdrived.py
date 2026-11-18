@@ -381,9 +381,14 @@ class SelfdriveD:
          (CS.rightBlindspot and direction == LaneChangeDirection.right):
         self.events.add(EventName.laneChangeBlocked)
       else:
-        if direction == LaneChangeDirection.left:
+        # A held lamp after an ended change is waiting for new driver intent.
+        # Preserve BSD warnings, but do not replace completion with another
+        # routine preparation prompt (or turn an unknown direction into right).
+        waiting = self.sm['modelV2'].meta.indicatorPrepareSource in (
+          'lane_completed', 'lane_cancelled', 'lane_unverified', 'lane_waiting_driver')
+        if direction == LaneChangeDirection.left and not waiting:
           self.events.add(EventName.preLaneChangeLeft)
-        else:
+        elif direction == LaneChangeDirection.right and not waiting:
           self.events.add(EventName.preLaneChangeRight)
     elif self.sm['modelV2'].meta.laneChangeState in (LaneChangeState.laneChangeStarting,
                                                     LaneChangeState.laneChangeFinishing):

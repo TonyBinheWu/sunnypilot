@@ -8,6 +8,7 @@ import {visionPresentation} from '../../../../cockpit/presentation.js';
  * 아직 구 HUD(#driveHudCard)는 제거하지 않음(비교/안정화 후 정리). */
 
 import { createTeslaView } from "./tesla_view.js";
+import { createLaneChangeNotice } from "./lane_change_notice.js";
 import { createLiveView } from "./live_view.js";
 import { injectStyle } from "./style.js";
 import { applyHudDegradation, createHudLayoutObserver } from "./layout.js";
@@ -105,6 +106,7 @@ export function createHudOverlay(doc) {
   const root = el(doc, "div", { class: "chud", attrs: { "data-carrot-hud": "overlay" } });
 
   const target = doc.defaultView || globalThis;
+  const laneNotice = createLaneChangeNotice(doc, target);
   let presentation = "carrot";
   let timer = null;
   let tesla = null;
@@ -182,6 +184,7 @@ export function createHudOverlay(doc) {
   // 붙어 같은 z-index에서 항상 다른 HUD 아래에 깔린다. degradation 대상도 아니다.
   const cornerBL = el(doc, "div", { class: "chud-corner chud-corner--bl" }, [devTemp.el]);
   root.append(cornerBL, zoneTL, zoneTC, zoneTR, zoneBL, zoneBR, live.root);
+  root.appendChild(laneNotice.el);
   const layoutZones = {
     topLeft: zoneTL,
     topCenter: turn.el,
@@ -203,6 +206,7 @@ export function createHudOverlay(doc) {
     root.hidden = hidden;
     root.inert = hidden;
     root.classList.toggle("is-hud-suppressed", hidden);
+    laneNotice.setActive(!hidden);
     if (hidden) {
       root.setAttribute("aria-hidden", "true");
       clock.stop();
@@ -226,6 +230,7 @@ export function createHudOverlay(doc) {
   function update(payload) {
     if (destroyed || !payload) return false;
     const data = mapPayload(payload);
+    laneNotice.render();
     lastData = data;
     live.update(data, payload);
     teslaUpdatedAt = payload.sourceStale === true ? null : (target.performance?.now?.() ?? Date.now());teslaMetric = payload.isMetric !== false;renderTesla();
@@ -303,6 +308,7 @@ export function createHudOverlay(doc) {
     if (destroyed) return false;
     active = false;
     destroyed = true;
+    laneNotice.destroy();
     suppressions.clear();
     layoutObserver?.destroy?.();
     layoutObserver = null;

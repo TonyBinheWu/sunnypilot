@@ -152,6 +152,8 @@ jobs:
       - run: ./tools/op.sh setup
       - name: Build openpilot
         run: scons
+      - name: Check native model notice wire parity
+        run: python -m pytest -c /dev/null --rootdir=. --noconftest -q openpilot/selfdrive/carrot/tests/test_lane_notice_wire.py
       - name: Ensure real codec regression tools
         run: |
           if [ ! -x /usr/bin/ffmpeg ] || [ ! -x /usr/bin/ffprobe ]; then

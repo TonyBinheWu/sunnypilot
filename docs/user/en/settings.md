@@ -583,6 +583,10 @@ After confirmed turn entry, the TBT indicator ends its hold as the wheel returns
 
 The ATC right lane-change distance uses 0m for off and 50m steps up to 500m. The former ON setting migrates to 250m at restart.
 
+## Lane-change notices and observed completion
+
+Vehicle and connected Web/APK Vision now show lane-change forecasts, preparation, execution and end results independently of automatic indicator settings. An observed boundary crossing followed by stable target-lane centering ends the current lane-change desire; weak observations produce an unconfirmed result. These notices neither operate indicators nor initiate steering. Existing queued driver requests, takeover and blind-spot warnings remain. Fresh CAN/state, Drive, active lateral control and at least 30 km/h are required; existing alerts have priority. Update and restart vehicle source. See the [conditions, limits and verification guide](../../LANE_CHANGE_NOTICES.zh-TW.md#english).
+
 ## Interface language
 
 Carrot Web supports Korean, English, Simplified Chinese and Traditional Chinese. Choose **Tools > Language > 繁體中文** for Traditional Chinese. Device UI language is a separate setting and may require a reboot. Translated setting names, summaries and choices retain the same numeric values, bounds and activation timing. Traditional Chinese detailed guides are bundled with this branch and selected independently of the upstream Wiki index.

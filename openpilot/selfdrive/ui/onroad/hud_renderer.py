@@ -296,9 +296,11 @@ class HudRenderer(Widget):
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
     self._draw_cruise_speed_animation(rect)
     from openpilot.common.indicator_display import draw as draw_indicator
+    from openpilot.selfdrive.ui.lane_change_notice import draw_lane_change_notice
     badge_width = min(500, rect.width * .62)
-    draw_indicator(rect.x + (rect.width-badge_width)/2, rect.y+rect.height*.16,
-                   badge_width, self._font_display, 26 if rect.width > 1200 else 19)
+    if not draw_lane_change_notice(ui_state.sm, rect, self._font_display):
+      draw_indicator(rect.x + (rect.width-badge_width)/2, rect.y+rect.height*.16,
+                     badge_width, self._font_display, 26 if rect.width > 1200 else 19)
 
   def _paint(self, rect: rl.Rectangle) -> None:
 

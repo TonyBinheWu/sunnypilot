@@ -8,6 +8,12 @@ on:
       - 'openpilot/selfdrive/car/**'
       - 'openpilot/selfdrive/controls/**'
       - 'openpilot/selfdrive/modeld/modeld.py'
+      - 'openpilot/selfdrive/modeld/lane_change_advisory.py'
+      - 'openpilot/selfdrive/modeld/tests/test_lane_change_advisory.py'
+      - 'openpilot/common/lane_change_notice.py'
+      - 'openpilot/common/tests/test_lane_change_notice.py'
+      - 'openpilot/selfdrive/selfdrived/selfdrived.py'
+      - 'openpilot/selfdrive/selfdrived/tests/test_lane_change_notice_warning.py'
       - 'openpilot/selfdrive/carrot/xiaoge_data.py'
       - 'openpilot/selfdrive/carrot/assistant_speed.py'
       - 'openpilot/selfdrive/carrot/tests/test_xiaoge_data.py'
@@ -59,6 +65,10 @@ jobs:
             openpilot/selfdrive/controls/tests/test_tesla_traffic_stop.py \
             openpilot/selfdrive/controls/tests/test_desire_helper_stalk.py \
             openpilot/selfdrive/controls/tests/test_lane_change_takeover.py \
+            openpilot/selfdrive/controls/tests/test_lane_change_completion.py \
+            openpilot/selfdrive/modeld/tests/test_lane_change_advisory.py \
+            openpilot/common/tests/test_lane_change_notice.py \
+            openpilot/selfdrive/selfdrived/tests/test_lane_change_notice_warning.py \
             openpilot/selfdrive/controls/tests/test_assistant_lane.py \
             openpilot/selfdrive/car/tests/test_assistant_speed.py \
             openpilot/selfdrive/controls/tests/test_lever_forced_turn.py \
