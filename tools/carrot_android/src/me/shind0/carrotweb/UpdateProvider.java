@@ -24,7 +24,7 @@ public final class UpdateProvider extends ContentProvider {
   public String getType(Uri uri) { return "application/vnd.android.package-archive"; }
   public Cursor query(Uri uri, String[] projection, String selection, String[] args, String sort) {
     MatrixCursor result = new MatrixCursor(new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE});
-    try { result.addRow(new Object[]{"CarrotAssist.apk",file(uri).length()}); } catch (FileNotFoundException ignored) {}
+    try { result.addRow(new Object[]{UpdatePolicy.cockpit(getContext().getPackageName()) ? "Formosa-Cockpit.apk" : "CarrotAssist.apk",file(uri).length()}); } catch (FileNotFoundException ignored) {}
     return result;
   }
   public Uri insert(Uri uri, ContentValues values) { throw new UnsupportedOperationException(); }

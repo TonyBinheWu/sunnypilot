@@ -38,6 +38,7 @@ public final class AppUpdater {
   private File pending;
   public AppUpdater(Activity activity, SharedPreferences preferences, Runnable openSpeechSetup, Runnable openTextSize, Runnable openDiagnostics) { this.activity=activity; this.preferences=preferences; this.openSpeechSetup=openSpeechSetup; this.openTextSize=openTextSize; this.openDiagnostics=openDiagnostics; }
   private void toast(String message) { if (!destroyed) Toast.makeText(activity,message,Toast.LENGTH_LONG).show(); }
+  private String appLabel() { return UpdatePolicy.cockpit(activity.getPackageName()) ? "Formosa 座艙" : "CarrotAssist"; }
   private PackageInfo installed() throws Exception { return activity.getPackageManager().getPackageInfo(activity.getPackageName(), flags()); }
   private static int flags() { return Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES; }
   private static long version(PackageInfo info) { return Build.VERSION.SDK_INT >= 28 ? info.getLongVersionCode() : info.versionCode; }
@@ -45,7 +46,7 @@ public final class AppUpdater {
     return Build.VERSION.SDK_INT >= 28 ? (info.signingInfo == null ? null : info.signingInfo.getApkContentsSigners()) : info.signatures;
   }
   public void info() {
-    String label = "CarrotAssist";
+    String label = appLabel();
     try { label += " "+installed().versionName; } catch (Exception ignored) {}
     android.widget.CheckBox autoVoice = new android.widget.CheckBox(activity);
     autoVoice.setText(UiText.get("당근웹 연결 시 음성조수 자동 실행", "Start the voice assistant when Carrot Web connects"));
@@ -128,7 +129,7 @@ public final class AppUpdater {
   }
   private void offer() {
     if (available==null || busy || destroyed) return;
-    new AlertDialog.Builder(activity).setTitle("CarrotAssist "+available.optString("version"))
+    new AlertDialog.Builder(activity).setTitle(appLabel()+" "+available.optString("version"))
       .setMessage(UiText.get("새 버전을 다운로드하고 안드로이드 설치 화면을 열까요? 설치 중 앱이 종료될 수 있으니 주차 후 진행하세요.", "Download the update and open the Android installer? The app may close during installation. Please park first."))
       .setPositiveButton(UiText.get("다운로드", "Download"),(d,w)->download()).setNegativeButton(UiText.get("나중에", "Later"),null).show();
   }
