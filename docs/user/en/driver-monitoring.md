@@ -115,3 +115,7 @@ An authenticated owner viewing lease can start camerad offroad for wide-road or 
 ## Four-family steering and curve assist
 
 `HkgPhase1Assist` changes steering target response and optional curve speed planning on supported Hyundai/Kia platforms. It does not change driver-monitoring modes, attention requirements, warning escalation or lockout. See [steering settings](settings.md) for its separate enable and vehicle-validation requirements.
+
+## Lane-change notices and warning priority
+
+The new lane-change progress card yields to existing onroad alerts, including driver-monitoring warnings. It does not acknowledge or clear attention warnings, change escalation or lockout, or imply the driver may stop watching the road. Confirmed completion only ends the current lane-change desire. Existing blind-spot blocked warnings remain even when a held lamp is waiting for another driver request. See [lane-change notices](lane-change.md#observed-completion-and-advance-notices).

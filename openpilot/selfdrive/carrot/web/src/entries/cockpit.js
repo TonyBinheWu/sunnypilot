@@ -214,6 +214,13 @@ function render(){
         if(r&&r.width&&r.height&&r.right>frame.left&&r.left<frame.right&&r.bottom>frame.top&&r.top<frame.bottom)obstruction=Math.max(obstruction,frame.bottom-r.top);
       }
       frameWindow.document.documentElement?.style?.setProperty('--cockpit-bottom-obstruction',`${Math.max(0,obstruction)}px`);
+      // Parent instruments sit above the embedded Vision HUD. Reserve their
+      // measured lower edge after font, viewport and panel changes.
+      const instruments=$('visionInstruments').getBoundingClientRect();
+      const noticeTop=instruments.width&&instruments.height?Math.max(0,instruments.bottom-frame.top+12):0;
+      const frameStyle=frameWindow.document.documentElement?.style;
+      const noticeValue=`${noticeTop}px`;
+      if(frameStyle?.getPropertyValue('--cockpit-lane-notice-top')!==noticeValue)frameStyle?.setProperty('--cockpit-lane-notice-top',noticeValue);
       frameWindow.document.body.dataset.cockpitTelemetryFresh=String(Boolean(payload));
     }
     if(payload){frameWindow?.DriveVisionHudContent?.update?.(payload);hudHadData=true;}
