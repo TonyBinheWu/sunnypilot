@@ -236,6 +236,7 @@ def main():
             write_json(store.root/'teacher-attempt.json',{'fingerprint':fingerprint,'batch':str(batch),'started':time.time()})
             run_local('tools.training_studio.qualification',['--root',store.root,'--batch',batch],folder/('qualification-'+selection+'.log'),allowed=(0,2))
             outcome=read_json(store.root/'teacher-qualification-progress.json',{})
+            remember_tested_scenarios(state,read_json(batch/'qualification.json',{}).get('results',[]))
             if outcome.get('state')=='passed':
               state.update(parent=pointer,cycle=cycle+1,qualified_sha256=pointer['sha256'])
               write_json(loop_root/'state.json',state)
@@ -247,7 +248,6 @@ def main():
               state['parent']=pointer
               state['best_closed_loop']=score
               state['scenario']=outcome.get('scenario','red_light')
-            remember_tested_scenarios(state,read_json(batch/'qualification.json',{}).get('results',[]))
           state['cycle']=cycle+1
           write_json(loop_root/'state.json',state)
         except InterruptedError: raise
