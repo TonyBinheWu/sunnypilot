@@ -126,6 +126,18 @@ python -m tools.training_studio.remote setup --root build/training-studio
 
 ## 教師資格
 
+### 持續教師適配
+
+操作者明確啟用 runtime `teacher_adaptation.enabled` 後，Studio 會在合格前反覆建立模擬監督資料、訓練實際 Action Expert LoRA、載入自己標記的 `studio-teacher` 容器，再重跑原有完整資格。原始 NVIDIA 基底、VLM／語言解碼器與原有教師容器保持不變；只更新動作專家的注意力、MLP 與輸出投影適配器。這些容器帶有 `formosapilot.owner=training-studio`，停止／替換前核對標記，沒有車機控制或自動發布。
+
+訓練通過與官方推論完全相同的 10 步 Euler 採樣路徑反向傳播，先核對輸出，再用真實未來位置、速度、車身方向及停等誤差最佳化。模擬真值僅供離線監督；送入模型的欄位有明確白名單，排除未來軌跡、號誌狀態與評分器真值。較遠縱向誤差使用 Smooth L1，避免長距離平方誤差壓過近 2 秒停等及車道置中；每次更新實測損失，不採用反而使該樣本損失上升的步幅。
+
+注意力與 MLP 使用低秩殘差；小型動作輸出投影使用完整矩陣殘差，增加煞停與起步的適配能力。從舊低秩投影升級時保留其實際映射，原始投影仍凍結。資料另外涵蓋煞車歷史、紅轉綠、加速與向外偏移歷史。教師服務及最佳化容器使用依內容雜湊命名的程式快照，避免其他版本的程式上傳改變正在執行的模型。
+
+每輪保留不可變資料、父權重雜湊、候選、實際 loss 及資格失敗。分別保留停等安全優先與綜合驗證 loss 最低的候選，去除相同雜湊後，各自接受同一套完整資格；不能只因最後一個 epoch 的總 loss 最低就放行。後續訓練的父模型依實際閉迴路失敗與已通過關卡選擇，仍不是上車或發布資格。資料含接近停止區、提早停車、低速蠕行、起步與偏移置中；新失敗情境加入後仍重播舊情境，避免遺忘。訓練 seed 1000–6999、驗證 seed 8000–9499 與資格 seed 300–303 隔離；每筆在獨立 renderer 程序生成，以免累積 D3D12 context 損壞。真實片段的學生資料分組規則不變。
+
+`teacher-adaptation/state.json` 鎖定場景評分器、紅燈停等稽核、追蹤器及資格實驗程式的雜湊；變動時拒絕默默沿用。每輪仍須通過 3 個紅燈及其他 8 個情境，不放寬停等、車道、碰撞、進度或起步門檻。儀表板的「教師訓練 loss」與 N16 學生 loss 分開顯示。按「暫停持續訓練」會停止自己的訓練工作；失聯 lease 超過 90 秒也會結束 GPU 最佳化。再次啟動保留已執行版本，建立下一輪，直到完整資格通過或操作者停止。
+
 Studio 可維護自己的 SSH tunnel，並由背景監看程序每 3 秒核對線上教師。runtime `config.json` 的 `teacher_connection.tunnel_command` 使用可信任的本機參數陣列（既有 SSH wrapper、`-N`、`-o ExitOnForwardFailure=yes`、`-L 127.0.0.1:18766:127.0.0.1:8766`、既有 DGX host）；只停止自己啟動的 tunnel，不停止既有教師容器。`teacher_url` 指向 `http://127.0.0.1:18766`。
 
 Windows 請使用 `scripts/run_training_studio.ps1`：啟動器會隱藏視窗並維持 `wsl.exe` 存活，讓既有 Windows TCP proxy 的 WSL interop 環境不會隨啟動命令結束而失效。SSH 建議設定 `ConnectTimeout=10`、`ConnectionAttempts=1`、`ServerAliveInterval=15` 與 `ServerAliveCountMax=3`，讓失聯通道可以結束並由監看程序重建。

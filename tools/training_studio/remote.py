@@ -1,5 +1,6 @@
 """Transfer bound training snapshots to DGX and supervise only our own training container."""
 import io
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -36,19 +37,24 @@ class Remote:
   def call(self,command,**kwargs):
     return subprocess.run(self.command(command),check=True,timeout=kwargs.pop("timeout",60),**kwargs)
 
-  def program(self):
+  def program(self, snapshot=False):
     root=Path(__file__).resolve().parents[2]
     buffer=io.BytesIO()
     files=["tools/training_studio/__init__.py","tools/training_studio/head.py","tools/training_studio/plan_head.py","tools/training_studio/store.py",
-           "tools/training_studio/remote_head.py","openpilot/sunnypilot/formosalink/training_protocol.py"]
+           "tools/training_studio/remote_head.py","tools/training_studio/teacher_train.py","tools/training_studio/teacher_lora.py",
+           "tools/training_studio/teacher_service.py","tools/training_studio/edge_inputs.py","openpilot/sunnypilot/formosalink/training_protocol.py"]
+    fingerprint=hashlib.sha256()
     with tarfile.open(fileobj=buffer,mode="w:gz") as archive:
       for name in files:
         body=(root/name).read_bytes()
+        fingerprint.update(name.encode()+b'\0'+body)
         member=tarfile.TarInfo(name)
         member.size=len(body)
         archive.addfile(member,io.BytesIO(body))
     program=self.root+"/program"
+    if snapshot: program+='-'+fingerprint.hexdigest()[:16]
     self.call("mkdir -p "+shlex.quote(program)+" && tar -xzf - -C "+shlex.quote(program),input=buffer.getvalue())
+    return program
 
   def upload(self,source,destination):
     with Path(source).open("rb") as stream:

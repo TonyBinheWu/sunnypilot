@@ -59,6 +59,17 @@ def split_for(group):
   return "test" if bucket == 0 else "validation" if bucket == 1 else "train"
 
 
+def teacher_runs(root):
+  paths=[path for path in (Path(root)/'teacher-cycles').glob('cycle-*/result.json') if path.parent.name.split('-')[-1].isdigit()]
+  paths=sorted(paths,key=lambda path:int(path.parent.name.split('-')[-1]),reverse=True)
+  rows=[]
+  for path in paths[:20]:
+    result=read_json(path,{})
+    rows.append({'id':path.parent.name,'cycle':int(path.parent.name.split('-')[-1]),'history':result.get('history',[]),
+      'best_epoch':result.get('best_epoch'),'adapter_saved':result.get('adapter_saved',False)})
+  return rows
+
+
 class Store:
   def __init__(self, root):
     self.root = Path(root).resolve()
@@ -180,7 +191,7 @@ class Store:
       route_counts={row['split']:row['count'] for row in db.execute('SELECT split,COUNT(DISTINCT route_group) count FROM datasets GROUP BY split')}
     missing=[name for name in ('train','validation','test') if not route_counts.get(name)]
     config=self.config()
-    from tools.training_studio.teacher_control import training_ready
+    from tools.training_studio.teacher_control import training_ready,adaptation_progress
     qualified=training_ready(self)
     teacher_health=read_json(self.root/'teacher-health.json',{})
     teacher_progress=read_json(self.root/'teacher-qualification-progress.json',{})
@@ -208,6 +219,8 @@ class Store:
       "collection_progress":read_json(self.root/'collector-progress.json',{}),
       "pipeline":{"missing_splits":missing,"route_counts":route_counts,"blockers":blockers},
       "teacher":{**teacher_health,'qualification':teacher_progress},
+      "teacher_training":adaptation_progress(self),
+      "teacher_runs":teacher_runs(self.root),
       "readiness":{"collector_configured":bool(self.config().get("collector")),
         "teacher_qualified":qualified,
         "dgx":read_json(self.root/"worker-readiness.json",{}),"compiler_configured":bool(self.config().get("compiler_command"))},

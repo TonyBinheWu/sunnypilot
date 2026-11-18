@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {workerLabel,pipelineNotice,collectionMessage,teacherMessage} from '../web/status.mjs';
+import {workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory} from '../web/status.mjs';
 test('active download is not displayed as training or a disconnected worker',()=>{
   const value={enabled:true,worker:{fresh:true,state:'collecting'},pipeline:{blockers:['缺少 validation, test']},collection_progress:{filename:'rlog.zst',bytes:1048576,total:2097152}};
   assert.equal(workerLabel(value),'同步行車資料');
@@ -25,4 +25,11 @@ test('teacher validation failure and inference progress are explicit, without fa
   assert.match(text.progress,/red_stop_not_sustained/);
   value.time=200;
   assert.match(teacherMessage(value).connection,/過期/);
+});
+test('previous real losses stay clearly labeled while a new round has no optimizer results',()=>{
+  const value={teacher_training:{phase:'generating',cycle:4},teacher_runs:[{cycle:3,history:[{train_loss:2,validation_loss:3}]}]};
+  assert.match(teacherLossHistory(value).label,/第 3 輪已完成/);
+  assert.equal(teacherLossHistory(value).history[0].train_loss,2);
+  value.teacher_training.history=[{train_loss:1,validation_loss:2}];
+  assert.match(teacherLossHistory(value).label,/第 4 輪實際/);
 });

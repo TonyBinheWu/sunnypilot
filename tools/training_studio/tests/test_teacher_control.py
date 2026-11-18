@@ -9,7 +9,7 @@ import unittest
 from tools.training_studio.engine import TEACHER_REVISION
 from tools.training_studio.server import initialize
 from tools.training_studio.store import write_json
-from tools.training_studio.teacher_control import check_health,qualified,training_ready
+from tools.training_studio.teacher_control import check_health,qualified,training_ready,adaptation_progress
 from tools.training_studio.qualify_teacher import qualify
 from tools.training_studio.qualification import log_progress
 
@@ -73,6 +73,14 @@ class TeacherControlTest(unittest.TestCase):
       path=Path(directory)/'case.log'
       path.write_text(json.dumps({'plan':3,'simulation_time_s':5,'inference_s':1.1,'cot':'private reasoning'})+'\n')
       self.assertEqual(log_progress(path),{'plan':3,'simulation_time_s':5,'inference_s':1.1})
+
+  def test_live_supervisor_progress_wins_over_an_old_remote_clock(self):
+    with tempfile.TemporaryDirectory() as directory:
+      store=initialize(directory)
+      (store.root/'teacher-pilot.log').write_text(json.dumps({'phase':'completed','updated':9999999999})+'\n')
+      write_json(store.root/'teacher-training-progress.json',{'phase':'training','cycle':3,'updated':1})
+      self.assertEqual(adaptation_progress(store)['cycle'],3)
+      self.assertEqual(adaptation_progress(store)['phase'],'training')
 
 
 if __name__=='__main__': unittest.main()

@@ -12,6 +12,7 @@ def main():
   parser=argparse.ArgumentParser(description=__doc__)
   parser.add_argument('--model',type=Path,required=True)
   parser.add_argument('--receipt',type=Path,required=True)
+  parser.add_argument('--adapter',type=Path,help='Immutable JSON adapter pointer with path and SHA-256')
   parser.add_argument('--port',type=int,default=8767)
   parser.add_argument('--listen',default='127.0.0.1')
   parser.add_argument('--memory-fraction',type=float,default=.2,help='DGX Spark default; adjust explicitly for smaller GPUs')
@@ -34,6 +35,15 @@ def main():
   torch.cuda.set_per_process_memory_fraction(args.memory_fraction)
   model,_=load_model(str(model_path),device='cuda',dtype='bfloat16',attn_implementation='sdpa')
   model.requires_grad_(False)
+  adapter=None
+  if args.adapter:
+    from tools.training_studio.teacher_lora import load
+    adapter=json.loads(args.adapter.read_text())
+    path=Path(adapter['path']).resolve()
+    if digest_file(path)!=adapter['sha256']: raise ValueError('teacher adapter hash mismatch')
+    load(model,path)
+    model.requires_grad_(False)
+  model.eval()
   processor=get_processor(model.tokenizer,model.config)
   space=model.expert.action_space
   captured={}
@@ -47,7 +57,7 @@ def main():
   provenance={**receipt,'input_profile':'experimental_front_only','camera_ids':[1,6],'precision':'BF16',
     'gpu':torch.cuda.get_device_name(0),'server_script_sha256':digest_file(Path(__file__)),
     'input_adapter_sha256':digest_file(Path(__file__).with_name('edge_inputs.py')),
-    'action_expert_adapter':None,'driving_qualified':False,'amd_benchmarked':False}
+    'action_expert_adapter':adapter,'driving_qualified':False,'amd_benchmarked':False}
 
   class Handler(BaseHTTPRequestHandler):
     def reply(self,value,status=200):

@@ -94,6 +94,15 @@ class StoreTest(unittest.TestCase):
       self.assertEqual(value['state'],'collecting')
     self.assertEqual(read_json(self.store.root/'worker.json')['state'],'stopped')
 
+  def test_completed_teacher_losses_remain_available_while_next_round_generates_data(self):
+    for cycle in (2,3):
+      write_json(self.store.root/'teacher-cycles'/f'cycle-{cycle:03d}'/'result.json',
+        {'history':[{'epoch':1,'train_loss':10-cycle,'validation_loss':11-cycle}],'adapter_saved':cycle==2})
+    (self.store.root/'teacher-cycles'/'cycle-004'/'data').mkdir(parents=True)
+    rows=self.store.state()['teacher_runs']
+    self.assertEqual([row['cycle'] for row in rows],[3,2])
+    self.assertEqual(rows[0]['history'][0]['train_loss'],7)
+
 
 if __name__=="__main__":
   unittest.main()

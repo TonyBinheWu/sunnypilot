@@ -30,13 +30,35 @@ def training_ready(store):
   return bool(health.get('connected') and health.get('qualified') and 0<=time.time()-health.get('updated',0)<20)
 
 
+def adaptation_progress(store):
+  saved=read_json(store.root/'teacher-training-progress.json',{})
+  if saved: return saved  # never compare a DGX wall clock with the supervisor clock
+  path=store.root/'teacher-pilot.log'
+  if path.is_file():
+    with path.open('rb') as stream:
+      stream.seek(max(0,path.stat().st_size-131072))
+      for line in reversed(stream.read().decode('utf-8',errors='replace').splitlines()):
+        try:
+          row=json.loads(line)
+          if row.get('phase') in ('prefill','training','completed'):
+            return {**row,'cycle':1}
+        except ValueError: pass
+  return saved
+
+
 def monitor(store,stop):
   tunnel=child=None
+  tunnel_command=None
   opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
   try:
     while not stop.is_set():
       config=store.config()
       connection=config.get('teacher_connection',{})
+      command=connection.get('tunnel_command')
+      if tunnel is not None and command!=tunnel_command:
+        tunnel.terminate()
+        tunnel.wait(timeout=10)
+        tunnel=None
       try:
         with opener.open(config['teacher_url'].rstrip('/')+'/health',timeout=5) as response:
           health=json.loads(response.read(1024*1024))
@@ -53,7 +75,11 @@ def monitor(store,stop):
         write_json(store.root/'teacher-health.json',status)
         retry=store.root/'teacher-retry.json'
         if child and child.poll() is not None: child=None
-        if config.get('qualification_checkout') and child is None and (retry.exists() or (not ready and attempt.get('fingerprint')!=fingerprint)):
+        adapting=config.get('teacher_adaptation',{}).get('enabled') is True
+        if adapting and store.enabled() and not ready and child is None:
+          with (store.root/'teacher-adaptation.log').open('a') as log:
+            child=subprocess.Popen([sys.executable,'-u','-m','tools.training_studio.teacher_adapt','--root',str(store.root)],stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+        if not adapting and config.get('qualification_checkout') and child is None and (retry.exists() or (not ready and attempt.get('fingerprint')!=fingerprint)):
           if retry.exists(): retry.unlink()
           batch=store.root/'teacher-qualification'/f'{fingerprint[:12]}-{int(time.time())}'
           write_json(store.root/'teacher-attempt.json',{'fingerprint':fingerprint,'batch':str(batch),'started':time.time()})
@@ -62,12 +88,12 @@ def monitor(store,stop):
           write_json(store.root/'teacher-health.json',{**status,'qualified':False})
       except Exception as exc:
         write_json(store.root/'teacher-health.json',{'updated':time.time(),'connected':False,'qualified':False,'error':type(exc).__name__})
-        command=connection.get('tunnel_command')
         if command and (tunnel is None or tunnel.poll() is not None):
           if not isinstance(command,list) or not all(isinstance(x,str) for x in command):
             raise ValueError('tunnel_command must be a trusted local argument array')
           with (store.root/'teacher-tunnel.log').open('a') as log:
             tunnel=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+          tunnel_command=command
       stop.wait(3)
   finally:
     for owned in (child,tunnel):
