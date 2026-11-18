@@ -57,7 +57,7 @@ export function teacherLossHistory(value){
   const current=value.teacher_training||{};
   if(current.history?.length)return {history:current.history,label:`第 ${current.cycle} 輪實際訓練／驗證 loss`};
   const saved=value.teacher_runs?.find(row=>row.history?.length);
-  return saved?{history:saved.history,label:`顯示第 ${saved.cycle} 輪${saved.completed===false?'中斷前的實際':'已完成的'} loss；目前第 ${current.cycle||'—'} 輪正在準備。`}:{history:[],label:'本輪尚無實際 loss'};
+  return saved?{history:saved.history,label:`顯示第 ${saved.cycle} 輪${saved.completed===false?'中斷前的實際':'已完成的'} loss；第 ${current.cycle||'—'} 輪尚無完成的 epoch。`}:{history:[],label:'本輪尚無實際 loss'};
 }
 
 
