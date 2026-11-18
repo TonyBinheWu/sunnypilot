@@ -14,6 +14,13 @@
   Visible notices own an existing HUD+overlay data lease: standard camera/HUD
   mode otherwise lacks model metadata. Guard synchronous lease reentrancy, late
   publisher installation and release on deactivate/destroy. No camera request.
+  Verification:1088 web,184 related Python pass; native SCons build and codec
+  parity pass in44313014178. Signal44316247535:2060+362subtests/40skips, plus
+  pedal132, steering165, fault418 and Panda F4/H7 pass. Do not call the entire
+  native workflow green: later pre-existing RAV4 fixtures may still fail.
+  Browser simulation covers1920x720/1280x720/1024x768/390x844, large text,
+  switching/fullscreen, stale/alert hiding and standard HUD-only subscription.
+  Cockpit publishes measured instrument bottom so notices leave12px clearance.
   Guide: docs/LANE_CHANGE_NOTICES.zh-TW.md. Simulated UI and recorded fixed-input
   replay are not actual model/road acceptance. No native APK change.
 

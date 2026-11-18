@@ -85,7 +85,7 @@ def test_confirmed_completion_keeps_an_explicit_queued_driver_request(direction)
   helper.prev_desire_enabled = True
   car = cs(leftBlinker=direction == 1, rightBlinker=direction == 2)
   # The real stalk logic has already admitted this explicit following request.
-  # Its internal enum uses bit values: left=2, right=1.
+  # Use its internal constants rather than duplicating the encoding here.
   from openpilot.selfdrive.controls.lib.desire_lib.constants import BLINKER_LEFT, BLINKER_RIGHT
   helper.queued_lane_change = BLINKER_LEFT if direction == 1 else BLINKER_RIGHT
   for n, row in enumerate(crossing(direction)):

@@ -32,6 +32,10 @@
 
 測試涵蓋左右預告、確認跨線／置中、燈滅與時間不能冒充完成、反向取消、等待下一次駕駛操作、舊版封包相容、原生與 Python 編碼一致、畫面切換／過期清除及多種螢幕尺寸。隔離畫面使用合成車況，並非實車閉迴路或道路驗收。既有導航偏移與 CAN 匯流排錯誤仍須獨立依實際紀錄判斷。
 
+2026-11-18 驗證：網頁 1,088 項及相關 Python 184 項通過。正式 SCons 原生編譯與 [原生封包編碼一致性步驟](https://github.com/TonyBinheWu/sunnypilot/actions/runs/44313014178)通過；[訊號整合](https://github.com/TonyBinheWu/sunnypilot/actions/runs/44316247535)含 Panda F4／H7 建置通過。此處只列出已完成的步驟，不代表整套 CI 或實車道路驗收均已通過。
+
+正式座艙在隔離的 1920×720、1280×720、1024×768、390×844 CSS viewport 檢查大字、畫面切換與進出全螢幕。提示會避讓座艙資訊列；一般網頁的儀表模式也會在可見期間訂閱所需模型資料，背景及離開畫面時釋放，與鏡頭啟動權限無關。這是瀏覽器模擬，不是實體 Android 車用盒子測試。
+
 ## English
 
 Vehicle and connected Web/APK Vision share read-only advance, preparation, active, completed, cancelled and unconfirmed notices. Forecasts do not operate indicators or initiate steering; nearby exit guidance does not establish a required lane change. No fixed warning lead time is guaranteed. Notices require fresh state, valid CAN, active lateral control, Drive and at least 30 km/h, and yield to existing alerts.
