@@ -1,5 +1,14 @@
 # Repository memory
 
+- 2026-11-18 Navigation map validity: mapsd invalid black frames used to retain
+  a nonzero route ID. Publish ID0 for failed/slow/unpositioned frames; MapInput
+  also rejects the legacy all-black sentinel during rolling updates and clears
+  the previous image/provenance. Keep TBT and route/freshness policies intact.
+  Production-loop isolated IPC tests cover valid/failure/recovery, not a road
+  acceptance or proof of any reported navigation bias. No CAN/Panda suppression.
+  Guide: docs/NAVIGATION_MAP_VALIDITY.zh-TW.md. Incident rlogs and derived
+  telemetry remain private under .analysis; do not commit raw vehicle evidence.
+
 - 2026-11-18 Object-display investigation: C4 OS04C10 is1344x760; the old
   standard964x604 live encoder stretched its aspect and cameraGeometry correctly
   rejected it. Standard on-demand ROAD encoding now explicitly selects half

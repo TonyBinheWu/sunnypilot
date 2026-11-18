@@ -34,7 +34,11 @@ class MapInput:
       if buf is not None:
         self.image = None
         if (buf.width, buf.height) == (256, 256) and len(buf.data) >= 65536:
-          self.image = np.frombuffer(buf.data, np.uint8, count=65536).reshape(256, 256).copy()
+          image = np.frombuffer(buf.data, np.uint8, count=65536).reshape(256, 256)
+          # Older mapsd versions stamp invalid black frames with a live route ID.
+          # Also reject that sentinel during a rolling producer/consumer update.
+          # A rendered map always contains at least the ego/route strokes.
+          self.image = image.copy() if image.any() else None
           self.image_time_ns = int(self.client.timestamp_eof)
           self.image_time = self.image_time_ns * 1e-9
           self.route_time = self.client.timestamp_sof

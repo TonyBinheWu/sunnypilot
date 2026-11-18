@@ -122,7 +122,7 @@ def main():
         next_render = finished + (render_interval(cpu) if valid else max(1., render_interval(cpu)))
         # Timestamp at render START prevents a slow tile request looking fresh.
         server.send(VisionStreamType.VISION_STREAM_MAP, image.tobytes(), rk.frame,
-                    route_id, int(started * 1e9))
+                    route_id if valid else 0, int(started * 1e9))
         if finished >= next_preview:
           write_preview(image, reason=reason)
           next_preview = finished + .5

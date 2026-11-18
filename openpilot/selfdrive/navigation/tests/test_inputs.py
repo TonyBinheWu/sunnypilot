@@ -97,3 +97,26 @@ def test_map_input_rejects_stale_image_wrong_route_and_invalid_tbt(monkeypatch):
   sm.valid['navInstructionCarrot'] = False
   assert client.update(model, sm, 10) == {}
   assert client.update(NS(views={}), sm, 10) == {}
+
+
+@pytest.mark.parametrize('pixels,route_id,admitted', [(0, 123, False), (128, 0, False), (128, 123, True)])
+def test_received_invalid_map_revokes_cached_valid_map(monkeypatch, pixels, route_id, admitted):
+  from openpilot.selfdrive.navigation import map_client
+  monkeypatch.setattr(map_client.time, 'monotonic', lambda: 10.)
+  client = MapInput()
+  frame = NS(width=256, height=256, data=np.full(65536, pixels, np.uint8).tobytes())
+  client.client = NS(is_connected=lambda: True, recv=lambda _: frame,
+                     timestamp_eof=9_900_000_000, timestamp_sof=route_id)
+  client.image, client.image_time, client.route_time = np.ones((256, 256), np.uint8), 9.8, 123
+  class SM(dict):
+    pass
+  sm = SM(navInstructionCarrot=NS(allManeuvers=[NS(type='turn', modifier='right', distance=100)]),
+          navRoute=NS(carrotRouteId=123))
+  sm.valid = {'navInstructionCarrot': True, 'navRoute': True}
+  sm.recv_time = {'navInstructionCarrot': 9.9}
+  metadata = []
+  result = client.update(NS(views={'nav_map': None}, set_nav_metadata=metadata.append), sm, 10)
+  assert ('nav_map' in result) == admitted
+  assert metadata[0] is None
+  if not admitted:
+    assert len(metadata) == 1  # Never revive the previous valid map provenance.

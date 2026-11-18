@@ -57,6 +57,7 @@ jobs:
           python -m pytest -c /dev/null --noconftest -q
           openpilot/selfdrive/navigation/tests/test_rendering.py
           openpilot/selfdrive/navigation/tests/test_inputs.py
+          openpilot/selfdrive/navigation/tests/test_map_publication.py
           openpilot/selfdrive/navigation/tests/test_position.py
           openpilot/selfdrive/navigation/tests/test_route_position.py
           openpilot/selfdrive/navigation/tests/test_mapbox_tiles.py
