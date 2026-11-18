@@ -115,6 +115,10 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(model.position,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}
     else ribbon(model.position,-.75,.75,night?'#0589fff0':'#178fffd9');
   }
+  for(const slot of (scene.parking||[]).slice(0,12)){
+    const p=slot.corners?.map(([x,y])=>project(x,y,.065));if(!p||p.length!==4||p.some(v=>!v))continue;
+    ctx.strokeStyle='#d69c30';ctx.lineWidth=2;ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.stroke();
+  }
   const objects=[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
   objects.sort((a,b)=>project.depth?project.depth(b.x,b.y)-project.depth(a.x,a.y):b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text,night}));
   if(drawEgo)drawEgo(ctx,project);

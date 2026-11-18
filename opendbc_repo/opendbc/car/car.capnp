@@ -296,6 +296,10 @@ struct CarState {
   stockSccFault @114 :Bool; # original Casper FCA failure, before outgoing fault suppression
   cruiseCancelState @115 :Bool; # Carrot cruise CANCEL latch, cleared by SET/RES or +/-.
 
+  lightingStateValid @116 :Bool; # fresh, decoded actual lamp state; false means unknown
+  lowBeamOn @117 :Bool;
+  highBeamOn @118 :Bool;
+
   struct TeslaTrafficControl {
     available @0 :Bool;
     valid @1 :Bool;

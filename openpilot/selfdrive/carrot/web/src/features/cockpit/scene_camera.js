@@ -2,9 +2,9 @@
 const finite=Number.isFinite,clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export function sceneCamera(width,height,view={}){
  const w=finite(width)&&width>0?width:1,h=finite(height)&&height>0?height:1,aspect=w/h;
- const yaw=(finite(view?.yaw)?view.yaw:0)*Math.PI/180,pitch=clamp(finite(view?.pitch)?view.pitch:25,18,60)*Math.PI/180;
+ const yaw=(finite(view?.yaw)?view.yaw:0)*Math.PI/180,pitch=clamp(finite(view?.pitch)?view.pitch:25,18,view?.parking===true?82:60)*Math.PI/180;
  const scale=Array.isArray(view?.skinScale)&&view.skinScale.length===3&&view.skinScale.every(n=>finite(n)&&n>.5&&n<2)?view.skinScale:[1.25,1.15,1.55];
- const pivot=[0,0,.78*scale[2]],anchor=clamp((finite(view?.anchorY)?view.anchorY:.80)-.20,.56,.65);
+ const pivot=[0,0,.78*scale[2]],anchor=view?.parking===true ? .65 : clamp((finite(view?.anchorY)?view.anchorY:.80)-.20,.56,.65);
  const fov=Math.max(50,Math.min(100,2*Math.atan(Math.tan(Math.PI/8)/Math.max(.25,aspect))*180/Math.PI));
  const tan=Math.tan(fov*Math.PI/360),theta=pitch-Math.atan((anchor*2-1)*tan);
  const cy=Math.cos(yaw),sy=Math.sin(yaw),ct=Math.cos(theta),st=Math.sin(theta);
@@ -12,10 +12,13 @@ export function sceneCamera(width,height,view={}){
  let range=clamp(finite(view?.distance)?view.distance:9,5,26)*.80,position;
  const depth=(p)=>p.reduce((n,v,i)=>n+v*forward[i],0);
  const extents=[2.42*scale[0],1.16*scale[1],1.66*scale[2]];
+ const envelope=[];
+ for(const x of [-extents[0],extents[0]])for(const y of [-extents[1],extents[1]])for(const z of [0,extents[2]])envelope.push([x,y,z]);
+ if(view?.parking===true)for(const p of (view.parkingPoints||[]).slice(0,48))if(Array.isArray(p)&&p.length===2&&p.every(finite)&&p[0]>=1&&p[0]<=18&&Math.abs(p[1])<=8)envelope.push([p[0],-p[1],.065]);
  for(let attempt=0;attempt<40;attempt++){
   position=[-range*Math.cos(pitch)*cy,range*Math.cos(pitch)*sy,pivot[2]+range*Math.sin(pitch)];
   let fits=true;
-  for(const x of [-extents[0],extents[0]])for(const y of [-extents[1],extents[1]])for(const z of [0,extents[2]]){
+  for(const [x,y,z] of envelope){
    const p=[x-position[0],y-position[1],z-position[2]],d=depth(p);
    const px=p.reduce((n,v,i)=>n+v*right[i],0)/(d*tan*aspect),py=p.reduce((n,v,i)=>n+v*up[i],0)/(d*tan);
    if(d<=.1||Math.abs(px)>.90||Math.abs(py)>.84)fits=false;

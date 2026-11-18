@@ -20,6 +20,7 @@ const arContract = {
     "gearShifter", "leftBlinker", "rightBlinker", "fuelGauge", "ureaGauge", "tpms",
     // Appended for the cluster-parity EV telltale (kept at the end).
     "evModeValid", "evModeActive",
+    "lightingStateValid", "lowBeamOn", "highBeamOn", "doorOpen",
   ]],
   selfdriveState: [6, [
     "enabled", "personality", "alertStatus", "alertSize", "alertType", "alertText1", "alertText2",

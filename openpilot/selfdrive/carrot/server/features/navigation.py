@@ -221,6 +221,8 @@ async def preview(request):
 
 
 def register(app):
+  from . import parking
+  parking.register(app)
   app[SEARCH_STATE] = SearchState()
   app[FAVORITES] = NavigationFavorites(CARROT_NAVIGATION_FAVORITES_PATH)
   app.router.add_get('/navigation', page)

@@ -159,6 +159,10 @@ export function withVehicleHudFields(payload = {}, source = {}) {
   });
   return {
     ...payload,
+    // Both classic HUD flattening boundaries must retain raw speed and actual
+    // lamps. Alternating compact/cockpit updates otherwise reset P admission.
+    ...Object.fromEntries(['vehicleSpeedMps','lightingStateValid','lowBeamOn','highBeamOn','doorOpen','brakeLights']
+      .filter(key=>Object.hasOwn(source,key)).map(key=>[key,source[key]])),
     evActive: source.evActive === true,
     activeLaneLine: laneMode.controlled,
     laneModeRequested: laneMode.requested,
@@ -184,6 +188,8 @@ export function vehicleHudSignature(payload = {}) {
     override?.label ?? "-",
     override?.mode ?? "-",
     drivingModeState(payload.drivingMode) ?? "-",
+    payload.vehicleSpeedMps ?? '-', payload.lightingStateValid ?? '-',
+    payload.lowBeamOn ?? '-', payload.highBeamOn ?? '-', payload.doorOpen ?? '-', payload.brakeLights ?? '-',
   ].join(":");
 }
 
@@ -312,6 +318,7 @@ export function deriveVehicleHudPayload(state = {}) {
 
   return {
     gear,
+    vehicleSpeedMps: finite(carState.vEgo),
     gearStep,
     evActive,
     activeLaneLine: laneMode.controlled,
@@ -334,6 +341,7 @@ export function deriveVehicleHudPayload(state = {}) {
     leftBlinker: Boolean(carState.leftBlinker),
     rightBlinker: Boolean(carState.rightBlinker),
     brakeLights: carState.brakeLights === true,
+    lightingStateValid: carState.lightingStateValid === true, lowBeamOn: carState.lowBeamOn === true, highBeamOn: carState.highBeamOn === true, doorOpen: carState.doorOpen === true,
     fuelGauge: level(carState.fuelGauge),
     ureaGauge: level(carState.ureaGauge),
     tpms: tpmsPayload(carState.tpms),

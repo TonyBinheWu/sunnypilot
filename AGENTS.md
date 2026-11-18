@@ -1,5 +1,17 @@
 # Repository memory
 
+- 2026-11-18 Parking display is opt-in: vision_parking_assist enables low-speed
+  overhead and a single fresh stopped P transition orbit; vision_parking_map
+  separately discloses current-position lookup to fixed Overpass host, default
+  off. Closed OSM polygons never prove occupancy or camera slot geometry. Local
+  paint candidates use calibrated ROAD pixels, bounded worker/two-frame support
+  and1s TTL; no learned parking/occupancy model or rear/side coverage. P animation
+  is presentation-only, cancels on motion/gear/stale/manual/hidden/reduced motion.
+  Actual CGW1 classic Hyundai lamps get explicit validity; CANFD light switch
+  position is NOT actual lamp state, stays unknown. Append-only compact fields
+  must match Python/native/JS order. No new actuator/CAN TX/Panda change.
+  Guide: tools/carrot_android/PARKING_VIEW.zh-TW.md.
+
 - 2026-11-18 Cockpit layoutVersion11: web-only vision_vehicle_color persists
   nine fixed paint IDs, shared by cockpit and canonical Canvas/WebGL skins.
   Kia/Hyundai official pages are appearance references, NOT imported CAD assets

@@ -607,6 +607,10 @@ void encode_car_state(std::string &out, const DynamicReader &value) {
   // evolution: order must stay identical across all three). Green EV telltale.
   append_bool(out, value, "evModeValid");
   append_bool(out, value, "evModeActive");
+  append_bool(out, value, "lightingStateValid");
+  append_bool(out, value, "lowBeamOn");
+  append_bool(out, value, "highBeamOn");
+  append_bool(out, value, "doorOpen");
 }
 
 void encode_controls_state(std::string &out, const DynamicReader &value) {

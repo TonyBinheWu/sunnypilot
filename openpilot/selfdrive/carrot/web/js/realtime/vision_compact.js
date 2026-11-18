@@ -106,6 +106,10 @@ window.CarrotVisionCompact = (() => {
       // Appended (must match compact_state.py / native order). Green EV telltale.
       // Decoder is append-tolerant, so shorter recorded frames stay decodable.
       ["evModeValid", "bool"], ["evModeActive", "bool"],
+      ["lightingStateValid", "bool"],
+      ["lowBeamOn", "bool"],
+      ["highBeamOn", "bool"],
+      ["doorOpen", "bool"],
     ]]],
     [2, ["controlsState", [
       ["enabled", "bool"], ["vCruiseCluster", "f32"], ["activeLaneLine", "bool"],

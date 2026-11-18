@@ -1,5 +1,6 @@
 "use strict";
 globalThis.CarrotNavigationZhTw = Object.freeze({
+  "Mapped parking area / space · availability unknown": "圖資停車場／停車格・空位未確認",
   "Refresh navigation state": "重新讀取導航狀態",
   "A navigation request is already in progress.": "正在處理導航要求，請稍候。",
   "Read the navigation state again before ending navigation.": "導航狀態尚未確認，請先重新讀取。",

@@ -215,6 +215,10 @@ SERVICE_SCHEMAS: dict[str, tuple[int, tuple[tuple[Any, ...], ...]]] = {
     # evModeValid@86).
     ("evModeValid", "bool"),
     ("evModeActive", "bool"),
+    ("lightingStateValid", "bool"),
+    ("lowBeamOn", "bool"),
+    ("highBeamOn", "bool"),
+    ("doorOpen", "bool"),
   )),
   "controlsState": (2, (
     ("enabled", "bool", ("deprecated", "enabled")),

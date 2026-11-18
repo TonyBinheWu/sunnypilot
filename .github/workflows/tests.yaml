@@ -147,6 +147,11 @@ jobs:
       - run: ./tools/op.sh setup
       - name: Build openpilot
         run: scons
+      - name: Check display-only parking lookup and actual lamp freshness
+        run: >-
+          python -m pytest -o addopts='' -q
+          openpilot/selfdrive/carrot/server/tests/test_parking_display.py
+          opendbc_repo/opendbc/car/hyundai/tests/test_display_lighting.py
       - name: Check actual full-cereal offline lane extraction
         run: python -m pytest -o addopts='' -q tools/carrot_mapping/test_native_extract.py
       - name: Check recording quota and existing emergency cleanup

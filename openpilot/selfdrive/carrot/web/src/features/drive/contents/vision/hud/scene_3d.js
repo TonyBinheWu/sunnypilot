@@ -31,9 +31,9 @@ export function roadRibbon(path,left,right,{behind=false}={}){
 export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory=options=>new T.WebGLRenderer(options)}={}){
   const canvas=doc.createElement('canvas');canvas.className='tesla-scene tesla-scene-3d';canvas.hidden=true;canvas.setAttribute('aria-label','即時 3D 駕駛視覺');
   let renderer=null,failed=false,lost=false,closed=false,scene,world,camera,models,ego,egoKey='',active=false,hud,hudCamera,ground;
-  const hudNodes=new Map();
+  const hudNodes=new Map(),parkingNodes=[];
   const objectNodes=new Map(),ribbons=[];let renderWidth=0,renderHeight=0,lastStats={backend:'not-started',objects:0,classified:0,unknown:0};
-  const dispose=()=>{for(const m of ribbons){m.geometry.dispose();m.material.dispose();}ribbons.length=0;models?.dispose();models=null;scene?.traverse(o=>{if(o.userData?.owned){o.geometry?.dispose();o.material?.dispose();}});renderer?.dispose();renderer=null;objectNodes.clear();hudNodes.clear();ego=null;renderWidth=renderHeight=0;};
+  const dispose=()=>{for(const m of ribbons){m.geometry.dispose();m.material.dispose();}ribbons.length=0;models?.dispose();models=null;scene?.traverse(o=>{if(o.userData?.owned){o.geometry?.dispose();o.material?.dispose();}});renderer?.dispose();renderer=null;objectNodes.clear();hudNodes.clear();parkingNodes.length=0;ego=null;renderWidth=renderHeight=0;};
   const contextLost=e=>{e.preventDefault();lost=true;canvas.hidden=true;lastStats={...lastStats,backend:'context-lost'};onChange();};
   const contextRestored=()=>{if(closed)return;lost=false;failed=false;dispose();onChange();};
   canvas.addEventListener('webglcontextlost',contextLost);canvas.addEventListener('webglcontextrestored',contextRestored);
@@ -52,6 +52,10 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       for(let i=0;i<12;i++){
         const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(new Float32Array(256*18),3).setUsage(T.DynamicDrawUsage));geometry.setDrawRange(0,0);
         const mesh=new T.Mesh(geometry,new T.MeshBasicMaterial({color:'#ffffff',side:T.DoubleSide,depthWrite:false,transparent:true,opacity:.9}));mesh.frustumCulled=false;mesh.renderOrder=i;world.add(mesh);ribbons.push(mesh);
+      }
+      for(let i=0;i<12;i++){
+        const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(new Float32Array(15),3));
+        const node=new T.Line(g,new T.LineBasicMaterial({color:'#d69c30'}));node.userData.owned=true;node.frustumCulled=false;world.add(node);parkingNodes.push(node);
       }
       return true;
     }catch{failed=true;dispose();lastStats={...lastStats,backend:'canvas-fallback'};return false;}
@@ -75,13 +79,17 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
         if(rainbow)['#ff4c72','#ffad35','#f8e45d','#43dda1','#22baff','#8c74ff'].forEach((c,i)=>ribbon(i+6,model.position,-.83+i*1.66/6,-.83+(i+1)*1.66/6,c,false));
         else ribbon(6,model.position,-.83,.83,'#008dff',false);
       }
+      for(const [i,node] of parkingNodes.entries()){
+        const slot=data.parking?.[i],corners=slot?.corners;node.visible=Array.isArray(corners)&&corners.length===4&&corners.every(p=>p.length===2&&p.every(finite));
+        if(node.visible){const points=[...corners,corners[0]].flatMap(([x,y])=>[x,y,.065]);node.geometry.attributes.position.array.set(points);node.geometry.attributes.position.needsUpdate=true;}
+      }
       const visible=new Set(),objects=sceneTargets(data);
       for(const [i,o] of objects.entries()){
         const key=`${o.source||'observation'}:${o.id??i}:${o.kind}`;visible.add(key);let node=objectNodes.get(key);
         if(!node){node=models.get(o.kind);world.add(node);objectNodes.set(key,node);}node.position.set(o.x,o.y,0);
       }
       for(const [key,node] of objectNodes)if(!visible.has(key)){world.remove(node);objectNodes.delete(key);}
-      const nextKey=`${skin?.id}:${skin?.paint}:${lamps.brake}:${lamps.left}:${lamps.right}`;
+      const nextKey=`${skin?.id}:${skin?.paint}:${lamps.brake}:${lamps.left}:${lamps.right}:${lamps.lowBeam}:${lamps.highBeam}`;
       if(nextKey!==egoKey||!ego){if(ego)world.remove(ego);ego=models.get('ego',{skin,lamps});world.add(ego);egoKey=nextKey;}
       renderer.autoClear=true;renderer.render(scene,camera);const drawCalls=renderer.info.render.calls,triangles=renderer.info.render.triangles;
       const imageKeys=new Set();hudCamera.right=width;hudCamera.top=height;hudCamera.updateProjectionMatrix();

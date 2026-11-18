@@ -25,6 +25,20 @@
     document.getElementById('map').hidden=true;
     document.getElementById('mapAttribution').innerHTML='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> · <a href="https://www.openstreetmap.org/fixthemap">'+tr('지도 오류 신고','Report a map issue')+'</a>';
     let map,route,marker,destination,selected=null,follow=true,lastPoint=null,busy=false,stopped=false,timer,tileUrl,nextConfigRead=0;
+    let parkingLayers=[],parkingAt=0,parkingBusy=false;
+    async function refreshParking(){
+      if(parkingBusy||Date.now()<parkingAt||!visible()||!map)return;parkingBusy=true;parkingAt=Date.now()+10000;
+      const controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),9000);
+      try{const response=await fetch('/api/navigation/parking',{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error();const value=await response.json();
+        parkingLayers.forEach(layer=>map.removeLayer(layer));parkingLayers=[];
+        if(visible()&&value.status==='ready')for(const area of (value.areas||[]).slice(0,80)){
+          if(!Array.isArray(area.points)||area.points.length>300||!area.points.every(p=>Array.isArray(p)&&coordinate(p[0],p[1])))continue;
+          const layer=globalThis.L.polygon(area.points,{color:'#b98924',weight:2,fillOpacity:.07});
+          layer.bindTooltip(tr('지도에 표시된 주차 구획 · 빈자리 미확인','Mapped parking area / space · availability unknown'));layer.addTo(map);parkingLayers.push(layer);
+        }
+      }catch{parkingLayers.forEach(layer=>map.removeLayer(layer));parkingLayers=[];}
+      finally{clearTimeout(deadline);parkingBusy=false;}
+    }
     async function configure(){
       if(tileUrl||Date.now()<nextConfigRead)return;
       nextConfigRead=Date.now()+5000;const controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),8000);
@@ -65,7 +79,7 @@
     function setDestination(place){selected=place||null;if(visible()&&ensureMap())showDestination();}
     async function refresh(){
       if(stopped)return;
-      if(visible())await configure();
+      if(visible()){await configure();refreshParking();}
       if(stopped)return;
       if(!busy&&visible()&&ensureMap()){
         busy=true;const controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),8000);

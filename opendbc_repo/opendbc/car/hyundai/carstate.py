@@ -1,3 +1,4 @@
+from opendbc.car.hyundai.lighting import classic_lighting_state
 from collections import deque
 import copy
 import math
@@ -558,6 +559,7 @@ class CarState(CarStateBase):
     ret.steeringAngleDeg = cp.vl["SAS11"]["SAS_Angle"]
     ret.steeringRateDeg = cp.vl["SAS11"]["SAS_Speed"]
     ret.yawRate = cp.vl["ESP12"]["YAW_RATE"]
+    ret.lightingStateValid, ret.lowBeamOn, ret.highBeamOn = classic_lighting_state(cp)
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(
       50, cp.vl["CGW1"]["CF_Gway_TurnSigLh"], cp.vl["CGW1"]["CF_Gway_TurnSigRh"])
     ret.steeringTorque = cp.vl["MDPS12"]["CR_Mdps_StrColTq"]

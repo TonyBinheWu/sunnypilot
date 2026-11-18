@@ -346,6 +346,8 @@ def _build_car_state(service: Any, previous: dict[str, Any] | None = None) -> di
   p["softHoldActive"] = safe_int(safe_get(service, "softHoldActive"))
   p["carrotCruise"] = safe_int(safe_get(service, "carrotCruise"))
   p["brakeLights"] = safe_bool(safe_get(service, "brakeLights"))
+  for key in ("lightingStateValid", "lowBeamOn", "highBeamOn", "doorOpen"):
+    p[key] = safe_bool(safe_get(service, key))
   p["leftBlindspot"] = safe_bool(safe_get(service, "leftBlindspot"))
   p["rightBlindspot"] = safe_bool(safe_get(service, "rightBlindspot"))
   p["standstill"] = safe_bool(safe_get(service, "standstill"))

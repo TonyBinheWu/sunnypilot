@@ -68,10 +68,10 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
   if(ego)face([[roofShape[0]-.01,-.27,roofShape[2]],[roofShape[0]-.01,.27,roofShape[2]],[roofShape[0]-.01,.27,roofShape[2]+.035],[roofShape[0]-.01,-.27,roofShape[2]+.035]],red);
   for(const side of [-1,1]){
     const y=side*.68;
-    front(y-.18,y+.18,.59,.7,'#edf7ff');
-    if(ego&&['ev9','ev3','ev5','sportage','sorento','carnival','palisade'].includes(style))front(y-.04,y+.04,.45,.81,'#edf7ff');
-    if(ego&&style==='ioniq5')for(let p=0;p<4;p++)front(y-.12+p*.065,y-.075+p*.065,.62,.68,'#edf7ff');
-    if(ego&&['kona','staria','santafe'].includes(style))front(-.82,.82,.79,.815,'#edf7ff');
+    front(y-.18,y+.18,.59,.7,ego?(lamps.lowBeam||lamps.highBeam?'#f4f9ff':'#4a5663'):'#4a5663');
+    if(ego&&['ev9','ev3','ev5','sportage','sorento','carnival','palisade'].includes(style))front(y-.04,y+.04,.45,.81,lamps.lowBeam||lamps.highBeam?'#f4f9ff':'#4a5663');
+    if(ego&&style==='ioniq5')for(let p=0;p<4;p++)front(y-.12+p*.065,y-.075+p*.065,.62,.68,lamps.lowBeam||lamps.highBeam?'#f4f9ff':'#4a5663');
+    if(ego&&['kona','staria','santafe'].includes(style))front(-.82,.82,.79,.815,lamps.lowBeam||lamps.highBeam?'#f4f9ff':'#4a5663');
     const amber=ego&&(side<0?lamps.left:lamps.right)===true?'#ffb126':'#65513b';
     if(ego){tail(y-.13,y+.13,.51,.57,amber);front(y-.13,y+.13,.53,.58,amber);face([[.9,side*1.085,.94],[1.13,side*1.085,.94],[1.13,side*1.085,.97],[.9,side*1.085,.97]],amber);}
   }
@@ -84,7 +84,7 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
       const ys=p.map(v=>v[1]),g=ctx.createLinearGradient?.(0,Math.min(...ys),0,Math.max(...ys)+1);
       if(g?.addColorStop){g.addColorStop(0,f.color);g.addColorStop(1,['#34414e','#344454','#455869'].includes(f.color)?'#101b29':'#a5b2c0');ctx.fillStyle=g;}
     }
-    const illuminated=f.color==='#ff343d'||f.color==='#ffb126';if(illuminated){ctx.shadowColor=f.color;ctx.shadowBlur=5;}ctx.fill();if(illuminated)ctx.shadowBlur=0;
+    const illuminated=f.color==='#ff343d'||f.color==='#ffb126'||f.color==='#f4f9ff';if(illuminated){ctx.shadowColor=f.color;ctx.shadowBlur=5;}ctx.fill();if(illuminated)ctx.shadowBlur=0;
     if(outline){ctx.strokeStyle=outline;ctx.lineWidth=.8;ctx.stroke();}
   }
   ctx.restore();

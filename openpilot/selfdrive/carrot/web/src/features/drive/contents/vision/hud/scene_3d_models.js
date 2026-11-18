@@ -20,7 +20,7 @@ export function createSceneModels(){
     const positions=[],colors=[],emission=[];let polygon=[],color='#fff';
     const capture={save(){},restore(){},beginPath(){polygon=[];},moveTo(...p){polygon.push(p);},lineTo(...p){polygon.push(p);},closePath(){},stroke(){},fill(){
       if(color==='#50607020')return;const c=new T.Color(color);
-      for(let i=1;i<polygon.length-1;i++)for(const p of [polygon[0],polygon[i],polygon[i+1]]){positions.push(...p.slice(0,3));colors.push(c.r,c.g,c.b);emission.push(color==='#ff343d'||color==='#ffb126'?1:0);}
+      for(let i=1;i<polygon.length-1;i++)for(const p of [polygon[0],polygon[i],polygon[i+1]]){positions.push(...p.slice(0,3));colors.push(c.r,c.g,c.b);emission.push(color==='#ff343d'||color==='#ffb126'||color==='#f4f9ff'?1:0);}
     },set fillStyle(c){color=c;}};
     const project=(x,y,z)=>[x,y,z];project.view=[-8,0,6];drawVehicleMesh(capture,project,{body:skin,lamps,ego:true});
     const g=new T.Group(),buffer=geometry(new T.BufferGeometry());
@@ -102,7 +102,7 @@ export function createSceneModels(){
     const result=new T.Group();result.add(new T.Mesh(g,materials.get('combined')));return result;
   }
   return {get(kind,{skin,lamps={}}={}){
-    const key=kind==='ego'?`ego:${skin?.id||'generic'}:${skin?.paint||'default'}:${!!lamps.brake}:${!!lamps.left}:${!!lamps.right}`:kind;
+    const key=kind==='ego'?`ego:${skin?.id||'generic'}:${skin?.paint||'default'}:${!!lamps.brake}:${!!lamps.left}:${!!lamps.right}:${!!lamps.lowBeam}:${!!lamps.highBeam}`:kind;
     if(!templates.has(key))templates.set(key,combine(make(kind,skin,lamps)));
     else if(kind==='ego'){const value=templates.get(key);templates.delete(key);templates.set(key,value);}
     const egoKeys=[...templates.keys()].filter(key=>key.startsWith('ego:'));

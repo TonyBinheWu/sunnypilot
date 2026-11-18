@@ -68,6 +68,8 @@ export function mapPayload(p = {}) {
     setSpeed: setSpeed != null && setSpeed > 0 ? toUnit(setSpeed) : null,
     gap: gap != null && gap > 0 ? Math.round(gap) : null,
     gear,
+    vehicleGear: p.gear == null ? null : String(p.gear).trim().toUpperCase(),
+    vehicleSpeedMps: num(p.vehicleSpeedMps),
     speedLimit: limit != null && limit > 0 ? toUnit(limit) : null,
     // 클러스터 패리티: EV 텔테일 / LFA 레인 초록 날개 / 크루즈 오버라이드(감속=주황·eco=초록)
     evActive: p.evActive === true,
@@ -86,6 +88,7 @@ export function mapPayload(p = {}) {
     leftBlinker: p.leftBlinker === true,
     rightBlinker: p.rightBlinker === true,
     brakeLights: p.brakeLights === true,
+    lightingStateValid: p.lightingStateValid === true, lowBeamOn: p.lowBeamOn === true, highBeamOn: p.highBeamOn === true, doorOpen: p.doorOpen === true,
     fuelGauge: num(p.fuelGauge),
     ureaGauge: num(p.ureaGauge),
     tpms: p.tpms && typeof p.tpms === "object" ? p.tpms : null,
