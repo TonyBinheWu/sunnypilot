@@ -30,6 +30,30 @@ def balanced_scene_weights(rows):
   return {key[0]+':'+key[1]:len(rows)/(4*scenes[key[0]]*count) for key,count in counts.items()}
 
 
+def navigation_order(rows,epoch):
+  """Balance actual exposure; scalar single-example weights can vanish at clipping.
+
+  Cycle shuffled members rather than discarding common references. Epoch offsets
+  continue those cycles, so later epochs visit the rest of each scene's data.
+  """
+  import numpy as np
+  balanced_maneuver_weights(rows)
+  rng=np.random.default_rng(42);groups={key:{} for key in ('wait','straight','left','right')}
+  for index,row in enumerate(rows):groups[maneuver_class(row)].setdefault(row['scenario'],[]).append(index)
+  prepared={}
+  for key,scenes in groups.items():
+    names=rng.permutation(sorted(scenes)).tolist()
+    prepared[key]=[rng.permutation(scenes[name]).tolist() for name in names]
+  per_class=(len(rows)+3)//4;result=[]
+  keys=np.random.default_rng(epoch+42).permutation(list(groups)).tolist()
+  for step in range(per_class):
+    slot=epoch*per_class+step
+    for key in keys:
+      scenes=prepared[key];members=scenes[slot%len(scenes)]
+      result.append(members[(slot//len(scenes))%len(members)])
+  return result
+
+
 def decision_text(row,navigation_balanced=False):
   scenario=row['scenario']
   if row['stop_required']:
@@ -60,7 +84,9 @@ def main():
   parser.add_argument('--epochs',type=int,default=12)
   parser.add_argument('--learning-rate',type=float,default=1e-5)
   parser.add_argument('--navigation-balanced',action='store_true',help='Balance Wait/Proceed/Left/Right with distinct first decision tokens')
+  parser.add_argument('--balanced-sampling',action='store_true',help='Balance actual maneuver/scene exposure, not single-example gradient magnitudes')
   args=parser.parse_args()
+  if args.balanced_sampling and not args.navigation_balanced: raise ValueError('balanced sampling requires the four-class navigation profile')
   import numpy as np
   import torch
   from torch import nn
@@ -85,6 +111,9 @@ def main():
   train_weights=balanced_scene_weights(train) if args.navigation_balanced else {}
   validation_weights=balanced_scene_weights(validation) if args.navigation_balanced else {}
   objective_name='balanced_Wait_Proceed_Left_Right_first_decision_CE_v2' if args.navigation_balanced else 'token_CE_plus_4x_first_decision_CE_v1'
+  if args.balanced_sampling:
+    train_weights={};objective_name='balanced_scene_sampled_Wait_Proceed_Left_Right_CE_v3'
+  sampling_profile='four_maneuver_scene_round_robin_v1' if args.balanced_sampling else 'single_pass_shuffle_v1'
   if {r['pixel_sha256'] for r in train}&{r['pixel_sha256'] for r in validation}: raise ValueError('duplicate images across splits')
   for row in rows:
     path=(args.data/row['file']).resolve()
@@ -106,7 +135,7 @@ def main():
   processor=get_processor(model.tokenizer,model.config);history=[]
   def emit(phase,**fields):
     value={'phase':phase,'updated':time.time(),'epochs':args.epochs,'history':history,'experiment_only':True,'qualified':False,
-      'objective':objective_name,'maneuver_class_weights':train_weights,'trainable_parameters':sum(p.numel() for p in params.values()),
+      'objective':objective_name,'sampling_profile':sampling_profile,'maneuver_class_weights':train_weights,'trainable_parameters':sum(p.numel() for p in params.values()),
       'cuda_peak_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
     print(json.dumps({k:v for k,v in value.items() if k!='history'}),flush=True)
@@ -162,19 +191,20 @@ def main():
   save();optimizer=torch.optim.AdamW(params.values(),lr=args.learning_rate,weight_decay=0)
   for epoch in range(1,args.epochs+1):
     values=[];ces=[]
-    for batch,index in enumerate(np.random.default_rng(42+epoch).permutation(len(train)),1):
+    order=navigation_order(train,epoch-1) if args.balanced_sampling else np.random.default_rng(42+epoch).permutation(len(train))
+    for batch,index in enumerate(order,1):
       optimizer.zero_grad(set_to_none=True);loss,ce,decision,_=objective(train[index],train_weights);value=float(loss.detach());ce_value=float(ce.detach())
       if not np.isfinite(value): raise ValueError('nonfinite decision loss')
       loss.backward();norm=torch.nn.utils.clip_grad_norm_(params.values(),1.)
       if not torch.isfinite(norm) or norm<=0: raise ValueError('invalid visual decision gradient')
-      optimizer.step();values.append(value);ces.append(ce_value);del loss,ce,decision;torch.cuda.empty_cache();emit('training',epoch=epoch,batch=batch,batches=len(train),loss=value,ce=ce_value)
+      optimizer.step();values.append(value);ces.append(ce_value);del loss,ce,decision;torch.cuda.empty_cache();emit('training',epoch=epoch,batch=batch,batches=len(order),loss=value,ce=ce_value)
     metrics=validate(epoch);history.append({'epoch':epoch,'train_loss':float(np.mean(values)),'train_ce':float(np.mean(ces)),**metrics})
     candidate_score=score(metrics)
     if candidate_score>best: best,best_epoch=candidate_score,epoch;save()
     generation(epoch);emit('training',epoch=epoch)
   write_json(args.output/'result.json',{'history':history,'best_epoch':best_epoch,'adapter_sha256':hashlib.sha256((args.output/'best.safetensors').read_bytes()).hexdigest(),
     'parent_sha256':args.parent_sha256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),'script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-    'objective':objective_name,'maneuver_class_weights':train_weights,'qualification_granted':False,'live_service_changed':False,'paths':paths})
+    'objective':objective_name,'sampling_profile':sampling_profile,'maneuver_class_weights':train_weights,'qualification_granted':False,'live_service_changed':False,'paths':paths})
   emit('completed',epoch=args.epochs)
 
 
