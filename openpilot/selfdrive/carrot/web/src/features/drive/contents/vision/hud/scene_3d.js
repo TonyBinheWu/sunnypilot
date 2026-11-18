@@ -13,9 +13,12 @@ export function sceneTargets(scene){
 export function sceneCamera(width,height,camera={}){
   const yaw=finite(camera?.yaw)?camera.yaw*Math.PI/180:0,pitch=finite(camera?.pitch)?clamp(camera.pitch,18,60):25;
   const distance=finite(camera?.distance)?clamp(camera.distance,9,16):9,elevation=finite(camera?.height)?clamp(camera.height,6,12):6;
-  const d=distance*.72,h=2.1+(elevation-6)*.18,aspect=width/Math.max(1,height),fov=50;
+  const d=distance*.72,h=2.1+(elevation-6)*.18,aspect=width/Math.max(1,height);
+  // Maintain a useful horizontal field on portrait phones instead of cropping
+  // the car to the narrow viewport. Wide/4:3 camera geometry stays unchanged.
+  const fov=Math.max(50,Math.min(100,2*Math.atan(Math.tan(Math.PI/8)/Math.max(.25,aspect))*180/Math.PI));
   const anchor=finite(camera?.anchorY)?clamp(camera.anchorY-.20,.56,.67):.59;
-  const theta=Math.atan2(h,d)-Math.atan((anchor*2-1)*Math.tan(fov*Math.PI/360))+(pitch-25)*Math.PI/180;
+  const theta=Math.max(4*Math.PI/180,Math.atan2(h,d)-Math.atan((anchor*2-1)*Math.tan(fov*Math.PI/360)))+(pitch-25)*Math.PI/180;
   return {position:[-d*Math.cos(yaw),d*Math.sin(yaw),h],target:[(-d+20*Math.cos(theta))*Math.cos(yaw),(d-20*Math.cos(theta))*Math.sin(yaw),h-20*Math.sin(theta)],aspect,fov};
 }
 export function roadRibbon(path,left,right,{behind=false}={}){

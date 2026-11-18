@@ -13,6 +13,13 @@ import {createObjectPerception} from './object_perception.js';
 import {createDrivingScene3D} from './scene_3d.js';
 
 export const METRIC_DEFAULTS = Object.freeze({speed:[.04,.04,1.2],limit:[.04,.43,1],set:[.04,.80,1]});
+export function sceneRenderSize(width,height,quality){
+  const vw=Number.isFinite(width)&&width>0?width:1,vh=Number.isFinite(height)&&height>0?height:1;
+  const cap=quality==='high'?[1920,1080,2]:quality==='low'?[480,270,1]:[960,540,1];
+  if(vh>vw)[cap[0],cap[1]]=[cap[1],cap[0]];
+  const factor=Math.min(cap[2],cap[0]/vw,cap[1]/vh);
+  return {width:Math.max(1,Math.round(vw*factor)),height:Math.max(1,Math.round(vh*factor)),factor};
+}
 export function metricLayout(value) {
   let input={};try {input=typeof value==='string'?JSON.parse(value):value||{};}catch{}
   return Object.fromEntries(Object.entries(METRIC_DEFAULTS).map(([key,def])=>{
@@ -257,9 +264,7 @@ export function createTeslaView(doc,target) {
     if(tesla){
       setText(notice,bev.frozen?text('bev_frozen','Annotation snapshot · not live'):text(scene.model?'scene_live_notice':'vision_tesla_wait',scene.model?'Live observations · front camera / native targets; not 360°':'Waiting for fresh model data'));
       const vw=root.clientWidth||536,vh=root.clientHeight||300;
-      const quality=settings.vision_render_quality,cap=quality==='high'?[1920,1080,2]:quality==='low'?[480,270,1]:[960,540,1];
-      const factor=Math.min(cap[2],cap[0]/vw,cap[1]/vh);
-      const w=Math.max(1,Math.round(vw*factor)),h=Math.max(1,Math.round(vh*factor));
+      const {width:w,height:h,factor}=sceneRenderSize(vw,vh,settings.vision_render_quality);
       const stamp=target.CarrotStateReceivedAtMonotonic?.modelV2??target.CarrotStateUpdatedAt?.modelV2;
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
       const signature=`${w}:${h}:${skin.id}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}:${zoomEnabled?zoom.progress.toFixed(3):'manual'}:${orbit.pose.yaw}:${orbit.pose.pitch}:${lamps.brake}:${lamps.left}:${lamps.right}`;

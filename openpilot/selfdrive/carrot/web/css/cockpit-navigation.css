@@ -6,3 +6,15 @@ form{gap:12px}#mapConfig{border:0;border-bottom:1px solid #d9dde4;border-radius:
 #results li button,.favorite-row .go{font-size:18px;text-align:left;min-height:64px}.actions{gap:12px}.actions button{flex:1;white-space:normal}#favoriteForm{padding:20px;border-radius:6px;gap:16px}
 html.cockpit-night .layout>section:nth-child(2){border-color:#35404f}
 @media(max-width:600px){body.search-open .layout>section:nth-child(2){inset:76px 8px 8px;padding:16px}input,button,select{font-size:16px;padding:12px}form{gap:8px}.address-search{flex-wrap:wrap}}
+@media(max-width:600px){
+ body.search-open .layout>section:nth-child(2){inset:8px}
+ #mapAttribution{font-size:calc(10px * clamp(1,var(--carrot-text-scale,1),1.25))!important}
+ #mapStatus{font-size:calc(14px * clamp(1,var(--carrot-text-scale,1),1.25))!important}
+ #favoriteForm{padding:12px;min-width:0}#favoriteForm input{max-width:100%;min-width:0}
+ .favorite-row .actions{flex-wrap:wrap}.favorite-row{overflow-wrap:anywhere}
+}
+@media(max-width:1100px) and (max-height:440px){
+ #mapAttribution{font-size:calc(10px * clamp(1,var(--carrot-text-scale,1),1.25))!important}
+ #mapStatus{font-size:calc(14px * clamp(1,var(--carrot-text-scale,1),1.25))!important}
+ body.search-open .layout>section:nth-child(2){inset:8px;padding:12px}
+}

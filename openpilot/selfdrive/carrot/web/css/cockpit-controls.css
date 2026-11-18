@@ -25,6 +25,7 @@ html.cockpit-controls-mode body[data-cockpit-panel="setting"] .cockpit-control-r
 html.cockpit-controls-mode body[data-cockpit-panel="setting"] .cockpit-control-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,.85fr);gap:32px;align-items:center;padding:24px 0;min-height:104px}
 .cockpit-control-heading{display:flex;gap:12px;align-items:center;min-width:0}.cockpit-control-heading .setting-title-row{flex:1;min-width:0}.cockpit-control-heading .title{font-size:calc(var(--control-font) * var(--carrot-text-scale,1))!important;font-weight:550!important;line-height:1.5!important;white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere}
 .cockpit-control-heading .setting-marquee__content{white-space:normal!important;transform:none!important;animation:none!important}
+.cockpit-control-heading .setting-marquee__content{display:inline!important;min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:normal!important}
 .cockpit-control-tools{display:flex;gap:6px;flex-shrink:0}.cockpit-control-tools button{border:0;border-radius:6px;background:var(--md-surface-cont-h);color:var(--md-on-surface-var);padding:6px;min-width:52px;min-height:52px;font-size:24px}
 .cockpit-control-main .ctrl{justify-self:stretch;min-width:0;max-width:none;width:100%;gap:8px;flex-wrap:wrap}
 .cockpit-control-main .ctrl button,.cockpit-control-main .ctrl select{min-height:56px!important;box-shadow:none!important;border-radius:6px!important;font-size:calc(var(--control-font) * var(--carrot-text-scale,1))!important;max-width:100%}.cockpit-control-main .ctrl button{padding:12px 16px!important}
@@ -84,3 +85,23 @@ html.cockpit-night .cockpit-controls{--md-surface:#202124;--md-surface-cont-h:#3
 @media(max-height:420px) and (min-width:521px){.cockpit-quick-controls{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-bottom:8px}.cockpit-quick-control{min-height:76px;padding:10px 6px;gap:7px}.cockpit-quick-control strong{font-size:calc(13px * var(--carrot-text-scale-chrome))}.cockpit-quick-settings{min-height:44px;font-size:calc(13px * var(--carrot-text-scale-chrome))}}
 
 @media(min-width:1000px) and (min-height:480px){.cockpit-controls{grid-template-columns:200px minmax(0,1fr);--control-font:22px}.cockpit-control-nav-list button{font-size:calc(17px * var(--carrot-text-scale-chrome));min-height:54px}.cockpit-control-header h2{font-size:calc(28px * var(--carrot-text-scale-chrome))}.cockpit-control-search-slot input{font-size:calc(18px * var(--carrot-text-scale-chrome))!important}.cockpit-quick-control{min-height:142px}.cockpit-quick-control strong{font-size:calc(21px * var(--carrot-text-scale-chrome))}.cockpit-quick-control small{font-size:calc(14px * var(--carrot-text-scale-chrome))}.cockpit-control-main .ctrl button,.cockpit-control-main .ctrl select{min-height:56px!important}}
+
+@media(max-width:520px){
+ .cockpit-control-pane{padding:10px 12px 0}.cockpit-control-header{gap:8px;margin-bottom:10px}
+ .cockpit-control-header h2{display:block;flex:1;min-width:0;white-space:normal;font-size:calc(18px * var(--carrot-text-scale-chrome))}
+ .cockpit-category-toggle{font-size:calc(14px * var(--carrot-text-scale-chrome));padding:8px 10px;min-height:48px}
+ .cockpit-control-menu,.cockpit-control-back{min-width:48px;min-height:48px}
+ html.cockpit-controls-mode body[data-cockpit-panel="setting"] .cockpit-control-main{grid-template-columns:minmax(0,1fr);gap:14px}
+ .cockpit-control-heading{display:grid;grid-template-columns:minmax(0,1fr) auto}.cockpit-control-tools button{min-width:44px;min-height:48px;font-size:calc(24px * var(--carrot-text-scale-chrome))}
+ .cockpit-control-main .ctrl:has(input[type="checkbox"]){justify-self:start}
+ .cockpit-control-main .ctrl{grid-column:1;flex-wrap:wrap}
+ .cockpit-control-tabs button{font-size:calc(14px * var(--carrot-text-scale-chrome));min-height:48px}
+}
+@media(max-width:1100px) and (max-height:440px){
+ .cockpit-controls{grid-template-columns:minmax(0,1fr)}.cockpit-control-pane{padding:8px 12px 0}.cockpit-control-header{flex-wrap:nowrap;margin-bottom:8px;gap:8px}
+ .cockpit-control-nav{display:none;position:absolute;inset:0 auto 0 0;width:min(300px,85%);z-index:200;background:var(--md-surface);border-right:1px solid var(--md-outline-var)}
+ .cockpit-controls[data-nav-open="true"] .cockpit-control-nav{display:block}
+ .cockpit-controls[data-nav-open="true"] .cockpit-nav-dismiss{display:block!important;position:absolute;inset:0;z-index:199;background:#0006}
+ .cockpit-control-header .cockpit-category-toggle{display:block!important;min-height:48px;font-size:calc(14px * var(--carrot-text-scale-chrome));padding:8px 12px}
+ .cockpit-control-header h2{font-size:calc(18px * var(--carrot-text-scale-chrome))}.cockpit-control-search-slot{flex-basis:auto;order:0}
+}

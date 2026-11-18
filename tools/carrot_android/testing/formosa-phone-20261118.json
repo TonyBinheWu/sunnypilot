@@ -1,0 +1,132 @@
+{
+  "date": "2026-11-18",
+  "device": "Samsung SM-A146P / Android 14 / APK 0.6.0",
+  "data": "isolated synthetic car state and fake Mapbox, no real vehicle writes",
+  "webTests": {
+    "passed": 1026,
+    "failed": 0
+  },
+  "pageHttpTests": {
+    "passed": 2,
+    "warnings": "local pytest configuration lacks xdist plugins; isolated tests exclude root native Params conftest"
+  },
+  "samples": [
+    {
+      "sample": "small-driving-last.json",
+      "width": 320,
+      "height": 572,
+      "scale": "2",
+      "panel": "vision",
+      "fullscreen": false,
+      "dockBottom": 571.9823532104492,
+      "clockVisible": true,
+      "outerOverflow": false,
+      "coreOverflow": false,
+      "labelsFit": true,
+      "renderer": {
+        "backend": "webgl2",
+        "objects": 3,
+        "classified": 0,
+        "unknown": 3,
+        "imageIcons": 0,
+        "width": 320,
+        "height": 572,
+        "drawCalls": 19,
+        "triangles": 1190
+      },
+      "errors": null
+    },
+    {
+      "sample": "small-driving-100-final.json",
+      "width": 320,
+      "height": 572,
+      "scale": "1",
+      "panel": "vision",
+      "fullscreen": false,
+      "dockBottom": 571.9823608398438,
+      "clockVisible": true,
+      "outerOverflow": false,
+      "coreOverflow": false,
+      "labelsFit": true,
+      "renderer": {
+        "backend": "webgl2",
+        "objects": 3,
+        "classified": 0,
+        "unknown": 3,
+        "imageIcons": 0,
+        "width": 320,
+        "height": 572,
+        "drawCalls": 19,
+        "triangles": 1190
+      },
+      "errors": null
+    },
+    {
+      "sample": "small-fullscreen.json",
+      "width": 320,
+      "height": 572,
+      "scale": "1",
+      "panel": "vision",
+      "fullscreen": true,
+      "dockBottom": 571.9823608398438,
+      "clockVisible": true,
+      "outerOverflow": false,
+      "coreOverflow": false,
+      "labelsFit": true,
+      "renderer": {
+        "backend": "webgl2",
+        "objects": 3,
+        "classified": 0,
+        "unknown": 3,
+        "imageIcons": 0,
+        "width": 320,
+        "height": 572,
+        "drawCalls": 19,
+        "triangles": 1190
+      },
+      "errors": null
+    },
+    {
+      "sample": "landscape-driving-final.json",
+      "width": 825,
+      "height": 380,
+      "scale": "2",
+      "panel": "vision",
+      "fullscreen": false,
+      "dockBottom": 380.6167297363281,
+      "clockVisible": true,
+      "outerOverflow": false,
+      "coreOverflow": false,
+      "labelsFit": true,
+      "renderer": {
+        "backend": "webgl2",
+        "objects": 3,
+        "classified": 0,
+        "unknown": 3,
+        "imageIcons": 0,
+        "width": 826,
+        "height": 381,
+        "drawCalls": 19,
+        "triangles": 1190
+      },
+      "errors": null
+    }
+  ],
+  "navigation": {
+    "query": "Taipei",
+    "upstream": "local fake response",
+    "searchCount": 2,
+    "selectedDestination": false,
+    "backClosesSearch": true
+  },
+  "additionalAcceptance": [
+    "portrait 380x825 controls/category and large-font title wrap",
+    "small-phone app drawer scroll reaches device/update and fullscreen",
+    "display setting 200 to100 readback through the original UI"
+  ],
+  "limits": [
+    "single Android model",
+    "display size override is not a second physical phone",
+    "no real RTC, map API, distance accuracy or endurance test"
+  ]
+}

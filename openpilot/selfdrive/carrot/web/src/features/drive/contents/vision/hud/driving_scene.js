@@ -6,7 +6,7 @@ import {surroundingTargets} from './scene_objects.js';
 export function drivingProjection(width,height,camera=null) {
   const pitch=Number.isFinite(camera?.pitch)?Math.max(18,Math.min(60,camera.pitch)):25;
   const yaw=Number.isFinite(camera?.yaw)?camera.yaw*Math.PI/180:0;
-  const s=Math.sin(pitch*Math.PI/180),c=Math.cos(pitch*Math.PI/180),f=height*.96;
+  const s=Math.sin(pitch*Math.PI/180),c=Math.cos(pitch*Math.PI/180),f=Math.min(height*.96,width*1.35);
   const distance=Number.isFinite(camera?.distance)?Math.max(9,Math.min(16,camera.distance)):9;
   const elevation=Number.isFinite(camera?.height)?Math.max(6,Math.min(12,camera.height)):8;
   const origin=Number.isFinite(camera?.anchorY)?height*Math.max(.72,Math.min(.88,camera.anchorY))-f*(elevation*c-distance*s)/(distance*c+elevation*s):height*.46;

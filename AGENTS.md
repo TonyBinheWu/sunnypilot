@@ -1,5 +1,21 @@
 # Repository memory
 
+- 2026-11-18 Phone-primary cockpit support: raw cockpit-mobile.css follows
+  cockpit-tesla.css, full-width phone apps/navigation, bounded date/dock chrome,
+  stacked portrait instruments, category drawer on short landscape. Long setting
+  title spans must clear inherited min-width:max-content, not just white-space.
+  Mobile navigation reserves its search toolbar outside the iframe; close/Back
+  blur the input instead of focusing a hidden field. Classified source/control
+  unchanged. Portrait Three camera fits the horizontal field; Canvas fallback
+  bounds focal length. Resolution caps rotate with aspect (auto long edge960,
+  high1920) and retain the wide-screen budgets. 1026 full JS and2 isolated HTTP
+  pass; actual Samsung Android14/0.6 tested380x825,825x380 and wm320x572,100/200%,
+  app scrolling, fake navigation search/keyboard/Back and fullscreen. Isolated
+  data only, not real map/RTC/vehicle/endurance or all Android-brand acceptance.
+  Restore original wm/density/rotation and remove ADB reverse after tests. APK
+  unchanged/immutable; update vehicle web then reopen0.6. Phone guide/evidence:
+  tools/carrot_android/PHONE_DISPLAY.zh-TW.md.
+
 - 2026-11-18 Formosa 座艙 0.6.0/code8 renames the separate cockpit package
   without changing signing/channel. No cockpit voice entry, recording permission,
   onboarding or native voice setup; standard CarrotAssist retains voice. Date/time

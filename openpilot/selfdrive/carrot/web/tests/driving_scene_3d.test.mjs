@@ -34,6 +34,20 @@ test('reusable road ribbons continue only an observed near segment under the vie
   assert.equal(roadRibbon({x:[10,20],y:[0,0]},-1,1,{behind:true})[0],10);
 });
 
+test('portrait phones retain the complete default Kia mesh and a forward horizon at close and highway zoom',()=>{
+  const models=createSceneModels();
+  for(const [width,height] of [[320,568],[360,800],[393,852],[412,915],[480,800]])for(const progress of [0,1])for(const id of ['ev6','sorento','sportage','carnival','ev9']){
+    const spec=sceneCamera(width,height,{distance:9+7*progress,height:6+6*progress,anchorY:.78+.07*progress});
+    const camera=new T.PerspectiveCamera(spec.fov,spec.aspect,.1,180);camera.up.set(0,0,1);camera.position.set(...spec.position);camera.lookAt(...spec.target);camera.updateMatrixWorld();
+    const mesh=models.get('ego',{skin:VEHICLE_SKINS[id]});mesh.scale.y=-1;mesh.updateMatrixWorld();
+    mesh.traverse(o=>{const p=o.geometry?.getAttribute('position');if(!p)return;for(let i=0;i<p.count;i++){
+      const v=new T.Vector3().fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld).project(camera);
+      assert.ok(v.x>-.96&&v.x<.96,`${width}x${height} ${id}: horizontal ${v.x}`);
+      assert.ok(v.y>-.82&&v.y<.65,`${width}x${height} ${id}: vertical ${v.y}`);
+    }});
+  }models.dispose();
+});
+
 test('every supported classified object has finite 3D geometry; image-only icons stay distinct from scene admission',()=>{
   const models=createSceneModels(),sizes=new Set();
   for(const kind of [...ROAD_CLASSES,'traffic cone','unknown','traffic light','stop sign','crosswalk','bird']){

@@ -58,6 +58,13 @@ test('leaving navigation closes its search sheet before it becomes a mini map',(
   body.classList.add('search-open');h.panel('vision').onclick();
   assert.equal(body.classList.contains('search-open'),false);assert.equal(h.writes.length,0);
 });
+test('mobile navigation search closes without refocusing its hidden input; Back and panel changes dismiss it',()=>{
+  const h=harness();let focused=0,blurred=0;h.register('query',{focus:()=>focused++,blur:()=>blurred++});
+  h.panel('navigation').onclick();h.el('searchNav').onclick();assert.equal(focused,1);assert.equal(h.el('searchNav')['aria-expanded'],'true');
+  h.el('searchNav').onclick();assert.equal(focused,1);assert.equal(blurred,1);assert.equal(h.el('searchNav')['aria-expanded'],'false');
+  h.el('searchNav').onclick();assert.equal(h.context.CarrotCockpit.back(),true);assert.equal(blurred,2);assert.equal(h.context.document.body.dataset.panel,'navigation');
+  h.el('searchNav').onclick();h.panel('vision').onclick();assert.equal(blurred,3);assert.equal(h.el('searchNav')['aria-expanded'],'false');assert.equal(h.writes.length,0);
+});
 
 test('road shortcuts and preview expansion retain the classified Vision renderer and its preferences',()=>{
   const h=harness();

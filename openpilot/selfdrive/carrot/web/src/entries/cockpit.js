@@ -18,13 +18,14 @@ const sceneActivity=createCockpitSceneActivity();
 let socket=null,retry=null,guard=null,failures=0,transportPhase='connecting',transportReason='',epoch=0,view='vision',primary='vision',busy=false,currentMode=null,coreReady=false,dismissed=false,hudHadData=false;
 const core=$('features'),nav=$('navigation'),titles={navigation:'導航地圖',vision:'Carrot Vision',setting:'控制與設定',tools:'工具／診斷',logs:'行車紀錄'};
 function syncNavigationTextScale(){try{if(nav.contentWindow.location.origin===location.origin)nav.contentWindow.CarrotDisplayPreferences?.apply({web_text_scale:Number(document.documentElement.dataset.textScale)||100});}catch{}}
+function closeNavigationSearch(){try{nav.contentDocument?.body.classList.remove('search-open');nav.contentDocument?.getElementById('query')?.blur?.();}catch{}$('searchNav').textContent='搜尋目的地／最愛';$('searchNav').setAttribute('aria-expanded','false');}
 function status(text){$('panelStatus').textContent=text;$('panelStatus').hidden=!text;}
 function coreWindow(){try{return coreReady&&core.contentWindow.location.origin===location.origin?core.contentWindow:null;}catch{return null;}}
 function selectCore(next){const w=coreWindow();if(!w||typeof w.showPage!=='function')return false;w.document.body.dataset.cockpitPanel=next;w.showPage(next==='vision'?'carrot':next,false);w.CarrotVisionRaw?.syncDataActivity?.();w.CarrotVisionRaw?.markHudDirty?.();w.dispatchEvent?.(new w.Event('carrot:cockpitpanelchange'));return true;}
 function panel(next){
   $('resetView').hidden=next!=='vision';
   if(!titles[next])return;if(['navigation','vision'].includes(next))primary=next;view=next;document.body.dataset.panel=next;document.body.classList.remove('scene-full');nav.hidden=next!=='navigation';core.hidden=next==='navigation';$('searchNav').hidden=next!=='navigation';$('visionTools').hidden=next!=='vision';$('vehicleButton').hidden=next!=='vision';$('panelTitle').textContent=titles[next];$('closePanel').hidden=['navigation','vision'].includes(next);$('miniNav').hidden=next!=='vision';
-  if(next!=='navigation')try{nav.contentDocument?.body.classList.remove('search-open');}catch{}
+  if(next!=='navigation')closeNavigationSearch();
   document.querySelectorAll('[data-panel]').forEach(b=>b.classList.toggle('selected',b.dataset.panel===next));
   $('shellPageName').textContent=next==='vision'?'駕駛視覺':titles[next];
   $('closePanel').textContent=primary==='navigation'?'返回導航':'返回駕駛';
@@ -98,7 +99,7 @@ for(const [id,key] of [['detectionObjects','vision_object_detection'],['detectio
   }catch{$('visionSettingFeedback').textContent='設定未確認，請確認連線後重試；不會自動重送。';}
   finally{savingVision=false;$('detectionObjects').disabled=false;$('detectionRoad').disabled=false;}
 };
-$('searchNav').onclick=()=>{try{nav.contentDocument.body.classList.toggle('search-open');nav.contentDocument.getElementById('query').focus();}catch{status('請先等待導航頁載入。');}};
+$('searchNav').onclick=()=>{try{const doc=nav.contentDocument,open=!doc.body.classList.contains('search-open');if(!open){closeNavigationSearch();return;}doc.body.classList.add('search-open');$('searchNav').setAttribute('aria-expanded','true');$('searchNav').textContent='關閉搜尋／最愛';doc.getElementById('query').focus();}catch{status('請先等待導航頁載入。');}};
 $('appsButton').onclick=()=>$('apps').showModal();
 document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{const next=b.dataset.panel;const fromApps=b.closest?.('#apps');if(fromApps)$('apps').close();panel(!fromApps&&next==='setting'&&view==='setting'?primary:next);});
 // Every road-view entry uses the same camera/classification renderer. The old
@@ -222,6 +223,6 @@ $('modeApply').onclick=async()=>{
   try{const r=await fetch('/api/param_set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'MyDrivingMode',value:mode,source:'cockpit'})});if(!r.ok)throw Error();await modeRead();$('profileStatus').textContent=currentMode===mode?`已確認儲存：${MODES[mode]}`:'設定結果不一致，請到控制與設定確認。';}
   catch{$('profileStatus').textContent='結果未確認；不會自動重送，請到控制與設定查看。';}finally{busy=false;document.querySelectorAll('[data-mode]').forEach(x=>x.disabled=false);}
 };
-window.CarrotCockpit={layoutVersion:7,back(){const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}if(view==='vision'&&document.body.classList.contains('advanced-vision')){advancedVision(false);return true;}if(!['vision','navigation'].includes(view)){panel(primary);return true;}return false;},pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(view==='navigation'?'setting':view);connect();}};
+window.CarrotCockpit={layoutVersion:7,back(){const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}if(view==='navigation'&&nav.contentDocument?.body.classList.contains('search-open')){closeNavigationSearch();return true;}if(view==='vision'&&document.body.classList.contains('advanced-vision')){advancedVision(false);return true;}if(!['vision','navigation'].includes(view)){panel(primary);return true;}return false;},pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(view==='navigation'?'setting':view);connect();}};
 const updateClock=()=>{$('clock').textContent=cockpitClock();};updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',updateClock);
 panel(view);connect();setInterval(()=>{if(!paused)render();},100);render();
