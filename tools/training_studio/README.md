@@ -142,6 +142,13 @@ python -m tools.training_studio.remote setup --root build/training-studio
 
 已停妥樣本另有前 2 秒的前進執行速度損失：從最近觀測速度出發，使用既有加速度上限逐步積分，每一步限制速度不小於零。這個近似損失避免用倒退速度抵銷正加速度脈衝；不替代物理閉迴路，也不變更任何驗收界線。
 
+教師模擬自行行駛片段可用 `teacher_policy_data` 產生修正監督。它只接受獨立訓練／驗證 seed，核對實際 NVIDIA 輸入與教師身分，重播控制至選定時刻，再驗證當下狀態及最近 20 筆位姿一致。紅燈觀測的參考未來維持紅燈，避免預知將來放行；原狀態或參考未來已違規時拒收。這些片段及其修正標籤不會變成資格通過證據。
+
+```bash
+python -m tools.training_studio.teacher_policy_data --episode TRAINING_SEED_SIMULATION \
+  --index 4 --split train --output build/training-studio/policy-reference
+```
+
 每輪保留不可變資料、父權重雜湊、候選、實際 loss 及資格失敗。分別保留停等安全優先與綜合驗證 loss 最低的候選，去除相同雜湊後，各自接受同一套完整資格；不能只因最後一個 epoch 的總 loss 最低就放行。後續訓練的父模型依實際閉迴路失敗與已通過關卡選擇，仍不是上車或發布資格。資料含接近停止區、提早停車、低速蠕行、起步與偏移置中；新失敗情境加入後仍重播舊情境，避免遺忘。訓練 seed 1000–6999、驗證 seed 8000–9499 與資格 seed 300–303 隔離；每筆在獨立 renderer 程序生成，以免累積 D3D12 context 損壞。真實片段的學生資料分組規則不變。
 
 `teacher-adaptation/state.json` 鎖定場景評分器、紅燈停等稽核、追蹤器及資格實驗程式的雜湊；變動時拒絕默默沿用。每輪仍須通過 3 個紅燈及其他 8 個情境，不放寬停等、車道、碰撞、進度或起步門檻。儀表板的「教師訓練 loss」與 N16 學生 loss 分開顯示。按「暫停持續訓練」會停止自己的訓練工作；失聯 lease 超過 90 秒也會結束 GPU 最佳化。再次啟動保留已執行版本，建立下一輪，直到完整資格通過或操作者停止。

@@ -5,9 +5,24 @@ from tools.training_studio.teacher_data import training_seeds
 from tools.training_studio.teacher_train import observed_inputs
 from tools.training_studio.teacher_adapt import closed_loop_score
 from tools.training_studio.store import write_json
+from tools.training_studio.teacher_policy_data import check_source
+from tools.training_studio.edge_inputs import MODEL_REVISION
+import hashlib
+import json
 
 
 class TeacherDataPolicyTest(unittest.TestCase):
+  def test_on_policy_labels_require_observed_source_identity_and_separate_seeds(self):
+    provenance={'revision':MODEL_REVISION,'camera_ids':[1,6],'weights_verified':True,'adapter_sha256':'a'*64}
+    fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
+    result={'seed':1027,'backend':'nvidia_alpamayo2_edge','revision':MODEL_REVISION,'scripted_fallback':False,
+      'model_inputs_include_signal_ground_truth':False,'model_provenance_sha256':fingerprint,
+      'status':'fail','failures':['red_hold_not_maintained']}
+    self.assertEqual(check_source(result,{'provenance':provenance},'train'),fingerprint)
+    for changed,split in (({**result,'seed':300},'train'),(result,'validation'),
+      ({**result,'model_inputs_include_signal_ground_truth':True},'train'),({**result,'model_provenance_sha256':'b'*64},'train')):
+      with self.assertRaises(ValueError): check_source(changed,{'provenance':provenance},split)
+
   def test_training_never_reuses_qualification_seeds_or_validation_seed_range(self):
     for cycle in range(1,10001):
       seeds=training_seeds(cycle)
