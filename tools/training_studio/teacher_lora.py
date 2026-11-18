@@ -1,4 +1,5 @@
-"""Small FP32 LoRA deltas on the real Edge action expert; frozen official base weights."""
+"""Bounded FP32 adapters on the real Edge expert and optional final VLM projections."""
+import re
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -62,8 +63,8 @@ def load(model,path):
   for key,value in saved.items():
     if not key.endswith('.a'): continue
     name=key[:-2]
-    if not (name.startswith('expert.expert.') or name=='expert.action_out_proj'):
-      raise ValueError('Adapter must stay inside the actual action expert')
+    if not (name.startswith('expert.expert.') or name=='expert.action_out_proj' or reasoning_path(model,name)):
+      raise ValueError('Adapter must stay inside the actual expert or the final four VLM query/value projections')
     parent_name,_,leaf=name.rpartition('.')
     parent=model.get_submodule(parent_name)
     base=getattr(parent,leaf)
@@ -101,3 +102,24 @@ def expand(model):
     model.expert.action_out_proj=DenseActionDelta(model.expert.action_out_proj)
     paths.append('expert.action_out_proj')
   return paths
+
+
+def reasoning_path(model,name):
+  """Accept only the pinned final four text-attention q/v projections."""
+  match=re.fullmatch(r'vlm\.model\.language_model\.layers\.(\d+)\.self_attn\.(q_proj|v_proj)',name)
+  if not match or not hasattr(model.config,'vlm_config'): return False
+  count=model.config.vlm_config.text_config.num_hidden_layers
+  return max(0,count-4)<=int(match[1])<count
+
+
+def adapter_parameters(model):
+  """Include frozen reasoning deltas when an expert-only continuation is saved."""
+  result={}
+  for name,module in model.named_modules():
+    if isinstance(module,DeltaLinear):
+      result[name+'.a']=module.a
+      result[name+'.b']=module.b
+    elif isinstance(module,DenseActionDelta):
+      result[name+'.delta_weight']=module.delta_weight
+      result[name+'.delta_bias']=module.delta_bias
+  return result

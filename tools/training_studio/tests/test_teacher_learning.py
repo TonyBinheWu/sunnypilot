@@ -182,6 +182,48 @@ class TeacherLearningTest(unittest.TestCase):
       load(restored,path)
       torch.testing.assert_close(model(x),restored(x))
 
+  def test_combined_checkpoint_keeps_frozen_visual_decisions_during_expert_continuation(self):
+    import torch
+    from torch import nn
+    from safetensors.torch import save_file
+    from tools.training_studio.teacher_lora import DeltaLinear,install,expand,load,adapter_parameters,reasoning_path
+    class Model(nn.Module):
+      def __init__(self):
+        super().__init__()
+        self.config=SimpleNamespace(vlm_config=SimpleNamespace(text_config=SimpleNamespace(num_hidden_layers=8)))
+        self.vlm=nn.Module();self.vlm.model=nn.Module();self.vlm.model.language_model=nn.Module()
+        self.vlm.model.language_model.layers=nn.ModuleList()
+        for index in range(8):
+          layer=nn.Module();layer.self_attn=nn.Module();layer.self_attn.q_proj=nn.Linear(4,4);layer.self_attn.v_proj=nn.Linear(4,4)
+          self.vlm.model.language_model.layers.append(layer)
+        self.expert=nn.Module();self.expert.expert=nn.Module();self.expert.expert.block=nn.Module();self.expert.expert.block.q_proj=nn.Linear(4,4);self.expert.action_out_proj=nn.Linear(4,2)
+      def forward(self,x):
+        features=sum(layer.self_attn.q_proj(x)+layer.self_attn.v_proj(x) for layer in self.vlm.model.language_model.layers)
+        return self.expert.action_out_proj(self.expert.expert.block.q_proj(features))
+    torch.manual_seed(17);model=Model();install(model);expand(model)
+    name='vlm.model.language_model.layers.7.self_attn.q_proj';parent=model.get_submodule(name.rpartition('.')[0]);parent.q_proj=DeltaLinear(parent.q_proj)
+    with torch.no_grad():parent.q_proj.b.normal_(std=.03)
+    model.vlm.requires_grad_(False);x=torch.randn(3,4)
+    frozen={key:p.detach().clone() for key,p in model.vlm.named_parameters()}
+    torch.optim.SGD((p for p in model.parameters() if p.requires_grad),lr=.00001).zero_grad()
+    model(x).square().mean().backward()
+    torch.optim.SGD((p for p in model.parameters() if p.requires_grad),lr=.00001).step()
+    for key,p in model.vlm.named_parameters():torch.testing.assert_close(p,frozen[key])
+    saved=adapter_parameters(model)
+    self.assertIn(name+'.a',saved);self.assertIn(name+'.b',saved)
+    self.assertFalse(any('.base.' in key for key in saved))
+    for invalid in ('vlm.model.language_model.layers.0.self_attn.q_proj','vlm.model.language_model.layers.8.self_attn.q_proj','vlm.model.language_model.layers.7.self_attn.k_proj','vlm.model.visual.q_proj'):
+      self.assertFalse(reasoning_path(model,invalid))
+      with tempfile.TemporaryDirectory() as directory:
+        path=Path(directory)/'invalid.safetensors';save_file({invalid+'.a':torch.zeros(8,4)},str(path))
+        with self.assertRaises(ValueError):load(Model(),path)
+    with tempfile.TemporaryDirectory() as directory:
+      path=Path(directory)/'combined.safetensors';save_file({k:p.detach().contiguous() for k,p in saved.items()},str(path))
+      torch.manual_seed(17);restored=Model();load(restored,path);restored.vlm.requires_grad_(False)
+      torch.testing.assert_close(model(x),restored(x))
+      self.assertEqual(set(saved),set(adapter_parameters(restored)))
+      self.assertTrue(all(not p.requires_grad for p in restored.vlm.parameters()))
+
   def test_inference_context_copy_is_independent_and_normal_for_backprop(self):
     import torch
     from tools.training_studio.teacher_train import cache_copy

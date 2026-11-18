@@ -228,7 +228,7 @@ def main():
             if checksum in seen: continue
             seen.add(checksum)
             pointer={'path':f'/studio/teacher/cycle-{cycle:03d}/output/'+filename,'sha256':checksum,
-              'cycle':cycle,'training_epoch':epoch,'selection':selection,'scope':'actual_Edge_expert_expanded_LoRA','driving_qualified':False}
+              'cycle':cycle,'training_epoch':epoch,'selection':selection,'scope':result.get('adapter_scope','actual_Edge_expert_expanded_LoRA'),'driving_qualified':False}
             report('qualification',cycle=cycle,selection=selection)
             health=publish_service(pointer)
             fingerprint=hashlib.sha256(json.dumps(health['provenance'],sort_keys=True).encode()).hexdigest()

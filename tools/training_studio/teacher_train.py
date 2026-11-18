@@ -159,7 +159,7 @@ def main():
   from alpamayo2_edge.helper import get_processor,to_device
   from alpamayo2_edge.inference import predict
   from tools.training_studio.edge_inputs import MODEL_REVISION,prepare_front_inputs
-  from tools.training_studio.teacher_lora import install,load,expand
+  from tools.training_studio.teacher_lora import install,load,expand,adapter_parameters
   from tools.training_studio.store import write_json
   args.output.mkdir(parents=True,exist_ok=False)
   prefix_directory=tempfile.TemporaryDirectory(prefix='prefix-',dir=args.output)
@@ -175,10 +175,14 @@ def main():
     load(model,args.parent)
   else: install(model)
   if args.expanded_expert: expand(model)
+  # A saved visual-decision adapter is part of the parent, but this stage
+  # optimizes the expert against its newly generated, frozen contexts only.
+  model.vlm.requires_grad_(False)
   from tools.training_studio.teacher_motion import install as install_motion
   install_motion(model.expert.action_space)
   model.eval()
   parameters={name:p for name,p in model.named_parameters() if p.requires_grad}
+  adapter_scope='actual_Edge_expert_and_VLM_LoRA' if any(name.startswith('vlm.') for name in adapter_parameters(model)) else 'actual_Edge_expert_expanded_LoRA'
   processor=get_processor(model.tokenizer,model.config)
   settings={'seed':42,'num_traj_sets':1,'num_traj_samples':1,'top_p':.98,'top_k':None,'temperature':.6,'max_generation_length':256,'diffusion_kwargs':{'inference_step':10}}
   manifest=json.loads((args.data/'manifest.json').read_text())
@@ -195,7 +199,7 @@ def main():
   model._sample_actions=capture
   history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'stage':None,'objective_revision':OBJECTIVE_REVISION,'epochs':args.epochs,'history':history,'updated':time.time(),
+    value={'phase':phase,'adapter_scope':adapter_scope,'stage':None,'objective_revision':OBJECTIVE_REVISION,'epochs':args.epochs,'history':history,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -335,15 +339,15 @@ def main():
     if score>best_score:
       best_score=score
       best_metrics,best_epoch=metrics,epoch+1
-      save_file({name:p.detach().float().cpu().contiguous() for name,p in parameters.items()},str(args.output/'best.safetensors'))
+      save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(args.output/'best.safetensors'))
     if metrics['validation_loss']<balanced_metrics['validation_loss']:
       balanced_metrics,balanced_epoch=metrics,epoch+1
-      save_file({name:p.detach().float().cpu().contiguous() for name,p in parameters.items()},str(args.output/'balanced.safetensors'))
+      save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(args.output/'balanced.safetensors'))
     emit('training',epoch=epoch+1,baseline=baseline,**metrics)
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
-    'objective_revision':OBJECTIVE_REVISION,
+    'objective_revision':OBJECTIVE_REVISION,'adapter_scope':adapter_scope,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})

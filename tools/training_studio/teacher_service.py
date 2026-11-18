@@ -64,7 +64,7 @@ def main():
     'gpu':torch.cuda.get_device_name(0),'server_script_sha256':digest_file(Path(__file__)),
     'input_adapter_sha256':digest_file(Path(__file__).with_name('edge_inputs.py')),
     'motion_state_profile':MOTION_PROFILE,'motion_state_adapter_sha256':digest_file(Path(__file__).with_name('teacher_motion.py')),
-    'action_expert_adapter':adapter,'driving_qualified':False,'amd_benchmarked':False}
+    'action_expert_adapter':adapter,'adapter_loader_sha256':digest_file(Path(__file__).with_name('teacher_lora.py')),'driving_qualified':False,'amd_benchmarked':False}
 
   class Handler(BaseHTTPRequestHandler):
     def reply(self,value,status=200):
