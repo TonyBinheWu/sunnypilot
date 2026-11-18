@@ -134,6 +134,7 @@ def main():
         origin,reference=history.positions[-1],history.rotations[-1]
         front_distance=scene.stop_s-scene.state()[3]-scene.vehicle.LENGTH/2
         initial_speed=scene.state()[-1]
+        stop_required=not is_go and scenario in STOP_SCENARIOS
         # The generic approach expert targets a fixed point near the line and
         # would restart a vehicle already parked within the valid stop zone.
         # Supervise maintaining that completed stop, instead of contradicting
@@ -165,8 +166,8 @@ def main():
         path=args.output/f'{split}-{seed}-{index}.npz'
         np.savez_compressed(path,**sample)
         records.append({'file':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'seed':seed,'split':split,'scenario':scenario,'mode':mode,
-          'stop_required':not is_go and scenario in STOP_SCENARIOS,
-          'restart_required':is_go and initial_speed<.2,'front_distance_m':front_distance,
+          'stop_required':stop_required,
+          'restart_required':not stop_required and initial_speed<.2,'front_distance_m':front_distance,
           'maintain_stop_reference':maintain_stop,
           'future_actor_motion_frozen':freeze_actor,
           'pixel_sha256':hashlib.sha256(sample['image_frames'].tobytes()).hexdigest()})
