@@ -167,6 +167,15 @@ class Store:
       datasets = [dict(row) for row in db.execute("SELECT split,COUNT(*) segments,SUM(bytes) bytes FROM datasets GROUP BY split")]
       jobs = [dict(row) for row in db.execute("SELECT * FROM jobs ORDER BY created DESC LIMIT 100")]
       events = [dict(row) for row in db.execute("SELECT * FROM events ORDER BY id DESC LIMIT 50")]
+      route_counts={row['split']:row['count'] for row in db.execute('SELECT split,COUNT(DISTINCT route_group) count FROM datasets GROUP BY split')}
+    missing=[name for name in ('train','validation','test') if not route_counts.get(name)]
+    config=self.config()
+    qualified=bool(config.get('teacher_qualification') and Path(config['teacher_qualification']).is_file())
+    blockers=[]
+    if missing:
+      blockers.append('缺少獨立行程資料組：'+', '.join(missing)+'；同一行程的片段不會拆到不同資料組。')
+    if not qualified:
+      blockers.append('尚未設定有效的雙前鏡頭教師資格報告；教師標註與蒸餾尚未開始。')
     for job in jobs:
       folder = self.root / "runs" / job["id"]
       job["progress"] = read_json(folder / "progress.json", {})
@@ -178,6 +187,8 @@ class Store:
       "config": {key: value for key, value in self.config().items() if key not in ("commands",)},
       "base": read_json(self.root / "models" / "base.json", {**BASE, "verified": False}),
       "collection":read_json(self.root/"collection.json",{}),
+      "collection_progress":read_json(self.root/'collector-progress.json',{}),
+      "pipeline":{"missing_splits":missing,"route_counts":route_counts,"blockers":blockers},
       "readiness":{"collector_configured":bool(self.config().get("collector")),
         "teacher_qualified":bool(self.config().get("teacher_qualification") and Path(self.config()["teacher_qualification"]).is_file()),
         "dgx":read_json(self.root/"worker-readiness.json",{}),"compiler_configured":bool(self.config().get("compiler_command"))},

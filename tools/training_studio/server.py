@@ -69,14 +69,14 @@ def handler_for(store, port):
             text = stream.read().decode("utf-8",errors="replace")
         self.send_json({"text":text})
         return
-      files = {"/":"index.html","/studio.js":"studio.js","/studio.css":"studio.css"}
+      files = {"/":"index.html","/studio.js":"studio.js","/studio.css":"studio.css","/status.mjs":"status.mjs"}
       if self.path not in files:
         self.send_error(404)
         return
       file = WEB/files[self.path]
       body = file.read_bytes()
       self.send_response(200)
-      self.send_header("Content-Type",{".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8"}[file.suffix])
+      self.send_header("Content-Type",{".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".mjs":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8"}[file.suffix])
       self.send_header("Content-Length",str(len(body)))
       self.send_header("Cache-Control","no-store")
       self.send_header("Content-Security-Policy","default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'")

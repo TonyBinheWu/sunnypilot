@@ -1,5 +1,6 @@
 """Resumable stage runner. A new dataset creates a new version; failures never spin optimizers."""
 import argparse
+from contextlib import contextmanager
 import io
 import json
 import os
@@ -16,6 +17,32 @@ from tools.training_studio.store import BASE, STAGES, Store, exclusive_worker, r
 from openpilot.sunnypilot.formosalink.training_protocol import digest_file
 
 TEACHER_REVISION = "b92b6aa326bd3e2235db28f248ad5a30b5890e64"
+
+
+@contextmanager
+def worker_heartbeat(store, interval=2):
+  """Report liveness independently of slow network transfers and dataset hashing."""
+  done=threading.Event()
+  lock=threading.Lock()
+  current={'state':'starting'}
+  def publish(**fields):
+    with lock:
+      current.clear()
+      current.update(fields)
+      write_json(store.root/'worker.json',{'pid':os.getpid(),'updated':time.time(),**current})
+  def run():
+    while not done.wait(interval):
+      with lock:
+        write_json(store.root/'worker.json',{'pid':os.getpid(),'updated':time.time(),**current})
+  publish(state='starting')
+  thread=threading.Thread(target=run,name='studio-heartbeat',daemon=True)
+  thread.start()
+  try:
+    yield publish
+  finally:
+    done.set()
+    thread.join()
+    publish(state='stopped')
 
 
 def base_model(store):
@@ -177,7 +204,7 @@ def stage(name, folder):
 def worker(root, stop=None):
   store = Store(root)
   stop = stop or threading.Event()
-  with exclusive_worker(root):
+  with exclusive_worker(root), worker_heartbeat(store) as heartbeat:
     # Restarted interrupted optimizers need inspection, not an automatic second start.
     with store.db() as db:
       db.execute("UPDATE jobs SET state='interrupted',error='worker restarted; explicit retry creates a new version' WHERE state='running'")
@@ -185,7 +212,7 @@ def worker(root, stop=None):
     collector_error = None
     try:
       while not stop.is_set():
-        write_json(store.root/"worker.json",{"pid":os.getpid(),"updated":time.time(),"state":"watching" if store.enabled() else "paused"})
+        heartbeat(state='watching' if store.enabled() else 'paused')
         scan = store.root/"scan-request.json"
         if scan.exists():
           scan.unlink()
@@ -195,6 +222,7 @@ def worker(root, stop=None):
           continue
         if store.config().get("collector"):
           try:
+            heartbeat(state='collecting')
             from tools.training_studio.collector import sync
             sync(store,stop=stop)
             collector_error=None
@@ -202,6 +230,7 @@ def worker(root, stop=None):
             if str(exc)!=collector_error:
               store.event("資料同步等待："+str(exc))
               collector_error=str(exc)
+        heartbeat(state='importing')
         store.discover()
         store.enqueue()
         with store.db() as db:
@@ -210,6 +239,7 @@ def worker(root, stop=None):
           if row:
             db.execute("UPDATE jobs SET state='running',updated=? WHERE id=?",(time.time(),row["id"]))
         if not row:
+          heartbeat(state='watching')
           stop.wait(5)
           continue
         identity = row["id"]
@@ -245,7 +275,7 @@ def worker(root, stop=None):
                       child.kill()
                     child.wait()
                   raise InterruptedError("paused; no automatic optimizer restart")
-                write_json(store.root/"worker.json",{"pid":os.getpid(),"updated":time.time(),"state":name,"job":identity})
+                heartbeat(state=name,job=identity)
               if child.returncode:
                 tail = (folder/(name+".log")).read_text(encoding="utf-8",errors="replace")[-2000:]
                 raise RuntimeError(name+" failed: "+tail)
@@ -262,7 +292,7 @@ def worker(root, stop=None):
       if child and child.poll() is None:
         child.terminate()
         child.wait(timeout=10)
-      write_json(store.root/"worker.json",{"pid":os.getpid(),"updated":time.time(),"state":"stopped"})
+      heartbeat(state='stopped')
 
 
 def main():

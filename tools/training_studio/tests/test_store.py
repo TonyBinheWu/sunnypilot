@@ -2,6 +2,7 @@ import hashlib
 from pathlib import Path
 import tempfile
 import unittest
+import time
 
 from tools.training_studio.server import initialize
 from tools.training_studio.store import Store, read_json, split_for, write_json
@@ -70,6 +71,28 @@ class StoreTest(unittest.TestCase):
     group="a"*64
     self.assertEqual(split_for(group),split_for(group))
     self.assertIn(split_for(group),("train","validation","test"))
+
+  def test_waiting_reason_preserves_whole_route_holdouts(self):
+    self.add('train')
+    self.store.discover()
+    state=self.store.state()
+    self.assertEqual(state['pipeline']['missing_splits'],['validation','test'])
+    self.assertEqual(state['pipeline']['route_counts'],{'train':1})
+    self.assertTrue(any('教師' in text for text in state['pipeline']['blockers']))
+    self.assertEqual(state['jobs'],[])
+
+  def test_heartbeat_advances_during_a_blocked_collector_and_stops_cleanly(self):
+    from tools.training_studio.engine import worker_heartbeat
+    with worker_heartbeat(self.store,interval=.01) as heartbeat:
+      heartbeat(state='collecting')
+      initial=read_json(self.store.root/'worker.json')['updated']
+      deadline=time.monotonic()+1
+      while read_json(self.store.root/'worker.json')['updated']<=initial and time.monotonic()<deadline:
+        time.sleep(.01)
+      value=read_json(self.store.root/'worker.json')
+      self.assertGreater(value['updated'],initial)
+      self.assertEqual(value['state'],'collecting')
+    self.assertEqual(read_json(self.store.root/'worker.json')['state'],'stopped')
 
 
 if __name__=="__main__":
