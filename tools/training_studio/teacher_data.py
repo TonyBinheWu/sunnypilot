@@ -81,7 +81,9 @@ def main():
         scene.vehicle.set_velocity(scene.vehicle.heading,speed)
         scene.previous_position=np.array(scene.vehicle.position)
         is_go=mode in ('go','green_transition','accelerating_go','drift_go')
-        scene.green_at=1.9 if mode=='green_transition' else 0 if is_go else 1e6
+        # Actor interpolation divides by the clearance time. A small positive
+        # time clears actors before any history frame used for a go packet.
+        scene.green_at=1.9 if mode=='green_transition' else 1e-6 if is_go else 1e6
         scene.update_actors()
         history=EdgeHistory()
         for step in range(41):
