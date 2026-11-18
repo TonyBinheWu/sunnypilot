@@ -20,6 +20,10 @@
   CI PATH also has a reduced FFmpeg executable without lavfi/x265. Codec tests
   explicitly select distro /usr/bin/ffmpeg and ffprobe; require both and fail
   rather than skip in release CI. Do not change playback's no-CLI contract.
+  APK Back must close an embedded .dashcam-player-overlay via its original close
+  button before leaving Logs. Also dispose replay on carrot:pagechange away from
+  logs; otherwise its body-level overlay survives when the shared iframe changes
+  to Vision, despite the parent appearing to navigate successfully.
 
 - 2026-11-18 Parking worker belongs in build.mjs workerDefinitions, never
   bundleDefinitions. A worker with bundle-only source metadata makes the strict

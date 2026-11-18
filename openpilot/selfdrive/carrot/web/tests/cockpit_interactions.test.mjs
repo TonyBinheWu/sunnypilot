@@ -14,3 +14,10 @@ test('native child dialogs may veto cancellation and Back cannot force confirmat
  assert.equal(closeEmbeddedDialog(target),true);assert.equal(closed,0);allowed=true;
  assert.equal(closeEmbeddedDialog(target),true);assert.equal(closed,1);assert.equal(closeEmbeddedDialog(null),false);
 });
+
+test('Back closes an embedded replay through its cleanup handler before leaving the page',()=>{
+ let closed=0,present=true;
+ const target={document:{getElementById:()=>null,querySelector:selector=>selector==='dialog[open]'?null:present?{click(){closed++;present=false;}}:null}};
+ assert.equal(closeEmbeddedDialog(target),true);assert.equal(closed,1);
+ assert.equal(closeEmbeddedDialog(target),false);assert.equal(closed,1);
+});

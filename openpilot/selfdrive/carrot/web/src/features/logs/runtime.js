@@ -444,6 +444,7 @@ function openLogsVideoPlayer(title, src, options = {}) {
   const close = () => {
     if (closed) return;
     closed = true;
+    window.removeEventListener('carrot:pagechange', onPlayerPageChange);
     try { options.onClose?.(activeSegmentId()); } catch {}
     mediaSwitchToken += 1;
     if (toastTimer) window.clearTimeout(toastTimer);
@@ -453,6 +454,10 @@ function openLogsVideoPlayer(title, src, options = {}) {
     try { player?.destroy?.(); } catch {}
     overlay.remove();
   };
+  function onPlayerPageChange(event) {
+    if (event?.detail?.page !== 'logs') close();
+  }
+  window.addEventListener('carrot:pagechange', onPlayerPageChange);
   const runNavigationAction = (handler) => {
     if (navigationPending || typeof handler !== "function") return;
     navigationPending = true;

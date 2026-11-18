@@ -21,7 +21,12 @@ export function closeEmbeddedDialog(target){
     return true;
   }
   const dialog=doc.querySelector('dialog[open]');
-  if(!dialog)return false;
+  if(!dialog){
+    // Replay owns its media/timer/SEI cleanup; use its original close handler.
+    const replayClose=doc.querySelector('.dashcam-player-overlay.is-open .dashcam-player-close');
+    if(!replayClose)return false;
+    replayClose.click();return true;
+  }
   const event=new target.Event('cancel',{cancelable:true});
   if(dialog.dispatchEvent(event)&&dialog.open)dialog.close();
   return true;
