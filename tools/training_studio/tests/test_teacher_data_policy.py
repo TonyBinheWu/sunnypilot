@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from tools.training_studio.teacher_data import training_seeds
 from tools.training_studio.teacher_train import observed_inputs
-from tools.training_studio.teacher_adapt import closed_loop_score,restore_parent_ranking
+from tools.training_studio.teacher_adapt import closed_loop_score,restore_parent_ranking,remember_tested_scenarios
 from tools.training_studio.store import write_json
 from tools.training_studio.teacher_policy_data import check_source
 from tools.training_studio.edge_inputs import MODEL_REVISION
@@ -12,6 +12,12 @@ import json
 
 
 class TeacherDataPolicyTest(unittest.TestCase):
+  def test_rehearsal_keeps_passed_scene_types_without_held_out_samples(self):
+    state={'rehearsal':['red_light']}
+    remember_tested_scenarios(state,[{'scenario':'lane_center','seed':303,'status':'pass'},
+      {'scenario':'pedestrian','seed':303,'status':'fail','input':'held-out-packet'}])
+    self.assertEqual(state,{'rehearsal':['lane_center','pedestrian','red_light']})
+
   def test_on_policy_labels_require_observed_source_identity_and_separate_seeds(self):
     provenance={'revision':MODEL_REVISION,'camera_ids':[1,6],'weights_verified':True,'adapter_sha256':'a'*64}
     fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()

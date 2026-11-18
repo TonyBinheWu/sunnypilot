@@ -35,12 +35,18 @@ def closed_loop_score(batch):
     -max((row.get('max_center_error_m',0.) for row in rows),default=0.))
 
 
+def remember_tested_scenarios(state,rows):
+  """Rehearse scene types with new seeds, never held-out observations or labels."""
+  names={row['scenario'] for row in rows}
+  state['rehearsal']=sorted(set(state.get('rehearsal',[]))|names)
+
+
 def restore_parent_ranking(store,state):
   """Re-rank recorded candidates after changing the training-parent heuristic.
 
   This does not issue qualification: only the original complete suite may do so.
   """
-  if state.get('ranking_version')==5: return
+  if state.get('ranking_version')==5 and state.get('rehearsal_version')==1: return
   best=(-1,)*11
   for batch in sorted((store.root/'teacher-cycles').glob('cycle-*/qualification-*')):
     if not batch.is_dir(): continue
@@ -53,11 +59,12 @@ def restore_parent_ranking(store,state):
     adapter=provenance.get('action_expert_adapter') or {}
     if not adapter.get('path','').startswith('/studio/teacher/cycle-') or not adapter.get('sha256'): continue
     if any(row.get('model_provenance_sha256')!=fingerprint for row in rows): continue
+    remember_tested_scenarios(state,rows)
     score=closed_loop_score(batch)
     if score>best:
       best=score
       state.update(parent=adapter,scenario=rows[-1]['scenario'])
-  state.update(best_closed_loop=best,ranking_version=5)
+  state.update(best_closed_loop=best,ranking_version=5,rehearsal_version=1)
 
 
 def main():
@@ -240,7 +247,7 @@ def main():
               state['parent']=pointer
               state['best_closed_loop']=score
               state['scenario']=outcome.get('scenario','red_light')
-            state['rehearsal']=sorted(set(state.get('rehearsal',[]))|{outcome.get('scenario','red_light')})
+            remember_tested_scenarios(state,read_json(batch/'qualification.json',{}).get('results',[]))
           state['cycle']=cycle+1
           write_json(loop_root/'state.json',state)
         except InterruptedError: raise
