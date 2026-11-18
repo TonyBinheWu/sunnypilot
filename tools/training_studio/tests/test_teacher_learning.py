@@ -9,6 +9,19 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_restart_supervision_prioritizes_executed_commands_over_equally_wrong_later_commands(self):
+    import torch
+    from tools.training_studio.teacher_train import restart_command_loss
+    early=torch.zeros(1,64);early[:,:3]=1.6
+    late=torch.zeros_like(early);late[:,17:20]=1.6
+    torch.testing.assert_close(early[:,:20].square().mean(),late[:,:20].square().mean())
+    self.assertGreater(float(restart_command_loss(early)),10*float(restart_command_loss(late)))
+    prediction=torch.zeros_like(early,requires_grad=True)
+    loss=restart_command_loss(prediction-early);loss.backward()
+    self.assertTrue(bool((prediction.grad[:,:3]<0).all()))
+    self.assertEqual(float(prediction.grad[:,20:].abs().sum()),0.)
+    self.assertEqual(float(restart_command_loss(torch.zeros_like(early))),0.)
+
   def test_permitted_motion_loss_has_a_restart_gradient_at_zero_velocity_and_preserves_turn_direction(self):
     import torch
     from tools.training_studio.teacher_train import proceed_velocity_loss

@@ -12,6 +12,7 @@ import tempfile
 import time
 
 IMPLEMENTATION_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+OBJECTIVE_REVISION='ten_step_immediate_restart_v1'
 
 
 def observed_inputs(sample):
@@ -92,6 +93,16 @@ def proceed_velocity_loss(velocity,reference_velocity):
   """Match immediate permitted motion rather than postponing a restart at every replan."""
   error=(velocity[:,:20]-reference_velocity[:,:20]).square().sum(-1)
   return 200*error.amax()+50*error.mean()
+
+
+def restart_command_loss(accel_error):
+  """Do not postpone permitted acceleration beyond the next replan.
+
+  The reference inverse dynamics already requests positive initial acceleration;
+  averaging it over twenty commands underweights the commands executed first.
+  This loss is applied only to permitted, stationary restart references.
+  """
+  return 50*accel_error[:,:3].square().mean()+10*accel_error[:,:20].square().mean()
 
 
 def rollout(model,item,*,grad,seed=42):
@@ -184,7 +195,7 @@ def main():
   model._sample_actions=capture
   history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'stage':None,'epochs':args.epochs,'history':history,'updated':time.time(),
+    value={'phase':phase,'stage':None,'objective_revision':OBJECTIVE_REVISION,'epochs':args.epochs,'history':history,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -243,7 +254,7 @@ def main():
     if item['row'].get('restart_required'):
       accel_std=model.expert.action_space.accel_std.to(action.device)
       restart_error=(action[...,0]-item['target_action'].to(action.device)[...,0])*accel_std
-      loss=loss+10*restart_error[:,:20].square().mean()
+      loss=loss+restart_command_loss(restart_error)
     if item['row']['stop_required']:
       held=(torch.linalg.vector_norm(ref_velocity,dim=-1)<.15).float()
       loss=loss+stop_zone_loss(xyz,target,held,item['row']['front_distance_m'])
@@ -332,6 +343,7 @@ def main():
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
+    'objective_revision':OBJECTIVE_REVISION,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})

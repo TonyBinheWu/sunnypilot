@@ -26,6 +26,7 @@ class TeacherDataPolicyTest(unittest.TestCase):
       'status':'fail','failures':['red_hold_not_maintained']}
     self.assertEqual(check_source(result,{'provenance':provenance},'train'),fingerprint)
     self.assertEqual(check_source({**result,'scenario':'pedestrian'},{'provenance':provenance},'train'),fingerprint)
+    self.assertEqual(check_source({**result,'scenario':'lane_center'},{'provenance':provenance},'train'),fingerprint)
     for changed,split in (({**result,'seed':300},'train'),(result,'validation'),
       ({**result,'model_inputs_include_signal_ground_truth':True},'train'),({**result,'model_provenance_sha256':'b'*64},'train'),
       ({**result,'scenario':'yield_left'},'train')):
