@@ -53,6 +53,7 @@ def monitor(store,stop):
   try:
     while not stop.is_set():
       config=store.config()
+      adapting=config.get('teacher_adaptation',{}).get('enabled') is True
       connection=config.get('teacher_connection',{})
       command=connection.get('tunnel_command')
       if tunnel is not None and command!=tunnel_command:
@@ -75,10 +76,6 @@ def monitor(store,stop):
         write_json(store.root/'teacher-health.json',status)
         retry=store.root/'teacher-retry.json'
         if child and child.poll() is not None: child=None
-        adapting=config.get('teacher_adaptation',{}).get('enabled') is True
-        if adapting and store.enabled() and not ready and child is None:
-          with (store.root/'teacher-adaptation.log').open('a') as log:
-            child=subprocess.Popen([sys.executable,'-u','-m','tools.training_studio.teacher_adapt','--root',str(store.root)],stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
         if not adapting and config.get('qualification_checkout') and child is None and (retry.exists() or (not ready and attempt.get('fingerprint')!=fingerprint)):
           if retry.exists(): retry.unlink()
           batch=store.root/'teacher-qualification'/f'{fingerprint[:12]}-{int(time.time())}'
@@ -94,6 +91,12 @@ def monitor(store,stop):
           with (store.root/'teacher-tunnel.log').open('a') as log:
             tunnel=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
           tunnel_command=command
+      # Offline adaptation loads its bound parent directly and repairs its own
+      # teacher sidecar at qualification. A crashed API must not deadlock it.
+      if child and child.poll() is not None: child=None
+      if adapting and store.enabled() and not training_ready(store) and child is None:
+        with (store.root/'teacher-adaptation.log').open('a') as log:
+          child=subprocess.Popen([sys.executable,'-u','-m','tools.training_studio.teacher_adapt','--root',str(store.root)],stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
       stop.wait(3)
   finally:
     for owned in (child,tunnel):

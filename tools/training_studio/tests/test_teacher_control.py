@@ -5,16 +5,32 @@ from pathlib import Path
 import tempfile
 import time
 import unittest
+from unittest.mock import patch,MagicMock
+import threading
 
 from tools.training_studio.engine import TEACHER_REVISION
 from tools.training_studio.server import initialize
-from tools.training_studio.store import write_json
-from tools.training_studio.teacher_control import check_health,qualified,training_ready,adaptation_progress
+from tools.training_studio.store import write_json,read_json
+from tools.training_studio.teacher_control import check_health,qualified,training_ready,adaptation_progress,monitor
 from tools.training_studio.qualify_teacher import qualify
 from tools.training_studio.qualification import log_progress
 
 
 class TeacherControlTest(unittest.TestCase):
+  def test_teacher_api_failure_does_not_deadlock_offline_adaptation_or_unlock_students(self):
+    with tempfile.TemporaryDirectory() as directory:
+      store=initialize(directory);store.enabled(True)
+      write_json(store.root/'config.json',{'teacher_url':'http://teacher.invalid','teacher_adaptation':{'enabled':True}})
+      stop=threading.Event();opener=MagicMock();opener.open.side_effect=ConnectionResetError('offline')
+      child=MagicMock();child.poll.return_value=None
+      def launch(*args,**kwargs):stop.set();return child
+      with patch('tools.training_studio.teacher_control.urllib.request.build_opener',return_value=opener),patch('tools.training_studio.teacher_control.subprocess.Popen',side_effect=launch) as spawn:
+        monitor(store,stop)
+      self.assertEqual(spawn.call_count,1)
+      self.assertIn('tools.training_studio.teacher_adapt',spawn.call_args.args[0])
+      self.assertFalse(read_json(store.root/'teacher-health.json')['connected'])
+      self.assertFalse(training_ready(store))
+
   def setUp(self):
     self.health={'teacher_ready':True,'provenance':{'revision':TEACHER_REVISION,'weights_verified':True,'camera_ids':[1,6],'input_profile':'experimental_front_only','action_expert_adapter':{'sha256':'a'*64}}}
     cases=[{'scenario':name,'seed':303,'passed':True} for name in ('lane_center','pedestrian','left_turn','right_turn','yield_left','yield_right','left_arrow','right_arrow')]
@@ -31,7 +47,7 @@ class TeacherControlTest(unittest.TestCase):
     self.assertFalse(qualified(incomplete,self.health))
     self.assertFalse(check_health({'teacher_ready':True,'provenance':{**self.health['provenance'],'camera_ids':[0,1,2,3,4,6]}}))
 
-  def test_stale_or_disconnected_teacher_cannot_start_optimizer(self):
+  def test_stale_or_disconnected_teacher_cannot_start_student_optimizer(self):
     with tempfile.TemporaryDirectory() as directory:
       store=initialize(directory)
       path=store.root/'teacher-health.json'

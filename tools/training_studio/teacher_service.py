@@ -15,7 +15,7 @@ def main():
   parser.add_argument('--adapter',type=Path,help='Immutable JSON adapter pointer with path and SHA-256')
   parser.add_argument('--port',type=int,default=8767)
   parser.add_argument('--listen',default='127.0.0.1')
-  parser.add_argument('--memory-fraction',type=float,default=.2,help='DGX Spark default; adjust explicitly for smaller GPUs')
+  parser.add_argument('--memory-fraction',type=float,help='Explicit CUDA fraction; default caps this service at 12 GiB')
   args=parser.parse_args()
   import numpy as np
   import torch
@@ -32,7 +32,10 @@ def main():
     path=(model_path/value['file']).resolve()
     if not path.is_relative_to(model_path) or path.stat().st_size!=value['bytes'] or digest_file(path)!=value['sha256']:
       raise ValueError('teacher weight digest/size mismatch')
-  torch.cuda.set_per_process_memory_fraction(args.memory_fraction)
+  cuda_total=torch.cuda.get_device_properties(0).total_memory
+  cuda_fraction=args.memory_fraction if args.memory_fraction is not None else min(.9,12*1024**3/cuda_total)
+  if not 0<cuda_fraction<=1: raise ValueError('CUDA memory fraction must be in (0,1]')
+  torch.cuda.set_per_process_memory_fraction(cuda_fraction)
   model,_=load_model(str(model_path),device='cuda',dtype='bfloat16',attn_implementation='sdpa')
   model.requires_grad_(False)
   adapter=None
@@ -57,6 +60,7 @@ def main():
   settings={'seed':42,'num_traj_sets':1,'num_traj_samples':1,'top_p':.98,'top_k':None,'temperature':.6,
     'max_generation_length':256,'diffusion_kwargs':{'inference_step':10}}
   provenance={**receipt,'input_profile':'experimental_front_only','camera_ids':[1,6],'precision':'BF16',
+    'cuda_memory_budget_gib':cuda_fraction*cuda_total/1024**3,
     'gpu':torch.cuda.get_device_name(0),'server_script_sha256':digest_file(Path(__file__)),
     'input_adapter_sha256':digest_file(Path(__file__).with_name('edge_inputs.py')),
     'motion_state_profile':MOTION_PROFILE,'motion_state_adapter_sha256':digest_file(Path(__file__).with_name('teacher_motion.py')),
@@ -106,6 +110,8 @@ def main():
           'amd_benchmarked':False,'precision':'BF16'})
       except Exception as exc:
         self.reply({'ok':False,'error':str(exc),'scripted_fallback':False},400)
+      finally:
+        torch.cuda.empty_cache()
 
     def log_message(self,*unused):
       pass

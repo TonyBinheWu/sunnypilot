@@ -32,7 +32,16 @@ def spill_prefix(item,path):
   """Keep generated frozen VLM contexts on disk, not one CPU copy per sample."""
   import torch
   torch.save({key:item[key] for key in ('cache','positions','mask')},path)
+  release_prefix_pages(path)
   return {**{key:value for key,value in item.items() if key not in ('cache','positions','mask')},'prefix_path':str(path)}
+
+
+def release_prefix_pages(path):
+  """Evict only this generated file's clean pages from shared CPU/GPU RAM."""
+  if not hasattr(os,'posix_fadvise'): return
+  with open(path,'r+b') as stream:
+    os.fsync(stream.fileno())
+    os.posix_fadvise(stream.fileno(),0,0,os.POSIX_FADV_DONTNEED)
 
 
 @lru_cache(maxsize=1)
@@ -144,7 +153,9 @@ def main():
   args.output.mkdir(parents=True,exist_ok=False)
   prefix_directory=tempfile.TemporaryDirectory(prefix='prefix-',dir=args.output)
   prefix_root=Path(prefix_directory.name)
-  torch.cuda.set_per_process_memory_fraction(.35)
+  cuda_total=torch.cuda.get_device_properties(0).total_memory
+  cuda_budget=min(24*1024**3,int(.9*cuda_total))
+  torch.cuda.set_per_process_memory_fraction(cuda_budget/cuda_total)
   torch.manual_seed(42)
   model,_=load_model('/teacher/model',device='cuda',dtype='bfloat16',attn_implementation='sdpa')
   if args.parent:
@@ -173,7 +184,9 @@ def main():
   model._sample_actions=capture
   history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'epochs':args.epochs,'history':history,'updated':time.time(),**fields}
+    value={'phase':phase,'epochs':args.epochs,'history':history,'updated':time.time(),
+      'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
+      'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
     print(json.dumps(value),flush=True)
   prepared=[]
@@ -210,6 +223,9 @@ def main():
     captured.pop('action',None)
     prepared.append(spilled)
     del inputs,cache,item
+    load_prefix.cache_clear()
+    release_prefix_pages(spilled['prefix_path'])
+    torch.cuda.empty_cache()
   train=[r for r in prepared if r['row']['split']=='train']
   validation=[r for r in prepared if r['row']['split']=='validation']
   if not train or not validation: raise ValueError('training and validation samples required')
@@ -256,6 +272,10 @@ def main():
           target=item['target'].cuda()
           reference_velocity=torch.diff(torch.cat((torch.zeros_like(target[:,:1]),target),dim=1),dim=1)/.1
           proceed.append(float((velocity[:,:20]-reference_velocity[:,:20]).square().sum(-1).mean()))
+        del loss,xyz,velocity
+        load_prefix.cache_clear()
+        release_prefix_pages(item['prefix_path'])
+        torch.cuda.empty_cache()
     return {'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral)),'stop_metric':'valid_stop_zone_v2','go_velocity_mse':float(np.mean(proceed)) if proceed else None,'go_samples':len(proceed)}
   baseline=validate()
   best_metrics,best_epoch=baseline,0
@@ -290,6 +310,10 @@ def main():
           optimizer.state.clear()
           scale=0.
       values.append(observed)
+      del loss,_
+      load_prefix.cache_clear()
+      release_prefix_pages(train[index]['prefix_path'])
+      torch.cuda.empty_cache()
       emit('training',epoch=epoch+1,batch=batch+1,batches=len(train),loss=values[-1],loss_before_step=initial_loss,step_scale=scale,baseline=baseline)
     metrics=validate()
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
