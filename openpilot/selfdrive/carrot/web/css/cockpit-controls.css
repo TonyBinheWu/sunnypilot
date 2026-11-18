@@ -134,3 +134,15 @@ html.cockpit-night .cockpit-controls{--md-surface:#202124;--md-surface-cont-h:#3
  .cockpit-quick-control svg{width:24px;height:24px;flex:none}.cockpit-quick-control strong{font-size:calc(15px * var(--carrot-text-scale-chrome))}
  .cockpit-quick-settings{background:transparent;text-align:left}
 }
+
+@media(max-width:600px) and (orientation:portrait), (min-width:601px) and (max-width:1100px) and (max-height:500px){
+ .cockpit-control-tabs:has(>button:only-child){display:none}
+}
+@media(min-width:601px) and (max-width:1100px) and (max-height:500px){
+ .cockpit-control-pane{--carrot-text-scale-controls:clamp(1,var(--carrot-text-scale,1),1.5)}
+ .cockpit-control-header h2{display:block;font-size:calc(18px * var(--carrot-text-scale-chrome));flex-shrink:0}
+ .cockpit-control-heading .title{font-size:calc(18px * var(--carrot-text-scale-controls))!important}
+ .cockpit-control-main .ctrl button,.cockpit-control-main .ctrl select{font-size:calc(16px * var(--carrot-text-scale-controls))!important}
+ .cockpit-control-tools button{font-size:calc(22px * var(--carrot-text-scale-chrome));line-height:1;min-width:44px;min-height:44px}
+ html.cockpit-controls-mode body[data-cockpit-panel="setting"] .cockpit-control-main{padding:12px 0;min-height:72px}
+}
