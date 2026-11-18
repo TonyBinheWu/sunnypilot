@@ -222,6 +222,7 @@ class Store:
       "pipeline":{"missing_splits":missing,"route_counts":route_counts,"blockers":blockers},
       "teacher":{**teacher_health,'qualification':teacher_progress},
       "teacher_training":adaptation_progress(self),
+      "teacher_reasoning":read_json(self.root/"reasoning-experiment-progress.json",{}),
       "teacher_runs":teacher_runs(self.root),
       "readiness":{"collector_configured":bool(self.config().get("collector")),
         "teacher_qualified":qualified,

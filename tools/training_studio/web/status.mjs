@@ -50,3 +50,14 @@ export function teacherLossHistory(value){
   const saved=value.teacher_runs?.find(row=>row.history?.length);
   return saved?{history:saved.history,label:`顯示第 ${saved.cycle} 輪${saved.completed===false?'中斷前的實際':'已完成的'} loss；目前第 ${current.cycle||'—'} 輪正在準備。`}:{history:[],label:'本輪尚無實際 loss'};
 }
+
+
+export function reasoningSummary(value){
+  const p=value.teacher_reasoning;
+  if(!p?.experiment_only)return null;
+  const last=p.history?.at(-1),phase={training:'更新視覺決策權重',validation:'獨立樣本驗證',generation:'檢查實際生成',completed:'本次實驗完成'}[p.phase]||'準備中';
+  const fresh=Number.isFinite(p.updated)&&Math.abs(value.time-p.updated)<120;
+  const counter=Number.isFinite(p.batch)&&p.phase==='training'?`batch ${p.batch} / ${p.batches}`:Number.isFinite(p.sample)?`樣本 ${p.sample} / ${p.samples}`:'';
+  const loss=Number.isFinite(last?.ce)?`獨立驗證 CE ${last.ce.toFixed(5)}`:'尚無完整獨立驗證結果';
+  return `隔離視覺決策實驗 · ${phase} · Epoch ${p.epoch||0} / 6 · ${counter} · ${loss}${!fresh&&p.phase!=='completed'?' · 回報已過期':''} · 此處不是完整行車資格結果`;
+}
