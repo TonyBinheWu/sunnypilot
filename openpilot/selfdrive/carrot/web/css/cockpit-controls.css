@@ -110,7 +110,7 @@ html.cockpit-night .cockpit-controls{--md-surface:#202124;--md-surface-cont-h:#3
 
 /* Phone: a quiet list of actions instead of six oversized dashboard tiles. */
 @media(max-width:600px) and (orientation:portrait){
- .cockpit-control-pane{padding:12px 16px 0;--carrot-control-scale:clamp(1,var(--carrot-text-scale,1),1.5)}
+ .cockpit-control-pane{padding:12px 16px 0;--carrot-text-scale-controls:clamp(1,var(--carrot-text-scale,1),1.5)}
  .cockpit-control-header{gap:8px;margin-bottom:12px}.cockpit-control-header h2{font-size:calc(20px * var(--carrot-text-scale-chrome))}
  .cockpit-control-header .cockpit-category-toggle{font-size:0!important;min-width:44px;width:44px;min-height:44px;padding:0}
  .cockpit-category-toggle::before{content:'☰';font-size:calc(22px * var(--carrot-text-scale-chrome))}
@@ -124,8 +124,9 @@ html.cockpit-night .cockpit-controls{--md-surface:#202124;--md-surface-cont-h:#3
  .cockpit-quick-control small{display:block;grid-column:2;grid-row:2;font-size:calc(12px * var(--carrot-text-scale-chrome));line-height:1.4;text-align:left}
  .cockpit-quick-settings{min-height:52px;padding:12px 4px;background:transparent;border-radius:0;font-size:calc(15px * var(--carrot-text-scale-chrome))}
  html.cockpit-controls-mode body[data-cockpit-panel="setting"] .cockpit-control-main{padding:16px 0;gap:12px;min-height:0}
- .cockpit-control-heading .title{font-size:calc(18px * var(--carrot-control-scale))!important}
- .cockpit-control-main .ctrl button,.cockpit-control-main .ctrl select{font-size:calc(16px * var(--carrot-control-scale))!important;min-height:48px!important}
+ .cockpit-control-heading .title{font-size:calc(18px * var(--carrot-text-scale-controls))!important}
+ .cockpit-control-tools button{font-size:calc(22px * var(--carrot-text-scale-chrome));line-height:1;min-width:44px;min-height:44px}
+ .cockpit-control-main .ctrl button,.cockpit-control-main .ctrl select{font-size:calc(16px * var(--carrot-text-scale-controls))!important;min-height:48px!important}
 }
 
 @media(min-width:601px) and (max-width:1100px) and (max-height:500px){
