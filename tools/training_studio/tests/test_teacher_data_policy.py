@@ -74,10 +74,12 @@ class TeacherDataPolicyTest(unittest.TestCase):
     from types import SimpleNamespace
     with tempfile.TemporaryDirectory() as directory:
       root=Path(directory)
-      for cycle,hold,failures in ((11,9.,['crossed_before_permission','insufficient_progress']),
+      for cycle,hold,failures in ((9,12.,['crossed_before_permission']),
+        (11,9.,['crossed_before_permission','insufficient_progress']),
         (13,5.,['crossed_before_permission'])):
         batch=root/'teacher-cycles'/f'cycle-{cycle:03d}'/'qualification-balanced'
-        adapter={'path':f'/studio/teacher/cycle-{cycle:03d}/output/balanced.safetensors','sha256':str(cycle)*32}
+        adapter={'path':f'/studio/teacher/cycle-{cycle:03d}/output/balanced.safetensors','sha256':str(cycle)*32,
+          'cycle':cycle,'training_epoch':6}
         provenance={'action_expert_adapter':adapter}
         fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
         rows=[{'scenario':'red_light','status':'pass','failures':[],
@@ -86,9 +88,9 @@ class TeacherDataPolicyTest(unittest.TestCase):
         for name,row in zip(('red','pedestrian'),rows):write_json(batch/name/'result.json',row)
         write_json(batch/'red'/'provenance.json',{'provenance':provenance})
         write_json(batch/'qualification.json',{'passed':False,'results':rows})
-      state={'ranking_version':3}
+      state={'ranking_version':4}
       restore_parent_ranking(SimpleNamespace(root=root),state)
-      self.assertEqual(state['ranking_version'],4)
+      self.assertEqual(state['ranking_version'],5)
       self.assertIn('cycle-013',state['parent']['path'])
       self.assertNotIn('qualified_sha256',state)
 
