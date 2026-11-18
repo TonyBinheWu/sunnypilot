@@ -184,7 +184,7 @@ def main():
   model._sample_actions=capture
   history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'epochs':args.epochs,'history':history,'updated':time.time(),
+    value={'phase':phase,'stage':None,'epochs':args.epochs,'history':history,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -257,7 +257,7 @@ def main():
       loss=loss+30*torch.relu(xyz[...,0]-item['row']['front_distance_m']+.2).square().mean()
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
-  def validate():
+  def validate(epoch=None):
     values=[]; red=0; lateral=[]; hold=[]; proceed=[]
     with torch.no_grad():
       for item in validation:
@@ -276,6 +276,9 @@ def main():
         load_prefix.cache_clear()
         release_prefix_pages(item['prefix_path'])
         torch.cuda.empty_cache()
+        emit('prefill' if epoch is None else 'training',epoch=epoch or 0,
+          stage='validation',validation_sample=len(values),validation_samples=len(validation),
+          **({'baseline':baseline} if epoch is not None else {}))
     return {'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral)),'stop_metric':'valid_stop_zone_v2','go_velocity_mse':float(np.mean(proceed)) if proceed else None,'go_samples':len(proceed)}
   baseline=validate()
   best_metrics,best_epoch=baseline,0
@@ -315,7 +318,7 @@ def main():
       release_prefix_pages(train[index]['prefix_path'])
       torch.cuda.empty_cache()
       emit('training',epoch=epoch+1,batch=batch+1,batches=len(train),loss=values[-1],loss_before_step=initial_loss,step_scale=scale,baseline=baseline)
-    metrics=validate()
+    metrics=validate(epoch+1)
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
     score=(metrics['red_safe_count'],-metrics['red_hold_speed_mse'],-metrics['validation_loss'])
     if score>best_score:
