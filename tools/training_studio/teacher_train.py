@@ -79,6 +79,12 @@ def valid_stopped_trajectory(xyz,velocity,front_distance):
   return ((xyz[...,0].amax(dim=-1)<=front_distance)&((final_front>=0)&(final_front<5)).all(dim=-1)&(speed[...,-10:].amax(dim=-1)<.15)).all()
 
 
+def proceed_velocity_loss(velocity,reference_velocity):
+  """Match immediate permitted motion rather than postponing a restart at every replan."""
+  error=(velocity[:,:20]-reference_velocity[:,:20]).square().sum(-1)
+  return 200*error.amax()+50*error.mean()
+
+
 def rollout(model,item,*,grad,seed=42):
   import torch
   from torch.utils.checkpoint import checkpoint
@@ -216,6 +222,8 @@ def main():
     # Match near-term execution and body orientation, rather than a one-step flow proxy.
     loss=F.smooth_l1_loss(xyz[...,0],target[...,0])+20*error[...,1].square().mean()+10*error[:,:20].square().mean()
     loss=loss+4*(velocity[:,:20]-ref_velocity[:,:20]).square().mean()+50*(rot-item['target_rot'].cuda()).square().mean()
+    if not item['row']['stop_required']:
+      loss=loss+proceed_velocity_loss(velocity,ref_velocity)
     if item['row'].get('restart_required'):
       accel_std=model.expert.action_space.accel_std.to(action.device)
       restart_error=(action[...,0]-item['target_action'].to(action.device)[...,0])*accel_std

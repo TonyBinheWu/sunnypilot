@@ -9,6 +9,19 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_permitted_motion_loss_has_a_restart_gradient_at_zero_velocity_and_preserves_turn_direction(self):
+    import torch
+    from tools.training_studio.teacher_train import proceed_velocity_loss
+    target=torch.zeros(1,64,3);target[:,:20,0]=1.5;target[:,:20,1]=.3
+    prediction=torch.zeros_like(target,requires_grad=True)
+    loss=proceed_velocity_loss(prediction,target)
+    self.assertGreater(float(loss.detach()),0.)
+    loss.backward()
+    self.assertTrue(bool((prediction.grad[:,:20,0]<0).all()))
+    self.assertTrue(bool((prediction.grad[:,:20,1]<0).all()))
+    self.assertEqual(float(proceed_velocity_loss(target,target)),0.)
+    self.assertEqual(float(prediction.grad[:,20:].abs().sum()),0.)
+
   def test_stop_selection_and_loss_reject_stopping_just_outside_original_zone(self):
     import torch
     from tools.training_studio.teacher_train import valid_stopped_trajectory,stop_zone_loss
