@@ -238,6 +238,12 @@ def main():
             outcome=read_json(store.root/'teacher-qualification-progress.json',{})
             remember_tested_scenarios(state,read_json(batch/'qualification.json',{}).get('results',[]))
             if outcome.get('state')=='passed':
+              from tools.training_studio.teacher_control import finish_adaptation
+              with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(store.config()['teacher_url']+'/health',timeout=10) as response:
+                confirmed=json.load(response)
+              if confirmed.get('provenance',{}).get('action_expert_adapter',{}).get('sha256')!=pointer['sha256']:
+                raise RuntimeError('live teacher changed after qualification; do not adopt it')
+              finish_adaptation(store,confirmed)
               state.update(parent=pointer,cycle=cycle+1,qualified_sha256=pointer['sha256'])
               write_json(loop_root/'state.json',state)
               report('qualified',cycle=cycle)

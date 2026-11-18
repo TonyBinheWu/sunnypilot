@@ -11,7 +11,7 @@ import threading
 from tools.training_studio.engine import TEACHER_REVISION
 from tools.training_studio.server import initialize
 from tools.training_studio.store import write_json,read_json
-from tools.training_studio.teacher_control import check_health,qualified,training_ready,adaptation_progress,monitor
+from tools.training_studio.teacher_control import check_health,qualified,training_ready,adaptation_progress,monitor,finish_adaptation
 from tools.training_studio.qualify_teacher import qualify
 from tools.training_studio.qualification import log_progress
 
@@ -46,6 +46,20 @@ class TeacherControlTest(unittest.TestCase):
     incomplete['cases'].pop()
     self.assertFalse(qualified(incomplete,self.health))
     self.assertFalse(check_health({'teacher_ready':True,'provenance':{**self.health['provenance'],'camera_ids':[0,1,2,3,4,6]}}))
+
+  def test_complete_qualification_stops_teacher_adaptation_but_keeps_student_loop_enabled(self):
+    with tempfile.TemporaryDirectory() as directory:
+      store=initialize(directory);store.enabled(True)
+      receipt=store.root/'qualification.json';write_json(receipt,self.receipt)
+      write_json(store.root/'config.json',{'teacher_qualification':str(receipt),'teacher_adaptation':{'enabled':True},'retained':'configuration'})
+      invalid=copy.deepcopy(self.health);invalid['provenance']['action_expert_adapter']['sha256']='b'*64
+      with self.assertRaises(ValueError):finish_adaptation(store,invalid)
+      self.assertTrue(store.config()['teacher_adaptation']['enabled'])
+      finish_adaptation(store,self.health)
+      self.assertFalse(store.config()['teacher_adaptation']['enabled'])
+      self.assertTrue(store.enabled())
+      self.assertEqual(store.config()['retained'],'configuration')
+      self.assertEqual(read_json(receipt),self.receipt)
 
   def test_stale_or_disconnected_teacher_cannot_start_student_optimizer(self):
     with tempfile.TemporaryDirectory() as directory:

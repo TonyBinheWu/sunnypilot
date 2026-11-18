@@ -30,6 +30,15 @@ def training_ready(store):
   return bool(health.get('connected') and health.get('qualified') and 0<=time.time()-health.get('updated',0)<20)
 
 
+def finish_adaptation(store,health):
+  """Latch completion only for the exact qualified teacher; keep students enabled."""
+  config=store.config()
+  if not qualified(read_json(config['teacher_qualification'],{}),health):
+    raise ValueError('complete qualification bound to the live teacher is required')
+  config['teacher_adaptation']['enabled']=False
+  write_json(store.root/'config.json',config)
+
+
 def adaptation_progress(store):
   saved=read_json(store.root/'teacher-training-progress.json',{})
   if saved: return saved  # never compare a DGX wall clock with the supervisor clock
