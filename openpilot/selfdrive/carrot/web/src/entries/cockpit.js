@@ -5,6 +5,7 @@ import {nightAppearance,readAppearance,setCockpitTextScale,tireLabels} from '../
 import {drawDrivingScene} from '../features/drive/contents/vision/hud/driving_scene.js';
 import {createCockpitState,telemetry,cockpitHudPayload,SERVICES,MODES} from '../features/cockpit/state.js';
 import {drawCockpitVehicle,createVehicleSkinCache} from '../features/cockpit/vehicle.js';
+import {cockpitClock,assistStates} from '../features/cockpit/status_display.js';
 import {vehicleLamps} from '../features/cockpit/vehicle_lamps.js';
 import {installCockpitHelp} from '../features/cockpit/embedded.js';
 import {installDisplayPreferences} from '../shared/web/display_preferences.js';
@@ -185,9 +186,10 @@ function render(){
   $('speed').textContent=t.speed??'—';$('limit').textContent=t.limit??'—';$('setSpeed').textContent=t.setSpeed>0&&t.setSpeed<250?t.setSpeed:'—';
   $('gear').textContent=({park:'P',reverse:'R',neutral:'N',drive:'D',sport:'S'})[t.gear]||'—';
   document.body.dataset.parked=String(t.parked);
-  $('assist').textContent=t.latActive===null||t.longActive===null?'控制狀態待確認':`橫向${t.latActive?'啟用':'關閉'} · 縱向${t.longActive?'啟用':'關閉'}`;
-  $('visionGear').textContent=$('gear').textContent;$('visionAssist').textContent=$('assist').textContent;$('visionSpeed').textContent=$('speed').textContent;$('visionLimit').textContent=$('limit').textContent;$('visionSetSpeed').textContent=$('setSpeed').textContent;$('compactSpeed').textContent=`${t.speed??'—'} km/h · ${$('gear').textContent}`;
-  $('connection').textContent=t.gear?'車機已連線':transportPhase==='retrying'?'正在重新連線':transportPhase==='connecting'?'正在連線':'已連線 · 車況待更新';$('connection').dataset.state=t.gear?'connected':transportPhase;$('connectionSummary').textContent=transportPhase==='retrying'?'連線中斷，會保留目前裝置並自動重試。':t.gear?'車機資料持續更新。':transportPhase==='connecting'?'正在建立車機資料通道。':'通道已連接，等待車機提供新鮮車況。';$('connectionAttempts').textContent=String(failures);$('connectionReason').textContent=({'connect-timeout':'連線建立逾時','heartbeat-timeout':'通道無回應','network-error':'網路連線中斷','socket-closed':'通道已關閉','format-error':'資料格式不符，請更新車機','connect-failed':'無法建立資料通道'})[transportReason]||'—';$('clock').textContent=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});$('alert').textContent=t.alert;$('alert').hidden=!t.alert;
+  const controlLabels=assistStates(t);
+  for(const id of ['assist','visionAssist']){const node=$(id);node.replaceChildren(...controlLabels.map(item=>{const span=document.createElement('span');span.className='assist-axis';span.dataset.state=item.state;span.textContent=`${item.axis}：${item.text}`;return span;}));node.setAttribute('aria-label',controlLabels.map(item=>`${item.axis}：${item.text}`).join('；'));}
+  $('visionGear').textContent=$('gear').textContent;$('visionSpeed').textContent=$('speed').textContent;$('visionLimit').textContent=$('limit').textContent;$('visionSetSpeed').textContent=$('setSpeed').textContent;$('compactSpeed').textContent=`${t.speed??'—'} km/h · ${$('gear').textContent}`;
+  $('connection').textContent=t.gear?'車機已連線':transportPhase==='retrying'?'正在重新連線':transportPhase==='connecting'?'正在連線':'已連線 · 車況待更新';$('connection').dataset.state=t.gear?'connected':transportPhase;$('connectionSummary').textContent=transportPhase==='retrying'?'連線中斷，會保留目前裝置並自動重試。':t.gear?'車機資料持續更新。':transportPhase==='connecting'?'正在建立車機資料通道。':'通道已連接，等待車機提供新鮮車況。';$('connectionAttempts').textContent=String(failures);$('connectionReason').textContent=({'connect-timeout':'連線建立逾時','heartbeat-timeout':'通道無回應','network-error':'網路連線中斷','socket-closed':'通道已關閉','format-error':'資料格式不符，請更新車機','connect-failed':'無法建立資料通道'})[transportReason]||'—';$('alert').textContent=t.alert;$('alert').hidden=!t.alert;
   $('sceneStatus').textContent=t.parked?'停車車況・車輛為示意繪圖':model?'模型／雷達觀測視覺・非環景實景':'模型資料尚未更新';
   $('lead').textContent=radar?.leadOne?.status&&Number.isFinite(radar.leadOne.dRel)?`前車 ${radar.leadOne.dRel.toFixed(1)} m`:'前車 —';
   const ds=state.get('deviceState'),temps=ds?.cpuTempC?.filter(Number.isFinite)||[];$('temperatures').textContent=temps.length?`車機 ${Math.round(Math.max(...temps))}°C`:'車機 —';$('storage').textContent=Number.isFinite(ds?.freeSpacePercent)?`可用空間 ${Math.round(ds.freeSpacePercent)}%`:'空間 —';
@@ -220,4 +222,5 @@ $('modeApply').onclick=async()=>{
   catch{$('profileStatus').textContent='結果未確認；不會自動重送，請到控制與設定查看。';}finally{busy=false;document.querySelectorAll('[data-mode]').forEach(x=>x.disabled=false);}
 };
 window.CarrotCockpit={layoutVersion:7,pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(view==='navigation'?'setting':view);connect();}};
+const updateClock=()=>{$('clock').textContent=cockpitClock();};updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',updateClock);
 panel(view);connect();setInterval(()=>{if(!paused)render();},100);render();

@@ -61,7 +61,7 @@ public final class AppUpdater {
     options.setOrientation(android.widget.LinearLayout.VERTICAL);
     android.widget.Button speech = new android.widget.Button(activity);
     speech.setText(UiText.get("중국어 음성 확인 및 설치", "Chinese speech model and microphone setup")); speech.setAllCaps(false);
-    options.addView(speech); options.addView(autoVoice); options.addView(direct);
+    if (!UpdatePolicy.cockpit(activity.getPackageName())) { options.addView(speech); options.addView(autoVoice); options.addView(direct); }
     android.widget.Button textSize = new android.widget.Button(activity);
     textSize.setText(UiText.get("앱 기본 화면 글자 크기", "Native interface text size")); textSize.setAllCaps(false);
     textSize.setOnClickListener(v -> openTextSize.run()); options.addView(textSize);
@@ -69,7 +69,7 @@ public final class AppUpdater {
     diagnosis.setText("zh-tw".equals(UiText.languageCode()) ? "連線自我診斷與修復" : "Connection diagnosis and repair");
     diagnosis.setAllCaps(false);options.addView(diagnosis);
     android.widget.ScrollView scroll = new android.widget.ScrollView(activity); scroll.addView(options);
-    AlertDialog infoDialog = new AlertDialog.Builder(activity).setTitle(label).setView(scroll).setMessage(UiText.get("폰 직접 듣기는 차로변경과 깜박이 설정 열기를 처리합니다. 질문은 기본 음성비서에서 다시 말해 주세요. 직접 듣기를 끄면 미니창으로 시작합니다.\n\n업데이트 설치는 주차 후 진행하세요.", "Direct listening handles lane requests and turn signal settings. Repeat questions in the default assistant. Turn off direct listening to start in the assistant overlay.\n\nInstall updates while parked."))
+    AlertDialog infoDialog = new AlertDialog.Builder(activity).setTitle(label).setView(scroll).setMessage(UpdatePolicy.cockpit(activity.getPackageName()) ? "Formosa 座艙：顯示車況、導航與控制設定。請停車後安裝更新。" : UiText.get("폰 직접 듣기는 차로변경과 깜박이 설정 열기를 처리합니다. 질문은 기본 음성비서에서 다시 말해 주세요. 직접 듣기를 끄면 미니창으로 시작합니다.\n\n업데이트 설치는 주차 후 진행하세요.", "Direct listening handles lane requests and turn signal settings. Repeat questions in the default assistant. Turn off direct listening to start in the assistant overlay.\n\nInstall updates while parked."))
       .setPositiveButton(available == null ? UiText.get("업데이트 확인", "Check for updates") : UiText.get("새 버전 설치", "Install update"), (d,w)->{ if (available==null) check(true); else offer(); })
       .setNeutralButton(UiText.get("ChatGPT 맞춤 지침 복사", "Copy ChatGPT instructions"), (d,w)->copyChatGPTInstructions())
       .setNegativeButton(UiText.get("닫기", "Close"),null).show();

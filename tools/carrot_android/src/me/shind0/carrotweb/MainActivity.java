@@ -135,12 +135,12 @@ public final class MainActivity extends Activity {
     super.onCreate(saved);
     preferences = getSharedPreferences("carrot-web", MODE_PRIVATE);
     initializeVoiceMode(preferences);
-    speechSetup = new SpeechSetup(this);
+    if (!UpdatePolicy.cockpit(getPackageName())) speechSetup = new SpeechSetup(this);
     diagnostics = new AppDiagnostics(this, () -> currentAddress == null ? preferences.getString("last_address", "") : currentAddress,
       this::startSearch, this::manualAddress, () -> showSpeechSetup(""), this::openDeviceDiagnosis);
     updater = new AppUpdater(this, preferences, () -> showSpeechSetup(""), this::showTextSize, diagnostics::open);
-    welcome = new VoiceWelcome(this);
-    phoneVoice = new PhoneVoice(this, new PhoneVoice.Listener() {
+    if (!UpdatePolicy.cockpit(getPackageName())) welcome = new VoiceWelcome(this);
+    if (!UpdatePolicy.cockpit(getPackageName())) phoneVoice = new PhoneVoice(this, new PhoneVoice.Listener() {
       public void status(String text) { title.setText(text); if (!phoneVoice.listening()) phoneSession = false; }
       public void heard(LocalCommand command) { handlePhoneCommand(command); }
       public void missed(String heard, String reason) {
@@ -200,11 +200,13 @@ public final class MainActivity extends Activity {
     root.addView(page, new LinearLayout.LayoutParams(-1, 0, 1));
     content = column();
     page.addView(content, new FrameLayout.LayoutParams(-1, -1));
+    if (!UpdatePolicy.cockpit(getPackageName())) {
     FloatingVoiceButton assistant = new FloatingVoiceButton(this, preferences);
     voiceOverlay = assistant;
     assistant.setOnClickListener(v -> invokeAssistant());
     page.addView(assistant, new FrameLayout.LayoutParams(dp(68), dp(68)));
     page.addOnLayoutChangeListener((v,l,t,r,b,oldL,oldT,oldR,oldB) -> assistant.place());
+    }
     setContentView(root);
     startSearch();
     updater.check(false);
@@ -597,6 +599,7 @@ public final class MainActivity extends Activity {
     });
   }
   private void invokeAssistant() {
+    if (UpdatePolicy.cockpit(getPackageName())) return;
     if (!foregroundActivity) return;
     if (recovering) { notice(UiText.get("당근웹 연결 중이에요. 웹이 열리면 음성을 시작할 수 있어요.", "Connecting to Carrot Web. Voice is available when the page opens.")); return; }
     if (phoneSession) { stopPhoneVoice(); title.setText(currentAddress); return; }
@@ -604,6 +607,7 @@ public final class MainActivity extends Activity {
     startVoice(false);
   }
   private void scheduleAutoVoice() {
+    if (UpdatePolicy.cockpit(getPackageName())) return;
     ui.removeCallbacks(tryAutoVoice);
     if (foregroundActivity && pageReady) ui.postDelayed(tryAutoVoice, 450);
   }
@@ -650,7 +654,7 @@ public final class MainActivity extends Activity {
     beginVoiceAttempt();
   }
   private boolean phoneMode() { return preferences.getBoolean("voice_local_first", true); }
-  private boolean autoVoiceEnabled() { return preferences.getBoolean("voice_auto_start", phoneMode()); }
+  private boolean autoVoiceEnabled() { return !UpdatePolicy.cockpit(getPackageName()) && preferences.getBoolean("voice_auto_start", phoneMode()); }
 
   private void stopPhoneVoice() {
     phoneGeneration++; directionCheck.clear(); cruiseCheck.clear(); phoneSearchId = null;
@@ -979,7 +983,7 @@ public final class MainActivity extends Activity {
     if (UpdatePolicy.cockpit(getPackageName()) && web!=null && currentAddress!=null)
       web.evaluateJavascript(onDevicePage("window.CarrotCockpit?."+action+"()"),null);
   }
-  @Override protected void onPause() { cancelDeviceReconnect(); if(web!=null)web.setKeepScreenOn(false); cockpitLifecycle("pause"); foregroundActivity = false; if (diagnostics!=null) diagnostics.pause(); resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
+  @Override protected void onPause() { cancelDeviceReconnect(); if(web!=null)web.setKeepScreenOn(false); cockpitLifecycle("pause"); foregroundActivity = false; if (diagnostics!=null) diagnostics.pause(); resetVisionHost(); if (phoneVoice!=null) phoneVoice.resetSupport(); if (speechSetup!=null) speechSetup.pause(); stopPhoneVoice(); if(welcome!=null)welcome.cancel(); ui.removeCallbacks(tryAutoVoice); cancelVoiceCheck(); super.onPause(); }
   @Override protected void onStop() { checkAfterBackground=true; if (scanning) { stopSearch(); if (status!=null) status.setText(UiText.get("검색이 중단됐어요. 다시 검색을 눌러 주세요.", "Search paused. Tap Search again.")); } super.onStop(); }
   @Override public void onBackPressed() {
     if (visionFullscreen != null) { leaveVisionView(); return; }

@@ -63,7 +63,7 @@ public final class AppDiagnostics {
     button(root,"Open Wi-Fi settings","開啟 Wi-Fi 設定",()->{
       try{activity.startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));}catch(Exception ignored){}
     });
-    button(root,"Chinese speech model and microphone setup","中文語音檢查與安裝",speech);
+    if(!UpdatePolicy.cockpit(activity.getPackageName()))button(root,"Chinese speech model and microphone setup","中文語音檢查與安裝",speech);
     button(root,"Open full device diagnosis","開啟車機完整診斷",device);
     ScrollView scroll=new ScrollView(activity);scroll.addView(root);
     dialog=new AlertDialog.Builder(activity).setTitle(text("Connection diagnosis and repair","連線自我診斷與修復"))
@@ -98,9 +98,11 @@ public final class AppDiagnostics {
           text("No supported local IPv4 interface found. Check Wi-Fi/hotspot or Ethernet.","未找到可用的區域網路 IPv4 介面，請檢查 Wi-Fi／熱點或有線網路。"));
         message+="\n\n"+(verified?text("Carrot Web responded and passed software checks. This does not prove the camera or CAN is healthy.","Carrot Web 已回應並通過軟體辨識；這不代表鏡頭或 CAN 也正常。"):
           text("Could not verify Carrot Web at the selected address. Check IP/port 7000, device power, boot completion and network isolation. Search again if the IP changed.","無法在選取位址驗證 Carrot Web。請確認 IP／7000 連接埠、車機供電、開機是否完成，以及網路是否隔離；IP 改變時請重新搜尋。"));
+        if(!UpdatePolicy.cockpit(activity.getPackageName())) {
         message+="\n\n"+text("Microphone permission: ","麥克風權限：")+(microphone?text("granted","已授予"):text("not granted","尚未授予"));
         message+="\n"+text("On-device speech service: ","裝置端語音服務：")+(recognizer?text("available","可用"):text("not confirmed/unsupported","尚未確認／不支援"));
         message+="\n"+text("Service availability does not confirm that a zh-TW model is installed. Use speech setup to inspect it.","服務可用不代表已安裝 zh-TW 模型，請用「中文語音檢查與安裝」確認。");
+        }
         message+="\n\n"+text("Read-only checks. No settings, pairing, permissions or recordings were changed or uploaded.","本次為唯讀檢查，未更改設定、配對、權限或錄影，也沒有上傳資料。");
         result.setText(message);
       });

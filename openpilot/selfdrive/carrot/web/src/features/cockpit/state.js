@@ -14,7 +14,7 @@ export function telemetry(state){
   return {speed:cs?number(cs.vEgoCluster,3.6):null,setSpeed:cs?number(cs.vCruiseCluster):null,
     limit:cm&&cm.nRoadLimitSpeed>0?number(cm.nRoadLimitSpeed):null,gear:cs?.gearShifter||null,
     enabled:typeof sd?.enabled==='boolean'?sd.enabled:null,
-    latActive:typeof cc?.latActive==='boolean'?cc.latActive:null,longActive:typeof cc?.longActive==='boolean'?cc.longActive:null,
+    latActive:cs&&typeof cc?.latActive==='boolean'?cc.latActive:null,longActive:cs&&typeof cc?.longActive==='boolean'?cc.longActive:null,
     alert:sd?[sd.alertText1,sd.alertText2].filter(x=>typeof x==='string'&&x).join('\n'):'',
     parked:Boolean(cs&&cs.gearShifter==='park'&&Number.isFinite(cs.vEgo)&&cs.vEgo>=0&&cs.vEgo<.1
       &&sd?.enabled===false&&cc?.latActive===false&&cc?.longActive===false)};
