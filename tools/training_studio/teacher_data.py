@@ -100,10 +100,18 @@ def main():
         origin,reference=history.positions[-1],history.rotations[-1]
         front_distance=scene.stop_s-scene.state()[3]-scene.vehicle.LENGTH/2
         initial_speed=scene.state()[-1]
+        # The generic approach expert targets a fixed point near the line and
+        # would restart a vehicle already parked within the valid stop zone.
+        # Supervise maintaining that completed stop, instead of contradicting
+        # the unchanged red-hold acceptance rule. This flag is label-only.
+        maintain_stop=(not is_go and scene.blocked() and 0<front_distance<5 and initial_speed<.15)
         for observation in scene.env.observations.values(): observation.observe=lambda *a,**k:{}
         xyz,rot=[],[]
         for step in range(128):
-          scene.step(scene.expert())
+          action=scene.expert()
+          if maintain_stop and scene.blocked():
+            action[1]=np.clip(-1.5*scene.state()[-1],-3.5,0.)
+          scene.step(action)
           if step%2==1:
             xyz.append((np.array([*scene.vehicle.position,0])-origin)@reference)
             rot.append(reference.T@rotation(scene.vehicle.heading_theta))
@@ -116,6 +124,7 @@ def main():
         records.append({'file':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'seed':seed,'split':split,'scenario':scenario,'mode':mode,
           'stop_required':not is_go and scenario in ('red_light','pedestrian','yield_left','yield_right','left_arrow','right_arrow'),
           'restart_required':is_go and initial_speed<.2,'front_distance_m':front_distance,
+          'maintain_stop_reference':maintain_stop,
           'pixel_sha256':hashlib.sha256(sample['image_frames'].tobytes()).hexdigest()})
         write_json(args.output/'generation-progress.json',{'phase':'generating','samples':len(records),'rejected':len(rejected),'updated':time.time()})
       finally: scene.close()
