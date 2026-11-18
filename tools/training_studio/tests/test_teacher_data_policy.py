@@ -19,9 +19,10 @@ class TeacherDataPolicyTest(unittest.TestCase):
       'model_inputs_include_signal_ground_truth':False,'model_provenance_sha256':fingerprint,
       'status':'fail','failures':['red_hold_not_maintained']}
     self.assertEqual(check_source(result,{'provenance':provenance},'train'),fingerprint)
+    self.assertEqual(check_source({**result,'scenario':'pedestrian'},{'provenance':provenance},'train'),fingerprint)
     for changed,split in (({**result,'seed':300},'train'),(result,'validation'),
       ({**result,'model_inputs_include_signal_ground_truth':True},'train'),({**result,'model_provenance_sha256':'b'*64},'train'),
-      ({**result,'scenario':'pedestrian'},'train')):
+      ({**result,'scenario':'yield_left'},'train')):
       with self.assertRaises(ValueError): check_source(changed,{'provenance':provenance},split)
 
   def test_training_never_reuses_qualification_seeds_or_validation_seed_range(self):

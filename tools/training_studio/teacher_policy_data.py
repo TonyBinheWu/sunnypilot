@@ -15,7 +15,7 @@ def check_source(result,health,split):
   provenance=health.get('provenance',{})
   fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
   if not valid_seed: raise ValueError('policy supervision must use separate training/validation seeds')
-  if (result.get('scenario')!='red_light' or result.get('backend')!='nvidia_alpamayo2_edge' or result.get('revision')!=MODEL_REVISION
+  if (result.get('scenario') not in ('red_light','pedestrian') or result.get('backend')!='nvidia_alpamayo2_edge' or result.get('revision')!=MODEL_REVISION
       or result.get('scripted_fallback') is not False or result.get('model_inputs_include_signal_ground_truth') is not False
       or result.get('model_provenance_sha256')!=fingerprint or provenance.get('weights_verified') is not True
       or provenance.get('revision')!=MODEL_REVISION or provenance.get('camera_ids')!=[1,6]):
@@ -63,8 +63,15 @@ def reference(episode,index,output,split,assets):
     front=scene.stop_s-progress-scene.vehicle.LENGTH/2
     blocked=scene.blocked()
     maintain=blocked and front>0 and (scene.stopped or (front<5 and speed<.15))
-    # Red observations must not learn an unobserved future permission change.
-    if blocked: scene.green_at=1e6
+    # Freeze a still-crossing actor at its observed position for offline labels.
+    # Moving its clearance clock alone would teleport it back across the road.
+    # Neither the future permission nor these label-only flags enter inference.
+    freeze_actor=blocked and result['scenario']=='pedestrian'
+    if freeze_actor:
+      actor_position=np.array(scene.pedestrian.position)
+      scene.green_at=1e6
+      scene.update_actors=lambda:scene.pedestrian.set_position(actor_position)
+    elif blocked: scene.green_at=1e6
     scene.update_actors();xyz=[];rot=[]
     latched_stop=maintain
     for step in range(128):
@@ -86,7 +93,8 @@ def reference(episode,index,output,split,assets):
         'front_distance_m':front,'maintain_stop_reference':maintain,
         'pixel_sha256':hashlib.sha256(sample['image_frames'].tobytes()).hexdigest(),'source_input_sha256':source_hash,
         'source_teacher_provenance_sha256':fingerprint,'source_simulation_time_s':moment,'physics_replay_errors':errors,
-        'future_permission_frozen_for_red_supervision':blocked,'source_episode_status':result['status'],
+        'future_permission_frozen_for_red_supervision':blocked and result['scenario']=='red_light',
+        'future_actor_motion_frozen':freeze_actor,'source_episode_status':result['status'],
         'reference_generator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
     write_json(output/'sample.json',row)
     return row
