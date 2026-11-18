@@ -19,7 +19,8 @@ def test_old_google_settings_migrate_to_native_map_and_do_not_expose_browser_key
   assert value['navigation_map_provider'] == 'mapbox' and 'navigation_google_key' not in value
   assert 'MapboxPublicKey' not in value
   config = json.loads(asyncio.run(navigation.map_config(None)).text)
-  assert config == {'provider': 'mapbox', 'basemaps': ['mapbox', 'openstreetmap'], 'search': 'mapbox', 'routing': 'mapbox', 'model': 'mapsd'}
+  assert config == {'provider': 'openstreetmap', 'basemaps': ['openstreetmap'], 'search': 'mapbox', 'routing': 'mapbox', 'model': 'mapsd',
+                    'osm_tile_url': 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
   assert all(field['key'] != 'navigation_google_key' for field in web_settings.web_settings_client_spec())
 
 
@@ -38,6 +39,16 @@ def test_exact_route_ui_copy_freshness_and_no_model_file_write(monkeypatch, tmp_
   assert json.loads(asyncio.run(navigation.route_view(None)).text)['coordinates'] == []
   write_navigation_view(route, None, 0, path=path)
   assert json.loads(asyncio.run(navigation.route_view(None)).text)['position'] is None
+
+
+def test_ui_instruction_copy_is_bounded_and_removed_when_no_fresh_instruction(tmp_path):
+  path=tmp_path/'view.json'
+  instruction=NS(maneuverPrimaryText='台灣測試路',maneuverModifier='left',maneuverDistance=230,distanceRemaining=4500,timeRemaining=370)
+  write_navigation_view([[121.,25.],[121.1,25.1]],NS(latitude=25.,longitude=121.),4,instruction=instruction,path=path)
+  value=json.loads(path.read_text())
+  assert value['instruction']==dict(text='台灣測試路',modifier='left',distance=230.,remaining_m=4500.,remaining_s=370.)
+  write_navigation_view([],None,0,instruction=instruction,path=path)
+  assert json.loads(path.read_text())['instruction'] is None
   assert json.loads(path.read_text())['coordinates'] == []
 
 

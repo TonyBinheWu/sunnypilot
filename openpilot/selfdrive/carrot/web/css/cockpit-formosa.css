@@ -1,0 +1,44 @@
+/* Formosa reference composition: quiet glass panels, a real-action rail and OSM. */
+@font-face{font-family:Formosa;src:url('/shared-assets/fonts/Inter-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:Formosa;src:url('/shared-assets/fonts/Inter-SemiBold.ttf') format('truetype');font-weight:600;font-display:swap}
+:root{font-family:Formosa,"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;--bg:#e7eaf2;--surface:#f9faff;--ink:#121722;--muted:#69717f;--line:#d5dbea;--blue:#087bff}
+body{background:linear-gradient(120deg,#f5f7fc,#e2e6f0);color:var(--ink)}
+body.night{--bg:#121925;--surface:#1c2635;--ink:#edf2fa;--muted:#adb9ca;--line:#354357;background:#111722}
+.top{background:transparent;gap:16px}.top strong{font-size:calc(18px * var(--carrot-text-scale-chrome));letter-spacing:.025em;color:var(--ink);font-weight:600}.top #shellPageName{font-size:calc(15px * var(--carrot-text-scale-chrome));font-weight:600;color:var(--ink)}
+.top #clock{font-weight:600;letter-spacing:-.025em}.top #connection{color:var(--muted)}
+.dock button,.dock a{font-weight:600}.dock .selected{background:#087bff;color:#fff;box-shadow:inset 0 0 0 1px #ffffff80,0 4px 10px #087bff25}
+.workspace{background:var(--surface)}.instrument-speed>b{font-weight:600;letter-spacing:-.065em}.gear-strip{font-weight:600;letter-spacing:.10em}.instrument-state{font-weight:600}
+#vehicleDock{display:none}
+body:not(.night)[data-panel="vision"] .vision-instruments{color:var(--ink);text-shadow:none}body:not(.night)[data-panel="vision"] .instrument-speed>span,body:not(.night)[data-panel="vision"] .instrument-state,body:not(.night)[data-panel="vision"] .instrument-limits small{color:var(--muted)}
+body:not(.night)[data-panel="vision"] .top{background:transparent;color:var(--ink)}
+body:not(.night)[data-panel="vision"] #driveStatusPill{background:#f6f8fddd;border-color:#d4dbeb;color:#286ead}
+dialog{border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 48px #14274730;background:var(--surface)}
+.cockpit-dialog-head{border-color:var(--line)}
+@media(min-width:900px) and (min-height:501px){
+ :root{--rail:104px;--status-size:48px;--dock-size:0px}
+ body{grid-template-columns:calc(var(--rail) * var(--shell-scale)) minmax(0,1fr);grid-template-rows:calc(var(--status-size) * var(--shell-scale)) minmax(0,1fr);gap:10px;padding:0 12px 12px 10px}
+ .top{grid-row:1;grid-column:1 / -1;padding:0 18px}.top strong{font-size:calc(22px * var(--carrot-text-scale-chrome))}.top #clock{font-size:calc(18px * var(--carrot-text-scale-chrome))}
+ .dock{grid-row:2;grid-column:1;display:flex;flex-direction:column;gap:6px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:10px 8px;background:var(--surface);border:1px solid #ffffff80;border-radius:20px;box-shadow:0 3px 12px #1b2f4f15;align-items:stretch}
+ .dock>button{display:flex!important;flex-direction:column;flex:none;min-height:72px;width:100%;padding:8px 4px;justify-content:center;color:var(--ink);border-radius:14px;gap:3px}
+ .dock>button.selected{color:#fff}.dock svg{width:32px;height:32px;stroke-width:1.8}.dock .dock-label{font-size:calc(17px * var(--carrot-text-scale-chrome));line-height:1.3;white-space:normal}
+ .dock [data-panel="vision"]{order:0}.dock [data-panel="navigation"]{order:1}.dock [data-panel="logs"]{order:2}.dock #appsButton{order:3}.dock #vehicleDock{order:4}.dock #soundDock{order:5}.dock [data-panel="setting"]{order:6;margin-top:auto!important}
+ main,body[data-panel="vision"] main{grid-row:2;grid-column:2;position:relative;inset:auto;min-width:0;min-height:0;border-radius:20px;gap:12px;overflow:hidden}
+ body:is([data-panel="setting"],[data-panel="tools"],[data-panel="logs"],[data-panel="navigation"]) main{grid-template-columns:minmax(0,1fr)}
+ body:is([data-panel="setting"],[data-panel="tools"],[data-panel="logs"],[data-panel="navigation"]) .visual{display:none!important}
+ .workspace{border:1px solid #ffffff70;border-radius:20px;box-shadow:0 3px 12px #1b2f4f15}
+ body[data-panel="vision"] .workspace{border:0;background:transparent;box-shadow:none}
+ body[data-panel="vision"] #frames{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px;isolation:isolate}
+ body[data-panel="vision"] #features{grid-column:1;grid-row:1;position:relative;inset:auto;width:100%;height:100%;border:1px solid #ffffff90;border-radius:20px;overflow:hidden}
+ body[data-panel="vision"][data-has-route] #navigation[hidden]{display:block!important;visibility:visible!important;pointer-events:auto!important;grid-column:2;grid-row:1;position:relative;inset:auto;width:100%;height:100%;min-height:0;border:1px solid #ffffff80;border-radius:20px}
+ body[data-panel="vision"] .vision-instruments{position:fixed;left:calc(var(--rail) * var(--shell-scale) + 50px);top:calc(var(--status-size) * var(--shell-scale) + 30px);width:calc((100vw - var(--rail) * var(--shell-scale) - 50px) * .58 - 58px);display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto auto;gap:6px 12px;pointer-events:none}
+ .gear-strip{grid-column:1;grid-row:1;font-size:calc(20px * var(--carrot-text-scale-chrome));margin:0;gap:14px}.instrument-speed{grid-column:1;grid-row:2;display:flex;align-items:baseline;gap:10px}.instrument-speed>b{font-size:calc(clamp(56px,11vh,88px) * var(--carrot-text-scale-chrome));line-height:1}.instrument-speed>span{font-size:calc(15px * var(--carrot-text-scale-chrome))}
+ .instrument-limits{grid-column:2;grid-row:1 / 3;flex-direction:row;align-items:center;margin:0;gap:14px}.instrument-limits>div:first-child{border-radius:12px;border:2px solid var(--ink);min-width:56px;width:56px;aspect-ratio:auto;background:#fff;color:#10151b;padding:5px}.instrument-limits>div:first-child small{display:block;font-size:calc(9px * var(--carrot-text-scale-chrome));line-height:1.2;color:#10151b}
+ .instrument-limits>div:last-child{width:auto;min-width:48px}.instrument-limits b{font-size:calc(27px * var(--carrot-text-scale-chrome))}.instrument-limits small{font-size:calc(11px * var(--carrot-text-scale-chrome))}
+ .instrument-state{grid-column:1 / -1;grid-row:3;margin:0;font-size:calc(12px * var(--carrot-text-scale-chrome))}.instrument-state>b{display:none}.instrument-state>span{max-width:none}#profile,#driveStatusPill{display:none!important}
+ body[data-panel="vision"] #workspaceTitle{position:absolute;left:auto;right:calc(42% + 22px);bottom:14px;top:auto;max-width:calc(58% - 32px);width:auto;gap:8px}
+ #visionTools,#resetView,#vehicleButton{font-size:calc(11px * var(--carrot-text-scale-chrome));min-height:44px;padding:8px 12px;border-radius:10px}
+ #resetView,#vehicleButton{display:none!important}
+ #miniNav{display:none!important}
+}
+@media(min-width:900px) and (min-height:501px) and (max-width:1100px){:root{--rail:74px}.dock>button{min-height:62px}.top #shellPageName{display:none}.instrument-speed>b{font-size:calc(56px * var(--carrot-text-scale-chrome))}.instrument-limits{gap:6px}.instrument-limits b{font-size:calc(22px * var(--carrot-text-scale-chrome))}.instrument-limits>div:first-child{min-width:44px;width:44px}.instrument-limits>div:last-child{min-width:38px}body[data-panel="vision"] .vision-instruments{left:calc(var(--rail) * var(--shell-scale) + 38px);width:calc((100vw - var(--rail) * var(--shell-scale) - 50px) * .58 - 34px)}}
+@media(max-width:899px),(max-height:500px){body{background:var(--bg)}.dock{background:var(--surface);border-top:1px solid var(--line)}.dock button,.dock a{color:var(--muted)}.dock .selected{color:#fff}body:not(.night)[data-panel="vision"] .top{background:linear-gradient(#eef2f9,#eef2f900)}.workspace{border-radius:0}dialog{border-radius:14px}}

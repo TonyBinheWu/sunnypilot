@@ -15,7 +15,8 @@
   $("clear").textContent = tr("현재 내비게이션 종료", "End current navigation");
   $("note").textContent = tr("키 등록 후 목적지를 검색하고 선택하세요. 선택한 위치는 현재 주행 세션에만 사용되며, 주행이 끝나거나 장치가 재시작되면 지워집니다. 경로 지도는 주행 화면이 켜져 있고 현재 위치와 안내 경로가 있을 때 표시됩니다. 외부 내비 안내가 우선이며, 연결이 끝나면 현재 주행의 Mapbox 목적지를 사용합니다.", "After saving your Public key, search for and select a destination. The selected place is used only for the current drive and is cleared when the drive ends or the device restarts. The route map needs the driving screen, a current position and route guidance. External navigation takes priority; the current drive's Mapbox destination resumes after it disconnects.");
   $('mapConfigTitle').textContent=tr('지도와 검색 소스','Map sources and search');
-  $('mapSourceNote').textContent=tr('Mapbox 검색과 경로를 사용하고 차량의 Mapbox / OpenStreetMap·Protomaps 지도를 표시합니다. 내비게이션 모델과 동일한 지도 미리보기를 공유합니다. 설정 → 네트워크에서 Mapbox Public key를 등록하세요.','Search and routes use Mapbox. The map shares the vehicle’s Mapbox / OpenStreetMap–Protomaps preview with the navigation model. Set your Mapbox Public key in Settings → Network.');
+  $('mapSourceNote').textContent=tr('표시 지도는 OpenStreetMap, 검색과 경로 및 모델 지도는 기존 Mapbox를 사용합니다.','The display uses OpenStreetMap. Search, routes and model maps retain the existing Mapbox pipeline.');
+  const osm=globalThis.CarrotNavigationOsm?.start({tr,isVisible:()=>viewVisible});
   async function api(path, options) {
     let response, value;
     const controller=typeof AbortController==='function'?new AbortController():null;
@@ -52,9 +53,11 @@
   function destinationAction(){
     $('clear').textContent=destinationKnown?endLabel:tr('목적지 다시 확인','Refresh navigation state');
     $('clear').disabled=destinationBusy||destinationReadBusy||(destinationKnown&&!currentPlace);
+    $('endOnMap').hidden=!destinationKnown||!currentPlace;$('endOnMap').disabled=$('clear').disabled;$('endOnMap').textContent=endLabel;
   }
   function current(value) {
     currentPlace = value.destination || null;
+    osm?.setDestination(currentPlace);
     destinationKnown=true;destinationError='';
     $('current').textContent = currentPlace?.place_name || tr('현재 목적지 없음', 'No current destination');
     $('saveCurrent').disabled = !currentPlace;
@@ -99,6 +102,7 @@
   async function navigate(place, query) {
     await changeDestination('POST',place);
     currentSearchQuery = query;
+    globalThis.dispatchEvent?.(new Event('carrot-navigation-started'));
     $('status').textContent = tr('현재 주행 목적지로 설정했습니다. GPS와 지도 수신을 기다립니다.', 'Destination set for this drive. Waiting for GPS and map data.');
   }
   function quality(place) {
@@ -128,13 +132,18 @@
     try {
       const value = await api(`search?q=${encodeURIComponent(query)}${suffix}`);
       if (version !== searchVersion) return;
-      renderResults(value.results, query);
+      const places=value.results;
+      if(places.length===1&&places[0].feature_type==='address'&&['exact','high'].includes(places[0].match_confidence)&&!['interpolated','approximate'].includes(places[0].accuracy)){
+        await navigate(places[0],query);return true;
+      }
+      renderResults(places, query);
       $('status').textContent = value.results.length ? tr('결과를 선택하면 안내를 시작합니다.', 'Select a result to start navigation.') : tr('검색 결과 없음', 'No results.');
     } catch (error) { if (version === searchVersion) $('status').textContent = error.message; }
     finally { if (version === searchVersion) $('search').disabled = false; }
   }
   $('form').addEventListener('submit', async event => {event.preventDefault();await runSearch($('query').value);});
   $('searchRegion').addEventListener('change',()=>{searchVersion++;$('search').disabled=false;$('results').replaceChildren();$('status').textContent=tr('범위 변경 후 다시 검색하세요.','Search again after changing region.');});
+  $('endOnMap').addEventListener('click',async()=>{try{await endNavigation();}catch(error){$('status').textContent=error.message;}});
   $('clear').addEventListener('click', async () => {
     try { if(!destinationKnown){await readDestination();return;}await endNavigation(); }
     catch (error) { $('status').textContent = error.message; }
@@ -149,7 +158,7 @@
         if (place.provider === 'google') {openEditor(place.id,place);$('status').textContent=tr('이 즐겨찾기에 주소나 검색어를 입력하세요.', 'Enter an address or search text for this legacy favorite.');return;}
         const request=await api(`favorites/${encodeURIComponent(place.id)}/query`);
         if(request.requires_selection!==true||typeof request.query!=='string')throw Error(tr('내비게이션을 새로 고침하세요.', 'Reload navigation.'));
-        await runSearch(request.query);$('query').focus();$('results').scrollIntoView?.({block:'nearest'});
+        const started=await runSearch(request.query);if(!started){$('query').focus();$('results').scrollIntoView?.({block:'nearest'});}
       });go.className = 'go';
       const address = document.createElement('small');address.textContent=place.query||place.place_name||tr('주소 입력 필요', 'Address text needed');
       const actions = document.createElement('div');actions.className = 'actions';
@@ -224,5 +233,5 @@
     }
     setTimeout(refresh, 500);
   }
-  refresh();
+  if(!osm)refresh();
 })();

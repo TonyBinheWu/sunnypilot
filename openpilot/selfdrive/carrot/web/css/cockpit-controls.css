@@ -1,4 +1,7 @@
 /* Flat cockpit settings. Canonical widgets, confirmations and readback remain. */
+@font-face{font-family:Formosa;src:url('/shared-assets/fonts/Inter-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:Formosa;src:url('/shared-assets/fonts/Inter-SemiBold.ttf') format('truetype');font-weight:600;font-display:swap}
+.cockpit-controls,.cockpit-controls button,.cockpit-controls input,.cockpit-controls select{font-family:Formosa,"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif!important}
 html.cockpit-controls-mode body[data-cockpit-panel="setting"] #pageSetting{position:fixed!important;inset:0!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;overflow:hidden!important}
 .cockpit-controls{position:absolute;inset:0;display:grid;grid-template-columns:208px minmax(0,1fr);min-height:0;background:var(--md-surface);color:var(--md-on-surface);font:17px/1.55 system-ui,"Noto Sans TC",sans-serif;--control-font:18px}
 .cockpit-control-nav{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:20px 12px;border-right:1px solid var(--md-outline-var)}

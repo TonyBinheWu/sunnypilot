@@ -63,14 +63,15 @@ def main():
         tracker = RouteTracker(route) if route_id and 2 <= len(route) <= 4096 and np.isfinite(route).all() else None
         next_render = 0.
       gps = position.update(sm)
+      fresh_tbt = sm.valid['navInstructionCarrot'] and 0 <= now - sm.recv_time['navInstructionCarrot'] < 2.
       if demand and now >= next_view:
         # A separate UI-only route copy; route/model rendering below is intact.
         try:
-          write_navigation_view(route, gps, route_id if tracker is not None else 0)
+          write_navigation_view(route, gps, route_id if tracker is not None else 0,
+                                instruction=sm['navInstructionCarrot'] if fresh_tbt else None)
         except (OSError, ValueError, TypeError):
           pass
         next_view = now + 1.
-      fresh_tbt = sm.valid['navInstructionCarrot'] and 0 <= now - sm.recv_time['navInstructionCarrot'] < 2.
       # Navigation without usable position/instruction immediately publishes black.
       if now >= demand_checked:
         demand = (params.get_bool('UsbGpuActive') or jetlink_map_demand(now=now) or

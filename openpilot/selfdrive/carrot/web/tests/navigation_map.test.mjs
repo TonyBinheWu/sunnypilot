@@ -46,6 +46,25 @@ async function page(responses, language = "en", handleApi = null) {
   return { target, element, revoked, blobs: () => blobs, next: async () => { await timers.shift()(); } };
 }
 
+test('one high-confidence exact address starts the existing destination flow once after explicit search',async()=>{
+  const writes=[];
+  const p=await page([{status:204,reason:'offroad'}],'zh-TW',async(url,options)=>{
+    if(url.includes('/search?'))return {results:[{latitude:25,longitude:121,place_name:'唯一完整地址',feature_type:'address',match_confidence:'high',accuracy:'rooftop'}]};
+    if(options.method==='POST'){writes.push(JSON.parse(options.body));return {destination:writes.at(-1)};}
+    if(url.endsWith('favorites'))return {favorites:[]};return {destination:null};
+  });
+  p.element('query').value='完整測試地址';await p.element('form').trigger('submit');assert.equal(writes.length,1);assert.equal(writes[0].place_name,'唯一完整地址');assert.equal(p.target.CarrotNavigationView.snapshot().active,true);
+});
+test('approximate single address and multiple addresses still require a location selection',async()=>{
+  for(const results of [[{feature_type:'address',match_confidence:'medium',accuracy:'interpolated'}],[{feature_type:'address',match_confidence:'high'},{feature_type:'address',match_confidence:'high'}]]){
+    let writes=0;
+    const p=await page([{status:204,reason:'offroad'}],'zh-TW',async(url,options)=>{
+      if(url.includes('/search?'))return {results:results.map(v=>({...v,latitude:25,longitude:121,place_name:'待確認地址'}))};
+      if(options.method==='POST')writes++;if(url.endsWith('favorites'))return {favorites:[]};return {destination:null};
+    });
+    p.element('query').value='待確認地址';await p.element('form').trigger('submit');assert.equal(writes,0);assert.equal(p.element('results').children.length,results.length);
+  }
+});
 test("keys without a route show destination instructions instead of a black image", async () => {
   const p = await page([{ status: 200, reason: "route" }]);
   assert.equal(p.element("map").hidden, true);

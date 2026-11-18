@@ -66,4 +66,12 @@ globalThis.CarrotNavigationZhTw = Object.freeze({
   "Invalid search region or language.": "搜尋範圍或語言無效，請重新載入導航頁面。",
   "Save a name and address text. Coordinate favorites are no longer created.": "請儲存名稱與地址文字；新版不再新增座標型最愛。",
   "Select a search result first. Reload navigation.": "請重新載入導航頁面，先查詢並選擇結果後才開始導航。",
+  "The display uses OpenStreetMap. Search, routes and model maps retain the existing Mapbox pipeline.": "觀看地圖使用 OpenStreetMap；搜尋、路徑規劃與模型圖資維持既有 Mapbox 流程。唯一且高信心的完整地址會直接開始導航，多筆或近似結果請選擇確認。",
+  "Unable to load the map. Reopen this page.": "地圖元件載入失敗，請重新開啟頁面。",
+  "OSM tiles are unavailable. Check the connection.": "目前無法取得 OSM 圖磚，請檢查網路連線。",
+  "Current position": "回到目前位置",
+  "Report a map issue": "回報地圖問題",
+  "Zoom in": "放大地圖",
+  "Zoom out": "縮小地圖",
+  "min": "分鐘",
 });

@@ -41,7 +41,7 @@ def destination(value):
 
 async def page(request):
   html = Path(WEB_DIR, 'navigation.html').read_text(encoding='utf-8')
-  for asset in ('/js/pages/navigation_zh_tw.js', '/js/pages/navigation_map.js'):
+  for asset in ('/js/pages/navigation_zh_tw.js', '/js/pages/navigation_osm.js', '/js/pages/navigation_map.js'):
     fingerprint = fingerprint_static_asset(WEB_DIR, asset)
     if fingerprint:
       html = html.replace(f'src="{asset}"', f'src="{asset}?v={fingerprint}"')
@@ -49,8 +49,9 @@ async def page(request):
 
 
 async def map_config(_request):
-  return web.json_response({'provider': 'mapbox', 'basemaps': ['mapbox', 'openstreetmap'],
-                            'search': 'mapbox', 'routing': 'mapbox', 'model': 'mapsd'},
+  return web.json_response({'provider': 'openstreetmap', 'basemaps': ['openstreetmap'],
+                            'search': 'mapbox', 'routing': 'mapbox', 'model': 'mapsd',
+                            'osm_tile_url': 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'},
                            headers={'Cache-Control': 'no-store'})
 
 
