@@ -191,3 +191,11 @@ test('feature bootstrap timeout exposes a read-only retry and first-run setup ow
  h.el('features').src='http://fixture/?cockpit_embed=1';h.el('retryPanel').onclick();assert.equal(h.el('features').src,'http://fixture/?cockpit_embed=1');assert.equal(h.writes.length,0);
  h.frame.__CARROT_BOOTSTRAP__={intro:{shouldShow:true}};h.el('features').emit('load');assert.equal(h.context.document.body.dataset.panel,'setting');assert.equal(h.el('panelStatus').hidden,true);assert.equal(h.el('panelTitle').textContent,'首次引導設定');
 });
+
+
+test('phone app shortcuts retain sound controls and camera-view reset without driving writes',()=>{
+ const h=harness(),sections=[];let resets=0;
+ h.frame.CarrotCockpitControls={selectSection:id=>sections.push(id)};h.frame.CarrotVisionView={reset:()=>resets++};
+ h.el('appsButton').onclick();h.el('soundShortcut').onclick();assert.equal(h.el('apps').open,false);assert.equal(h.context.document.body.dataset.panel,'setting');assert.deepEqual(sections,['sound']);
+ h.el('resetViewSetting').onclick();assert.equal(resets,1);assert.match(h.el('visionSettingFeedback').textContent,/回到前方/);assert.equal(h.writes.length,0);
+});
