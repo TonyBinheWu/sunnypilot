@@ -1,6 +1,6 @@
 import {ANIMALS} from './object_classes.js';
 // Original closed sedan mesh. Dimensions and styling are illustrative, never inferred.
-export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=true,body=null,lamps={}}={}){
+export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=true,body=null,lamps={},outline=null}={}){
   const faces=[];
   const scale=body?.scale||[1,1,1],roofShape=body?.roof||[-.65,.65,1.42];
   const transform=p=>p.map((v,i)=>v*scale[i]);
@@ -69,7 +69,13 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
   if(shadow.every(Boolean)){ctx.beginPath();shadow.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fillStyle='#50607020';ctx.fill();}
   for(const f of faces.sort((a,b)=>a.depth-b.depth)){
     const p=f.points.map(v=>project(...v));if(p.some(v=>!v))continue;
-    ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.fillStyle=f.color;ctx.fill();
+    ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.fillStyle=f.color;
+    if(ego&&['#f6f8fb','#e5ebf1','#cfdae4','#e1e6ec','#34414e','#344454','#455869'].includes(f.color)){
+      const ys=p.map(v=>v[1]),g=ctx.createLinearGradient?.(0,Math.min(...ys),0,Math.max(...ys)+1);
+      if(g?.addColorStop){g.addColorStop(0,f.color);g.addColorStop(1,['#34414e','#344454','#455869'].includes(f.color)?'#101b29':'#a5b2c0');ctx.fillStyle=g;}
+    }
+    const illuminated=f.color==='#ff343d'||f.color==='#ffb126';if(illuminated){ctx.shadowColor=f.color;ctx.shadowBlur=5;}ctx.fill();if(illuminated)ctx.shadowBlur=0;
+    if(outline){ctx.strokeStyle=outline;ctx.lineWidth=.8;ctx.stroke();}
   }
   ctx.restore();
 }
@@ -96,7 +102,7 @@ export function drawDetectedMesh(ctx,project,object){
     poly([[-.23,.23,.06],[-.23,-.23,.06],[0,0,.8]],'#f0a365');
     poly([[-.15,.15,.32],[-.15,-.15,.32],[-.1,-.1,.48],[-.1,.1,.48]],'#f6f6ef');return;
   }
-  if(kind==='car'){drawVehicleMesh(ctx,p,{ego:false});return;}
+  if(kind==='car'){drawVehicleMesh(ctx,p,{ego:false,outline:'#279fff'});return;}
   if(ANIMALS.includes(kind)){
     const scale=({cat:.45,dog:.65,horse:1.2,sheep:.8,cow:1.2,elephant:2.3,bear:1.1,zebra:1.2,giraffe:1.5})[kind];
     const color=kind==='zebra'?'#b6c1cb':kind==='bear'?'#697c8d':'#93a7b8';

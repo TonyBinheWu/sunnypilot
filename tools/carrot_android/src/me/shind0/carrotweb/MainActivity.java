@@ -989,7 +989,12 @@ public final class MainActivity extends Activity {
     if (visionFullscreen != null) { leaveVisionView(); return; }
     if (UpdatePolicy.cockpit(getPackageName()) && pageReady && web != null && web.getUrl() != null
         && isCurrent(Uri.parse(web.getUrl())) && "/cockpit".equals(Uri.parse(web.getUrl()).getPath())) {
-      title.performClick(); return; // Device menu provides discovery and updates; retain cockpit chrome.
+      final WebView currentWeb=web; final String currentUrl=web.getUrl();
+      web.evaluateJavascript(onDevicePage("!!window.CarrotCockpit?.back?.()"), handled -> {
+        if(web!=currentWeb||!foregroundActivity||!pageReady||!currentUrl.equals(web.getUrl()))return;
+        if(!"true".equals(handled))title.performClick();
+      });
+      return; // Device menu remains available when the cockpit has nothing to close.
     }
     if (visionImmersive) { leaveVisionView(); return; }
     if(pageLoadFailed){startSearch();return;}

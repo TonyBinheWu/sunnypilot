@@ -12,7 +12,7 @@ function harness(){
     const classes=new Set(),listeners={};
     return {id,hidden:false,dataset:{},textContent:'',disabled:false,href:'/css/cockpit-embedded.css',
       classList:{contains:x=>classes.has(x),toggle(x,force){const next=force??!classes.has(x);if(next)classes.add(x);else classes.delete(x);return next;},add:x=>classes.add(x),remove:x=>classes.delete(x)},
-      addEventListener:(name,fn)=>{listeners[name]=fn;},emit:name=>listeners[name]?.(),append(){},focus(){},
+      addEventListener:(name,fn)=>{listeners[name]=fn;},emit:name=>listeners[name]?.(),append(){},replaceChildren(...children){this.children=children;},setAttribute(name,value){this[name]=value;},focus(){},
       close(){this.open=false;listeners.close?.();},showModal(){this.open=true;},getBoundingClientRect:()=>({width:480,height:320}),getContext:()=>new Proxy({measureText:()=>({width:20})},{get:(t,k)=>t[k]??(()=>{}),set:(t,k,v)=>(t[k]=v,true)})};
   }
   for(const [,id] of html.matchAll(/id="([^"]+)"/g))nodes.set(id,element(id));

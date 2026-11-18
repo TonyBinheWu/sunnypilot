@@ -37,5 +37,6 @@ test('cockpit host owns fullscreen independently of Vision JS dismissal',()=>{
   const poll=activity.slice(activity.indexOf('private void pollVisionHost()'),activity.indexOf('private void leaveVisionView()'));
   assert.ok(poll.indexOf('setVisionImmersive(true)')<poll.indexOf('web.evaluateJavascript'));
   assert.match(poll,/UpdatePolicy.cockpit\(getPackageName\(\)\) && "\/cockpit".equals/);
-  assert.match(activity,/title.performClick\(\); return; \/\/ Device menu/);
+  assert.match(activity,/CarrotCockpit\?\.back\?\.\(\)/);
+  assert.match(activity,/if\(!"true"\.equals\(handled\)\)title.performClick\(\)/);
 });
