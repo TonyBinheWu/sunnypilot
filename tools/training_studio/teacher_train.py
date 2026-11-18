@@ -91,6 +91,8 @@ def main():
     load(model,args.parent)
   else: install(model)
   if args.expanded_expert: expand(model)
+  from tools.training_studio.teacher_motion import install as install_motion
+  install_motion(model.expert.action_space)
   model.eval()
   parameters={name:p for name,p in model.named_parameters() if p.requires_grad}
   processor=get_processor(model.tokenizer,model.config)

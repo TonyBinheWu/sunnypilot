@@ -9,6 +9,23 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_motion_initialization_resolves_sign_conflict_without_changing_observed_reverse_or_forward_fit(self):
+    import torch
+    from tools.training_studio.teacher_motion import install
+    fitted=torch.tensor([-.02,-1.,2.,-.1])
+    measured=torch.tensor([.04,-1.,1.,0.])
+    history=torch.zeros(4,2,3)
+    history[:,-2,0]=-measured*.1
+    original=history.clone()
+    theta=torch.tensor([.01,.02,.03,.04])
+    space=SimpleNamespace(dt=.1,estimate_t0_states=lambda *args:{'v':fitted,'theta':theta})
+    install(space); installed=space.estimate_t0_states; install(space)
+    self.assertIs(space.estimate_t0_states,installed)
+    result=space.estimate_t0_states(history,torch.eye(3).expand(4,2,3,3))
+    torch.testing.assert_close(result['v'],torch.tensor([.04,-1.,2.,0.]))
+    torch.testing.assert_close(result['theta'],theta)
+    torch.testing.assert_close(history,original)
+
   def test_checkpointed_rollout_preserves_outputs_and_actual_gradients(self):
     import torch
     from torch import nn

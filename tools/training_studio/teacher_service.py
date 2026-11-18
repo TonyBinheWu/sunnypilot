@@ -44,6 +44,8 @@ def main():
     load(model,path)
     model.requires_grad_(False)
   model.eval()
+  from tools.training_studio.teacher_motion import install as install_motion,PROFILE as MOTION_PROFILE
+  install_motion(model.expert.action_space)
   processor=get_processor(model.tokenizer,model.config)
   space=model.expert.action_space
   captured={}
@@ -57,6 +59,7 @@ def main():
   provenance={**receipt,'input_profile':'experimental_front_only','camera_ids':[1,6],'precision':'BF16',
     'gpu':torch.cuda.get_device_name(0),'server_script_sha256':digest_file(Path(__file__)),
     'input_adapter_sha256':digest_file(Path(__file__).with_name('edge_inputs.py')),
+    'motion_state_profile':MOTION_PROFILE,'motion_state_adapter_sha256':digest_file(Path(__file__).with_name('teacher_motion.py')),
     'action_expert_adapter':adapter,'driving_qualified':False,'amd_benchmarked':False}
 
   class Handler(BaseHTTPRequestHandler):

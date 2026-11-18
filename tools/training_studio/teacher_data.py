@@ -31,7 +31,8 @@ def main():
     ('red_light','go',7,.4,3,-.025),('red_light','go',15,0,4,.04),
     ('red_light','brake_approach',-13,0,3,0),('red_light','brake_hold',-9,0,1.5,0),
     ('red_light','green_transition',-6.5,0,0,0),('red_light','accelerating_go',-6.5,0,0,0),
-    ('red_light','drift_go',7,.5,3,0),('red_light','drift_go',7,-.5,3,0)]
+    ('red_light','drift_go',7,.5,3,0),('red_light','drift_go',7,-.5,3,0),
+    ('red_light','brake_to_hold',-9.5,0,3.2,0),('red_light','gentle_brake_hold',-9,0,3,0)]
   scenarios=sorted(({args.scenario}|set(filter(None,args.rehearsal.split(','))))-{'red_light'})
   for scenario in scenarios:
     fixtures += [(scenario,'hold',-6.5,0,0,0),(scenario,'approach',-25,0,3,0),
@@ -90,7 +91,11 @@ def main():
           if step%2==0: history.record(scene)
           if step<40:
             action=np.zeros(2,np.float32)
-            if mode.startswith('brake_'): action[1]=-.8
+            if mode in ('brake_to_hold','gentle_brake_hold'):
+              duration=1.7 if mode=='brake_to_hold' else 1.8
+              desired=speed*max(0.,1-(step+1)*.05/duration)
+              action[1]=np.clip(4*(desired-scene.state()[-1]),-3.5,0.)
+            elif mode.startswith('brake_'): action[1]=-.8
             elif mode=='accelerating_go': action=scene.expert()
             elif mode=='drift_go': action[0]=-np.sign(lateral)*.06
             scene.step(action)
