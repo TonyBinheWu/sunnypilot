@@ -18,14 +18,15 @@ from tools.training_studio.store import Store,exclusive_worker,read_json,write_j
 
 def closed_loop_score(batch):
   rows=[read_json(path) for path in Path(batch).glob('*/result.json')]
-  if not rows: return (-1,)*8
+  if not rows: return (-1,)*9
   failures={failure for row in rows for failure in row.get('failures',[])}
   red=[row.get('red_wait_audit',{}).get('longest_contiguous_red_stop_s',0.) for row in rows if row.get('scenario')=='red_light']
   # Qualification fails fast. An untested later case is not evidence that an
   # earlier-failing parent is safer. Preserve actual passed-prefix progress.
   return (sum(row.get('status')=='pass' and not row.get('failures') for row in rows),
     int('collision' not in failures),int('crossed_before_permission' not in failures),int('out_of_road' not in failures),
-    int('lane_envelope' not in failures),int(not failures.intersection({'red_hold_not_maintained','red_stop_not_sustained'})),min(red,default=0.),
+    int('lane_envelope' not in failures),int(not failures.intersection({'red_hold_not_maintained','red_stop_not_sustained'})),
+    -len(failures),min(red,default=0.),
     -max((row.get('max_center_error_m',0.) for row in rows),default=0.))
 
 
@@ -34,8 +35,8 @@ def restore_parent_ranking(store,state):
 
   This does not issue qualification: only the original complete suite may do so.
   """
-  if state.get('ranking_version')==3: return
-  best=(-1,)*8
+  if state.get('ranking_version')==4: return
+  best=(-1,)*9
   for batch in sorted((store.root/'teacher-cycles').glob('cycle-*/qualification-*')):
     if not batch.is_dir(): continue
     report=read_json(batch/'qualification.json',{})
@@ -51,7 +52,7 @@ def restore_parent_ranking(store,state):
     if score>best:
       best=score
       state.update(parent=adapter,scenario=rows[-1]['scenario'])
-  state.update(best_closed_loop=best,ranking_version=3)
+  state.update(best_closed_loop=best,ranking_version=4)
 
 
 def main():
