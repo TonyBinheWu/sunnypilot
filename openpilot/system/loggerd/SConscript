@@ -25,7 +25,9 @@ logger_lib = env.Library('logger', src)
 libs.insert(0, logger_lib)
 
 env.Program('loggerd', ['loggerd.cc'], LIBS=libs, FRAMEWORKS=frameworks)
-env.Program('sei_reader', ['sei_reader.cc'], LIBS=['avformat', 'avcodec', 'avutil'])
+# Vendored FFmpeg is static on release targets; keep its transitive platform
+# dependencies (x264, swresample, VAAPI and Darwin frameworks) with loggerd.
+env.Program('sei_reader', ['sei_reader.cc'], LIBS=libs, FRAMEWORKS=frameworks)
 env.Program('encoderd', ['encoderd.cc'], LIBS=libs + ["jpeg"], FRAMEWORKS=frameworks)
 env.Program('bootlog.cc', LIBS=libs, FRAMEWORKS=frameworks)
 if arch in ("aarch64", "larch64"):

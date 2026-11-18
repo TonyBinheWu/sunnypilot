@@ -14,6 +14,9 @@
   guards. Preserve SSID/PSK/APN and standalone setup/updater behavior. Real SIM
   sharing remains untested with the user's flag kept0. Guides: DRIVING_SEI and
   SEI_REPLAY_ACCEPTANCE under tools/carrot_android, docs/HOTSPOT_ON_BOOT.zh-TW.md.
+  Release FFmpeg is STATIC: sei_reader must reuse loggerd's complete libs and
+  platform frameworks. A system dynamic-FFmpeg g++ check alone misses transitive
+  x264/swresample/VAAPI dependencies; the default native CI build catches them.
 
 - 2026-11-18 Parking worker belongs in build.mjs workerDefinitions, never
   bundleDefinitions. A worker with bundle-only source metadata makes the strict
