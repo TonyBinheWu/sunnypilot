@@ -242,7 +242,7 @@ def main():
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
   def validate():
-    values=[]; red=0; lateral=[]; hold=[]
+    values=[]; red=0; lateral=[]; hold=[]; proceed=[]
     with torch.no_grad():
       for item in validation:
         loss,xyz,velocity=objective(item,False)
@@ -252,7 +252,11 @@ def main():
           speed=torch.linalg.vector_norm(velocity,dim=-1)
           red+=int(bool(valid_stopped_trajectory(xyz,velocity,item['row']['front_distance_m'])))
           hold.append(float(speed[:,-10:].square().mean()))
-    return {'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral)),'stop_metric':'valid_stop_zone_v2'}
+        else:
+          target=item['target'].cuda()
+          reference_velocity=torch.diff(torch.cat((torch.zeros_like(target[:,:1]),target),dim=1),dim=1)/.1
+          proceed.append(float((velocity[:,:20]-reference_velocity[:,:20]).square().sum(-1).mean()))
+    return {'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral)),'stop_metric':'valid_stop_zone_v2','go_velocity_mse':float(np.mean(proceed)) if proceed else None,'go_samples':len(proceed)}
   baseline=validate()
   best_metrics,best_epoch=baseline,0
   balanced_metrics,balanced_epoch=baseline,0

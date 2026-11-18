@@ -25,7 +25,7 @@ export function teacherMessage(value){
   const state={running:'資格驗證中',failed:'資格未通過',passed:'資格驗證通過',error:'驗證程序錯誤',interrupted:'驗證已中斷'}[q.state]||'等待資格驗證';
   const batch=String(q.batch||'').replaceAll('\\','/').match(/cycle-(\d+)\/qualification-(safety|balanced)(?:-early-epoch(\d+))?$/);
   const candidate=batch?`第 ${Number(batch[1])} 輪 · ${batch[2]==='safety'?'安全優先候選':'綜合損失候選'}${batch[3]?` · Epoch ${Number(batch[3])} 固定快照`:''}`:null;
-  const reasons={lane_envelope:'超出車道邊界 (lane_envelope)',red_stop_not_sustained:'紅燈停等未持續達標 (red_stop_not_sustained)',red_hold_not_maintained:'紅燈期間未保持停車 (red_hold_not_maintained)'};
+  const reasons={lane_envelope:'超出車道邊界 (lane_envelope)',red_stop_not_sustained:'紅燈停等未持續達標 (red_stop_not_sustained)',red_hold_not_maintained:'紅燈期間未保持停車 (red_hold_not_maintained)',insufficient_progress:'行駛進度不足 (insufficient_progress)',crossed_before_permission:'允許通行前越線 (crossed_before_permission)',stop_not_observed:'未在有效區內形成停等 (stop_not_observed)',resume_not_observed:'未觀察到恢復行駛 (resume_not_observed)'};
   const fields=[candidate,state,q.scenario,Number.isFinite(q.done)?`${q.done} / ${q.total} 關卡`:null,
     Number.isFinite(q.plan)?`已完成 ${q.plan+1} 次模型推論`:null,
     Number.isFinite(q.simulation_time_s)?`模擬 ${q.simulation_time_s.toFixed(1)} 秒`:null,
@@ -33,6 +33,15 @@ export function teacherMessage(value){
     Number.isFinite(q.red_wait_audit?.longest_contiguous_red_stop_s)?`連續紅燈停等 ${q.red_wait_audit.longest_contiguous_red_stop_s.toFixed(2)} 秒`:null,
     ...(q.failures||[]).map(reason=>reasons[reason]||reason),q.error].filter(Boolean);
   return {connection,progress:fields.join(' · ')};
+}
+
+export function teacherValidationSummary(value){
+  const row=value.teacher_training?.history?.at(-1);
+  if(!row)return '';
+  const parts=[];
+  if(row.stop_metric==='valid_stop_zone_v2'&&Number.isFinite(row.red_safe_count)&&Number.isFinite(row.red_samples))parts.push(`停止區樣本 ${row.red_safe_count} / ${row.red_samples}`);
+  if(Number.isFinite(row.go_velocity_mse))parts.push(`放行速度 MSE ${row.go_velocity_mse.toFixed(4)}`);
+  return parts.join(' · ');
 }
 
 export function teacherLossHistory(value){
