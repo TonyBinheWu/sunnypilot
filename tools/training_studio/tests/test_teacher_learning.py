@@ -9,6 +9,22 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_stop_command_loss_catches_positive_pulses_even_when_signed_speed_later_cancels(self):
+    import torch
+    from tools.training_studio.teacher_train import held_command_loss
+    space=SimpleNamespace(dt=.1,accel_std=torch.tensor(1.),accel_mean=torch.tensor(0.))
+    history=torch.zeros(1,20,3)
+    zero=torch.zeros(1,64,2)
+    self.assertEqual(float(held_command_loss(zero,space,history)),0.)
+    for positive,negative in ((0,1),(1,0)):
+      pulse=zero.clone()
+      pulse[0,positive,0]=.5; pulse[0,negative,0]=-.5
+      pulse.requires_grad_()
+      loss=held_command_loss(pulse,space,history)
+      self.assertGreater(float(loss.detach()),0.)
+      loss.backward()
+      self.assertGreater(float(pulse.grad[0,positive,0]),0.)
+
   def test_motion_initialization_resolves_sign_conflict_without_changing_observed_reverse_or_forward_fit(self):
     import torch
     from tools.training_studio.teacher_motion import install

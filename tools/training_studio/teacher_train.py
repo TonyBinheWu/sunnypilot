@@ -26,6 +26,25 @@ def cache_copy(source,device):
   return result
 
 
+def held_command_loss(action,space,history_xyz):
+  """Penalize forward motion under observed speed and bounded executed commands.
+
+  Signed decoded velocities can cancel small positive acceleration pulses;
+  forward-only execution cannot cancel those pulses by reversing the vehicle.
+  This is an offline loss for already-completed stop references only.
+  """
+  import torch
+  initial=torch.linalg.vector_norm(history_xyz[...,-1,:2]-history_xyz[...,-2,:2],dim=-1)/space.dt
+  acceleration=action[...,0]*space.accel_std.to(action.device)+space.accel_mean.to(action.device)
+  speed=initial
+  speeds=[]
+  for value in acceleration[...,:20].clamp(-3.5,1.6).unbind(-1):
+    speed=(speed+value*space.dt).clamp_min(0)
+    speeds.append(speed)
+  executed=torch.stack(speeds,dim=-1)
+  return 200*executed.square().amax()+50*executed.square().mean()
+
+
 def rollout(model,item,*,grad,seed=42):
   import torch
   from torch.utils.checkpoint import checkpoint
@@ -161,6 +180,8 @@ def main():
       accel_std=model.expert.action_space.accel_std.to(action.device)
       accel_error=(action[...,0]-item['target_action'].to(action.device)[...,0])*accel_std
       loss=loss+50*(accel_error[:,:20].square()*held[:,:20]).sum()/held[:,:20].sum().clamp_min(1)
+      if item['row'].get('maintain_stop_reference'):
+        loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))
       loss=loss+30*torch.relu(xyz[...,0]-item['row']['front_distance_m']+.2).square().mean()
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
