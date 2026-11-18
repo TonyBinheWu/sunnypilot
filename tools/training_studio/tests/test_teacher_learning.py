@@ -21,6 +21,10 @@ class TeacherLearningTest(unittest.TestCase):
     self.assertFalse(bool(valid_stopped_trajectory(overshot,velocity,5.1)))
     moving=velocity.clone();moving[:,-1,0]=.2
     self.assertFalse(bool(valid_stopped_trajectory(advanced,moving,5.1)))
+    late_entry=xyz.clone();late_entry[...,0]=.095
+    late_entry[:,-10:,0]=torch.linspace(.095,.105,10)
+    late_velocity=torch.diff(torch.cat((torch.zeros_like(late_entry[:,:1]),late_entry),dim=1),dim=1)/.1
+    self.assertFalse(bool(valid_stopped_trajectory(late_entry,late_velocity,5.1)))
     held=torch.ones(1,64)
     prediction=xyz.clone().requires_grad_()
     loss=stop_zone_loss(prediction,advanced,held,5.1)

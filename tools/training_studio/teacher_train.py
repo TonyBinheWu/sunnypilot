@@ -74,9 +74,9 @@ def stop_zone_loss(xyz,target,held,front_distance):
 def valid_stopped_trajectory(xyz,velocity,front_distance):
   """Offline selection must honor the existing zero-to-five-metre stop zone."""
   import torch
-  final_front=front_distance-xyz[...,-1,0]
+  final_front=front_distance-xyz[...,-10:,0]
   speed=torch.linalg.vector_norm(velocity,dim=-1)
-  return ((xyz[...,0].amax(dim=-1)<=front_distance)&(final_front>=0)&(final_front<=5)&(speed[...,-10:].amax(dim=-1)<.15)).all()
+  return ((xyz[...,0].amax(dim=-1)<=front_distance)&((final_front>=0)&(final_front<=5)).all(dim=-1)&(speed[...,-10:].amax(dim=-1)<.15)).all()
 
 
 def rollout(model,item,*,grad,seed=42):
