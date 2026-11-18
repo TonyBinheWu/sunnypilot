@@ -6,7 +6,7 @@ import test from "node:test";
 const root = path.resolve(import.meta.dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 
-test("log players reuse the persistent replay media transport", () => {
+test("log players retain replay transport while idle controls can hide", () => {
   const runtime = read("src/features/logs/runtime.js");
   const style = read("src/features/logs/style.css");
 
@@ -21,6 +21,7 @@ test("log players reuse the persistent replay media transport", () => {
   assert.match(runtime, /onNext:\s*\(\)\s*=>\s*nextButton\?\.click\(\)/);
   assert.match(runtime, /inputController\?\.dispose\?\.\(\)/);
   assert.match(runtime, /hideControls:\s*false/);
+  assert.match(runtime, /bindPlayerChrome/);
   assert.match(runtime, /player\?\.play\s*\?\s*player\.play\(\)\s*:\s*videoEl\.play\(\)/);
   assert.match(runtime, /player\?\.pause/);
   assert.match(style, /\.dashcam-player-frame \.plyr__control--overlaid\s*\{[^}]*display:\s*none\s*!important/s);

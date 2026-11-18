@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     DrivingTelemetry fixture;
     for(size_t i=0;i+1<offsets.size();++i){
       uint64_t t=1000000000+i*50000000;
-      fixture.add_car({t,true,20.+i*.1,-31.5+i,.3,.1,true,false,true});
+      fixture.add_car({t,true,20.+i*.1,-31.5+i,i%3==0?.3:0,i%3==1?.2:0,i%3==0,i%3==1,i%4<2});
       fixture.add_control({t,true,true,true,i%2==0});
       auto out=embed_driving_sei(data.data()+offsets[i],offsets[i+1]-offsets[i],fixture.payload(t,i),hevc);
       assert(!out.empty());file.write(reinterpret_cast<char *>(out.data()),out.size());

@@ -462,6 +462,8 @@ The Replay event timeline also identifies Carrot Navi connection and route-sessi
 <a id="system"></a>
 ## System
 
+`HotspotOnBoot` starts the saved WPA2 hotspot once the SIM is ready and cellular data is connected. It checks in the background, retries failed activation with backoff, and uses NetworkManager shared IPv4 (DHCP, DNS and NAT) so connected devices can use the cellular connection. The existing hotspot name/password, APN, roaming and metered-upload settings are retained. One Wi-Fi radio switches from joining Wi-Fi to hosting the hotspot; reconnect viewers to the device hotspot. Turning tethering off manually pauses automatic startup until this option is disabled/re-enabled or the device restarts. Turning the option off closes a hotspot managed by this option. A temporary cellular outage keeps the local hotspot available. Cellular plans/APNs must permit tethering; SIM presence alone is insufficient. Runtime checks apply in about five seconds; an older installed program needs an update and restart first.
+
 The 12 system settings cover recording, power, network, maps, sound, and software menus.
 
 | Group | Parameters | Purpose |

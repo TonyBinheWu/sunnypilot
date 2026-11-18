@@ -13,10 +13,10 @@
 
 `HotspotOnBoot`
 
-COMMA에 USIM을 장착한경우 핫스팟을 자동으로 켜주는 기능
+USIM이 준비되고 이동통신 데이터가 연결되면 저장된 Wi-Fi 핫스팟을 자동으로 켜고 인터넷을 공유합니다. 수동 끄기는 이번 부팅 동안 자동 시작을 일시 정지합니다.
 
 <!-- CARROT:AUTO:BEGIN HotspotOnBoot -->
-<!-- CARROT:AUTO:SOURCE facts="e644cd0d78ca06f5dc4e1471a510bc4394c4323b119bc9cef3552f9f6f564a02" semantic="f60b11ad1a9e01c9a2140827ce36a15ff5fc686b902d45a7c578afb846582f96" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="1d52ce16a17fab84a2fc4f06123eeec4b1511523aaf94d0bb5cb7377174917e6" semantic="483a8e450bc5248e62520b76fc55c79fad20bff0753ad2f7a1540169a0b7c434" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
@@ -26,28 +26,25 @@ COMMA에 USIM을 장착한경우 핫스팟을 자동으로 켜주는 기능
 <!-- CARROT:AUTO:END HotspotOnBoot -->
 
 <!-- CARROT:MANUAL:BEGIN HotspotOnBoot -->
-<!-- CARROT:REVIEW reviewed-for="f60b11ad1a9e01c9a2140827ce36a15ff5fc686b902d45a7c578afb846582f96" reviewed-at="2026-07-24T16:44:29+09:00" -->
+<!-- CARROT:REVIEW reviewed-for="483a8e450bc5248e62520b76fc55c79fad20bff0753ad2f7a1540169a0b7c434" reviewed-at="2026-11-18T09:30:00Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 동작
 
-- **켜짐:** 장치 부팅 후 사용 가능한 셀룰러 연결로 핫스팟 자동 시작을 요청합니다.
-- **꺼짐:** 부팅 시 핫스팟을 자동으로 켜지 않습니다.
+켜면 SIM 준비와 최신 셀룰러 데이터 연결을 기다린 뒤 저장된 핫스팟과 인터넷 공유를 시작합니다. 끄면 이 설정이 자동 관리하던 핫스팟을 종료합니다.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->
 ### 사용
 
-네트워크 연결 상태에서 변경하고, 다음 연결 또는 지도 화면에서 적용 결과를 확인합니다.
+업데이트 후 한 번 재시작하면 변경은 약 5초 이내에 적용됩니다. 기존 핫스팟 이름과 비밀번호를 유지하며, 다른 기기를 연결해 Carrot와 외부 인터넷 접속을 확인합니다. 시작 실패 시 간격을 두고 재시도합니다.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->
 ### 참고
 
-<!-- CARROT:NOTICE level="NOTE" -->
-> [!NOTE]
-> USIM과 셀룰러 네트워크를 사용할 수 있는 장치에서만 자동 핫스팟 시작이 가능합니다.
-<!-- CARROT:NOTICE:END -->
+핫스팟을 수동으로 끄면 이 설정을 껐다 켜거나 기기를 재시작할 때까지 자동 시작을 일시 중지합니다. 셀룰러 일시 단절에도 로컬 연결은 유지합니다. 단일 Wi-Fi 무선 장치는 클라이언트에서 핫스팟으로 전환될 수 있으며, 요금제·APN·통신사가 테더링을 허용해야 합니다. APN이나 로밍 설정은 변경하지 않습니다.
 <!-- CARROT:SECTION:END REFERENCE -->
+
 <!-- CARROT:MANUAL:END HotspotOnBoot -->
 
 <!-- CARROT:SETTING:END HotspotOnBoot -->

@@ -1,6 +1,8 @@
 "use strict";
 
 import { createDashcamPlayerSession } from "./dashcam_player_session.js";
+import { attachDrivingSei } from "./player/driving_sei.js";
+import { bindPlayerChrome } from "./player/chrome.js";
 import {
   createLogsPlayerDialog,
   createLogsPlayerSegmentList,
@@ -374,7 +376,7 @@ function openLogsVideoPlayer(title, src, options = {}) {
     playerDialog.dialog.setAttribute("aria-labelledby", playerTitle.id);
   }
   overlay.append(playerDialog.dialog);
-  const videoEl = overlay.querySelector("video");
+  let videoEl = overlay.querySelector("video");
   videoEl.controls = false;
   videoEl.removeAttribute("controls");
   const toastEl = overlay.querySelector(".dashcam-player-toast");
@@ -388,6 +390,22 @@ function openLogsVideoPlayer(title, src, options = {}) {
   let closed = false;
   let mediaSwitchToken = 0;
   let inputController = null;
+  let seiView = null;
+  let disposeChrome = null;
+  const bindSei = () => {
+    videoEl=player?.media||videoEl;
+    bindMediaInput();
+    // Plyr replaces media and custom children when changing source. Restore
+    // transport and idle listeners for the new container on every segment.
+    const container=player?.elements?.container;
+    if(container&&transportEl)container.appendChild(transportEl);
+    disposeChrome?.();disposeChrome=player?bindPlayerChrome(playerDialog.frame,player):null;
+    seiView?.destroy();seiView=null;
+    if(kind!=='dashcam')return;
+    let segment=activeSegmentId();
+    if(!segment){try{const u=new URL(currentMedia.src,location.href);if(u.origin===location.origin&&u.pathname.startsWith('/api/dashcam/video/'))segment=decodeURIComponent(u.pathname.slice('/api/dashcam/video/'.length));}catch{}}
+    if(segment)seiView=attachDrivingSei(player?.media||videoEl,player?.elements?.container||playerDialog.frame,{segment});
+  };
   let segmentList = null;
   const transportEl = overlay.querySelector(".dashcam-player-transport");
   const mediaTransport = window.CarrotMediaTransport;
@@ -431,6 +449,7 @@ function openLogsVideoPlayer(title, src, options = {}) {
     if (toastTimer) window.clearTimeout(toastTimer);
     inputController?.dispose?.();
     inputController = null;
+    seiView?.destroy();disposeChrome?.();
     try { player?.destroy?.(); } catch {}
     overlay.remove();
   };
@@ -529,6 +548,7 @@ function openLogsVideoPlayer(title, src, options = {}) {
       videoEl.load();
     }
     if (autoplay) requestCurrentPlayback(token);
+    bindSei();
     return true;
   };
   const applySegmentResult = (result, autoplay = true) => {
@@ -593,6 +613,12 @@ function openLogsVideoPlayer(title, src, options = {}) {
   } else if (transportEl) {
     transportEl.hidden = true;
   }
+  let boundMedia=null;
+  function bindMediaInput(){
+    inputController?.dispose?.();
+    for(const name of ['play','pause','ended'])boundMedia?.removeEventListener(name,syncTransportPlayState);
+    boundMedia=videoEl;
+    for(const name of ['play','pause','ended'])boundMedia.addEventListener(name,syncTransportPlayState);
   inputController = mediaTransport?.createInputController?.({
     media: videoEl,
     stage: playerDialog.frame,
@@ -618,6 +644,7 @@ function openLogsVideoPlayer(title, src, options = {}) {
       ".dashcam-player-transport",
     ].join(", "),
   }) || null;
+  }
   overlay.addEventListener("click", (ev) => {
     if (ev.target === overlay) close();
   });
@@ -662,7 +689,7 @@ function openLogsVideoPlayer(title, src, options = {}) {
     try {
       player = new Plyr(videoEl, {
         controls: ["play", "progress", "current-time", "duration", "settings", "fullscreen", "download"],
-        hideControls: false,
+        hideControls: false, // Shared chrome owns idle timing for both control rows.
         seekTime: 5,
         settings: ["speed"],
         speed: { selected: 1, options: [0.5, 1, 1.5, 2] },
@@ -677,6 +704,7 @@ function openLogsVideoPlayer(title, src, options = {}) {
         title: currentMedia.title || currentMedia.name,
         sources: [{ src: currentMedia.src, type: "video/mp4" }],
       };
+      bindSei();
       player.once("ready", () => {
         const container = player.elements?.container || overlay;
         if (transportEl && transportEl.parentElement !== container) container.appendChild(transportEl);
@@ -704,6 +732,7 @@ function openLogsVideoPlayer(title, src, options = {}) {
       videoEl.controls = true;
       videoEl.setAttribute("controls", "");
       videoEl.src = currentMedia.src;
+      bindSei();
     }
   });
   const updateSegments = (values) => {

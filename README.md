@@ -28,6 +28,8 @@
 
 座艙依提供的示意圖改為[Formosa 分區與字體排版](tools/carrot_android/FORMOSA_REFERENCE_LAYOUT.zh-TW.md)，駕駛視覺下方已移除重複的聲音卡片。觀看地圖採 [OSM、搜尋／模型維持 Mapbox](docs/NAVIGATION_MAPBOX_OSM.zh-TW.md)；新錄製的攝影機 H.264／HEVC 影片加入[同步車況 SEI](tools/carrot_android/DRIVING_SEI.zh-TW.md)，既有 0.6.0 APK 可沿用。
 
+網頁與 APK 的行車記錄回放可直接顯示 SEI 車況，跟隨影片時間同步；播放控制列閒置時自動收起，輕觸即可叫出。啟用 [`HotspotOnBoot`（SIM 行動網路分享）](docs/HOTSPOT_ON_BOOT.zh-TW.md)後，SIM 數據連線就緒時自動啟動既有熱點，供已連線裝置上網。
+
 Formosa 座艙已補強手機精簡版面，並完成[停車實車連線、100%／200% 大字、旋轉與全螢幕操作實測](tools/carrot_android/LIVE_DEVICE_ACCEPTANCE.zh-TW.md)。現有 0.6.0 APK 可沿用；更新車機後重新開啟 App 即可取得介面修正。
 
 新增預設關閉的「三角錐與斑馬線辨識」，保留原有人車／動物辨識與繁中功能。三角錐可作近似地面定位；斑馬線為影像提示。**停止線與機車停等區仍缺可部署且授權明確的權重，尚未完成辨識**。需更新車機網頁；[開啟方式、模型來源、效能及後續條件](tools/carrot_road_models/README.md)。僅顯示，不介入駕駛控制。

@@ -1,5 +1,20 @@
 # Repository memory
 
+- 2026-11-18 Replay reads embedded SEI through normally built loggerd/sei_reader
+  (libavformat, no ffprobe/ffmpeg CLI needed on AGNOS), bounded8MiB/6000samples,
+  single admitted task, LRU2, real container PTS, causal250ms values and100ms
+  display hold. Never substitute live carState for recorded data. MP4 remux keeps
+  original packets. Plyr.source replaces media/custom children: rebind input,
+  SEI, transport and idle handlers on every segment; abort and reject late replies.
+  Controls/SEI use separate flex rows; absolute contain video needs a definite
+  flex container height. Use iframe100dvh for replay bounds, not stale parent
+  viewport vars. Short landscape initially collapses SEI. HotspotOnBoot defaults
+  OFF; runtime WiFiManagers opt into fresh SIM/PPP readiness background policy,
+  saved WPA2/shared profile, forwarding repair, retry/manual pause/disable race
+  guards. Preserve SSID/PSK/APN and standalone setup/updater behavior. Real SIM
+  sharing remains untested with the user's flag kept0. Guides: DRIVING_SEI and
+  SEI_REPLAY_ACCEPTANCE under tools/carrot_android, docs/HOTSPOT_ON_BOOT.zh-TW.md.
+
 - 2026-11-18 Parking worker belongs in build.mjs workerDefinitions, never
   bundleDefinitions. A worker with bundle-only source metadata makes the strict
   production manifest loader reject the entire catalog; repeated update retries

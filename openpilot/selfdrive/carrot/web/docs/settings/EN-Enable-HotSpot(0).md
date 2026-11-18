@@ -13,10 +13,10 @@
 
 `HotspotOnBoot`
 
-Feature to automatically enable hotspot when a USIM is inserted in COMMA
+Automatically starts the saved Wi-Fi hotspot and shares Internet when the SIM and cellular data connection are ready. Manually turning tethering off pauses automatic startup for this boot.
 
 <!-- CARROT:AUTO:BEGIN HotspotOnBoot -->
-<!-- CARROT:AUTO:SOURCE facts="d77a1734cbc66e6bdd936dec2762a0c273635f80f2a7fdac1c4a9dd1d8e9be37" semantic="f60b11ad1a9e01c9a2140827ce36a15ff5fc686b902d45a7c578afb846582f96" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="ff6216f4ca2c64c5c50f391590632893490b0a340b7e726ea7003c62e81bed9f" semantic="483a8e450bc5248e62520b76fc55c79fad20bff0753ad2f7a1540169a0b7c434" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
@@ -26,28 +26,25 @@ Feature to automatically enable hotspot when a USIM is inserted in COMMA
 <!-- CARROT:AUTO:END HotspotOnBoot -->
 
 <!-- CARROT:MANUAL:BEGIN HotspotOnBoot -->
-<!-- CARROT:REVIEW reviewed-for="f60b11ad1a9e01c9a2140827ce36a15ff5fc686b902d45a7c578afb846582f96" reviewed-at="2026-07-24T16:44:29+09:00" -->
+<!-- CARROT:REVIEW reviewed-for="483a8e450bc5248e62520b76fc55c79fad20bff0753ad2f7a1540169a0b7c434" reviewed-at="2026-11-18T09:30:00Z" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### Behavior
 
-- **On:** Requests automatic hotspot startup after boot when a cellular connection is available.
-- **Off:** Does not enable the hotspot automatically at boot.
+When enabled, waits for a ready SIM and a fresh connected cellular data link, then starts the saved hotspot and Internet sharing. When disabled, stops the hotspot managed by this option.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->
 ### Usage
 
-Change this while network connectivity is available, then verify it on the next connection or map view.
+After updating and restarting once, changes apply within about five seconds. Keep the saved hotspot name and password; connect another device to verify both Carrot and Internet access. A failed activation retries with backoff.
 <!-- CARROT:SECTION:END USAGE -->
 
 <!-- CARROT:SECTION:BEGIN REFERENCE -->
 ### Reference
 
-<!-- CARROT:NOTICE level="NOTE" -->
-> [!NOTE]
-> Automatic hotspot startup requires a device with an available USIM and cellular network.
-<!-- CARROT:NOTICE:END -->
+Manually switching the hotspot off pauses automatic activation until this option is toggled off/on or the device restarts. Temporary cellular loss keeps the local network available. One Wi-Fi radio may switch from client to hotspot; the SIM plan, APN and carrier must permit tethering. No APN or roaming changes are made.
 <!-- CARROT:SECTION:END REFERENCE -->
+
 <!-- CARROT:MANUAL:END HotspotOnBoot -->
 
 <!-- CARROT:SETTING:END HotspotOnBoot -->

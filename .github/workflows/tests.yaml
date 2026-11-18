@@ -63,7 +63,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs tests/forced_offroad.test.mjs tests/vision_live_view.test.mjs tests/vision_parked.test.mjs 'tests/hud*.test.mjs'
+          node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs tests/forced_offroad.test.mjs tests/vision_live_view.test.mjs tests/vision_parked.test.mjs 'tests/hud*.test.mjs' tests/driving_sei.test.mjs tests/logs_player_transport.test.mjs
           git diff --exit-code -- js/generated generated guide.zh-TW.html
       - name: Validate generated asset manifest using production loader
         run: >-
@@ -152,6 +152,22 @@ jobs:
       - run: ./tools/op.sh setup
       - name: Build openpilot
         run: scons
+      - name: Ensure real codec regression tools
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Check embedded driving data and SIM hotspot policy
+        env:
+          CARROT_REQUIRE_SEI_CODECS: '1'
+        run: >-
+          python -m pytest -o addopts='' -q
+          tools/carrot_android/tests/test_sei_video.py
+          tools/carrot_android/tests/test_driving_sei_reader.py
+          openpilot/selfdrive/carrot/server/tests/test_driving_sei.py
+          openpilot/common/tests/test_auto_hotspot.py
+          openpilot/system/ui/lib/tests/test_hotspot_runtime.py
       - name: Check display-only parking lookup and actual lamp freshness
         run: >-
           python -m pytest -o addopts='' -q

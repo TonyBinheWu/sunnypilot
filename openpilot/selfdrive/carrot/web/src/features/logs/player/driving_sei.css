@@ -1,0 +1,25 @@
+.driving-sei{box-sizing:border-box;flex:none;order:1;width:100%;background:var(--md-surface,#18212e);color:var(--md-on-surface,#fff);padding:5px 10px;border-top:1px solid #8293a655;font:calc(12px * min(var(--carrot-text-scale,1),1.25))/1.35 system-ui;pointer-events:auto}
+.driving-sei__header{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px}.driving-sei__status{overflow-wrap:anywhere}.driving-sei__toggle{font:inherit!important;min-height:36px;min-width:48px;padding:4px 8px;flex:none}.driving-sei__grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px 10px}.driving-sei__cell{min-width:0}.driving-sei__cell small{display:block;color:var(--md-on-surface-var,#abbaca);font:inherit}.driving-sei__cell b{display:block;font:inherit;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.driving-sei [hidden]{display:none!important}
+@media(max-width:600px){.driving-sei__grid{grid-template-columns:repeat(3,minmax(0,1fr))}.driving-sei{padding:4px 8px}}
+/* Video gets its own flex region; controls and SEI occupy separate rows. */
+.dashcam-player-dialog:not(.dashcam-player-dialog--browsable){width:min(92vw,960px);max-height:none!important}
+.dashcam-player-dialog:not(.dashcam-player-dialog--browsable) .plyr{height:min(calc(100dvh - 48px),680px)!important;max-height:none!important}
+.dashcam-player-dialog--browsable{height:min(calc(100dvh - 24px),640px);max-height:calc(100dvh - 24px);aspect-ratio:auto}
+.dashcam-player-frame .plyr{display:flex!important;flex-direction:column;min-height:0}
+.dashcam-player-dialog--browsable .dashcam-player-frame .plyr{height:100%!important;max-height:none!important}
+.dashcam-player-frame .plyr .plyr__video-wrapper{flex:1 1 auto;min-height:0;width:100%!important;height:auto!important;overflow:hidden}
+.dashcam-player-frame .plyr .plyr__controls{position:relative;inset:auto;flex:none;order:2;background:#101923;padding:8px 10px;transform:none!important}
+.dashcam-player-frame .plyr video{position:absolute;inset:0;width:100%!important;height:100%!important;max-height:100%!important;object-fit:contain}
+.dashcam-player-frame .dashcam-player-transport{position:relative!important;inset:auto!important;transform:none!important;order:3;flex:none;width:100%;display:flex;justify-content:center;gap:12px;padding:4px 8px;background:#101923;min-height:44px}
+.dashcam-player-frame .dashcam-player-transport .carrot-media-action-button{width:52px;height:48px;min-width:48px;min-height:44px}
+.dashcam-player-frame.is-player-idle .dashcam-player-top{opacity:0;visibility:hidden;pointer-events:none}
+.dashcam-player-frame.is-player-idle .dashcam-player-transport{opacity:0;visibility:hidden;pointer-events:none;height:0;min-height:0;padding-block:0;overflow:hidden}
+.dashcam-player-frame .plyr.plyr--hide-controls .plyr__controls{height:0;min-height:0;padding-block:0;overflow:hidden;pointer-events:none}
+.dashcam-player-frame.is-player-idle .plyr .plyr__controls{opacity:0;visibility:hidden;height:0;min-height:0;padding-block:0;overflow:hidden;pointer-events:none}
+.dashcam-player-frame .plyr.plyr--fullscreen-active{display:flex!important;flex-direction:column}
+.dashcam-player-frame .plyr.plyr--fullscreen-active .plyr__video-wrapper{height:auto!important;flex:1;min-height:0}
+.dashcam-player-frame .plyr.plyr--fullscreen-active video{height:100%!important;max-height:100%!important}
+.carrot-stage.has-driving-sei>.driving-sei{position:absolute;bottom:0;left:0;right:var(--carrot-replay-content-right,0px);width:auto;z-index:var(--drive-layer-transport,20)}
+.carrot-stage.is-replay.has-driving-sei .carrot-stage__replayViewport{bottom:var(--replay-sei-height,0px)}
+.carrot-stage.is-replay.has-driving-sei .carrot-replay-controls__timeOverlay{bottom:calc(var(--replay-sei-height,0px) + 8px)}
+@media(orientation:portrait){.dashcam-player-dialog--browsable{height:min(80dvh,672px)}.dashcam-player-dialog--browsable .dashcam-player-layout{grid-template-rows:minmax(0,2fr) minmax(90px,1fr)}.dashcam-player-dialog--browsable .dashcam-player-frame{height:100%;aspect-ratio:auto}}

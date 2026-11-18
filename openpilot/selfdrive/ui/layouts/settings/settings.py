@@ -54,7 +54,7 @@ class SettingsLayout(Widget):
     self._current_panel = PanelType.DEVICE
 
     # Panel configuration
-    wifi_manager = WifiManager()
+    wifi_manager = WifiManager(auto_tethering=True)
     wifi_manager.set_active(False)
 
     self._panels = {

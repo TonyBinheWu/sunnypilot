@@ -1,6 +1,6 @@
 {
   "catalogCommit": "50886f191a78c49f14db7994be4c6ed3dfa7dd7b",
-  "contentHash": "9f905aca73d8f65ae0f8a09568de84b89e351547820d311bcfa954d5cba66db8",
+  "contentHash": "dac010123f3c2c899f8b0024b6cf84caa4075500b4ce740378115632a7f6ff01",
   "generatedAt": "2026-11-17T16:52:11Z",
   "locales": [
     "ko",
@@ -302,8 +302,8 @@
       "hash": "8be8233ade2cd43ccc32d0d060716a5ece1c7c0ea5585ea7a44e31c46128da61"
     },
     "EN-Enable-HotSpot(0).md": {
-      "bytes": 1906,
-      "hash": "8ef16683602e50eb0b398ab7492714bdaa0318bfe6ff7c06313a1ed4ef6bdd7e"
+      "bytes": 2327,
+      "hash": "bae02b78fe482f6055254b99aa1de7a58d6f440c4870f21858be02addb84351e"
     },
     "EN-Enable-Software-menu.md": {
       "bytes": 1890,
@@ -1346,8 +1346,8 @@
       "hash": "02c54347ae5abcc7e9937d4e1b0d29d39219c4210df8c662cfdc96bc93c6aaeb"
     },
     "KO-부팅시-핫스팟켜기.md": {
-      "bytes": 2020,
-      "hash": "8bfcabf764c2db44403bbfb74b20f1522a9070bdb668795404e815a708c2ecfa"
+      "bytes": 2559,
+      "hash": "19d89a45ebfe076e63dfee15f6c0ab3b8d05e8f83baf4ff4bed6748e750d691a"
     },
     "KO-사고방지턱-감속완료시간시점(1s).md": {
       "bytes": 2193,
@@ -2610,8 +2610,8 @@
       "hash": "5144c613676564f929229fcb5e30ba93096f023a47206b0abf5849c6ebf50a56"
     },
     "ZH-TW-開啟熱點-(0).md": {
-      "bytes": 1751,
-      "hash": "688e2c42d115a2db7d6bb51817729814514fcf30efd662beeadd1f9d066c41e6"
+      "bytes": 2252,
+      "hash": "c94de9c8d8ba56dca04931c0ce58f449379fe30e2e842f597427d1335a9fcfc4"
     },
     "ZH-TW-開啟角雷達-(0).md": {
       "bytes": 1995,
@@ -3042,8 +3042,8 @@
       "hash": "cf5046d47aee5daa383d23149fbb13f8451682a401273da629db855db8e47ee4"
     },
     "ZH-开启热点-(0).md": {
-      "bytes": 1111,
-      "hash": "37445b8b5199e8ef5b3f4d747849752e98ddce536cae58bbb432871444f53491"
+      "bytes": 2240,
+      "hash": "1412798ebe9d6e40cfbb954c61e59d1c8e799a81fda62c9a003f2a836f6ab72e"
     },
     "ZH-开启角雷达-(0).md": {
       "bytes": 1170,
@@ -3487,8 +3487,8 @@
     }
   },
   "review": {
-    "current": 48,
-    "needs_review": 169
+    "current": 49,
+    "needs_review": 168
   },
   "schemaVersion": 1,
   "settings": {
@@ -6504,31 +6504,31 @@
       "locales": {
         "en": {
           "anchor": "HotspotOnBoot",
-          "factsHash": "d77a1734cbc66e6bdd936dec2762a0c273635f80f2a7fdac1c4a9dd1d8e9be37",
+          "factsHash": "ff6216f4ca2c64c5c50f391590632893490b0a340b7e726ea7003c62e81bed9f",
           "page": "EN-Enable-HotSpot(0).md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "HotspotOnBoot",
-          "factsHash": "e644cd0d78ca06f5dc4e1471a510bc4394c4323b119bc9cef3552f9f6f564a02",
+          "factsHash": "1d52ce16a17fab84a2fc4f06123eeec4b1511523aaf94d0bb5cb7377174917e6",
           "page": "KO-부팅시-핫스팟켜기.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "HotspotOnBoot",
-          "factsHash": "b5e99864e8b79ced4d30df363e23788dcaaf3390dade6f224977d978ca8e0fd1",
+          "factsHash": "e82f5b81680c38388d3410c7eb1c9aa0350de6b7168672a10b9eeb46a5bc7a7b",
           "page": "ZH-开启热点-(0).md",
-          "reviewStatus": "needs_review"
+          "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "HotspotOnBoot",
-          "factsHash": "4b081fdc1bed47bc10f2f78648c7e3b6f0f3574f7efa39a22858c394d99790d5",
+          "factsHash": "fa18e51d54b1caf70996d244b74fe595f55b78787f3b04af1665d9dc6cc3a5e9",
           "page": "ZH-TW-開啟熱點-(0).md",
-          "reviewStatus": "needs_review"
+          "reviewStatus": "current"
         }
       },
-      "reviewStatus": "needs_review",
-      "semanticHash": "f60b11ad1a9e01c9a2140827ce36a15ff5fc686b902d45a7c578afb846582f96"
+      "reviewStatus": "current",
+      "semanticHash": "483a8e450bc5248e62520b76fc55c79fad20bff0753ad2f7a1540169a0b7c434"
     },
     "HyundaiCameraSCC": {
       "group": "VEH_HYUNDAI",

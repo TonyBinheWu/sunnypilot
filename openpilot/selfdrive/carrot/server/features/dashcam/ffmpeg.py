@@ -1,6 +1,8 @@
 import os
 import shutil
 import subprocess
+import threading
+from pathlib import Path
 
 from aiohttp import web
 
@@ -82,7 +84,16 @@ def ensure_preview(segment: str) -> str:
   return out
 
 
+_video_lock = threading.Lock()
+
+
 def browser_video(segment: str) -> tuple[str, str]:
+  # The player and SEI index may request the same remux concurrently.
+  with _video_lock:
+    return _browser_video(segment)
+
+
+def _browser_video(segment: str) -> tuple[str, str]:
   segment_path = segment_dir(segment)
   source, source_name = source_video(segment_path)
   if source_name.endswith(".mp4"):
@@ -93,6 +104,23 @@ def browser_video(segment: str) -> tuple[str, str]:
   out = cache_path("video", segment, ".mp4")
   if os.path.isfile(out) and os.path.getsize(out) > 0:
     return out, "video/mp4"
+
+  # AGNOS has libavformat for loggerd but may have no ffmpeg command. The
+  # normally-built helper remuxes locally without decoding or removing SEI.
+  if not shutil.which('ffmpeg'):
+    helper=Path(__file__).resolve().parents[5]/'system/loggerd/sei_reader'
+    if helper.is_file() and os.path.getsize(source)<=8*1024*1024:
+      temporary=out+'.tmp.mp4'
+      try:
+        result=subprocess.run([str(helper),'--remux',source,temporary],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20)
+        if result.returncode==0 and os.path.getsize(temporary)>0:
+          os.replace(temporary,out)
+          return out,'video/mp4'
+      except (OSError,subprocess.SubprocessError):
+        pass
+      finally:
+        Path(temporary).unlink(missing_ok=True)
+    return source,'video/mp2t'
 
   # qcamera.ts의 오디오는 loggerd가 AAC로 먹싱하므로(RecordAudio) mp4에 그대로
   # 복사해도 브라우저에서 재생된다 — 오디오 트랙을 보존한다

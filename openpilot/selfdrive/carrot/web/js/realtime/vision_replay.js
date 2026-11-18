@@ -5,6 +5,7 @@ window.CarrotVisionReplay = window.CarrotVisionReplay || (() => {
   const stageEl = document.getElementById("carrotStage");
   const videoEl = document.getElementById("carrotRoadVideo");
   const controlsEl = document.getElementById("carrotReplayControls");
+  let seiView = null;
   const closeButton = document.getElementById("btnCarrotReplayClose");
   const playButton = document.getElementById("btnCarrotReplayPlay");
   const speedButton = document.getElementById("btnCarrotReplaySpeed");
@@ -297,10 +298,10 @@ window.CarrotVisionReplay = window.CarrotVisionReplay || (() => {
   function scheduleControlsHide() {
     if (controlsHideTimer != null) window.clearTimeout(controlsHideTimer);
     controlsHideTimer = null;
-    if (!state.active || state.loading || !videoEl || videoEl.ended || insights?.hasOpenPopover?.()) return;
+    if (!state.active || state.loading || !videoEl || videoEl.paused || videoEl.ended || state.scrubbing || insights?.hasOpenPopover?.()) return;
     controlsHideTimer = window.setTimeout(() => {
       controlsHideTimer = null;
-      if (!state.active || videoEl.ended || insights?.hasOpenPopover?.()) return;
+      if (!state.active || videoEl.paused || videoEl.ended || state.scrubbing || insights?.hasOpenPopover?.() || controlsEl?.querySelector('input:focus,select:focus')) return;
       stageEl?.classList.add("is-replay-controls-hidden");
     }, window.CarrotMediaTransport?.autoHideDelay?.() || 1400);
   }
@@ -640,6 +641,7 @@ window.CarrotVisionReplay = window.CarrotVisionReplay || (() => {
   }
 
   function clearVideoSource() {
+    seiView?.destroy();seiView=null;
     if (!videoEl) return;
     try { videoEl.pause(); } catch {}
     videoEl.srcObject = null;
@@ -910,6 +912,7 @@ window.CarrotVisionReplay = window.CarrotVisionReplay || (() => {
     state.previewsRequested = false;
     state.abortController = new AbortController();
     const workspaceManaged = setReplayUiVisible(true);
+    seiView=window.CarrotDrivingSei?.attach?.(videoEl,stageEl,{segment,reserveStage:true});
     if (!workspaceManaged) {
       window.DriveContentVision?.activate?.({ reason: "recorded replay" });
     }

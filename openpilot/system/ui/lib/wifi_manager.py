@@ -3,6 +3,8 @@ import threading
 import time
 import uuid
 import subprocess
+import json
+from pathlib import Path
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from enum import IntEnum
@@ -17,6 +19,7 @@ from jeepney.wrappers import Properties
 
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.wifi_coexistence import direct_ap_active
+from openpilot.common.auto_hotspot import AutoHotspotPolicy, cellular_ready
 from openpilot.system.ui.lib.networkmanager import (NM, NM_WIRELESS_IFACE, NM_802_11_AP_SEC_PAIR_WEP40,
                                                     NM_802_11_AP_SEC_PAIR_WEP104, NM_802_11_AP_SEC_GROUP_WEP40,
                                                     NM_802_11_AP_SEC_GROUP_WEP104, NM_802_11_AP_SEC_KEY_MGMT_PSK,
@@ -37,6 +40,8 @@ DEFAULT_TETHERING_PASSWORD = "swagswagcomma"
 SIGNAL_QUEUE_SIZE = 10
 SCAN_PERIOD_SECONDS = 5
 BACKGROUND_SCAN_PERIOD_SECONDS = 5
+HOTSPOT_STATUS_PATH = Path('/dev/shm/carrot-hotspot-status.json')
+IP_FORWARD_PATH = Path('/proc/sys/net/ipv4/ip_forward')
 
 DEBUG = False
 _dbus_call_idx = 0
@@ -154,7 +159,7 @@ class WifiState:
 
 
 class WifiManager:
-  def __init__(self):
+  def __init__(self, *, auto_tethering=False):
     self._networks: list[Network] = []  # an unsorted list of available Networks. a Network can be comprised of multiple APs
     self._active = True  # used to not run when not in settings
     self._exit = False
@@ -182,6 +187,11 @@ class WifiManager:
     self._current_network_metered: MeteredType = MeteredType.UNKNOWN
     self._tethering_password: str = ""
     self._ipv4_forward = False
+    self._auto_tethering = auto_tethering
+    self._auto_share = False
+    self._hotspot_policy = AutoHotspotPolicy()
+    self._auto_thread = None
+    self._auto_stop = threading.Event()
 
     self._last_network_scan: float = 0.0
     self._callback_queue: list[Callable] = []
@@ -220,6 +230,9 @@ class WifiManager:
       self._init_wifi_state()
 
       self._tethering_password = self._get_tethering_password()
+      if self._auto_tethering and Params is not None:
+        self._auto_thread = threading.Thread(target=self._auto_hotspot_loop, daemon=True)
+        self._auto_thread.start()
       cloudlog.debug("WifiManager initialized")
 
     threading.Thread(target=worker, daemon=True).start()
@@ -629,7 +642,6 @@ class WifiManager:
           ('address', ('s', TETHERING_IP_ADDRESS)),
           ('prefix', ('u', 24)),
         ]]),
-        'gateway': ('s', TETHERING_IP_ADDRESS),
         'never-default': ('b', True),
       },
       'ipv6': {'method': ('s', 'ignore')},
@@ -807,19 +819,57 @@ class WifiManager:
   def set_ipv4_forward(self, enabled: bool):
     self._ipv4_forward = enabled
 
-  def set_tethering_active(self, active: bool):
+  def set_tethering_active(self, active: bool, *, automatic=False):
+    if not automatic:
+      self._hotspot_policy.manual(active)
     def worker():
       if active:
+        if automatic and (self._exit or self._hotspot_policy.paused or Params().get_int('HotspotOnBoot')!=1):
+          return
         self.activate_connection(self._tethering_ssid, block=True)
+        if automatic and (self._exit or self._hotspot_policy.paused or Params().get_int('HotspotOnBoot')!=1):
+          self._deactivate_connection(self._tethering_ssid)
+          return
 
-        if not self._ipv4_forward:
+        if not self._ipv4_forward and not self._auto_share:
           time.sleep(5)
-          cloudlog.warning("net.ipv4.ip_forward = 0")
-          subprocess.run(["sudo", "sysctl", "net.ipv4.ip_forward=0"], check=False)
+          # Automatic SIM sharing may become ready while activation is pending.
+          if not self._ipv4_forward and not self._auto_share:
+            cloudlog.warning("net.ipv4.ip_forward = 0")
+            subprocess.run(["sudo", "sysctl", "net.ipv4.ip_forward=0"], check=False, timeout=5)
       else:
         self._deactivate_connection(self._tethering_ssid)
 
     threading.Thread(target=worker, daemon=True).start()
+
+  def _auto_hotspot_loop(self):
+    params=Params()
+    status_path=HOTSPOT_STATUS_PATH
+    while not self._exit:
+      try:
+        now=time.monotonic()
+        enabled=params.get_int('HotspotOnBoot')==1
+        ready=cellular_ready(now)
+        active=self.is_tethering_active() and self._wifi_state.status==ConnectStatus.CONNECTED
+        action=self._hotspot_policy.step(enabled=enabled,cellular=ready,active=active,now=now,radio_busy=direct_ap_active())
+        self._auto_share=enabled and action in ('activate','connecting','share')
+        if action=='activate':
+          # Existing WPA2 profile, password, DHCP/DNS and NM shared-mode NAT.
+          self.set_tethering_active(True,automatic=True)
+        elif action=='share':
+          # A previous manual session may have disabled global forwarding after
+          # NM activated the shared profile. Repair only the opted-in active AP.
+          if IP_FORWARD_PATH.read_text().strip()!='1':
+            subprocess.run(['sudo','sysctl','net.ipv4.ip_forward=1'],check=True,timeout=5,stdout=subprocess.DEVNULL)
+        elif action=='stop':
+          self.set_tethering_active(False,automatic=True)
+        payload={'enabled':enabled,'cellular_ready':ready,'active':active,'state':action,'updated':now}
+        temporary=status_path.with_suffix('.tmp')
+        temporary.write_text(json.dumps(payload));temporary.replace(status_path)
+      except Exception:
+        cloudlog.exception('Automatic hotspot check failed')
+      if self._auto_stop.wait(5):
+        break
 
   def set_current_network_metered(self, metered: MeteredType):
     def worker():
@@ -948,6 +998,9 @@ class WifiManager:
   def stop(self):
     if not self._exit:
       self._exit = True
+      self._auto_stop.set()
+      if self._auto_thread is not None:
+        self._auto_thread.join(timeout=6)
       if self._scan_thread.is_alive():
         self._scan_thread.join()
       if self._state_thread.is_alive():
