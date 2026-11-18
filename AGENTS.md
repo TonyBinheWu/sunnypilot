@@ -1,5 +1,19 @@
 # Repository memory
 
+- 2026-11-18 User explicitly requested GitHub APK delivery after shared UI work.
+  Published Formosa cockpit0.6.1/code9 and standard CarrotAssist0.2.20/code27,
+  source ae7beb7cd32a171e9cf8b250ee5e04e73135bf17. Native CI44283979374 and
+  44284050202 pass. Both retain package/signer/permissions; independently checked
+  v2 RSA signed-data AND APK chunk content digest, cert90e20971...051a8, CRC,
+  metadata and SHA256. Anonymous APK/SHA/update.json downloads and separate
+  canonical update feeds verified. Cockpit APK59ac0908...4f85d1, standard
+  ccfa47e4...750161. New cockpit installed-r on Samsung Android14 preserves data;
+  actual parked vehicle old replay/no-SEI notice and two-step Back pass. Standard
+  not installed on phone. Vehicle8ea7577b provides shared UI; APK does not bundle
+  it. Both versions and older published binaries are immutable; bump names/codes
+  for future builds. README links and proof: APK_RELEASE_20261118.zh-TW.md under
+  tools/carrot_android. Source push builds cockpit; dispatch standard separately.
+
 - 2026-11-18 Replay reads embedded SEI through normally built loggerd/sei_reader
   (libavformat, no ffprobe/ffmpeg CLI needed on AGNOS), bounded8MiB/6000samples,
   single admitted task, LRU2, real container PTS, causal250ms values and100ms

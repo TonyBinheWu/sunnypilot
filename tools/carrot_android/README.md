@@ -1,10 +1,12 @@
 # CarrotAssist Android public beta — Traditional Chinese distribution
 
-**Separate cockpit edition:** [Formosa 座艙 繁中 0.6.0](COCKPIT.md) adds a central touchscreen layout and a separate install/update identity. The existing CarrotAssist APK below remains available. Build it with `build.ps1 -Cockpit`; source pushes build the cockpit edition, while manual workflow dispatch can select `standard` or `cockpit`.
+**Separate cockpit edition:** [Formosa 座艙 繁中 0.6.1](COCKPIT.md) adds a central touchscreen layout and a separate install/update identity. The existing CarrotAssist APK below remains available. Build it with `build.ps1 -Cockpit`; source pushes build the cockpit edition, while manual workflow dispatch can select `standard` or `cockpit`.
 
-This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.19 (code 26). It can coexist with the upstream app; data and authorizations are separate.
+This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.20 (code 27). It can coexist with the upstream app; data and authorizations are separate.
 
-[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.19)
+[Download APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.20/CarrotAssist-TW-0.2.20.apk) · [Release and SHA-256](https://github.com/TonyBinheWu/sunnypilot/releases/tag/carrot-assist-tw-v0.2.20)
+
+Version 0.2.20 and cockpit 0.6.1 synchronize the replay-control and embedded SEI release. Update and restart the vehicle first: the shared web UI is served by the vehicle, not bundled in the APK. Packages, signing identities and permissions are retained. Both public APK downloads and independent update feeds were verified; cockpit 0.6.1 was installed over 0.6.0 on Samsung Android 14 and tested against the parked vehicle's saved replay. [Release verification](APK_RELEASE_20261118.zh-TW.md).
 
 Updates are restricted to this repository’s `carrot-assist-tw-updates` channel and `carrot-assist-tw-vX.Y.Z` release URLs. The `.github/workflows/carrot-assist-apk.yaml` workflow runs the build checks, signs using protected repository secrets, verifies the APK and prepares a draft release. Signing keys never belong in this repository. A published version is immutable; increment the version name and code for another APK.
 

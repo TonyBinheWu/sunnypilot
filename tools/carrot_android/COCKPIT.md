@@ -2,7 +2,7 @@
 
 獨立的 Android 座艙版，套件 `me.shind0.carrotweb.tw.cockpit`，可與 CarrotAssist 繁中並存。Android 8.0 以上；本版依使用者要求移除語音功能與麥克風權限，原 CarrotAssist 保留語音。介面參考中央觸控螢幕的車況／導航分割、底部快捷列與模式卡片，沿用 Carrot 現有功能，車輛及圖示使用本專案原創繪圖，沒有 Tesla 程式、標誌或車輛模型。
 
-[下載 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.6.0/CarrotCockpit-TW-0.6.0.apk)
+[下載 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.6.1/CarrotCockpit-TW-0.6.1.apk)
 
 先更新並重新啟動 TonyBinheWu/sunnypilot 的 carrot-wip 車機，再讓 Android 裝置與車機連上同一 Wi-Fi／熱點。首次開啟重新選擇裝置；獨立套件的連線資料與授權分開保存，原版資料不會被匯入或覆寫。尚未支援遠端 FormosaLink 在這個 LAN 版本中直接啟動座艙。
 
@@ -14,7 +14,7 @@
 
 新錄影的 SEI 可同步顯示車速、方向盤角度、油門、煞車、橫向／縱向輔助與 ACC；舊影片沒有 SEI 時明確提示。另支援車機的 SIM 就緒後自動熱點分享。這些介面與網路功能由車機提供，**只更新 APK 不會更新車機程式**。[SEI 使用與驗證](DRIVING_SEI.zh-TW.md)／[SIM 分享指南](../../docs/HOTSPOT_ON_BOOT.zh-TW.md)。
 
-車機版本 `8ea7577b` 已完成停車更新、舊影片 MP4 回放及設定保留檢查；既有 0.6.0 在 Samsung Android 14 上完成實車連線播放、控制列收合與返回順序驗證。新 APK 的建置、簽章與安裝結果另於發行驗證後記錄，不將合成影片或既有 APK 測試宣稱為所有車用盒子的驗收。
+車機版本 `8ea7577b` 已完成停車更新、舊影片 MP4 回放及設定保留檢查；既有 0.6.0 在 Samsung Android 14 上完成實車連線播放與控制列收合。新 0.6.1 APK 已覆蓋安裝、保留連線資料，並實測開啟車機舊影片、無 SEI 提示及逐層返回。[簽章、下載及更新頻道驗證](APK_RELEASE_20261118.zh-TW.md)。合成影片或單一手機測試不代表所有車用盒子均已驗收。
 
 ## 介面與操作修正（2026-11-18）
 
