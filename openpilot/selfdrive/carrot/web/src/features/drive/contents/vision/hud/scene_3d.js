@@ -69,7 +69,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
     if(!start()){canvas.hidden=true;return false;}
     try{
       if(renderWidth!==width||renderHeight!==height){renderer.setSize(width,height,false);renderWidth=width;renderHeight=height;}
-      const spec=sceneCamera(width,height,{...view,skinScale:skin?.scale});camera.fov=spec.fov;camera.aspect=spec.aspect;camera.position.set(...spec.position);camera.lookAt(...spec.target);camera.updateProjectionMatrix();
+      const spec=sceneCamera(width,height,{...view,skinScale:skin?.scale});camera.fov=spec.fov;camera.aspect=spec.aspect;camera.position.set(...spec.position);camera.lookAt(...spec.target);camera.updateProjectionMatrix();renderer.setViewport?.(0,spec.bottomInset,width,spec.viewportHeight);
       const bg=night?'#0c1018':'#edf1f8';scene.background=new T.Color(bg);scene.fog=new T.Fog(bg,45,125);ground.material.color.set(night?'#191e27':'#e8edf5');
       for(const m of ribbons)m.visible=false;
       const model=data.model;
@@ -99,7 +99,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
         node.position.set(slot.x,height-slot.y,0);node.scale.setScalar(slot.size);node.rotation.set(-.9,0,-.4);
       }
       for(const [key,node] of hudNodes)if(!imageKeys.has(key)){hud.remove(node);hudNodes.delete(key);}
-      if(hudNodes.size){renderer.autoClear=false;renderer.clearDepth();renderer.render(hud,hudCamera);}
+      if(hudNodes.size){renderer.setViewport?.(0,0,width,height);renderer.autoClear=false;renderer.clearDepth();renderer.render(hud,hudCamera);}
       lastStats={backend:'webgl2',objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles};canvas.dataset.renderer='webgl2';return true;
     }catch{failed=true;dispose();canvas.hidden=true;lastStats={...lastStats,backend:'canvas-fallback'};return false;}
   },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats}),destroy(){closed=true;canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);dispose();canvas.remove();}};

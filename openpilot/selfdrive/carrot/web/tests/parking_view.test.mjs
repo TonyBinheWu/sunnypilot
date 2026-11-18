@@ -76,3 +76,11 @@ test('parking camera keeps all own-vehicle bounds framed on phone and head unit'
     for(const [x,y] of corners){const q=p(x,y,.065);assert.ok(q&&q[0]>0&&q[0]<w&&q[1]>0&&q[1]<h);}
   }
 });
+
+test('parking projections reserve the dynamic cockpit controls area',()=>{
+ for(const [w,h] of [[1920,720],[1024,768],[380,825],[825,380]]){
+  const view={parking:true,pitch:82,distance:24,bottomFraction:.42,parkingPoints:[[5,-1.25],[10,1.25]]},spec=sceneCamera(w,h,view),p=sceneProjection(w,h,view);
+  for(const [x,y] of [[-2.5,-1],[2.5,1],[5,-1.25],[10,1.25]]){const q=p(x,y,0);assert.ok(q&&q[1]>0&&q[1]<spec.viewportHeight);}
+  assert.ok(spec.bottomInset>=h*.4);
+ }
+});

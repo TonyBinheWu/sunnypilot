@@ -11,6 +11,13 @@
   position is NOT actual lamp state, stays unknown. Append-only compact fields
   must match Python/native/JS order. No new actuator/CAN TX/Panda change.
   Guide: tools/carrot_android/PARKING_VIEW.zh-TW.md.
+  Viewer follow-up measures actual dock/vision-tool obstruction, stacks parking
+  controls and reserves their viewport in shared Canvas/Three projection. Keep
+  raw vehicle speed and actual lamps through BOTH classic HUD flattening passes;
+  alternating missing values reset P confirmation. 1058 web tests pass. Isolated
+  perspective video exercised the production paint worker (no injected slots),
+  ordinary-motion P orbit and reduced-motion veto. Native full build and parking/
+  lamp CI step pass; overall CI retains the same11 pre-existing RAV4 fixtures.
 
 - 2026-11-18 Cockpit layoutVersion11: web-only vision_vehicle_color persists
   nine fixed paint IDs, shared by cockpit and canonical Canvas/WebGL skins.

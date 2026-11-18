@@ -208,7 +208,14 @@ function render(){
   if(view==='vision'&&!frameWindow?.CarrotVisionReplay?.isActive?.()&&frameWindow?.CarrotVisionReplay?.status?.()?.active!==true){
     const metric=frameWindow?.CarrotLiveRuntimeState?.runtime?.params?.IsMetric;
     const payload=cockpitHudPayload(state,metric==null?true:Boolean(Number(metric)),frameWindow?.CarrotHudDataBridge);
-    if(frameWindow)frameWindow.document.body.dataset.cockpitTelemetryFresh=String(Boolean(payload));
+    if(frameWindow){
+      const frame=$('features').getBoundingClientRect();let obstruction=0;
+      for(const node of [document.querySelector('.dock'),$('workspaceTitle')]){const r=node?.getBoundingClientRect();
+        if(r&&r.width&&r.height&&r.right>frame.left&&r.left<frame.right&&r.bottom>frame.top&&r.top<frame.bottom)obstruction=Math.max(obstruction,frame.bottom-r.top);
+      }
+      frameWindow.document.documentElement?.style?.setProperty('--cockpit-bottom-obstruction',`${Math.max(0,obstruction)}px`);
+      frameWindow.document.body.dataset.cockpitTelemetryFresh=String(Boolean(payload));
+    }
     if(payload){frameWindow?.DriveVisionHudContent?.update?.(payload);hudHadData=true;}
     else if(hudHadData){frameWindow?.DriveVisionHudContent?.update?.({sourceStale:true,isMetric:metric==null?true:Boolean(Number(metric))});hudHadData=false;}
   }
