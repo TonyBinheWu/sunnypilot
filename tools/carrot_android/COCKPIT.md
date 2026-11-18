@@ -1,10 +1,10 @@
-# Carrot Cockpit 繁中 0.5.0
+# Formosa 座艙 繁中 0.6.0
 
-獨立的 Android 座艙版，套件 `me.shind0.carrotweb.tw.cockpit`，可與 CarrotAssist 繁中並存。Android 8.0 以上；原生中文語音需要 Android 12 以上及可用的裝置端語音模型。介面參考中央觸控螢幕的車況／導航分割、底部快捷列與模式卡片，沿用 Carrot 現有功能，車輛及圖示使用本專案原創繪圖，沒有 Tesla 程式、標誌或車輛模型。
+獨立的 Android 座艙版，套件 `me.shind0.carrotweb.tw.cockpit`，可與 CarrotAssist 繁中並存。Android 8.0 以上；本版依使用者要求移除語音功能與麥克風權限，原 CarrotAssist 保留語音。介面參考中央觸控螢幕的車況／導航分割、底部快捷列與模式卡片，沿用 Carrot 現有功能，車輛及圖示使用本專案原創繪圖，沒有 Tesla 程式、標誌或車輛模型。
 
-[下載 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.5.0/CarrotCockpit-TW-0.5.0.apk)
+[下載 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.6.0/CarrotCockpit-TW-0.6.0.apk)
 
-先更新並重新啟動 TonyBinheWu/sunnypilot 的 carrot-wip 車機，再讓 Android 裝置與車機連上同一 Wi-Fi／熱點。首次開啟重新選擇裝置；新套件的連線資料、麥克風權限與授權獨立，原版資料不會被匯入或覆寫。尚未支援遠端 FormosaLink 在這個 LAN 版本中直接啟動座艙。
+先更新並重新啟動 TonyBinheWu/sunnypilot 的 carrot-wip 車機，再讓 Android 裝置與車機連上同一 Wi-Fi／熱點。首次開啟重新選擇裝置；獨立套件的連線資料與授權分開保存，原版資料不會被匯入或覆寫。尚未支援遠端 FormosaLink 在這個 LAN 版本中直接啟動座艙。
 
 ## Formosa 座艙 0.6.0
 
@@ -12,9 +12,18 @@
 
 座艙版改名「Formosa 座艙」，採獨立藍色中控螢幕圖示；原 CarrotAssist 名稱、圖示及套件不變。沿用座艙套件 me.shind0.carrotweb.tw.cockpit 與原簽章，因此可覆蓋更新而保留既有資料。版本 0.6.0／code 8 需要車機網頁 layoutVersion 7；先更新 carrot-wip 車機。
 
-控制與設定改為中央觸控螢幕的分區操作：寬螢幕左側保留車況，右側控制頁先顯示駕駛模式、鏡頭辨識、車況、顯示、連線及診斷六個常用入口；完整參數仍保留在分類及搜尋。底部提供車輛設定、導航、駕駛視覺、應用程式、紀錄、語音與聲音入口。停車模式不在本車圖上重複堆疊車速／限速；較窄的 4:3、直向頁面改為完整設定面板。
+控制與設定改為中央觸控螢幕的分區操作：寬螢幕左側保留車況，右側控制頁先顯示駕駛模式、鏡頭辨識、車況、顯示、連線及診斷六個常用入口；完整參數仍保留在分類及搜尋。底部提供設定、導航、駕駛視覺、應用程式、紀錄與聲音六個入口。停車模式不在本車圖上重複堆疊車速／限速；較窄的 4:3、直向頁面改為完整設定面板。
 
-功能只沿用現有能力，不提供沒有實作的 Tesla 空調、車門、排檔或 FSD 控制。繁中說明、詳細指南、確認、權限、回讀及原生連線復原保留。正在以 USB ADB、Samsung SM-A146P／Android 14 實測；測試環境使用隔離合成車況，不連線實車。
+功能只沿用現有能力，不提供沒有實作的 Tesla 空調、車門、排檔或 FSD 控制。繁中說明、詳細指南、確認、權限、回讀及原生連線復原保留。已以 USB ADB、Samsung SM-A146P／Android 14 安裝實測；車況與校正為隔離合成資料，另使用真實公開影片執行原辨識模型，不連線實車。詳見 [0.6.0 驗收與限制](FORMOSA_COCKPIT_0.6.0_ACCEPTANCE.zh-TW.md)。
+
+
+### 滿版 3D 駕駛視覺
+
+道路場景鋪滿可用螢幕，檔位、速度、速限、巡航設定、控制狀態、日期時間及固定底列浮在場景上。使用 WebGL 2 立體模型與光照：汽車、巴士、卡車、行人、機車、腳踏車、三角錐及既有模型支援的九種動物均有原創 3D 外觀；未分類原生目標以中性立體框表示。保留依車速縮放、拖曳旋轉、視角回正、彩虹路徑、本車車型外觀與實際燈號。
+
+交通號誌、STOP、鳥類、斑馬線等只有影像觀測而無有效距離的結果，以 **3D 觀測圖示** 顯示並標明「未提供 3D 位置」，不放入道路世界、不猜測紅綠燈色。停止線及機車停等區仍沒有可用辨識模型；本次不新增偵測類別、VIO、3D 地圖或車輛控制。前鏡頭無法提供完整環車覆蓋；道路僅繪製現有模型的車道／路徑資料，沒有假造建築、樹木、其他車輛或 Tesla FSD 狀態。
+
+低規或不支援 WebGL 2 的裝置保留原有投影幾何備援。繪圖 context 遺失時暫用備援，恢復後重建 3D 資源；分類與過期規則沿用原辨識流程。切換 BEV、工具、導航或背景頁面保留原生命週期管理。大字模式的頂列／底列採有限放大，1920×720 保留左側車況；4:3 的設定／工具／紀錄改用完整寬度。
 
 [操作概念參考 Tesla Touchscreen](https://www.tesla.com/ownersmanual/modely/en_us/GUID-518C51C1-E9AC-4A68-AE12-07F4FF8C881E.html)。本 App 為 Formosa 分支座艙，並非 Tesla 原廠軟體。
 

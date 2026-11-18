@@ -83,7 +83,7 @@ test('fresh camera people, cars and motorcycles keep their meshes beside unknown
   const commands=[];const ctx=new Proxy({measureText:()=>({width:20})},{get:(t,k)=>t[k]??((...v)=>commands.push([k,...v])),set:(t,k,v)=>(t[k]=v,true)});
   const radar={leadOne:lead(25,0,2)};
   drawDrivingScene(ctx,1280,480,{radar,vision:first},{drawEgo:()=>{}});
-  assert.equal(commands.filter(c=>c[0]==='ellipse').length,1); // Only unknown radar is a circle.
+  assert.equal(commands.filter(c=>c[0]==='ellipse').length,0); // Unclassified targets use neutral open 3D volumes too.
   assert.ok(commands.filter(c=>c[0]==='fill').length>10); // Actual class meshes remain.
   assert.ok(commands.some(c=>c[0]==='fillText'&&c[1]==='person'));
   f.setClock(5500);f.video.currentTime=2;const next=await detect(20);

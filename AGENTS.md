@@ -1,5 +1,25 @@
 # Repository memory
 
+- 2026-11-18 Formosa 座艙 0.6.0/code8 renames the separate cockpit package
+  without changing signing/channel. No cockpit voice entry, recording permission,
+  onboarding or native voice setup; standard CarrotAssist retains voice. Date/time
+  uses Asia/Taipei with seconds; independent fresh carControl axes, never overall
+  enabled. Compact instruments and car occupy separate flex regions. Six fixed
+  dock cells, bounded chrome scaling; 4:3 settings/tools/logs hide compact car.
+  Primary Vision is full viewport WebGL2 with original cached 3D class/skin meshes,
+  mobile draw-call merging and bounded reusable road buffers. Reflect sensor y
+  once at the render boundary. No invented object class/depth/light state or FSD;
+  elevated/image-only detections use labeled unpositioned 3D observation icons.
+  Existing BEV, detector TTL/backpressure, preferences and lifecycle remain.
+  Context loss must gate BEFORE cached renderer; fall back and rebuild on restore.
+  1022 full web and2 HTTP pass; real Samsung Android14 APK install, wm1920x720/
+  1024x768,100/200%, five axis cases, actual-model public video classes, navigation
+  return/fullscreen/orbit/context recovery checked with isolated car/calibration.
+  Not a real head-unit, RTC, vehicle-distance, control or endurance acceptance.
+  APK source7a837f66, CI44223147163 v2/v3 pass; SHA256e69e32d465f27564f0d23e58f
+  30c72a04bdee407072c3651072119133387f8fc. Same signing, install-r data retained.
+  See tools/carrot_android/FORMOSA_COCKPIT_0.6.0_ACCEPTANCE.zh-TW.md.
+
 - 2026-11-18 Follow-up fixes the prior52 fixture failures: add and assert VM
   update_geometry in44 cases; isolate the actual MPC/model stop-selection If
   instead of executing its unbounded suffix in8 cases, plus Tesla blended

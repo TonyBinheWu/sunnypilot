@@ -39,7 +39,7 @@ test('fifteen grounded classes have finite, distinct original mesh silhouettes',
 });
 test('unknown radar targets remain neutral and invalid positions do not create a mesh',()=>{
   const a=canvas();drawSceneObject(a.ctx,project,{x:15,y:2,kind:'unknown'});
-  assert.ok(a.commands.some(c=>c[0]==='ellipse'));assert.equal(a.commands.some(c=>c[0]==='fill'),false);
+  assert.equal(a.commands.some(c=>c[0]==='ellipse'),false);assert.ok(a.commands.filter(c=>c[0]==='lineTo').length>=12);assert.equal(a.commands.some(c=>c[0]==='fill'),false);
   for(const point of [{x:NaN,y:0},{x:1,y:Infinity}]){const b=canvas();drawDetectedMesh(b.ctx,project,{...point,kind:'car'});assert.equal(b.commands.length,0);}
 });
 test('full existing description is retained under an idempotent disclosure',()=>{

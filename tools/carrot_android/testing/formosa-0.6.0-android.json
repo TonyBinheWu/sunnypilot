@@ -1,0 +1,184 @@
+{
+  "date": "2026-11-18",
+  "android": "Samsung SM-A146P / Android 14",
+  "display": "physical-phone wm overrides, not a head-unit acceptance",
+  "data": "synthetic car state/calibration; actual EfficientDet-Lite0 worker on public videos; no RTC/vehicle controls",
+  "webTests": {
+    "passed": 1022,
+    "failed": 0
+  },
+  "httpTests": {
+    "passed": 2,
+    "failed": 0
+  },
+  "axisCases": [
+    {
+      "lateral": false,
+      "longitudinal": false,
+      "expected": [
+        "橫向：未介入",
+        "縱向：未介入"
+      ],
+      "passed": true
+    },
+    {
+      "lateral": true,
+      "longitudinal": false,
+      "expected": [
+        "橫向：介入中",
+        "縱向：未介入"
+      ],
+      "passed": true
+    },
+    {
+      "lateral": false,
+      "longitudinal": true,
+      "expected": [
+        "橫向：未介入",
+        "縱向：介入中"
+      ],
+      "passed": true
+    },
+    {
+      "lateral": true,
+      "longitudinal": true,
+      "expected": [
+        "橫向：介入中",
+        "縱向：介入中"
+      ],
+      "passed": true
+    },
+    {
+      "stale": "both unknown",
+      "passed": true
+    }
+  ],
+  "video": {
+    "classifiedSampleOccurrences": {
+      "person": 111,
+      "car": 21,
+      "motorcycle": 81,
+      "bicycle": 3
+    },
+    "meaning": "repeated sampled results, not unique instances or accuracy",
+    "worker": {
+      "results": 208,
+      "classes": {
+        "person": {
+          "frames": 116,
+          "differentBoxes": 100
+        },
+        "car": {
+          "frames": 12,
+          "differentBoxes": 12
+        },
+        "motorcycle": {
+          "frames": 55,
+          "differentBoxes": 51
+        },
+        "bicycle": {
+          "frames": 2,
+          "differentBoxes": 2
+        }
+      },
+      "latest": [],
+      "workerStarts": 10,
+      "workerStops": 9,
+      "durationMs": 296.59999999403954
+    }
+  },
+  "layouts": [
+    {
+      "source": "final-wide-controls-200.json",
+      "width": 1877,
+      "height": 720,
+      "scale": "2",
+      "panel": "setting",
+      "fullscreen": true,
+      "dock": {
+        "x": 0,
+        "y": 625,
+        "width": 1877,
+        "height": 95,
+        "bottom": 720,
+        "right": 1877
+      },
+      "allDockLabelsFit": true,
+      "renderer": {
+        "backend": "webgl2",
+        "objects": 4,
+        "classified": 1,
+        "unknown": 3,
+        "imageIcons": 0,
+        "width": 960,
+        "height": 368,
+        "drawCalls": 20,
+        "triangles": 2046
+      },
+      "error": null
+    },
+    {
+      "source": "four-three-200.json",
+      "width": 978,
+      "height": 768,
+      "scale": "2",
+      "panel": "vision",
+      "fullscreen": null,
+      "dock": {
+        "x": 0,
+        "y": 683,
+        "width": 978,
+        "height": 85,
+        "bottom": 768,
+        "right": 978
+      },
+      "allDockLabelsFit": true,
+      "renderer": {
+        "backend": "webgl2",
+        "objects": 3,
+        "classified": 0,
+        "unknown": 3,
+        "imageIcons": 0,
+        "width": 688,
+        "height": 540,
+        "drawCalls": 19,
+        "triangles": 1190
+      },
+      "error": null
+    },
+    {
+      "source": "after-return-fullscreen.json",
+      "width": 978,
+      "height": 768,
+      "scale": "1",
+      "panel": "vision",
+      "fullscreen": true,
+      "dock": {
+        "x": 0,
+        "y": 700,
+        "width": 978,
+        "height": 68,
+        "bottom": 768,
+        "right": 978
+      },
+      "allDockLabelsFit": true,
+      "renderer": {
+        "backend": "webgl2",
+        "objects": 6,
+        "classified": 3,
+        "unknown": 3,
+        "imageIcons": 0,
+        "width": 688,
+        "height": 540,
+        "drawCalls": 22,
+        "triangles": 3258
+      },
+      "error": null
+    }
+  ],
+  "contextLoss": {
+    "unitRegression": "passed: loss falls back, restoration rebuilds geometry",
+    "androidDuringLoss": "context-lost",
+    "androidAfterRestore": "webgl2"
+  }
+}

@@ -32,7 +32,7 @@
 
 **[⬇ 下載 CarrotAssist 繁體中文版 0.2.19（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.19/CarrotAssist-TW-0.2.19.apk)**
 
-**[下載 Carrot Cockpit 座艙版 0.5.0（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.5.0/CarrotCockpit-TW-0.5.0.apk)**：以車載操作重新編排，固定狀態列／底列、全寬設定、大型按鈕、分組應用程式與可收合分類。修正大字模式重複放大，支援超寬、16:9、4:3與Full HD，保留所有功能、繁中搜尋／詳細說明、物件辨識、連線恢復與原有設定。[操作與驗證範圍](tools/carrot_android/COCKPIT.md)。 已補上 [1920×720／4:3、大字、全螢幕與動態分類驗收](tools/carrot_android/COCKPIT_0.5.0_ACCEPTANCE.zh-TW.md)：依車速縮放、拖曳視角、EV6／Sorento／Sportage／Carnival／EV9 本車外觀及煞車／方向燈同步。更新車機即可套用，APK 維持 0.5.0。先更新並重啟 carrot-wip 車機再覆蓋安裝；可與原版並存。已完成瀏覽器版面驗證，尚未完成實體 Android 盒子與實車驗收；既有[真實影片動態分類驗證](tools/carrot_android/COCKPIT_VALIDATION.zh-TW.md)仍可參考。
+**[下載 Formosa 座艙 繁中 0.6.0（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.6.0/CarrotCockpit-TW-0.6.0.apk)**：座艙版更名並採獨立藍色圖示；滿版 3D 道路、分類物件立體模型、浮動儀表與固定底列，控制頁採分區操作。修正 4:3 與大字版面、左右座標及橫縱向獨立狀態，顯示台灣日期與即時秒數；本版移除語音／麥克風權限，原 CarrotAssist 保留。既有繁中搜尋、詳細指南、設定確認與回讀、導航最愛、依車速縮放、拖曳視角、車型外觀、燈號及連線恢復延續。[操作說明](tools/carrot_android/COCKPIT.md)／[Android 實測與限制](tools/carrot_android/FORMOSA_COCKPIT_0.6.0_ACCEPTANCE.zh-TW.md)。先更新並重啟 carrot-wip 車機，再覆蓋安裝 APK；可與原版並存。已在 Samsung Android 手機以模擬 1920×720／4:3 驗證，尚未完成實體車用盒子或實車驗收。
 
 | 項目 | 說明 |
 |---|---|
