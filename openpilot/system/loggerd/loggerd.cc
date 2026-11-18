@@ -10,11 +10,13 @@
 #include "system/loggerd/encoder/encoder.h"
 #include "system/loggerd/loggerd.h"
 #include "system/loggerd/video_writer.h"
+#include "system/loggerd/driving_sei.h"
 
 ExitHandler do_exit;
 
 struct LoggerdState {
   LoggerState logger;
+  formosa::DrivingTelemetry telemetry;
   std::atomic<double> last_camera_seen_tms{0.0};
   std::atomic<int> ready_to_rotate{0};  // count of encoders ready to rotate
   int max_waiting = 0;
@@ -99,7 +101,17 @@ size_t write_encode_data(LoggerdState *s, cereal::Event::Reader event, RemoteEnc
   // if we are actually writing the video file, do so
   if (re.writer) {
     auto data = edata.getData();
-    re.writer->write((uint8_t *)data.begin(), data.size(), idx.getTimestampEof() / 1000, false, flags & V4L2_BUF_FLAG_KEYFRAME);
+    std::vector<uint8_t> annotated;
+    const bool hevc = idx.getType() == cereal::EncodeIndex::Type::FULL_H_E_V_C;
+    if (hevc || idx.getType() == cereal::EncodeIndex::Type::QCAMERA_H264) {
+      try {
+        const uint64_t frame_time = idx.getTimestampSof() ? idx.getTimestampSof() : idx.getTimestampEof();
+        annotated = formosa::embed_driving_sei(data.begin(), data.size(), s->telemetry.payload(frame_time, idx.getFrameId()), hevc);
+      } catch (const std::exception &) { LOGE_100("SEI annotation unavailable; preserving original video"); }
+    }
+    re.writer->write(annotated.empty() ? (uint8_t *)data.begin() : annotated.data(),
+                     annotated.empty() ? data.size() : annotated.size(),
+                     idx.getTimestampEof() / 1000, false, flags & V4L2_BUF_FLAG_KEYFRAME);
   }
 
   // put it in log stream as the idx packet
@@ -292,6 +304,25 @@ void loggerd_thread() {
       Message *msg = nullptr;
       while (!do_exit && (msg = sock->receive(true))) {
         const bool in_qlog = service.freq != -1 && (service.counter++ % service.freq == 0);
+
+        // Keep a bounded causal history: delayed encoder/audio packets must not
+        // inherit a newer pedal/control state. Never publish or change controls.
+        if (service.name == "carState" || service.name == "carControl") {
+          try {
+            capnp::FlatArrayMessageReader reader({(capnp::word *)msg->getData(), msg->getSize() / sizeof(capnp::word)});
+            auto event = reader.getRoot<cereal::Event>();
+            if (event.which() == cereal::Event::CAR_STATE) {
+              auto car = event.getCarState();
+              s.telemetry.add_car({event.getLogMonoTime(), event.getValid() && car.getCanValid(),
+                car.getVEgo(), car.getSteeringAngleDeg(), car.getGas(), car.getBrake(),
+                car.getGasPressed(), car.getBrakePressed(), car.getCruiseState().getEnabled()});
+            } else if (event.which() == cereal::Event::CAR_CONTROL) {
+              auto control = event.getCarControl();
+              s.telemetry.add_control({event.getLogMonoTime(), event.getValid(), control.getEnabled(),
+                                      control.getLatActive(), control.getLongActive()});
+            }
+          } catch (const kj::Exception &) { LOGE_100("Invalid driving telemetry for SEI; preserving original log"); }
+        }
 
         if (service.record_audio) {
           capnp::FlatArrayMessageReader cmsg(kj::ArrayPtr<capnp::word>((capnp::word *)msg->getData(), msg->getSize() / sizeof(capnp::word)));

@@ -44,6 +44,11 @@ jobs:
         run: |
           g++ -std=c++17 -Iopenpilot openpilot/system/loggerd/tests/test_vision_resolution.cc -o /tmp/vision-resolution-test
           /tmp/vision-resolution-test
+      - name: Check driving SEI causal samples and H.264 H.265 packet framing
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iopenpilot openpilot/system/loggerd/tests/test_driving_sei.cc -o /tmp/driving-sei-test
+          /tmp/driving-sei-test
+          python -m pytest -c /dev/null --rootdir=. --noconftest -q tools/carrot_android/tests/test_driving_sei_reader.py
       - name: Device strings, update tokens and text layout
         run: >-
           python -m pytest -c /dev/null --rootdir=. --noconftest -q
