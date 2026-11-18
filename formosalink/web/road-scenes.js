@@ -10,7 +10,7 @@ export function drawScene(canvas, item, roads, history=[]) {
   ctx.fillStyle='#101923';ctx.fillRect(0,0,w,h);
   if(!item)return;
   const s=item.scene,f=s.fix,scale=Math.min(w/100,h/90);
-  const project=([x,y,z=0])=>[w*.5+y*scale,h*.88-x*scale*.86-z*scale*.45];
+  const project=([x,y,z=0])=>[w*.5+y*scale,h*.88-x*scale*.86+z*scale*.45];
   function line(points,color,width,offset=0) {
     ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();
     points.forEach(([x,y,z],i)=>{const p=project([x,y+offset,z]);if(i)ctx.lineTo(...p);else ctx.moveTo(...p);});
@@ -61,19 +61,26 @@ export async function roadSceneDialog(device,api,language) {
     drawScene(canvas,item,data.osm,data.history);link.hidden=!data.count;
     buttons[0].disabled=data.enabled;buttons[1].disabled=!data.enabled;
   }
-  async function refresh() {data=await api(path);if(!closed)render();}
+  let generation=0,changing=false;
+  async function refresh() {
+    const request=++generation;
+    const updated=await api(path);
+    if(!closed&&request===generation){data=updated;render();}
+  }
   for(const [i,action] of [[1,'enable'],[2,'disable'],[3,'erase'],[5,'close']]) {
     const b=document.createElement('button');b.type='button';b.textContent=l[i];actions.append(b);buttons.push(b);
     b.onclick=async()=>{
       if(action==='close'){dialog.close();return;}
       if(action==='erase'&&!confirm(l[15]))return;
-      b.disabled=true;
+      if(changing)return;
+      changing=true;generation++;
+      for(const button of buttons.slice(0,3))button.disabled=true;
       try{await api(path,{action,schema:data.schema,revision:data.revision});await refresh();}
-      catch(e){status.textContent=e.reason||l[6];}
-      finally{if(!closed){buttons[2].disabled=false;}}
+      catch(e){if(!closed){render();status.textContent=e.reason||l[6];}}
+      finally{changing=false;if(!closed){buttons[2].disabled=false;}}
     };
   }
-  const tick=async()=>{try{await refresh();}catch{status.textContent=l[6];}if(!closed)timer=setTimeout(tick,5000);};
+  const tick=async()=>{try{if(!changing)await refresh();}catch{status.textContent=l[6];}if(!closed)timer=setTimeout(tick,5000);};
   dialog.addEventListener('close',()=>{closed=true;clearTimeout(timer);dialog.remove();},{once:true});
   document.body.append(dialog);render();dialog.showModal();timer=setTimeout(tick,5000);
 }

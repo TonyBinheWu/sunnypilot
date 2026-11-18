@@ -1,4 +1,4 @@
-import {roadSceneDialog,sceneTitle} from './road-scenes.js';
+import {roadSceneDialog,sceneTitle} from './road-scenes.js?v=1';
 import {contributionDialog} from './training-data.js?v=1';
 import {initTheme} from './theme.js?v=0.6.0';
 import {supportPanel} from './support.js?v=0.9.0';
