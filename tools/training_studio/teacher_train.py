@@ -222,7 +222,7 @@ def main():
     # Match near-term execution and body orientation, rather than a one-step flow proxy.
     loss=F.smooth_l1_loss(xyz[...,0],target[...,0])+20*error[...,1].square().mean()+10*error[:,:20].square().mean()
     loss=loss+4*(velocity[:,:20]-ref_velocity[:,:20]).square().mean()+50*(rot-item['target_rot'].cuda()).square().mean()
-    if not item['row']['stop_required']:
+    if not item['row']['stop_required'] or not item['row'].get('maintain_stop_reference',False):
       loss=loss+proceed_velocity_loss(velocity,ref_velocity)
     if item['row'].get('restart_required'):
       accel_std=model.expert.action_space.accel_std.to(action.device)
