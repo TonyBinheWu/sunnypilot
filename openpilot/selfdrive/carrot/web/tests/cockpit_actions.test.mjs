@@ -19,7 +19,7 @@ function harness(){
   const buttons=[1,2,3,4].map(mode=>Object.assign(element(),{dataset:{mode:String(mode)}}));
   const panels=['navigation','vision','logs','setting','tools'].map(panel=>Object.assign(element(),{dataset:{panel}}));
   const document={hidden:false,body:element(),documentElement:{...element(),style:{setProperty(){}}},head:element(),
-    getElementById:id=>nodes.get(id),querySelector:()=>null,querySelectorAll:s=>s==='[data-mode]'?buttons:s==='[data-panel]'?panels:[],
+    getElementById:id=>nodes.get(id),querySelector:s=>s==='.dock [data-panel="logs"]'?panels[2]:null,querySelectorAll:s=>s==='[data-mode]'?buttons:['button[data-panel]','.dock [data-panel]'].includes(s)?panels:[],
     addEventListener:(name,fn)=>{docEvents[name]=fn;},createElement:()=>element()};
   const innerDocument={...document,documentElement:{...element(),hasAttribute:()=>true}};
   nodes.get('features').contentWindow={location:{origin:'http://fixture'},document:innerDocument,showPage:p=>pages.push(p),
@@ -198,4 +198,50 @@ test('phone app shortcuts retain sound controls and camera-view reset without dr
  h.frame.CarrotCockpitControls={selectSection:id=>sections.push(id)};h.frame.CarrotVisionView={reset:()=>resets++};
  h.el('appsButton').onclick();h.el('soundShortcut').onclick();assert.equal(h.el('apps').open,false);assert.equal(h.context.document.body.dataset.panel,'setting');assert.deepEqual(sections,['sound']);
  h.el('resetViewSetting').onclick();assert.equal(resets,1);assert.match(h.el('visionSettingFeedback').textContent,/回到前方/);assert.equal(h.writes.length,0);
+});
+
+test('returning from an Apps dialog restores the originating shortcut and scroll',()=>{
+  for(const [shortcut,dialog] of [['vehicleShortcut','vehicleDetails'],['visionShortcut','visionSettings'],['profileShortcut','profiles'],['displayShortcut','displaySettings']]){
+    const h=harness(),apps=h.el('apps'),child=h.el(dialog);let focused=false;
+    h.el(shortcut).focus=()=>{focused=true;};
+    apps.scrollTop=90;h.el('appsButton').onclick();assert.equal(apps.scrollTop,0);
+    apps.scrollTop=120;h.el(shortcut).onclick();
+    assert.equal(apps.open,false);assert.equal(child.open,true);
+    apps.scrollTop=0;child.close();h.docEvents.close({target:child});
+    assert.equal(apps.open,true);assert.equal(apps.scrollTop,120);assert.equal(focused,true);
+    assert.equal(h.writes.length,0);
+  }
+  const h=harness();
+  h.el('appsButton').onclick();h.el('vehicleShortcut').onclick();h.el('routeOpen').onclick();
+  h.docEvents.close({target:h.el('vehicleDetails')});
+  assert.equal(h.el('apps').open,false);assert.equal(h.context.document.body.dataset.panel,'navigation');
+});
+
+test('the log destination highlights its visible entry as the screen changes size',()=>{
+  const h=harness(),logs=h.panel('logs'),apps=h.el('appsButton');
+  logs.offsetWidth=68;logs.onclick();
+  assert.equal(logs['aria-current'],'page');assert.equal(apps['aria-current'],'false');
+  logs.offsetWidth=0;h.events.resize();
+  assert.equal(apps['aria-current'],'page');assert.equal(logs['aria-current'],'false');
+});
+
+test('the driving split follows confirmed guidance and ignores an old thumbnail',()=>{
+  const h=harness(),nav=h.el('navigation');let snapshot={known:true,active:false};
+  h.register('map',{naturalWidth:512,hidden:false});
+  nav.contentWindow.CarrotNavigationView={snapshot:()=>snapshot,refreshIfDue(){}};
+  const value=()=>{h.tick();return h.context.document.body.dataset.hasRoute;};
+  assert.equal(value(),'false');snapshot.active=true;assert.equal(value(),'true');
+  snapshot={known:true,active:false,mapReady:true};assert.equal(value(),'true');
+  snapshot.known=false;assert.equal(value(),'false');
+});
+
+test('an early sound shortcut opens its section after the embedded page is ready',()=>{
+  const h=harness(),sections=[];
+  h.frame.CarrotCockpitControls=undefined;h.el('soundShortcut').onclick();
+  h.frame.CarrotCockpitControls={selectSection:key=>sections.push(key)};
+  h.el('features').emit('load');assert.deepEqual(sections,['sound']);
+  h.el('features').emit('load');assert.deepEqual(sections,['sound']);
+  h.frame.CarrotCockpitControls=undefined;h.el('soundShortcut').onclick();h.panel('vision').onclick();
+  h.frame.CarrotCockpitControls={selectSection:key=>sections.push(key)};
+  h.el('features').emit('load');assert.deepEqual(sections,['sound']);
 });

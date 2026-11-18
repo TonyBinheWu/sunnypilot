@@ -1,6 +1,6 @@
 # CarrotAssist Android public beta — Traditional Chinese distribution
 
-**Separate cockpit edition:** [Formosa 座艙 繁中 0.6.1](COCKPIT.md) adds a central touchscreen layout and a separate install/update identity. The existing CarrotAssist APK below remains available. Build it with `build.ps1 -Cockpit`; source pushes build the cockpit edition, while manual workflow dispatch can select `standard` or `cockpit`.
+**Separate cockpit edition:** [Formosa 座艙 繁中 0.6.2](COCKPIT.md) adds a central touchscreen layout and a separate install/update identity. The existing CarrotAssist APK below remains available. Build it with `build.ps1 -Cockpit`; source pushes build the cockpit edition, while manual workflow dispatch can select `standard` or `cockpit`.
 
 This fork publishes a signed standalone Android app as **CarrotAssist 繁中**, package `me.shind0.carrotweb.tw`, version 0.2.20 (code 27). It can coexist with the upstream app; data and authorizations are separate.
 

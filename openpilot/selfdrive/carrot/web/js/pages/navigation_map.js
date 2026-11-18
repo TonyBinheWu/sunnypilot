@@ -32,6 +32,7 @@
     }
     return value;
   }
+  let mapReady = false;
   let currentPlace = null, savedPlaces = [], editingId = null, deletePending = null;
   let savingEditor = false, searchVersion = 0, currentSearchQuery = '';
   let destinationBusy=false,destinationReadBusy=false,destinationRevision=0,destinationKnown=false,destinationError='',lastDestinationRead=-Infinity;
@@ -57,6 +58,7 @@
   }
   function current(value) {
     currentPlace = value.destination || null;
+    mapReady = value.map_ready === true;
     osm?.setDestination(currentPlace);
     destinationKnown=true;destinationError='';
     $('current').textContent = currentPlace?.place_name || tr('현재 목적지 없음', 'No current destination');
@@ -86,8 +88,9 @@
     return {ended:true};
   }
   globalThis.CarrotNavigationView=Object.freeze({
-    snapshot:()=>({known:destinationKnown,busy:destinationBusy||destinationReadBusy,active:destinationKnown&&!!currentPlace,label:currentPlace?.place_name||'',error:destinationError}),
+    snapshot:()=>({known:destinationKnown,mapReady:destinationKnown && mapReady,busy:destinationBusy||destinationReadBusy,active:destinationKnown&&!!currentPlace,label:currentPlace?.place_name||'',error:destinationError}),
     refresh:readDestination,end:endNavigation,
+    refreshIfDue:()=>{if(Date.now()-lastDestinationRead>=5000)return readDestination();},
   });
   $('clear').disabled=true;readDestination();
   function button(text, action) {
