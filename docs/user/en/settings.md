@@ -2,6 +2,12 @@
 
 [한국어](../ko/settings.md)
 
+## Carrot Vision object display
+
+The object detector needs a connected front-camera image and fresh calibration. The standard live stream now preserves the full source aspect: C4 uses 672×380; C3/C3X retain 964×604. Update and rebuild the vehicle, reboot while parked, then reconnect the existing APK.
+
+Image-only classifications remain visible when ground projection is unavailable, without assigning a distance. The viewer distinguishes missing calibration or camera height, stale telemetry, incompatible stream aspect and slow inference. First inference has a separate warm-up budget; capture expiry remains 1.2 seconds and old detections never become current merely because inference completed. See the [display recovery guide](../../../tools/carrot_android/OBJECT_DISPLAY_RECOVERY.zh-TW.md) for diagnostics and limits. These display changes do not validate navigation steering.
+
 ## Revisit initial vehicle and control choices
 
 For error messages, use **Tools → Error diagnosis and repair** first. It distinguishes observed faults from missing data; any supported repair requires confirmation and a fresh parked-state check. [Diagnosis scope and recovery](carrot-web.md#error-diagnosis-and-repair).
