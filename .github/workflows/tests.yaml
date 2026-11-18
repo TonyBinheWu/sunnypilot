@@ -273,6 +273,7 @@ jobs:
           openpilot/selfdrive/carrot/tests/test_radarcan_process.py
           openpilot/selfdrive/carrot/tests/test_rav4_radar_slowdown.py
           openpilot/selfdrive/controls/tests/test_desire_helper_stalk.py
+          openpilot/selfdrive/controls/tests/test_lane_change_takeover.py
           openpilot/selfdrive/controls/tests/test_lever_forced_turn.py
           openpilot/selfdrive/ui/tests/test_radar_display.py
       - name: Check coherent OS04C10 exposure updates

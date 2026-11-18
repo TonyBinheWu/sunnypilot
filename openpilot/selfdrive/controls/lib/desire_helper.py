@@ -763,15 +763,21 @@ class DesireHelper:
 
     self.prev_desire_enabled = desire_enabled
 
-    # 반대 방향 토크로 cancel (기존 유지)
+    # The FSM retains its direction after a one-touch lamp ends. Compare driver
+    # takeover with that active direction, not the now-neutral lamp/ATC request.
+    cancel_blinker_state = blinker_state
+    if self.lane_change_state in (LaneChangeState.laneChangeStarting, LaneChangeState.laneChangeFinishing):
+      cancel_blinker_state = {LaneChangeDirection.left: BLINKER_LEFT,
+                              LaneChangeDirection.right: BLINKER_RIGHT}.get(self.lane_change_direction, BLINKER_NONE)
     steering_pressed_cancel = carstate.steeringPressed and (
-      (carstate.steeringTorque < 0 and blinker_state == BLINKER_LEFT) or
-      (carstate.steeringTorque > 0 and blinker_state == BLINKER_RIGHT)
+      (carstate.steeringTorque < 0 and cancel_blinker_state == BLINKER_LEFT) or
+      (carstate.steeringTorque > 0 and cancel_blinker_state == BLINKER_RIGHT)
     )
     if steering_pressed_cancel and self.lane_change_state != LaneChangeState.off:
       self.lane_change_direction = LaneChangeDirection.none
       self.lane_change_state = LaneChangeState.off
       self.blinker_ignore = True
+      self.desireLog += "driver_opposite_cancel, "
 
     if self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange):
       self.crossing = LaneCrossing()

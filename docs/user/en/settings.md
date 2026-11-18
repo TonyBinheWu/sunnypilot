@@ -8,6 +8,10 @@ The object detector needs a connected front-camera image and fresh calibration. 
 
 Image-only classifications remain visible when ground projection is unavailable, without assigning a distance. The viewer distinguishes missing calibration or camera height, stale telemetry, incompatible stream aspect and slow inference. First inference has a separate warm-up budget; capture expiry remains 1.2 seconds and old detections never become current merely because inference completed. See the [display recovery guide](../../../tools/carrot_android/OBJECT_DISPLAY_RECOVERY.zh-TW.md) for diagnostics and limits. These display changes do not validate navigation steering.
 
+## Opposite steering takeover during a lane change
+
+During a lane change, opposite steering takeover now uses the active maneuver direction even after a one-touch indicator ends. The existing steeringPressed threshold remains required; cancellation clears the queued next change. This does not change torque-confirmation entry preferences or increase steering limits. [Details and verification limits](../../NAVIGATION_MAP_VALIDITY.zh-TW.md#變道中的反向接管取消).
+
 ## Revisit initial vehicle and control choices
 
 For error messages, use **Tools → Error diagnosis and repair** first. It distinguishes observed faults from missing data; any supported repair requires confirmation and a fresh parked-state check. [Diagnosis scope and recovery](carrot-web.md#error-diagnosis-and-repair).

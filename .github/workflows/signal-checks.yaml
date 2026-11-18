@@ -58,6 +58,7 @@ jobs:
             openpilot/selfdrive/controls/tests/test_tesla_turn_journey.py \
             openpilot/selfdrive/controls/tests/test_tesla_traffic_stop.py \
             openpilot/selfdrive/controls/tests/test_desire_helper_stalk.py \
+            openpilot/selfdrive/controls/tests/test_lane_change_takeover.py \
             openpilot/selfdrive/controls/tests/test_assistant_lane.py \
             openpilot/selfdrive/car/tests/test_assistant_speed.py \
             openpilot/selfdrive/controls/tests/test_lever_forced_turn.py \

@@ -1,5 +1,15 @@
 # Repository memory
 
+- 2026-11-18 Lane-change takeover: active starting/finishing FSM direction
+  outlives a one-touch lamp. Cancellation used neutral current blinker_state
+  and missed opposite driver torque; use retained maneuver direction, preserve
+  steeringPressed and torque sign gates. Clear queued requests via existing off
+  path. No authority/Panda/CAN relaxation.24 symmetric phase/lamp/torque cases
+  reproduce4 pre-fix failures. Private recorded replay matches baseline except
+  normal receiver timing differences and cancels two missed takeovers earlier;
+  fixed-input replay is not a closed-loop road/model/map acceptance. Guide:
+  docs/NAVIGATION_MAP_VALIDITY.zh-TW.md. Do not publish incident telemetry.
+
 - 2026-11-18 Navigation map validity: mapsd invalid black frames used to retain
   a nonzero route ID. Publish ID0 for failed/slow/unpositioned frames; MapInput
   also rejects the legacy all-black sentinel during rolling updates and clears
