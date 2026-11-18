@@ -99,3 +99,11 @@ dialog .cockpit-dialog-head .close{position:static;float:none;width:48px;height:
  #profile,#driveStatusPill,#vehicleButton,#resetView{display:none!important}
  #visionTools,body[data-panel="vision"] #miniNav{min-height:44px;font-size:calc(12px * var(--carrot-text-scale-chrome))}
 }
+
+@media(min-width:601px) and (max-width:1100px) and (max-height:500px){
+ .apps-sheet .app-grid{gap:6px}
+ .apps-sheet .app-grid button,.apps-sheet .app-grid a{min-height:56px;padding:12px;gap:10px;justify-content:flex-start;font-size:calc(15px * var(--carrot-text-scale-chrome));line-height:1.35;background:transparent;border-radius:0;border-bottom:1px solid var(--line);text-align:left}
+ .apps-sheet .app-grid svg{width:24px;height:24px;flex:none}
+ .apps-sheet .app-section h3{font-size:calc(13px * var(--carrot-text-scale-chrome));margin-bottom:8px}.apps-sheet .app-section+.app-section{margin-top:12px}
+}
+@media(min-width:601px) and (max-width:740px) and (max-height:500px){.apps-sheet .app-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
