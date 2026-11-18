@@ -142,10 +142,13 @@ def main():
   parser.add_argument('--parent',type=Path)
   parser.add_argument('--parent-sha256')
   parser.add_argument('--epochs',type=int,default=12)
-  parser.add_argument('--learning-rate',type=float,default=3e-5)
+  parser.add_argument('--learning-rate',type=float)
+  parser.add_argument('--paired-stop-go',action='store_true',help='Pair stop/proceed gradients with PCGrad and guarded SGD')
   parser.add_argument('--expanded-expert',action='store_true')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
+  if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
+  if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:
     def watchdog():
       changed,stamp=time.monotonic(),None
@@ -204,7 +207,7 @@ def main():
   model._sample_actions=capture
   history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'adapter_scope':adapter_scope,'stage':None,'objective_revision':OBJECTIVE_REVISION,'epochs':args.epochs,'history':history,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':'paired_stop_go_pcgrad_sgd_v1' if args.paired_stop_go else 'single_sample_adamw_backtracking_v1','learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':OBJECTIVE_REVISION,'epochs':args.epochs,'history':history,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -308,40 +311,48 @@ def main():
   best_metrics,best_epoch=baseline,0
   balanced_metrics,balanced_epoch=baseline,0
   best_score=(baseline['red_safe_count'],-baseline['red_hold_speed_mse'],-baseline['validation_loss'])
-  optimizer=torch.optim.AdamW(parameters.values(),lr=args.learning_rate,weight_decay=0)
+  from tools.training_studio.teacher_optim import paired_indices,paired_step
+  optimizer=(torch.optim.SGD if args.paired_stop_go else torch.optim.AdamW)(parameters.values(),lr=args.learning_rate,weight_decay=0)
   emit('training',epoch=0,baseline=baseline,trainable_parameters=sum(p.numel() for p in parameters.values()))
   for epoch in range(args.epochs):
     values=[]
-    for batch,index in enumerate(np.random.default_rng(epoch+42).permutation(len(train))):
-      optimizer.zero_grad()
-      loss,_,_=objective(train[index],True)
-      loss.backward()
-      gradients=[p.grad for p in parameters.values() if p.grad is not None]
-      if not gradients or not all(torch.isfinite(g).all() for g in gradients): raise ValueError('invalid real expert gradients')
-      torch.nn.utils.clip_grad_norm_(parameters.values(),1.)
-      before={name:p.detach().clone() for name,p in parameters.items()}
-      initial_loss=float(loss.detach())
-      optimizer.step()
-      delta={name:p.detach()-before[name] for name,p in parameters.items()}
-      scale=1.
-      with torch.no_grad():
-        observed=float(objective(train[index],False)[0])
-        for backtrack in range(5):
-          if observed<=initial_loss+max(.0001,initial_loss*.0001): break
-          scale*=.5
-          for name,p in parameters.items(): p.copy_(before[name]+scale*delta[name])
+    if args.paired_stop_go:
+      pairs=paired_indices(train,epoch)
+      for batch,(stop_index,go_index) in enumerate(pairs,1):
+        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index])
+        values.append(outcome['loss'])
+        emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=2,baseline=baseline,**outcome)
+    else:
+      for batch,index in enumerate(np.random.default_rng(epoch+42).permutation(len(train))):
+        optimizer.zero_grad()
+        loss,_,_=objective(train[index],True)
+        loss.backward()
+        gradients=[p.grad for p in parameters.values() if p.grad is not None]
+        if not gradients or not all(torch.isfinite(g).all() for g in gradients): raise ValueError('invalid real expert gradients')
+        torch.nn.utils.clip_grad_norm_(parameters.values(),1.)
+        before={name:p.detach().clone() for name,p in parameters.items()}
+        initial_loss=float(loss.detach())
+        optimizer.step()
+        delta={name:p.detach()-before[name] for name,p in parameters.items()}
+        scale=1.
+        with torch.no_grad():
           observed=float(objective(train[index],False)[0])
-        if observed>initial_loss+max(.0001,initial_loss*.0001):
-          for name,p in parameters.items(): p.copy_(before[name])
-          observed=initial_loss
-          optimizer.state.clear()
-          scale=0.
-      values.append(observed)
-      del loss,_
-      load_prefix.cache_clear()
-      release_prefix_pages(train[index]['prefix_path'])
-      torch.cuda.empty_cache()
-      emit('training',epoch=epoch+1,batch=batch+1,batches=len(train),loss=values[-1],loss_before_step=initial_loss,step_scale=scale,baseline=baseline)
+          for backtrack in range(5):
+            if observed<=initial_loss+max(.0001,initial_loss*.0001): break
+            scale*=.5
+            for name,p in parameters.items(): p.copy_(before[name]+scale*delta[name])
+            observed=float(objective(train[index],False)[0])
+          if observed>initial_loss+max(.0001,initial_loss*.0001):
+            for name,p in parameters.items(): p.copy_(before[name])
+            observed=initial_loss
+            optimizer.state.clear()
+            scale=0.
+        values.append(observed)
+        del loss,_
+        load_prefix.cache_clear()
+        release_prefix_pages(train[index]['prefix_path'])
+        torch.cuda.empty_cache()
+        emit('training',epoch=epoch+1,batch=batch+1,batches=len(train),loss=values[-1],loss_before_step=initial_loss,step_scale=scale,baseline=baseline)
     metrics=validate(epoch+1)
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
     score=(metrics['red_safe_count'],-metrics['red_hold_speed_mse'],-metrics['validation_loss'])
@@ -356,7 +367,7 @@ def main():
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
-    'objective_revision':OBJECTIVE_REVISION,'adapter_scope':adapter_scope,
+    'objective_revision':OBJECTIVE_REVISION,'adapter_scope':adapter_scope,'optimization_profile':'paired_stop_go_pcgrad_sgd_v1' if args.paired_stop_go else 'single_sample_adamw_backtracking_v1','learning_rate':args.learning_rate,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})
