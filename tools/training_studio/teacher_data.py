@@ -50,6 +50,10 @@ def main():
         (scenario,'clear_go',1.5,0,0,0),(scenario,'clear_go',-1,0,2,0),
         (scenario,'braking_clear_go',-9.5,0,3.2,0),(scenario,'crossing_67',-6.5,0,0,0),
         (scenario,'brake_crossing_67',-9.5,0,3.2,0)]
+      # Add genuinely moving, near-line braking references. Earlier fixtures
+      # mostly covered parked holds or approaches still far enough to accelerate.
+      fixtures += [(scenario,f'approach_crossing_{phase}',offset,0,speed,0)
+        for phase in (20,40,60,80,94) for offset,speed in ((-13,4),(-11.5,3.2))]
     elif scenario=='lane_center':
       fixtures += [(scenario,'hold',-6.5,0,0,0),(scenario,'approach',-25,0,3,0),
         (scenario,'go',-6.5,0,0,0),(scenario,'go',-15,0,3,0),

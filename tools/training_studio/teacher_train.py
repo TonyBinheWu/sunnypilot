@@ -12,7 +12,7 @@ import tempfile
 import time
 
 IMPLEMENTATION_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-OBJECTIVE_REVISION='ten_step_immediate_restart_v1'
+OBJECTIVE_REVISION='ten_step_immediate_stop_and_restart_v2'
 
 
 def observed_inputs(sample):
@@ -95,14 +95,19 @@ def proceed_velocity_loss(velocity,reference_velocity):
   return 200*error.amax()+50*error.mean()
 
 
-def restart_command_loss(accel_error):
-  """Do not postpone permitted acceleration beyond the next replan.
+def immediate_command_loss(accel_error):
+  """Match the next executed commands, including moving stop approaches.
 
-  The reference inverse dynamics already requests positive initial acceleration;
-  averaging it over twenty commands underweights the commands executed first.
-  This loss is applied only to permitted, stationary restart references.
+  Rollout position error alone can defer braking until a later replan. These
+  offline inverse-dynamics targets preserve acceleration on distant approaches
+  and teach braking where safe reference trajectories actually brake.
   """
-  return 50*accel_error[:,:3].square().mean()+10*accel_error[:,:20].square().mean()
+  return 50*accel_error[:,:3].square().mean()+20*accel_error[:,:10].square().mean()+10*accel_error[:,:20].square().mean()
+
+
+def restart_command_loss(accel_error):
+  """Compatibility name for the same immediate permitted-restart supervision."""
+  return immediate_command_loss(accel_error)
 
 
 def rollout(model,item,*,grad,seed=42):
@@ -266,6 +271,10 @@ def main():
       loss=loss+200*(velocity.square().sum(-1)*held).amax()
       accel_std=model.expert.action_space.accel_std.to(action.device)
       accel_error=(action[...,0]-item['target_action'].to(action.device)[...,0])*accel_std
+      # Use the same acceleration scale as restart supervision, including
+      # parked holds: a speed-only hold penalty can underweight small
+      # positive command pulses compared with direct restart acceleration.
+      loss=loss+immediate_command_loss(accel_error)
       loss=loss+50*(accel_error[:,:20].square()*held[:,:20]).sum()/held[:,:20].sum().clamp_min(1)
       if item['row'].get('maintain_stop_reference'):
         loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))

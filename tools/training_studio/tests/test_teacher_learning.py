@@ -9,6 +9,24 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_moving_approach_commands_supervise_braking_without_forcing_brakes_on_distant_approaches(self):
+    import torch
+    from tools.training_studio.teacher_train import immediate_command_loss
+    for target_acceleration in (-2.4,1.2):
+      target=torch.full((1,64),target_acceleration)
+      prediction=torch.zeros_like(target,requires_grad=True)
+      loss=immediate_command_loss(prediction-target);loss.backward()
+      self.assertTrue(torch.isfinite(prediction.grad).all())
+      self.assertTrue(bool((prediction.grad[:,:10]*target_acceleration<0).all()))
+      self.assertEqual(float(prediction.grad[:,20:].abs().sum()),0.)
+    pulse=torch.zeros(1,64);pulse[:,0]=.2;pulse[:,1]=-.2;pulse.requires_grad_()
+    self.assertEqual(float(pulse.mean()),0.)
+    hold=immediate_command_loss(pulse);self.assertGreater(float(hold),0.);hold.backward()
+    self.assertGreater(float(pulse.grad[0,0]),0.);self.assertLess(float(pulse.grad[0,1]),0.)
+    early=torch.zeros(1,64);early[:,3:10]=2
+    late=torch.zeros_like(early);late[:,13:20]=2
+    self.assertGreater(float(immediate_command_loss(early)),float(immediate_command_loss(late)))
+
   def test_first_decision_error_cannot_hide_behind_correct_template_completion(self):
     import torch
     from tools.training_studio.teacher_reasoning_train import decision_objective
