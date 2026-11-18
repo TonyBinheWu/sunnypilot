@@ -6,6 +6,8 @@
   delay index delivery beyond Android's900ms probe timeout. Build reproducibility
   alone missed this. Validate actual generated output with AssetManifestLoader
   in CI after building, preserving strict contracts and path/hash validation.
+  Short landscape must keep the parking row end-aligned even when its status is
+  hidden in normal driving view; otherwise its sole button overlaps instruments.
 
 - 2026-11-18 Parking display is opt-in: vision_parking_assist enables low-speed
   overhead and a single fresh stopped P transition orbit; vision_parking_map

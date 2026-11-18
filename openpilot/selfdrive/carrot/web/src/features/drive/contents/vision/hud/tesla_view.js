@@ -339,5 +339,5 @@ export const TESLA_VIEW_CSS=`
  .tesla-parking-panel{position:absolute;left:12px;right:12px;bottom:calc(var(--cockpit-bottom-obstruction,52px) + 12px);z-index:4;display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
 .tesla-parking-view{pointer-events:auto;max-width:100%;padding:10px 14px;border-radius:10px;border:1px solid #8293a6;background:#192b42e8;color:white;font:600 calc(14px * min(var(--carrot-text-scale,1),1.25)) system-ui;min-height:44px}.tesla-parking-view:disabled{opacity:.5}.is-light-scene .tesla-parking-view{background:#ffffffed;color:#263a50}
 .tesla-parking-status{max-width:100%;max-height:6em;overflow:auto;pointer-events:auto;padding:7px 9px;border-radius:7px;background:#142238e8;color:#fff;font:calc(13px * min(var(--carrot-text-scale,1),1.25)) system-ui;line-height:1.4;overflow-wrap:anywhere}.is-light-scene .tesla-parking-status{background:#ffffffed;color:#35475a}
-@media(max-height:450px) and (min-width:600px){.tesla-parking-panel{flex-direction:row;align-items:center}.tesla-parking-status{max-width:calc(100% - 170px);margin-right:auto}}
+@media(max-height:450px) and (min-width:600px){.tesla-parking-panel{flex-direction:row;align-items:center;justify-content:flex-end}.tesla-parking-status{max-width:calc(100% - 170px);margin-right:auto}}
 ` + BEV_CSS;
