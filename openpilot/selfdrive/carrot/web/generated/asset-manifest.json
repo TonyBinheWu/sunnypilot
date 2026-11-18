@@ -2,13 +2,6 @@
   "schemaVersion": 1,
   "assets": [
     {
-      "id": "vision.parking-detector-worker",
-      "kind": "worker",
-      "source": "src/features/drive/contents/vision/parking_detector_worker.js",
-      "path": "js/generated/parking-detector-worker.js",
-      "hash": "668cb987faae570bd0df62d4c2a4672bba8af4a1ffee7506cbde83180f6ef5fd"
-    },
-    {
       "id": "app.cockpit",
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
@@ -175,6 +168,12 @@
       "source": "src/entries/intro.css",
       "path": "css/generated/intro.css",
       "hash": "f4dfadc44115c1df243eaade83192aac63adcfe881f13d521742386895d5b48e"
+    },
+    {
+      "id": "vision.parking-detector-worker",
+      "kind": "worker",
+      "path": "js/generated/parking-detector-worker.js",
+      "hash": "668cb987faae570bd0df62d4c2a4672bba8af4a1ffee7506cbde83180f6ef5fd"
     },
     {
       "id": "vision.road-detector-worker",

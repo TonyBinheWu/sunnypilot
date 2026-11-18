@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
 
@@ -14,6 +15,16 @@ from openpilot.selfdrive.carrot.server.services.asset_manifest import (
 
 def _content_hash(payload: bytes) -> str:
   return hashlib.sha256(payload.replace(b"\r\n", b"\n")).hexdigest()
+
+
+def test_checked_in_build_manifest_passes_production_loader():
+  # A reproducible build alone does not prove that the server accepts its
+  # catalog. Worker entries must use the worker contract, not bundle metadata.
+  web_dir = Path(__file__).resolve().parents[2] / "web"
+  manifest = AssetManifestLoader().validate(web_dir)
+  workers = {asset["id"]: asset for asset in manifest["assets"] if asset["kind"] == "worker"}
+  assert workers["vision.parking-detector-worker"]["path"] == "js/generated/parking-detector-worker.js"
+  assert all("source" not in asset for asset in workers.values())
 
 
 def _write_manifest(web_dir, payload: bytes) -> None:

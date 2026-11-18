@@ -65,6 +65,11 @@ jobs:
           npm run build
           node --test 'tests/settings_*.test.mjs' tests/traditional_chinese.test.mjs tests/navigation_map.test.mjs tests/web_sound_volume.test.mjs tests/forced_offroad.test.mjs tests/vision_live_view.test.mjs tests/vision_parked.test.mjs 'tests/hud*.test.mjs'
           git diff --exit-code -- js/generated generated guide.zh-TW.html
+      - name: Validate generated asset manifest using production loader
+        run: >-
+          python -m pytest -c /dev/null --rootdir=. --noconftest -q
+          openpilot/selfdrive/carrot/server/tests/test_asset_manifest.py
+          -k checked_in_build
 
   egpu_startup:
     name: eGPU selected-model startup

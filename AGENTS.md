@@ -1,5 +1,12 @@
 # Repository memory
 
+- 2026-11-18 Parking worker belongs in build.mjs workerDefinitions, never
+  bundleDefinitions. A worker with bundle-only source metadata makes the strict
+  production manifest loader reject the entire catalog; repeated update retries
+  delay index delivery beyond Android's900ms probe timeout. Build reproducibility
+  alone missed this. Validate actual generated output with AssetManifestLoader
+  in CI after building, preserving strict contracts and path/hash validation.
+
 - 2026-11-18 Parking display is opt-in: vision_parking_assist enables low-speed
   overhead and a single fresh stopped P transition orbit; vision_parking_map
   separately discloses current-position lookup to fixed Overpass host, default
