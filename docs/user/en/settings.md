@@ -6,9 +6,13 @@
 
 In FormosaLink, choose your paired Carrot device, open **Road scene research**, and select **Start sharing**. The portal shows recent road geometry and nearby OpenStreetMap roads. Stop sharing, erase the data, or download your observations from the same panel. Camera classifications require a connected viewer with detection enabled. [Data fields and evaluation](../../ROAD_SCENE_RESEARCH.zh-TW.md)
 
+## Driving view
+
+The live cockpit opens with the vehicle in the lower centre of the road scene. Rotating the screen preserves its scale relative to the shorter edge. The default vehicle colour is white. Your selected paint colour carries over when you update.
+
 ## Parking overhead view
 
-In Driving View settings, enable **Parking overhead**. The view switches automatically when fresh vehicle data reports a stationary car in P, or when reversing at low speed. To leave the overhead view, tap its return button. When front-camera occupancy is enabled, raised surfaces appear where the model has depth evidence. Repeated paint observations outline candidate parking bays. The nearest confirmed target or estimated raised surface has a distance marker measured from the front camera. The marker turns amber within 8 m and red within 4 m. Side and rear coverage and bumper clearance remain unknown with front cameras alone.
+In Driving View settings, enable **Parking overhead**. Fresh vehicle data selects an elevated rear view when stationary in P and a near-vertical view when reversing at low speed. To leave the overhead view, tap its return button. When front-camera occupancy is enabled, raised surfaces appear where the model has depth evidence. Repeated paint observations outline candidate parking bays. The nearest confirmed target or estimated raised surface has a distance marker measured from the front camera. The marker turns amber within 8 m and red within 4 m. Side and rear coverage and bumper clearance remain unknown with front cameras alone.
 
 With the car stationary in P, a paired cockpit can also display the USB driving model's confirmed lead range. The C4 checks predicted side lines against calibrated front camera images before reporting a candidate bay. The eGPU runs the driving model, and the C4 CPU checks the paint. Missing or expired samples clear from the display.
 
