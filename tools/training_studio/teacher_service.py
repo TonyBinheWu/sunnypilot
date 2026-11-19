@@ -14,6 +14,7 @@ def main():
   parser.add_argument('--receipt',type=Path,required=True)
   parser.add_argument('--adapter',type=Path,help='Immutable JSON adapter pointer with path and SHA-256')
   parser.add_argument('--forward-only',action='store_true',help='Decode the explicit forward-only teacher profile')
+  parser.add_argument('--rear-axle-offset-m',type=float,help='Explicit observed-center to rear-axle vehicle geometry')
   parser.add_argument('--port',type=int,default=8767)
   parser.add_argument('--listen',default='127.0.0.1')
   parser.add_argument('--memory-fraction',type=float,help='Explicit CUDA fraction; default caps this service at 12 GiB')
@@ -55,6 +56,13 @@ def main():
   if forward_only:
     from tools.training_studio.teacher_forward_motion import install as install_forward
     install_forward(model.expert.action_space)
+  from tools.training_studio.teacher_reference_frame import validate_offset,install as install_reference,PROFILE as REFERENCE_PROFILE
+  pointer_offset=adapter.get('rear_axle_offset_m',0.) if adapter else 0.
+  offset=validate_offset(pointer_offset if args.rear_axle_offset_m is None else args.rear_axle_offset_m)
+  if args.rear_axle_offset_m is not None and adapter and 'rear_axle_offset_m' in adapter and offset!=validate_offset(pointer_offset):
+    raise ValueError('CLI geometry disagrees with immutable teacher pointer')
+  if offset and not forward_only:raise ValueError('rear-axle calibration requires the forward-only profile')
+  install_reference(model.expert.action_space,offset)
   processor=get_processor(model.tokenizer,model.config)
   space=model.expert.action_space
   captured={}
@@ -75,6 +83,9 @@ def main():
     from tools.training_studio.teacher_forward_motion import PROFILE as FORWARD_PROFILE
     provenance.update(forward_motion_profile=FORWARD_PROFILE,
       forward_motion_adapter_sha256=digest_file(Path(__file__).with_name('teacher_forward_motion.py')))
+  if offset:
+    provenance.update(reference_frame_profile=REFERENCE_PROFILE,rear_axle_offset_m=offset,
+      reference_frame_adapter_sha256=digest_file(Path(__file__).with_name('teacher_reference_frame.py')))
 
   class Handler(BaseHTTPRequestHandler):
     def reply(self,value,status=200):

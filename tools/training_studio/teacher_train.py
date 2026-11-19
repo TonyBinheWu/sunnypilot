@@ -16,6 +16,7 @@ OBJECTIVE_REVISION='ten_step_immediate_stop_and_restart_v2'
 EXECUTED_OBJECTIVE_REVISION='ten_step_executed_accel_curvature_hold_margin_v3'
 RECOVERY_OBJECTIVE_REVISION='ten_step_balanced_recovery_interior_stop_margin_v4'
 FORWARD_OBJECTIVE_REVISION='ten_step_forward_physics_consistent_hold_v5'
+AXLE_OBJECTIVE_REVISION='ten_step_observed_rear_axle_forward_hold_v7'
 SIGNED_HOLD_OBJECTIVE_REVISION='ten_step_signed_standstill_controls_v6'
 
 
@@ -164,7 +165,7 @@ def acceleration_error(action,target_action,space,*,completed_hold=False,forward
   return (action[...,0]-target_action.to(action.device)[...,0])*std
 
 
-def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False,signed_hold_controls=False,optimization_profile=None):
+def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False,signed_hold_controls=False,optimization_profile=None,rear_axle_offset_m=0.):
   """Keep every completed epoch available for the authoritative driving suite.
 
   Validation ranking may reject a model without testing it in closed loop.
@@ -178,7 +179,7 @@ def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha
   save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(path))
   pointer={'file':path.name,'epoch':epoch,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'metrics':metrics,
     'dataset_sha256':dataset_sha256,'parent_sha256':parent_sha256,'objective_revision':objective_revision,
-    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'signed_hold_controls':signed_hold_controls,'optimization_profile':optimization_profile,'driving_qualified':False}
+    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'signed_hold_controls':signed_hold_controls,'optimization_profile':optimization_profile,'rear_axle_offset_m':rear_axle_offset_m,'driving_qualified':False}
   write_json(path.with_suffix('.json'),pointer)
   return pointer
 
@@ -222,11 +223,15 @@ def main():
   parser.add_argument('--executed-commands',action='store_true',help='Supervise immediate steering and all permitted acceleration commands, with stationary hold margin')
   parser.add_argument('--balanced-stop-modes',action='store_true',help='Balance held, approaching and early-stopped recovery references; train non-held stops inside the legal zone')
   parser.add_argument('--forward-only',action='store_true',help='Use forward-only physical decoding and consistent completed-stop braking supervision')
+  parser.add_argument('--rear-axle-offset-m',type=float,default=0.,help='Explicit observed-center to rear-axle vehicle geometry for action dynamics')
   parser.add_argument('--signed-hold-controls',action='store_true',help='Train stationary controls against the unchanged signed-motion simulator; do not add a negative brake bias')
   parser.add_argument('--grouped-stop-go',action='store_true',help='Guard three stop modes and three permitted directions together with a common descent update')
   parser.add_argument('--correction-warmup',action='store_true',help='Prepend a guarded six-task group for rare physically checked correction labels each epoch')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
+  from tools.training_studio.teacher_reference_frame import validate_offset
+  args.rear_axle_offset_m=validate_offset(args.rear_axle_offset_m)
+  if args.rear_axle_offset_m and not args.forward_only:raise ValueError('rear-axle calibration requires the forward-only profile')
   if args.balanced_stop_modes and not (args.executed_commands and args.paired_stop_go and args.unit_task_gradients):raise ValueError('balanced recovery requires executed commands and paired unit gradients')
   if args.forward_only and not args.balanced_stop_modes:raise ValueError('forward-only training requires balanced recovery')
   if args.signed_hold_controls and (args.forward_only or not args.balanced_stop_modes):raise ValueError('signed standstill requires balanced recovery and the original signed decoder')
@@ -234,6 +239,7 @@ def main():
   if args.correction_warmup and not args.grouped_stop_go:raise ValueError('correction warmup requires six-task guarded updates')
   objective_revision=RECOVERY_OBJECTIVE_REVISION if args.balanced_stop_modes else EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
   if args.forward_only:objective_revision=FORWARD_OBJECTIVE_REVISION
+  if args.rear_axle_offset_m:objective_revision=AXLE_OBJECTIVE_REVISION
   if args.signed_hold_controls:objective_revision=SIGNED_HOLD_OBJECTIVE_REVISION
   if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
@@ -284,6 +290,9 @@ def main():
   if args.forward_only:
     from tools.training_studio.teacher_forward_motion import install as install_forward
     install_forward(model.expert.action_space)
+  if args.rear_axle_offset_m:
+    from tools.training_studio.teacher_reference_frame import install as install_reference
+    install_reference(model.expert.action_space,args.rear_axle_offset_m)
   model.eval()
   parameters={name:p for name,p in model.named_parameters() if p.requires_grad}
   adapter_scope='actual_Edge_expert_and_VLM_LoRA' if any(name.startswith('vlm.') for name in adapter_parameters(model)) else 'actual_Edge_expert_expanded_LoRA'
@@ -303,7 +312,7 @@ def main():
   model._sample_actions=capture
   history=[];checkpoints=[];batch_history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -465,7 +474,7 @@ def main():
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
     checkpoints.append(save_epoch_checkpoint(model,args.output,epoch+1,history[-1],
       dataset_sha256=hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
-      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only,signed_hold_controls=args.signed_hold_controls,optimization_profile=optimization_profile))
+      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only,signed_hold_controls=args.signed_hold_controls,optimization_profile=optimization_profile,rear_axle_offset_m=args.rear_axle_offset_m))
     score=(metrics['red_safe_count'],-metrics['red_hold_speed_mse'],-metrics['validation_loss'])
     if score>best_score:
       best_score=score
@@ -478,7 +487,7 @@ def main():
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'checkpoints':checkpoints,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
-    'objective_revision':objective_revision,'forward_only':args.forward_only,'signed_hold_controls':args.signed_hold_controls,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
+    'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'signed_hold_controls':args.signed_hold_controls,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})
