@@ -32,6 +32,11 @@ export function drawSceneObject(ctx,project,object,options={}) {
   }
   const heading=object.heading||0, {x,y}=object, c=Math.cos(heading),s=Math.sin(heading);
   const rotated=heading?(px,py,z)=>project(x+c*(px-x)-s*(py-y), y+s*(px-x)+c*(py-y),z):project;
+  if(object.following===true && object.state==='confirmed'){
+    const ring=Array.from({length:33},(_,i)=>project(x+1.4*Math.cos(i*Math.PI/16),y+1.4*Math.sin(i*Math.PI/16),.04));
+    if(ring.every(Boolean)){ctx.save();ctx.beginPath();ring.forEach(([u,v],i)=>i?ctx.lineTo(u,v):ctx.moveTo(u,v));
+      ctx.strokeStyle='#23c677';ctx.lineWidth=3;ctx.stroke();ctx.restore();}
+  }
   if(object.state!=='predicted')return paintSceneObject(ctx,rotated,object,options);
   ctx.save();ctx.globalAlpha*=.48;
   try {paintSceneObject(ctx,rotated,object,options);} finally {ctx.restore();}

@@ -8,6 +8,7 @@ import {createObjectTracker} from '../features/drive/contents/vision/hud/object_
 import {surroundingTargets,createModelLeadSource,mergeModelLead} from '../features/drive/contents/vision/hud/scene_objects.js';
 import {trackingReport} from '../features/drive/contents/vision/hud/perception_scene.js';
 import {combineParking,vehicleParkingSource} from '../features/drive/contents/vision/hud/vehicle_parking.js';
+import {worldSource,withWorldContacts,worldNotice} from '../features/drive/contents/vision/hud/world_scene.js';
 import {parkingObservation,PARKING_VIEW} from '../features/drive/contents/vision/hud/parking_environment.js';
 import {drawDrivingScene} from '../features/drive/contents/vision/hud/driving_scene.js';
 import {createCockpitState,telemetry,cockpitHudPayload,SERVICES,MODES} from '../features/cockpit/state.js';
@@ -263,7 +264,7 @@ function render(){
   const frameWindow=coreWindow();
   sceneActivity.sync(frameWindow,visibleCore()==='vision'&&!document.hidden&&!paused&&!document.body.classList.contains('scene-full'));
   const report=cockpitPerceptionReport(frameWindow);
-  if($('visionTools').textContent!=='視覺設定')$('visionTools').textContent='視覺設定';$('visionTools').dataset.attention=String(!report.camera||report.objects.enabled!==true||['load_error','inference_error','unsupported'].includes(report.objects.status));$('visionTools').title=report.summary;$('visionTools').setAttribute('aria-label',`視覺設定：${report.summary}`);$('advancedVisionTools').textContent=document.body.classList.contains('advanced-vision')?'收起進階影像工具':'進階影像工具';
+  if($('visionTools').textContent!=='視覺設定')$('visionTools').textContent='視覺設定';$('visionTools').dataset.attention=String(report.vehicleOnly?false:!report.camera||report.objects.enabled!==true||['load_error','inference_error','unsupported'].includes(report.objects.status));$('visionTools').title=report.summary;$('visionTools').setAttribute('aria-label',`視覺設定：${report.summary}`);$('advancedVisionTools').textContent=document.body.classList.contains('advanced-vision')?'收起進階影像工具':'進階影像工具';
   $('visionDiagnostic').textContent=report.summary;
   if($('trackDetails')?.open && $('visionSettings').open && performance.now()-reportAt>=500){
     reportAt=performance.now();$('trackReport').textContent=trackingReport(frameWindow?.CarrotVisionPerception?.tracking?.());
@@ -275,8 +276,13 @@ function render(){
   $('visionCameraStatus').textContent=[report.camera?'已取得影像；辨識結果仍依下列模型狀態更新。':cameraButton?.disabled?(cameraButton.title||'車機尚未啟用 Carrot Vision，請至工具／診斷確認。'):cameraProgress||'等待自動連線至前鏡頭。',modelSource].filter(Boolean).join(' ');
   $('objectDetectionStatus').textContent=report.objects.text+(report.objects.count?` · 模型回報 ${report.objects.count} 項，其中 ${report.objects.positioned} 項可定位`: '')+(report.objects.classes?`（${report.objects.classes}）`:'');
   $('roadDetectionStatus').textContent=report.road.text+(report.road.count?` · 模型回報 ${report.road.count} 項`: '');
-  $('environmentDetectionStatus').textContent=report.environment.text;
-  if(!savingVision){$('detectionEnvironment').checked=report.environment.enabled===true;$('detectionEnvironment').disabled=report.environment.enabled===null;$('detectionObjects').checked=report.objects.enabled===true;$('detectionRoad').checked=report.road.enabled===true;$('detectionObjects').disabled=report.objects.enabled===null;$('detectionRoad').disabled=report.road.enabled===null;}
+  $('environmentDetectionStatus').textContent=report.vehicleOnly?'等待車機佔用資料。可在網頁設定的「感知運算來源」切換。':report.environment.text;
+  if(!savingVision){
+    for(const [id,modelRow] of [['detectionEnvironment',report.environment],['detectionObjects',report.objects],['detectionRoad',report.road]]){
+      $(id).checked=modelRow.enabled===true;
+      $(id).disabled=report.vehicleOnly===true||modelRow.enabled===null;
+    }
+  }
   $('retryDetection').disabled=!report.objects.enabled&&!report.road.enabled&&!report.environment.enabled;
   $('openBev').textContent=frameWindow?.CarrotWebSettingsState?.vision_presentation==='bev'?'切回道路視角':'切換俯視視角';
   $('resetView').disabled=!frameWindow?.CarrotVisionView||frameWindow?.CarrotWebSettingsState?.vision_presentation==='bev';$('resetViewSetting').disabled=$('resetView').disabled;
@@ -297,6 +303,7 @@ function render(){
       const noticeValue=`${noticeTop}px`;
       if(frameStyle?.getPropertyValue('--cockpit-lane-notice-top')!==noticeValue)frameStyle?.setProperty('--cockpit-lane-notice-top',noticeValue);
       frameWindow.document.body.dataset.cockpitTelemetryFresh=String(Boolean(payload));
+      frameWindow.document.body.dataset.cockpitLongActive=String(t.longActive===true);
     }
     if(payload){frameWindow?.DriveVisionHudContent?.update?.(payload);hudHadData=true;}
     else if(hudHadData){frameWindow?.DriveVisionHudContent?.update?.({sourceStale:true,isMetric:metric==null?true:Boolean(Number(metric))});hudHadData=false;}
@@ -330,14 +337,16 @@ function render(){
   }
   applyAppearance();
   const c=$('scene'),r=$('scene-surface').getBoundingClientRect();
-  if(!r.width||!r.height||visibleCore()==='vision'){vehicleParking.update(false);preview3d?.pause();return;}
+  if(!r.width||!r.height||visibleCore()==='vision'){world.clear();vehicleParking.update(false);preview3d?.pause();return;}
   const scale=Math.min(devicePixelRatio||1,1.5),w=Math.max(1,Math.round(r.width*scale)),h=Math.max(1,Math.round(r.height*scale));if(c.width!==w||c.height!==h){c.width=w;c.height=h;}ctx.setTransform(scale,0,0,scale,0,0);
   const at=performance.now(),car=state.get('carState'),motion={speed:car?.vEgo,yaw:car?.yawRate};
   previewModelLead.update(model,state.stamp('modelV2'),at,motion);
   if(!radar||radar._sourceInvalid){previewTracker.drop('radar');previewRadar=null;}
   else if(previewRadar!==radar){previewRadar=radar;previewTracker.ingest('radar',{stamp:state.stamp('radarState'),objects:surroundingTargets(radar)},at,motion);}
   const parkingAssist=coreWindow()?.CarrotWebSettingsState?.vision_parking_assist===true;
-  const preview={model:t.parked&&!parkingAssist?null:model,radar,tracks:mergeModelLead(previewTracker.sample(at,motion),at)};
+  const observation=world.update(coreWindow()?.__CARROT_BOOTSTRAP__?.vehicleWorldScene===true&&!document.hidden&&!paused);
+  const preview={model:t.parked&&!parkingAssist?null:model,radar,
+    tracks:withWorldContacts(mergeModelLead(previewTracker.sample(at,motion),at),observation,t.longActive===true)};
   const camera=t.parked&&parkingAssist?{...PARKING_VIEW}:null,night=document.body.classList.contains('night');
   vehicleParking.update(!!camera&&coreWindow()?.__CARROT_BOOTSTRAP__?.vehicleParkingScene===true&&!document.hidden&&!paused);
   const observed=vehicleParking.sample();
@@ -347,6 +356,8 @@ function render(){
     camera.parkingPoints=preview.parking?.flatMap(slot=>slot.corners);
     if(observed)$('sceneStatus').textContent='停車俯視 · 車機 USB eGPU 模型'+(preview.parkingCue?' · 距前鏡頭約 '+Math.round(preview.parkingCue.distance)+' m':'')+(observed.slots.length?' · 影像覆核車格 '+observed.slots.length:'');
   }
+  const sensorNotice=worldNotice(observation);
+  if(sensorNotice)$('sceneStatus').textContent=sensorNotice;
   const lamps=vehicleLamps(car,!car,at);
   const factory=coreWindow()?.CarrotCreateDrivingScene3D;
   if(previewOwner!==factory){releasePreview();if(factory){
@@ -376,5 +387,6 @@ $('modeApply').onclick=async()=>{
 };
 window.CarrotCockpit={layoutVersion:12,back(){const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}if(view==='navigation'&&nav.contentDocument?.body.classList.contains('search-open')){closeNavigationSearch();return true;}if(view!=='navigation'&&closeEmbeddedDialog(coreWindow()))return true;if(view==='setting'&&coreWindow()?.CarrotCockpitControls?.back?.())return true;if(view==='vision'&&document.body.classList.contains('advanced-vision')){advancedVision(false);return true;}if(!['vision','navigation'].includes(view)){panel(primary);return true;}return false;},pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(visibleCore());connect();}};
 const vehicleParking=vehicleParkingSource(window);
+const world=worldSource(window);
 const updateClock=()=>{$('clock').textContent=cockpitClock();};updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',updateClock);
 panel(view);connect();setInterval(()=>{if(!paused)render();},100);render();

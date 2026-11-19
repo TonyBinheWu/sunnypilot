@@ -1,6 +1,12 @@
 "use strict";
 
 window.CarrotTranslations.register("zh-tw", {
+  vision_compute_source: "感知運算來源",
+  vision_compute_desc: "已連接過 USB eGPU 的車機會自動採用車機感知。",
+  vision_compute_auto: "自動",
+  vision_compute_vehicle: "僅車機",
+  vision_compute_viewer: "允許觀看裝置辨識",
+  vision_compute_waiting: "車機感知 · 等待車機提供對應資料",
   name: "Traditional Chinese",
   nativeName: "繁體中文",
   shortName: "繁中",

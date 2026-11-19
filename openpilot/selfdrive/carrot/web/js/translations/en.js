@@ -1,6 +1,12 @@
 "use strict";
 
 window.CarrotTranslations.register("en", {
+  vision_compute_source: "Perception processor",
+  vision_compute_desc: "Automatic uses vehicle perception on devices with a known USB eGPU.",
+  vision_compute_auto: "Automatic",
+  vision_compute_vehicle: "Vehicle only",
+  vision_compute_viewer: "Allow viewer inference",
+  vision_compute_waiting: "Vehicle perception · awaiting vehicle observations",
   name: "English",
   nativeName: "English",
   shortName: "EN",

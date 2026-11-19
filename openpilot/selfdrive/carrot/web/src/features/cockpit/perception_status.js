@@ -12,6 +12,14 @@ export function cockpitPerceptionReport(frame){
   let snapshot;try{snapshot=frame?.CarrotVisionPerception?.snapshot?.();}catch{}
   const settings=frame?.CarrotWebSettingsState||{},video=frame?.document?.getElementById?.('carrotRoadVideo');
   const camera=Boolean(video&&video.readyState>=2&&video.videoWidth>0&&video.videoHeight>0);
+  if(snapshot?.vehicleOnly){
+    const native=snapshot.world;
+    const count=native?.contacts?.length??0;
+    const lenses=(native?.cameras??[]).map(k=>k==='road'?'遠距':'廣角');
+    const summary=['車機感知',...(lenses.length?['USB eGPU '+lenses.join('、')]:[]),...(count?['雷達量測 '+count+' 筆']:[])].join(' · ');
+    const row={enabled:false,status:'vehicle',count:0,positioned:0,classes:'',text:'已選用車機感知'};
+    return {vehicleOnly:true,camera,objects:row,road:row,environment:{enabled:false,text:'等待車機佔用資料'},summary:summary==='車機感知'?summary+' · 等待有效量測':summary};
+  }
   function row(key){
     const raw=settings[key==='objects'?'vision_object_detection':'vision_road_detection'];
     const enabled=typeof raw==='boolean'?raw:null;

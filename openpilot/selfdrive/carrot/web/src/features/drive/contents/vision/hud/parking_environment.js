@@ -19,7 +19,7 @@ export function parkingObservation({tracks=[], environment, environmentMotion}={
     if (!finite(track.x) || !finite(track.y)) continue;
     // radarState and the model lead use a bumper reference. Return them to the
     // camera reference used by ground projection and occupancy before comparing.
-    if (['driving_model_lead','native_lead_reference'].includes(track.origin)) {
+    if (['driving_model_lead','native_lead_reference','radar_contact'].includes(track.origin)) {
       consider(track.x+1.52, track.y, 'target', track.x);
     } else if (track.positionMethod === 'flat_ground_projection' || track.origin === 'calibrated_camera') {
       consider(track.x, track.y, 'target');

@@ -1,6 +1,12 @@
 "use strict";
 
 window.CarrotTranslations.register("ko", {
+  vision_compute_source: "인지 연산 장치",
+  vision_compute_desc: "자동 설정은 USB eGPU 사용 이력이 있는 차량에서 차량 인지 데이터를 사용합니다.",
+  vision_compute_auto: "자동",
+  vision_compute_vehicle: "차량만",
+  vision_compute_viewer: "뷰어 추론 허용",
+  vision_compute_waiting: "차량 인지 · 차량 관측 데이터 대기",
   name: "Korean",
   nativeName: "한국어",
   shortName: "KO",

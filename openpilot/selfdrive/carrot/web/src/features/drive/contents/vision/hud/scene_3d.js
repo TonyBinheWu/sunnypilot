@@ -90,7 +90,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
     if(volume.instanceColor)volume.instanceColor.needsUpdate=true;
     volume.instanceMatrix.needsUpdate=true;lastPositions=positions;
   }
-  let shadow, highlightedCar, mapContext, lastMapLines;
+  let shadow, highlightedCar, mapContext, lastMapLines, followRing;
   const shadowMatrix=new T.Matrix4();
   function placeShadow(i,x,y,heading,length,width){
     shadowMatrix.makeRotationZ(heading);shadowMatrix.scale(shadowScale.set(length,width,1));shadowMatrix.setPosition(x,y,.035);
@@ -167,6 +167,8 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
         const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(new Float32Array(72),3).setUsage(T.DynamicDrawUsage));
         const node=new T.Mesh(g,new T.MeshBasicMaterial({color:'#e9bf72',side:T.DoubleSide}));node.userData.owned=true;node.frustumCulled=false;world.add(node);parkingNodes.push(node);
       }
+      followRing=new T.Mesh(new T.RingGeometry(1.33,1.46,40),new T.MeshBasicMaterial({color:'#23c677',side:T.DoubleSide}));
+      followRing.userData.owned=true;followRing.visible=false;world.add(followRing);
       return true;
     }catch{failed=true;dispose();lastStats={...lastStats,backend:'canvas-fallback'};return false;}
   }
@@ -258,6 +260,9 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
         if(node.visible)positions.needsUpdate=true;
       }
       const visible=new Set(),objects=sceneTargets(data);
+      const follow=objects.find(o=>o.following===true && o.state==='confirmed');
+      followRing.visible=!!follow;
+      if(follow)followRing.position.set(follow.x,follow.y,.06);
       const lodCounts=[0,0,0],frameTime=target.performance?.now?.()??Date.now();
       let shadowCount=0;placeShadow(shadowCount++,0,0,0,5.2*(skin?.scale?.[0]||1),2.4*(skin?.scale?.[1]||1));
       for(const [i,o] of objects.entries()){
@@ -320,7 +325,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       }
       for(const [key,node] of hudNodes)if(!imageKeys.has(key)){hud.remove(node);hudNodes.delete(key);}
       if(hudNodes.size){renderer.setViewport?.(0,0,width,height);renderer.autoClear=false;renderer.clearDepth();renderer.render(hud,hudCamera);}
-      lastStats={backend:'webgl2',parkingObservation:cue,egoModel:cuv?'generic-cuv':skin?.id||'fallback',modelLibrary:library.status,lodCounts,objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
+      lastStats={backend:'webgl2',parkingObservation:cue,followingShown:!!follow,radarContacts:objects.filter(o=>o.origin==='radar_contact').length,egoModel:cuv?'generic-cuv':skin?.id||'fallback',modelLibrary:library.status,lodCounts,objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
     }catch{failed=true;dispose();canvas.hidden=true;lastStats={...lastStats,backend:'canvas-fallback'};return false;}
   },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats,environmentRanges:active&&!lost&&renderer&&lastRanges?lastRanges.length/6:0,environmentCells:active&&!lost&&renderer?volume?.count||0:0}),destroy(){closed=true;egoModel.dispose();library.dispose();canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);volume?.dispose();dispose();canvas.remove();}};
 }

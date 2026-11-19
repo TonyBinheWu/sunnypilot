@@ -39,6 +39,12 @@ body[data-cockpit-panel="setting"] #btnSettingSearch{background:transparent!impo
 
 /* The cockpit supplies one coherent instrument cluster; original editing is
    still available in Advanced tools without overwriting the saved HUD layout. */
+body[data-cockpit-panel="vision"] .tesla-notice[data-world-alert="true"]:not([hidden]) {
+  display:block!important;left:12px!important;right:auto!important;top:auto!important;
+  bottom:calc(var(--cockpit-bottom-obstruction,0px) + 12px)!important;max-width:68%;width:max-content;
+  padding:8px 12px;background:#302916!important;color:#ffe5a8!important;font-size:clamp(13px,2.4vmin,19px)!important;
+  line-height:1.3;white-space:normal;pointer-events:none;
+}
 body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .tesla-metrics,
 body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .tesla-notice,
 body[data-cockpit-panel="vision"]:not(.cockpit-vision-tools) .tesla-perception,

@@ -455,6 +455,7 @@ WEB_SETTINGS_SPEC: List[_Field] = [
   _Field("vision_metric_layout", "str", _normalize_metric_layout(''), normalize=_normalize_metric_layout, hidden=True),
   _Field("vision_rainbow_lane", "bool", False),
   _Field("vision_vehicle_color", "str", "white", normalize=_vehicle_color),
+  _Field("vision_compute_source", "enum", "auto", choices={"auto", "vehicle", "viewer"}),
   _Field("vision_object_detection", "bool", False),
   _Field("vision_road_detection", "bool", False),
   _Field("vision_environment_occupancy", "bool", False),
