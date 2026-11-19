@@ -224,12 +224,14 @@ def main():
   parser.add_argument('--forward-only',action='store_true',help='Use forward-only physical decoding and consistent completed-stop braking supervision')
   parser.add_argument('--signed-hold-controls',action='store_true',help='Train stationary controls against the unchanged signed-motion simulator; do not add a negative brake bias')
   parser.add_argument('--grouped-stop-go',action='store_true',help='Guard three stop modes and three permitted directions together with a common descent update')
+  parser.add_argument('--correction-warmup',action='store_true',help='Prepend a guarded six-task group for rare physically checked correction labels each epoch')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
   if args.balanced_stop_modes and not (args.executed_commands and args.paired_stop_go and args.unit_task_gradients):raise ValueError('balanced recovery requires executed commands and paired unit gradients')
   if args.forward_only and not args.balanced_stop_modes:raise ValueError('forward-only training requires balanced recovery')
   if args.signed_hold_controls and (args.forward_only or not args.balanced_stop_modes):raise ValueError('signed standstill requires balanced recovery and the original signed decoder')
   if args.grouped_stop_go and not (args.paired_stop_go and args.unit_task_gradients and args.balanced_stop_modes):raise ValueError('grouped updates require balanced paired unit gradients')
+  if args.correction_warmup and not args.grouped_stop_go:raise ValueError('correction warmup requires six-task guarded updates')
   objective_revision=RECOVERY_OBJECTIVE_REVISION if args.balanced_stop_modes else EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
   if args.forward_only:objective_revision=FORWARD_OBJECTIVE_REVISION
   if args.signed_hold_controls:objective_revision=SIGNED_HOLD_OBJECTIVE_REVISION
@@ -237,6 +239,7 @@ def main():
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
   if args.balanced_stop_modes:optimization_profile='paired_balanced_cross_task_pcgrad_sgd_v4'
   if args.grouped_stop_go:optimization_profile='grouped_six_task_unit_descent_sgd_v6'
+  if args.correction_warmup:optimization_profile='grouped_six_task_correction_replay_sgd_v7'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:
@@ -419,7 +422,7 @@ def main():
     batch_history=[]
     values=[]
     if args.paired_stop_go:
-      pairs=paired_groups(train,epoch) if args.grouped_stop_go else paired_indices(train,epoch,balanced_stop_modes=args.balanced_stop_modes)
+      pairs=paired_groups(train,epoch,correction_warmup=args.correction_warmup) if args.grouped_stop_go else paired_indices(train,epoch,balanced_stop_modes=args.balanced_stop_modes)
       for batch,indices in enumerate(pairs,1):
         stop_index,go_index,*extra=indices
         def group_progress(**fields):emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**fields)

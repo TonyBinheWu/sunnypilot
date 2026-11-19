@@ -94,6 +94,8 @@ test('cross-task sampling is shown only for its measured optimizer profile',()=>
   assert.match(teacherValidationSummary(value),/六類共同更新/);
   assert.doesNotMatch(teacherValidationSummary(value),/本組三類停止 loss/);
   assert.doesNotMatch(teacherValidationSummary(value),/本對/);
+  value.teacher_training.optimization_profile='grouped_six_task_correction_replay_sgd_v7';
+  assert.match(teacherValidationSummary(value),/修正樣本優先重播/);
 });
 
 test('group substeps cannot relabel a previous completed loss as the next batch',()=>{

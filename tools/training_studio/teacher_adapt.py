@@ -238,6 +238,7 @@ def main():
           if settings.get('executed_commands'):args.append('--executed-commands')
           if settings.get('balanced_stop_modes'):args.append('--balanced-stop-modes')
           if settings.get('grouped_stop_go'):args.append('--grouped-stop-go')
+          if settings.get('correction_warmup'):args.append('--correction-warmup')
           if settings.get('forward_only'):args.append('--forward-only')
           if settings.get('signed_hold_controls'):args.append('--signed-hold-controls')
           child=subprocess.Popen(remote.command(command(args)),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
