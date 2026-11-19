@@ -19,6 +19,7 @@ FORWARD_OBJECTIVE_REVISION='ten_step_forward_physics_consistent_hold_v5'
 AXLE_OBJECTIVE_REVISION='ten_step_observed_rear_axle_forward_hold_v7'
 GENTLE_RECOVERY_OBJECTIVE_REVISION='ten_step_gentle_boundary_recovery_v8'
 PEAK_HOLD_OBJECTIVE_REVISION='ten_step_executed_peak_hold_brake_margin_v9'
+PEAK_EXECUTION_OBJECTIVE_REVISION='ten_step_executed_peak_hold_and_steering_v10'
 SIGNED_HOLD_OBJECTIVE_REVISION='ten_step_signed_standstill_controls_v6'
 
 
@@ -128,7 +129,7 @@ def restart_command_loss(accel_error):
   return immediate_command_loss(accel_error)
 
 
-def immediate_steering_loss(action,target_action,space,history_xyz):
+def immediate_steering_loss(action,target_action,space,history_xyz,*,executed_peak=False):
   """Supervise the curvature commands that execute before the next replan.
 
   Course/rotation losses over a long horizon can hide an incorrect first turn
@@ -139,7 +140,10 @@ def immediate_steering_loss(action,target_action,space,history_xyz):
   speed=torch.linalg.vector_norm(history_xyz[...,-1,:2]-history_xyz[...,-2,:2],dim=-1)/space.dt
   scale=speed.clamp(1,5).square().unsqueeze(-1)
   error=(action[...,1]-target_action[...,1])*space.curvature_std.to(action.device)*scale
-  return immediate_command_loss(error)
+  loss=immediate_command_loss(error)
+  # A short turn-entry error can disappear in horizon means even though
+  # only the first second executes before replanning. Keep the mean terms.
+  return loss+200*error[:,:10].square().amax() if executed_peak else loss
 
 
 def held_brake_margin_loss(action,space,*,executed_peak=False):
@@ -324,7 +328,7 @@ def main():
     for row in rows:stop_training_margin(row,args.balanced_stop_modes)
     objective_revision=GENTLE_RECOVERY_OBJECTIVE_REVISION
   if args.forward_only and args.executed_commands and not args.signed_hold_controls:
-    objective_revision=PEAK_HOLD_OBJECTIVE_REVISION
+    objective_revision=PEAK_EXECUTION_OBJECTIVE_REVISION
   if {r['seed'] for r in rows if r['split']=='train'} & {r['seed'] for r in rows if r['split']=='validation'}: raise ValueError('seed leakage')
   if any(r['seed'] in (300,301,302,303) for r in rows): raise ValueError('qualification seeds must remain held out')
   captured={}
@@ -399,7 +403,7 @@ def main():
       restart_error=(action[...,0]-item['target_action'].to(action.device)[...,0])*accel_std
       loss=loss+restart_command_loss(restart_error)
     if args.executed_commands:
-      loss=loss+immediate_steering_loss(action,item['target_action'].to(action.device),model.expert.action_space,item['ego_history_xyz'].to(action.device))
+      loss=loss+immediate_steering_loss(action,item['target_action'].to(action.device),model.expert.action_space,item['ego_history_xyz'].to(action.device),executed_peak=args.forward_only)
     if item['row']['stop_required']:
       held=(torch.linalg.vector_norm(ref_velocity,dim=-1)<.15).float()
       margin=stop_training_margin(item['row'],args.balanced_stop_modes)

@@ -75,6 +75,39 @@ class TeacherLearningTest(unittest.TestCase):
     braking=torch.zeros_like(action);braking[...,0]=-.25
     self.assertEqual(float(held_brake_margin_loss(braking,space)),0.)
 
+  def test_executed_steering_peak_protects_short_symmetric_turn_entry_in_physical_units(self):
+    import torch
+    from tools.training_studio.teacher_train import immediate_steering_loss
+    space=SimpleNamespace(curvature_std=torch.tensor(.2),dt=.1)
+    history=torch.zeros(1,20,3);history[0,-1,0]=.4
+    target=torch.zeros(1,64,2)
+    for direction in (-1.,1.):
+      action=target.clone();action[0,7,1]=direction*.05;action.requires_grad_()
+      mean=immediate_steering_loss(action,target,space,history)
+      peak=immediate_steering_loss(action,target,space,history,executed_peak=True)
+      # Physical curvature .01 times 4m/s squared = .16m/s^2.
+      self.assertAlmostEqual(float((peak-mean).detach()),200*.16**2,places=5)
+      peak.backward();self.assertGreater(float(action.grad[0,7,1])*direction,0.)
+      self.assertEqual(float(action.grad[...,0].abs().sum()),0.)
+      self.assertEqual(float(immediate_steering_loss(target,target,space,history,executed_peak=True)),0.)
+    sparse=target.clone();sparse[0,7,1]=.05
+    dense=target.clone();dense[0,:10,1]=.05
+    sparse_extra=immediate_steering_loss(sparse,target,space,history,executed_peak=True)-immediate_steering_loss(sparse,target,space,history)
+    dense_extra=immediate_steering_loss(dense,target,space,history,executed_peak=True)-immediate_steering_loss(dense,target,space,history)
+    torch.testing.assert_close(sparse_extra,dense_extra)
+
+  def test_executed_steering_peak_ignores_commands_after_next_replan(self):
+    import torch
+    from tools.training_studio.teacher_train import immediate_steering_loss
+    space=SimpleNamespace(curvature_std=torch.tensor(.2),dt=.1)
+    history=torch.zeros(1,20,3);history[0,-1,0]=.4
+    action=torch.zeros(1,64,2);action[:,10:,1]=.2;action.requires_grad_()
+    target=torch.zeros_like(action)
+    mean=immediate_steering_loss(action,target,space,history)
+    peak=immediate_steering_loss(action,target,space,history,executed_peak=True)
+    self.assertEqual(float((peak-mean).detach()),0.)
+    peak.backward();self.assertEqual(float(action.grad[:,20:].abs().sum()),0.)
+
   def test_executed_hold_peak_cannot_be_diluted_by_other_braking_commands(self):
     import torch
     from tools.training_studio.teacher_train import held_brake_margin_loss
