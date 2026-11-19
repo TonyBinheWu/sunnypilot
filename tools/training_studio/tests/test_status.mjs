@@ -88,6 +88,10 @@ test('cross-task sampling is shown only for its measured optimizer profile',()=>
   value.teacher_training.optimization_profile='paired_balanced_stop_modes_pcgrad_sgd_v3';
   assert.doesNotMatch(teacherValidationSummary(value),/九種交錯配對/);
   assert.match(teacherValidationSummary(value),/均衡配對/);
+  value.teacher_training={optimization_profile:'grouped_six_task_unit_descent_sgd_v6',phase:'training',stop_loss_before_step:2,stop_loss:1,go_loss_before_step:4,go_loss:3};
+  assert.match(teacherValidationSummary(value),/六類共同更新/);
+  assert.match(teacherValidationSummary(value),/本組三類停止 loss 2.000 → 1.000/);
+  assert.doesNotMatch(teacherValidationSummary(value),/本對/);
 });
 test('previous real losses stay clearly labeled while a new round has no optimizer results',()=>{
   const value={teacher_training:{phase:'generating',cycle:4},teacher_runs:[{cycle:3,history:[{train_loss:2,validation_loss:3}]}]};

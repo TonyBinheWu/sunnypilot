@@ -164,7 +164,7 @@ def acceleration_error(action,target_action,space,*,completed_hold=False,forward
   return (action[...,0]-target_action.to(action.device)[...,0])*std
 
 
-def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False,signed_hold_controls=False):
+def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False,signed_hold_controls=False,optimization_profile=None):
   """Keep every completed epoch available for the authoritative driving suite.
 
   Validation ranking may reject a model without testing it in closed loop.
@@ -178,7 +178,7 @@ def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha
   save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(path))
   pointer={'file':path.name,'epoch':epoch,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'metrics':metrics,
     'dataset_sha256':dataset_sha256,'parent_sha256':parent_sha256,'objective_revision':objective_revision,
-    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'signed_hold_controls':signed_hold_controls,'driving_qualified':False}
+    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'signed_hold_controls':signed_hold_controls,'optimization_profile':optimization_profile,'driving_qualified':False}
   write_json(path.with_suffix('.json'),pointer)
   return pointer
 
@@ -223,17 +223,20 @@ def main():
   parser.add_argument('--balanced-stop-modes',action='store_true',help='Balance held, approaching and early-stopped recovery references; train non-held stops inside the legal zone')
   parser.add_argument('--forward-only',action='store_true',help='Use forward-only physical decoding and consistent completed-stop braking supervision')
   parser.add_argument('--signed-hold-controls',action='store_true',help='Train stationary controls against the unchanged signed-motion simulator; do not add a negative brake bias')
+  parser.add_argument('--grouped-stop-go',action='store_true',help='Guard three stop modes and three permitted directions together with a common descent update')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
   if args.balanced_stop_modes and not (args.executed_commands and args.paired_stop_go and args.unit_task_gradients):raise ValueError('balanced recovery requires executed commands and paired unit gradients')
   if args.forward_only and not args.balanced_stop_modes:raise ValueError('forward-only training requires balanced recovery')
   if args.signed_hold_controls and (args.forward_only or not args.balanced_stop_modes):raise ValueError('signed standstill requires balanced recovery and the original signed decoder')
+  if args.grouped_stop_go and not (args.paired_stop_go and args.unit_task_gradients and args.balanced_stop_modes):raise ValueError('grouped updates require balanced paired unit gradients')
   objective_revision=RECOVERY_OBJECTIVE_REVISION if args.balanced_stop_modes else EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
   if args.forward_only:objective_revision=FORWARD_OBJECTIVE_REVISION
   if args.signed_hold_controls:objective_revision=SIGNED_HOLD_OBJECTIVE_REVISION
   if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
   if args.balanced_stop_modes:optimization_profile='paired_balanced_cross_task_pcgrad_sgd_v4'
+  if args.grouped_stop_go:optimization_profile='grouped_six_task_unit_descent_sgd_v6'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:
@@ -409,17 +412,19 @@ def main():
   best_metrics,best_epoch=baseline,0
   balanced_metrics,balanced_epoch=baseline,0
   best_score=(baseline['red_safe_count'],-baseline['red_hold_speed_mse'],-baseline['validation_loss'])
-  from tools.training_studio.teacher_optim import paired_indices,paired_step
+  from tools.training_studio.teacher_optim import paired_indices,paired_groups,paired_step
   optimizer=(torch.optim.SGD if args.paired_stop_go else torch.optim.AdamW)(parameters.values(),lr=args.learning_rate,weight_decay=0)
   emit('training',epoch=0,baseline=baseline,trainable_parameters=sum(p.numel() for p in parameters.values()))
   for epoch in range(args.epochs):
     values=[]
     if args.paired_stop_go:
-      pairs=paired_indices(train,epoch,balanced_stop_modes=args.balanced_stop_modes)
-      for batch,(stop_index,go_index) in enumerate(pairs,1):
-        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients)
+      pairs=paired_groups(train,epoch) if args.grouped_stop_go else paired_indices(train,epoch,balanced_stop_modes=args.balanced_stop_modes)
+      for batch,indices in enumerate(pairs,1):
+        stop_index,go_index,*extra=indices
+        def group_progress(**fields):emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**fields)
+        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients,extra_items=tuple(train[i] for i in extra),progress=group_progress if extra else None)
         values.append(outcome['loss'])
-        emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=2,baseline=baseline,**outcome)
+        emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**outcome)
     else:
       for batch,index in enumerate(np.random.default_rng(epoch+42).permutation(len(train))):
         optimizer.zero_grad()
@@ -455,7 +460,7 @@ def main():
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
     checkpoints.append(save_epoch_checkpoint(model,args.output,epoch+1,history[-1],
       dataset_sha256=hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
-      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only,signed_hold_controls=args.signed_hold_controls))
+      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only,signed_hold_controls=args.signed_hold_controls,optimization_profile=optimization_profile))
     score=(metrics['red_safe_count'],-metrics['red_hold_speed_mse'],-metrics['validation_loss'])
     if score>best_score:
       best_score=score
