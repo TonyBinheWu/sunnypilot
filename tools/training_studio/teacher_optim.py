@@ -116,11 +116,14 @@ def project_group(gradients):
     raise ValueError('two to six matching flat task gradients required')
   matrix=torch.stack(gradients)
   if not bool(torch.isfinite(matrix).all()):raise ValueError('nonfinite grouped gradient')
-  norms=matrix.norm(dim=1)
+  # Near-opposed tasks can cancel below FP32 Gram/cross-sum precision. Compute
+  # their geometry before casting back, so unit normalization cannot amplify
+  # an accepted tiny negative gain into a genuine ascent direction.
+  precise=matrix.double();norms=precise.norm(dim=1)
   if not bool(torch.isfinite(norms).all()):raise ValueError('nonfinite grouped gradient norm')
-  unit=matrix/norms.clamp_min(1e-12).unsqueeze(1)
+  unit=precise/norms.clamp_min(1e-12).unsqueeze(1)
   active=(norms>1e-12).nonzero().flatten().tolist()
-  gram=(unit@unit.T).double().cpu().numpy();best=None
+  gram=(unit@unit.T).cpu().numpy();best=None
   for size in range(1,len(active)+1):
     for subset in itertools.combinations(active,size):
       block=gram[np.ix_(subset,subset)]
@@ -131,9 +134,11 @@ def project_group(gradients):
       squared=float(weights@gram@weights)
       if best is None or squared<best[0]:best=(squared,weights)
   weights=np.zeros(len(gradients)) if best is None else best[1]
-  joint=torch.as_tensor(weights,device=matrix.device,dtype=matrix.dtype)@unit
-  gains=unit@joint
-  if bool((gains<-1e-6).any()):raise ValueError('grouped direction is not common descent')
+  joint=(torch.as_tensor(weights,device=matrix.device,dtype=precise.dtype)@unit).to(matrix.dtype)
+  gains=unit@joint.double()
+  length=joint.double().norm()
+  if bool(length>1e-6) and bool(((unit@(joint.double()/length))<-1e-8).any()):
+    raise ValueError('normalized grouped direction is not common descent')
   return joint,weights.tolist(),float(gains.min()),bool((gram<-1e-6).any())
 
 

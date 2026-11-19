@@ -20,6 +20,14 @@ class CommonDescentTest(unittest.TestCase):
     scaled,_,_,_=project_group([g*scale for g,scale in zip(gradients,(.01,100,2,.5,10,.1))])
     torch.testing.assert_close(scaled,joint,atol=1e-6,rtol=1e-5)
 
+  def test_nearly_opposed_tasks_remain_descent_after_unit_normalization(self):
+    from tools.training_studio.teacher_optim import project_group
+    torch.manual_seed(0);axis=torch.randn(256);axis=axis/axis.norm()
+    gradients=[((-1.)**i)*axis+1e-5*torch.randn(256) for i in range(6)]
+    joint,_,_,_=project_group(gradients);self.assertGreater(float(joint.norm()),1e-6)
+    unit=torch.stack([g.double()/g.double().norm() for g in gradients])
+    self.assertGreater(float((unit@(joint.double()/joint.double().norm())).min()),0.)
+
   def test_opposed_singular_and_zero_gradients_do_not_create_a_harmful_direction(self):
     from tools.training_studio.teacher_optim import project_group
     joint,_,gain,_=project_group([torch.tensor([1.,0.]),torch.tensor([-1.,0.]),torch.zeros(2)])
