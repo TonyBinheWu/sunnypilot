@@ -298,9 +298,9 @@ def main():
     captured['action']=action.detach().cpu().clone()
     return action
   model._sample_actions=capture
-  history=[];checkpoints=[]
+  history=[];checkpoints=[];batch_history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -416,6 +416,7 @@ def main():
   optimizer=(torch.optim.SGD if args.paired_stop_go else torch.optim.AdamW)(parameters.values(),lr=args.learning_rate,weight_decay=0)
   emit('training',epoch=0,baseline=baseline,trainable_parameters=sum(p.numel() for p in parameters.values()))
   for epoch in range(args.epochs):
+    batch_history=[]
     values=[]
     if args.paired_stop_go:
       pairs=paired_groups(train,epoch) if args.grouped_stop_go else paired_indices(train,epoch,balanced_stop_modes=args.balanced_stop_modes)
@@ -424,6 +425,7 @@ def main():
         def group_progress(**fields):emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**fields)
         outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients,extra_items=tuple(train[i] for i in extra),progress=group_progress if extra else None)
         values.append(outcome['loss'])
+        batch_history.append({'batch':batch,'loss':outcome['loss'],'loss_before_step':outcome['loss_before_step']})
         emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**outcome)
     else:
       for batch,index in enumerate(np.random.default_rng(epoch+42).permutation(len(train))):

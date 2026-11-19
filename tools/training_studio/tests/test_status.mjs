@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary,teacherBatchObservation} from '../web/status.mjs';
+import {workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary,teacherBatchObservation,teacherTrainingLoss} from '../web/status.mjs';
 
 test('a connected teacher does not make a stale qualification controller look active',()=>{
   const value={time:100,teacher:{updated:99,connected:true,qualified:false,qualification:{state:'running',updated:50,done:0,total:11}}};
@@ -90,8 +90,28 @@ test('cross-task sampling is shown only for its measured optimizer profile',()=>
   assert.match(teacherValidationSummary(value),/均衡配對/);
   value.teacher_training={optimization_profile:'grouped_six_task_unit_descent_sgd_v6',phase:'training',stop_loss_before_step:2,stop_loss:1,go_loss_before_step:4,go_loss:3};
   assert.match(teacherValidationSummary(value),/六類共同更新/);
-  assert.match(teacherValidationSummary(value),/本組三類停止 loss 2.000 → 1.000/);
+  assert.doesNotMatch(teacherValidationSummary(value),/本組三類停止 loss/);
   assert.doesNotMatch(teacherValidationSummary(value),/本對/);
+});
+
+test('group substeps cannot relabel a previous completed loss as the next batch',()=>{
+  const value={teacher_training:{cycle:56,epoch:1,phase:'training',optimization_profile:'grouped_six_task_unit_descent_sgd_v6',group_stage:'gradient',group_task:2,group_tasks:6,batch:2,loss:99,loss_before_step:100}};
+  assert.equal(teacherBatchObservation(value).entries.length,0);
+  assert.equal(teacherTrainingLoss(value).value,undefined);
+  value.teacher_training.history=[{train_loss:12}];
+  assert.deepEqual(teacherTrainingLoss(value),{label:'最近完整 epoch loss',value:12});
+  value.teacher_training.task_count=6;
+  assert.deepEqual(teacherTrainingLoss(value),{label:'最近回報組 loss',value:99});
+  value.teacher_training.batch_history=[{batch:1,loss:4,loss_before_step:5}];
+  let observed=teacherBatchObservation(value);
+  assert.deepEqual(observed.entries,[{batch:1,loss:4,before:5}]);
+  assert.deepEqual(teacherTrainingLoss(value),{label:'最近完成組 loss',value:4});
+  value.teacher_training.stage='validation';
+  value.teacher_training.batch_history.push({batch:2,loss:3,loss_before_step:4});
+  observed=teacherBatchObservation(value,observed);
+  assert.deepEqual(observed.entries.map(row=>row.batch),[1,2]);
+  assert.match(observed.label,/工作程序已記錄/);
+  assert.doesNotMatch(teacherValidationSummary(value),/計算梯度/);
 });
 test('previous real losses stay clearly labeled while a new round has no optimizer results',()=>{
   const value={teacher_training:{phase:'generating',cycle:4},teacher_runs:[{cycle:3,history:[{train_loss:2,validation_loss:3}]}]};
