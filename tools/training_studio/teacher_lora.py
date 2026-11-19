@@ -88,7 +88,9 @@ def load(model,path):
 def expand(model):
   """Increase conditional expert capacity; keep the VLM and all base weights frozen."""
   paths=[]
-  suffixes=('.q_proj','.k_proj','.v_proj','.o_proj','.gate_proj','.up_proj','.down_proj')
+  # The pinned Cosmos3 Edge text expert uses relu2 fc1/fc2, not the gated
+  # gate/up/down projections used by Llama-style experts.
+  suffixes=('.q_proj','.k_proj','.v_proj','.o_proj','.gate_proj','.up_proj','.down_proj','.mlp.fc1','.mlp.fc2')
   for name,module in list(model.expert.expert.named_modules()):
     if '.base' in name or not isinstance(module,nn.Linear) or not name.endswith(suffixes): continue
     parent_name,_,leaf=name.rpartition('.')
