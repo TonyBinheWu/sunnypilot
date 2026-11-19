@@ -108,6 +108,8 @@ const WEB_SETTINGS_GROUPS = [
       {id:"vision_parking_assist",titleKey:"vision_parking_assist",descKey:"vision_parking_assist_desc"},
       {id:"vision_parking_map",titleKey:"vision_parking_map",descKey:"vision_parking_map_desc"},
       {id:"vision_vehicle_color",titleKey:"vision_vehicle_color",descKey:"vision_vehicle_color_desc",options:["white","silver","gray","black","red","blue","green","beige","orange"].map(value=>({value,labelKey:`vehicle_color_${value}`}))},
+      {id:"vision_compute_source",titleKey:"vision_compute_source",descKey:"vision_compute_desc",
+        options:["auto","vehicle","viewer"].map(value=>({value,labelKey:"vision_compute_"+value}))},
       {id:"vision_object_detection",titleKey:"scene_detection",descKey:"scene_detection_desc"},
       {id:"vision_road_detection",titleKey:"road_detection",descKey:"road_detection_desc"},
       {id:"vision_environment_occupancy",titleKey:"vision_environment_occupancy",descKey:"vision_environment_occupancy_desc"},

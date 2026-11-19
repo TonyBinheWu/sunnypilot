@@ -177,6 +177,11 @@ def deduplicate_corner_candidates(candidates):
   return objects
 
 
+def position_timestamp(parser, address, signal):
+  # CANParser timestamps each decoded signal. A held slot keeps its original time.
+  return getattr(parser, "ts_nanos", {}).get(address, {}).get(signal, 0)
+
+
 def corner_object_position_valid(d_rel: float, y_rel: float) -> bool:
   normal_object = 0.2 < d_rel < 180.0
   clipped_side_object = (
@@ -911,6 +916,7 @@ class RadarInterface(RadarInterfaceBase):
         obj = objects[addr]
         point = structs.RadarData.RadarPoint()
         point.trackId, point.radarSource, point.measured = track_id, "frontRadar", True
+        point.measurementMonoTime = position_timestamp(self.rcp_tracks, addr, 'LONG_DIST')
         point.dRel, point.yRel, point.vRel = obj.d_rel, obj.y, obj.v
         point.vLead, point.aRel, point.yvRel = self.v_ego + obj.v, float("nan"), 0.0
         self.pts[32 + addr - self.radar_start_addr] = point
@@ -953,6 +959,7 @@ class RadarInterface(RadarInterfaceBase):
       valid = valid and not optional_track_stale
 
       self.pts[t_id].measured = bool(valid)
+      self.pts[t_id].measurementMonoTime = position_timestamp(self.rcp_tracks, addr, "LONG_DIST1" if self.radar_group1 else "LONG_DIST") if valid else 0
       if not valid:
         self.pts[t_id].dRel = 0
         self.pts[t_id].yRel = 0
@@ -1000,6 +1007,7 @@ class RadarInterface(RadarInterfaceBase):
         optional_track_stale = (addr >= self.radar_start_addr + self.radar_required_msg_count and
                                 addr not in updated_messages)
         valid = msg['VALID_CNT2'] > 10 and not optional_track_stale
+        self.pts[t_id].measurementMonoTime = position_timestamp(self.rcp_tracks, addr, 'LONG_DIST2') if valid else 0
         self.pts[t_id].measured = bool(valid)
         if not valid:
           self.pts[t_id].dRel = 0
@@ -1094,6 +1102,13 @@ class RadarInterface(RadarInterfaceBase):
       point = self.pts[t_id]
       point.measured = True
       point.trackId = track_ids[t_id]
+      if source == "corner235":
+        addr = CORNER_OBJECT_235_START_ADDR + t_id - CORNER_OBJECT_235_TRACK_ID_OFFSET
+        point.measurementMonoTime = position_timestamp(getattr(self, "rcp_corner_objects", None), addr, "OBJ_REL_POS_X")
+      elif source == "corner180":
+        index, slot = divmod(t_id - CORNER_OBJECT_180_TRACK_ID_OFFSET, CORNER_OBJECT_180_SLOTS_PER_MSG)
+        parser = getattr(self, "rcp_corner_objects_180", None)
+        point.measurementMonoTime = position_timestamp(parser, CORNER_OBJECT_180_START_ADDR + index, f"SLOT{slot + 1}_REL_POS_X")
       point.radarSource = source
       point.dRel = d_rel
       point.yRel = y_rel

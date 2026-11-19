@@ -117,12 +117,14 @@ def _load_device_languages() -> list:
 def _build_bootstrap_payload() -> dict:  # noqa: DICT_OK - serialized mixed-shape client bootstrap
   try:
     device_values = get_param_values(
-      ["LanguageSetting", "SoundLanguageSetting"],
-      {"LanguageSetting": "", "SoundLanguageSetting": "auto"},
+      ["LanguageSetting", "SoundLanguageSetting", "UsbGpuHardwareSeen"],
+      {"LanguageSetting": "", "SoundLanguageSetting": "auto", "UsbGpuHardwareSeen": 0},
     )
+    known_usb_gpu = device_values.get("UsbGpuHardwareSeen") in (True, 1, "1")
     device_language = device_values.get("LanguageSetting", "")
     sound_language = device_values.get("SoundLanguageSetting", "auto")
   except Exception:  # noqa: BROAD_EXCEPT_OK - optional native Params backend varies by device
+    known_usb_gpu = False
     device_language = ""
     sound_language = "auto"
   # Injected (not fetched) so the client can gate on the very first render —
@@ -136,6 +138,8 @@ def _build_bootstrap_payload() -> dict:  # noqa: DICT_OK - serialized mixed-shap
   web_settings = read_web_settings()
   return {
     "vehicleParkingScene": True,
+    "vehicleWorldScene": True,
+    "vehicleGpuPreferred": known_usb_gpu,
     "webSettings": web_settings,
     "webSettingsSpec": web_settings_client_spec(),
     "webCapabilities": resolve_web_capabilities(web_settings),

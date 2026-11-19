@@ -137,5 +137,7 @@ export function trackingReport(s) {
     'GPU 幾何 '+number(s.render.geometries)+'　紋理 '+number(s.render.textures)+'　JS 堆積 '+number(s.heapMiB,1)+' MiB',
     '車機 CPU '+number(s.cpu)+'%　GPU '+number(s.gpu)+'%　記憶體 '+number(s.memory)+'%（— 表示無回報）',
     ...s.tracks.map(t=>'#'+t.id+' '+(labels[t.source]||t.source)+' · '+(labels[t.state]||t.state)+' · 信心 '+number(t.confidence,2)));
+  if(s.world?.radarSources?.length)rows.push('有效 CAN 量測 '+s.world.contacts+' · '+s.world.radarSources.join('、'));
+  if(s.world?.cameras?.length)rows.push('駕駛模型 USB eGPU · '+s.world.cameras.map(k=>k==='road'?'前方遠距':'前方廣角').join('、'));
   return rows.join('\n');
 }

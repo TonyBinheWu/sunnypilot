@@ -1,6 +1,7 @@
 import {PARKING_VIEW, parkingAttitude, parkingDistanceText, parkingObservation} from './parking_environment.js';
 import {createParkingView,createParkingMap,insidePolygon} from '../../../../cockpit/parking.js';
 import {combineParking,vehicleParkingSource} from './vehicle_parking.js';
+import {vehicleInferenceOnly,worldSource,withWorldContacts,worldNotice} from './world_scene.js';
 import {createParkingPerception} from './parking_perception.js';
 import {paintedVehicle} from '../../../../cockpit/vehicle_paint.js';
 import {drawCockpitVehicle,createVehicleSkinCache,VEHICLE_SKINS} from '../../../../cockpit/vehicle.js';
@@ -147,6 +148,8 @@ export function createTeslaView(doc,target) {
   const orbit=createViewOrbit();
   const parkingView=createParkingView();
   const vehicleParking=vehicleParkingSource(target);
+  const world=worldSource(target);
+  const vehicleOnly=()=>vehicleInferenceOnly(target.CarrotWebSettingsState,target.__CARROT_BOOTSTRAP__);
   const parkingMap=createParkingMap(target,()=>{lastSignature='';render(data,stale,unit,metricVisible,viewActive);});
   const parkingPerception=createParkingPerception(doc,target,()=>{lastSignature='';render(data,stale,unit,metricVisible,viewActive);});
   let parkingAnimation=false,poseLease=null,updatingLease=false;
@@ -182,7 +185,7 @@ export function createTeslaView(doc,target) {
     zoomFrame=null;if(destroyed||doc.hidden||!viewActive)return;
     if(stamp-zoomPaintedAt>=40){zoomPaintedAt=stamp;render(data,stale,unit,metricVisible,viewActive);}else animateZoom();
   });};
-  const visibility=()=>{if(doc.hidden){parkingPoseActive(false);stopZoomAnimation();perceptionScene.clear();environment.update({active:false});if(remoteGpu)scene3d.pause();}};doc.addEventListener?.('visibilitychange',visibility);
+  const visibility=()=>{if(doc.hidden){world.clear();parkingPoseActive(false);stopZoomAnimation();perceptionScene.clear();environment.update({active:false});if(remoteGpu)scene3d.pause();}};doc.addEventListener?.('visibilitychange',visibility);
   const editor=el(doc,'div',{class:'tesla-editor'});editor.hidden=true;
   const toggle=el(doc,'button',{class:'tesla-edit',attrs:{type:'button'}});
   let layout=metricLayout(target.CarrotWebSettingsState?.vision_metric_layout),editing=false,dirty=false,saving=false;
@@ -255,7 +258,9 @@ export function createTeslaView(doc,target) {
     const usage=target.CarrotHudState?.deviceState, cpu=usage?.cpuUsagePercent?.filter?.(n=>Number.isFinite(n)&&n>=0&&n<=100), mono=target.CarrotStateReceivedAtMonotonic?.deviceState;
     const fresh=Number.isFinite(mono)&&now()-mono>=0&&now()-mono<3000;
     const heap=target.performance?.memory?.usedJSHeapSize;
+    const measured=world.sample();
     return {...perceptionScene.tracker.snapshot(now()),render:{...scene3d.snapshot(),...meter.snapshot(now())},
+      world:measured?{radarSources:[...new Set(measured.contacts.map(p=>p.source))],contacts:measured.contacts.length,cameras:measured.cameras}:null,
       heapMiB:Number.isFinite(heap)?heap/1048576:null,cpu:fresh&&Array.isArray(cpu)&&cpu.length&&cpu.every(Number.isFinite)?cpu.reduce((a,b)=>a+b)/cpu.length:null,
       gpu:fresh&&usage?.gpuUsagePercent>=0&&usage.gpuUsagePercent<=100?usage.gpuUsagePercent:null,memory:fresh?usage?.memoryUsagePercent:null};
   }
@@ -267,6 +272,7 @@ export function createTeslaView(doc,target) {
           awaitingResult:s.awaitingResult===true,geometryReason:s.geometryReason??null,frameSize:s.frameSize??null,durationMs:s.durationMs??null,delegate:s.delegate??null};};
       const occ=environment.scene();
       const external=remoteGpu?scene3d.snapshot():null;
+      if(vehicleOnly()&&!remoteGpu)return {vehicleOnly:true,world:world.sample(),objects:{status:'vehicle'},road:{status:'vehicle'},environment:{status:'vehicle'}};
       return {objects:describe(perception),road:describe(roadPerception),environment:external?{status:external.status,cells:external.cells,drawn:external.cells,raisedCells:external.raised,backend:external.backend}: {status:occ.status,cells:occ.count,drawn:scene3d.snapshot().environmentCells,
         raisedCells:occ.status==='ready'?occ.raisedCells??0:0,ranges:scene3d.snapshot().environmentRanges,supportedRays:occ.supportedRays??0,visibleEmptyIntervals:occ.status==='ready'?occ.visibleEmpty:0,
         latencyMs:occ.durationMs??null,cellMetres:1,coverage:'front',groundTruth:false}};
@@ -295,10 +301,11 @@ export function createTeslaView(doc,target) {
     if(editing&&(!visible||!canEditMetrics(target,now()))){editing=false;editor.hidden=true;drag=null;dirty=false;layout=metricLayout(settings.vision_metric_layout);}
     root.classList.toggle('is-editing',editing);toggle.disabled=!canEditMetrics(target,now())||saving;
     setText(toggle,text(editing?'vision_metric_done':'vision_metric_edit',editing?'Finish editing':'Arrange information'));
-    perceptionScene.startConfigured(!remoteGpu&&tesla&&viewActive&&!doc.hidden&&!bev.frozen,settings);
-    perception.update({active:!remoteGpu&&tesla&&viewActive,frozen:bev.frozen});
-    roadPerception.update({active:!remoteGpu&&tesla&&viewActive,frozen:bev.frozen});
-    const environmentActive=!remoteGpu&&tesla&&!isBev&&viewActive&&!bev.frozen&&!!target.WebGL2RenderingContext;
+    const viewerInference=!remoteGpu&&!vehicleOnly();
+    perceptionScene.startConfigured(viewerInference&&tesla&&viewActive&&!doc.hidden&&!bev.frozen,settings);
+    perception.update({active:viewerInference&&tesla&&viewActive,frozen:bev.frozen});
+    roadPerception.update({active:viewerInference&&tesla&&viewActive,frozen:bev.frozen});
+    const environmentActive=viewerInference&&tesla&&!isBev&&viewActive&&!bev.frozen&&!!target.WebGL2RenderingContext;
     environment.update({active:environmentActive,frozen:bev.frozen});
     const occ=environment.scene();
     const vision=perception.scene(),road=roadPerception.scene(),liveScene=tesla?{...birdScene(target,now()),vision,road}:{};
@@ -309,7 +316,9 @@ export function createTeslaView(doc,target) {
     scene.environment=environmentActive&&occ.status==='ready'?occ.positions:null;
     volumeLegend.hidden=!environmentActive||settings.vision_environment_occupancy!==true;
     const trackingActive=tesla&&viewActive&&!doc.hidden&&!bev.frozen;
-    const tracks=perceptionScene.update(liveScene,now(),trackingActive,target.CarrotVisionReplay?.status?.()?.active===true);
+    const replay=target.CarrotVisionReplay?.status?.()?.active===true;
+    const observation=world.update(target.__CARROT_BOOTSTRAP__?.vehicleWorldScene===true && trackingActive && !remoteGpu && !replay);
+    const tracks=withWorldContacts(perceptionScene.update(liveScene,now(),trackingActive,replay),observation);
     if(scene.environment){
       scene.environmentMotion=surfaceMotion(perceptionScene.motion,now()-occ.capturedAt);
       if(!scene.environmentMotion)scene.environment=null;
@@ -328,6 +337,7 @@ export function createTeslaView(doc,target) {
         state==='missing'?text('occupancy_missing','車機尚未安裝環境模型'):
         text('vision_environment_occupancy','3D 環境佔用')+' · '+text('scene_status_'+state,state));
     }
+    if(vehicleOnly()&&!remoteGpu)setText(perceptionStatus,observation?.cameras?.length?'車機 USB eGPU · '+observation.cameras.map(k=>k==='road'?'前方遠距':'前方廣角').join('、'):text('vision_compute_waiting','Vehicle perception · awaiting vehicle observations'));
     predictionLegend.hidden=!trackingActive||!tracks.some(o=>o.state==='predicted');
     if(!predictionLegend.hidden)setText(predictionLegend,text('tracking_prediction','淡色模型為短暫預測'));
     const imageCounts=new Map();
@@ -365,7 +375,7 @@ export function createTeslaView(doc,target) {
     parkingPanel.hidden=!parkingEnabled;parkingButton.hidden=!parkingEnabled;parkingButton.disabled=displayStale||speedKph===null||speedKph>20;
     parkingButton.textContent=text(parking.overhead?'parking_view_exit':'parking_view',parking.overhead?'Return to driving view':'Parking overhead');
     parkingButton.setAttribute('aria-pressed',String(parking.overhead));
-    parkingPerception.update(!remoteGpu&&parkingEnabled&&parking.overhead&&viewActive&&!displayStale&&!doc.hidden);
+    parkingPerception.update(viewerInference&&parkingEnabled&&parking.overhead&&viewActive&&!displayStale&&!doc.hidden);
     const paint=parkingPerception.scene();scene.parking=paint.slots;
     vehicleParking.update(target.__CARROT_BOOTSTRAP__?.vehicleParkingScene===true&&!remoteGpu&&!displayStale&&parking.overhead&&!parking.spin&&displayData.vehicleGear==='P'&&viewActive&&!doc.hidden);
     const vehicleFrame=vehicleParking.sample();
@@ -419,6 +429,8 @@ export function createTeslaView(doc,target) {
     place();
     if(tesla){
       setText(notice,parking.spin?text('parking_spin','Parked · vehicle presentation; not a camera view'):parking.overhead?text('parking_front_only','Front camera paint estimates · no rear/side coverage'):bev.frozen?text('bev_frozen','Annotation snapshot · not live'):text(scene.model?'scene_live_notice':'vision_tesla_wait',scene.model?'Live observations · front camera / native targets; not 360°':'Waiting for fresh model data'));
+      const sensorNotice=worldNotice(observation);
+      if(sensorNotice)setText(notice,sensorNotice);
       const vw=root.clientWidth||536,vh=root.clientHeight||300;
       const quality=meter.quality(settings.vision_render_quality);
       const {width:w,height:h,factor}=sceneRenderSize(vw,vh,quality,target.devicePixelRatio);
@@ -451,7 +463,7 @@ export function createTeslaView(doc,target) {
   }
   const observer=typeof target.ResizeObserver==='function'?new target.ResizeObserver(()=>{lastSignature='';render(data,stale,unit);}):null;
   observer?.observe(root);
-  return {root,canvas,render,destroy(){destroyed=true;viewActive=false;parkingPoseActive(false);perceptionScene.clear();stopZoomAnimation();orbit.cancel();for(const [name,handler] of Object.entries(orbitEvents)){canvas.removeEventListener(name,handler);scene3d.canvas.removeEventListener(name,handler);}scene3d.destroy();if(target.CarrotVisionView===viewControls)delete target.CarrotVisionView;doc.removeEventListener?.('visibilitychange',visibility);if(target.CarrotVisionPerception===diagnostics)delete target.CarrotVisionPerception;perception.destroy();roadPerception.destroy();environment.destroy();vehicleSkin.destroy();bev.destroy();parkingMap.destroy();parkingPerception.destroy();vehicleParking.destroy();observer?.disconnect();canvas.remove();root.remove();}};
+  return {root,canvas,render,destroy(){destroyed=true;viewActive=false;parkingPoseActive(false);perceptionScene.clear();stopZoomAnimation();orbit.cancel();for(const [name,handler] of Object.entries(orbitEvents)){canvas.removeEventListener(name,handler);scene3d.canvas.removeEventListener(name,handler);}scene3d.destroy();if(target.CarrotVisionView===viewControls)delete target.CarrotVisionView;doc.removeEventListener?.('visibilitychange',visibility);if(target.CarrotVisionPerception===diagnostics)delete target.CarrotVisionPerception;perception.destroy();roadPerception.destroy();environment.destroy();vehicleSkin.destroy();bev.destroy();parkingMap.destroy();parkingPerception.destroy();vehicleParking.destroy();world.clear();observer?.disconnect();canvas.remove();root.remove();}};
 }
 export const TESLA_VIEW_CSS=`
 .tesla-volume-legend{position:absolute;z-index:2;left:50%;top:3px;transform:translateX(-50%);max-width:62%;background:#14232de8;color:#a8e5e5;border-radius:5px;padding:3px 8px;text-align:center;font:12px system-ui;pointer-events:none}

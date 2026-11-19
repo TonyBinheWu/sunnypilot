@@ -35,18 +35,20 @@ def measure(args, parent_pid):
   from openpilot.selfdrive.modeld.precompiled_worker import claim_gpu_owner
   from openpilot.system.hardware.usbgpu import get_usbgpu_device, is_current_usbgpu_firmware
   from .gpu_objects import INPUT, MODEL_SHA256, decode, model_input, output_grid
-  from .gpu_priority_bench import metric
+  from .gpu_priority_bench import OCC, metric
 
   check_bridge(get_usbgpu_device(), is_current_usbgpu_firmware)
   artifact = installed()
   if artifact is None:
     raise RuntimeError("installed driving-model runtime unavailable")
   manifest = json.loads((artifact.parent / "installed.json").read_text())
-  if manifest["gpu_arch"] != "gfx1200" or sha256(args.model) != MODEL_SHA256:
+  expected_hash = OCC if args.world else MODEL_SHA256
+  if manifest["gpu_arch"] != "gfx1200" or sha256(args.model) != expected_hash:
     raise ValueError("unexpected model or GPU architecture")
   files = (args.road, args.wide)
-  if files[0].samefile(files[1]) or any(p.stat().st_size != INPUT * INPUT * 4 for p in files):
-    raise ValueError("supply two distinct letterboxed 416x416 RGBA recordings")
+  size = 224 * 126 * 4 if args.world else INPUT * INPUT * 4
+  if files[0].samefile(files[1]) or any(p.stat().st_size != size for p in files):
+    raise ValueError(f"supply two distinct RGBA views with {size} bytes each")
   frames = [p.read_bytes() for p in files]
   if frames[0] == frames[1]:
     raise ValueError("two identical samples cannot validate separate cameras")
@@ -62,6 +64,11 @@ def measure(args, parent_pid):
   gpu = Device["AMD"]
   if not gpu.is_usb() or gpu.arch != manifest["gpu_arch"]:
     raise RuntimeError("USB AMD device required")
+  if args.world:
+    from .usb_world import qualify
+    width, height = map(int, args.resolution.split("x"))
+    print(json.dumps(qualify(artifact, manifest, args.model, args.pairs, frames, width, height)), flush=True)
+    return
   runner = OnnxRunner(args.model)
 
   @TinyJit
@@ -95,6 +102,8 @@ def main():
   for name in ("model", "road", "wide"):
     parser.add_argument(name, type=Path)
   parser.add_argument("--pairs", type=int, default=20, choices=range(3, 61), metavar="3..60")
+  parser.add_argument("--world", action="store_true", help="measure pinned ray occupancy together with installed N16 on the parked USB AMD")
+  parser.add_argument("--resolution", choices=("1344x760", "1928x1208"), default="1344x760", help="N16 input resolution for --world")
   args = parser.parse_args()
   check_bridge(get_usbgpu_device(), is_current_usbgpu_firmware)
   sm, params = messaging.SubMaster(["deviceState", "pandaStates"]), Params()
