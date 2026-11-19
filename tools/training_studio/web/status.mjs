@@ -43,7 +43,7 @@ export function teacherValidationSummary(value){
   if(Number.isFinite(row?.go_velocity_mse))parts.push(`放行速度 MSE ${row.go_velocity_mse.toFixed(4)}`);
   if(['paired_stop_go_pcgrad_sgd_v1','paired_unit_gradient_pcgrad_sgd_v2','paired_balanced_stop_modes_pcgrad_sgd_v3','paired_balanced_cross_task_pcgrad_sgd_v4','grouped_six_task_unit_descent_sgd_v6'].includes(progress.optimization_profile)){
     const grouped=progress.optimization_profile==='grouped_six_task_unit_descent_sgd_v6';
-    if(grouped&&progress.phase==='training'&&progress.stage!=='validation'&&Number.isFinite(progress.group_task)&&Number.isFinite(progress.group_tasks))parts.push(`${progress.group_stage==='gradient'?'計算梯度':'檢查更新'} ${progress.group_task} / ${progress.group_tasks}${progress.backtracks?` · 回退 ${progress.backtracks} 次`:''}`);
+    if(grouped&&progress.phase==='training'&&progress.stage!=='validation'&&Number.isFinite(progress.group_task)&&Number.isFinite(progress.group_tasks))parts.push(`${progress.group_stage==='gradient'?'計算梯度':'檢查更新'} ${progress.group_task} / ${progress.group_tasks}${progress.group_stage==='verify'&&progress.backtracks?` · 回退 ${progress.backtracks} 次`:''}`);
     parts.push(grouped?'六類共同更新／逐類損失檢查':progress.optimization_profile==='paired_balanced_cross_task_pcgrad_sgd_v4'?'停止狀態 × 通行方向九種交錯配對':progress.optimization_profile==='paired_balanced_stop_modes_pcgrad_sgd_v3'?'停等／接近／提早停車恢復均衡配對':'停止／通行成對最佳化');
     if(progress.phase==='training'&&progress.stage!=='validation'&&!grouped&&Number.isFinite(progress.stop_loss_before_step)&&Number.isFinite(progress.go_loss_before_step)){
       parts.push(`${grouped?'本組三類':'本對'}停止 loss ${progress.stop_loss_before_step.toFixed(3)} → ${progress.stop_loss.toFixed(3)}`);
