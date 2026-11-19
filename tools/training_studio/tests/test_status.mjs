@@ -97,6 +97,7 @@ test('cross-task sampling is shown only for its measured optimizer profile',()=>
 test('group substeps cannot relabel a previous completed loss as the next batch',()=>{
   const value={teacher_training:{cycle:56,epoch:1,phase:'training',optimization_profile:'grouped_six_task_unit_descent_sgd_v6',group_stage:'gradient',group_task:2,group_tasks:6,batch:2,loss:99,loss_before_step:100}};
   assert.equal(teacherBatchObservation(value).entries.length,0);
+  assert.equal(teacherBatchObservation(value,{cycle:56,epoch:1,objective:'',entries:[{batch:2,loss:99,before:100}]}).entries.length,0);
   assert.equal(teacherTrainingLoss(value).value,undefined);
   value.teacher_training.history=[{train_loss:12}];
   assert.deepEqual(teacherTrainingLoss(value),{label:'最近完整 epoch loss',value:12});

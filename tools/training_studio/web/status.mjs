@@ -67,8 +67,8 @@ export function teacherBatchObservation(value,previous={}){
   const p=value.teacher_training||{},cycle=p.cycle,epoch=p.epoch,objective=p.objective_revision||'';
   const valid=Number.isInteger(cycle)&&cycle>0&&Number.isInteger(epoch)&&epoch>0;
   const same=valid&&previous.cycle===cycle&&previous.epoch===epoch&&previous.objective===objective;
-  const entries=same&&Array.isArray(previous.entries)?previous.entries.filter(row=>Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.before)).slice(-200):[];
   const recorded=Array.isArray(p.batch_history);
+  const entries=!recorded&&!p.optimization_profile?.startsWith('grouped_six_task_')&&same&&Array.isArray(previous.entries)?previous.entries.filter(row=>Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.before)).slice(-200):[];
   const candidates=recorded?p.batch_history:(p.phase==='training'&&p.stage!=='validation'&&!p.optimization_profile?.startsWith('grouped_six_task_')?[p]:[]);
   for(const row of candidates){
     if(valid&&Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.loss_before_step)&&!entries.some(entry=>entry.batch===row.batch))entries.push({batch:row.batch,loss:row.loss,before:row.loss_before_step});
