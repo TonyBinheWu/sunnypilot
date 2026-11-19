@@ -170,8 +170,11 @@ def main():
               data.rename(folder/f'data-incomplete-{int(time.time())}')
             run_local('tools.training_studio.teacher_data',['--cycle',cycle,'--scenario',state['scenario'],'--rehearsal',','.join(state.get('rehearsal',[])),'--output',data],folder/'data.log',data/'generation-progress.json')
           destination=remote.root+f'/teacher/cycle-{cycle:03d}'
-          replay=store.config().get('teacher_adaptation',{}).get('supervision_replay_manifest')
-          if replay:
+          replay_config=store.config().get('teacher_adaptation',{})
+          replays=replay_config.get('supervision_replay_manifests')
+          if replays is None:replays=[replay_config['supervision_replay_manifest']] if replay_config.get('supervision_replay_manifest') else []
+          if not isinstance(replays,list) or any(not isinstance(path,str) for path in replays):raise ValueError('replay manifests must be a trusted path list')
+          for replay in replays:
             from tools.training_studio.teacher_replay import append_replay
             added=append_replay(data,replay)
             if added: store.event(f'教師監督重播：第 {cycle} 輪加入 {added} 筆已驗證修正樣本')
@@ -204,7 +207,9 @@ def main():
             '--output',f'/studio/teacher/cycle-{cycle:03d}/output','--parent',state['parent']['path'],'--parent-sha256',state['parent']['sha256'],
             '--epochs',str(settings.get('epochs',12)),'--learning-rate',str(settings.get('learning_rate',1e-5)),
             '--lease',f'/studio/teacher/cycle-{cycle:03d}/lease','--expanded-expert']
-          if settings.get('optimizer')=='paired_pcgrad_sgd': args.append('--paired-stop-go')
+          if settings.get('optimizer')=='paired_pcgrad_sgd':
+            args.append('--paired-stop-go')
+            if settings.get('unit_task_gradients'): args.append('--unit-task-gradients')
           child=subprocess.Popen(remote.command(command(args)),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
           with (folder/'train.log').open('w') as log:
             for line in child.stdout:

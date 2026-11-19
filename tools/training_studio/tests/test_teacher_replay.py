@@ -9,6 +9,16 @@ from tools.training_studio.teacher_replay import append_replay
 
 
 class TeacherReplayTest(unittest.TestCase):
+  def test_quarantined_draft_cannot_be_added_even_when_packet_checksums_are_valid(self):
+    with tempfile.TemporaryDirectory() as folder:
+      data=Path(folder)/'data';source=Path(folder)/'source'
+      base=[self.packet(data,'base.npz',1000,'train',1),self.packet(data,'validation.npz',8000,'validation',2)]
+      write_json(data/'manifest.json',{'samples':base});before=(data/'manifest.json').read_bytes()
+      manifest=self.source(source,[self.packet(source,'draft.npz',1001,'train',3)])
+      write_json(source/'not-for-training.json',{'reason':'future permission was not observed'})
+      with self.assertRaisesRegex(ValueError,'quarantined'):append_replay(data,manifest)
+      self.assertEqual((data/'manifest.json').read_bytes(),before)
+
   def packet(self,root,name,seed,split,color):
     frames=np.full((10,1,3,2,2),color,np.uint8)
     path=root/name;root.mkdir(parents=True,exist_ok=True)

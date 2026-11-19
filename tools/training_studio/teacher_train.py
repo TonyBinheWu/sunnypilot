@@ -144,9 +144,12 @@ def main():
   parser.add_argument('--epochs',type=int,default=12)
   parser.add_argument('--learning-rate',type=float)
   parser.add_argument('--paired-stop-go',action='store_true',help='Pair stop/proceed gradients with PCGrad and guarded SGD')
+  parser.add_argument('--unit-task-gradients',action='store_true',help='Balance stop/proceed gradient norms before paired projection')
   parser.add_argument('--expanded-expert',action='store_true')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
+  if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
+  optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:
@@ -207,7 +210,7 @@ def main():
   model._sample_actions=capture
   history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':'paired_stop_go_pcgrad_sgd_v1' if args.paired_stop_go else 'single_sample_adamw_backtracking_v1','learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':OBJECTIVE_REVISION,'epochs':args.epochs,'history':history,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':OBJECTIVE_REVISION,'epochs':args.epochs,'history':history,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -319,7 +322,7 @@ def main():
     if args.paired_stop_go:
       pairs=paired_indices(train,epoch)
       for batch,(stop_index,go_index) in enumerate(pairs,1):
-        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index])
+        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients)
         values.append(outcome['loss'])
         emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=2,baseline=baseline,**outcome)
     else:
@@ -367,7 +370,7 @@ def main():
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
-    'objective_revision':OBJECTIVE_REVISION,'adapter_scope':adapter_scope,'optimization_profile':'paired_stop_go_pcgrad_sgd_v1' if args.paired_stop_go else 'single_sample_adamw_backtracking_v1','learning_rate':args.learning_rate,
+    'objective_revision':OBJECTIVE_REVISION,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})

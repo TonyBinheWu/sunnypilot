@@ -10,6 +10,7 @@ def append_replay(data,source_manifest):
   import numpy as np
   data,source_manifest=Path(data),Path(source_manifest)
   manifest=read_json(data/'manifest.json');source=read_json(source_manifest)
+  if (source_manifest.parent/'not-for-training.json').exists():raise ValueError('reference dataset is quarantined; do not train on its draft labels')
   identity=hashlib.sha256(source_manifest.read_bytes()).hexdigest()
   used=manifest.get('replay_manifest_sha256s',[])
   if identity in used: return 0

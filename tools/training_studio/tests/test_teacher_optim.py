@@ -16,6 +16,18 @@ class PairCoverageTest(unittest.TestCase):
 
 @unittest.skipUnless(importlib.util.find_spec('torch'),'pinned training image supplies torch')
 class ProjectedPairTest(unittest.TestCase):
+  def test_unit_task_balancing_preserves_descent_and_is_invariant_to_task_scale(self):
+    import torch
+    from tools.training_studio.teacher_optim import project_pair
+    stop=torch.tensor([100.,0.]);go=torch.tensor([-1.,2.])
+    joint,cosine,conflict=project_pair(stop,go,unit_gradients=True)
+    scaled,_,_=project_pair(stop*1000,go*.01,unit_gradients=True)
+    torch.testing.assert_close(joint,scaled)
+    self.assertTrue(conflict);self.assertLess(cosine,0)
+    self.assertGreater(float(torch.dot(joint,stop)),0.);self.assertGreater(float(torch.dot(joint,go)),0.)
+    zero,_,_=project_pair(torch.zeros(2),go,unit_gradients=True)
+    torch.testing.assert_close(zero,go/go.norm()/2)
+
   def test_conflicting_projection_descends_both_tasks_and_preserves_original_gradients(self):
     import torch
     from tools.training_studio.teacher_optim import project_pair

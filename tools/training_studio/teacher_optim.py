@@ -15,7 +15,7 @@ def paired_indices(items,epoch):
   return [(stop[i%len(stop)],go[i%len(go)]) for i in range(max(len(stop),len(go)))]
 
 
-def project_pair(stop,go):
+def project_pair(stop,go,*,unit_gradients=False):
   import torch
   if stop.ndim!=1 or stop.shape!=go.shape or not stop.numel(): raise ValueError('matching nonempty flat gradients required')
   if not bool(torch.isfinite(stop).all() and torch.isfinite(go).all()): raise ValueError('nonfinite paired gradient')
@@ -23,6 +23,13 @@ def project_pair(stop,go):
   if not bool(torch.isfinite(torch.stack((dot,stop_norm,go_norm))).all()): raise ValueError('nonfinite paired gradient norm')
   conflict=bool(dot<0)
   cosine=float(dot/(stop_norm*go_norm).sqrt()) if bool(stop_norm>0 and go_norm>0) else None
+  if unit_gradients:
+    # Normalize tasks before projection, so small held-stop gradients have the
+    # same directional influence as much larger moving/restart losses.
+    if bool(stop_norm>0):stop=stop/stop_norm.sqrt()
+    if bool(go_norm>0):go=go/go_norm.sqrt()
+    dot=torch.dot(stop,go);stop_norm=torch.dot(stop,stop);go_norm=torch.dot(go,go)
+    conflict=bool(dot<0)
   if conflict:
     # Both projections use the original other-task gradient, not an already
     # modified vector. With two tasks this is exactly the PCGrad update.
@@ -31,7 +38,7 @@ def project_pair(stop,go):
   return joint,cosine,conflict
 
 
-def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=8):
+def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=8,*,unit_gradients=False):
   import torch
   from tools.training_studio.teacher_train import load_prefix,release_prefix_pages
   if not stop_item['row']['stop_required'] or go_item['row']['stop_required']: raise ValueError('one stop and one proceed example required')
@@ -53,7 +60,8 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
       before_losses.append(float(loss.detach()));loss.backward()
       gradients.append(torch.cat([(p.grad.detach() if p.grad is not None else torch.zeros_like(p)).reshape(-1) for p in params]))
       del result,loss;release_mappings()
-    joint,cosine,conflict=project_pair(*gradients)
+    task_norms=[float(gradient.norm()) for gradient in gradients]
+    joint,cosine,conflict=project_pair(*gradients,unit_gradients=unit_gradients)
     optimizer.zero_grad(set_to_none=True);offset=0
     for p in params:
       p.grad=joint[offset:offset+p.numel()].reshape_as(p);offset+=p.numel()
@@ -83,7 +91,8 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
     change=float(torch.stack([(p.detach()-before[name]).square().sum() for name,p in parameters.items()]).sum().sqrt())
     return {'loss':sum(observed)/2,'loss_before_step':sum(before_losses)/2,'stop_loss':observed[0],'go_loss':observed[1],
       'stop_loss_before_step':before_losses[0],'go_loss_before_step':before_losses[1],'step_scale':scale,'backtracks':backtracks,
-      'gradient_cosine':cosine,'gradient_projected':conflict,'parameter_delta_norm':change,'gradient_norm_before_clip':float(norm)}
+      'gradient_cosine':cosine,'gradient_projected':conflict,'parameter_delta_norm':change,'gradient_norm_before_clip':float(norm),
+      'task_gradients_normalized':unit_gradients,'stop_gradient_norm':task_norms[0],'go_gradient_norm':task_norms[1]}
   finally:
     load_prefix.cache_clear()
     for item in items:
