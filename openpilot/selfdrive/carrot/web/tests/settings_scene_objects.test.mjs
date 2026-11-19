@@ -85,6 +85,21 @@ test('recognition owns one in-flight frame, expires paused video results and ter
   f.perception.update({active:false});assert.equal(worker.terminated,true);assert.equal(f.timers.size,0);
 });
 
+test('a stalled decoder does not turn an advancing video clock into new detections',async()=>{
+  const f=fixture();let decoded=5,callback,cancelled=false;
+  f.video.requestVideoFrameCallback=fn=>{callback=fn;return 12;};
+  f.video.cancelVideoFrameCallback=()=>{cancelled=true;};
+  f.video.getVideoPlaybackQuality=()=>({totalVideoFrames:decoded});
+  f.perception.update();const worker=f.workers[0];worker.reply({type:'ready'});
+  callback(4970,{mediaTime:1});f.perception.update();await Promise.resolve();
+  const frame=worker.messages.at(-1);worker.reply({type:'result',id:frame.id,detections:[]});
+  assert.equal(f.perception.scene().capturedAt,4970);
+  f.setClock(5400);f.video.currentTime=1.3;f.perception.update();await Promise.resolve();
+  assert.equal(worker.messages.filter(m=>m.type==='frame').length,1);
+  decoded++;f.perception.update();await Promise.resolve();
+  assert.equal(worker.messages.filter(m=>m.type==='frame').length,2);
+  f.perception.destroy();assert.ok(cancelled);
+});
 test('fresh camera people, cars and motorcycles keep their meshes beside unknown radar targets and update with new frames',async()=>{
   const f=fixture();f.perception.update();const worker=f.workers[0];worker.reply({type:'ready'});
   const detect=async shift=>{

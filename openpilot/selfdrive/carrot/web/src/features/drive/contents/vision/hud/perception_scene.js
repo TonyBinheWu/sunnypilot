@@ -32,7 +32,7 @@ function combineReferences(items, aliases) {
 
 export function createPerceptionScene(target) {
   const tracker=createObjectTracker(), stamps=new Map(), aliases=new Map();
-  let session=null, autoStarted=false, lastVideo=null, poseLease=null, acquiring=false;
+  let session=null, autoStarted=false, lastVideo=null, replaySample=null, poseLease=null, acquiring=false;
   function releasePose(){const lease=poseLease;poseLease=null;lease?.release?.();}
   function syncPose(enabled){
     if(!enabled){releasePose();return;}
@@ -41,11 +41,20 @@ export function createPerceptionScene(target) {
     try {poseLease=target.CarrotDriveDataActivity.acquire({owner:'perception_pose',hud:true,overlay:true,ar:true});}
     finally {acquiring=false;}
   }
-  function clear() {tracker.reset();stamps.clear();aliases.clear();lastVideo=null;}
+  function clear() {tracker.reset();stamps.clear();aliases.clear();lastVideo=null;replaySample=null;}
   function update(scene,now,active,replay) {
     if(!active) {clear();releasePose();session=null;return [];}
     syncPose(!replay && target.CarrotDeviceRuntimeState?.isOffroad!==true);
     if(session!==replay){clear();session=replay;}
+    if(replay){
+      const playback=target.CarrotVisionReplay?.status?.();
+      if(Number.isFinite(playback?.currentTime)){
+        const delta=playback.currentTime-(replaySample?.time??playback.currentTime);
+        const elapsed=(now-(replaySample?.at??now))/1000*Math.max(1,playback.playbackRate||1);
+        if(replaySample && (playback.segment!==replaySample.segment || delta<-.04 || delta>elapsed+.6))clear();
+        replaySample={segment:playback.segment,time:playback.currentTime,at:now};
+      }
+    }
     const videoTime=scene.vision?.videoTime??scene.road?.videoTime;
     if(replay && Number.isFinite(videoTime) && lastVideo!==null && (videoTime<lastVideo||videoTime-lastVideo>2))clear();
     if(Number.isFinite(videoTime))lastVideo=videoTime;

@@ -805,6 +805,7 @@ async function stopCarrotVisionRealtime(reason = "user stop") {
     return;
   }
   if (!isCarrotVisionActive()) return;
+  document.getElementById("carrotStage")?.removeAttribute("data-auto-perception");
   console.warn("[vision] stop requested", reason);
   setCarrotVisionActive(false, {
     phase: CARROT_VISION_PHASE.INACTIVE,
@@ -831,6 +832,7 @@ window.CarrotVisionStart = async function(options) {
     if (typeof showAppToast === "function") showAppToast(window.CARROT_VISION_DISABLED_MESSAGE, { tone: "error" });
     return;
   }
+  document.getElementById("carrotStage")?.toggleAttribute("data-auto-perception", automatic);
   if (!automatic) {
     requestCarrotVisionDefaultFullscreen({ quiet: false }).catch(() => {});
     window.CarrotVisionRtc?.prepareOwnershipRetry?.("user start");

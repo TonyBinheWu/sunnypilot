@@ -7,12 +7,20 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
   let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,warmed=false,lastAttempt=-Infinity;
   let lastDecoded=null,lastProfile=null,lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
   let state={status:'off',objects:[],imageObjects:[],count:0,capturedAt:null,revision};
-  let watchedVideo=null;
-  function timelineChanged(){if(worker||state.capturedAt!==null)stop('waiting');}
+  let watchedVideo=null,frameCallback=null,presented=null,lastPresented=null;
+  function observeFrame(video){
+    frameCallback=video.requestVideoFrameCallback?.((stamp,meta)=>{
+      if(video!==watchedVideo)return;
+      presented={time:meta.mediaTime,at:stamp};observeFrame(video);
+    });
+  }
+  function timelineChanged(){presented=lastPresented=null;lastDecoded=null;if(worker||state.capturedAt!==null)stop('waiting');}
   function watch(video){
     if(video===watchedVideo)return;
     for(const event of ['seeking','emptied','ended'])watchedVideo?.removeEventListener?.(event,timelineChanged);
-    watchedVideo=video;
+    if(frameCallback!=null)watchedVideo?.cancelVideoFrameCallback?.(frameCallback);
+    watchedVideo=video;presented=lastPresented=null;frameCallback=null;
+    if(video)observeFrame(video);
     for(const event of ['seeking','emptied','ended'])watchedVideo?.addEventListener?.(event,timelineChanged);
   }
   const contribute=sceneContributor(target,road?'road':'efficientdet');
@@ -63,10 +71,10 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
   }
   function update({active=true,frozen=false}={}){
     const enabled=target.CarrotWebSettingsState?.[road?'vision_road_detection':'vision_object_detection']===true;
-    if(!enabled){failed=false;wasEnabled=false;stop();return;}
+    if(!enabled){watch(null);failed=false;wasEnabled=false;stop();return;}
     if(!wasEnabled){failed=false;wasEnabled=true;}
-    if(!active||frozen||doc.hidden){if(!failed)stop('paused');return;}
-    if(failed)return;
+    if(!active||frozen||doc.hidden){watch(null);if(!failed)stop('paused');return;}
+    if(failed){watch(null);return;}
     const video=doc.getElementById?.('carrotRoadVideo');
     watch(video);
     const stream=video?.srcObject, track=stream?.getVideoTracks?.()[0];
@@ -87,11 +95,13 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     }
     // currentTime can advance while the RTC decoder repeats its last image.
     const decoded=video.getVideoPlaybackQuality?.().totalVideoFrames??video.webkitDecodedFrameCount;
+    const newPresented=presented && presented!==lastPresented && now()-presented.at<=DETECTION_TTL_MS;
+    // A covered video element may suppress frame callbacks on a head unit while its decoder still advances.
     if(!ready||busy||now()-lastAttempt<interval||lastTime===video.currentTime||
-      (Number.isFinite(decoded)&&(decoded<=0||decoded===lastDecoded)))return;
-    lastDecoded=decoded;
-    const current=generation,capturedAt=now(),videoTime=video.currentTime;
-    lastAttempt=capturedAt;lastTime=videoTime;busy=true;
+      (!newPresented && (decoded>0?decoded===lastDecoded:!!video.requestVideoFrameCallback)))return;
+    lastDecoded=decoded;lastPresented=presented;
+    const current=generation,capturedAt=newPresented?presented.at:now(),videoTime=newPresented?presented.time:video.currentTime;
+    lastAttempt=now();lastTime=video.currentTime;busy=true;
     const width=Math.min(640,video.videoWidth),height=Math.round(video.videoHeight*width/video.videoWidth);
     const raw=target.CarrotOverlayState||{},stamps=target.CarrotStateReceivedAtMonotonic||{};
     // A replay source is historical by design. Live calibration/profile must be fresh.

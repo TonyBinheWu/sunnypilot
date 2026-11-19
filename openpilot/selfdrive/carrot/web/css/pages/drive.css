@@ -428,6 +428,40 @@ body[data-page="carrot"] #driveHudCard.is-vision-hud-suppressed {
   pointer-events: auto;
 }
 
+/* An automatic camera connection must leave the live native scene available. */
+.carrot-stage[data-auto-perception] .carrot-stage__loading {
+  inset: auto 12px 12px auto;
+  max-width: min(78%, 340px);
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+}
+.carrot-stage[data-auto-perception] .carrot-stage__loadingPanel {
+  min-width: 0;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: #18232cec;
+  box-shadow: none;
+}
+.carrot-stage[data-auto-perception] .carrot-stage__spinner { display: none; }
+.carrot-stage[data-auto-perception] .carrot-stage__loadingText,
+.carrot-stage[data-auto-perception] .carrot-stage__loadingDetail { grid-column: 1; text-align: start; }
+.carrot-stage[data-auto-perception] .carrot-stage__loadingActions {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin: 0;
+  pointer-events: auto;
+}
+.carrot-stage[data-auto-perception] .carrot-stage__loadingAction { min-height: 44px; }
+body[data-cockpit-panel="vision"] .carrot-stage[data-auto-perception] .carrot-stage__loading {
+  right: auto;
+  left: 12px;
+}
+
 .carrot-stage__loadingPanel {
   min-width: min(76vw, 260px);
   max-width: min(82vw, 320px);
