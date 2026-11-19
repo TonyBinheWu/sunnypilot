@@ -1,7 +1,9 @@
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
-  let preferred = navigator.language || "en";
+  const cockpitLanguage = typeof URLSearchParams === "function"
+    ? new URLSearchParams(globalThis.location?.search || "").get("lang") : null;
+  let preferred = cockpitLanguage || navigator.language || "en";
   try { preferred = localStorage.getItem("language") || preferred; } catch (_) { /* private browsing */ }
   const language = preferred.toLowerCase().replaceAll("_", "-");
   const traditional = /^zh-(tw|hk|mo|hant|cht)(-|$)/.test(language);

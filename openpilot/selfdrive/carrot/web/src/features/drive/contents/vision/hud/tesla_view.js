@@ -18,16 +18,18 @@ import {drawDrivingScene,drawSceneObject} from './driving_scene.js';
 import {createObjectPerception} from './object_perception.js';
 import {surfaceMotion} from '../occupancy_grid.js';
 import {researchMap} from './research_map.js';
-import {lanePaint,paintStripes} from './road_paint.js';
+import {forEachDash} from './road_scene_style.js';
+import {lanePaint,paintStripes,stripePattern} from './road_paint.js';
 import {createPerceptionScene,createRenderMeter,trackingReport} from './perception_scene.js';
 import {createDrivingScene3D} from './scene_3d.js';
 
 export const METRIC_DEFAULTS = Object.freeze({speed:[.04,.04,1.2],limit:[.04,.43,1],set:[.04,.80,1]});
-export function sceneRenderSize(width,height,quality){
+export function sceneRenderSize(width,height,quality,pixelRatio=1){
   const vw=Number.isFinite(width)&&width>0?width:1,vh=Number.isFinite(height)&&height>0?height:1;
-  const cap=quality==='high'?[1920,1080,2]:quality==='low'?[480,270,1]:[960,540,1];
+  const cap=quality==='high'?[2560,1440]:quality==='low'?[960,540]:[1920,1080];
+  const density=Math.max(1,Math.min(2,Number.isFinite(pixelRatio)?pixelRatio:1));
   if(vh>vw)[cap[0],cap[1]]=[cap[1],cap[0]];
-  const factor=Math.min(cap[2],cap[0]/vw,cap[1]/vh);
+  const factor=Math.min(density,cap[0]/vw,cap[1]/vh);
   return {width:Math.max(1,Math.round(vw*factor)),height:Math.max(1,Math.round(vh*factor)),factor};
 }
 export function metricLayout(value) {
@@ -86,7 +88,19 @@ export function drawBirdScene(ctx,w,h,scene,{rainbow=false,projection=null,maxDi
     (model.laneLines||[]).slice(0,4).forEach((p,i)=>{
       if((model.laneLineProbs?.[i]??0)<=.3)return;
       const paint=paintStripes(scene.paint?.[i],i,'#c2cad4');
-      for(const offset of paint.offsets)line(p,paint.color,2,offset);
+      paint.offsets.forEach((offset,j)=>{
+        const pattern=stripePattern(scene.paint?.[i],j);
+        if(pattern==='dashed'||pattern==='dots'){
+          ctx.beginPath();
+          forEachDash(p,pattern==='dots',(s,y,e,z)=>{
+            if(s>=maxDistance)return;
+            const end=Math.min(e,maxDistance);
+            ctx.moveTo(...px(s,y+offset));
+            ctx.lineTo(...px(end,y+offset+(z-y)*(end-s)/(e-s)));
+          });
+          ctx.strokeStyle=paint.color;ctx.lineWidth=2;ctx.stroke();
+        }else line(p,pattern==='boundary'?'#91989e':paint.color,2,offset);
+      });
     });
     if(rainbow){
       const colors=['#f15c66','#ffad55','#ffe773','#79e5a1','#63cafa','#a18af5','#e88cdb'];
@@ -118,6 +132,9 @@ export function createTeslaView(doc,target) {
   const canvas=el(doc,'canvas',{class:'tesla-scene',attrs:{'aria-label':text('vision_tesla_name','Bird’s-eye view')}});
   const notice=el(doc,'div',{class:'tesla-notice'});
   const perceptionStatus=el(doc,'div',{class:'tesla-perception',attrs:{role:'status'}});
+  const mapCredit=el(doc,'a',{class:'tesla-map-credit',text:'OSM 道路中心線 · © OpenStreetMap contributors'});
+  mapCredit.href='https://www.openstreetmap.org/copyright';mapCredit.target='_blank';mapCredit.rel='noopener noreferrer';
+  mapCredit.hidden=true;root.appendChild(mapCredit);
   const volumeLegend=el(doc,'small',{class:'tesla-volume-legend',text:text('occupancy_legend','青色方格為推估表面，淡紫線為估距範圍。空白含未知區域。')});
   volumeLegend.hidden=true;
   const predictionLegend=el(doc,'small',{class:'tesla-prediction-legend'});predictionLegend.hidden=true;
@@ -285,7 +302,8 @@ export function createTeslaView(doc,target) {
     environment.update({active:environmentActive,frozen:bev.frozen});
     const occ=environment.scene();
     const vision=perception.scene(),road=roadPerception.scene(),liveScene=tesla?{...birdScene(target,now()),vision,road}:{};
-    const map=research.read(isBev&&viewActive&&!doc.hidden&&!bev.frozen&&target.CarrotVisionReplay?.status?.()?.active!==true,now());
+    const map=research.read(tesla&&!remoteGpu&&viewActive&&!doc.hidden&&!bev.frozen&&target.CarrotVisionReplay?.status?.()?.active!==true,now());
+    if(!tesla)mapCredit.hidden=true;
     if(tesla){liveScene.paint=lanePaint(target,now());liveScene.mapLines=map.lines;}
     const scene={...bev.prepare(liveScene),text};
     scene.environment=environmentActive&&occ.status==='ready'?occ.positions:null;
@@ -403,7 +421,7 @@ export function createTeslaView(doc,target) {
       setText(notice,parking.spin?text('parking_spin','Parked · vehicle presentation; not a camera view'):parking.overhead?text('parking_front_only','Front camera paint estimates · no rear/side coverage'):bev.frozen?text('bev_frozen','Annotation snapshot · not live'):text(scene.model?'scene_live_notice':'vision_tesla_wait',scene.model?'Live observations · front camera / native targets; not 360°':'Waiting for fresh model data'));
       const vw=root.clientWidth||536,vh=root.clientHeight||300;
       const quality=meter.quality(settings.vision_render_quality);
-      const {width:w,height:h,factor}=sceneRenderSize(vw,vh,quality);
+      const {width:w,height:h,factor}=sceneRenderSize(vw,vh,quality,target.devicePixelRatio);
       const stamp=target.CarrotStateReceivedAtMonotonic?.modelV2??target.CarrotStateUpdatedAt?.modelV2;
       const rs=target.CarrotStateReceivedAtMonotonic?.radarState??target.CarrotStateUpdatedAt?.radarState;
       const bounds=root.getBoundingClientRect(),center=bounds.left+bounds.width/2;
@@ -418,6 +436,7 @@ export function createTeslaView(doc,target) {
       const obstruction=parseFloat(target.getComputedStyle?.(doc.documentElement)?.getPropertyValue('--cockpit-bottom-obstruction'))||0;
       const bottomFraction=Math.min(.40,Math.max(inset,obstruction)/Math.max(1,vh));
       const signature=`${occ.revision}:${occ.status}:${tracks.length?Math.floor(now()/40):0}:${w}:${h}:${skin.id}:${skin.paint}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${map.revision}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}:${zoomEnabled?zoom.progress.toFixed(3):'manual'}:${orbit.pose.yaw}:${orbit.pose.pitch}:${orbit.zoom}:${lamps.brake}:${lamps.left}:${lamps.right}:${lamps.lowBeam}:${lamps.highBeam}:${lamps.tail}:${displayData.measuredRoadWheelDeg}:${parking.overhead}:${parking.vertical}:${bottomFraction}:${parking.yaw}:${paint.revision}:${vehicleFrame?.frame}:${lot.status}:${attitude?.roll}:${attitude?.pitch}`;
+      mapCredit.hidden=isBev||!scene.model||!scene.mapLines?.length||parking.overhead||parking.spin;
       const drivingCamera=orbitCamera({...zoom.camera,skinScale:skin.scale},orbit.pose,orbit.zoom);
       const cameraView=parking.spin?{...drivingCamera,yaw:parking.yaw,pitch:28,distance:9,bottomFraction}:parking.overhead?{...drivingCamera,...PARKING_VIEW,pitch:parking.vertical?82:PARKING_VIEW.pitch,parkingPoints:scene.parking.flatMap(s=>s.corners),bottomFraction}:drivingCamera;
       if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){const drawStart=now();if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
@@ -437,6 +456,7 @@ export function createTeslaView(doc,target) {
 export const TESLA_VIEW_CSS=`
 .tesla-volume-legend{position:absolute;z-index:2;left:50%;top:3px;transform:translateX(-50%);max-width:62%;background:#14232de8;color:#a8e5e5;border-radius:5px;padding:3px 8px;text-align:center;font:12px system-ui;pointer-events:none}
 .tesla-view{position:absolute;inset:0;pointer-events:none;z-index:4;color:#fff;font-family:system-ui,sans-serif}.tesla-view[hidden],.tesla-view [hidden]{display:none!important}
+.tesla-map-credit{position:absolute;z-index:1;bottom:3px;left:8px;font:11px/1.25 system-ui;color:#b1c5da;background:#24272bd9;border-radius:3px;padding:2px 4px}.tesla-map-credit[hidden]{display:none}
 .tesla-scene{position:absolute;z-index:0;pointer-events:none;inset:0;width:100%;height:100%;object-fit:fill}.tesla-notice{position:absolute;top:8px;left:150px;right:110px;text-align:center;font-size:12px;background:#171c23b0;border-radius:8px;padding:6px}
 .has-webgl-scene .tesla-image-object{display:flex;flex-direction:column;background:#182432e8;color:#e2edf8;min-width:74px;padding:5px 8px;gap:3px;text-align:center}
 .has-webgl-scene .tesla-image-object b{visibility:hidden;display:block;width:48px;height:48px;padding:0}

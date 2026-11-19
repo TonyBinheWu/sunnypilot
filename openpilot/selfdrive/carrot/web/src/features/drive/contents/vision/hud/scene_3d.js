@@ -6,8 +6,8 @@ import {metricSize,roadModelKind,roadModelLod} from './road_model_selection.js';
 import {createGpuSceneReceiver} from './gpu_scene_receiver.js';
 import {createSceneModels} from './scene_3d_models.js';
 import {surroundingTargets} from './scene_objects.js';
-import {paintStripes} from './road_paint.js';
-import {roadColors, pathChevrons, nearPathSurface, nearPathCar, parkingOutline, dashedRibbon, isDashed} from './road_scene_style.js';
+import {paintStripes,stripePattern} from './road_paint.js';
+import {roadColors, pathChevrons, nearPathSurface, nearPathCar, parkingOutline, dashedRibbon} from './road_scene_style.js';
 import {ROAD_CLASSES} from './object_classes.js';
 
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
@@ -90,7 +90,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
     if(volume.instanceColor)volume.instanceColor.needsUpdate=true;
     volume.instanceMatrix.needsUpdate=true;lastPositions=positions;
   }
-  let shadow, highlightedCar;
+  let shadow, highlightedCar, mapContext, lastMapLines;
   const shadowMatrix=new T.Matrix4();
   function placeShadow(i,x,y,heading,length,width){
     shadowMatrix.makeRotationZ(heading);shadowMatrix.scale(shadowScale.set(length,width,1));shadowMatrix.setPosition(x,y,.035);
@@ -142,6 +142,11 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       // Sensor x-forward/y-right/z-up is left-handed. Reflect exactly once at
       // the render boundary; keep all observations and vehicle lamp sides intact.
       world=new T.Group();world.scale.y=-1;scene.add(world);egoPivot=new T.Group();world.add(egoPivot);
+      const mapGeometry=new T.BufferGeometry();
+      mapGeometry.setAttribute('position',new T.BufferAttribute(new Float32Array(24*12*6),3).setUsage(T.DynamicDrawUsage));
+      mapGeometry.setDrawRange(0,0);
+      mapContext=new T.LineSegments(mapGeometry,new T.LineBasicMaterial({color:'#7692a6',transparent:true,opacity:.55,depthWrite:false}));
+      mapContext.frustumCulled=false;mapContext.userData.owned=true;world.add(mapContext);lastMapLines=null;
       const tickGeometry=new T.BufferGeometry();
       tickGeometry.setAttribute('position',new T.BufferAttribute(new Float32Array(12),3).setUsage(T.DynamicDrawUsage));
       wheelTicks=new T.LineSegments(tickGeometry,new T.LineBasicMaterial({color:'#3289c5'}));
@@ -201,6 +206,17 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       camera.updateProjectionMatrix();renderer.setViewport?.(0,0,width,height);
       const palette=roadColors(night);scene.background.set(palette.sky);scene.fog.color.set(palette.sky);ground.material.color.set(palette.road);
       const cue=view?.parking ? (data.parkingCue===undefined ? parkingObservation(data) : data.parkingCue) : null;
+      const lines=data.model&&!view?.parking?data.mapLines:null;
+      if(lines!==lastMapLines){
+        lastMapLines=lines;
+        const position=mapContext.geometry.getAttribute('position');
+        let count=0;
+        for(const [a,b] of (lines||[]).slice(0,24*12)){
+          position.setXYZ(count++,a[0],a[1],.009);
+          position.setXYZ(count++,b[0],b[1],.009);
+        }
+        mapContext.geometry.setDrawRange(0,count);position.needsUpdate=true;
+      }
       markProximity(cue);
       updateVolume(data.environment,view?.parking===true);
       updateRanges(data.environment&&data.environmentRanges);
@@ -226,8 +242,9 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
           const paint=paintStripes(data.paint?.[i],i,palette.lane);
           paint.offsets.forEach((offset,j)=>{
             const index=j?12+i:i+2;
-            if(isDashed(data.paint?.[i]))geometryAt(index,dashedRibbon(p,offset-.065,offset+.065),paint.color);
-            else ribbon(index,p,offset-.055,offset+.055,paint.color,true);
+            const style=stripePattern(data.paint?.[i],j);
+            if(style==='dashed'||style==='dots')geometryAt(index,dashedRibbon(p,offset-.065,offset+.065,style==='dots'),paint.color);
+            else ribbon(index,p,offset-.055,offset+.055,style==='boundary'?palette.edge:paint.color,false);
           });
         });
         const path=view?.parking?null:model.position;

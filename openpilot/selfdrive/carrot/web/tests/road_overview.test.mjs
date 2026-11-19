@@ -24,3 +24,29 @@ test('overview keeps ego low and complete with the observed roadway ahead across
     assert.ok(front[1]>far[1]&&far[1]<h*.55);
   }
 });
+
+import {paintStripes,stripePattern} from '../src/features/drive/contents/vision/hud/road_paint.js';
+import {researchMap} from '../src/features/drive/contents/vision/hud/research_map.js';
+
+test('OEM inner marking evidence does not invent the outer style or paint over barriers',()=>{
+  for(const [code,style] of [[20,'dashed'],[21,'solid'],[24,'solid'],[25,'dashed'],[26,'boundary'],[27,'dots']]){
+    assert.equal(stripePattern(code),style);
+    assert.equal(stripePattern(code,1),'boundary');
+  }
+  assert.deepEqual(paintStripes(25,1,'gray').offsets,[0,-.28]);
+  for(const code of [13,28])assert.deepEqual(paintStripes(code,1,'gray').offsets,[]);
+});
+
+test('aligned OSM layer rejects malformed points and expires if there is no fresh reply',async()=>{
+  const line=[[0,3],[100,32]];
+  let now=1000;
+  const map=researchMap({performance:{now:()=>now},fetch:async()=>({ok:true,json:async()=>({
+    enabled:true,lines:[line,[[0,0],[1,Infinity]],null,[[1,60],[2,3]]]
+  })})});
+  map.read(true,now);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(map.read(true,now).lines,[line]);
+  now+=901;
+  assert.deepEqual(map.read(true,now).lines,[]);
+  assert.deepEqual(map.read(false,now).lines,[]);
+});

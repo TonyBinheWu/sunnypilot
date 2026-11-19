@@ -7,7 +7,7 @@ const source = await readFile(new URL("../js/pages/navigation_map.js", import.me
 const traditionalSource = await readFile(new URL("../js/pages/navigation_zh_tw.js", import.meta.url), "utf8");
 const settle = () => new Promise((resolve) => setImmediate(resolve));
 
-async function page(responses, language = "en", handleApi = null) {
+async function page(responses, language = "en", handleApi = null, search = "") {
   const elements = new Map(), timers = [], revoked = [];
   let blobs = 0;
   const makeElement = () => ({
@@ -24,7 +24,7 @@ async function page(responses, language = "en", handleApi = null) {
   };
   const target = {
     document: { documentElement: {}, hidden: false, getElementById: element, createElement: makeElement },
-    localStorage: { getItem: () => language }, navigator: {},
+    localStorage: { getItem: () => language }, navigator: {}, location: {search}, URLSearchParams,
     URL: { createObjectURL: () => `blob:${++blobs}`, revokeObjectURL: (url) => revoked.push(url) },
     setTimeout: (callback) => timers.push(callback),
     fetch: async (url, options) => {
@@ -215,4 +215,9 @@ test('lost end response is unknown, never automatically replayed, and can be rec
  });
  const api=p.target.CarrotNavigationView;await assert.rejects(api.end());assert.equal(api.snapshot().known,false);assert.equal(p.element('clear').disabled,false);assert.equal(p.element('clear').textContent,'重新讀取導航狀態');
  await assert.rejects(api.end());assert.equal(writes,1);await p.element('clear').trigger('click');assert.equal(api.snapshot().known,true);assert.equal(api.snapshot().active,false);assert.equal(writes,1);
+});
+
+test('embedded cockpit supplies Traditional Chinese before a language preference is saved',async()=>{
+  const p=await page([{status:204,reason:'offroad'}],null,null,'?cockpit=1&lang=zh-tw');
+  assert.equal(p.element('clear').textContent,'結束當前導航');
 });

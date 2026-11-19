@@ -61,17 +61,23 @@ export function nearPathSurface(path) {
   return out;
 }
 
-export function dashedRibbon(path,left,right) {
-  const points=[];
+export function forEachDash(path,dots,visit) {
+  const period=dots?2:6;
   for(const [a,b,y,z] of segments(path)){
     const lateral=x=>y+(z-y)*(x-a)/(b-a);
-    for(let start=Math.floor(a/6)*6;start<b;start+=6){
-      const s=Math.max(a,start),e=Math.min(b,start+2.75);
-      if(e<=s)continue;
-      const sl=[s,lateral(s)+left,.03],sr=[s,lateral(s)+right,.03],el=[e,lateral(e)+left,.03],er=[e,lateral(e)+right,.03];
-      points.push(...sl,...sr,...er,...sl,...er,...el);
+    for(let start=Math.floor(a/period)*period;start<b;start+=period){
+      const s=Math.max(a,start),e=Math.min(b,start+(dots ? .22 : 2.75));
+      if(e>s)visit(s,lateral(s),e,lateral(e));
     }
   }
+}
+
+export function dashedRibbon(path,left,right,dots=false) {
+  const points=[];
+  forEachDash(path,dots,(s,y,e,z)=>{
+    const sl=[s,y+left,.03],sr=[s,y+right,.03],el=[e,z+left,.03],er=[e,z+right,.03];
+    points.push(...sl,...sr,...er,...sl,...er,...el);
+  });
   return points;
 }
 

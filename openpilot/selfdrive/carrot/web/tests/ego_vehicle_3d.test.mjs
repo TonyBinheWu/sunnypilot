@@ -22,7 +22,7 @@ test('one generic ego instance changes paint, LOD, wheels and lamps independentl
   assert.equal(updated,root);assert.ok(front.rotation.y>0);assert.ok(front.children[0].rotation.x>0);
   assert.ok(nodes.get('RearLens').emissiveIntensity>1);assert.ok(nodes.get('IndicatorRight').emissiveIntensity>1);
   assert.equal(nodes.get('IndicatorLeft').emissiveIntensity,0);
-  for(const [quality,expected] of [['standard',1],['low',2]]){
+  for(const [quality,expected] of [['standard',0],['low',1]]){
     assert.equal(ego.update({...options,quality,lamps:vehicleLamps({},true)}),root);
     assert.deepEqual(root.children.filter(n=>n.visible).map(n=>n.name),['CUV_LOD'+expected]);
   }

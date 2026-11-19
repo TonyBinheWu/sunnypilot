@@ -30,7 +30,7 @@ export function createEgoVehicle3D(target,doc,onChange){
   function update({skin,lamps={},quality,range,at,speed,reverse,steer}){
     if(skin?.id&&skin.id!=='generic'){lastAt=null;return null;}
     if(!asset){void load();return null;}
-    const level=quality==='low'||range>=24?2:quality==='standard'||range>=17?1:0;
+    const level=range>=24?2:quality==='low'||range>=17?1:0;
     levels.forEach((m,i)=>{m.visible=i===level;});
     const key=[skin?.paint,lamps.brake,lamps.left,lamps.right,lamps.lowBeam,lamps.highBeam,lamps.tail].join('/');
     if(key!==materialKey){
