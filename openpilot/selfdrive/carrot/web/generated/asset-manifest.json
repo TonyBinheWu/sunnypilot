@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "5f81411c365968a416646e25c5f942c2fac40cf7e5f9dffaef9f3b92d3b22e96"
+      "hash": "0b556756f852ca87d236aac121418dbce76bd956ba06eabe0dcda01b28e0855a"
     },
     {
       "id": "navigation.offline",

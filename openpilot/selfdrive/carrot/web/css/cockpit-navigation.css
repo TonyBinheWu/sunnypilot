@@ -19,3 +19,37 @@ html.cockpit-night .layout>section:nth-child(2){border-color:#35404f}
  #mapStatus{font-size:calc(14px * clamp(1,var(--carrot-text-scale,1),1.25))!important}
  body.search-open .layout>section:nth-child(2){inset:8px;padding:12px}
 }
+
+/* The cockpit owns the search/return bar above this frame. Use the entire pane
+   for the address and results, including when the Android keyboard is open. */
+body.search-open .layout > section:first-child { visibility:hidden }
+body.search-open .layout > section:nth-child(2) {
+  inset:0; max-height:none; border:0; border-radius:0;
+  padding:clamp(12px,3vw,22px); overscroll-behavior:contain;
+}
+body.search-open #searchTitle { margin:0 0 10px }
+body.search-open #form { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px }
+body.search-open #form :is(input,button) { min-height:48px; border-radius:10px }
+body.search-open #search { color:#fff; background:#1763bb; border-color:transparent }
+body.search-open #status:empty { min-height:0; margin:0 }
+body.search-open #mapConfig { margin-top:20px; padding-bottom:0 }
+body.search-open #mapConfig > summary { min-height:48px }
+.layout > section > #mapStatus {
+  position:static; max-width:none; flex:none; padding:5px 10px;
+  border-radius:0; text-align:start; background:#eef2f7; color:#324055;
+}
+html.cockpit-night .layout > section > #mapStatus { background:#263140; color:#e4ebf6 }
+@media(max-height:400px) {
+  .layout .map-guidance { inset:6px auto 6px 6px; max-width:calc(100% - 64px); gap:4px }
+  .layout .map-guidance #mapTrip {
+    max-height:none; gap:3px 8px; padding:3px 6px;
+    font-size:calc(14px * clamp(.9,var(--carrot-text-scale,1),1.35));
+  }
+  .layout > section > #mapStatus[role="status"] {
+    padding:4px 8px; font-size:calc(13px * clamp(1,var(--carrot-text-scale,1),1.25))!important; line-height:1.35;
+  }
+  #mapTrip #endOnMap {
+    min-height:44px; padding:4px 8px; font-size:inherit; line-height:1.2;
+    white-space:normal;
+  }
+}
