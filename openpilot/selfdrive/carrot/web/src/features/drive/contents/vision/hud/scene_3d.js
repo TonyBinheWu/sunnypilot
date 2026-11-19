@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {parkingObservation, parkingDistanceText, parkingWheelTicks} from './parking_environment.js';
 import {createEgoVehicle3D} from '../../../../cockpit/ego_vehicle_3d.js';
 import {createRoadLibrary} from './road_model_library.js';
 import {metricSize,roadModelKind,roadModelLod} from './road_model_selection.js';
@@ -41,11 +42,12 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
     const pause=()=>{receiver.update(false);canvas.hidden=true;};
     return {canvas,pause,render(width,height,data,options={}){
       const active=options.enabled!==false&&!doc.hidden;
-      canvas.hidden=!active;receiver.update(active);if(active)receiver.setView(width,height,options);return active;
+      canvas.hidden=!active;if(active)receiver.setView(width,height,options);receiver.update(active);return active;
     },snapshot(){const s=receiver.snapshot();return {...s,environmentCells:s.cells,raisedCells:s.raised};},
     destroy(){receiver.destroy();canvas.remove();}};
   }
   let renderer=null,failed=false,lost=false,closed=false,scene,world,camera,models,ego,egoKey='',active=false,hud,hudCamera,ground;
+  let egoPivot,wheelTicks, proximityMarker=null, distanceSprite=null, distanceLabel='';
   const egoModel=createEgoVehicle3D(target,doc,onChange);
   let library=createRoadLibrary(target,doc,onChange);
   const hudNodes=new Map(),parkingNodes=[];
@@ -64,23 +66,28 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
     points.array.set(ranges);points.needsUpdate=true;rangeLines.geometry.setDrawRange(0,ranges.length/3);
     lastRanges=ranges;
   }
-  const voxelTransform=new T.Matrix4();
-  function updateVolume(positions) {
+  let parkingPalette=false;
+  const voxelTransform=new T.Matrix4(), voxelColor=new T.Color();
+  function updateVolume(positions,parking) {
     if(!positions?.length){if(volume)volume.count=0;lastPositions=null;return;}
-    if(lastPositions===positions)return;
+    if(lastPositions===positions&&parkingPalette===parking)return;
+    parkingPalette=parking;
     if(!volume){
       volume=new T.InstancedMesh(new T.BoxGeometry(.94,.94,.94),
-        new T.MeshLambertMaterial({color:'#429fa6',transparent:true,opacity:.42,depthWrite:false}),64*36);
+        new T.MeshLambertMaterial({color:'#ffffff',transparent:true,opacity:.42,depthWrite:false}),64*36);
       volume.instanceMatrix.setUsage(T.DynamicDrawUsage);volume.frustumCulled=false;
       volume.userData.owned=true;world.add(volume);
     }
+    volume.material.opacity=parking ? .78 : .42;
     volume.count=Math.min(64*36,Math.floor(positions.length/3));
     for(let i=0;i<volume.count;i++){
       const z=positions[3*i+2];
       // Show ground-height cells as tiles, so a flat surface never becomes a row of bollards.
       voxelTransform.makeScale(1,1,z===0?.05:1).setPosition(positions[3*i],positions[3*i+1],z);
       volume.setMatrixAt(i,voxelTransform);
+      volume.setColorAt(i,voxelColor.set(parking && z>0 ? '#748998' : '#429fa6'));
     }
+    if(volume.instanceColor)volume.instanceColor.needsUpdate=true;
     volume.instanceMatrix.needsUpdate=true;lastPositions=positions;
   }
   let shadow, highlightedCar;
@@ -120,7 +127,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
     });
   }
   let renderWidth=0,renderHeight=0,lastStats={backend:'not-started',objects:0,classified:0,unknown:0};
-  const dispose=()=>{for(const m of ribbons){m.geometry.dispose();m.material.dispose();}ribbons.length=0;models?.dispose();models=null;scene?.traverse(o=>{if(o.userData?.owned){o.geometry?.dispose();o.material?.dispose();}});renderer?.dispose();renderer=null;discarded+=objectNodes.size+pooled;objectNodes.clear();pool.clear();pooled=0;predictedMesh?.dispose();predictedLine?.dispose();highlightedCar?.dispose();highlightedCar=null;shadow=null;roadCache=null;hudNodes.clear();parkingNodes.length=0;ego=null;renderWidth=renderHeight=0;};
+  const dispose=()=>{distanceSprite?.material.map.dispose();distanceSprite?.material.dispose();distanceSprite=null;distanceLabel='';proximityMarker=null;for(const m of ribbons){m.geometry.dispose();m.material.dispose();}ribbons.length=0;models?.dispose();models=null;scene?.traverse(o=>{if(o.userData?.owned){o.geometry?.dispose();o.material?.dispose();}});renderer?.dispose();renderer=null;discarded+=objectNodes.size+pooled;objectNodes.clear();pool.clear();pooled=0;predictedMesh?.dispose();predictedLine?.dispose();highlightedCar?.dispose();highlightedCar=null;shadow=null;roadCache=null;hudNodes.clear();parkingNodes.length=0;ego=null;renderWidth=renderHeight=0;};
   const contextLost=e=>{e.preventDefault();lost=true;canvas.hidden=true;lastStats={...lastStats,backend:'context-lost'};onChange();};
   const contextRestored=()=>{if(closed)return;lost=false;failed=false;volume?.dispose();volume=null;lastPositions=null;rangeLines=null;lastRanges=null;dispose();library.dispose();library=createRoadLibrary(target,doc,onChange);onChange();};
   canvas.addEventListener('webglcontextlost',contextLost);canvas.addEventListener('webglcontextrestored',contextRestored);
@@ -134,7 +141,11 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       camera=new T.PerspectiveCamera(50,1,.1,180);camera.up.set(0,0,1);models=createSceneModels();
       // Sensor x-forward/y-right/z-up is left-handed. Reflect exactly once at
       // the render boundary; keep all observations and vehicle lamp sides intact.
-      world=new T.Group();world.scale.y=-1;scene.add(world);if(scenery)world.add(scenery);
+      world=new T.Group();world.scale.y=-1;scene.add(world);egoPivot=new T.Group();world.add(egoPivot);
+      const tickGeometry=new T.BufferGeometry();
+      tickGeometry.setAttribute('position',new T.BufferAttribute(new Float32Array(12),3).setUsage(T.DynamicDrawUsage));
+      wheelTicks=new T.LineSegments(tickGeometry,new T.LineBasicMaterial({color:'#3289c5'}));
+      wheelTicks.userData.owned=true;wheelTicks.frustumCulled=false;egoPivot.add(wheelTicks);if(scenery)world.add(scenery);
       scene.add(new T.HemisphereLight('#ffffff','#c9c4c1',2.2));const light=new T.DirectionalLight('#ffffff',1.9);light.position.set(-8,-12,22);scene.add(light);
       hud=new T.Scene();hud.add(new T.HemisphereLight('#eff8ff','#556c88',2));hudCamera=new T.OrthographicCamera(0,1,1,0,1,1000);hudCamera.position.z=500;
       ground=new T.Mesh(new T.PlaneGeometry(600,600),new T.MeshBasicMaterial({color:'#e8edf5'}));ground.position.set(70,0,-.04);ground.userData.owned=true;scene.add(ground);
@@ -154,6 +165,27 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       return true;
     }catch{failed=true;dispose();lastStats={...lastStats,backend:'canvas-fallback'};return false;}
   }
+  function markProximity(cue) {
+    if(!cue){if(proximityMarker)proximityMarker.visible=distanceSprite.visible=false;return;}
+    if(!proximityMarker){
+      proximityMarker=new T.Mesh(new T.RingGeometry(.58,.75,40),new T.MeshBasicMaterial({side:T.DoubleSide,depthTest:false,depthWrite:false}));
+      proximityMarker.userData.owned=true;proximityMarker.renderOrder=25;world.add(proximityMarker);
+      const label=doc.createElement('canvas');label.width=192;label.height=64;
+      const texture=new T.CanvasTexture(label);texture.colorSpace=T.SRGBColorSpace;
+      distanceSprite=new T.Sprite(new T.SpriteMaterial({map:texture,depthTest:false,depthWrite:false}));
+      distanceSprite.renderOrder=26;distanceSprite.scale.set(3,.99,1);scene.add(distanceSprite);
+    }
+    proximityMarker.visible=distanceSprite.visible=true;proximityMarker.position.set(cue.x,cue.y,.08);
+    distanceSprite.position.set(cue.x,-cue.y,1.65);
+    proximityMarker.material.color.set(cue.color);
+    const labelText=parkingDistanceText(cue);
+    if(labelText!==distanceLabel){
+      const texture=distanceSprite.material.map,label=texture.image,ctx=label.getContext('2d');
+      ctx.fillStyle='#17232b';ctx.fillRect(0,0,label.width,label.height);
+      ctx.font='bold 40px system-ui';ctx.textAlign='center';ctx.fillStyle='#ffffff';ctx.fillText(labelText,96,46);
+      texture.needsUpdate=true;distanceLabel=labelText;
+    }
+  }
   function geometryAt(index,positions,color){
     const mesh=ribbons[index];const attribute=mesh.geometry.getAttribute('position');
     attribute.array.set(positions);attribute.needsUpdate=true;mesh.geometry.setDrawRange(0,positions.length/3);mesh.material.color.set(color);mesh.visible=positions.length>0;
@@ -166,7 +198,9 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       if(renderWidth!==width||renderHeight!==height){renderer.setSize(width,height,false);renderWidth=width;renderHeight=height;}
       const spec=sceneCamera(width,height,{...view,roadOverview:true,skinScale:skin?.scale});camera.fov=spec.fov;camera.aspect=spec.aspect;camera.position.set(...spec.position);camera.lookAt(...spec.target);camera.updateProjectionMatrix();renderer.setViewport?.(0,spec.bottomInset,width,spec.viewportHeight);
       const palette=roadColors(night);scene.background.set(palette.sky);scene.fog.color.set(palette.sky);ground.material.color.set(palette.road);
-      updateVolume(data.environment);
+      const cue=view?.parking ? (data.parkingCue===undefined ? parkingObservation(data) : data.parkingCue) : null;
+      markProximity(cue);
+      updateVolume(data.environment,view?.parking===true);
       updateRanges(data.environment&&data.environmentRanges);
       if(rangeLines){
         rangeLines.position.set(data.environmentMotion?.x||0,data.environmentMotion?.y||0,0);
@@ -243,11 +277,19 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       for(const [key,node] of objectNodes)if(!visible.has(key))release(key,node);
       const cuv=egoModel.update({skin,lamps,quality,range:spec.range,at:frameTime,...egoMotion});
       if(cuv){
-        if(ego!==cuv){if(ego)world.remove(ego);world.add(cuv);ego=cuv;egoKey='';}
+        if(ego!==cuv){if(ego)egoPivot.remove(ego);egoPivot.add(cuv);ego=cuv;egoKey='';}
       }else{
         const nextKey=[skin?.id,skin?.paint,lamps.brake,lamps.left,lamps.right,lamps.lowBeam,lamps.highBeam].join('/');
-        if(!ego||nextKey!==egoKey){if(ego)world.remove(ego);ego=models.get('ego',{skin,lamps});world.add(ego);egoKey=nextKey;}
+        if(!ego||nextKey!==egoKey){if(ego)egoPivot.remove(ego);ego=models.get('ego',{skin,lamps});egoPivot.add(ego);egoKey=nextKey;}
       }
+      const ticks=view?.parking?parkingWheelTicks(egoMotion.steer,skin?.scale):[];
+      wheelTicks.visible=!!ticks.length;
+      if(wheelTicks.visible){
+        const attr=wheelTicks.geometry.attributes.position;
+        ticks.forEach(([x,y,endX,endY],i)=>{attr.setXYZ(i*2,x,y,.12);attr.setXYZ(i*2+1,endX,endY,.12);});
+        attr.needsUpdate=true;
+      }
+      egoPivot.rotation.set(-(egoMotion.attitude?.roll||0),-(egoMotion.attitude?.pitch||0),0,'YXZ');
       renderer.autoClear=true;renderer.render(scene,camera);const drawCalls=renderer.info.render.calls,triangles=renderer.info.render.triangles;
       const imageKeys=new Set();hudCamera.right=width;hudCamera.top=height;hudCamera.updateProjectionMatrix();
       for(const slot of imageSlots.slice(0,5)){
@@ -257,7 +299,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       }
       for(const [key,node] of hudNodes)if(!imageKeys.has(key)){hud.remove(node);hudNodes.delete(key);}
       if(hudNodes.size){renderer.setViewport?.(0,0,width,height);renderer.autoClear=false;renderer.clearDepth();renderer.render(hud,hudCamera);}
-      lastStats={backend:'webgl2',egoModel:cuv?'generic-cuv':skin?.id||'fallback',modelLibrary:library.status,lodCounts,objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
+      lastStats={backend:'webgl2',parkingObservation:cue,egoModel:cuv?'generic-cuv':skin?.id||'fallback',modelLibrary:library.status,lodCounts,objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
     }catch{failed=true;dispose();canvas.hidden=true;lastStats={...lastStats,backend:'canvas-fallback'};return false;}
   },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats,environmentRanges:active&&!lost&&renderer&&lastRanges?lastRanges.length/6:0,environmentCells:active&&!lost&&renderer?volume?.count||0:0}),destroy(){closed=true;egoModel.dispose();library.dispose();canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);volume?.dispose();dispose();canvas.remove();}};
 }

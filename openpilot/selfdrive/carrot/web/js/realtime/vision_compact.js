@@ -171,6 +171,8 @@ window.CarrotVisionCompact = (() => {
       ["laneLineStds", "f32list"], ["frameAge", "i32"],
       ["frameDropPerc", "f32"], ["modelExecutionTime", "f32"],
       ["meta", "struct", modelNotice],
+      ["visionCameraInputs", "enumname", ["unknown", "road", "wide", "roadWide"]],
+      ["visionCompute", "enumname", ["unknown", "nonUsb", "usbGpu"]],
     ]]],
     [10, ["liveCalibration", [
       ["calStatus", "enumname", ["uncalibrated", "calibrated", "invalid", "recalibrating"]],

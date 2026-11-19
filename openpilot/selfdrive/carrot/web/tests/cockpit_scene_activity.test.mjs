@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createDriveDataActivity} from '../src/shared/activity/drive_data.js';
 import {createCockpitSceneActivity} from '../src/features/cockpit/scene_activity.js';
-import {cockpitPerceptionReport} from '../src/features/cockpit/perception_status.js';
+import {cockpitPerceptionReport,modelPerceptionSource} from '../src/features/cockpit/perception_status.js';
 
 test('visible cockpit leases model/radar overlays without starting a camera or duplicating leases',()=>{
   const activity=createDriveDataActivity({target:{}}),session=createCockpitSceneActivity();
@@ -50,4 +50,13 @@ test('calibration diagnostics retain real classifications and tell C4 stream mis
   assert.equal(cockpitPerceptionReport(frame).objects.classes,'行人 1、機車 1');
   assert.match(cockpitPerceptionReport(frame).objects.text,/串流比例/);
   reason='telemetry';assert.match(cockpitPerceptionReport(frame).objects.text,/資料未更新/);
+});
+
+test('compute and lens provenance must belong to a fresh valid model frame',()=>{
+  const model={visionCameraInputs:'roadWide',visionCompute:'usbGpu'};
+  assert.match(modelPerceptionSource(model,100,449),/遠距＋廣角（USB eGPU）/);
+  for(const stamp of [null,NaN,450.1,100])assert.equal(modelPerceptionSource(model,stamp,450),'');
+  assert.equal(modelPerceptionSource({...model,_sourceInvalid:true},100,200),'');
+  assert.equal(modelPerceptionSource({visionCompute:'usbGpu'},100,200),'');
+  assert.equal(modelPerceptionSource({visionCameraInputs:'road'},100,200),'');
 });

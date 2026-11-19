@@ -13,6 +13,7 @@ class SceneFrame:
   jpeg: bytes
   cells: int
   raised: int
+  parking: bool
 
 
 class GpuSceneRelay:
@@ -21,7 +22,7 @@ class GpuSceneRelay:
     self.frame = None
     self.seq = 0
 
-  def publish(self, jpeg, age_ms, cells, raised):
+  def publish(self, jpeg, age_ms, cells, raised, parking=False):
     if not (0 <= age_ms < 900 and 0 <= raised <= cells <= 2304):
       return False
     if not (0 < len(jpeg) <= 1048576 and jpeg.startswith(b"\xff\xd8") and jpeg.endswith(b"\xff\xd9")):
@@ -30,7 +31,7 @@ class GpuSceneRelay:
     if self.frame and captured <= self.frame.captured:
       return False
     self.seq += 1
-    self.frame = SceneFrame(self.seq, captured, jpeg, cells, raised)
+    self.frame = SceneFrame(self.seq, captured, jpeg, cells, raised, parking)
     return True
 
   async def read(self, request):
@@ -41,6 +42,6 @@ class GpuSceneRelay:
       return web.Response(status=204, headers=headers)
     if request is not None and request.query.get("after") == str(frame.seq):
       return web.Response(status=304, headers=headers)
-    headers.update({"X-Scene-Frame":str(frame.seq), "X-Scene-Age-Ms":str(age),
+    headers.update({"X-Scene-Parking": "1" if frame.parking else "0", "X-Scene-Frame":str(frame.seq), "X-Scene-Age-Ms":str(age),
                     "X-Scene-Cells":str(frame.cells), "X-Scene-Raised":str(frame.raised)})
     return web.Response(body=frame.jpeg, content_type="image/jpeg", headers=headers)

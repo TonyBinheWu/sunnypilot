@@ -30,3 +30,12 @@ def test_real_native_encoder_preserves_notice_health_and_takeover_gates(can_vali
   cs.gearShifter, cs.vEgo = 'drive', 30.
   cs.laneLineInfoMonoTime = 123456789012 if can_valid else 0
   assert encode_frame('carState', event.to_bytes(), 17) == encode_carrot_state_frame('carState', cs, 17)
+
+
+@pytest.mark.parametrize('camera', ['unknown', 'road', 'wide', 'roadWide'])
+@pytest.mark.parametrize('compute', ['unknown', 'nonUsb', 'usbGpu'])
+def test_real_native_encoder_preserves_visual_source(camera, compute):
+  event = log.Event.new_message()
+  md = event.init('modelV2')
+  md.visionCameraInputs, md.visionCompute = camera, compute
+  assert encode_frame('modelV2', event.to_bytes(), 17) == encode_carrot_state_frame('modelV2', md, 17)

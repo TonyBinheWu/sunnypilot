@@ -25,6 +25,45 @@ export function surroundingTargets(radar, range=75) {
   return out.slice(0,32);
 }
 
+// These hypotheses describe the same in-path lead at different future times.
+// Only use the first, present-time hypothesis. Match radarState's bumper origin.
+export function createModelLeadSource(tracker) {
+  const source='modelV2.leadsV3[0]';
+  let lastFrame=null, lastAt=null, lastClock=null;
+  function clear() {tracker.drop('model');lastFrame=lastAt=lastClock=null;}
+  function update(model, stamp, now, motion) {
+    if(!model || model._sourceInvalid || !finite(stamp) || stamp>now || now-stamp>=350) {clear();return;}
+    const frame=model._sourceSequence??model.frameId??stamp;
+    if(lastAt!==null && (stamp<lastAt || now-lastClock>=350))clear();
+    if(frame===lastFrame)return;
+    lastFrame=frame;lastAt=stamp;lastClock=now;
+    const lead=model.leadsV3?.[0];
+    const x=lead?.x?.[0],y=lead?.y?.[0],p=lead?.prob;
+    const valid=finite(p)&&p>=.8&&p<=1&&finite(x)&&x>1.52&&x<=76.52&&finite(y)&&Math.abs(y)<=20;
+    const objects=valid?[{source,origin:'driving_model_lead',kind:'vehicle',x:x-1.52,y,
+      probability:p,positionMethod:'driving_model',trackId:null}]:[];
+    tracker.ingest('model',{stamp,objects},now,motion);
+  }
+  return {clear,update};
+}
+
+export function mergeModelLead(tracks,now) {
+  const references=tracks.filter(t=>t.origin!=='driving_model_lead');
+  const leads=tracks.filter(t=>t.origin==='driving_model_lead'&&now-t.measurementAt<350);
+  // A model may switch its primary target while the previous track is still predicted.
+  leads.sort((a,b)=>b.measurementAt-a.measurementAt);
+  for(const lead of leads.slice(0,1)){
+    const near=references.filter(t=>Math.abs(t.x-lead.x)<=Math.min(2,.6+lead.x*.03)&&Math.abs(t.y-lead.y)<=.65);
+    if(!near.length){references.push(lead);continue;}
+    const t=near[0];
+    if(near.length===1&&t.kind==='unknown'&&t.state==='confirmed'&&lead.state==='confirmed'&&
+       ['radarState.leadOne','radarState.leadTwo'].includes(t.source)&&Math.abs(t.measurementAt-lead.measurementAt)<=250){
+      references[references.indexOf(t)]={...t,kind:'vehicle',classSource:lead.source};
+    }
+  }
+  return references;
+}
+
 export function cameraGeometry(state, width, height) {
   const cal=state?.liveCalibration,cam=state?.roadCameraState;
   const rpy=cal?.rpyCalib,h=cal?.height?.[0];
@@ -46,13 +85,13 @@ export function groundPoint(box, geometry, range=75) {
   if(![u,v,bw,bh].every(finite)||bw<=1||bh<=1||u<0||v<0||u+bw>w+1||v+bh>=h*.985)return null;
   // Intersect the bottom-centre image ray with a locally flat ground plane.
   // This is an approximation, not depth inference or measured 3D dimensions.
-  const ray=[1,(u+bw/2-w/2)/fx,(v+bh-h/2)/fy];
+  const ray=[1,(u+bw/2-(geometry.cx??w/2))/fx,(v+bh-(geometry.cy??h/2))/fy];
   const [r,p,y]=rpy,cr=Math.cos(r),sr=Math.sin(r),cp=Math.cos(p),sp=Math.sin(p),cy=Math.cos(y),sy=Math.sin(y);
   const rotation=[[cy*cp,cy*sp*sr-sy*cr,cy*sp*cr+sy*sr],
     [sy*cp,sy*sp*sr+cy*cr,sy*sp*cr-cy*sr],[-sp,cp*sr,cp*cr]];
   const calibrated=[0,1,2].map(i=>rotation[0][i]*ray[0]+rotation[1][i]*ray[1]+rotation[2][i]*ray[2]);
   if(calibrated[0]<=0||calibrated[2]<.02)return null;
-  const scale=heightM/calibrated[2],x=calibrated[0]*scale,lat=calibrated[1]*scale;
+  const scale=heightM/calibrated[2],x=calibrated[0]*scale+(geometry.offsetX??0),lat=calibrated[1]*scale+(geometry.offsetY??0);
   return finite(x)&&finite(lat)&&x>=1&&x<=range&&Math.abs(lat)<=20?[x,lat]:null;
 }
 

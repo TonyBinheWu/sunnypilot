@@ -8,13 +8,13 @@ from pathlib import Path
 import numpy as np
 
 
-class WorkstationOccupancy:
+class WorkstationGpuModel:
   def __init__(self, path: Path, expected_hash: str, profile_prefix: Path, adapter: int = 0):
     import onnxruntime as ort
 
     with path.open("rb") as model:
       if hashlib.file_digest(model, "sha256").hexdigest() != expected_hash:
-        raise ValueError("occupancy model integrity check failed")
+        raise ValueError("GPU model integrity check failed")
     if "DmlExecutionProvider" not in ort.get_available_providers():
       raise RuntimeError("Windows DirectML GPU provider is unavailable")
     options = ort.SessionOptions()
@@ -27,10 +27,25 @@ class WorkstationOccupancy:
     if self.session.get_providers()[0] != "DmlExecutionProvider":
       raise RuntimeError("DirectML GPU was not selected")
     self.session.disable_fallback()
+    self.profile = None
+
+  def verify_profile(self):
+    if self.profile is not None:
+      return self.profile
+    events = json.loads(Path(self.session.end_profiling()).read_text(encoding="utf-8"))
+    executed = {event["args"].get("provider") for event in events if event.get("cat") == "Node"}
+    if executed != {"DmlExecutionProvider"}:
+      raise RuntimeError(f"unexpected kernel execution providers: {executed}")
+    self.profile = sorted(executed)
+    return self.profile
+
+
+class WorkstationOccupancy(WorkstationGpuModel):
+  def __init__(self, path: Path, expected_hash: str, profile_prefix: Path, adapter: int = 0):
+    super().__init__(path, expected_hash, profile_prefix, adapter)
+    self.latencies = []
     self.mean = np.array([.485, .456, .406], dtype=np.float32)
     self.std = np.array([.229, .224, .225], dtype=np.float32)
-    self.latencies = []
-    self.profile = None
 
   def infer_rgba(self, pixels: bytes):
     if len(pixels) != 224 * 126 * 4:
@@ -46,13 +61,3 @@ class WorkstationOccupancy:
     if len(self.latencies) > 512:
       del self.latencies[:256]
     return occupied, visible, elapsed
-
-  def verify_profile(self):
-    if self.profile is not None:
-      return self.profile
-    events = json.loads(Path(self.session.end_profiling()).read_text(encoding="utf-8"))
-    executed = {event["args"].get("provider") for event in events if event.get("cat") == "Node"}
-    if executed != {"DmlExecutionProvider"}:
-      raise RuntimeError(f"unexpected kernel execution providers: {executed}")
-    self.profile = sorted(executed)
-    return self.profile

@@ -20,7 +20,10 @@ import {
   installDriveVisionLeafFacades,
 } from "../features/drive/contents/vision/index.js";
 
+import {createDrivingScene3D} from '../features/drive/contents/vision/hud/scene_3d.js';
 const target = globalThis;
+// The outer cockpit reuses this loaded renderer for its compact preview.
+target.CarrotCreateDrivingScene3D=createDrivingScene3D;
 installAndroidVision(target);
 const catalog = validateDriveContentCatalog(contentCatalogSource);
 

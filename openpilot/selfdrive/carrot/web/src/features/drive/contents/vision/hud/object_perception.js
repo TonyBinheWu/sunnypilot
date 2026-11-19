@@ -12,7 +12,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false,oc
   const profiles=[];
   const signalHistory=createSignalHistory();
   let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,warmed=false,lastAttempt=-Infinity;
-  let lastDecoded=null,lastProfile=null,lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
+  let lastDecoded=null,lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
   let state={status:'off',objects:[],imageObjects:[],count:0,capturedAt:null,revision};
   let watchedVideo=null,frameCallback=null,presented=null,lastPresented=null;
   function observeFrame(video){
@@ -59,7 +59,10 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false,oc
         if(data.type!=='result'||!request||data.id!==request.id)return;
         busy=false;warmed=true;
         const captured=request;request=null;
-        interval=Math.min(1200,Math.max(250,Number(data.durationMs||0)*3));
+        const age=now()-captured.capturedAt;
+        // Sampling is measured from the previous capture. Leave enough time
+        // for the next inference to finish before the displayed result expires.
+        interval=Math.max(250,Math.min(Number(data.durationMs||0)*3,ttl-age-100));
         if(occupancy)interval=Math.max(240,Math.min(600,Number(data.durationMs)||240));
         if(now()-captured.capturedAt>=ttl){publish('slow',{
           durationMs:data.durationMs,delegate:data.delegate||null,geometryReason:captured.geometryReason,
@@ -121,27 +124,32 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false,oc
     const source=video.srcObject||video.currentSrc||video.src;
     if(worker&&(source!==lastSource||lastReplay!==replay||lastTime!==null&&video.currentTime<lastTime))stop('waiting');
     if(!worker){lastSource=source;lastReplay=replay;start();return;}
-    if(occupancy){
+    if(!replay){
       const raw=target.CarrotOverlayState,stamps=target.CarrotStateReceivedAtMonotonic||{};
       const at=Math.max(stamps.liveCalibration,stamps.roadCameraState);
       const valid=['liveCalibration','roadCameraState'].every(k=>Number.isFinite(stamps[k])&&now()>=stamps[k]&&now()-stamps[k]<2000);
       const width=Math.min(640,video.videoWidth),height=Math.round(video.videoHeight*width/video.videoWidth);
       const g=valid&&cameraGeometry(raw,width,height);
-      if(!g){if(busy||state.positions)stop('calibration');else {profiles.length=0;if(state.status!=='calibration')publish('calibration');}return;}
       const prior=profiles.at(-1);
-      if(prior&&(prior.geometry.sensor!==g.sensor||prior.geometry.width!==width||prior.geometry.height!==height)){
+      if(!g){
+        profiles.length=0;
+        if(occupancy){
+          if(request?.geometry||state.geometry)stop('calibration');
+          else if(state.status!=='calibration')publish('calibration');
+          return;
+        }
+        // A calibration gap invalidates 3D placement. The same decoder and
+        // classifier can still finish the captured image in image coordinates.
+        if(request?.geometry){request.geometry=null;request.geometryReason=valid?'calibration':'telemetry';}
+        if(state.geometry)publish('calibration',{geometryReason:valid?'calibration':'telemetry'});
+        // Keep image-only recognition available without projecting it into 3D.
+      }
+      if(g&&prior&&(prior.geometry.sensor!==g.sensor||prior.geometry.width!==width||prior.geometry.height!==height)){
         stop('calibration');return;
       }
-      if(!prior||prior.at!==at){
+      if(g&&(!prior||prior.at!==at)){
         profiles.push({at,oldest:Math.min(stamps.liveCalibration,stamps.roadCameraState),geometry:g});
         if(profiles.length>12)profiles.shift();
-      }
-    }
-    if(state.geometry&&!replay){
-      const raw=target.CarrotOverlayState, stamps=target.CarrotStateReceivedAtMonotonic||{};
-      if(raw?.liveCalibration?._sourceInvalid||raw?.roadCameraState?._sourceInvalid||![1,'calibrated'].includes(raw?.liveCalibration?.calStatus)||raw?.roadCameraState?.sensor!==lastProfile||
-        !['liveCalibration','roadCameraState'].every(k=>now()-stamps[k]>=0&&now()-stamps[k]<2000)){
-        stop('calibration');return;
       }
     }
     // currentTime can advance while the RTC decoder repeats its last image.
@@ -157,10 +165,11 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false,oc
     const raw=target.CarrotOverlayState||{},stamps=target.CarrotStateReceivedAtMonotonic||{};
     // A replay source is historical by design. Live calibration/profile must be fresh.
     const fresh=key=>replay||Number.isFinite(stamps[key])&&capturedAt-stamps[key]>=0&&capturedAt-stamps[key]<2000;
-    const geometry=occupancy?profiles.slice().reverse().find(p=>p.at<=capturedAt&&capturedAt-p.oldest<2000)?.geometry:
-      fresh('liveCalibration')&&fresh('roadCameraState')?cameraGeometry(raw,width,height):null;
+    // Video presentation and telemetry arrive independently. Use the most
+    // recent valid profile that was already known when this frame was shown.
+    const geometry=replay?cameraGeometry(raw,width,height):
+      profiles.slice().reverse().find(p=>p.at<=capturedAt&&capturedAt-p.oldest<2000)?.geometry;
     if(occupancy&&!geometry){busy=false;if(state.status!=='calibration')publish('calibration');return;}
-    lastProfile=raw.roadCameraState?.sensor;
     const geometryReason=geometry?null:!fresh('liveCalibration')||!fresh('roadCameraState')?'telemetry'
       :!['calibrated',1].includes(raw.liveCalibration?.calStatus)?'calibration'
       :!Number.isFinite(raw.liveCalibration?.height?.[0])||raw.liveCalibration.height[0]<.5||raw.liveCalibration.height[0]>3?'height'
@@ -184,7 +193,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false,oc
     retry(){failed=false;stop(wasEnabled?'waiting':'off');},
     scene(){
       if(state.capturedAt!==null&&now()-state.capturedAt>=ttl)
-        return {...state,status:'stale',positions:undefined,ranges:undefined,supportedRays:0,objects:[],imageObjects:[],count:0};
+        return {...state,status:'stale',awaitingResult:busy,positions:undefined,ranges:undefined,supportedRays:0,objects:[],imageObjects:[],count:0};
       return state;
     },
     destroy(){watch(null);stop();},

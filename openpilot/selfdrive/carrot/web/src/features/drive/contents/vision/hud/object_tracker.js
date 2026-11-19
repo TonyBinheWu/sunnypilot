@@ -189,11 +189,12 @@ export function createObjectTracker() {
 }
 
 // Inverse of groundPoint: project a ground contact back into the calibrated ROAD image.
-function inCameraView(g,x,y) {
+export function inCameraView(g,x,y) {
+  x-=g.offsetX??0;y-=g.offsetY??0;
   const [r,p,yaw]=g.rpy, cr=Math.cos(r),sr=Math.sin(r),cp=Math.cos(p),sp=Math.sin(p),cy=Math.cos(yaw),sy=Math.sin(yaw);
   const z=g.heightM, a=cy*cp*x+(cy*sp*sr-sy*cr)*y+(cy*sp*cr+sy*sr)*z;
   const b=sy*cp*x+(sy*sp*sr+cy*cr)*y+(sy*sp*cr-cy*sr)*z, d=-sp*x+cp*sr*y+cp*cr*z;
   if(a<=0)return false;
-  const u=g.width/2+g.fx*b/a, v=g.height/2+g.fy*d/a;
+  const u=(g.cx??g.width/2)+g.fx*b/a, v=(g.cy??g.height/2)+g.fy*d/a;
   return u>=0&&u<=g.width&&v>=0&&v<=g.height;
 }
