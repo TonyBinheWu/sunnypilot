@@ -16,14 +16,32 @@ def check_source(result,health,split):
   provenance=health.get('provenance',{})
   fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
   if not valid_seed: raise ValueError('policy supervision must use separate training/validation seeds')
-  # Simple turns have no moving permission/actor state to anticipate. Yield and
-  # arrow cases still require their own observed-actor freezing implementation.
-  if (result.get('scenario') not in ('red_light','pedestrian','lane_center','left_turn','right_turn') or result.get('backend')!='nvidia_alpamayo2_edge' or result.get('revision')!=MODEL_REVISION
+  if (result.get('scenario') not in ('red_light','pedestrian','lane_center','left_turn','right_turn','yield_left','yield_right','left_arrow','right_arrow') or result.get('backend')!='nvidia_alpamayo2_edge' or result.get('revision')!=MODEL_REVISION
       or result.get('scripted_fallback') is not False or result.get('model_inputs_include_signal_ground_truth') is not False
       or result.get('model_provenance_sha256')!=fingerprint or provenance.get('weights_verified') is not True
       or provenance.get('revision')!=MODEL_REVISION or provenance.get('camera_ids')!=[1,6]):
     raise ValueError('policy source is not a bound, observed-only Edge episode')
   return fingerprint
+
+
+def freeze_observed_permission(scene,scenario):
+  """Keep blocked offline futures at the actor/permission actually observed."""
+  if not scene.blocked():return False
+  import numpy as np
+  actor=(scene.pedestrian if scenario=='pedestrian' else scene.opponent if scenario in ('yield_left','yield_right') else None)
+  # Changing the clearance clock without freezing the actor would teleport it
+  # to an earlier crossing phase. This affects future supervision only.
+  if actor is not None:
+    position=np.array(actor.position,copy=True)
+    heading=float(actor.heading_theta) if scenario in ('yield_left','yield_right') else None
+    def hold_actor():
+      actor.set_position(position.copy())
+      if heading is not None:actor.set_heading_theta(heading)
+    scene.update_actors=hold_actor
+  scene.green_at=1e6
+  # Arrow scenes retain the original light updater; the observed forbidden
+  # arrow stays forbidden throughout the label without anticipating its change.
+  return actor is not None
 
 
 def reference(episode,index,output,split,assets,*,turn_reference_speed_mps=None):
@@ -69,15 +87,7 @@ def reference(episode,index,output,split,assets,*,turn_reference_speed_mps=None)
     heading_change=abs((scene.vehicle.heading_theta-scene.initial_heading+np.pi)%(2*np.pi)-np.pi)
     blocked=scene.blocked()
     maintain=blocked and in_stop_zone(scene)
-    # Freeze a still-crossing actor at its observed position for offline labels.
-    # Moving its clearance clock alone would teleport it back across the road.
-    # Neither the future permission nor these label-only flags enter inference.
-    freeze_actor=blocked and result['scenario']=='pedestrian'
-    if freeze_actor:
-      actor_position=np.array(scene.pedestrian.position)
-      scene.green_at=1e6
-      scene.update_actors=lambda:scene.pedestrian.set_position(actor_position)
-    elif blocked: scene.green_at=1e6
+    freeze_actor=freeze_observed_permission(scene,result['scenario'])
     scene.update_actors();xyz=[];rot=[]
     latched_stop=maintain
     for step in range(128):
@@ -111,6 +121,7 @@ def reference(episode,index,output,split,assets,*,turn_reference_speed_mps=None)
         'turn_reference_speed_mps':turn_reference_speed_mps,
         'reference_terminal_front_distance_m':terminal_front,'reference_terminal_speed_mps':terminal[-1],
         'future_permission_frozen_for_red_supervision':blocked and result['scenario']=='red_light',
+        'future_permission_frozen_for_supervision':blocked,
         'future_actor_motion_frozen':freeze_actor,'source_episode_status':result['status'],
         'reference_generator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
     write_json(output/'sample.json',row)

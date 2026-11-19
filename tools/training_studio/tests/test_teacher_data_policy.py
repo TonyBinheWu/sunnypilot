@@ -5,13 +5,51 @@ from tools.training_studio.teacher_data import training_seeds
 from tools.training_studio.teacher_train import observed_inputs
 from tools.training_studio.teacher_adapt import closed_loop_score,restore_parent_ranking,remember_tested_scenarios
 from tools.training_studio.store import write_json
-from tools.training_studio.teacher_policy_data import check_source,reference
+from tools.training_studio.teacher_policy_data import check_source,reference,freeze_observed_permission
 from tools.training_studio.edge_inputs import MODEL_REVISION
 import hashlib
 import json
 
 
 class TeacherDataPolicyTest(unittest.TestCase):
+  def test_blocked_actor_future_keeps_observed_position_and_heading(self):
+    from types import SimpleNamespace
+    import numpy as np
+    for scenario in ('pedestrian','yield_left','yield_right'):
+      with self.subTest(scenario=scenario):
+        actor=SimpleNamespace(position=np.array([7.,3.]),heading_theta=.7)
+        actor.set_position=lambda value:setattr(actor,'position',np.array(value))
+        actor.set_heading_theta=lambda value:setattr(actor,'heading_theta',value)
+        scene=SimpleNamespace(t=4.,green_at=8.,pedestrian=actor if scenario=='pedestrian' else None,opponent=actor if scenario!='pedestrian' else None)
+        scene.blocked=lambda:scene.t<scene.green_at
+        scene.update_actors=lambda:actor.set_position([scene.t/scene.green_at,0.])
+        self.assertTrue(freeze_observed_permission(scene,scenario))
+        for moment in (4.,7.,10.):
+          scene.t=moment;actor.position[:]=-100;actor.heading_theta=-2
+          scene.update_actors()
+          np.testing.assert_array_equal(actor.position,[7.,3.])
+          if scenario!='pedestrian':self.assertEqual(actor.heading_theta,.7)
+          self.assertTrue(scene.blocked())
+
+  def test_blocked_arrow_retains_original_light_updates_without_future_clearance(self):
+    from types import SimpleNamespace
+    for scenario in ('left_arrow','right_arrow','red_light'):
+      with self.subTest(scenario=scenario):
+        scene=SimpleNamespace(t=4.,green_at=8.,allowed=None)
+        scene.blocked=lambda:scene.t<scene.green_at
+        def lights():scene.allowed=not scene.blocked()
+        scene.update_actors=lights
+        self.assertFalse(freeze_observed_permission(scene,scenario))
+        self.assertIs(scene.update_actors,lights)
+        scene.t=10.;scene.update_actors();self.assertFalse(scene.allowed)
+
+  def test_cleared_actor_future_is_unchanged(self):
+    from types import SimpleNamespace
+    scene=SimpleNamespace(green_at=8.,blocked=lambda:False,update_actors=lambda:None)
+    updater=scene.update_actors
+    self.assertFalse(freeze_observed_permission(scene,'yield_left'))
+    self.assertEqual(scene.green_at,8.);self.assertIs(scene.update_actors,updater)
+
   def test_slow_turn_references_cannot_create_stopped_go_labels_or_override_signal_cases(self):
     provenance={'revision':MODEL_REVISION,'camera_ids':[1,6],'weights_verified':True}
     fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
@@ -40,12 +78,12 @@ class TeacherDataPolicyTest(unittest.TestCase):
     self.assertEqual(check_source(result,{'provenance':provenance},'train'),fingerprint)
     self.assertEqual(check_source({**result,'scenario':'pedestrian'},{'provenance':provenance},'train'),fingerprint)
     self.assertEqual(check_source({**result,'scenario':'lane_center'},{'provenance':provenance},'train'),fingerprint)
-    for scenario in ('left_turn','right_turn'):
+    for scenario in ('left_turn','right_turn','yield_left','yield_right','left_arrow','right_arrow'):
       self.assertEqual(check_source({**result,'scenario':scenario},{'provenance':provenance},'train'),fingerprint)
       with self.assertRaises(ValueError):check_source({**result,'scenario':scenario,'seed':303},{'provenance':provenance},'train')
     for changed,split in (({**result,'seed':300},'train'),(result,'validation'),
       ({**result,'model_inputs_include_signal_ground_truth':True},'train'),({**result,'model_provenance_sha256':'b'*64},'train'),
-      ({**result,'scenario':'yield_left'},'train')):
+      ({**result,'scenario':'unknown'},'train')):
       with self.assertRaises(ValueError): check_source(changed,{'provenance':provenance},split)
 
   def test_training_never_reuses_qualification_seeds_or_validation_seed_range(self):
