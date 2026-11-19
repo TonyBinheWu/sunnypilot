@@ -16,6 +16,13 @@ from tools.training_studio.remote import Remote
 from tools.training_studio.store import Store,exclusive_worker,read_json,write_json
 
 
+def require_optimizer_success(returncode,*,authorized):
+  # A lease/container stop may close stdout before its final progress line.
+  # Explicitly stopped work must not be classified as a failed new cycle.
+  if not authorized:raise InterruptedError('teacher adaptation paused')
+  if returncode:raise RuntimeError('DGX teacher optimizer failed; inspect train.log')
+
+
 def closed_loop_score(batch):
   rows=[read_json(path) for path in Path(batch).glob('*/result.json')]
   if not rows: return (-1,)*11
@@ -219,7 +226,7 @@ def main():
                 event=json.loads(line)
                 if event.get('phase') in ('prefill','training','completed'): report(event.pop('phase'),cycle=cycle,**event)
               except ValueError: pass
-          if child.wait(): raise RuntimeError('DGX teacher optimizer failed; inspect train.log')
+          require_optimizer_success(child.wait(),authorized=authorized())
           lease_done.set()
           child=None; active_container=None
           remote.download(destination+'/output/result.json',folder/'result.json')
@@ -264,6 +271,7 @@ def main():
           write_json(loop_root/'state.json',state)
         except InterruptedError: raise
         except Exception as exc:
+          if not authorized():raise InterruptedError('teacher adaptation paused') from exc
           if 'lease_done' in locals(): lease_done.set()
           report('error',cycle=cycle,error=str(exc))
           store.event('教師適配保留失敗：'+str(exc))
