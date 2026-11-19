@@ -80,5 +80,6 @@ body[data-panel="vision"] .vision-instruments{color:#f6f6f3;text-shadow:0 1px 3p
 body[data-panel="vision"] .gear-strip span:not(.active){color:#c4c4c7}
 body[data-panel="vision"]:not(.night) .instrument-speed>span,
 body[data-panel="vision"]:not(.night) .instrument-state,
+body[data-panel="vision"]:not(.night) .instrument-state>span,
 body[data-panel="vision"]:not(.night) .instrument-limits small{color:#d6d7d9}
 body[data-panel="vision"]:not(.night) .instrument-limits>div:first-child small{color:#202125}

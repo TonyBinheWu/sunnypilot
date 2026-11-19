@@ -168,12 +168,12 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
   function markProximity(cue) {
     if(!cue){if(proximityMarker)proximityMarker.visible=distanceSprite.visible=false;return;}
     if(!proximityMarker){
-      proximityMarker=new T.Mesh(new T.RingGeometry(.58,.75,40),new T.MeshBasicMaterial({side:T.DoubleSide,depthTest:false,depthWrite:false}));
+      proximityMarker=new T.Mesh(new T.RingGeometry(.58,.75,40),new T.MeshBasicMaterial({side:T.DoubleSide,depthTest:true,depthWrite:false}));
       proximityMarker.userData.owned=true;proximityMarker.renderOrder=25;world.add(proximityMarker);
       const label=doc.createElement('canvas');label.width=192;label.height=64;
       const texture=new T.CanvasTexture(label);texture.colorSpace=T.SRGBColorSpace;
       distanceSprite=new T.Sprite(new T.SpriteMaterial({map:texture,depthTest:false,depthWrite:false}));
-      distanceSprite.renderOrder=26;distanceSprite.scale.set(3,.99,1);scene.add(distanceSprite);
+      distanceSprite.renderOrder=26;distanceSprite.scale.set(2.55,.85,1);distanceSprite.center.set(0,0);scene.add(distanceSprite);
     }
     proximityMarker.visible=distanceSprite.visible=true;proximityMarker.position.set(cue.x,cue.y,.08);
     distanceSprite.position.set(cue.x,-cue.y,1.65);
