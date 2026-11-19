@@ -236,6 +236,7 @@ def main():
             args.append('--paired-stop-go')
             if settings.get('unit_task_gradients'): args.append('--unit-task-gradients')
           if settings.get('executed_commands'):args.append('--executed-commands')
+          if settings.get('balanced_stop_modes'):args.append('--balanced-stop-modes')
           child=subprocess.Popen(remote.command(command(args)),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
           with (folder/'train.log').open('w') as log:
             for line in child.stdout:

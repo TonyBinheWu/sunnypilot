@@ -40,8 +40,8 @@ export function teacherValidationSummary(value){
   const parts=[];
   if(row?.stop_metric==='valid_stop_zone_v2'&&Number.isFinite(row.red_safe_count)&&Number.isFinite(row.red_samples))parts.push(`停止區樣本 ${row.red_safe_count} / ${row.red_samples}`);
   if(Number.isFinite(row?.go_velocity_mse))parts.push(`放行速度 MSE ${row.go_velocity_mse.toFixed(4)}`);
-  if(['paired_stop_go_pcgrad_sgd_v1','paired_unit_gradient_pcgrad_sgd_v2'].includes(progress.optimization_profile)){
-    parts.push('停止／通行成對最佳化');
+  if(['paired_stop_go_pcgrad_sgd_v1','paired_unit_gradient_pcgrad_sgd_v2','paired_balanced_stop_modes_pcgrad_sgd_v3'].includes(progress.optimization_profile)){
+    parts.push(progress.optimization_profile==='paired_balanced_stop_modes_pcgrad_sgd_v3'?'停等／接近／提早停車恢復均衡配對':'停止／通行成對最佳化');
     if(progress.phase==='training'&&progress.stage!=='validation'&&Number.isFinite(progress.stop_loss_before_step)&&Number.isFinite(progress.go_loss_before_step)){
       parts.push(`本對停止 loss ${progress.stop_loss_before_step.toFixed(3)} → ${progress.stop_loss.toFixed(3)}`);
       parts.push(`本對通行 loss ${progress.go_loss_before_step.toFixed(3)} → ${progress.go_loss.toFixed(3)}`);

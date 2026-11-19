@@ -14,6 +14,7 @@ import time
 IMPLEMENTATION_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 OBJECTIVE_REVISION='ten_step_immediate_stop_and_restart_v2'
 EXECUTED_OBJECTIVE_REVISION='ten_step_executed_accel_curvature_hold_margin_v3'
+RECOVERY_OBJECTIVE_REVISION='ten_step_balanced_recovery_interior_stop_margin_v4'
 
 
 def observed_inputs(sample):
@@ -73,12 +74,13 @@ def held_command_loss(action,space,history_xyz):
   return 200*executed.square().amax()+50*executed.square().mean()
 
 
-def stop_zone_loss(xyz,target,held,front_distance):
+def stop_zone_loss(xyz,target,held,front_distance,*,interior_margin_m=0.):
   """Penalize stopping short only where the reference has reached the valid zone."""
   import torch
+  if not 0<=interior_margin_m<5:raise ValueError('invalid training stop margin')
   reference_front=front_distance-target[...,0]
   valid_reference=held*((reference_front>=0)&(reference_front<5)).to(held.dtype)
-  shortfall=torch.relu(front_distance-xyz[...,0]-5)
+  shortfall=torch.relu(front_distance-xyz[...,0]-(5-interior_margin_m))
   return 30*(shortfall.square()*valid_reference).sum()/valid_reference.sum().clamp_min(1)
 
 
@@ -193,11 +195,14 @@ def main():
   parser.add_argument('--unit-task-gradients',action='store_true',help='Balance stop/proceed gradient norms before paired projection')
   parser.add_argument('--expanded-expert',action='store_true')
   parser.add_argument('--executed-commands',action='store_true',help='Supervise immediate steering and all permitted acceleration commands, with stationary hold margin')
+  parser.add_argument('--balanced-stop-modes',action='store_true',help='Balance held, approaching and early-stopped recovery references; train non-held stops inside the legal zone')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
-  objective_revision=EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
+  if args.balanced_stop_modes and not (args.executed_commands and args.paired_stop_go and args.unit_task_gradients):raise ValueError('balanced recovery requires executed commands and paired unit gradients')
+  objective_revision=RECOVERY_OBJECTIVE_REVISION if args.balanced_stop_modes else EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
   if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
+  if args.balanced_stop_modes:optimization_profile='paired_balanced_stop_modes_pcgrad_sgd_v3'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:
@@ -275,6 +280,7 @@ def main():
     item={'cache':cache_copy(cache,'cpu'),'positions':positions.detach().cpu().clone(),'mask':mask.detach().cpu().clone(),
       'ego_history_xyz':inputs['ego_history_xyz'][:,-1].detach().cpu().clone(),'ego_history_rot':inputs['ego_history_rot'][:,-1].detach().cpu().clone(),
       'target':torch.from_numpy(sample['future_xyz']),'target_rot':torch.from_numpy(sample['future_rot']),'row':row}
+    item['observed_speed_mps']=float(torch.linalg.vector_norm(item['ego_history_xyz'][...,-1,:2]-item['ego_history_xyz'][...,-2,:2],dim=-1).max()/model.expert.action_space.dt)
     # Official inverse dynamics supplies acceleration targets from the same
     # observed history and label-only reference future. Average position loss
     # alone can hide a positive first-step acceleration pulse while parked.
@@ -322,7 +328,8 @@ def main():
       loss=loss+immediate_steering_loss(action,item['target_action'].to(action.device),model.expert.action_space,item['ego_history_xyz'].to(action.device))
     if item['row']['stop_required']:
       held=(torch.linalg.vector_norm(ref_velocity,dim=-1)<.15).float()
-      loss=loss+stop_zone_loss(xyz,target,held,item['row']['front_distance_m'])
+      margin=.5 if args.balanced_stop_modes and not item['row'].get('maintain_stop_reference') else 0.
+      loss=loss+stop_zone_loss(xyz,target,held,item['row']['front_distance_m'],interior_margin_m=margin)
       loss=loss+50*(velocity.square().sum(-1)*held).sum()/held.sum().clamp_min(1)
       loss=loss+200*(velocity.square().sum(-1)*held).amax()
       accel_std=model.expert.action_space.accel_std.to(action.device)
@@ -371,7 +378,7 @@ def main():
   for epoch in range(args.epochs):
     values=[]
     if args.paired_stop_go:
-      pairs=paired_indices(train,epoch)
+      pairs=paired_indices(train,epoch,balanced_stop_modes=args.balanced_stop_modes)
       for batch,(stop_index,go_index) in enumerate(pairs,1):
         outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients)
         values.append(outcome['loss'])

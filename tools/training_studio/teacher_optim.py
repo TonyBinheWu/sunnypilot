@@ -5,11 +5,45 @@ optimization only; the original closed-loop driving gates remain authoritative.
 """
 
 
-def paired_indices(items,epoch):
+def stop_mode(item):
+  row=item['row']
+  if not row['stop_required']:raise ValueError('stop reference required')
+  if row.get('maintain_stop_reference'):return 'hold'
+  speed=item.get('observed_speed_mps')
+  if speed is None or not __import__('math').isfinite(speed):raise ValueError('observed stop speed required for balanced sampling')
+  return 'recover' if speed<.2 and row['front_distance_m']>=5 else 'approach'
+
+
+def _balanced_order(groups,epoch,count):
+  import numpy as np
+  rng=np.random.default_rng(42);prepared={}
+  for key,scenes in sorted(groups.items()):
+    names=rng.permutation(sorted(scenes)).tolist();prepared[key]=[rng.permutation(scenes[name]).tolist() for name in names]
+  keys=np.random.default_rng(epoch+42).permutation(sorted(groups)).tolist();per_class=count//len(keys);result=[]
+  for step in range(per_class):
+    slot=epoch*per_class+step
+    for key in keys:
+      scenes=prepared[key];members=scenes[slot%len(scenes)]
+      result.append(members[(slot//len(scenes))%len(members)])
+  return result
+
+
+def paired_indices(items,epoch,*,balanced_stop_modes=False):
   import numpy as np
   stop=[i for i,item in enumerate(items) if item['row']['stop_required']]
   go=[i for i,item in enumerate(items) if not item['row']['stop_required']]
   if not stop or not go: raise ValueError('paired training needs both stop and proceed references')
+  if balanced_stop_modes:
+    from tools.training_studio.teacher_reasoning_train import maneuver_class
+    groups=[{},{}]
+    for side,indices in enumerate((stop,go)):
+      for index in indices:
+        item=items[index];key=stop_mode(item) if side==0 else maneuver_class(item['row'])
+        groups[side].setdefault(key,{}).setdefault(item['row']['scenario'],[]).append(index)
+    if set(groups[0])!={'hold','recover','approach'} or set(groups[1])!={'straight','left','right'}:
+      raise ValueError('balanced recovery requires three stop modes and three permitted directions')
+    multiple=__import__('math').lcm(*(len(group) for group in groups));count=((max(len(stop),len(go))+multiple-1)//multiple)*multiple
+    return list(zip(*(_balanced_order(group,epoch,count) for group in groups)))
   rng=np.random.default_rng(epoch+42)
   stop=rng.permutation(stop).tolist();go=rng.permutation(go).tolist()
   return [(stop[i%len(stop)],go[i%len(go)]) for i in range(max(len(stop),len(go)))]

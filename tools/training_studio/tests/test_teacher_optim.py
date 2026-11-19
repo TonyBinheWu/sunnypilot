@@ -5,6 +5,24 @@ from tools.training_studio.teacher_optim import paired_indices
 
 
 class PairCoverageTest(unittest.TestCase):
+  def test_balanced_modes_rehearse_rare_recovery_and_cover_common_references_across_epochs(self):
+    from collections import Counter
+    from tools.training_studio.teacher_optim import stop_mode
+    from tools.training_studio.teacher_reasoning_train import maneuver_class
+    items=[]
+    for mode,scenario,count in [('hold','pedestrian',100),('hold','red_light',1),('recover','red_light',1),('approach','red_light',9)]:
+      items.extend({'row':{'stop_required':True,'scenario':scenario,'maintain_stop_reference':mode=='hold','front_distance_m':6.},'observed_speed_mps':0. if mode=='recover' else 3.} for _ in range(count))
+    for scenario,count in [('lane_center',100),('left_turn',1),('right_turn',1)]:items.extend({'row':{'stop_required':False,'scenario':scenario}} for _ in range(count))
+    covered=set()
+    for epoch in range(8):
+      pairs=paired_indices(items,epoch,balanced_stop_modes=True)
+      self.assertEqual(pairs,paired_indices(items,epoch,balanced_stop_modes=True))
+      self.assertEqual(set(Counter(stop_mode(items[s]) for s,g in pairs).values()),{37})
+      self.assertEqual(set(Counter(maneuver_class(items[g]['row']) for s,g in pairs).values()),{37})
+      covered.update(index for pair in pairs for index in pair)
+    self.assertEqual(covered,set(range(len(items))))
+    with self.assertRaises(ValueError):paired_indices(items[:111]+items[111:112],0,balanced_stop_modes=True)
+
   def test_every_training_reference_is_used_with_one_stop_and_one_go_per_step(self):
     items=[{'row':{'stop_required':value}} for value in (True,True,True,False,False)]
     pairs=paired_indices(items,3)

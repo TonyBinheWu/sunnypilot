@@ -9,6 +9,20 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_training_margin_requires_an_interior_stop_without_changing_original_stop_gate(self):
+    import torch
+    from tools.training_studio.teacher_train import stop_zone_loss,valid_stopped_trajectory
+    prediction=torch.zeros(1,64,3,requires_grad=True);target=torch.zeros_like(prediction);target[...,0]=2.
+    held=torch.ones(1,64)
+    self.assertFalse(bool(valid_stopped_trajectory(prediction,torch.zeros_like(prediction),5.)))
+    self.assertEqual(float(stop_zone_loss(prediction,target,held,5.)),0.)
+    loss=stop_zone_loss(prediction,target,held,5.,interior_margin_m=.5);self.assertGreater(float(loss),0.);loss.backward()
+    self.assertTrue(bool((prediction.grad[...,0]<0).all()))
+    self.assertEqual(float(stop_zone_loss(prediction.detach(),prediction.detach(),held,4.9)),0.)
+    inside=prediction.detach().clone();inside[...,0]=.6
+    self.assertEqual(float(stop_zone_loss(inside,target,held,5.,interior_margin_m=.5)),0.)
+    self.assertTrue(bool(valid_stopped_trajectory(inside,torch.zeros_like(inside),5.)))
+
   def test_completed_epoch_retains_frozen_adapters_and_cannot_overwrite_qualified_snapshot(self):
     import hashlib,json
     import torch
