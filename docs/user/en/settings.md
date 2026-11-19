@@ -6,6 +6,10 @@
 
 In FormosaLink, choose your paired Carrot device, open **Road scene research**, and select **Start sharing**. The portal shows recent road geometry and nearby OpenStreetMap roads. Stop sharing, erase the data, or download your observations from the same panel. Camera classifications require a connected viewer with detection enabled. [Data fields and evaluation](../../ROAD_SCENE_RESEARCH.zh-TW.md)
 
+## Parking overhead view
+
+In Driving View settings, enable **Parking overhead**. The view switches automatically when fresh vehicle data reports a stationary car in P, or when reversing at low speed. To leave the overhead view, tap its return button. When front-camera occupancy is enabled, raised surfaces appear where the model has depth evidence. Repeated paint observations outline candidate parking bays. The nearest confirmed target or estimated raised surface has a distance marker measured from the front camera. The marker turns amber within 8 m and red within 4 m. Side and rear coverage and bumper clearance remain unknown with front cameras alone.
+
 ## Carrot Vision object display
 
 Driving View keeps your car in the lower centre. Cockpit starts in daylight with red vehicle paint when no preference has been saved. Choose a different paint in Display settings or restore your preferred theme there. Blue cars are confirmed observations close to the displayed path. A blue car alone does not indicate a collision warning.

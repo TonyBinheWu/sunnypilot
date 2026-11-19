@@ -41,6 +41,12 @@ def select_vision_streams(available_streams: Collection[VisionStreamT], road_str
   return None, False
 
 
+def vision_camera_inputs(names, main_wide: bool, extra_wide: bool) -> str:
+  # A single-camera configuration may feed the same image into both tensors.
+  cameras = {'wide' if main_wide or (extra_wide and 'big' in name) else 'road' for name in names}
+  return 'roadWide' if len(cameras) == 2 else next(iter(cameras), 'unknown')
+
+
 def _default_tg_input_devices(process_name: str, usbgpu: bool):
   backend = os.getenv("DEV", "QCOM")
   defaults = {

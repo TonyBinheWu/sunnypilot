@@ -7,7 +7,7 @@ from openpilot.common.file_chunker import get_manifest_path
 from openpilot.selfdrive.modeld.big_model import BigModelManifest, _write_state
 import openpilot.selfdrive.modeld.helpers as helpers
 from openpilot.selfdrive.modeld.helpers import (active_usbgpu_compiled_path, modeld_pkl_path, refresh_usbgpu_device_cache,
-                                                select_vision_streams, usbgpu_compile_pending, usbgpu_compiled_path,
+                                                select_vision_streams, vision_camera_inputs, usbgpu_compile_pending, usbgpu_compiled_path,
                                                 usbgpu_pcie_not_ready)
 
 
@@ -379,3 +379,11 @@ def test_usbgpu_compiled_path_waits_for_selected_model_instead_of_previous(monke
   assert active_usbgpu_compiled_path() == active_pkl
   assert not usbgpu_compile_pending()
   assert usbgpu_compiled_path() == active_pkl
+
+@pytest.mark.parametrize(("names", "main_wide", "extra_wide", "expected"), [
+  (["img", "big_img"], False, True, "roadWide"), (["img", "big_img"], False, False, "road"),
+  (["img"], False, True, "road"), (["big_img"], False, True, "wide"),
+  (["img", "big_img"], True, False, "wide"), ([], False, False, "unknown"),
+])
+def test_reported_camera_inputs(names, main_wide, extra_wide, expected):
+  assert vision_camera_inputs(names, main_wide, extra_wide) == expected

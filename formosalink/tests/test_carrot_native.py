@@ -118,7 +118,10 @@ def test_camera_initialization_failure_retries_instead_of_killing_worker(monkeyp
   assert 'private material' not in caplog.text
 
 
-def test_carrot_health_uses_its_own_schema_without_sunnypilot_settings():
+def test_carrot_health_uses_its_own_schema_without_sunnypilot_settings(monkeypatch):
+  bridge = SimpleNamespace(speed_mbps=5000)
+  monkeypatch.setitem(sys.modules, 'openpilot.system.hardware.usbgpu',
+                      SimpleNamespace(get_usbgpu_device=lambda: bridge))
   provider=CarrotStatusProvider.__new__(CarrotStatusProvider)
   class State(dict):
     def update(self,timeout):pass
@@ -131,3 +134,5 @@ def test_carrot_health_uses_its_own_schema_without_sunnypilot_settings():
   assert snapshot['offroad'] and not snapshot['remote_enabled']
   assert snapshot['catalog']==[] and snapshot['info']['device_model']=='tizi'
   assert snapshot['info']['camera_diagnostics_version']==1
+  assert snapshot['info']['egpu_status'] == 'installed_unavailable'
+  assert snapshot['info']['egpu_usb_speed_mbps'] == 5000

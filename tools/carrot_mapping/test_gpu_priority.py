@@ -37,3 +37,30 @@ def test_relay_cannot_extend_capture_lifetime_with_duplicates_or_invalid_payload
   assert response.headers["X-Scene-Cells"] == "3"
   clock[0] += .9
   assert asyncio.run(relay.read(None)).status == 204
+
+
+def test_parked_amd_bridge_gate():
+  from types import SimpleNamespace
+  from .usb_gpu_objects import check_bridge
+
+  matches = lambda product: product == "approved"
+  for bridge in (None, SimpleNamespace(speed_mbps=480, product="approved"), SimpleNamespace(speed_mbps=5000, product="unrecognized")):
+    with pytest.raises(RuntimeError):
+      check_bridge(bridge, matches)
+  check_bridge(SimpleNamespace(speed_mbps=5000, product="approved"), matches)
+
+
+def test_two_lens_yolox_accepts_only_supported_confident_finite_candidates():
+  import numpy as np
+  from .gpu_objects import INPUT, decode, model_input, output_grid
+
+  image = np.zeros((INPUT, INPUT, 4), np.uint8)
+  image[0, 0] = [1, 2, 3, 255]
+  np.testing.assert_equal(model_input(image.tobytes())[0, :, 0, 0], [3, 2, 1])
+  grid, strides = output_grid()
+  raw = np.zeros((1, len(grid), 85), dtype=np.float32)
+  for i, label in enumerate([2, 2, 0, 3]):
+    raw[0, i, :4] = [12-i, 9, 1, 1]
+    raw[0, i, 4] = raw[0, i, 5+label] = .9
+  raw[0, 3, 0] = np.nan
+  assert [x["kind"] for x in decode(raw,grid,strides)] == ["car", "person"]

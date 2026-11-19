@@ -18,14 +18,18 @@ class CarrotStatusProvider:
   def capture(self):
     from openpilot.sunnypilot.formosalink.settings import revision
     from openpilot.sunnypilot.formosalink.telemetry import source_valid
-    from openpilot.sunnypilot.formosalink.device_health import collect_health
+    from openpilot.sunnypilot.formosalink.device_health import collect_health, add_carrot_usb_status
+    from openpilot.system.hardware.usbgpu import get_usbgpu_device
     self.sm.update(0)
     parked = bool(source_valid(self.sm, "deviceState", 2) and self.params.get_bool("IsOffroad") and not self.sm["deviceState"].started)
     catalog_hash = revision([])
+    health = collect_health(self.sm, "unknown")
+    if health["health_valid"]:
+      add_carrot_usb_status(health, get_usbgpu_device())
     from openpilot.sunnypilot.formosalink.camera_status import snapshot as camera_snapshot
     return {"version": 1, "session": self.session, "sampled_at": time.time(), "offroad": parked, "remote_enabled": False,
             "catalog_revision": catalog_hash, "revision": revision({"catalog": catalog_hash, "values": {}}),
-            "catalog": [], "values": {}, "info": {**collect_health(self.sm, "unknown"), **camera_snapshot()}, "receipts": []}
+            "catalog": [], "values": {}, "info": {**health, **camera_snapshot()}, "receipts": []}
 
   def apply(self, command, device_id, deadline):
     return {"id": command["id"], "status": "rejected", "reason": "permission_disabled"}

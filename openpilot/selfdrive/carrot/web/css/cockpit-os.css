@@ -28,7 +28,7 @@ body[data-panel="vision"].advanced-vision #workspaceTitle{display:none}
 body[data-panel="vision"] #navigation[hidden]{right:20px;top:88px;border:1px solid var(--line);border-radius:6px;box-shadow:none}
 body[data-panel="vision"] #miniNav{right:28px;top:calc(var(--status-size) * var(--shell-scale) + 100px);font-size:14px;min-height:44px}
 body[data-panel="navigation"] #workspaceTitle{padding:0;min-height:52px}#searchNav{min-width:260px}
-body[data-panel="navigation"] #compactSpeed,body[data-panel="navigation"] .visual #scene,body[data-panel="navigation"] .scene-note{display:none}
+body[data-panel="navigation"] #compactSpeed,body[data-panel="navigation"] .visual #scene-surface,body[data-panel="navigation"] .scene-note{display:none}
 .vision-instruments{top:calc(var(--status-size) * var(--shell-scale) + 20px);left:24px;width:210px;max-width:none}
 .instrument-speed>b{font-size:clamp(68px,12vh,112px)}.instrument-speed>span{font-size:15px}
 .instrument-state{font-size:14px;gap:10px;margin:12px 0 24px}.instrument-state>b{font-size:20px}.instrument-state>span{max-width:180px}

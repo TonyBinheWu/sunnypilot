@@ -197,3 +197,32 @@ test('missing geometry retains actual road classifications and the precise diagn
   const result=f.perception.scene();assert.equal(result.status,'calibration');assert.equal(result.geometryReason,'profile');assert.equal(result.objects.length,0);
   assert.deepEqual(result.imageObjects.map(o=>o.kind),['person','car','motorcycle']);
 });
+
+test('live camera keeps the calibrated profile that was valid at presentation time',async()=>{
+  const f=fixture();let callback;
+  f.video.requestVideoFrameCallback=fn=>{callback=fn;return 1;};
+  f.perception.update();const worker=f.workers[0];worker.reply({type:'ready'});
+  f.perception.update(); // calibration arrived at t=5000, no decoded frame yet
+  callback(5020,{mediaTime:1});f.setClock(5050);f.target.CarrotStateReceivedAtMonotonic.roadCameraState=5040;
+  f.perception.update();await Promise.resolve();
+  const hit={categories:[{categoryName:'car',score:.9}],boundingBox:{originX:285,originY:190,width:30,height:40}};
+  worker.reply({type:'result',id:worker.messages.at(-1).id,detections:[hit],durationMs:40});
+  assert.equal(f.perception.scene().capturedAt,5020);
+  assert.equal(f.perception.scene().objects[0].kind,'car');
+  f.target.CarrotOverlayState.liveCalibration.calStatus=0;f.perception.update();
+  assert.equal(f.perception.scene().objects.length,0);
+  assert.ok(!worker.terminated);
+});
+test('slow inference samples again before the result expires without extending stale track life',async()=>{
+  const f=fixture();f.perception.update();const w=f.workers[0];w.reply({type:'ready'});f.perception.update();await Promise.resolve();
+  f.setClock(5450);w.reply({type:'result',id:w.messages.at(-1).id,detections:[],durationMs:450});
+  f.video.currentTime=2;f.setClock(5650);f.perception.update();await Promise.resolve();
+  assert.equal(w.messages.filter(m=>m.type==='frame').length,2);
+  f.setClock(6200);assert.equal(f.perception.scene().status,'stale');assert.equal(f.perception.scene().awaitingResult,true);
+});
+
+test('projection uses each lens principal point and translation to report vehicle-relative metres',()=>{
+  const geometry={width:640,height:360,fx:400,fy:400,cx:300,cy:150,offsetX:1,offsetY:-.25,heightM:1.5,rpy:[0,0,0]};
+  const xy=groundPoint({originX:330,originY:160,width:20,height:50},geometry);
+  assert.deepEqual(xy,[11,.75]);
+});

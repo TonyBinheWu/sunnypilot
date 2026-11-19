@@ -3,11 +3,12 @@ export function createGpuSceneReceiver(target, canvas) {
   let active = false, generation = 0, controller, poll, expiry, latest = '', painted = 0;
   canvas.style.objectFit = 'contain';
   let status = 'paused', cells = 0, raised = 0;
-  let desiredView = '', sentView = '', retryViewAt = 0;
+  let parking = false, desiredView = '', sentView = '', retryViewAt = 0;
   function setView(width,height,{night=false,view={}}={}) {
     const v = view || {};
+    if(parking !== (v.parking===true)){parking=v.parking===true;if(active)clear('waiting');}
     desiredView = JSON.stringify({w:width,h:height,night:!!night,yaw:v.yaw||0,pitch:v.pitch||25,
-      distance:Math.max(5,Math.min(26,v.distance||9)),bottomFraction:v.bottomFraction||0});
+      parking:v.parking===true,distance:Math.max(5,Math.min(26,v.distance||9)),bottomFraction:v.bottomFraction||0});
   }
   const time = () => target.performance.now();
   function clear(state) {
@@ -26,6 +27,7 @@ export function createGpuSceneReceiver(target, canvas) {
       if (desiredView && desiredView !== sentView && time() >= retryViewAt) {
         const view = desiredView;
         const result = await target.fetch('/api/vision/gpu-scene/view',{method:'POST',headers:{'Content-Type':'application/json'},body:view,signal:requestController.signal});
+        if (epoch !== generation || !active) return;
         if (result.ok) sentView = view;
         retryViewAt = time() + (result.ok ? 100 : 1000);
       }
@@ -34,6 +36,8 @@ export function createGpuSceneReceiver(target, canvas) {
       if (epoch !== generation) return;
       if (response.status === 304) return;
       if (!response.ok || response.status === 204) { clear('waiting'); return; }
+      const frameIsParked=response.headers.get('X-Scene-Parking')==='1';
+      if(frameIsParked!==parking){clear('waiting');return;}
       const seq = response.headers.get('X-Scene-Frame');
       const age = Number(response.headers.get('X-Scene-Age-Ms') ?? NaN);
       if (!seq || !Number.isFinite(age) || age < 0 || age >= 900) { clear('stale'); return; }
@@ -43,7 +47,7 @@ export function createGpuSceneReceiver(target, canvas) {
       const image = await response.blob();
       if (image.size !== size) throw Error('invalid size');
       bitmap = await target.createImageBitmap(image);
-      if (epoch !== generation || !active) return;
+      if (epoch !== generation || !active || frameIsParked!==parking) return;
       const remaining = 900 - age - (time() - start);
       if (remaining <= 0) { clear('stale'); return; }
       if (canvas.width !== bitmap.width) canvas.width = bitmap.width;
@@ -71,6 +75,7 @@ export function createGpuSceneReceiver(target, canvas) {
     target.clearTimeout(poll);
     target.clearTimeout(expiry);
     latest = sentView = '';
+    retryViewAt = 0;
     if (active) { status = 'waiting'; void read(generation); }
     else clear('paused');
   }

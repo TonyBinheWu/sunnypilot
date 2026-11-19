@@ -14,7 +14,7 @@ export function createParkingView(){
     update({enabled=false,fresh=false,speed=null,gear=null,inLot=false,active=true,reducedMotion=false,now=0}={}){
       const valid=enabled&&fresh&&active&&finite(speed)&&speed>=0&&['P','D','R','N','S'].includes(gear);
       if(!valid){previous=null;pending=spin=null;context=false;manual=null;return {overhead:false,spin:false,yaw:0};}
-      const nextContext=speed<=15&&(inLot||gear==='R');
+      const nextContext=speed<=15&&(inLot||gear==='R'||(gear==='P'&&speed<.36));
       if(nextContext!==context)manual=null;context=nextContext;
       if(previous&&previous!=='P'&&gear==='P'&&speed<.36)pending=now;
       previous=gear;

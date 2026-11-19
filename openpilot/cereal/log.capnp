@@ -1055,6 +1055,11 @@ struct ModelDataV2 {
 
   # e2e lateral planner
   action @26: Action;
+  # Provenance of the published inference, for display and diagnostics.
+  visionCameraInputs @27 :CameraInputs;
+  visionCompute @28 :Compute;
+  enum CameraInputs { unknown @0; road @1; wide @2; roadWide @3; }
+  enum Compute { unknown @0; nonUsb @1; usbGpu @2; }
 
   lateralPlannerSolutionDEPRECATED @25: Deprecated.LateralPlannerSolution;
 

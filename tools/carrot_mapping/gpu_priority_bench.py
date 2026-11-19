@@ -91,6 +91,7 @@ def metric(values):
 
 
 def benchmark(args):
+  from .gpu_objects import INPUT, WorkstationObjects
   from .gpu_workstation import WorkstationOccupancy
   if args.frames < 20 or not args.worker:
     raise ValueError("at least 20 frames and a driving worker are required")
@@ -98,10 +99,19 @@ def benchmark(args):
     try:
       if driver.stdout.readline().strip() != "ready":
         raise RuntimeError("N16 worker failed before warmup")
-      gpu = WorkstationOccupancy(args.model, OCC, Path(tmp)/"profile")
-      pixels = bytes(224*126*4)
-      def cockpit():
-        gpu.infer_rgba(pixels)
+      if args.object_inputs:
+        gpu = WorkstationObjects(args.model, Path(tmp)/"profile")
+        images = [p.read_bytes() for p in args.object_inputs]
+        if any(len(image) != INPUT*INPUT*4 for image in images):
+          raise ValueError("expected two letterboxed 416x416 RGBA camera samples")
+        def cockpit():
+          for image in images:
+            gpu.detect(image)
+      else:
+        gpu = WorkstationOccupancy(args.model, OCC, Path(tmp)/"profile")
+        pixels = bytes(224*126*4)
+        def cockpit():
+          gpu.infer_rgba(pixels)
       warm = []
       for _ in range(25):
         start = time.monotonic()
@@ -136,7 +146,7 @@ def benchmark(args):
           release = deadline + PERIOD*max(0, math.floor((time.monotonic()-deadline)/PERIOD))
         report[mode] = {"drive":metric(duration), "available":metric(slack), "drive_late":late,
                         "cockpit":metric(auxiliary), "cockpit_suspended":budget.suspended}
-      report["occupancy_execution"] = gpu.verify_profile()
+      report["object_execution" if args.object_inputs else "occupancy_execution"] = gpu.verify_profile()
       print(json.dumps(report,indent=2))
     finally:
       if driver.poll() is None:
@@ -153,6 +163,7 @@ if __name__ == "__main__":
   sub = p.add_subparsers(dest="action", required=True)
   sub.add_parser("cuda-drive").add_argument("model", type=Path)
   bench = sub.add_parser("bench")
+  bench.add_argument("--object-inputs", nargs=2, type=Path, metavar=("ROAD_RGBA","WIDE_RGBA"))
   bench.add_argument("model", type=Path)
   bench.add_argument("--frames", type=int, default=100)
   bench.add_argument("worker", nargs=argparse.REMAINDER)

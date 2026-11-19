@@ -36,7 +36,7 @@ const arContract = {
   modelV2: [9, [
     "frameId", "frameIdExtra", "position", "velocity", "laneLines", "laneLineProbs",
     "roadEdges", "roadEdgeStds", "leadsV3", "laneLineStds", "frameAge",
-    "frameDropPerc", "modelExecutionTime", "meta",
+    "frameDropPerc", "modelExecutionTime", "meta", "visionCameraInputs", "visionCompute",
   ]],
   liveCalibration: [10, ["calStatus", "calCycle", "calPerc", "validBlocks", "rpyCalib", "height"]],
   roadCameraState: [11, ["frameId", "sensor", "timestampEof"]],
