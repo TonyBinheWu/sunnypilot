@@ -14,6 +14,8 @@ const row={contacts:[p],following:{...p,ttlMs:120},signals:{leftBlindspot:260}};
 test('independent measurement, following and blindspot expiry',()=>{
   const confirmed={x:15,y:2,kind:'car',state:'confirmed',nativeReference:12};
   assert.equal(withWorldContacts([confirmed],currentWorld(row,100))[0].following,true);
+  assert.ok(withWorldContacts([confirmed],currentWorld(row,100),false).every(o=>!o.following));
+  assert.ok(withWorldContacts([],currentWorld(row,100),false).every(o=>!o.following));
   assert.equal(withWorldContacts([confirmed],currentWorld(row,120))[0].following,undefined);
   assert.equal(withWorldContacts([],currentWorld(row,180)).length,0);
   assert.equal(worldNotice(currentWorld(row,180)),'左側盲點警示');

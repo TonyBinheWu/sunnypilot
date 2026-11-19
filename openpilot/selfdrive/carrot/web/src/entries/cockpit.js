@@ -303,6 +303,7 @@ function render(){
       const noticeValue=`${noticeTop}px`;
       if(frameStyle?.getPropertyValue('--cockpit-lane-notice-top')!==noticeValue)frameStyle?.setProperty('--cockpit-lane-notice-top',noticeValue);
       frameWindow.document.body.dataset.cockpitTelemetryFresh=String(Boolean(payload));
+      frameWindow.document.body.dataset.cockpitLongActive=String(t.longActive===true);
     }
     if(payload){frameWindow?.DriveVisionHudContent?.update?.(payload);hudHadData=true;}
     else if(hudHadData){frameWindow?.DriveVisionHudContent?.update?.({sourceStale:true,isMetric:metric==null?true:Boolean(Number(metric))});hudHadData=false;}
@@ -345,7 +346,7 @@ function render(){
   const parkingAssist=coreWindow()?.CarrotWebSettingsState?.vision_parking_assist===true;
   const observation=world.update(coreWindow()?.__CARROT_BOOTSTRAP__?.vehicleWorldScene===true&&!document.hidden&&!paused);
   const preview={model:t.parked&&!parkingAssist?null:model,radar,
-    tracks:withWorldContacts(mergeModelLead(previewTracker.sample(at,motion),at),observation)};
+    tracks:withWorldContacts(mergeModelLead(previewTracker.sample(at,motion),at),observation,t.longActive===true)};
   const camera=t.parked&&parkingAssist?{...PARKING_VIEW}:null,night=document.body.classList.contains('night');
   vehicleParking.update(!!camera&&coreWindow()?.__CARROT_BOOTSTRAP__?.vehicleParkingScene===true&&!document.hidden&&!paused);
   const observed=vehicleParking.sample();

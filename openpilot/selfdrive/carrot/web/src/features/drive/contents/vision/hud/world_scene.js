@@ -46,14 +46,14 @@ export function currentWorld(row,age) {
       row.model.cameras.filter(k=>['road','wide'].includes(k)):[]};
 }
 
-export function withWorldContacts(tracks,world) {
+export function withWorldContacts(tracks,world,allowFollowing=true) {
   if(!world)return tracks;
   const result=[...tracks];
   const close=(a,b)=>Math.abs(a.x-b.x)<2&&Math.abs(a.y-b.y)<.65;
   for(const p of world.contacts){
     const near=tracks.filter(t=>close(t,p));
     const lock=world.following;
-    const following=lock?.nativeId===p.nativeId&&lock.source===p.source&&close(lock,p);
+    const following=allowFollowing&&lock?.nativeId===p.nativeId&&lock.source===p.source&&close(lock,p);
     if(near.length){
       const match=near[0];
       const id=match.nativeReference??(match.radarUsed===true?match.trackId:null);

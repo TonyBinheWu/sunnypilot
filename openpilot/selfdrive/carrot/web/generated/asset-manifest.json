@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "e4ceaf233311ed8269bcaf3b910d7d54e035b30ed929fa52f01772783fef3e16"
+      "hash": "63d54cd227a85f38bcbaf6dc7617ae5d95642148046ee30dd3e44a4edf31d318"
     },
     {
       "id": "navigation.offline",
@@ -48,7 +48,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "0e68a1fe2c54cbda5cac3c948d3bf0ef76389defeff0688a49aa0c1e19a61aa6"
+      "hash": "478e1dd647996cc5797e5afe1385de4b813ebc1a1819f765227bde6dd7716a95"
     },
     {
       "id": "replay.runtime",

@@ -318,7 +318,8 @@ export function createTeslaView(doc,target) {
     const trackingActive=tesla&&viewActive&&!doc.hidden&&!bev.frozen;
     const replay=target.CarrotVisionReplay?.status?.()?.active===true;
     const observation=world.update(target.__CARROT_BOOTSTRAP__?.vehicleWorldScene===true && trackingActive && !remoteGpu && !replay);
-    const tracks=withWorldContacts(perceptionScene.update(liveScene,now(),trackingActive,replay),observation);
+    const allowFollowing=doc.body?.dataset?.cockpitLongActive!=='false' && target.CarrotOverlayState?.carControl?.longActive!==false;
+    const tracks=withWorldContacts(perceptionScene.update(liveScene,now(),trackingActive,replay),observation,allowFollowing);
     if(scene.environment){
       scene.environmentMotion=surfaceMotion(perceptionScene.motion,now()-occ.capturedAt);
       if(!scene.environmentMotion)scene.environment=null;
@@ -430,6 +431,7 @@ export function createTeslaView(doc,target) {
     if(tesla){
       setText(notice,parking.spin?text('parking_spin','Parked · vehicle presentation; not a camera view'):parking.overhead?text('parking_front_only','Front camera paint estimates · no rear/side coverage'):bev.frozen?text('bev_frozen','Annotation snapshot · not live'):text(scene.model?'scene_live_notice':'vision_tesla_wait',scene.model?'Live observations · front camera / native targets; not 360°':'Waiting for fresh model data'));
       const sensorNotice=worldNotice(observation);
+      notice.dataset.worldAlert=String(Boolean(sensorNotice));
       if(sensorNotice)setText(notice,sensorNotice);
       const vw=root.clientWidth||536,vh=root.clientHeight||300;
       const quality=meter.quality(settings.vision_render_quality);
