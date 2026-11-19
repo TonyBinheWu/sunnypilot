@@ -79,7 +79,7 @@ export function imageTargets(detections,width,height,classes=IMAGE_ONLY_CLASSES)
       ||b.originX<0||b.originY<0||b.originX+b.width>width+1||b.originY+b.height>height+1)return [];
     return [{id:`image-${i}`,kind:c.categoryName,probability:c.score,
       box:[b.originX/width,b.originY/height,b.width/width,b.height/height],
-      origin:'image_detection_only',position:null,distance:null,signalState:null}];
+      origin:'image_detection_only',position:null,distance:null,signalState:c.categoryName==='traffic light'&&Array.isArray(item.lamps)?item.lamps:null}];
   });
 }
 

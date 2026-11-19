@@ -34,7 +34,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "d93c73f9efbce7546dc614d49c2fd6462ee41d85f389f4068b8d2ce0c2e36a8f"
+      "hash": "c682d18db4da8b43541a7b0aeafc8dcc2d3c5a3b5e137421978b6f4e8799a5eb"
     },
     {
       "id": "replay.runtime",
@@ -179,7 +179,7 @@
       "id": "vision.parking-detector-worker",
       "kind": "worker",
       "path": "js/generated/parking-detector-worker.js",
-      "hash": "426235bc125f62fbe3c6d0106dab4eda708e48799f96b224e980a207971de243"
+      "hash": "eff4528481e0e2fce03ba004413aef75316afa7462723c3d7659fd0371f29fed"
     },
     {
       "id": "vision.road-detector-worker",
@@ -191,7 +191,7 @@
       "id": "vision.object-detector-worker",
       "kind": "worker",
       "path": "js/generated/bev-detector-worker.js",
-      "hash": "c94a7b1ee519cf3f400237c1c699182e3edfbc625a2a4bc23456ca01ddf13b84"
+      "hash": "b91aa8617686bdd940fd078de0df2f494ca485bab881615d5e9c566fc04d7f80"
     },
     {
       "id": "vision.webgl2.worker",

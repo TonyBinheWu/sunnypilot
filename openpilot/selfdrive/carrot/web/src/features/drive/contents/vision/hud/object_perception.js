@@ -1,6 +1,7 @@
 import {cameraGeometry,cameraTargets,unpositionedTargets,roadCameraTargets,roadImageTargets} from './scene_objects.js';
 
 import {captureIdentity,sceneContributor} from './scene_contribution.js';
+import {createSignalHistory} from '../signal_history.js';
 import {OCCUPANCY_TTL_MS} from '../occupancy_grid.js';
 
 export const DETECTION_TTL_MS=1200;
@@ -9,6 +10,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false,oc
   const setting=occupancy?'vision_environment_occupancy':road?'vision_road_detection':'vision_object_detection';
   let expiry=null;
   const profiles=[];
+  const signalHistory=createSignalHistory();
   let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,warmed=false,lastAttempt=-Infinity;
   let lastDecoded=null,lastProfile=null,lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
   let state={status:'off',objects:[],imageObjects:[],count:0,capturedAt:null,revision};
@@ -33,7 +35,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false,oc
   const clearTimeout=()=>{if(timeout!==null)target.clearTimeout(timeout);timeout=null;};
   const publish=(status,extra={})=>{state={status,objects:[],imageObjects:[],count:0,capturedAt:null,...extra,revision:++revision};onChange();};
   function stop(status='off'){
-    profiles.length=0;
+    profiles.length=0;signalHistory.clear();
     if(expiry!==null){target.clearTimeout(expiry);expiry=null;}
     generation++;worker?.terminate();worker=null;ready=false;busy=false;warmed=false;request=null;clearTimeout();
     lastDecoded=null;lastTime=null;lastSource=null;lastReplay=null;lastAttempt=-Infinity;interval=250;
@@ -75,10 +77,23 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false,oc
         }
         const objects=(road?roadCameraTargets:cameraTargets)(data.detections,captured.geometry)
           .map(o=>({...o,capturedAt:captured.capturedAt,videoTime:captured.videoTime}));
+        const imageObjects=road?roadImageTargets(data.detections,captured.width,captured.height)
+          :unpositionedTargets(data.detections,captured.geometry,captured.width,captured.height);
+        if(!road){
+          const heads=imageObjects.filter(o=>o.kind==='traffic light');
+          const confirmed=signalHistory.confirm(heads.map(h=>({box:h.box,lamps:h.signalState||[]})),captured.capturedAt);
+          heads.forEach((h,i)=>{h.signalState=confirmed[i];});
+          if(expiry!==null){target.clearTimeout(expiry);expiry=null;}
+          if(heads.length){
+            expiry=target.setTimeout(()=>{
+              expiry=null;
+              if(current===generation&&state.capturedAt===captured.capturedAt){signalHistory.clear();publish('stale');}
+            },Math.max(0,ttl-(now()-captured.capturedAt)));
+          }
+        }
         publish(captured.geometry?'ready':'calibration',{
           objects,count:Array.isArray(data.detections)?data.detections.length:0,capturedAt:captured.capturedAt,
-          imageObjects:road?roadImageTargets(data.detections,captured.width,captured.height)
-            :unpositionedTargets(data.detections,captured.geometry,captured.width,captured.height),
+          imageObjects,signalReader:data.signalReader||null,
           generation,geometry:captured.geometry,videoTime:captured.videoTime,durationMs:data.durationMs,camera:captured.geometry?.sensor||null,
           delegate:data.delegate||null,geometryReason:captured.geometryReason,frameSize:[captured.width,captured.height],
         });

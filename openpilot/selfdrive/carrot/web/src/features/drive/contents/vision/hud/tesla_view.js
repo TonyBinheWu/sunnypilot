@@ -3,6 +3,7 @@ import {createParkingPerception} from './parking_perception.js';
 import {paintedVehicle} from '../../../../cockpit/vehicle_paint.js';
 import {drawCockpitVehicle,createVehicleSkinCache,VEHICLE_SKINS} from '../../../../cockpit/vehicle.js';
 import {OBJECT_NAMES} from './object_classes.js';
+import {describeSignal,signalBadge} from './signal_badge.js';
 import {visionPresentation,cockpitTelemetryStale} from '../../../../cockpit/presentation.js';
 import {createSpeedZoom,sceneSpeedKph} from '../../../../cockpit/speed_zoom.js';
 import {createViewOrbit,orbitCamera} from '../../../../cockpit/view_orbit.js';
@@ -300,11 +301,18 @@ export function createTeslaView(doc,target) {
     predictionLegend.hidden=!trackingActive||!tracks.some(o=>o.state==='predicted');
     if(!predictionLegend.hidden)setText(predictionLegend,text('tracking_prediction','淡色模型為短暫預測'));
     const imageCounts=new Map();
-    for(const o of [...(vision.imageObjects||[]),...(road.imageObjects||[])])imageCounts.set(o.kind,(imageCounts.get(o.kind)||0)+1);
-    imageObservations.hidden=!tesla||imageCounts.size===0;
-    const imageKey=[...imageCounts].map(([kind,count])=>`${kind}:${count}:${text('scene_kind_'+kind.replaceAll(' ','_'),kind)}`).join('|');
+    const heads=[];
+    for(const o of [...(vision.imageObjects||[]),...(road.imageObjects||[])]){
+      if(o.kind==='traffic light')heads.push(o);
+      else imageCounts.set(o.kind,(imageCounts.get(o.kind)||0)+1);
+    }
+    heads.sort((a,b)=>a.box[0]-b.box[0]||a.box[1]-b.box[1]);
+    imageObservations.hidden=!tesla||(!imageCounts.size&&!heads.length);
+    const signals=heads.map(h=>describeSignal(h,text,vision.signalReader));
+    const imageKey=JSON.stringify([signals.map(s=>s.label),[...imageCounts].map(([kind,count])=>[kind,count,text('scene_kind_'+kind.replaceAll(' ','_'),kind)])]);
     if(imageKey!==imageSignature){
     imageSignature=imageKey;imageObservations.replaceChildren();
+    for(const signal of signals)imageObservations.appendChild(signalBadge(doc,signal));
     for(const [kind,count] of imageCounts){
       const badge=el(doc,'span',{class:'tesla-image-object'});
       badge.dataset.classification=kind;
@@ -313,7 +321,7 @@ export function createTeslaView(doc,target) {
       const label=el(doc,'span',{text:`${text('scene_kind_'+kind.replaceAll(' ','_'),OBJECT_NAMES[kind]||kind)}${count>1?' ×'+count:''}`});
       badge.append(icon,label);imageObservations.appendChild(badge);
     }
-    if(imageCounts.size)imageObservations.appendChild(el(doc,'small',{text:text('scene_image_observations','Image observations · no 3D position')}));
+    if(imageCounts.size||heads.length)imageObservations.appendChild(el(doc,'small',{text:text('scene_image_observations','Image observations · no 3D position')}));
     }
     const frozenHud=bev.frozenHud,displayData=frozenHud?.data||data,displayStale=(frozenHud?.stale??stale)||(!frozenHud&&cockpitTelemetryStale(target)),displayUnit=frozenHud?.unit||unit;
     const zoomEnabled=doc.body.dataset.cockpitPanel==='vision'&&!isBev;
@@ -373,7 +381,7 @@ export function createTeslaView(doc,target) {
       const drivingCamera=orbitCamera({...zoom.camera,skinScale:skin.scale},orbit.pose,orbit.zoom);
       const cameraView=parking.spin?{...drivingCamera,yaw:parking.yaw,pitch:28,distance:9,bottomFraction}:parking.overhead?{...drivingCamera,parking:true,yaw:0,pitch:82,distance:24,parkingPoints:scene.parking.flatMap(s=>s.corners),bottomFraction}:drivingCamera;
       if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){const drawStart=now();if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
-        const bounds=root.getBoundingClientRect?.(),imageSlots=bounds?[...imageObservations.querySelectorAll('.tesla-image-object')].map(badge=>{const r=badge.getBoundingClientRect();return {kind:badge.dataset.classification,x:(r.left+r.width/2-bounds.left)*factor,y:(r.top+36-bounds.top)*factor,size:20*factor};}):[];
+        const bounds=root.getBoundingClientRect?.(),imageSlots=bounds?[...imageObservations.querySelectorAll('.tesla-image-object')].filter(badge=>badge.dataset.kind!=='signal').map(badge=>{const r=badge.getBoundingClientRect();return {kind:badge.dataset.classification,x:(r.left+r.width/2-bounds.left)*factor,y:(r.top+36-bounds.top)*factor,size:20*factor};}):[];
         const rendered3d=!isBev&&scene3d.render(w,h,scene,{rainbow:settings.vision_rainbow_lane===true,night,skin,lamps,view:zoomEnabled||parking.overhead||parking.spin?cameraView:null,enabled:viewActive,imageSlots,quality});
         root.classList.toggle('has-webgl-scene',!!rendered3d);
         canvas.hidden=!!rendered3d;
@@ -395,6 +403,9 @@ export const TESLA_VIEW_CSS=`
 .has-webgl-scene .tesla-image-observations{left:auto;right:16px;top:116px;width:min(320px,34%);gap:6px;justify-content:flex-end}
 .tesla-prediction-legend{position:absolute;right:12px;bottom:60px;padding:4px 8px;border-radius:6px;color:white;background:#243241e8;font:12px system-ui;pointer-events:none}
 .has-webgl-scene .tesla-image-object[data-kind=object] b{display:none}
+.tesla-image-observations .signal-observation,.has-webgl-scene .tesla-image-object.signal-observation{flex-direction:row;align-self:flex-start;min-width:0;gap:.45em;background:#182432ef;color:#e2edf8}
+.signal-lamp{font-size:clamp(12px,1.3vw,18px);font-weight:650;white-space:nowrap}
+.signal-lamp[data-color=red]{color:#ff989c}.signal-lamp[data-color=yellow]{color:#ffdb73}.signal-lamp[data-color=green]{color:#72e9ab}
 .has-webgl-scene .tesla-image-observations small{color:#a7b9ce;text-shadow:0 1px 4px #000}
 .tesla-metrics{position:absolute;inset:0}.tesla-metric{position:absolute;box-sizing:border-box;min-width:96px;width:max-content;padding:8px 10px;text-align:center;background:#101924df;border:1px solid #ffffff40;border-radius:12px;transform-origin:0 0;font-variant-numeric:tabular-nums;white-space:nowrap}.tesla-metric small{display:block;font-size:12px;line-height:1.4}.tesla-metric b{display:block;font-size:34px;line-height:1.15}
 .tesla-edit,.tesla-editor{position:absolute;right:8px;top:8px;pointer-events:auto;background:#101924ef;border:1px solid #ffffff50;border-radius:10px;padding:8px;color:white;font:13px system-ui}.tesla-edit{top:auto;bottom:8px;min-height:40px}.tesla-editor{top:48px;max-width:calc(100% - 24px);display:flex;flex-wrap:wrap;align-items:center;gap:8px;white-space:normal}.tesla-editor button,.tesla-editor select{min-height:36px;font:inherit;color:white;background:#24364c;border:1px solid #ffffff50;border-radius:6px;padding:6px}.tesla-editor label{display:flex;gap:8px;align-items:center;font-size:12px}.tesla-editor input{max-width:130px}.tesla-view.is-editing .tesla-metric{pointer-events:auto;touch-action:none;cursor:move;outline:2px dashed #65baff}

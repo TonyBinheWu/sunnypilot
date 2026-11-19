@@ -77,3 +77,22 @@ test('road results expire after 1.2s; background/freeze kills worker and old cal
   f.setNow(5001+DETECTION_TTL_MS);assert.equal(road.scene().objects.length,0);assert.equal(road.scene().imageObjects.length,0);
   road.update({frozen:true});assert.equal(worker.terminated,true);worker.reply({type:'result',id:frame.id,detections:[det('traffic cone')]});assert.equal(road.scene().status,'paused');assert.equal(f.timers.size,0);
 });
+
+test('the live camera confirms lamps by housing and expires the final observation without another frame',async()=>{
+  const f=fixture(),perception=createObjectPerception(f.doc,f.target);
+  perception.update();const worker=f.workers[0];worker.reply({type:'ready'});
+  const lamps=[{color:'red',shape:'color'},{color:'green',shape:'left'}];
+  const signal={categories:[{categoryName:'traffic light',score:.8}],boundingBox:{originX:20,originY:12,width:60,height:18},lamps};
+  async function deliver(time,seconds){
+    f.setNow(time);f.video.currentTime=seconds;perception.update();await Promise.resolve();
+    const {id}=worker.messages.at(-1);worker.reply({type:'result',id,durationMs:12,detections:[signal]});
+    return perception.scene().imageObjects[0];
+  }
+  assert.equal((await deliver(5000,1)).signalState,null);
+  const confirmed=await deliver(5300,1.3);
+  assert.deepEqual(confirmed.signalState,lamps);assert.equal(confirmed.distance,null);
+  f.setNow(5300+DETECTION_TTL_MS);
+  for(const callback of [...f.timers.values()])callback();
+  assert.equal(perception.scene().status,'stale');assert.deepEqual(perception.scene().imageObjects,[]);
+  perception.destroy();
+});

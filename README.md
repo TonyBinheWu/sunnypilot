@@ -44,6 +44,8 @@ Formosa 座艙已補強手機精簡版面，並完成[停車實車連線、100%�
 
 新版駕駛視覺以後上方視角顯示本車、藍色路徑箭紋與灰色路側。網頁與 Formosa 座艙共用車機上的新版畫面。[車色、日夜模式與路徑配色](tools/carrot_android/VEHICLE_DISPLAY.zh-TW.md#車款與顏色)
 
+駕駛視覺會逐組顯示前鏡頭辨識到的紅、黃、綠燈與方向箭頭，同一燈頭可以顯示多個燈號。[路口號誌與箭頭燈](tools/carrot_android/VEHICLE_DISPLAY.zh-TW.md#路口號誌與箭頭燈)
+
 路口車流可連續追蹤，轉動視角時仍會更新。通用 GLB 模型會依距離及顯示效能切換細節。[動態物件與車型判定](tools/carrot_android/VEHICLE_DISPLAY.zh-TW.md#路口的動態物件)
 
 **[⬇ 下載 CarrotAssist 繁體中文版 0.2.20（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.20/CarrotAssist-TW-0.2.20.apk)**
