@@ -71,6 +71,8 @@ export function mapPayload(p = {}) {
     gear,
     vehicleGear: p.gear == null ? null : String(p.gear).trim().toUpperCase(),
     vehicleSpeedMps: num(p.vehicleSpeedMps),
+    measuredRoadWheelDeg: num(p.measuredRoadWheelDeg),
+    tailLights: typeof p.tailLights==="boolean"?p.tailLights:null,
     speedLimit: limit != null && limit > 0 ? toUnit(limit) : null,
     // 클러스터 패리티: EV 텔테일 / LFA 레인 초록 날개 / 크루즈 오버라이드(감속=주황·eco=초록)
     evActive: p.evActive === true,

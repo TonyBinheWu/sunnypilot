@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {createEgoVehicle3D} from '../../../../cockpit/ego_vehicle_3d.js';
 import {createRoadLibrary} from './road_model_library.js';
 import {metricSize,roadModelKind,roadModelLod} from './road_model_selection.js';
 import {createGpuSceneReceiver} from './gpu_scene_receiver.js';
@@ -33,7 +34,7 @@ export function roadRibbon(path,left,right,{behind=false}={}){
   }return out;
 }
 
-export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory=options=>new T.WebGLRenderer(options)}={}){
+export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,rendererFactory=options=>new T.WebGLRenderer(options)}={}){
   const canvas=doc.createElement('canvas');canvas.className='tesla-scene tesla-scene-3d';canvas.hidden=true;canvas.setAttribute('aria-label','即時 3D 駕駛視覺');
   if(target.__CARROT_BOOTSTRAP__?.visionGpuScene===true){
     const receiver=createGpuSceneReceiver(target,canvas);
@@ -45,6 +46,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
     destroy(){receiver.destroy();canvas.remove();}};
   }
   let renderer=null,failed=false,lost=false,closed=false,scene,world,camera,models,ego,egoKey='',active=false,hud,hudCamera,ground;
+  const egoModel=createEgoVehicle3D(target,doc,onChange);
   let library=createRoadLibrary(target,doc,onChange);
   const hudNodes=new Map(),parkingNodes=[];
   const objectNodes=new Map(),pool=new Map(),ribbons=[];
@@ -132,7 +134,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       camera=new T.PerspectiveCamera(50,1,.1,180);camera.up.set(0,0,1);models=createSceneModels();
       // Sensor x-forward/y-right/z-up is left-handed. Reflect exactly once at
       // the render boundary; keep all observations and vehicle lamp sides intact.
-      world=new T.Group();world.scale.y=-1;scene.add(world);
+      world=new T.Group();world.scale.y=-1;scene.add(world);if(scenery)world.add(scenery);
       scene.add(new T.HemisphereLight('#ffffff','#c9c4c1',2.2));const light=new T.DirectionalLight('#ffffff',1.9);light.position.set(-8,-12,22);scene.add(light);
       hud=new T.Scene();hud.add(new T.HemisphereLight('#eff8ff','#556c88',2));hudCamera=new T.OrthographicCamera(0,1,1,0,1,1000);hudCamera.position.z=500;
       ground=new T.Mesh(new T.PlaneGeometry(600,600),new T.MeshBasicMaterial({color:'#e8edf5'}));ground.position.set(70,0,-.04);ground.userData.owned=true;scene.add(ground);
@@ -157,7 +159,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
     attribute.array.set(positions);attribute.needsUpdate=true;mesh.geometry.setDrawRange(0,positions.length/3);mesh.material.color.set(color);mesh.visible=positions.length>0;
   }
   function ribbon(index,path,left,right,color,behind){geometryAt(index,roadRibbon(path,left,right,{behind}),color);}
-  return {canvas,render(width,height,data,{night=false,rainbow=false,view=null,skin=null,lamps={},enabled=true,imageSlots=[],quality='auto'}={}){
+  return {canvas,render(width,height,data,{night=false,rainbow=false,view=null,skin=null,lamps={},egoMotion={},enabled=true,imageSlots=[],quality='auto'}={}){
     active=enabled&&!doc.hidden;canvas.hidden=!active;if(!active)return false;
     if(!start()){canvas.hidden=true;return false;}
     try{
@@ -239,8 +241,13 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       }
       shadow.count=shadowCount;shadow.instanceMatrix.needsUpdate=true;
       for(const [key,node] of objectNodes)if(!visible.has(key))release(key,node);
-      const nextKey=`${skin?.id}:${skin?.paint}:${lamps.brake}:${lamps.left}:${lamps.right}:${lamps.lowBeam}:${lamps.highBeam}`;
-      if(nextKey!==egoKey||!ego){if(ego)world.remove(ego);ego=models.get('ego',{skin,lamps});world.add(ego);egoKey=nextKey;}
+      const cuv=egoModel.update({skin,lamps,quality,range:spec.range,at:frameTime,...egoMotion});
+      if(cuv){
+        if(ego!==cuv){if(ego)world.remove(ego);world.add(cuv);ego=cuv;egoKey='';}
+      }else{
+        const nextKey=[skin?.id,skin?.paint,lamps.brake,lamps.left,lamps.right,lamps.lowBeam,lamps.highBeam].join('/');
+        if(!ego||nextKey!==egoKey){if(ego)world.remove(ego);ego=models.get('ego',{skin,lamps});world.add(ego);egoKey=nextKey;}
+      }
       renderer.autoClear=true;renderer.render(scene,camera);const drawCalls=renderer.info.render.calls,triangles=renderer.info.render.triangles;
       const imageKeys=new Set();hudCamera.right=width;hudCamera.top=height;hudCamera.updateProjectionMatrix();
       for(const slot of imageSlots.slice(0,5)){
@@ -250,7 +257,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       }
       for(const [key,node] of hudNodes)if(!imageKeys.has(key)){hud.remove(node);hudNodes.delete(key);}
       if(hudNodes.size){renderer.setViewport?.(0,0,width,height);renderer.autoClear=false;renderer.clearDepth();renderer.render(hud,hudCamera);}
-      lastStats={backend:'webgl2',modelLibrary:library.status,lodCounts,objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
+      lastStats={backend:'webgl2',egoModel:cuv?'generic-cuv':skin?.id||'fallback',modelLibrary:library.status,lodCounts,objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
     }catch{failed=true;dispose();canvas.hidden=true;lastStats={...lastStats,backend:'canvas-fallback'};return false;}
-  },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats,environmentRanges:active&&!lost&&renderer&&lastRanges?lastRanges.length/6:0,environmentCells:active&&!lost&&renderer?volume?.count||0:0}),destroy(){closed=true;library.dispose();canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);volume?.dispose();dispose();canvas.remove();}};
+  },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats,environmentRanges:active&&!lost&&renderer&&lastRanges?lastRanges.length/6:0,environmentCells:active&&!lost&&renderer?volume?.count||0:0}),destroy(){closed=true;egoModel.dispose();library.dispose();canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);volume?.dispose();dispose();canvas.remove();}};
 }

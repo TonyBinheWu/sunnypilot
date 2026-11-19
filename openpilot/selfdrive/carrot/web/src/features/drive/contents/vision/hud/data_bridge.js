@@ -161,7 +161,7 @@ export function withVehicleHudFields(payload = {}, source = {}) {
     ...payload,
     // Both classic HUD flattening boundaries must retain raw speed and actual
     // lamps. Alternating compact/cockpit updates otherwise reset P admission.
-    ...Object.fromEntries(['vehicleSpeedMps','lightingStateValid','lowBeamOn','highBeamOn','doorOpen','brakeLights']
+    ...Object.fromEntries(['vehicleSpeedMps','measuredRoadWheelDeg','tailLights','lightingStateValid','lowBeamOn','highBeamOn','doorOpen','brakeLights']
       .filter(key=>Object.hasOwn(source,key)).map(key=>[key,source[key]])),
     evActive: source.evActive === true,
     activeLaneLine: laneMode.controlled,
@@ -188,7 +188,7 @@ export function vehicleHudSignature(payload = {}) {
     override?.label ?? "-",
     override?.mode ?? "-",
     drivingModeState(payload.drivingMode) ?? "-",
-    payload.vehicleSpeedMps ?? '-', payload.lightingStateValid ?? '-',
+    payload.vehicleSpeedMps ?? '-', payload.measuredRoadWheelDeg ?? '-', payload.tailLights ?? '-', payload.lightingStateValid ?? '-',
     payload.lowBeamOn ?? '-', payload.highBeamOn ?? '-', payload.doorOpen ?? '-', payload.brakeLights ?? '-',
   ].join(":");
 }
@@ -304,6 +304,7 @@ export function deriveVehicleHudPayload(state = {}) {
   const controlsState = state.controlsState || {};
   const selfdriveState = state.selfdriveState || {};
   const carControl = state.carControl || {};
+  const steerRatio=state.carParams?.steerRatio ?? (state.liveParameters?.valid===false?null:state.liveParameters?.steerRatio);
   const gear = gearLabel(carState.gearShifter);
   const rawGearStep = finite(carState.gearStep);
   const gearStep = gear === "D" && rawGearStep != null && rawGearStep > 0
@@ -318,6 +319,9 @@ export function deriveVehicleHudPayload(state = {}) {
 
   return {
     gear,
+    measuredRoadWheelDeg: Number.isFinite(carState.steeringAngleDeg) && Number.isFinite(steerRatio) && steerRatio>=4 && steerRatio<=40
+      ? carState.steeringAngleDeg/steerRatio : null,
+    tailLights: optionalBoolean(carState.tailLights),
     vehicleSpeedMps: finite(carState.vEgo),
     gearStep,
     evActive,

@@ -2,7 +2,7 @@ import {drawVehicleMesh} from '../drive/contents/vision/hud/object_mesh.js';
 // Original vector silhouettes, not manufacturer CAD assets or measured meshes.
 const preset=(id,name,scale,roof,style='sedan')=>Object.freeze({id,name,scale:Object.freeze(scale),roof:Object.freeze(roof),style});
 export const VEHICLE_SKINS=Object.freeze({
-  generic:preset('generic','通用轎車',[1,1,1],[-.65,.65,1.42]),
+  generic:preset('generic','通用跨界休旅車',[1,1,1.08],[-.76,.70,1.53]),
   ev6:preset('ev6','Kia EV6',[1.06,1.04,1.06],[-.94,.55,1.43],'ev6'),
   ioniq5:preset('ioniq5','Hyundai IONIQ 5',[1.04,1.04,1.12],[-1.12,.75,1.43],'ioniq5'),
   sorento:preset('sorento','Kia Sorento',[1.12,1.06,1.28],[-1.30,.85,1.45],'sorento'),

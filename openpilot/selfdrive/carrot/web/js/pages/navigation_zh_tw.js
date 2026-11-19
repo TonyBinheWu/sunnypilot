@@ -1,5 +1,17 @@
 "use strict";
 globalThis.CarrotNavigationZhTw = Object.freeze({
+  "Taiwan offline map": "台灣離線地圖",
+  "Download Taiwan map": "下載台灣離線地圖",
+  "Update Taiwan map": "更新台灣離線地圖",
+  "Downloading…": "正在下載",
+  "Map file damaged. Download again.": "圖資損毀，請重新下載。",
+  "Insufficient storage.": "車機儲存空間不足。",
+  "Download failed. Try again.": "下載失敗，請恢復網路後重試。",
+  "Verifying the map…": "正在檢查圖資完整性…",
+  "Download Taiwan while online to use its basemap offline.": "有網路時可先下載台灣底圖到車機，約 175 MiB。離線時請讓觀看裝置保持連線至車機。",
+  "Check the connection to the device.": "請確認與車機的連線。",
+  "Unable to read offline tiles. Check the installed map.": "無法讀取本機圖資，請檢查已下載的地圖。",
+
   "Mapped parking area / space · availability unknown": "圖資停車場／停車格・空位未確認",
   "Refresh navigation state": "重新讀取導航狀態",
   "A navigation request is already in progress.": "正在處理導航要求，請稍候。",

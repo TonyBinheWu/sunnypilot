@@ -125,3 +125,14 @@ test('adaptive render resolution measures draws, respects explicit quality and d
   assert.equal(m.quality('auto'),'low');assert.equal(m.quality('high'),'high');assert.equal(m.snapshot(2000).fps,20);
   assert.equal(m.snapshot(4000).fps,null);
 });
+
+test('cockpit camera starts automatically with detector choices off and respects device availability',()=>{
+  const starts=[],target={document:{body:{dataset:{cockpitPanel:'vision'}}},CarrotVisionState:{available:true},
+    CarrotDeviceRuntimeState:{carrotVisionEnabled:0},CarrotVisionStart:o=>starts.push(o)};
+  const view=createPerceptionScene(target);
+  view.startConfigured(true,{});assert.equal(starts.length,0);
+  target.CarrotDeviceRuntimeState.carrotVisionEnabled=1;
+  view.startConfigured(true,{});view.startConfigured(true,{});assert.deepEqual(starts,[{automaticPerception:true}]);
+  target.CarrotVisionState.available=false;view.startConfigured(true,{});
+  target.CarrotVisionState.available=true;view.startConfigured(true,{});assert.equal(starts.length,2);
+});

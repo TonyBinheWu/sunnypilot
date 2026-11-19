@@ -140,8 +140,7 @@ test('object detection settings require explicit action and never start a camera
  h.tick();assert.equal(cameraStarts,0);assert.equal(saved.length,0);assert.equal(h.el('visionTools').textContent,'視覺設定');assert.match(h.el('visionTools')['aria-label'],/未啟用/);
  h.el('detectionObjects').checked=true;await h.el('detectionObjects').onchange();h.tick();
  assert.deepEqual(saved,[['vision_object_detection',true]]);assert.equal(cameraStarts,0);assert.match(h.el('visionDiagnostic').textContent,/等待前鏡頭/);
- h.el('connectVision').onclick();assert.equal(cameraStarts,1);
- camera.disabled=true;h.el('connectVision').onclick();assert.equal(cameraStarts,1);
+ assert.equal(h.el('connectVision'),undefined);assert.doesNotMatch(h.el('visionCameraStatus').textContent,/請先按/);
  h.el('detectionObjects').checked=false;await h.el('detectionObjects').onchange();assert.equal(h.writes.length,0);
 });
 
@@ -176,10 +175,8 @@ test('navigation card awaits the real end result and does not infer destination 
  api.end=async()=>{throw Error('連線中斷');};await h.el('routeEnd').onclick();assert.match(h.el('routeFeedback').textContent,/未確認結束：連線中斷/);assert.equal(h.writes.length,0);
  api.snapshot=()=>({known:true,busy:true,active:true,label:'現有目的地'});h.tick();assert.equal(h.el('routeEnd').disabled,true);assert.equal(h.context.document.body.dataset.hasRoute,'true');
 });
-test('full screen labels reflect the current browser state and waiting telemetry is not green',()=>{
- const h=harness();assert.equal(h.el('fullscreenLabel').textContent,'全螢幕');
- h.context.document.fullscreenElement={};h.docEvents.fullscreenchange();assert.equal(h.el('fullscreenLabel').textContent,'離開全螢幕');assert.equal(h.el('fullscreen')['aria-pressed'],'true');
- h.context.document.fullscreenElement=null;h.docEvents.fullscreenchange();assert.equal(h.el('fullscreenLabel').textContent,'全螢幕');
+test('cockpit uses its native layout and waiting telemetry is not green',()=>{
+ const h=harness();assert.equal(h.el('fullscreen'),undefined);
  h.sockets[0].onmessage({data:JSON.stringify({mode:'carrot-state-v1'})});h.tick();assert.equal(h.el('connection').dataset.state,'waiting');assert.equal(h.writes.length,0);
 });
 

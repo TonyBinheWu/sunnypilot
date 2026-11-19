@@ -6,7 +6,21 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "81766454d906d8b27b422e6764859d2c84560b0ac6085bb41998661dc0bffb44"
+      "hash": "deb854effb7d09dfad5880f2bb21bb82d2ef943efab9935e314f07788ee80929"
+    },
+    {
+      "id": "navigation.offline",
+      "kind": "bundle",
+      "source": "src/entries/offline_map.js",
+      "path": "js/generated/offline-map.js",
+      "hash": "588a89b44b74c0e558be4f40c2540c960b52a8bf6edb400eb624851fd7f52b77"
+    },
+    {
+      "id": "tools.intersection",
+      "kind": "bundle",
+      "source": "src/entries/intersection.js",
+      "path": "js/generated/intersection.js",
+      "hash": "198215c9f05194d892eca74870482ec3de13a451f5cebdaec37e49475390156e"
     },
     {
       "id": "tools.lane-mapping",
@@ -34,7 +48,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "c682d18db4da8b43541a7b0aeafc8dcc2d3c5a3b5e137421978b6f4e8799a5eb"
+      "hash": "c6022ad105b9606c70af4dcab6df3f1cab1d081476323dfd9edc1744d45f762b"
     },
     {
       "id": "replay.runtime",
@@ -191,7 +205,7 @@
       "id": "vision.object-detector-worker",
       "kind": "worker",
       "path": "js/generated/bev-detector-worker.js",
-      "hash": "b91aa8617686bdd940fd078de0df2f494ca485bab881615d5e9c566fc04d7f80"
+      "hash": "45d8dd7fcdd03599e1d9e3c21880f58fa2054788a84c9be4299b5bf583bafc45"
     },
     {
       "id": "vision.webgl2.worker",

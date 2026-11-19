@@ -32,7 +32,7 @@ function combineReferences(items, aliases) {
 
 export function createPerceptionScene(target) {
   const tracker=createObjectTracker(), stamps=new Map(), aliases=new Map();
-  let session=null, autoStarted=false, lastVideo=null, replaySample=null, poseLease=null, acquiring=false;
+  let session=null, autoStarted=false, retryAfter=0, lastVideo=null, replaySample=null, poseLease=null, acquiring=false;
   let lastMotion=null;
   function releasePose(){const lease=poseLease;poseLease=null;lease?.release?.();}
   function syncPose(enabled){
@@ -96,14 +96,14 @@ export function createPerceptionScene(target) {
     return combineReferences(tracker.sample(now,motion),aliases);
   }
   function startConfigured(active,settings) {
-    const configured=settings.vision_object_detection===true||settings.vision_road_detection===true||settings.vision_environment_occupancy===true;
-    if(!configured){autoStarted=false;return;}
-    if(!active || autoStarted || ![1,true].includes(target.CarrotDeviceRuntimeState?.carrotVisionEnabled)
+    const cockpit=target.document?.body?.dataset?.cockpitPanel==='vision';
+    const configured=cockpit||settings.vision_object_detection===true||settings.vision_road_detection===true||settings.vision_environment_occupancy===true;
+    if(!configured || ![1,true].includes(target.CarrotDeviceRuntimeState?.carrotVisionEnabled) || !target.CarrotVisionState?.available){autoStarted=false;return;}
+    if(!active || autoStarted || Date.now()<retryAfter
       ||target.CarrotVisionReplay?.status?.()?.active || !target.CarrotVisionStart)return;
-    if(!target.CarrotVisionState?.available)return;
     autoStarted=true;
     // Never take over another viewer's camera, request full screen or write a camera setting.
-    if(!target.CarrotVisionState.active)Promise.resolve(target.CarrotVisionStart({automaticPerception:true})).catch(()=>{});
+    if(!target.CarrotVisionState.active)Promise.resolve(target.CarrotVisionStart({automaticPerception:true})).catch(()=>{autoStarted=false;retryAfter=Date.now()+3000;});
   }
   return {update,startConfigured,clear(){clear();releasePose();},tracker,get motion(){return lastMotion;}};
 }

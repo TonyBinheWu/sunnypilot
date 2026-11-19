@@ -428,6 +428,11 @@ class _Field:
     return str(value if value is not None else "")
 
 
+def _vehicle_color(value: Any) -> str:
+  color = str(value).strip().lower()
+  return color if color in {"white", "silver", "gray", "black", "red", "blue", "green", "beige", "orange"} or re.fullmatch(r"#[0-9a-f]{6}", color) else "red"
+
+
 # Declarative schema. Order here is the canonical key order.
 WEB_SETTINGS_SPEC: List[_Field] = [
   _Field("auto_update_git_pull", "bool", False),
@@ -449,7 +454,7 @@ WEB_SETTINGS_SPEC: List[_Field] = [
   _Field("vision_custom_metrics", "bool", False),
   _Field("vision_metric_layout", "str", _normalize_metric_layout(''), normalize=_normalize_metric_layout, hidden=True),
   _Field("vision_rainbow_lane", "bool", False),
-  _Field("vision_vehicle_color", "enum", "red", choices={"white","silver","gray","black","red","blue","green","beige","orange"}),
+  _Field("vision_vehicle_color", "str", "red", normalize=_vehicle_color),
   _Field("vision_object_detection", "bool", False),
   _Field("vision_road_detection", "bool", False),
   _Field("vision_environment_occupancy", "bool", False),

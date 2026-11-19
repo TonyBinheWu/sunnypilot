@@ -14,6 +14,7 @@ def test_vehicle_paint_is_display_only_validated_and_persisted(tmp_path, monkeyp
   monkeypatch.setattr(web_settings,'CARROT_WEB_SETTINGS_PATH',str(tmp_path/'web_settings.json'))
   before=web_settings.sanitize_web_settings({})
   changed=web_settings.update_web_settings({'vision_vehicle_color':'blue'})
+  assert web_settings.sanitize_web_settings({'vision_vehicle_color':'#A4B6C8'})['vision_vehicle_color']=='#a4b6c8'
   assert changed['vision_vehicle_color']=='blue'
   assert web_settings.read_web_settings()['vision_vehicle_color']=='blue'
   assert all(changed[key]==value for key,value in before.items() if key!='vision_vehicle_color')

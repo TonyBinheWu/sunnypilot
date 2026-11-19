@@ -41,7 +41,7 @@ def destination(value):
 
 async def page(request):
   html = Path(WEB_DIR, 'navigation.html').read_text(encoding='utf-8')
-  for asset in ('/js/pages/navigation_zh_tw.js', '/js/pages/navigation_osm.js', '/js/pages/navigation_map.js'):
+  for asset in ('/js/generated/offline-map.js', '/js/pages/navigation_zh_tw.js', '/js/pages/navigation_osm.js', '/js/pages/navigation_map.js'):
     fingerprint = fingerprint_static_asset(WEB_DIR, asset)
     if fingerprint:
       html = html.replace(f'src="{asset}"', f'src="{asset}?v={fingerprint}"')
@@ -221,7 +221,8 @@ async def preview(request):
 
 
 def register(app):
-  from . import parking
+  from . import offline_basemap, parking
+  offline_basemap.register(app)
   parking.register(app)
   app[SEARCH_STATE] = SearchState()
   app[FAVORITES] = NavigationFavorites(CARROT_NAVIGATION_FAVORITES_PATH)

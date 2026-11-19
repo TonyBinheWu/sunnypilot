@@ -62,3 +62,13 @@ test('ambiguous matches, repeat timestamps, stream resets and old evidence canno
   assert.deepEqual(h.confirm([head(left,'red')],2000),[null]);
   h.clear();assert.deepEqual(h.confirm([head(left,'red')],2250),[null]);
 });
+
+test('local contrast recovers a shaded lens but two contradictory circles abstain',()=>{
+  const w=96,h=44,pixels=new Uint8ClampedArray(w*h*4).fill(212);
+  for(let y=12;y<=32;y++)for(let x=13;x<=70;x++){
+    const lit=(x-30)**2+(y-22)**2<=36;
+    pixels.set(lit?[33,89,54]:[57,55,53],4*(y*w+x));
+  }
+  assert.deepEqual(observedLamps(pixels,w,h),[rgb('green')]);
+  assert.deepEqual(picture([{x:20,color:'red'},{x:112,color:'green'}]),[]);
+});

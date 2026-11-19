@@ -17,6 +17,8 @@
     "three": "0.185.0"
   },
   "dependencies": {
-    "marked": "18.0.7"
+    "@mapbox/vector-tile": "2.0.4",
+    "marked": "18.0.7",
+    "pbf": "4.0.1"
   }
 }
