@@ -17,6 +17,7 @@ EXECUTED_OBJECTIVE_REVISION='ten_step_executed_accel_curvature_hold_margin_v3'
 RECOVERY_OBJECTIVE_REVISION='ten_step_balanced_recovery_interior_stop_margin_v4'
 FORWARD_OBJECTIVE_REVISION='ten_step_forward_physics_consistent_hold_v5'
 AXLE_OBJECTIVE_REVISION='ten_step_observed_rear_axle_forward_hold_v7'
+GENTLE_RECOVERY_OBJECTIVE_REVISION='ten_step_gentle_boundary_recovery_v8'
 SIGNED_HOLD_OBJECTIVE_REVISION='ten_step_signed_standstill_controls_v6'
 
 
@@ -252,8 +253,8 @@ def main():
   if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
   if args.balanced_stop_modes:optimization_profile='paired_balanced_cross_task_pcgrad_sgd_v4'
-  if args.grouped_stop_go:optimization_profile='grouped_six_task_unit_descent_sgd_v6'
-  if args.correction_warmup:optimization_profile='grouped_six_task_correction_replay_sgd_v7'
+  if args.grouped_stop_go:optimization_profile='grouped_six_task_fp64_projection_sgd_v8'
+  if args.correction_warmup:optimization_profile='grouped_six_task_correction_fp64_projection_sgd_v9'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:
@@ -310,6 +311,10 @@ def main():
   settings={'seed':42,'num_traj_sets':1,'num_traj_samples':1,'top_p':.98,'top_k':None,'temperature':.6,'max_generation_length':256,'diffusion_kwargs':{'inference_step':10}}
   manifest=json.loads((args.data/'manifest.json').read_text())
   rows=manifest['samples']
+  from tools.training_studio.teacher_standstill import stop_training_margin
+  if any(row.get('recovery_reference_profile') is not None for row in rows):
+    for row in rows:stop_training_margin(row,args.balanced_stop_modes)
+    objective_revision=GENTLE_RECOVERY_OBJECTIVE_REVISION
   if {r['seed'] for r in rows if r['split']=='train'} & {r['seed'] for r in rows if r['split']=='validation'}: raise ValueError('seed leakage')
   if any(r['seed'] in (300,301,302,303) for r in rows): raise ValueError('qualification seeds must remain held out')
   captured={}
@@ -387,7 +392,7 @@ def main():
       loss=loss+immediate_steering_loss(action,item['target_action'].to(action.device),model.expert.action_space,item['ego_history_xyz'].to(action.device))
     if item['row']['stop_required']:
       held=(torch.linalg.vector_norm(ref_velocity,dim=-1)<.15).float()
-      margin=.5 if args.balanced_stop_modes and not item['row'].get('maintain_stop_reference') else 0.
+      margin=stop_training_margin(item['row'],args.balanced_stop_modes)
       loss=loss+stop_zone_loss(xyz,target,held,item['row']['front_distance_m'],interior_margin_m=margin)
       loss=loss+50*(velocity.square().sum(-1)*held).sum()/held.sum().clamp_min(1)
       loss=loss+200*(velocity.square().sum(-1)*held).amax()
