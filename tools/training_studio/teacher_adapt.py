@@ -253,10 +253,15 @@ def main():
           candidates=[]
           if result['adapter_saved']: candidates.append(('safety','best.safetensors',result.get('best_epoch')))
           if result.get('balanced_adapter_saved'): candidates.append(('balanced','balanced.safetensors',result.get('balanced_epoch')))
+          if result.get('checkpoints'):
+            latest=result['checkpoints'][-1]
+            if Path(latest['file']).name!=latest['file']:raise ValueError('invalid completed epoch checkpoint path')
+            candidates.append(('latest',latest['file'],latest['epoch']))
           seen=set()
           for selection,filename,epoch in candidates:
             remote.download(destination+'/output/'+filename,folder/filename)
             checksum=hashlib.sha256((folder/filename).read_bytes()).hexdigest()
+            if selection=='latest' and checksum!=latest['sha256']:raise ValueError('completed epoch checkpoint digest changed')
             if checksum in seen: continue
             seen.add(checksum)
             pointer={'path':f'/studio/teacher/cycle-{cycle:03d}/output/'+filename,'sha256':checksum,

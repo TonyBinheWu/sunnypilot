@@ -9,6 +9,25 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_completed_epoch_retains_frozen_adapters_and_cannot_overwrite_qualified_snapshot(self):
+    import hashlib,json
+    import torch
+    from torch import nn
+    from safetensors.torch import load_file
+    from tools.training_studio.teacher_lora import DeltaLinear
+    from tools.training_studio.teacher_train import save_epoch_checkpoint
+    model=nn.Module();model.expert=DeltaLinear(nn.Linear(2,2));model.vlm=DeltaLinear(nn.Linear(2,2));model.vlm.requires_grad_(False)
+    with tempfile.TemporaryDirectory() as directory:
+      pointer=save_epoch_checkpoint(model,directory,1,{'validation_loss':5},dataset_sha256='d'*64,parent_sha256='p'*64,objective_revision='v3')
+      path=Path(directory)/pointer['file'];saved=load_file(str(path))
+      self.assertIn('vlm.a',saved);torch.testing.assert_close(saved['vlm.a'],model.vlm.a)
+      self.assertEqual(pointer['sha256'],hashlib.sha256(path.read_bytes()).hexdigest())
+      self.assertFalse(pointer['driving_qualified'])
+      self.assertEqual(json.loads(path.with_suffix('.json').read_text()),pointer)
+      original=path.read_bytes()
+      with self.assertRaises(FileExistsError):save_epoch_checkpoint(model,directory,1,{},dataset_sha256='x',parent_sha256='y',objective_revision='z')
+      self.assertEqual(path.read_bytes(),original)
+
   def test_immediate_steering_has_correct_symmetric_gradients_and_prioritizes_next_commands(self):
     import torch
     from tools.training_studio.teacher_train import immediate_steering_loss

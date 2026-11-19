@@ -48,6 +48,10 @@ test('teacher validation failure and inference progress are explicit, without fa
   assert.match(teacherMessage(value).progress,/第 8 輪 · 綜合損失候選/);
   value.teacher.qualification.batch='/teacher-cycles/cycle-011/qualification-safety-early-epoch006';
   assert.match(teacherMessage(value).progress,/第 11 輪 · 安全優先候選 · Epoch 6 固定快照/);
+  value.teacher.qualification.batch='/teacher-cycles/cycle-026/qualification-latest-early-epoch001';
+  assert.match(teacherMessage(value).progress,/第 26 輪 · 最近完整epoch候選 · Epoch 1 固定快照/);
+  value.teacher.qualification.batch='/teacher-cycles/cycle-026/qualification-latest-early-epoch001-stage-small-batch';
+  assert.match(teacherMessage(value).progress,/Epoch 1 固定快照 · 小批次權重更新/);
   value.teacher.qualification.batch='/teacher-cycles/cycle-013/qualification-balanced-early-epoch004-policy-crossing-v1';
   assert.match(teacherMessage(value).progress,/第 13 輪 · 綜合損失候選 · Epoch 4 固定快照 · 行人全程停讓指令/);
   value.teacher.qualification.batch='/teacher-cycles/cycle-019/qualification-balanced-early-epoch002-stage-visual-decision';

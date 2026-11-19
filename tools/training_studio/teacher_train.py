@@ -137,6 +137,25 @@ def held_brake_margin_loss(action,space):
   return 50*torch.relu(acceleration[:,:10]+.1).square().mean()
 
 
+def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision):
+  """Keep every completed epoch available for the authoritative driving suite.
+
+  Validation ranking may reject a model without testing it in closed loop.
+  Keep its exact weights without promoting it or overwriting another epoch.
+  """
+  from safetensors.torch import save_file
+  from tools.training_studio.teacher_lora import adapter_parameters
+  from tools.training_studio.store import write_json
+  path=Path(output)/f'epoch-{epoch:03d}.safetensors'
+  if path.exists():raise FileExistsError('completed epoch checkpoints are immutable')
+  save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(path))
+  pointer={'file':path.name,'epoch':epoch,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'metrics':metrics,
+    'dataset_sha256':dataset_sha256,'parent_sha256':parent_sha256,'objective_revision':objective_revision,
+    'script_sha256':IMPLEMENTATION_SHA256,'driving_qualified':False}
+  write_json(path.with_suffix('.json'),pointer)
+  return pointer
+
+
 def rollout(model,item,*,grad,seed=42):
   import torch
   from torch.utils.checkpoint import checkpoint
@@ -237,9 +256,9 @@ def main():
     captured['action']=action.detach().cpu().clone()
     return action
   model._sample_actions=capture
-  history=[]
+  history=[];checkpoints=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'epochs':args.epochs,'history':history,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'epochs':args.epochs,'history':history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -390,6 +409,9 @@ def main():
         emit('training',epoch=epoch+1,batch=batch+1,batches=len(train),loss=values[-1],loss_before_step=initial_loss,step_scale=scale,baseline=baseline)
     metrics=validate(epoch+1)
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
+    checkpoints.append(save_epoch_checkpoint(model,args.output,epoch+1,history[-1],
+      dataset_sha256=hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
+      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision))
     score=(metrics['red_safe_count'],-metrics['red_hold_speed_mse'],-metrics['validation_loss'])
     if score>best_score:
       best_score=score
@@ -401,7 +423,7 @@ def main():
     emit('training',epoch=epoch+1,baseline=baseline,**metrics)
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
-    'history':history,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
+    'history':history,'checkpoints':checkpoints,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
     'objective_revision':objective_revision,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
