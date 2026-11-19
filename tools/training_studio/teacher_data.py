@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import time
+from tools.training_studio.teacher_standstill import hold_acceleration,in_stop_zone,PROFILE as HOLD_PROFILE
 
 GO_MODES=frozenset(('go','green_transition','accelerating_go','drift_go','clear_go','braking_clear_go'))
 STOP_SCENARIOS=frozenset(('red_light','pedestrian','yield_left','yield_right','left_arrow','right_arrow'))
@@ -168,10 +169,10 @@ def main():
         xyz,rot=[],[]
         latched_stop=maintain_stop
         for step in range(128):
-          latched_stop=latched_stop or (scene.blocked() and scene.stopped)
+          latched_stop=latched_stop or (scene.blocked() and in_stop_zone(scene))
           action=scene.expert()
           if latched_stop and scene.blocked():
-            action[1]=np.clip(-1.5*scene.state()[-1],-3.5,0.)
+            action[1]=hold_acceleration(scene.vehicle.velocity,scene.vehicle.heading)
           scene.step(action)
           if step%2==1:
             xyz.append((np.array([*scene.vehicle.position,0])-origin)@reference)
@@ -186,6 +187,9 @@ def main():
           'stop_required':stop_required,
           'restart_required':not stop_required and initial_speed<.2,'front_distance_m':front_distance,
           'maintain_stop_reference':maintain_stop,
+          'hold_control_profile':HOLD_PROFILE,
+          'reference_terminal_front_distance_m':scene.stop_s-scene.state()[3]-scene.vehicle.LENGTH/2,
+          'reference_terminal_speed_mps':scene.state()[-1],
           'future_actor_motion_frozen':freeze_actor,
           'pixel_sha256':hashlib.sha256(sample['image_frames'].tobytes()).hexdigest()})
         write_json(args.output/'generation-progress.json',{'phase':'generating','samples':len(records),'rejected':len(rejected),'updated':time.time()})

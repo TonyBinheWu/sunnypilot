@@ -16,6 +16,7 @@ OBJECTIVE_REVISION='ten_step_immediate_stop_and_restart_v2'
 EXECUTED_OBJECTIVE_REVISION='ten_step_executed_accel_curvature_hold_margin_v3'
 RECOVERY_OBJECTIVE_REVISION='ten_step_balanced_recovery_interior_stop_margin_v4'
 FORWARD_OBJECTIVE_REVISION='ten_step_forward_physics_consistent_hold_v5'
+SIGNED_HOLD_OBJECTIVE_REVISION='ten_step_signed_standstill_controls_v6'
 
 
 def observed_inputs(sample):
@@ -83,6 +84,16 @@ def stop_zone_loss(xyz,target,held,front_distance,*,interior_margin_m=0.):
   valid_reference=held*((reference_front>=0)&(reference_front<5)).to(held.dtype)
   shortfall=torch.relu(front_distance-xyz[...,0]-(5-interior_margin_m))
   return 30*(shortfall.square()*valid_reference).sum()/valid_reference.sum().clamp_min(1)
+
+
+def signed_held_command_loss(action,space,history_xyz,history_rot=None):
+  """Use the same signed state and acceleration convention as the pinned decoder."""
+  import torch
+  speed=(space.estimate_t0_states(history_xyz,history_rot)['v'] if history_rot is not None
+    else (history_xyz[...,-1,0]-history_xyz[...,-2,0])/space.dt)
+  acceleration=action[...,0]*space.accel_std.to(action.device)+space.accel_mean.to(action.device)
+  velocity=speed.unsqueeze(-1)+acceleration[...,:20].clamp(-3.5,1.6).cumsum(-1)*space.dt
+  return 200*velocity.square().amax()+50*velocity.square().mean()
 
 
 def valid_stopped_trajectory(xyz,velocity,front_distance):
@@ -153,7 +164,7 @@ def acceleration_error(action,target_action,space,*,completed_hold=False,forward
   return (action[...,0]-target_action.to(action.device)[...,0])*std
 
 
-def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False):
+def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False,signed_hold_controls=False):
   """Keep every completed epoch available for the authoritative driving suite.
 
   Validation ranking may reject a model without testing it in closed loop.
@@ -167,7 +178,7 @@ def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha
   save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(path))
   pointer={'file':path.name,'epoch':epoch,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'metrics':metrics,
     'dataset_sha256':dataset_sha256,'parent_sha256':parent_sha256,'objective_revision':objective_revision,
-    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'driving_qualified':False}
+    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'signed_hold_controls':signed_hold_controls,'driving_qualified':False}
   write_json(path.with_suffix('.json'),pointer)
   return pointer
 
@@ -211,12 +222,15 @@ def main():
   parser.add_argument('--executed-commands',action='store_true',help='Supervise immediate steering and all permitted acceleration commands, with stationary hold margin')
   parser.add_argument('--balanced-stop-modes',action='store_true',help='Balance held, approaching and early-stopped recovery references; train non-held stops inside the legal zone')
   parser.add_argument('--forward-only',action='store_true',help='Use forward-only physical decoding and consistent completed-stop braking supervision')
+  parser.add_argument('--signed-hold-controls',action='store_true',help='Train stationary controls against the unchanged signed-motion simulator; do not add a negative brake bias')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
   if args.balanced_stop_modes and not (args.executed_commands and args.paired_stop_go and args.unit_task_gradients):raise ValueError('balanced recovery requires executed commands and paired unit gradients')
   if args.forward_only and not args.balanced_stop_modes:raise ValueError('forward-only training requires balanced recovery')
+  if args.signed_hold_controls and (args.forward_only or not args.balanced_stop_modes):raise ValueError('signed standstill requires balanced recovery and the original signed decoder')
   objective_revision=RECOVERY_OBJECTIVE_REVISION if args.balanced_stop_modes else EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
   if args.forward_only:objective_revision=FORWARD_OBJECTIVE_REVISION
+  if args.signed_hold_controls:objective_revision=SIGNED_HOLD_OBJECTIVE_REVISION
   if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
   if args.balanced_stop_modes:optimization_profile='paired_balanced_stop_modes_pcgrad_sgd_v3'
@@ -283,7 +297,7 @@ def main():
   model._sample_actions=capture
   history=[];checkpoints=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'epochs':args.epochs,'history':history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -361,8 +375,10 @@ def main():
       loss=loss+immediate_command_loss(accel_error)
       loss=loss+50*(accel_error[:,:20].square()*held[:,:20]).sum()/held[:,:20].sum().clamp_min(1)
       if item['row'].get('maintain_stop_reference'):
-        loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))
-        if args.executed_commands:loss=loss+held_brake_margin_loss(action,model.expert.action_space)
+        if args.signed_hold_controls:
+          loss=loss+signed_held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device),item['ego_history_rot'].to(action.device))
+        else:loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))
+        if args.executed_commands and not args.signed_hold_controls:loss=loss+held_brake_margin_loss(action,model.expert.action_space)
       loss=loss+30*torch.relu(xyz[...,0]-item['row']['front_distance_m']+.2).square().mean()
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
@@ -439,7 +455,7 @@ def main():
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
     checkpoints.append(save_epoch_checkpoint(model,args.output,epoch+1,history[-1],
       dataset_sha256=hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
-      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only))
+      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only,signed_hold_controls=args.signed_hold_controls))
     score=(metrics['red_safe_count'],-metrics['red_hold_speed_mse'],-metrics['validation_loss'])
     if score>best_score:
       best_score=score
@@ -452,7 +468,7 @@ def main():
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'checkpoints':checkpoints,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
-    'objective_revision':objective_revision,'forward_only':args.forward_only,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
+    'objective_revision':objective_revision,'forward_only':args.forward_only,'signed_hold_controls':args.signed_hold_controls,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})

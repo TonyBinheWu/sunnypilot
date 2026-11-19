@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from tools.training_studio.teacher_standstill import hold_acceleration,in_stop_zone
 
 SCENARIOS=('left_turn','right_turn','yield_left','yield_right','left_arrow','right_arrow')
 
@@ -44,7 +45,7 @@ def observed_stop_reference(args):
       if step%2==0 and step>=current_step-40:history.record(scene)
       if step==current_step:break
       action=np.zeros(2,np.float32) if step<40 else scene.expert()
-      if step>=40 and scene.blocked() and scene.stopped:action[1]=np.clip(-1.5*scene.state()[-1],-3.5,0.)
+      if step>=40 and scene.blocked() and in_stop_zone(scene):action[1]=hold_acceleration(scene.vehicle.velocity,scene.vehicle.heading)
       scene.step(action)
     if not scene.blocked():raise ValueError('counterfactual hold requires observed blocked state')
     intent=('Turn left' if CASES[args.scenario]>0 else 'Turn right')+' at the upcoming intersection. Obey signals, yield to traffic, and remain in the lane.'
@@ -59,7 +60,7 @@ def observed_stop_reference(args):
     xyz=[];rot=[]
     for step in range(128):
       action=scene.expert()
-      if scene.stopped:action[1]=np.clip(-1.5*scene.state()[-1],-3.5,0.)
+      if in_stop_zone(scene):action[1]=hold_acceleration(scene.vehicle.velocity,scene.vehicle.heading)
       scene.step(action)
       if step%2==1:
         xyz.append((np.array([*scene.vehicle.position,0])-origin)@reference);rot.append(reference.T@rotation(scene.vehicle.heading_theta))
@@ -116,7 +117,7 @@ def main():
           selected.append((len(times)-1,history.sample(intent),{'front_distance_m':front,'stop_required':blocked,'restart_required':not blocked and speed<.2,'maintain_stop_reference':blocked and 0<front<5 and speed<.15,'reference_phase':'post_turn' if angle>=np.deg2rad(75) else 'turning' if angle>=np.deg2rad(15) else 'approach','reference_heading_change_rad':float(angle)}))
       if step==round(24/DT):break
       action=np.zeros(2,np.float32) if step<40 else scene.expert()
-      if step>=40 and scene.blocked() and scene.stopped:action[1]=np.clip(-1.5*scene.state()[-1],-3.5,0.)
+      if step>=40 and scene.blocked() and in_stop_zone(scene):action[1]=hold_acceleration(scene.vehicle.velocity,scene.vehicle.heading)
       scene.step(action)
     result=scene.result();write_json(args.output/'reference-result.json',{**result,'scripted_reference_only':True,'neural_teacher_qualification':False})
     rows=[];rejected=[]

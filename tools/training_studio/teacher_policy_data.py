@@ -7,6 +7,7 @@ from pathlib import Path
 from tools.training_studio.edge_inputs import MODEL_REVISION
 from tools.training_studio.store import read_json,write_json
 from tools.training_studio.teacher_train import observed_inputs
+from tools.training_studio.teacher_standstill import hold_acceleration,in_stop_zone,PROFILE as HOLD_PROFILE
 
 
 def check_source(result,health,split):
@@ -65,7 +66,7 @@ def reference(episode,index,output,split,assets):
     front=scene.stop_s-progress-scene.vehicle.LENGTH/2
     heading_change=abs((scene.vehicle.heading_theta-scene.initial_heading+np.pi)%(2*np.pi)-np.pi)
     blocked=scene.blocked()
-    maintain=blocked and front>0 and (scene.stopped or (front<5 and speed<.15))
+    maintain=blocked and in_stop_zone(scene)
     # Freeze a still-crossing actor at its observed position for offline labels.
     # Moving its clearance clock alone would teleport it back across the road.
     # Neither the future permission nor these label-only flags enter inference.
@@ -78,14 +79,15 @@ def reference(episode,index,output,split,assets):
     scene.update_actors();xyz=[];rot=[]
     latched_stop=maintain
     for step in range(128):
-      latched_stop=latched_stop or (scene.blocked() and scene.stopped)
+      latched_stop=latched_stop or (scene.blocked() and in_stop_zone(scene))
       action=scene.expert()
-      if latched_stop and scene.blocked(): action[1]=np.clip(-1.5*scene.state()[-1],-3.5,0.)
+      if latched_stop and scene.blocked(): action[1]=hold_acceleration(scene.vehicle.velocity,scene.vehicle.heading)
       scene.step(action)
       if step%2==1:
         xyz.append((np.array([*scene.vehicle.position,0])-origin)@orientation)
         rot.append(orientation.T@rotation(scene.vehicle.heading_theta))
     output.mkdir(parents=True,exist_ok=False)
+    terminal=scene.state();terminal_front=scene.stop_s-terminal[3]-scene.vehicle.LENGTH/2
     if scene.failures:
       row={'rejected':True,'seed':result['seed'],'source_simulation_time_s':moment,'failures':sorted(scene.failures)}
     else:
@@ -97,6 +99,8 @@ def reference(episode,index,output,split,assets):
         'pixel_sha256':hashlib.sha256(sample['image_frames'].tobytes()).hexdigest(),'source_input_sha256':source_hash,
         'source_teacher_provenance_sha256':fingerprint,'source_simulation_time_s':moment,'physics_replay_errors':errors,
         'source_lateral_error_m':lateral,'source_heading_change_rad':float(heading_change),
+        'hold_control_profile':HOLD_PROFILE,
+        'reference_terminal_front_distance_m':terminal_front,'reference_terminal_speed_mps':terminal[-1],
         'future_permission_frozen_for_red_supervision':blocked and result['scenario']=='red_light',
         'future_actor_motion_frozen':freeze_actor,'source_episode_status':result['status'],
         'reference_generator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
