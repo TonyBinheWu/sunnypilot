@@ -35,7 +35,7 @@ from openpilot.selfdrive.navigation.map_client import MapInput
 from openpilot.selfdrive.modeld.lane_change_advisory import LaneChangeAdvisory
 from openpilot.selfdrive.modeld.signal_shadow import ShadowClient
 from openpilot.selfdrive.modeld.helpers import (get_tg_input_devices, load_oob, modeld_pkl_path,
-                                                refresh_usbgpu_device_cache, select_vision_streams, usbgpu_compiled_path,
+                                                refresh_usbgpu_device_cache, select_vision_streams, vision_camera_inputs, usbgpu_compiled_path,
                                                 usbgpu_pcie_not_ready, usbgpu_present, wait_for_usbgpu_present)
 
 PROCESS_NAME = "openpilot.selfdrive.modeld.modeld"
@@ -577,6 +577,9 @@ def main(demo=False):
       fill_model_msg(modelv2_send, model_output, action,
                      publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id,
                      frame_drop_ratio, meta_main.timestamp_eof, model_execution_time, live_calib_seen)
+
+      modelv2_send.modelV2.visionCameraInputs = vision_camera_inputs(bufs, main_wide_camera, use_extra_client)
+      modelv2_send.modelV2.visionCompute = 'usbGpu' if inference_usbgpu else 'nonUsb'
 
       desire_state = modelv2_send.modelV2.meta.desireState
       l_lane_change_prob = desire_state[log.Desire.laneChangeLeft]

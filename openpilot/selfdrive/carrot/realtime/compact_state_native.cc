@@ -730,6 +730,8 @@ void encode_model_v2(std::string &out, const DynamicReader &value) {
   append_enum(out, value, "meta", "laneChangeDirection");
   append_enum(out, value, "meta", "indicatorPrepareDirection");
   append_text(out, value, "meta", "indicatorPrepareSource");
+  append_enum(out, value, "visionCameraInputs");
+  append_enum(out, value, "visionCompute");
 }
 
 void encode_live_calibration(std::string &out, const DynamicReader &value) {

@@ -136,3 +136,30 @@ test('cockpit camera starts automatically with detector choices off and respects
   target.CarrotVisionState.available=false;view.startConfigured(true,{});
   target.CarrotVisionState.available=true;view.startConfigured(true,{});assert.equal(starts.length,2);
 });
+
+test('native camera lead survives an empty viewer detector and missing radar without inventing other cars',()=>{
+  const target={CarrotVisionCompactStateActive:true,CarrotStateReceivedAtMonotonic:{}},scene=createPerceptionScene(target);
+  function step(at,id,p=.96,radar,valid=true){
+    Object.assign(target.CarrotStateReceivedAtMonotonic,{modelV2:at,radarState:at});
+    return scene.update({radar,model:{frameId:id,_sourceInvalid:!valid,leadsV3:[{prob:p,x:[21.52],y:[1]}]},
+      vision:{status:'ready',capturedAt:at,objects:[]}},at,true,false);
+  }
+  assert.deepEqual(step(100,1),[]);assert.deepEqual(step(180,1),[]);
+  const [known]=step(240,2);assert.equal(known.kind,'vehicle');assert.equal(known.x,20);assert.equal(known.y,1);
+  const radar={leadOne:{status:true,dRel:20,yRel:-1,radar:true,radarTrackId:7,vRel:0}};
+  step(330,3,.99,radar);
+  const merged=step(430,4,.99,radar);assert.equal(merged.length,1);assert.equal(merged[0].classSource,known.source);
+  assert.equal(step(460,5,.99,radar,false)[0].kind,'unknown');
+  assert.deepEqual(step(600,6,.4),[]);assert.deepEqual(step(700,7,.4),[]);
+  step(800,8);const returned=step(900,9);assert.equal(returned.length,1);
+  assert.deepEqual(scene.update({model:{frameId:9}},1300,true,false),[]);
+  assert.deepEqual(step(1400,10),[]);step(1500,11);
+  target.CarrotVisionCompactStateActive=false;assert.deepEqual(step(1510,12),[]);
+});
+test('a nearby second radar echo prevents ambiguous vehicle promotion',()=>{
+  const target={CarrotStateReceivedAtMonotonic:{}},scene=createPerceptionScene(target);
+  const radar={leadOne:{status:true,dRel:20,yRel:0,radar:true,radarTrackId:3},leadTwo:{status:true,dRel:20.5,yRel:0,radar:true,radarTrackId:7}};
+  const tick=at=>{Object.assign(target.CarrotStateReceivedAtMonotonic,{modelV2:at,radarState:at});return scene.update({
+    model:{frameId:at,leadsV3:[{prob:.99,x:[21.52],y:[0]}]},radar},at,true,false);};
+  tick(100);assert.deepEqual(tick(200).map(t=>t.kind),['unknown','unknown']);
+});

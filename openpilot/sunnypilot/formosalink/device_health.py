@@ -14,6 +14,15 @@ def fresh(sm,service,age=5):
     return False
 
 
+def add_carrot_usb_status(health, bridge):
+  """A USB bridge is observable while parked, independently of GPU execution or temperature."""
+  if health["health_valid"] and bridge is not None:
+    if health["egpu_status"] == "unknown":
+      health["egpu_status"] = "installed_unavailable"
+    if bridge.speed_mbps > 0:
+      health["egpu_usb_speed_mbps"] = bridge.speed_mbps
+
+
 def collect_health(sm,brand):
   result={"health_valid":fresh(sm,"deviceState"),"vehicle_soc_percent":None,"soc_status":"unsupported",
           "egpu_status":"unknown","egpu_temp_c":None,"egpu_memory_temp_c":None}

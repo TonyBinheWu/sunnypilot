@@ -340,6 +340,8 @@ SERVICE_SCHEMAS: dict[str, tuple[int, tuple[tuple[Any, ...], ...]]] = {
     ("modelExecutionTime", "f32"),
     # Display-only maneuver metadata. Append for older compact recordings.
     ("meta", ("struct", MODEL_NOTICE_SCHEMA)),
+    ("visionCameraInputs", ("enum", ("unknown", "road", "wide", "roadWide"))),
+    ("visionCompute", ("enum", ("unknown", "nonUsb", "usbGpu"))),
   )),
   "liveCalibration": (10, (
     ("calStatus", ("enum", ("uncalibrated", "calibrated", "invalid", "recalibrating"))),

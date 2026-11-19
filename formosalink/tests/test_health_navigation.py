@@ -1,7 +1,7 @@
 import time
 from types import SimpleNamespace as NS
 import pytest
-from openpilot.sunnypilot.formosalink.device_health import collect_health
+from openpilot.sunnypilot.formosalink.device_health import add_carrot_usb_status, collect_health
 from openpilot.sunnypilot.formosalink.navigation import destination,encode
 from formosalink.tests.test_settings import provider,command
 
@@ -11,6 +11,20 @@ class Sources(dict):
 
 def sources(present=False):
  return Sources(deviceState=NS(deviceType='mici',cpuTempC=[44,45],gpuTempC=[43],pmicTempC=[37],modemTempC=[],memoryTempC=42,dspTempC=0,intakeTempC=30,exhaustTempC=38,gnssTempC=35,bottomSocTempC=46,maxTempC=46,thermalZones=[NS(name='cpu0',temp=44)],chestnutPresent=present),chestnutGpuState=NS(tempC=65,memoryTempC=62),carState=NS(canValid=True,fuelGauge=.73))
+
+def test_carrot_usb_presence_and_speed_do_not_claim_temperature_or_model_execution():
+ sm=sources()
+ del sm['deviceState'].chestnutPresent
+ h=collect_health(sm,'unknown')
+ add_carrot_usb_status(h,None)
+ assert h['egpu_status']=='unknown'
+ add_carrot_usb_status(h,NS(speed_mbps=5000))
+ assert h['egpu_status']=='installed_unavailable' and h['egpu_usb_speed_mbps']==5000
+ assert h['egpu_temp_c'] is None and h['egpu_memory_temp_c'] is None
+ sm.valid['deviceState']=False
+ h=collect_health(sm,'unknown')
+ add_carrot_usb_status(h,NS(speed_mbps=5000))
+ assert h['egpu_status']=='unknown' and 'egpu_usb_speed_mbps' not in h
 
 def test_hardware_and_vehicle_battery_are_distinct():
  sm=sources();health=collect_health(sm,'hyundai');assert health['vehicle_soc_percent'] is None and health['soc_status']=='unsupported';assert health['bottom_soc_temp_c']==46

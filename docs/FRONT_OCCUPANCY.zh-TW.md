@@ -68,3 +68,10 @@ python -m $m export environment-fp32.onnx --head head.pt
 python -m $m quantize environment-fp32.onnx environment.onnx
 python -m $m evaluate 2011_09_26_drive_0019_sync.zip 2011_09_26_calib.zip 0019.npz environment.onnx
 ```
+
+
+### 車機 USB AMD 與雙鏡頭停車量測
+
+FormosaLink 裝置資訊頁顯示的 USB 連線速率來自車機目前枚舉到的橋接器。確認駕駛模型確實使用 eGPU，可以查看新版座艙的「駕駛模型前車來源」，或讀取行車紀錄中的模型執行後端。速率與驅動溫度、板卡顯存、實際推論耗時是不同的讀值。
+
+車機停車熄火後，可用 `python -m tools.carrot_mapping.usb_gpu_objects yolox_nano.onnx road.rgba wide.rgba` 對已錄製的遠距與廣角影格進行獨立 GPU 量測。兩份檔案應由同一時間的兩顆實際鏡頭產生，等比例縮放並補邊成 416×416 RGBA。工具會核對官方 YOLOX-Nano 模型雜湊、橋接器韌體與 gfx1200 執行環境，輸出每顆鏡頭的辨識類別和成對處理耗時。超時、點火或停車資料過期會結束測試。此量測使用駕駛模型既有的獨占鎖，結果不送入車輛控制。實車行駛中同卡執行第二套辨識模型的時限仍須另外驗證。
