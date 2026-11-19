@@ -1,6 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary} from '../web/status.mjs';
+import {workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary,teacherBatchObservation} from '../web/status.mjs';
+
+test('batch observations retain measured updates without inventing missing batches or validation',()=>{
+  const value={teacher_training:{cycle:24,epoch:1,phase:'training',objective_revision:'v2',batch:3,loss:12,loss_before_step:15}};
+  let observed=teacherBatchObservation(value);
+  assert.equal(observed.entries.length,1);
+  observed=teacherBatchObservation(value,observed);
+  assert.equal(observed.entries.length,1);
+  value.teacher_training.batch=7;value.teacher_training.loss=9;
+  observed=teacherBatchObservation(value,observed);
+  assert.deepEqual(observed.entries.map(row=>row.batch),[3,7]);
+  assert.match(observed.label,/實際觀測 2 個 batch/);
+  assert.match(observed.label,/不是完整 epoch 平均或驗證 loss/);
+  value.teacher_training.stage='validation';value.teacher_training.batch=8;
+  observed=teacherBatchObservation(value,observed);
+  assert.deepEqual(observed.entries.map(row=>row.batch),[3,7]);
+  value.teacher_training.epoch=2;
+  assert.equal(teacherBatchObservation(value,observed).entries.length,0);
+  value.teacher_training.epoch=1;value.teacher_training.cycle=25;
+  assert.equal(teacherBatchObservation(value,observed).entries.length,0);
+});
 test('active download is not displayed as training or a disconnected worker',()=>{
   const value={enabled:true,worker:{fresh:true,state:'collecting'},pipeline:{blockers:['缺少 validation, test']},collection_progress:{filename:'rlog.zst',bytes:1048576,total:2097152}};
   assert.equal(workerLabel(value),'同步行車資料');

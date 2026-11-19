@@ -60,6 +60,19 @@ export function teacherLossHistory(value){
   return saved?{history:saved.history,label:`顯示第 ${saved.cycle} 輪${saved.completed===false?'中斷前的實際':'已完成的'} loss；第 ${current.cycle||'—'} 輪尚無完成的 epoch。`}:{history:[],label:'本輪尚無實際 loss'};
 }
 
+export function teacherBatchObservation(value,previous={}){
+  const p=value.teacher_training||{},cycle=p.cycle,epoch=p.epoch,objective=p.objective_revision||'';
+  const valid=Number.isInteger(cycle)&&cycle>0&&Number.isInteger(epoch)&&epoch>0;
+  const same=valid&&previous.cycle===cycle&&previous.epoch===epoch&&previous.objective===objective;
+  const entries=same&&Array.isArray(previous.entries)?previous.entries.filter(row=>Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.before)).slice(-200):[];
+  if(valid&&p.phase==='training'&&p.stage!=='validation'&&Number.isInteger(p.batch)&&p.batch>0&&Number.isFinite(p.loss)&&Number.isFinite(p.loss_before_step)&&!entries.some(row=>row.batch===p.batch)){
+    entries.push({batch:p.batch,loss:p.loss,before:p.loss_before_step});
+  }
+  entries.sort((a,b)=>a.batch-b.batch);
+  const retained=entries.slice(-200);
+  return {cycle,epoch,objective,entries:retained,label:retained.length?`第 ${cycle} 輪 Epoch ${epoch} · 本瀏覽器實際觀測 ${retained.length} 個 batch（${retained[0].batch}–${retained.at(-1).batch}）；顯示更新前／後損失，不是完整 epoch 平均或驗證 loss。`:'等待本瀏覽器觀測到實際 batch 更新'};
+}
+
 
 export function reasoningSummary(value){
   const p=value.teacher_reasoning;
