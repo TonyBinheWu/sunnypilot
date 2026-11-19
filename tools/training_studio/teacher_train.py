@@ -15,6 +15,7 @@ IMPLEMENTATION_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 OBJECTIVE_REVISION='ten_step_immediate_stop_and_restart_v2'
 EXECUTED_OBJECTIVE_REVISION='ten_step_executed_accel_curvature_hold_margin_v3'
 RECOVERY_OBJECTIVE_REVISION='ten_step_balanced_recovery_interior_stop_margin_v4'
+FORWARD_OBJECTIVE_REVISION='ten_step_forward_physics_consistent_hold_v5'
 
 
 def observed_inputs(sample):
@@ -139,7 +140,20 @@ def held_brake_margin_loss(action,space):
   return 50*torch.relu(acceleration[:,:10]+.1).square().mean()
 
 
-def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision):
+def acceleration_error(action,target_action,space,*,completed_hold=False,forward_only=False):
+  """Do not train a completed forward stop to release an adequate brake.
+
+  At rest, any sufficient brake is consistent with the stationary future.
+  Moving approaches and permitted motion retain inverse-dynamics supervision.
+  """
+  import torch
+  std=space.accel_std.to(action.device)
+  if completed_hold and forward_only:
+    return torch.relu(action[...,0]*std+space.accel_mean.to(action.device)+.1)
+  return (action[...,0]-target_action.to(action.device)[...,0])*std
+
+
+def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False):
   """Keep every completed epoch available for the authoritative driving suite.
 
   Validation ranking may reject a model without testing it in closed loop.
@@ -153,7 +167,7 @@ def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha
   save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(path))
   pointer={'file':path.name,'epoch':epoch,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'metrics':metrics,
     'dataset_sha256':dataset_sha256,'parent_sha256':parent_sha256,'objective_revision':objective_revision,
-    'script_sha256':IMPLEMENTATION_SHA256,'driving_qualified':False}
+    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'driving_qualified':False}
   write_json(path.with_suffix('.json'),pointer)
   return pointer
 
@@ -196,10 +210,13 @@ def main():
   parser.add_argument('--expanded-expert',action='store_true')
   parser.add_argument('--executed-commands',action='store_true',help='Supervise immediate steering and all permitted acceleration commands, with stationary hold margin')
   parser.add_argument('--balanced-stop-modes',action='store_true',help='Balance held, approaching and early-stopped recovery references; train non-held stops inside the legal zone')
+  parser.add_argument('--forward-only',action='store_true',help='Use forward-only physical decoding and consistent completed-stop braking supervision')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
   if args.balanced_stop_modes and not (args.executed_commands and args.paired_stop_go and args.unit_task_gradients):raise ValueError('balanced recovery requires executed commands and paired unit gradients')
+  if args.forward_only and not args.balanced_stop_modes:raise ValueError('forward-only training requires balanced recovery')
   objective_revision=RECOVERY_OBJECTIVE_REVISION if args.balanced_stop_modes else EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
+  if args.forward_only:objective_revision=FORWARD_OBJECTIVE_REVISION
   if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
   if args.balanced_stop_modes:optimization_profile='paired_balanced_stop_modes_pcgrad_sgd_v3'
@@ -244,6 +261,9 @@ def main():
   model.vlm.requires_grad_(False)
   from tools.training_studio.teacher_motion import install as install_motion
   install_motion(model.expert.action_space)
+  if args.forward_only:
+    from tools.training_studio.teacher_forward_motion import install as install_forward
+    install_forward(model.expert.action_space)
   model.eval()
   parameters={name:p for name,p in model.named_parameters() if p.requires_grad}
   adapter_scope='actual_Edge_expert_and_VLM_LoRA' if any(name.startswith('vlm.') for name in adapter_parameters(model)) else 'actual_Edge_expert_expanded_LoRA'
@@ -263,7 +283,7 @@ def main():
   model._sample_actions=capture
   history=[];checkpoints=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'epochs':args.epochs,'history':history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'epochs':args.epochs,'history':history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -333,7 +353,8 @@ def main():
       loss=loss+50*(velocity.square().sum(-1)*held).sum()/held.sum().clamp_min(1)
       loss=loss+200*(velocity.square().sum(-1)*held).amax()
       accel_std=model.expert.action_space.accel_std.to(action.device)
-      accel_error=(action[...,0]-item['target_action'].to(action.device)[...,0])*accel_std
+      accel_error=acceleration_error(action,item['target_action'],model.expert.action_space,
+        completed_hold=bool(item['row'].get('maintain_stop_reference')),forward_only=args.forward_only)
       # Use the same acceleration scale as restart supervision, including
       # parked holds: a speed-only hold penalty can underweight small
       # positive command pulses compared with direct restart acceleration.
@@ -418,7 +439,7 @@ def main():
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
     checkpoints.append(save_epoch_checkpoint(model,args.output,epoch+1,history[-1],
       dataset_sha256=hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
-      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision))
+      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only))
     score=(metrics['red_safe_count'],-metrics['red_hold_speed_mse'],-metrics['validation_loss'])
     if score>best_score:
       best_score=score
@@ -431,7 +452,7 @@ def main():
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'checkpoints':checkpoints,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
-    'objective_revision':objective_revision,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
+    'objective_revision':objective_revision,'forward_only':args.forward_only,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})

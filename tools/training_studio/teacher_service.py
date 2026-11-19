@@ -13,6 +13,7 @@ def main():
   parser.add_argument('--model',type=Path,required=True)
   parser.add_argument('--receipt',type=Path,required=True)
   parser.add_argument('--adapter',type=Path,help='Immutable JSON adapter pointer with path and SHA-256')
+  parser.add_argument('--forward-only',action='store_true',help='Decode the explicit forward-only teacher profile')
   parser.add_argument('--port',type=int,default=8767)
   parser.add_argument('--listen',default='127.0.0.1')
   parser.add_argument('--memory-fraction',type=float,help='Explicit CUDA fraction; default caps this service at 12 GiB')
@@ -49,6 +50,11 @@ def main():
   model.eval()
   from tools.training_studio.teacher_motion import install as install_motion,PROFILE as MOTION_PROFILE
   install_motion(model.expert.action_space)
+  if adapter is not None and type(adapter.get('forward_only',False)) is not bool:raise ValueError('invalid adapter motion profile')
+  forward_only=args.forward_only or bool(adapter and adapter.get('forward_only',False))
+  if forward_only:
+    from tools.training_studio.teacher_forward_motion import install as install_forward
+    install_forward(model.expert.action_space)
   processor=get_processor(model.tokenizer,model.config)
   space=model.expert.action_space
   captured={}
@@ -65,6 +71,10 @@ def main():
     'input_adapter_sha256':digest_file(Path(__file__).with_name('edge_inputs.py')),
     'motion_state_profile':MOTION_PROFILE,'motion_state_adapter_sha256':digest_file(Path(__file__).with_name('teacher_motion.py')),
     'action_expert_adapter':adapter,'adapter_loader_sha256':digest_file(Path(__file__).with_name('teacher_lora.py')),'driving_qualified':False,'amd_benchmarked':False}
+  if forward_only:
+    from tools.training_studio.teacher_forward_motion import PROFILE as FORWARD_PROFILE
+    provenance.update(forward_motion_profile=FORWARD_PROFILE,
+      forward_motion_adapter_sha256=digest_file(Path(__file__).with_name('teacher_forward_motion.py')))
 
   class Handler(BaseHTTPRequestHandler):
     def reply(self,value,status=200):
