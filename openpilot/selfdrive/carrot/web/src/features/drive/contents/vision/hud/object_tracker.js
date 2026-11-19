@@ -104,7 +104,27 @@ export function createObjectTracker() {
     advance(s,stamp);
     const obs=(objects||[]).filter(o=>o && finite(o.x)&&finite(o.y)&&o.x>0&&o.x<=75&&Math.abs(o.y)<=20).slice(0,32);
     const tracks=[...s.tracks.values()],pred=tracks.map(t=>project(t,stamp,motion));
-    const matches=assign(tracks.map((t,i)=>obs.map(o=>association(t,pred[i],o,stamp))),obs.length);
+    const costs=tracks.map((t,i)=>obs.map(o=>association(t,pred[i],o,stamp)));
+    // A first side-on crossing can travel several metres between camera frames.
+    // Relax the lateral gate only for a unique pair with no regular association.
+    if(name!=='radar' && finite(motion.speed) && Math.abs(motion.speed)<3){
+      const openRows=costs.map(row=>row.every(n=>n>=1));
+      const openCols=obs.map((_,j)=>costs.every(row=>row[j]>=1));
+      const counts=new Map(),pairs=new Map();
+      tracks.forEach((t,i)=>{
+        const dt=(stamp-t.at)/1000;
+        if(!openRows[i]||t.hits!==1||dt<=0||dt>.5||!['car','bus','truck','motorcycle','bicycle'].includes(t.obs.kind))return;
+        const candidates=[];
+        obs.forEach((o,j)=>{
+          if(!openCols[j]||o.kind!==t.obs.kind||!(o.probability>=.65)||!(t.obs.probability>=.65))return;
+          if(Math.abs(o.x-pred[i].x)>1.2||Math.abs(o.y-pred[i].y)>Math.min(6,.45+16*dt))return;
+          candidates.push(j);counts.set(j,(counts.get(j)??0)+1);
+        });
+        if(candidates.length===1)pairs.set(i,candidates[0]);
+      });
+      for(const [i,j] of pairs)if(counts.get(j)===1)costs[i][j]=.95;
+    }
+    const matches=assign(costs,obs.length);
     const used=new Set(matches.values());
     tracks.forEach((t,i)=>{
       if(!matches.has(i)) {t.missed=true;t.missedAt??=Math.min(stamp-t.at,Math.max(140,s.period*1.2));return;}
@@ -124,7 +144,7 @@ export function createObjectTracker() {
         heading=Math.atan2(t.vy,t.vx+motion.speed);
       t.heading=heading===null?lastHeading:lastHeading===null?heading:wrap(lastHeading+beta*wrap(heading-lastHeading));
       // Ease innovations over a brief real-time window, without delaying the association state.
-      t.easing=t.hits===1||t.phase==='lost'?0:Math.min(180,dt*720);
+      t.easing=t.hits===1||t.phase==='lost'?0:Math.min(450,dt*1000);
       t.ex=prior.x-(p.x+gain*dx);t.ey=prior.y-(p.y+gain*dy);
       t.eh=finite(prior.heading)&&finite(t.heading)?wrap(prior.heading-t.heading):0;t.missedAt=null;
       t.x=p.x+gain*dx;t.y=p.y+gain*dy;t.at=stamp;t.obs=o;t.hits++;t.missed=false;

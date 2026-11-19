@@ -28,7 +28,7 @@ export function pathLateral(path,x) {
 }
 
 export function nearPathCar(object,path) {
-  if(object.kind!=='car'||(object.state && object.state!=='confirmed'))return false;
+  if(!['car','vehicle','truck','bus'].includes(object.kind)||(object.state && object.state!=='confirmed'))return false;
   const lateral=pathLateral(path,object.x);
   return lateral!==null&&Math.abs(lateral-object.y)<=1.25;
 }

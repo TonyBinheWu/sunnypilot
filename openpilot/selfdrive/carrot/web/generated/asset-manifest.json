@@ -6,7 +6,7 @@
       "kind": "bundle",
       "source": "src/entries/cockpit.js",
       "path": "js/generated/cockpit.js",
-      "hash": "d8977775d4e48d150782df8ddad67a8e45d10433ebce7448b7636ced26eb3d13"
+      "hash": "81766454d906d8b27b422e6764859d2c84560b0ac6085bb41998661dc0bffb44"
     },
     {
       "id": "tools.lane-mapping",
@@ -34,7 +34,7 @@
       "kind": "bundle",
       "source": "src/entries/drive.js",
       "path": "js/generated/drive.js",
-      "hash": "1ff881f73a25a1ad63fe7a074607a09763745ef728d1ffa1d41aaa90f483db30"
+      "hash": "d93c73f9efbce7546dc614d49c2fd6462ee41d85f389f4068b8d2ce0c2e36a8f"
     },
     {
       "id": "replay.runtime",
@@ -179,7 +179,7 @@
       "id": "vision.parking-detector-worker",
       "kind": "worker",
       "path": "js/generated/parking-detector-worker.js",
-      "hash": "bb060852410ed24e3ebb19f5b9ec75af6878629da62607cc45116d18d43ec500"
+      "hash": "426235bc125f62fbe3c6d0106dab4eda708e48799f96b224e980a207971de243"
     },
     {
       "id": "vision.road-detector-worker",

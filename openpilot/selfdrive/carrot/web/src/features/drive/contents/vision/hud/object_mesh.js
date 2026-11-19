@@ -127,6 +127,14 @@ export function drawDetectedMesh(ctx,project,object){
     poly([[cx-l,cy-w,z+h],[cx+l,cy-w,z+h],[cx+l,cy+w,z+h],[cx-l,cy+w,z+h]],'#c4cdd5');
   };
   const disc=(cx,z,r,color)=>{const center=p(cx,0,z),edge=p(cx,0,z+r);if(!center||!edge)return;ctx.beginPath();ctx.arc(center[0],center[1],Math.max(1,Math.hypot(center[0]-edge[0],center[1]-edge[1])),0,Math.PI*2);ctx.fillStyle=color;ctx.fill();};
+  if(kind==='barrier'){box(0,0,.03,.9,.22,.8,'#ce785a');return;}
+  if(kind==='drum'){
+    for(let i=0;i<12;i++){
+      const a=Math.PI*i/6,b=Math.PI*(i+1)/6,side=(angle,z)=>[.34*Math.cos(angle),.34*Math.sin(angle),z];
+      for(const [lo,hi,color] of [[0,.42,'#d7963d'],[.42,.62,'#dfdfdb'],[.62,.92,'#d7963d']])poly([side(a,lo),side(b,lo),side(b,hi),side(a,hi)],color);
+    }
+    return;
+  }
   if(kind==='traffic cone'){
     box(0,0,.01,.3,.3,.05,'#626f7c');
     poly([[-.23,-.23,.06],[.23,-.23,.06],[0,0,.8]],'#ef9d55');

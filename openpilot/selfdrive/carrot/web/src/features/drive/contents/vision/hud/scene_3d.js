@@ -1,4 +1,6 @@
 import * as T from 'three';
+import {createRoadLibrary} from './road_model_library.js';
+import {metricSize,roadModelKind,roadModelLod} from './road_model_selection.js';
 import {createGpuSceneReceiver} from './gpu_scene_receiver.js';
 import {createSceneModels} from './scene_3d_models.js';
 import {surroundingTargets} from './scene_objects.js';
@@ -10,7 +12,7 @@ const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export function sceneTargets(scene){
   return (scene?.tracks??[...surroundingTargets(scene?.radar),...(scene?.vision?.objects||[]),...(scene?.road?.objects||[])])
-    .filter(o=>o&&(o.kind==='unknown'||ROAD_CLASSES.includes(o.kind)||o.kind==='traffic cone')&&finite(o.x)&&finite(o.y)&&o.x>0&&o.x<=75&&Math.abs(o.y)<=20).slice(0,80);
+    .filter(o=>o&&(!o.state||o.state==='confirmed'||o.state==='predicted')&&(o.kind==='unknown'||ROAD_CLASSES.includes(o.kind)||roadModelKind(o)!==null)&&finite(o.x)&&finite(o.y)&&o.x>0&&o.x<=75&&Math.abs(o.y)<=20).slice(0,80);
 }
 export {sceneCamera} from '../../../../cockpit/scene_camera.js';
 import {sceneCamera} from '../../../../cockpit/scene_camera.js';
@@ -43,6 +45,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
     destroy(){receiver.destroy();canvas.remove();}};
   }
   let renderer=null,failed=false,lost=false,closed=false,scene,world,camera,models,ego,egoKey='',active=false,hud,hudCamera,ground;
+  let library=createRoadLibrary(target,doc,onChange);
   const hudNodes=new Map(),parkingNodes=[];
   const objectNodes=new Map(),pool=new Map(),ribbons=[];
   let volume=null,lastPositions=null,rangeLines=null,lastRanges=null;
@@ -89,15 +92,21 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
   function acquire(kind) {
     const bin=pool.get(kind);let node;
     if(bin?.length){node=bin.pop();pooled--;reused++;}
-    else {node=models.get(kind);node.userData.poolKind=kind;allocated++;}
+    else {node=models.get(kind==='barrier'||kind==='drum'?'unknown':kind);node.userData.poolKind=kind;allocated++;}
+    node.scale.set(1,1,1);delete node.userData.roadLod;delete node.userData.sizeAt;
     world.add(node);return node;
   }
-  function release(key,node) {
-    world.remove(node);objectNodes.delete(key);
+  function recycle(node) {
     if(pooled>=40){discarded++;return;}
     const kind=node.userData.poolKind;
     if(!pool.has(kind))pool.set(kind,[]);
     pool.get(kind).push(node);pooled++;
+  }
+  function release(key,node){world.remove(node);objectNodes.delete(key);recycle(node);}
+  function changeKind(node,kind){
+    const replacement=acquire(kind),oldParts=node.children.slice(),oldData=node.userData;
+    world.remove(replacement);node.clear();node.add(...replacement.children.slice());replacement.add(...oldParts);
+    node.userData=replacement.userData;replacement.userData=oldData;node.scale.set(1,1,1);recycle(replacement);
   }
   function appearance(node,predicted) {
     if(Boolean(node.userData.predicted)===predicted)return;
@@ -111,7 +120,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
   let renderWidth=0,renderHeight=0,lastStats={backend:'not-started',objects:0,classified:0,unknown:0};
   const dispose=()=>{for(const m of ribbons){m.geometry.dispose();m.material.dispose();}ribbons.length=0;models?.dispose();models=null;scene?.traverse(o=>{if(o.userData?.owned){o.geometry?.dispose();o.material?.dispose();}});renderer?.dispose();renderer=null;discarded+=objectNodes.size+pooled;objectNodes.clear();pool.clear();pooled=0;predictedMesh?.dispose();predictedLine?.dispose();highlightedCar?.dispose();highlightedCar=null;shadow=null;roadCache=null;hudNodes.clear();parkingNodes.length=0;ego=null;renderWidth=renderHeight=0;};
   const contextLost=e=>{e.preventDefault();lost=true;canvas.hidden=true;lastStats={...lastStats,backend:'context-lost'};onChange();};
-  const contextRestored=()=>{if(closed)return;lost=false;failed=false;volume?.dispose();volume=null;lastPositions=null;rangeLines=null;lastRanges=null;dispose();onChange();};
+  const contextRestored=()=>{if(closed)return;lost=false;failed=false;volume?.dispose();volume=null;lastPositions=null;rangeLines=null;lastRanges=null;dispose();library.dispose();library=createRoadLibrary(target,doc,onChange);onChange();};
   canvas.addEventListener('webglcontextlost',contextLost);canvas.addEventListener('webglcontextrestored',contextRestored);
   function start(){
     if(failed||lost||closed||!target.WebGL2RenderingContext)return false;if(renderer)return true;
@@ -148,7 +157,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
     attribute.array.set(positions);attribute.needsUpdate=true;mesh.geometry.setDrawRange(0,positions.length/3);mesh.material.color.set(color);mesh.visible=positions.length>0;
   }
   function ribbon(index,path,left,right,color,behind){geometryAt(index,roadRibbon(path,left,right,{behind}),color);}
-  return {canvas,render(width,height,data,{night=false,rainbow=false,view=null,skin=null,lamps={},enabled=true,imageSlots=[]}={}){
+  return {canvas,render(width,height,data,{night=false,rainbow=false,view=null,skin=null,lamps={},enabled=true,imageSlots=[],quality='auto'}={}){
     active=enabled&&!doc.hidden;canvas.hidden=!active;if(!active)return false;
     if(!start()){canvas.hidden=true;return false;}
     try{
@@ -192,13 +201,33 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
         if(node.visible){const points=[...corners,corners[0]].flatMap(([x,y])=>[x,y,.065]);node.geometry.attributes.position.array.set(points);node.geometry.attributes.position.needsUpdate=true;}
       }
       const visible=new Set(),objects=sceneTargets(data);
+      const lodCounts=[0,0,0],frameTime=target.performance?.now?.()??Date.now();
       let shadowCount=0;placeShadow(shadowCount++,0,0,0,5.2*(skin?.scale?.[0]||1),2.4*(skin?.scale?.[1]||1));
       for(const [i,o] of objects.entries()){
         const key=o.trackingId!==undefined?o.id:`${o.source||'observation'}:${o.id??i}:${o.kind}`;visible.add(key);let node=objectNodes.get(key);
-        if(node&&node.userData.poolKind!==o.kind){release(key,node);node=null;}
-        if(!node){node=acquire(o.kind);objectNodes.set(key,node);}
+        const modelKind=roadModelKind(o);
+        const fallback=['sedan','suv','mpv','pickup'].includes(modelKind)?'car':modelKind==='cone'?'traffic cone':(modelKind||o.kind);
+        if(node&&node.userData.poolKind!==fallback)changeKind(node,fallback);
+        if(!node){node=acquire(fallback);objectNodes.set(key,node);}
         node.position.set(o.x,o.y,0);node.rotation.z=o.heading??0;appearance(node,o.state==='predicted');
-        if(o.kind==='car'&&o.state!=='predicted'){
+        if(modelKind)library.ensure();
+        const level=roadModelLod(Math.hypot(o.x,o.y),quality==='low',node.userData.roadLod);
+        const asset=modelKind&&library.get(modelKind,level);
+        if(asset){
+          let mesh=node.children[0];
+          if(!mesh.isMesh){node.remove(mesh);mesh=new T.Mesh(asset.geometry,asset.material);node.add(mesh);}
+          mesh.geometry=asset.geometry;
+          const material=nearPathCar(o,model?.position)?library.focus:asset.material;
+          if(o.state==='predicted'){mesh.userData.confirmedMaterial=material;mesh.material=predictedMesh;}else mesh.material=material;
+          node.userData.roadLod=level;lodCounts[level]++;
+          const size=['sedan','suv','mpv','pickup','bus','truck'].includes(modelKind)?metricSize(o):null;
+          const gain=node.userData.sizeAt===undefined?1:1-Math.exp(-Math.max(0,frameTime-node.userData.sizeAt)/150);
+          node.userData.sizeAt=frameTime;
+          for(const [axis,dim] of [['x','length'],['y','width'],['z','height']]){
+            const scale=size?size[dim]/asset.size[axis]:1;
+            node.scale[axis]+=gain*(scale-node.scale[axis]);
+          }
+        }else if(fallback==='car'&&o.state!=='predicted'){
           const mesh=node.children[0];mesh.userData.neutralPaint??=mesh.material;
           if(!highlightedCar){highlightedCar=mesh.material.clone();highlightedCar.color.setRGB(.28,1.03,2.1);}
           mesh.material=nearPathCar(o,model?.position)?highlightedCar:mesh.userData.neutralPaint;
@@ -221,7 +250,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       }
       for(const [key,node] of hudNodes)if(!imageKeys.has(key)){hud.remove(node);hudNodes.delete(key);}
       if(hudNodes.size){renderer.setViewport?.(0,0,width,height);renderer.autoClear=false;renderer.clearDepth();renderer.render(hud,hudCamera);}
-      lastStats={backend:'webgl2',objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
+      lastStats={backend:'webgl2',modelLibrary:library.status,lodCounts,objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
     }catch{failed=true;dispose();canvas.hidden=true;lastStats={...lastStats,backend:'canvas-fallback'};return false;}
-  },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats,environmentRanges:active&&!lost&&renderer&&lastRanges?lastRanges.length/6:0,environmentCells:active&&!lost&&renderer?volume?.count||0:0}),destroy(){closed=true;canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);volume?.dispose();dispose();canvas.remove();}};
+  },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats,environmentRanges:active&&!lost&&renderer&&lastRanges?lastRanges.length/6:0,environmentCells:active&&!lost&&renderer?volume?.count||0:0}),destroy(){closed=true;library.dispose();canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);volume?.dispose();dispose();canvas.remove();}};
 }

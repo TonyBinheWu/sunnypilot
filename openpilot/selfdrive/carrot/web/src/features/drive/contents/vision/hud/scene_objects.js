@@ -16,6 +16,7 @@ export function surroundingTargets(radar, range=75) {
       &&(id!==null&&p.trackId===id||(id===null||p.trackId===null)&&finite(lead.vRel)&&finite(p.vRel)&&Math.abs(p.vRel-lead.vRel)<.3)))return;
     out.push({id:source,source:`radarState.${source}`,kind:'unknown',x,y,vRel:finite(lead.vRel)?lead.vRel:null,
       trackId:id,radarUsed:typeof lead.radar==='boolean'?lead.radar:null,origin:'native_lead_reference',
+      ...(id!==null && lead.vehicleClass ? {vehicleClass:lead.vehicleClass,dimensions:lead.dimensions} : {}),
       probability:finite(lead.modelProb)&&lead.modelProb>=0&&lead.modelProb<=1?lead.modelProb:null});
   };
   for(const slot of ['leadOne','leadTwo','leadLeft','leadRight'])append(radar?.[slot],slot);

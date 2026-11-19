@@ -1,4 +1,5 @@
 import {roadColors,pathChevrons,nearPathSurface,dashedRibbon,isDashed,nearPathCar} from './road_scene_style.js';
+import {roadModelKind} from './road_model_selection.js';
 import {paintStripes} from './road_paint.js';
 import {drawDetectedMesh} from './object_mesh.js';
 import {ANIMALS} from './object_classes.js';
@@ -23,6 +24,11 @@ export function drivingProjection(width,height,camera=null) {
   return project;
 }
 export function drawSceneObject(ctx,project,object,options={}) {
+  const style=roadModelKind(object);
+  if(style){
+    const fallback=['sedan','suv','mpv','pickup'].includes(style)?'car':style==='cone'?'traffic cone':style;
+    if(fallback!==object.kind)object={...object,kind:fallback};
+  }
   const heading=object.heading||0, {x,y}=object, c=Math.cos(heading),s=Math.sin(heading);
   const rotated=heading?(px,py,z)=>project(x+c*(px-x)-s*(py-y), y+s*(px-x)+c*(py-y),z):project;
   if(object.state!=='predicted')return paintSceneObject(ctx,rotated,object,options);
@@ -46,12 +52,14 @@ function paintSceneObject(ctx,project,object,{ego=false,flat=false,night=false,t
     if(!flat){ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillStyle=ctx.strokeStyle;ctx.fillText(`${Math.round(x)} m`,p[0],p[1]-11);ctx.textAlign='left';}return;
   }
   const person=kind==='person',twoWheel=['motorcycle','bicycle'].includes(kind);
-  if(flat&&kind==='traffic cone'){
+  if(kind==='barrier'||kind==='drum'){
+    drawDetectedMesh(ctx,project,object);
+  }else if(flat&&kind==='traffic cone'){
     polygon([[-.5,-.35,0],[.5,0,0],[-.5,.35,0]],'#ed914b');
   }else if(flat&&ANIMALS.includes(kind)){
     const p=project(x,y);if(!p)return;ctx.fillStyle='#96aebd';ctx.beginPath();ctx.ellipse(p[0],p[1],5,9,0,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(p[0],p[1]-9,3.5,0,Math.PI*2);ctx.fill();
-  }else if(!flat&&['car','bus','truck','person','motorcycle','bicycle','traffic cone',...ANIMALS].includes(kind)){
+  }else if(!flat&&['car','bus','truck','person','motorcycle','bicycle','traffic cone','barrier','drum',...ANIMALS].includes(kind)){
     drawDetectedMesh(ctx,project,object);
   }else if(person){
     const feet=project(x,y,0),head=project(x,y,1.65),hip=project(x,y,.7);if(!feet||!head||!hip)return;
