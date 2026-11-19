@@ -30,7 +30,27 @@ window.addEventListener('pagehide',event=>{if(event.persisted)preview3d?.pause()
 let socket=null,retry=null,guard=null,failures=0,transportPhase='connecting',transportReason='',epoch=0,view='vision',primary='vision',busy=false,currentMode=null,coreReady=false,coreFaulted=false,dismissed=false,hudHadData=false;
 const core=$('features'),nav=$('navigation'),titles={navigation:'導航地圖',vision:'Carrot Vision',setting:'控制與設定',tools:'工具／診斷',logs:'行車紀錄'};
 function syncNavigationTextScale(){try{if(nav.contentWindow.location.origin===location.origin)nav.contentWindow.CarrotDisplayPreferences?.apply({web_text_scale:Number(document.documentElement.dataset.textScale)||100});}catch{}}
-function closeNavigationSearch(){try{nav.contentDocument?.body.classList.remove('search-open');nav.contentDocument?.getElementById('query')?.blur?.();}catch{}$('searchNav').textContent='搜尋目的地／最愛';$('searchNav').setAttribute('aria-expanded','false');}
+function closeNavigationSearch(restoreFocus = false) {
+  try {
+    nav.contentDocument?.body.classList.remove('search-open');
+    nav.contentDocument?.getElementById('query')?.blur?.();
+  } catch {}
+  $('searchNav').textContent = '搜尋目的地／最愛';
+  $('searchNav').setAttribute('aria-expanded', 'false');
+  if (restoreFocus) $('searchNav').focus();
+}
+
+function openNavigationSearch() {
+  try {
+    const doc = nav.contentDocument;
+    const query = doc?.getElementById('query');
+    if (!query) throw Error();
+    doc.body.classList.add('search-open');
+    $('searchNav').textContent = '返回地圖';
+    $('searchNav').setAttribute('aria-expanded', 'true');
+    query.focus();
+  } catch { status('請先等待導航頁載入。'); }
+}
 function status(text,retry=false){$('panelStatusText').textContent=text;$('panelStatus').hidden=!text;$('retryPanel').hidden=!retry;}
 $('retryPanel').onclick=()=>{const frame=view==='navigation'?nav:core;if(frame===core){coreLoadEpoch++;coreReady=false;coreFaulted=false;}status('正在重新載入功能頁…');frame.src=frame.src;};
 function coreFailure(text){coreReady=false;coreFaulted=true;if(view!=='navigation')status(text,true);}
@@ -117,7 +137,15 @@ nav.addEventListener('load',()=>{try{
   const d=nav.contentDocument;if(nav.contentWindow.location.origin!==location.origin)return;
   const navStyle=d.createElement('link');navStyle.rel='stylesheet';navStyle.href=$('navigationStyle').href;
   const style=d.createElement('style');style.textContent=`:root{color-scheme:light;background:#e8e9eb;color:#252a30}body{background:#e8e9eb}main{padding:0;max-width:none}header{display:none}.layout{display:block}.layout>section:first-child{border:0;border-radius:0;padding:0;background:#e8e9eb}.map-frame{height:calc(100vh - 28px);height:calc(100dvh - 28px);aspect-ratio:auto;background:#e8e9eb}small,.note{color:#68717c}small{font-size:9px;padding:4px}.layout>section:nth-child(2){position:fixed;top:12px;left:12px;right:12px;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:auto;box-shadow:0 6px 28px #0003;background:#fff;border:1px solid #dadde2;color:#252a30;display:none}body.search-open .layout>section:nth-child(2){display:block}input,button{background:#f4f5f6;border-color:#d5d9df;color:#252a30}#map{object-fit:contain}h2{font-size:16px}html.cockpit-night,html.cockpit-night body,html.cockpit-night .map-frame,html.cockpit-night .layout>section:first-child{background:#17191e;color:#e7ebf1}html.cockpit-night .layout>section:nth-child(2){background:#24272d;color:#e7ebf1}html.cockpit-night input,html.cockpit-night button{background:#343943;color:#e7ebf1}html,body,main,.layout{height:100%;min-height:0}.layout>section:first-child{height:100%;display:flex;flex-direction:column;min-height:0}.map-frame{flex:1;min-height:0;height:auto;aspect-ratio:auto}#mapStatus{font-size:12px;line-height:1.6;padding:12px}#mapAttribution{flex:none;font-size:9px;line-height:1.4;padding:3px 5px;overflow-wrap:anywhere;color:#62666d}#mapAttribution a{color:inherit}html.cockpit-night #mapAttribution{color:#b4b6ba}`;d.head.append(style);d.documentElement.classList.toggle('cockpit-night',document.body.classList.contains('night'));
-  d.head.append(navStyle);nav.contentWindow.addEventListener("carrot-navigation-started",()=>{closeNavigationSearch();});
+  d.head.append(navStyle);
+  const mapStatus=d.getElementById('mapStatus');
+  if(mapStatus)d.getElementById('mapAttribution')?.before(mapStatus);
+  d.addEventListener('keydown',event=>{
+    if(event.key==='Escape' && d.body.classList.contains('search-open') && !event.isComposing && !event.defaultPrevented){
+      event.preventDefault();closeNavigationSearch(true);
+    }
+  });
+  nav.contentWindow.addEventListener("carrot-navigation-started",()=>{closeNavigationSearch();});
   syncNavigationTextScale();
 }catch{status('導航頁面無法載入。',true);}});
 function showVehicle(){$('vehicleDetails').showModal();void navigationView()?.refresh();}
@@ -154,7 +182,7 @@ $('openBev').onclick=async()=>{
   try{await w.setWebSettingByKey('vision_presentation',next);$('visionSettingFeedback').textContent=next==='bev'?'已切換為俯視視角。':'已切換為道路視角。';}
   catch{$('visionSettingFeedback').textContent='視角設定未確認，請重新查看。';}
 };
-$('visionDiagnosis').onclick=()=>{$('visionSettings').close();window.CarrotSelfDiagnostics.open?.();};
+$('visionDiagnosis').onclick=()=>{appReturn=null;$('visionSettings').close();window.CarrotSelfDiagnostics.open?.();};
 $('retryDetection').onclick=()=>{
   const api=coreWindow()?.CarrotVisionPerception;
   if(!api){$('visionSettingFeedback').textContent='請先等待座艙視覺載入。';return;}
@@ -170,13 +198,23 @@ for(const [id,key] of [['detectionObjects','vision_object_detection'],['detectio
   }catch{$('visionSettingFeedback').textContent='設定未確認，請確認連線後重試；不會自動重送。';}
   finally{savingVision=false;$('detectionEnvironment').disabled=false;$('detectionObjects').disabled=false;$('detectionRoad').disabled=false;}
 };
-$('searchNav').onclick=()=>{try{const doc=nav.contentDocument,open=!doc.body.classList.contains('search-open');if(!open){closeNavigationSearch();return;}doc.body.classList.add('search-open');$('searchNav').setAttribute('aria-expanded','true');$('searchNav').textContent='關閉搜尋／最愛';doc.getElementById('query').focus();}catch{status('請先等待導航頁載入。');}};
+$('searchNav').onclick = () => {
+  if (nav.contentDocument?.body.classList.contains('search-open')) closeNavigationSearch(true);
+  else openNavigationSearch();
+};
 $('appsButton').onclick=()=>{
   const apps = $('apps');
   apps.showModal();
   apps.scrollTop = 0;
 };
-document.querySelectorAll('button[data-panel]').forEach(b=>b.onclick=()=>{const next=b.dataset.panel;const fromApps=b.closest?.('#apps');if(fromApps)$('apps').close();panel(!fromApps&&next==='setting'&&view==='setting'?primary:next);});
+document.querySelectorAll('button[data-panel]').forEach(button => button.onclick = () => {
+  const next = button.dataset.panel;
+  const fromApps = button.closest?.('#apps');
+  if (fromApps) $('apps').close();
+  const trip = next === 'navigation' ? navigationView()?.snapshot() : null;
+  panel(!fromApps && next === 'setting' && view === 'setting' ? primary : next);
+  if (trip?.known && !trip.busy && !trip.active && !trip.mapReady) openNavigationSearch();
+});
 // Every road-view entry uses the same camera/classification renderer. The old
 // parent-only expansion had model/radar data but no classified camera objects.
 function expand(){$('apps').close();panel('vision');}
@@ -374,7 +412,7 @@ $('modeApply').onclick=async()=>{
   try{const r=await fetch('/api/param_set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'MyDrivingMode',value:mode,source:'cockpit'})});if(!r.ok)throw Error();await modeRead();$('profileStatus').textContent=currentMode===mode?`已確認儲存：${MODES[mode]}`:'設定結果不一致，請到控制與設定確認。';}
   catch{$('profileStatus').textContent='結果未確認；不會自動重送，請到控制與設定查看。';}finally{busy=false;document.querySelectorAll('[data-mode]').forEach(x=>x.disabled=false);}
 };
-window.CarrotCockpit={layoutVersion:12,back(){const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}if(view==='navigation'&&nav.contentDocument?.body.classList.contains('search-open')){closeNavigationSearch();return true;}if(view!=='navigation'&&closeEmbeddedDialog(coreWindow()))return true;if(view==='setting'&&coreWindow()?.CarrotCockpitControls?.back?.())return true;if(view==='vision'&&document.body.classList.contains('advanced-vision')){advancedVision(false);return true;}if(!['vision','navigation'].includes(view)){panel(primary);return true;}return false;},pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(visibleCore());connect();}};
+window.CarrotCockpit={layoutVersion:12,back(){const dialog=document.activeElement?.closest?.('dialog[open]') || document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}if(view==='navigation'&&nav.contentDocument?.body.classList.contains('search-open')){closeNavigationSearch(true);return true;}if(view!=='navigation'&&closeEmbeddedDialog(coreWindow()))return true;if(view==='setting'&&coreWindow()?.CarrotCockpitControls?.back?.())return true;if(view==='vision'&&document.body.classList.contains('advanced-vision')){advancedVision(false);return true;}if(!['vision','navigation'].includes(view)){panel(primary);return true;}return false;},pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(visibleCore());connect();}};
 const vehicleParking=vehicleParkingSource(window);
 const updateClock=()=>{$('clock').textContent=cockpitClock();};updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',updateClock);
 panel(view);connect();setInterval(()=>{if(!paused)render();},100);render();

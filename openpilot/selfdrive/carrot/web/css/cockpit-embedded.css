@@ -68,3 +68,11 @@ body[data-cockpit-panel="tools"] #pageTools>.tools-console-dock{display:none!imp
 body[data-cockpit-panel="tools"] #pageTools.tools-log-expanded>.tools-console-dock{display:flex!important;opacity:1;pointer-events:auto;transform:none}
 body[data-cockpit-panel="tools"] .tools-console-shell{border-radius:6px!important;box-shadow:none!important;background:var(--md-surface)!important}
 body[data-cockpit-panel="tools"] #pageTools .tools-console-log{background:var(--md-surface)!important;color:var(--md-on-surface)!important}
+
+/* Leave the gear, speed limit and assistance state unobstructed in the parent HUD. */
+body[data-cockpit-panel="vision"] .tesla-volume-legend {
+  top:auto; left:10px; right:auto; bottom:8px; transform:none;
+  max-width:min(40%,25rem); margin:0; padding:5px 8px; border-radius:8px;
+  color:#e0f5fa; background:#202c36ed; text-align:start;
+  font-size:calc(11px * var(--carrot-text-scale-chrome,1)); line-height:1.35;
+}

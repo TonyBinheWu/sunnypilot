@@ -25,7 +25,7 @@
     document.getElementById('map').hidden=true;
     document.getElementById('mapAttribution').innerHTML='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> · <a href="https://www.openstreetmap.org/fixthemap">'+tr('지도 오류 신고','Report a map issue')+'</a> · <a href="https://download.geofabrik.de/asia/taiwan.html">Geofabrik</a>';
     let map,route,marker,destination,selected=null,follow=true,lastPoint=null,busy=false,stopped=false,firstFix=true,timer,tileUrl,nextConfigRead=0;
-    let baseLayer=null,baseKey=null;
+    let baseLayer=null,baseKey=null,routeMessage='',tileMessage='';
     const offline=globalThis.CarrotOfflineMap?.start({tr,onChange:syncBasemap});
     let parkingLayers=[],parkingAt=0,parkingBusy=false;
     async function refreshParking(){
@@ -50,7 +50,11 @@
       }catch{status.textContent=tr('지도를 불러올 수 없습니다. 페이지를 다시 여세요.','Unable to load the map. Reopen this page.');status.hidden=false;}
       finally{clearTimeout(deadline);}
     }
-    const message=text=>{status.textContent=text;status.hidden=!text;};
+    function updateStatus(){
+      const value=routeMessage||tileMessage;
+      status.textContent=value;status.hidden=!value;
+    }
+    const message=text=>{routeMessage=text;updateStatus();};
     const visible=()=>{
       if(document.hidden||!isVisible())return false;
       try{const frame=window.frameElement;if(frame&&(getComputedStyle(frame).visibility==='hidden'||getComputedStyle(frame).display==='none'))return false;}catch{}
@@ -66,7 +70,18 @@
       baseKey=key;host.dataset.basemap=useLocal?'offline':'online';
       if(useLocal)baseLayer=offline.layer(globalThis.L);
       else baseLayer=globalThis.L.tileLayer(tileUrl,{maxZoom:19,keepBuffer:0,updateWhenIdle:true,referrerPolicy:'strict-origin-when-cross-origin'});
-      baseLayer.on('tileerror',()=>message(useLocal?tr('오프라인 지도 파일을 확인하세요.','Unable to read offline tiles. Check the installed map.'):tr('OSM 지도를 받지 못했습니다. 연결을 확인하세요.','OSM tiles are unavailable. Check the connection.'))).addTo(map);
+      const layer=baseLayer, failed=new Set();
+      tileMessage='';updateStatus();
+      const failureText=useLocal?tr('오프라인 지도 파일을 확인하세요.','Unable to read offline tiles. Check the installed map.'):tr('OSM 지도를 받지 못했습니다. 연결을 확인하세요.','OSM tiles are unavailable. Check the connection.');
+      function forgetTile(event){
+        if(layer===baseLayer && failed.delete(event.tile) && !failed.size){
+          tileMessage='';updateStatus();
+        }
+      }
+      layer.on('tileerror',event=>{
+        if(layer!==baseLayer)return;
+        failed.add(event.tile);tileMessage=failureText;updateStatus();
+      }).on('tileunload',forgetTile).on('tileload',forgetTile).addTo(map);
     }
     function ensureMap(){
       if(map)return true;if(!tileUrl)return false;

@@ -53,6 +53,30 @@ test('camera-independent cockpit sends one explicit expiry and never retains its
   const count=h.hud.length;h.tick();assert.equal(h.hud.length,count);
   h.send('carState',{gearShifter:'park',vEgoCluster:0,vCruiseCluster:90});h.tick();assert.equal(h.hud.at(-1).vEgoKph,0);assert.equal(h.hud.at(-1).sourceStale,undefined);
 });
+
+test('opening navigation starts address entry only for a known empty trip',()=>{
+  const h=harness(), nav=h.el('navigation');
+  let trip, focused=0;
+  h.register('query',{focus:()=>focused++,blur(){}});
+  nav.contentWindow.CarrotNavigationView={snapshot:()=>trip,refresh(){trip={...trip,busy:true};}};
+  for (const state of [{known:false},{known:true,active:true},{known:true,mapReady:true},{known:true,busy:true}]) {
+    trip=state;h.panel('navigation').onclick();
+    assert.equal(focused,0);
+  }
+  trip={known:true,active:false,mapReady:false};h.panel('navigation').onclick();
+  assert.equal(focused,1);
+  assert.equal(h.el('searchNav')['aria-expanded'],'true');
+  assert.deepEqual(h.writes,[]);
+});
+
+test('hardware Back dismisses the focused nested dialog before its opener',()=>{
+  const h=harness(), outer=h.el('visionSettings'), inner=h.el('intersectionDialog');
+  inner.querySelector=()=>({removeAttribute(){}});
+  outer.showModal();inner.showModal();
+  h.context.document.activeElement={closest:()=>inner};
+  assert.equal(h.context.CarrotCockpit.back(),true);
+  assert.equal(inner.open,false);assert.equal(outer.open,true);
+});
 test('leaving navigation closes its search sheet before it becomes a mini map',()=>{
   const h=harness(),body=h.el('navigation').contentDocument.body;
   body.classList.add('search-open');h.panel('vision').onclick();
