@@ -37,7 +37,7 @@ class LaneChangeGuard:
       authorized = {'left': 1, 'right': 2}.get(direction, 0)
     crossing, center, contained = lane_evidence(md)
     side = crossing
-    released = bool(authorized and authorized == self.side)
+    released = bool(authorized and authorized == self.side and crossing in (0, authorized))
     if released:
       self.side = 0
       self.near_center = None

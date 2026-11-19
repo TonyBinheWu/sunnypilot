@@ -44,6 +44,16 @@ def test_city_and_highway_crossing_requires_matching_driver(side, speed):
   assert run(guard, 9, side, velocity=speed, authorized=side)[0] == 'off'
 
 
+@pytest.mark.parametrize('side', [1, 2])
+def test_confirming_original_side_cannot_release_hold_into_opposite_lane(side):
+  guard = LaneChangeGuard()
+  for n in range(8):
+    run(guard, n, side)
+  for n in range(8, 18):
+    assert run(guard, n, 3-side, authorized=side)[0] == 'hold'
+  assert run(guard, 18, 3-side, authorized=3-side)[0] == 'released'
+
+
 def test_forecast_curve_spike_duplicate_and_old_state_cannot_authorize_a_crossing():
   guard = LaneChangeGuard()
   for n in range(15):
