@@ -248,6 +248,8 @@ SERVICE_SCHEMAS: dict[str, tuple[int, tuple[tuple[Any, ...], ...]]] = {
     ("deviceType", ("enum", ("unknown", "neo", "chffrAndroid", "chffrIos", "tici", "pc", "tizi", "mici"))),
     # Appended for HUD power policy. Older compact clients ignore trailing fields.
     ("started", "bool"),
+    ("cpuUsagePercent", "f32_list"),
+    ("gpuUsagePercent", "i8"),
   )),
   "peripheralState": (4, (
     ("voltage", "u32"),
@@ -651,9 +653,9 @@ def _pack_schema(out: bytearray, value: Any, schema: Sequence[tuple[Any, ...]]) 
     _pack_field(out, _field_path(value, source_path), spec)
 
 
-def encode_carrot_state_frame(service: str, value: Any, sequence: int) -> bytes:
+def encode_carrot_state_frame(service: str, value: Any, sequence: int, *, valid: bool = True) -> bytes:
   service_id, schema = SERVICE_SCHEMAS[service]
-  out = bytearray(struct.pack("<4sBBH", FRAME_MAGIC, service_id, 0, sequence & 0xffff))
+  out = bytearray(struct.pack("<4sBBH", FRAME_MAGIC, service_id, int(not valid), sequence & 0xffff))
   _pack_schema(out, value, schema)
   return bytes(out)
 

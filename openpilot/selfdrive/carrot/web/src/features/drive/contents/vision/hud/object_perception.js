@@ -5,15 +5,23 @@ import {captureIdentity,sceneContributor} from './scene_contribution.js';
 export const DETECTION_TTL_MS=1200;
 export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={}) {
   let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,warmed=false,lastAttempt=-Infinity;
-  let lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
+  let lastDecoded=null,lastProfile=null,lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
   let state={status:'off',objects:[],imageObjects:[],count:0,capturedAt:null,revision};
+  let watchedVideo=null;
+  function timelineChanged(){if(worker||state.capturedAt!==null)stop('waiting');}
+  function watch(video){
+    if(video===watchedVideo)return;
+    for(const event of ['seeking','emptied','ended'])watchedVideo?.removeEventListener?.(event,timelineChanged);
+    watchedVideo=video;
+    for(const event of ['seeking','emptied','ended'])watchedVideo?.addEventListener?.(event,timelineChanged);
+  }
   const contribute=sceneContributor(target,road?'road':'efficientdet');
   const now=()=>target.performance?.now?.()??Date.now();
   const clearTimeout=()=>{if(timeout!==null)target.clearTimeout(timeout);timeout=null;};
   const publish=(status,extra={})=>{state={status,objects:[],imageObjects:[],count:0,capturedAt:null,...extra,revision:++revision};onChange();};
   function stop(status='off'){
     generation++;worker?.terminate();worker=null;ready=false;busy=false;warmed=false;request=null;clearTimeout();
-    lastTime=null;lastSource=null;lastReplay=null;lastAttempt=-Infinity;interval=250;
+    lastDecoded=null;lastTime=null;lastSource=null;lastReplay=null;lastAttempt=-Infinity;interval=250;
     if(state.status!==status||state.objects.length||state.imageObjects.length)publish(status);
   }
   const fail=status=>{failed=true;stop(status);};
@@ -44,7 +52,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
           objects,count:Array.isArray(data.detections)?data.detections.length:0,capturedAt:captured.capturedAt,
           imageObjects:road?roadImageTargets(data.detections,captured.width,captured.height)
             :unpositionedTargets(data.detections,captured.geometry,captured.width,captured.height),
-          videoTime:captured.videoTime,durationMs:data.durationMs,camera:captured.geometry?.sensor||null,
+          generation,geometry:captured.geometry,videoTime:captured.videoTime,durationMs:data.durationMs,camera:captured.geometry?.sensor||null,
           delegate:data.delegate||null,geometryReason:captured.geometryReason,frameSize:[captured.width,captured.height],
         });
         void contribute(captured.identity,state,now());
@@ -60,7 +68,9 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     if(!active||frozen||doc.hidden){if(!failed)stop('paused');return;}
     if(failed)return;
     const video=doc.getElementById?.('carrotRoadVideo');
-    if(!video||video.readyState<2||!video.videoWidth||!video.videoHeight||video.seeking){
+    watch(video);
+    const stream=video?.srcObject, track=stream?.getVideoTracks?.()[0];
+    if(!video||video.ended||stream?.active===false||track?.readyState==='ended'||track?.muted||video.readyState<2||!video.videoWidth||!video.videoHeight||video.seeking){
       if(state.objects.length||state.imageObjects.length||busy)stop('waiting');else if(state.status!=='loading'&&state.status!=='waiting')publish('waiting');
       return;
     }
@@ -68,7 +78,18 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     const source=video.srcObject||video.currentSrc||video.src;
     if(worker&&(source!==lastSource||lastReplay!==replay||lastTime!==null&&video.currentTime<lastTime))stop('waiting');
     if(!worker){lastSource=source;lastReplay=replay;start();return;}
-    if(!ready||busy||now()-lastAttempt<interval||lastTime===video.currentTime)return;
+    if(state.geometry&&!replay){
+      const raw=target.CarrotOverlayState, stamps=target.CarrotStateReceivedAtMonotonic||{};
+      if(raw?.liveCalibration?._sourceInvalid||raw?.roadCameraState?._sourceInvalid||![1,'calibrated'].includes(raw?.liveCalibration?.calStatus)||raw?.roadCameraState?.sensor!==lastProfile||
+        !['liveCalibration','roadCameraState'].every(k=>now()-stamps[k]>=0&&now()-stamps[k]<2000)){
+        stop('calibration');return;
+      }
+    }
+    // currentTime can advance while the RTC decoder repeats its last image.
+    const decoded=video.getVideoPlaybackQuality?.().totalVideoFrames??video.webkitDecodedFrameCount;
+    if(!ready||busy||now()-lastAttempt<interval||lastTime===video.currentTime||
+      (Number.isFinite(decoded)&&(decoded<=0||decoded===lastDecoded)))return;
+    lastDecoded=decoded;
     const current=generation,capturedAt=now(),videoTime=video.currentTime;
     lastAttempt=capturedAt;lastTime=videoTime;busy=true;
     const width=Math.min(640,video.videoWidth),height=Math.round(video.videoHeight*width/video.videoWidth);
@@ -76,6 +97,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     // A replay source is historical by design. Live calibration/profile must be fresh.
     const fresh=key=>replay||Number.isFinite(stamps[key])&&capturedAt-stamps[key]>=0&&capturedAt-stamps[key]<2000;
     const geometry=fresh('liveCalibration')&&fresh('roadCameraState')?cameraGeometry(raw,width,height):null;
+    lastProfile=raw.roadCameraState?.sensor;
     const geometryReason=geometry?null:!fresh('liveCalibration')||!fresh('roadCameraState')?'telemetry'
       :!['calibrated',1].includes(raw.liveCalibration?.calStatus)?'calibration'
       :!Number.isFinite(raw.liveCalibration?.height?.[0])||raw.liveCalibration.height[0]<.5||raw.liveCalibration.height[0]>3?'height'
@@ -102,6 +124,6 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
         return {...state,status:'stale',objects:[],imageObjects:[],count:0};
       return state;
     },
-    destroy(){stop();},
+    destroy(){watch(null);stop();},
   };
 }

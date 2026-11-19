@@ -227,10 +227,10 @@ class RawWsHub:
           frame = encode_compact_frame_native(service, payload, sequence)
         except Exception:
           with log.Event.from_bytes(payload, traversal_limit_in_words=2**64 - 1) as event:
-            frame = encode_carrot_state_frame(service, getattr(event, service), sequence)
+            frame = encode_carrot_state_frame(service, getattr(event, service), sequence, valid=event.valid)
       else:
         with log.Event.from_bytes(payload, traversal_limit_in_words=2**64 - 1) as event:
-          frame = encode_carrot_state_frame(service, getattr(event, service), sequence)
+          frame = encode_carrot_state_frame(service, getattr(event, service), sequence, valid=event.valid)
     except Exception:
       return None
     self._sequence[service] = sequence

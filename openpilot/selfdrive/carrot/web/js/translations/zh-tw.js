@@ -755,6 +755,8 @@ window.CarrotTranslations.register("zh-tw", {
     vision_metric_limit: "道路限速",
     vision_metric_set: "巡航設定速度",
     vision_metric_speed: "當前時速",
+    tracking_details: "追蹤診斷",
+    tracking_prediction: "淡色模型為短暫預測",
     vision_metric_select: "選擇速度資訊",
     vision_metric_size: "大小",
     vision_metric_save: "儲存配置",

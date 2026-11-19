@@ -821,7 +821,8 @@ async function stopCarrotVisionRealtime(reason = "user stop") {
 
 window.CarrotVisionStop = stopCarrotVisionRealtime;
 
-window.CarrotVisionStart = async function() {
+window.CarrotVisionStart = async function(options) {
+  const automatic = options?.automaticPerception === true;
   if (isCarrotVisionActive()) {
     syncCarrotVisionStartOverlay();
     return;
@@ -830,11 +831,13 @@ window.CarrotVisionStart = async function() {
     if (typeof showAppToast === "function") showAppToast(window.CARROT_VISION_DISABLED_MESSAGE, { tone: "error" });
     return;
   }
-  requestCarrotVisionDefaultFullscreen({ quiet: false }).catch(() => {});
-  window.CarrotVisionRtc?.prepareOwnershipRetry?.("user start");
+  if (!automatic) {
+    requestCarrotVisionDefaultFullscreen({ quiet: false }).catch(() => {});
+    window.CarrotVisionRtc?.prepareOwnershipRetry?.("user start");
+  }
   setCarrotVisionActive(true, {
     phase: CARROT_VISION_PHASE.STARTING,
-    reason: "user start",
+    reason: automatic ? "configured perception" : "user start",
   });
   
   syncCarrotVisionStartOverlay();

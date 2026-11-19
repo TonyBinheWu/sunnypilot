@@ -680,6 +680,8 @@ window.CarrotTranslations.register("en", {
     vision_metric_limit: "Road speed limit",
     vision_metric_set: "Cruise set speed",
     vision_metric_speed: "Current speed",
+    tracking_details: "Tracking diagnostics",
+    tracking_prediction: "Faded objects are short-term predictions",
     vision_metric_select: "Select information",
     vision_metric_size: "Size",
     vision_metric_save: "Save layout",

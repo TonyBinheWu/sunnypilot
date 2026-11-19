@@ -44,7 +44,9 @@ Formosa 座艙已補強手機精簡版面，並完成[停車實車連線、100%�
 
 **[⬇ 下載 CarrotAssist 繁體中文版 0.2.20（Android APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-assist-tw-v0.2.20/CarrotAssist-TW-0.2.20.apk)**
 
-**[下載 Formosa 座艙 繁中 0.6.2（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.6.2/CarrotCockpit-TW-0.6.2.apk)**：座艙版更名並採獨立藍色圖示；滿版 3D 道路、分類物件立體模型、浮動儀表與固定底列，控制頁採分區操作。修正 4:3 與大字版面、左右座標及橫縱向獨立狀態，顯示台灣日期與即時秒數；本版移除語音／麥克風權限，原 CarrotAssist 保留。既有繁中搜尋、詳細指南、設定確認與回讀、導航最愛、依車速縮放、拖曳視角、車型外觀、燈號及連線恢復延續。[操作說明](tools/carrot_android/COCKPIT.md)／[Android 實測與限制](tools/carrot_android/FORMOSA_COCKPIT_0.6.0_ACCEPTANCE.zh-TW.md)。先更新並重啟 carrot-wip 車機，再覆蓋安裝 APK；可與原版並存。 已補強[安卓手機直向／橫向主畫面](tools/carrot_android/PHONE_DISPLAY.zh-TW.md)：小尺寸、大字、導航鍵盤與設定操作；現有 0.6.0 APK 可沿用。已在 Samsung Android 手機以模擬 1920×720／4:3 驗證，尚未完成實體車用盒子或實車驗收。 另完成[介面與操作缺失修正](tools/carrot_android/INTERFACE_AUDIT.zh-TW.md)：大字頂列、車況卡片、彈窗與返回、載入重試及導航狀態同步；0.6.0 APK 可沿用。
+**[下載 Formosa 座艙 繁中 0.6.3（獨立 APK）](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.6.3/CarrotCockpit-TW-0.6.3.apk)**：座艙版更名並採獨立藍色圖示；滿版 3D 道路、分類物件立體模型、浮動儀表與固定底列，控制頁採分區操作。修正 4:3 與大字版面、左右座標及橫縱向獨立狀態，顯示台灣日期與即時秒數；本版移除語音／麥克風權限，原 CarrotAssist 保留。既有繁中搜尋、詳細指南、設定確認與回讀、導航最愛、依車速縮放、拖曳視角、車型外觀、燈號及連線恢復延續。[操作說明](tools/carrot_android/COCKPIT.md)／[Android 實測與限制](tools/carrot_android/FORMOSA_COCKPIT_0.6.0_ACCEPTANCE.zh-TW.md)。先更新並重啟 carrot-wip 車機，再覆蓋安裝 APK；可與原版並存。 已補強[安卓手機直向／橫向主畫面](tools/carrot_android/PHONE_DISPLAY.zh-TW.md)：小尺寸、大字、導航鍵盤與設定操作；現有 0.6.0 APK 可沿用。已在 Samsung Android 手機以模擬 1920×720／4:3 驗證，尚未完成實體車用盒子或實車驗收。 另完成[介面與操作缺失修正](tools/carrot_android/INTERFACE_AUDIT.zh-TW.md)：大字頂列、車況卡片、彈窗與返回、載入重試及導航狀態同步；0.6.0 APK 可沿用。
+
+座艙 0.6.3 在已啟用影像辨識時會自動連接可用前鏡頭。3D 模型依持續追蹤編號移動，淡色模型表示短暫預測。「應用 → 鏡頭與物件辨識 → 即時追蹤診斷」可查看各來源幀率、延遲與物件狀態。[追蹤指南](tools/carrot_android/COCKPIT.md#063-即時-3d-追蹤)
 
 座艙 0.6.2 的寬螢幕會依導航狀態展開地圖，未導航時給駕駛視覺完整寬度。在「應用」開啟子選單，關閉後可繼續從原位置操作。首次連線輸錯 IP 可以直接修正。[操作驗證與螢幕尺寸](tools/carrot_android/INTERFACE_AUDIT.zh-TW.md)
 

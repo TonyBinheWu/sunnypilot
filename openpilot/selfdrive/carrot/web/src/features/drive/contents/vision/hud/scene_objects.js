@@ -5,6 +5,7 @@ const finite = n => typeof n === 'number' && Number.isFinite(n);
 
 export function surroundingTargets(radar, range=75) {
   const out=[];
+  if(radar?._sourceInvalid)return out;
   const append=(lead,source)=>{
     if(lead?.status!==true||!finite(lead.dRel)||lead.dRel<=0||lead.dRel>range||!finite(lead.yRel)||Math.abs(lead.yRel)>20)return;
     const x=lead.dRel,y=-lead.yRel;
@@ -27,7 +28,7 @@ export function cameraGeometry(state, width, height) {
   const cal=state?.liveCalibration,cam=state?.roadCameraState;
   const rpy=cal?.rpyCalib,h=cal?.height?.[0];
   const calibrated=cal?.calStatus===1||cal?.calStatus==='calibrated';
-  if(!calibrated||!Array.isArray(rpy)||rpy.length!==3||!rpy.every(n=>finite(n)&&Math.abs(n)<1)
+  if(cal?._sourceInvalid||cam?._sourceInvalid||!calibrated||!Array.isArray(rpy)||rpy.length!==3||!rpy.every(n=>finite(n)&&Math.abs(n)<1)
     ||!finite(h)||h<.5||h>3||!finite(width)||!finite(height)||width<2||height<2)return null;
   const sensor=String(cam?.sensor||'').toLowerCase();
   const config=sensor==='os04c10'?[1344,760,1141.5]:['ar0231','ox03c10'].includes(sensor)?[1928,1208,2648]:null;

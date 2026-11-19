@@ -445,7 +445,7 @@ WEB_SETTINGS_SPEC: List[_Field] = [
   # Deprecated browser keys are deliberately absent from the client schema.
   _Field("navigation_map_provider", "enum", "mapbox", choices={"mapbox"}, hidden=True),
   _Field("web_lab_enabled", "bool", False),
-  _Field("vision_presentation", "enum", "carrot", choices={"carrot", "live_view", "tesla", "bev"}),
+  _Field("vision_presentation", "enum", "tesla", choices={"carrot", "live_view", "tesla", "bev"}),
   _Field("vision_custom_metrics", "bool", False),
   _Field("vision_metric_layout", "str", _normalize_metric_layout(''), normalize=_normalize_metric_layout, hidden=True),
   _Field("vision_rainbow_lane", "bool", False),

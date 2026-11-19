@@ -36,7 +36,7 @@ def test_display_choices_are_validated_and_persist_independently(tmp_path, monke
 def test_tesla_view_and_recording_quota_defaults_and_validation():
   import json
   settings = web_settings.sanitize_web_settings({})
-  assert settings['vision_presentation'] == 'carrot'
+  assert settings['vision_presentation'] == 'tesla'
   assert settings['vision_custom_metrics'] is False and settings['vision_rainbow_lane'] is False
   assert settings['recording_quota_percent'] == '0'
   settings = web_settings.sanitize_web_settings({'vision_presentation': 'tesla', 'recording_quota_percent': '50',
@@ -50,7 +50,7 @@ def test_tesla_view_and_recording_quota_defaults_and_validation():
 
 def test_bev_annotation_options_do_not_change_existing_presentation_or_driving_settings():
   settings=web_settings.sanitize_web_settings({})
-  assert settings['vision_presentation']=='carrot'
+  assert settings['vision_presentation']=='tesla'
   assert settings['vision_bev_range']=='50' and settings['vision_bev_grid'] is True
   enabled=web_settings.sanitize_web_settings({'vision_presentation':'bev','vision_bev_range':'30','vision_bev_details':False})
   assert enabled['vision_presentation']=='bev' and enabled['vision_bev_range']=='30'

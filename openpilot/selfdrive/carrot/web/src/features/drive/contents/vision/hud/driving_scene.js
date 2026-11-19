@@ -21,7 +21,14 @@ export function drivingProjection(width,height,camera=null) {
   if(camera){project.view=[-distance*Math.cos(yaw),-distance*Math.sin(yaw),elevation];project.depth=(x,y,z=0)=>(x*Math.cos(yaw)+y*Math.sin(yaw)+distance)*c+(elevation-z)*s;}
   return project;
 }
-export function drawSceneObject(ctx,project,object,{ego=false,flat=false,night=false,text=(k,f)=>f}={}) {
+export function drawSceneObject(ctx,project,object,options={}) {
+  const heading=object.heading||0, {x,y}=object, c=Math.cos(heading),s=Math.sin(heading);
+  const rotated=heading?(px,py,z)=>project(x+c*(px-x)-s*(py-y), y+s*(px-x)+c*(py-y),z):project;
+  if(object.state!=='predicted')return paintSceneObject(ctx,rotated,object,options);
+  ctx.save();ctx.globalAlpha*=.48;
+  try {paintSceneObject(ctx,rotated,object,options);} finally {ctx.restore();}
+}
+function paintSceneObject(ctx,project,object,{ego=false,flat=false,night=false,text=(k,f)=>f}={}) {
   const {x,y,kind}=object;
   const polygon=(points,color)=>{
     const p=points.map(([dx,dy,z])=>project(x+dx,y+dy,z));if(p.some(v=>!v))return;
@@ -124,7 +131,7 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     const p=slot.corners?.map(([x,y])=>project(x,y,.065));if(!p||p.length!==4||p.some(v=>!v))continue;
     ctx.strokeStyle='#d69c30';ctx.lineWidth=2;ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.stroke();
   }
-  const objects=[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
+  const objects=scene.tracks?[...scene.tracks]:[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
   objects.sort((a,b)=>project.depth?project.depth(b.x,b.y)-project.depth(a.x,a.y):b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text,night}));
   if(drawEgo)drawEgo(ctx,project);
   else drawSceneObject(ctx,project,{kind:'car',x:0,y:0},{ego:true,text});

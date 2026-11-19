@@ -634,6 +634,8 @@ void encode_device_state(std::string &out, const DynamicReader &value) {
   append_f32_list(out, value, "cpuTempC");
   append_enum(out, value, "deviceType");
   append_bool(out, value, "started");
+  append_f32_list(out, value, "cpuUsagePercent");
+  append_i8(out, value, "gpuUsagePercent");
 }
 
 void encode_carrot_man(std::string &out, const DynamicReader &value) {
@@ -855,7 +857,7 @@ std::string encode_carrot_state_compact_frame(const char *service_data, size_t s
   out.reserve(service == "modelV2" ? 2048 : 512);
   out.append("CVS1", 4);
   append_scalar(out, id);
-  append_scalar(out, static_cast<uint8_t>(0));
+  append_scalar(out, static_cast<uint8_t>(!event.getValid()));
   append_scalar(out, sequence);
   encode_service(out, service, value);
   return out;

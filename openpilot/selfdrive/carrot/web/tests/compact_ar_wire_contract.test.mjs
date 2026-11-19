@@ -27,7 +27,7 @@ const arContract = {
     "enabled", "personality", "alertStatus", "alertSize", "alertType", "alertText1", "alertText2",
   ]],
   deviceState: [3, [
-    "memoryUsagePercent", "freeSpacePercent", "cpuTempC", "deviceType", "started",
+    "memoryUsagePercent", "freeSpacePercent", "cpuTempC", "deviceType", "started", "cpuUsagePercent", "gpuUsagePercent",
   ]],
   gpsLocationExternal: [7, [
     "latitude", "longitude", "speed", "bearingDeg", "bearingAccuracyDeg", "speedAccuracy",

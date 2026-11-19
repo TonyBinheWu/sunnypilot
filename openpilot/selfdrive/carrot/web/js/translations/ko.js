@@ -696,6 +696,8 @@ window.CarrotTranslations.register("ko", {
     vision_metric_limit: "제한 속도",
     vision_metric_set: "설정 속도",
     vision_metric_speed: "현재 속도",
+    tracking_details: "추적 진단",
+    tracking_prediction: "흐린 물체는 단기 예측입니다",
     vision_metric_select: "정보 선택",
     vision_metric_size: "크기",
     vision_metric_save: "배치 저장",

@@ -82,6 +82,16 @@ test('moving classified geometry survives resize and context restoration; expire
   const world=devices[0].scene.children.find(o=>o.scale.y===-1),person=world.children.find(o=>o.position.x===10);
   assert.ok(person);objects[0].x=12;painter.render(1920,720,scene,options);assert.equal(person.position.x,12);assert.equal(devices[0].sizeChanges,1);
   painter.render(1024,768,scene,options);assert.equal(devices[0].sizeChanges,2);
+  const key=objects[0].id;
+  objects[0].state='predicted';painter.render(1024,768,scene,options);
+  assert.equal(person.userData.predicted,true);assert.equal(person.children[0].material.transparent,true);
+  objects[0].state='confirmed';painter.render(1024,768,scene,options);
+  assert.equal(person.userData.predicted,false);assert.equal(person.children[0].material.transparent,false);
+  painter.render(1024,768,{tracks:[]},options);assert.equal(painter.snapshot().pooled,3);
+  objects[0].id='new-person';painter.render(1024,768,scene,options);assert.equal(painter.snapshot().reused,3);
+  assert.equal(world.children.find(o=>o.position.x===12),person);objects[0].id=key;
+  const path={x:[0,10],y:[0,0]};
+  assert.equal(painter.render(1024,768,{tracks:[],model:{position:path,laneLines:[path,path,path,path],laneLineProbs:[1,1,1,1]},paint:[24,24,24,24]},{...options,rainbow:true}),true);
   let prevented=false;events.get('webglcontextlost')({preventDefault(){prevented=true;}});assert.ok(prevented);assert.equal(painter.render(1024,768,scene,options),false);
   events.get('webglcontextrestored')();assert.ok(devices[0].disposed);assert.equal(changes,2);assert.equal(painter.render(1024,768,scene,options),true);assert.equal(painter.snapshot().classified,3);
   painter.render(1024,768,{vision:{objects:[]}},options);assert.equal(painter.snapshot().objects,0);

@@ -129,7 +129,7 @@ window.CarrotVisionCompact = (() => {
     [3, ["deviceState", [
       ["memoryUsagePercent", "i8"], ["freeSpacePercent", "f32"], ["cpuTempC", "f32list"],
       ["deviceType", "enumname", ["unknown", "neo", "chffrAndroid", "chffrIos", "tici", "pc", "tizi", "mici"]],
-      ["started", "bool"],
+      ["started", "bool"], ["cpuUsagePercent", "f32list"], ["gpuUsagePercent", "i8"],
     ]]],
     [4, ["peripheralState", [["voltage", "u32"]]]],
     [5, ["carrotMan", [
@@ -366,7 +366,7 @@ window.CarrotVisionCompact = (() => {
     const cursor = new Cursor(bytes);
     cursor.offset = 4;
     const serviceId = cursor.readU8();
-    cursor.readU8(); // flags, reserved for a future compatible extension
+    const sourceInvalid = (cursor.readU8() & 1) !== 0; // zero also covers legacy frames
     const sequence = cursor.readU16();
     const definition = schemas.get(serviceId);
     if (!definition) throw new Error(`unknown compact state service ${serviceId}`);
@@ -375,6 +375,8 @@ window.CarrotVisionCompact = (() => {
     // Append-only evolution: a newer encoder may add trailing fields this decoder
     // doesn't know — ignore those extra bytes rather than rejecting the frame.
     // Mid-field truncation is still caught by Cursor.ensure().
+    if (sourceInvalid) decoded._sourceInvalid = true;
+    if (service === "radarState") Object.defineProperty(decoded, "_sourceSequence", {value:sequence});
     return { service, sequence, decoded, byteLength: bytes.byteLength };
   }
 

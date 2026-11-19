@@ -6,7 +6,7 @@ export function createCockpitState(now=()=>performance.now()) {
     if(!SERVICES.includes(frame?.service)||!frame.decoded||!Number.isInteger(frame.sequence)||frame.sequence<0||frame.sequence>65535)return false;
     if(samples.get(frame.service)?.sequence===frame.sequence)return false;
     samples.set(frame.service,{value:frame.decoded,sequence:frame.sequence,at:now()});return true;
-  },get(service){const s=samples.get(service);return s&&now()-s.at<=1500?s.value:null;},clear(){samples.clear();}};
+  },stamp(service){return samples.get(service)?.at??null;},get(service){const s=samples.get(service);return s&&now()-s.at<=1500?s.value:null;},clear(){samples.clear();}};
 }
 export function telemetry(state){
   const cs=state.get('carState'),cc=state.get('carControl'),sd=state.get('selfdriveState'),cm=state.get('carrotMan');
