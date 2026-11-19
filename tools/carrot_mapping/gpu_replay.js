@@ -1,5 +1,6 @@
 // Playback on the workstation uses the same projection and Three.js geometry as the cockpit.
 import {GRID, opticalCrop, visibleVoxels} from '/src/features/drive/contents/vision/occupancy_grid.js';
+import {parkingMarks} from '/src/features/drive/contents/vision/parking_marks.js';
 import {cameraTargets} from '/src/features/drive/contents/vision/hud/scene_objects.js';
 import {createObjectTracker, inCameraView} from '/src/features/drive/contents/vision/hud/object_tracker.js';
 import {createDrivingScene3D} from '/src/features/drive/contents/vision/hud/scene_3d.js';
@@ -17,7 +18,25 @@ let running = false, generation=0, config=null, refreshed=-Infinity;
 const tracker=createObjectTracker();
 const detector=document.createElement('canvas');detector.width=detector.height=416;
 const rgb=detector.getContext('2d',{willReadFrequently:true});
-function resetTracks(){generation++;tracker.reset();}
+const paintCanvas=document.createElement('canvas');
+const paintPixels=paintCanvas.getContext('2d',{willReadFrequently:true});
+let previousPaint=[],previousPaintAt=-Infinity,confirmedPaint=[];
+function resetPaint(){previousPaint=confirmedPaint=[];previousPaintAt=-Infinity;}
+function resetTracks(){generation++;tracker.reset();resetPaint();}
+
+function observedParkingPaint(g,captured){
+  const age=captured-previousPaintAt;
+  if(age>=0 && age<480)return confirmedPaint;
+  const width=Math.min(360,g.width), height=Math.round(g.height*width/g.width);
+  if(height<2||height>640||g.width+(g.left||0)>video.videoWidth||g.height+(g.top||0)>video.videoHeight){resetPaint();return [];}
+  if(paintCanvas.width!==width||paintCanvas.height!==height){paintCanvas.width=width;paintCanvas.height=height;}
+  paintPixels.drawImage(video,g.left||0,g.top||0,g.width,g.height,0,0,width,height);
+  const sx=width/g.width, sy=height/g.height;
+  const geometry={...g,width,height,fx:g.fx*sx,fy:g.fy*sy,cx:g.cx*sx,cy:g.cy*sy};
+  const next=parkingMarks(paintPixels.getImageData(0,0,width,height).data,width,height,geometry);
+  confirmedPaint=age>=0&&age<1000?next.filter(s=>previousPaint.some(p=>Math.hypot(p.center[0]-s.center[0],p.center[1]-s.center[1])<.7)):[];
+  previousPaint=next;previousPaintAt=captured;return confirmedPaint;
+}
 for(const event of ['pause','seeking','emptied'])video.addEventListener(event,resetTracks);
 
 async function occupancy(geometry,captured) {
@@ -81,16 +100,19 @@ async function next(now, metadata) {
       return;
     }
     const geometry = {...config, width:video.videoWidth, height:video.videoHeight};
+    let parking=[];
+    if(config.view.parking)parking=observedParkingPaint(config.lenses?.road||geometry,captured);
+    else resetPaint();
     const result = config.objects ? await detectObjects(geometry, config.lenses, captured, epoch) : await occupancy(geometry,captured);
     if (!result || epoch!==generation || video.paused || performance.now()-captured>=900) return;
     const v = config.view, scale = Math.min(1, 1280/Math.max(v.w,v.h));
     const ok = scene.render(Math.round(v.w*scale), Math.round(v.h*scale),
-      {tracks:result.tracks, environment:result.positions, environmentRanges:result.ranges}, {night:v.night, view:v});
+      {tracks:result.tracks, parking, environment:result.positions, environmentRanges:result.ranges}, {night:v.night, view:v});
     if (!ok || scene.snapshot().backend !== 'webgl2') throw Error('工作站缺少 WebGL 2');
     const jpeg = await new Promise(resolve=>scene.canvas.toBlob(resolve,'image/jpeg',.84));
     if (!jpeg || video.paused || epoch!==generation || performance.now()-captured>=900) return;
     const sent = await fetch(base+'publish',{method:'POST',body:jpeg,headers:{
-      'X-Age':String(performance.now()-captured), 'X-Cells':String(result.positions.length/3), 'X-Raised':String(result.raisedCells)}});
+      'X-Parking':v.parking?'1':'0', 'X-Age':String(performance.now()-captured), 'X-Cells':String(result.positions.length/3), 'X-Raised':String(result.raisedCells)}});
     const detail=config.objects?'物件追蹤 '+result.tracks.length+' 個':'體素 '+(result.positions.length/3)+' 格';
     status.textContent=sent.ok?'GPU 回放中 · '+detail:'略過過期影格';
   } catch (error) {

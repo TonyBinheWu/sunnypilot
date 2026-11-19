@@ -12,6 +12,7 @@ from types import SimpleNamespace
 from aiohttp import web
 
 from openpilot.selfdrive.carrot.realtime.compact_state import encode_carrot_state_batch, encode_carrot_state_frame
+from openpilot.selfdrive.carrot.server.services.web_settings import web_settings_client_spec
 from .gpu_objects import INPUT, WorkstationObjects
 from .gpu_scene_relay import GpuSceneRelay
 from .gpu_workstation import WorkstationOccupancy
@@ -68,9 +69,10 @@ async def parked_state(request):
 
 
 def make_app(args, inference, lens_profiles=None):
+  settings = {**SETTINGS, "vision_parking_assist": args.parking, "vision_presentation": "tesla"}
   relay = GpuSceneRelay()
   busy = asyncio.Lock()
-  default_view = {"w": 960, "h": 540, "night": True, "yaw": 0., "pitch": 25., "distance": 9., "bottomFraction": 0.}
+  default_view = {"w": 960, "h": 540, "night": True, "yaw": 0., "pitch": 25., "distance": 9., "bottomFraction": 0., "parking": False}
   view = dict(default_view)
   def local(request):
     if request.remote != "127.0.0.1":
@@ -125,7 +127,10 @@ def make_app(args, inference, lens_profiles=None):
     image = await request.read()
     try:
       age = float(request.headers["X-Age"]) + (time.monotonic()-received)*1000
-      accepted = relay.publish(image, age, int(request.headers["X-Cells"]), int(request.headers["X-Raised"]))
+      parking = request.headers.get("X-Parking", "0")
+      if parking not in ("0", "1"):
+        raise ValueError
+      accepted = relay.publish(image, age, int(request.headers["X-Cells"]), int(request.headers["X-Raised"]), parking == "1")
     except (KeyError, ValueError):
       raise web.HTTPBadRequest()
     return web.Response(status=204 if accepted else 409)
@@ -134,12 +139,12 @@ def make_app(args, inference, lens_profiles=None):
     limits = {"w": (64, 4096), "h": (64, 4096), "yaw": (-360, 360), "pitch": (18, 82), "distance": (5, 26), "bottomFraction": (0, .45)}
     try:
       values = await request.json()
-      if not isinstance(values, dict) or type(values.get("night")) is not bool or any(
+      if not isinstance(values, dict) or type(values.get("night")) is not bool or type(values.get("parking", False)) is not bool or any(
           type(values.get(k)) not in (int, float) or not lo <= values[k] <= hi for k, (lo, hi) in limits.items()):
         raise ValueError
     except (ValueError, TypeError):
       raise web.HTTPBadRequest()
-    view.update({k: values[k] for k in default_view})
+    view.update({k: values.get(k, False) for k in default_view})
     return web.Response(status=204)
 
   async def page(request):
@@ -148,14 +153,14 @@ def make_app(args, inference, lens_profiles=None):
       manifest = (ASSETS/"generated/asset-manifest.json").read_text(encoding="utf-8")
       html = html.replace('<script id="carrotAssetManifest" type="application/json"></script>',
                           '<script id="carrotAssetManifest" type="application/json">'+manifest+'</script>')
-      boot = {"visionGpuScene": True, "webSettings": SETTINGS, "deviceLanguage": "zh-CHT", "intro": {"shouldShow": False}}
+      boot = {"visionGpuScene": True, "webSettings": settings, "webSettingsSpec": web_settings_client_spec(), "deviceLanguage": "zh-CHT", "intro": {"shouldShow": False}}
       html = html.replace("<head>", "<head><script>window.__CARROT_BOOTSTRAP__="+json.dumps(boot)+";</script>", 1)
     else:
       html = html.replace("</body>", '<script>const label=document.querySelector("header strong");if(label)label.textContent="GPU 影片回放";</script></body>')
     return web.Response(text=html, content_type="text/html", headers={"Cache-Control":"no-store"})
 
   async def info(request):
-    answers = {"carrot_navi/capabilities":{"ok":True,"feature":"carrotNavi"}, "web_settings":{"settings":SETTINGS},
+    answers = {"carrot_navi/capabilities":{"ok":True,"feature":"carrotNavi"}, "web_settings":{"settings":settings},
                "params_bulk":{"ok":True,"values":{}}, "settings/snapshot":{"ok":True,"settings":{},"values":{}},
                "navigation/destination":{"ok":True,"destination":None}}
     value = answers.get(request.match_info["name"])
@@ -195,6 +200,7 @@ def main():
   p.add_argument("--listen", type=private)
   p.add_argument("--viewer", type=private, help="allow this handset along with loopback")
   p.add_argument("--port", type=int, default=7000)
+  p.add_argument("--parking", action="store_true", help="show recorded front-camera observations in the parked overhead view")
   p.add_argument("--objects", action="store_true", help="use YOLOX-Nano object detection instead of the occupancy network")
   p.add_argument("--paired-profile", type=Path, help="calibration and crops for synchronized rectified road/wide images in one recording")
   p.add_argument("--adapter", type=int, default=0)

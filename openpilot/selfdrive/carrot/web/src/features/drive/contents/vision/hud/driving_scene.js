@@ -1,3 +1,4 @@
+import {inclinedProjection, parkingDistanceText, parkingObservation, parkingWheelTicks} from './parking_environment.js';
 import {roadColors,pathChevrons,nearPathSurface,dashedRibbon,isDashed,nearPathCar} from './road_scene_style.js';
 import {roadModelKind} from './road_model_selection.js';
 import {paintStripes} from './road_paint.js';
@@ -94,7 +95,7 @@ function paintSceneObject(ctx,project,object,{ego=false,flat=false,night=false,t
   }
 }
 
-export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo,night=false,lift=0,camera=null}={}) {
+export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo,night=false,lift=0,camera=null,attitude=null,steer=null}={}) {
   const palette=roadColors(night);ctx.clearRect(0,0,width,height);ctx.fillStyle=palette.road;ctx.fillRect(0,0,width,height);
   const base=sceneProjection(width,height,{...camera,roadOverview:true}),shift=Number.isFinite(lift)?Math.max(0,Math.min(height*.3,lift)):0;
   const project=(x,y,z=0)=>{const p=base(x,y,z);return p?[p[0],p[1]-shift]:null;},model=scene.model;
@@ -145,12 +146,51 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(model.position,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}
     else {ribbon(model.position,-.83,.83,palette.path);fillTriangles(nearPathSurface(model.position),palette.near);fillTriangles(pathChevrons(model.position),palette.chevron);}
   }
+  // When WebGL is lost mid-frame, keep the same observed near-field surfaces.
+  // Draw only calibrated occupied cells, in depth order, with the same ego compensation.
+  if(camera?.parking && scene.environment?.length){
+    const motion=scene.environmentMotion||{},c=Math.cos(motion.angle||0),s=Math.sin(motion.angle||0);
+    const points=scene.environment,cells=[];
+    for(let i=0;i+2<points.length;i+=3){
+      const x=c*points[i]-s*points[i+1]+(motion.x||0),y=s*points[i]+c*points[i+1]+(motion.y||0),z=points[i+2];
+      if(x>0&&x<20&&Math.abs(y)<10&&z>=1&&z<=6)cells.push({x,y,z,depth:project.depth(x,y,z)});
+    }
+    cells.sort((a,b)=>b.depth-a.depth);
+    for(const {x,y,z} of cells){
+      const face=(offsets,color)=>{
+        const corners=offsets.map(([a,b,h])=>project(x+a*.47,y+b*.47,z+h*.47));
+        if(corners.some(p=>!p))return;
+        ctx.fillStyle=color;ctx.beginPath();corners.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fill();
+      };
+      face([[-1,-1,-1],[-1,1,-1],[-1,1,1],[-1,-1,1]],'#687e90');
+      const side=y<0?1:-1;
+      face([[-1,side,-1],[1,side,-1],[1,side,1],[-1,side,1]],'#8093a1');
+      face([[-1,-1,1],[-1,1,1],[1,1,1],[1,-1,1]],'#a8bac6');
+    }
+  }
   for(const slot of (scene.parking||[]).slice(0,12)){
     const p=slot.corners?.map(([x,y])=>project(x,y,.065));if(!p||p.length!==4||p.some(v=>!v))continue;
     ctx.strokeStyle='#d69c30';ctx.lineWidth=2;ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.stroke();
   }
   const objects=scene.tracks?[...scene.tracks]:[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
   objects.sort((a,b)=>project.depth?project.depth(b.x,b.y)-project.depth(a.x,a.y):b.x-a.x).forEach(object=>drawSceneObject(ctx,project,{...object,pathFocus:nearPathCar(object,model?.position)},{text,night}));
-  if(drawEgo)drawEgo(ctx,project);
+  if(camera?.parking){
+    const wheelProjection=inclinedProjection(project,attitude);
+    ctx.strokeStyle='#3289c5';ctx.lineWidth=2;
+    for(const [x,y,endX,endY] of parkingWheelTicks(steer,camera.skinScale)){
+      const a=wheelProjection(x,y,.12),b=wheelProjection(endX,endY,.12);
+      if(a&&b){ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();}
+    }
+    const cue=scene.parkingCue===undefined?parkingObservation(scene):scene.parkingCue;
+    const p=cue&&project(cue.x,cue.y,.08);
+    if(p){
+      ctx.save();ctx.strokeStyle=cue.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(...p,8,0,2*Math.PI);ctx.stroke();
+      ctx.font='bold 14px system-ui';ctx.textAlign='center';const label=parkingDistanceText(cue);
+      const width=ctx.measureText(label).width+12;
+      ctx.fillStyle='#17232b';ctx.fillRect(p[0]-width/2,p[1]-30,width,18);
+      ctx.fillStyle='#fff';ctx.fillText(label,p[0],p[1]-16);ctx.restore();
+    }
+  }
+  if(drawEgo)drawEgo(ctx,inclinedProjection(project,attitude));
   else drawSceneObject(ctx,project,{kind:'car',x:0,y:0},{ego:true,text});
 }

@@ -83,7 +83,7 @@ function runtimeCacheMatches(cache, rawHudState, rawOverlayState, liveServices) 
     && refs.rawCarControl === rawOverlayState?.carControl
     && refs.rawLiveDelay === rawOverlayState?.liveDelay
     && refs.rawLiveTorqueParameters === rawOverlayState?.liveTorqueParameters
-    && refs.rawLiveParameters === rawOverlayState?.liveParameters
+    && refs.rawLiveParameters === (rawOverlayState?.liveParameters ?? rawHudState?.liveParameters)
     && refs.rawLiveTracks === rawOverlayState?.liveTracks
     && refs.rawCameraOdometry === rawOverlayState?.cameraOdometry
     && refs.rawLivePose === rawOverlayState?.livePose
@@ -126,7 +126,7 @@ function captureRuntimeRefs(rawHudState, rawOverlayState, liveServices) {
     rawCarControl: rawOverlayState?.carControl,
     rawLiveDelay: rawOverlayState?.liveDelay,
     rawLiveTorqueParameters: rawOverlayState?.liveTorqueParameters,
-    rawLiveParameters: rawOverlayState?.liveParameters,
+    rawLiveParameters: rawOverlayState?.liveParameters ?? rawHudState?.liveParameters,
     rawLiveTracks: rawOverlayState?.liveTracks,
     rawCameraOdometry: rawOverlayState?.cameraOdometry,
     rawLivePose: rawOverlayState?.livePose,
@@ -168,6 +168,7 @@ function mergeRuntimeState(rawHudState, rawOverlayState, liveServices, cache = n
     ),
     navRoute: mergeServiceState(rawHudState?.navRoute, liveServices?.navRoute),
     lateralPlan: mergeServiceState(rawOverlayState?.lateralPlan, liveServices?.lateralPlan),
+    liveParameters: rawOverlayState?.liveParameters ?? rawHudState?.liveParameters,
     radarState,
   };
 

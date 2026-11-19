@@ -304,7 +304,7 @@ export function deriveVehicleHudPayload(state = {}) {
   const controlsState = state.controlsState || {};
   const selfdriveState = state.selfdriveState || {};
   const carControl = state.carControl || {};
-  const steerRatio=state.carParams?.steerRatio ?? (state.liveParameters?.valid===false?null:state.liveParameters?.steerRatio);
+  const steerRatio=state.carParams?.steerRatio ?? (state.liveParameters?._sourceInvalid||state.liveParameters?.valid===false?null:state.liveParameters?.steerRatio);
   const gear = gearLabel(carState.gearShifter);
   const rawGearStep = finite(carState.gearStep);
   const gearStep = gear === "D" && rawGearStep != null && rawGearStep > 0
