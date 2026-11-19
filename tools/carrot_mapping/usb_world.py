@@ -2,6 +2,7 @@
 import json
 import math
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import time
 
 import numpy as np
@@ -27,38 +28,43 @@ def check_volume(occupied, free):
   return int((occupied[0].max(axis=0) >= .22).sum())
 
 
-def drive_step(artifact, manifest, width, height):
-  from openpilot.selfdrive.modeld.precompiled_artifact import load_artifact
-  from openpilot.selfdrive.modeld.output_validation import validate_compiled_output
-  from openpilot.system.camerad.cameras.nv12_info import get_nv12_info
-  from openpilot.selfdrive.modeld.precompiled_model import sha256
-  from tinygrad import Device, Tensor
-  import model_runtime
-
+def verify_n16_artifact(manifest, digest):
   catalog = Path(__file__).resolve().parents[2] / "openpilot/selfdrive/modeld/model_catalog/catalog.json"
   expected = json.loads(catalog.read_text())["n16"]["egpu"]["sha256"]
-  if manifest["format"] != "comma-run-model" or manifest["pickle"]["sha256"] != expected or sha256(artifact) != expected:
-    raise ValueError("installed N16 eGPU artifact required")
+  if manifest["format"] != "comma-generic-onnx" or manifest["pickle"]["sha256"] != expected or digest != expected:
+    raise ValueError("installed generic N16 eGPU artifact required")
+
+
+def drive_step(artifact, manifest, width, height):
+  from openpilot.selfdrive.modeld.egpu_output_recovery import OutputRecovery
+  from openpilot.selfdrive.modeld.generic_model_runtime import GenericModelRuntime, model_metadata, use_compiled_copies
+  from openpilot.selfdrive.modeld.output_validation import validate_compiled_output
+  from openpilot.selfdrive.modeld.precompiled_artifact import load_artifact
+  from openpilot.selfdrive.modeld.precompiled_model import sha256
+  from openpilot.system.camerad.cameras.nv12_info import get_nv12_info
+  from tinygrad import Device
+
+  verify_n16_artifact(manifest, sha256(artifact))
   jits = load_artifact(artifact, manifest.get("serialization", "oob-v1"))
-  metadata = jits["metadata"]
-  if metadata["model_checkpoint"] != manifest["model_checkpoint"] or Device[jits["input_devices"]["model"]] is not Device["AMD"]:
+  checkpoint, _, _, _ = model_metadata(jits)
+  if checkpoint != manifest["model_checkpoint"] or Device[jits["input_specs"]["new_img"][2]] is not Device["AMD"]:
     raise ValueError("unexpected N16 checkpoint or processor")
-  execute = jits["run_model"][(width, height)]
-  frame_size = model_runtime.nv12_copy_size(*get_nv12_info(width, height)[:3])
-  queues, views, frames = model_runtime.make_input_queues(metadata["input_shapes"], 4, "AMD", frame_size)
-  # Exercise the actual graph, transfer, output download and validation. Both camera
-  # buffers are isolated timing inputs. No prediction is published to modeld.
-  packed = np.zeros_like(frames["img"].base)
+
+  # C4 uses the generic AMD warp and recurrent model. Keep the benchmark's
+  # warp cache and model state separate from the installed driving worker.
+  with TemporaryDirectory(prefix="world-warp-") as scratch:
+    runtime = GenericModelRuntime(jits, width, height, Path(scratch), get_nv12_info(width, height), use_compiled_copies(manifest))
+  runtime.packed.fill(0)
   for name in ("tfm", "big_tfm"):
-    if name in views:
-      offset = views[name].ctypes.data - frames["img"].base.ctypes.data
-      np.ndarray(views[name].shape, views[name].dtype, buffer=packed, offset=offset)[:] = np.eye(3).reshape(views[name].shape)
-  queues["packed_npy_inputs"] = Tensor(packed, device="NPY").realize()
-  count = max(v.stop for v in metadata["output_slices"].values())
+    runtime.views[name][:] = np.eye(3, dtype=np.float32)
+  runtime.bind_shared(runtime.packed)
+  recovery = OutputRecovery(runtime, runtime.count, lambda *args, **kwargs: None)
 
   def step():
-    out, = execute(**{k: queues[k] for k in model_runtime.MODELD_INPUTS})
-    validate_compiled_output(out.numpy().reshape(-1), count)
+    result = recovery.run()
+    if result is None:
+      raise ValueError("N16 held an output during qualification")
+    validate_compiled_output(result, runtime.count)
   return step
 
 

@@ -54,6 +54,14 @@ def measure(args, parent_pid):
     raise ValueError("two identical samples cannot validate separate cameras")
   claim_gpu_owner()
   os.environ.update(DEV="USB+AMD:LLVM", GMMU="0", JIT_BATCH_SIZE="0")
+  if args.world:
+    from openpilot.system.hardware.usbgpu import check_usbgpu_power
+    power_error = check_usbgpu_power()
+    if power_error:
+      raise RuntimeError(power_error)
+    os.environ.update(FLOAT16="1", TC_OPT="2", TC_MIN_GLOBALS="32")
+    if manifest.get("serialization") == "persistent-buffer-v1":
+      os.environ["OPENPILOT_HACKS"] = "1"
   sys.path.insert(0, str(artifact.parent / manifest["runtime_directory"]))
   from tinygrad import Device, Tensor, TinyJit
   from tinygrad.nn.onnx import OnnxRunner

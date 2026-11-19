@@ -1,7 +1,17 @@
 import numpy as np
 import pytest
 
-from .usb_world import check_volume, rgb_input, trial
+from .usb_world import check_volume, rgb_input, trial, verify_n16_artifact
+
+
+def test_c4_n16_uses_the_pinned_generic_artifact():
+  sha = "52205044e136efb64a6a841c9b016cf35b1db81186dd0f941b62eee5ebdcde24"
+  manifest = {"format": "comma-generic-onnx", "pickle": {"sha256": sha}}
+  verify_n16_artifact(manifest, sha)
+  with pytest.raises(ValueError):
+    verify_n16_artifact(manifest, "0" * 64)
+  with pytest.raises(ValueError):
+    verify_n16_artifact({**manifest, "format": "comma-run-model"}, sha)
 
 
 def test_probabilities_and_unknown_rays():
