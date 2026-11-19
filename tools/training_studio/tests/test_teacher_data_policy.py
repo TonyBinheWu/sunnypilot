@@ -12,6 +12,19 @@ import json
 
 
 class TeacherDataPolicyTest(unittest.TestCase):
+  def test_confirmed_red_stop_survives_creep_without_erasing_source_failures(self):
+    from tools.training_studio.teacher_policy_data import maintain_reference
+    audit={'red_stop_confirmed_at_s':6.999999999999983,'failures':['red_hold_not_maintained']}
+    self.assertTrue(maintain_reference('red_light',True,False,4.2334,audit))
+    self.assertEqual(audit,{'red_stop_confirmed_at_s':6.999999999999983,'failures':['red_hold_not_maintained']})
+    # Green permission, an unconfirmed short stop, other scene types and a
+    # position outside the unchanged legal zone must not inherit this latch.
+    self.assertFalse(maintain_reference('red_light',False,False,4.2334,audit))
+    self.assertFalse(maintain_reference('red_light',True,False,4.2334,{'red_stop_confirmed_at_s':None}))
+    self.assertFalse(maintain_reference('pedestrian',True,False,4.2334,audit))
+    for front in (-.01,5.,5.1):self.assertFalse(maintain_reference('red_light',True,False,front,audit))
+    self.assertTrue(maintain_reference('pedestrian',True,True,3.,None))
+
   def test_blocked_actor_future_keeps_observed_position_and_heading(self):
     from types import SimpleNamespace
     import numpy as np

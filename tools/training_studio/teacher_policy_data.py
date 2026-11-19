@@ -7,7 +7,10 @@ from pathlib import Path
 from tools.training_studio.edge_inputs import MODEL_REVISION
 from tools.training_studio.store import read_json,write_json
 from tools.training_studio.teacher_train import observed_inputs
-from tools.training_studio.teacher_standstill import hold_acceleration,in_stop_zone,PROFILE as HOLD_PROFILE
+from tools.training_studio.teacher_standstill import (hold_acceleration,in_stop_zone,PROFILE as HOLD_PROFILE,
+  gentle_recovery_acceleration,RECOVERY_PROFILE,RECOVERY_INTERIOR_MARGIN_M)
+
+REFERENCE_PROFILE="history_confirmed_red_stop_and_gentle_boundary_v2"
 
 
 def check_source(result,health,split):
@@ -42,6 +45,17 @@ def freeze_observed_permission(scene,scenario):
   # Arrow scenes retain the original light updater; the observed forbidden
   # arrow stays forbidden throughout the label without anticipating its change.
   return actor is not None
+
+
+def maintain_reference(scenario,blocked,current_stopped,front_distance,source_stop_audit):
+  """Retain an earlier original red-stop confirmation while correcting creep.
+
+  A source's past hold violation stays in its audit; future supervision must
+  brake back to rest instead of relaunching toward a nearer stopping point.
+  Permission release and leaving the legal stop zone never inherit a hold.
+  """
+  confirmed=source_stop_audit and source_stop_audit.get('red_stop_confirmed_at_s') is not None
+  return bool(blocked and 0<=front_distance<5 and (current_stopped or (scenario=='red_light' and confirmed)))
 
 
 def reference(episode,index,output,split,assets,*,turn_reference_speed_mps=None):
@@ -86,13 +100,25 @@ def reference(episode,index,output,split,assets,*,turn_reference_speed_mps=None)
     front=scene.stop_s-progress-scene.vehicle.LENGTH/2
     heading_change=abs((scene.vehicle.heading_theta-scene.initial_heading+np.pi)%(2*np.pi)-np.pi)
     blocked=scene.blocked()
-    maintain=blocked and in_stop_zone(scene)
+    source_stop_audit=None
+    if result['scenario']=='red_light':
+      from openpilot.tools.sim.training.edge_stop_audit import red_wait_audit
+      source_stop_audit=red_wait_audit(trace[:steps],result['signal_green_at_s'],scene.stop_s,scene.vehicle.LENGTH)
+    current_stopped=in_stop_zone(scene)
+    maintain=maintain_reference(result['scenario'],blocked,current_stopped,front,source_stop_audit)
+    historical_latch_used=maintain and not current_stopped
+    gentle=blocked and result['scenario']=='red_light' and 5<=front<=6 and not maintain
     freeze_actor=freeze_observed_permission(scene,result['scenario'])
     scene.update_actors();xyz=[];rot=[]
     latched_stop=maintain
     for step in range(128):
-      latched_stop=latched_stop or (scene.blocked() and in_stop_zone(scene))
+      ready=in_stop_zone(scene)
+      current_front=scene.stop_s-scene.state()[3]-scene.vehicle.LENGTH/2
+      if gentle:ready=ready and current_front<=5-RECOVERY_INTERIOR_MARGIN_M
+      latched_stop=latched_stop or (scene.blocked() and ready)
       action=scene.expert()
+      if gentle and not latched_stop and scene.blocked():
+        action[1]=gentle_recovery_acceleration(scene.vehicle.velocity,scene.vehicle.heading,current_front)
       if turn_reference_speed_mps is not None:
         # Offline corrective labels only: retain the original steering policy,
         # and test whether a slower turn is physically recoverable. Observed
@@ -117,7 +143,9 @@ def reference(episode,index,output,split,assets,*,turn_reference_speed_mps=None)
         'pixel_sha256':hashlib.sha256(sample['image_frames'].tobytes()).hexdigest(),'source_input_sha256':source_hash,
         'source_teacher_provenance_sha256':fingerprint,'source_simulation_time_s':moment,'physics_replay_errors':errors,
         'source_lateral_error_m':lateral,'source_heading_change_rad':float(heading_change),
-        'hold_control_profile':HOLD_PROFILE,
+        'hold_control_profile':HOLD_PROFILE,'label_policy_profile':REFERENCE_PROFILE,
+        'source_red_wait_audit':source_stop_audit,'historical_stop_latch_used':historical_latch_used,
+        **({'recovery_reference_profile':RECOVERY_PROFILE,'stop_interior_margin_m':RECOVERY_INTERIOR_MARGIN_M} if gentle else {}),
         'turn_reference_speed_mps':turn_reference_speed_mps,
         'reference_terminal_front_distance_m':terminal_front,'reference_terminal_speed_mps':terminal[-1],
         'future_permission_frozen_for_red_supervision':blocked and result['scenario']=='red_light',
