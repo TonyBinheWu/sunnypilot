@@ -604,6 +604,11 @@ def main(demo=False):
       DH.update(sm['carState'], modelv2_send.modelV2, sm['carControl'].latActive, lane_change_prob, sm['carrotMan'], sm['radarState'],
                 indicator_valid=indicator_valid, indicator_curvature=sm['carControl'].actuators.curvature,
                 indicator_yaw_rate=indicator_yaw_rate,
+                no_navigation=(not len(sm['navRoute'].coordinates)
+                               and not (sm.valid['navInstructionCarrot'] and sm.alive['navInstructionCarrot']
+                                        and 0 <= indicator_now - sm.recv_time['navInstructionCarrot'] < 2
+                                        and (sm['navInstructionCarrot'].distanceRemaining > 0 or
+                                             sm['navInstructionCarrot'].maneuverType not in ('', 'invalid')))),
                 assistant_valid=indicator_valid and sm.valid['radarState'] and sm.alive['radarState'] and
                 0 <= indicator_now-sm.recv_time['radarState'] < .35,
                 turn_hold_allowed=turn_hold_allowed, turn_pose=turn_pose)
