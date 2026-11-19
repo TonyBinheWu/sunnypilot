@@ -1,7 +1,7 @@
 import {inclinedProjection, parkingDistanceText, parkingObservation, parkingWheelTicks} from './parking_environment.js';
-import {roadColors,pathChevrons,nearPathSurface,dashedRibbon,isDashed,nearPathCar,parkingOutline} from './road_scene_style.js';
+import {roadColors,pathChevrons,nearPathSurface,dashedRibbon,nearPathCar,parkingOutline} from './road_scene_style.js';
 import {roadModelKind} from './road_model_selection.js';
-import {paintStripes} from './road_paint.js';
+import {paintStripes,stripePattern} from './road_paint.js';
 import {drawDetectedMesh} from './object_mesh.js';
 import {ANIMALS} from './object_classes.js';
 import {surroundingTargets} from './scene_objects.js';
@@ -144,11 +144,19 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
         ||Math.abs(edges[0].x[i]-edges[1].x[i])>.5||Math.abs(edges[0].x[i-1]-edges[1].x[i-1])>.5)continue;
       ctx.beginPath();ctx.moveTo(...left[i-1]);ctx.lineTo(...left[i]);ctx.lineTo(...right[i]);ctx.lineTo(...right[i-1]);ctx.closePath();ctx.fill();
     }
+    if(!camera?.parking)for(const [a,b] of scene.mapLines||[]){
+      const start=project(...a),end=project(...b);
+      if(start&&end){ctx.strokeStyle='#667d8d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(...start);ctx.lineTo(...end);ctx.stroke();}
+    }
     (model.roadEdges||[]).slice(0,2).forEach(line=>stroke(line,palette.edge,2.5));
     (model.laneLines||[]).slice(0,4).forEach((line,i)=>{
       if((model.laneLineProbs?.[i]??0)<=.3)return;
       const paint=paintStripes(scene.paint?.[i],i,palette.lane);
-      for(const offset of paint.offsets){if(isDashed(scene.paint?.[i]))fillTriangles(dashedRibbon(line,offset-.065,offset+.065),paint.color);else stroke(line,paint.color,1.6,offset);}
+      paint.offsets.forEach((offset,j)=>{
+        const style=stripePattern(scene.paint?.[i],j);
+        if(style==='dashed'||style==='dots')fillTriangles(dashedRibbon(line,offset-.065,offset+.065,style==='dots'),paint.color);
+        else stroke(line,style==='boundary'?palette.edge:paint.color,1.6,offset);
+      });
     });
     const path=camera?.parking?null:model.position;
     if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(path,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}

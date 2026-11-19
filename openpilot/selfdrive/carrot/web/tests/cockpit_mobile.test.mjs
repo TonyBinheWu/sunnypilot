@@ -12,9 +12,11 @@ test('phone portrait rendering uses its long edge without reducing quality on ro
     assert.ok(portrait.width>0&&portrait.height>0);
   }
   assert.deepEqual(sceneRenderSize(380,825,'auto'),{width:380,height:825,factor:1});
-  assert.deepEqual(sceneRenderSize(380,825,'high'),{width:760,height:1650,factor:2});
-  assert.deepEqual(sceneRenderSize(1920,720,'auto'),{width:960,height:360,factor:.5});
-  assert.deepEqual(sceneRenderSize(0,NaN,'high'),{width:2,height:2,factor:2});
+  assert.deepEqual(sceneRenderSize(380,825,'high',3),{width:760,height:1650,factor:2});
+  assert.deepEqual(sceneRenderSize(1920,720,'auto'),{width:1920,height:720,factor:1});
+  assert.deepEqual(sceneRenderSize(480,300,'standard',2),{width:960,height:600,factor:2});
+  assert.deepEqual(sceneRenderSize(1920,720,'low',2),{width:960,height:360,factor:.5});
+  assert.deepEqual(sceneRenderSize(0,NaN,'high'),{width:1,height:1,factor:1});
 });
 
 test('2D fallback keeps the full car inside narrow phones at near and far zoom',()=>{

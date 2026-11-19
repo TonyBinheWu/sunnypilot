@@ -67,8 +67,8 @@ function syncDock() {
 }
 window.addEventListener('resize', syncDock);
 
-const vehicleLayout=window.matchMedia?.('(min-width: 900px) and (min-height: 501px)');
-function splitNavigation(){return view==='navigation'&&vehicleLayout?.matches===true;}
+const vehicleLayout=window.matchMedia?.('(orientation: landscape)');
+function splitNavigation(){return view==='navigation'&&(vehicleLayout?.matches===true||document.body.dataset.hasRoute==='true');}
 function visibleCore(){return view==='navigation'?(splitNavigation()?'vision':'setting'):view;}
 function syncSplit(){
   if(view!=='navigation')return;
@@ -323,7 +323,11 @@ function render(){
   tireLabels(state.get('carState')).forEach((v,i)=>{$(['tireFl','tireFr','tireRl','tireRr'][i]).textContent=v;});
   const route=navigationView()?.snapshot();$('routeName').textContent=route?.busy?'正在更新導航…':!route?.known?route?.error?'導航狀態無法確認，請開啟導航重試。':'正在讀取目前導航…':route.active?route.label:'尚未設定目的地';$('routeEnd').disabled=!route?.known||!route.active||route.busy;
   if(pendingMode!==null&&!t.parked){cancelMode();$('profileStatus').textContent='車況已變更，已取消待確認的模式；未送出設定。';}
-  document.body.dataset.hasRoute=String(Boolean(route?.known && (route.active || route.mapReady)));
+  const hasRoute=String(Boolean(route?.known && (route.active || route.mapReady)));
+  if(document.body.dataset.hasRoute!==hasRoute){
+    document.body.dataset.hasRoute=hasRoute;
+    syncSplit();
+  }
   applyAppearance();
   const c=$('scene'),r=$('scene-surface').getBoundingClientRect();
   if(!r.width||!r.height||visibleCore()==='vision'){vehicleParking.update(false);preview3d?.pause();return;}

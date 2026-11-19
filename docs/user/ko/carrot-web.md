@@ -296,3 +296,5 @@ Git Pull로 갱신됩니다. 퇴역 모델은 목록에서 제외되고, 사용�
 ## carrot-wip의 FormosaLink
 
 C3X는 장치 → FormosaLink, C4는 설정 → FormosaLink에서 독립 QR 등록을 합니다. `FormosaLinkEnabled`는 기본 켜짐이지만 등록이 필요합니다. `FormosaLinkRemoteWeb`은 전체 Carrot 웹(기존 도구·터미널 포함)에 대한 별도의 로컬 권한이며 기본 꺼짐입니다. 최신 정차·시동 꺼짐 상태가 필요하고 권한·소유권·상태가 유효하지 않으면 연결을 종료합니다. `FormosaLinkRemoteSettings`가 전체 웹 권한을 부여하지 않습니다. Carrot 어댑터는 상태를 보고하며 설정 변경은 Carrot 웹의 기존 검증을 사용합니다. Live에서는 소유자 임대가 유효한 동안 광각·실내 MJPEG 영상을 볼 수 있습니다. 장치와 IIS를 함께 업데이트하세요. [배포와 제한](../../../formosalink/docs/CARROT_REMOTE.md).
+
+안내 중에는 지도와 주행 시각화가 화면을 절반씩 사용합니다. 세로 화면에서는 지도가 아래에 표시됩니다. 기본 3D 화질은 화면 크기와 픽셀 밀도에 따라 최대 1920 × 1080으로 렌더링됩니다. 선택한 OSM 레이어에는 도로 중심선이 표시되며, 차선 표시는 카메라와 차량 관측값을 따릅니다.
