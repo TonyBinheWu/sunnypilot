@@ -579,6 +579,8 @@ window.CarrotTranslations.register("zh", {
     parking_lights_unknown: "前灯状态未提供",
     parking_door_open: "车门未关",
     parking_spin: "已停车・车身展示动画，非环视影像",
+    parking_usb_model: "车机 USB eGPU 模型",
+    parking_paint_verified: "车机影像复核车位",
     parking_forward: "前方视野",
     parking_shape_target: "跟踪物体",
     parking_shape_surface: "估计表面",

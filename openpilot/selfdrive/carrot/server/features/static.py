@@ -135,6 +135,7 @@ def _build_bootstrap_payload() -> dict:  # noqa: DICT_OK - serialized mixed-shap
 
   web_settings = read_web_settings()
   return {
+    "vehicleParkingScene": True,
     "webSettings": web_settings,
     "webSettingsSpec": web_settings_client_spec(),
     "webCapabilities": resolve_web_capabilities(web_settings),

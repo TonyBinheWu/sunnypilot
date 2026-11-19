@@ -10,6 +10,8 @@ In FormosaLink, choose your paired Carrot device, open **Road scene research**, 
 
 In Driving View settings, enable **Parking overhead**. The view switches automatically when fresh vehicle data reports a stationary car in P, or when reversing at low speed. To leave the overhead view, tap its return button. When front-camera occupancy is enabled, raised surfaces appear where the model has depth evidence. Repeated paint observations outline candidate parking bays. The nearest confirmed target or estimated raised surface has a distance marker measured from the front camera. The marker turns amber within 8 m and red within 4 m. Side and rear coverage and bumper clearance remain unknown with front cameras alone.
 
+With the car stationary in P, a paired cockpit can also display the USB driving model's confirmed lead range. The C4 checks predicted side lines against calibrated front camera images before reporting a candidate bay. The eGPU runs the driving model, and the C4 CPU checks the paint. Missing or expired samples clear from the display.
+
 ## Carrot Vision object display
 
 Driving View keeps your car in the lower centre. Cockpit starts in daylight with red vehicle paint when no preference has been saved. Choose a different paint in Display settings or restore your preferred theme there. Blue cars are confirmed observations close to the displayed path. A blue car alone does not indicate a collision warning.
