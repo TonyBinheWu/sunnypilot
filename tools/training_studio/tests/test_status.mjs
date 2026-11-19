@@ -81,6 +81,14 @@ test('stop-zone and permitted-motion diagnostics only show measured compatible m
   value.teacher_training.history[0].go_velocity_mse=null;
   assert.equal(teacherValidationSummary(value),'停止區樣本 24 / 39');
 });
+
+test('cross-task sampling is shown only for its measured optimizer profile',()=>{
+  const value={teacher_training:{optimization_profile:'paired_balanced_cross_task_pcgrad_sgd_v4'}};
+  assert.match(teacherValidationSummary(value),/九種交錯配對/);
+  value.teacher_training.optimization_profile='paired_balanced_stop_modes_pcgrad_sgd_v3';
+  assert.doesNotMatch(teacherValidationSummary(value),/九種交錯配對/);
+  assert.match(teacherValidationSummary(value),/均衡配對/);
+});
 test('previous real losses stay clearly labeled while a new round has no optimizer results',()=>{
   const value={teacher_training:{phase:'generating',cycle:4},teacher_runs:[{cycle:3,history:[{train_loss:2,validation_loss:3}]}]};
   assert.match(teacherLossHistory(value).label,/第 3 輪已完成/);
