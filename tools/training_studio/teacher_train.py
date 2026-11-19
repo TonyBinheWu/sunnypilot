@@ -13,6 +13,7 @@ import time
 
 IMPLEMENTATION_SHA256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 OBJECTIVE_REVISION='ten_step_immediate_stop_and_restart_v2'
+EXECUTED_OBJECTIVE_REVISION='ten_step_executed_accel_curvature_hold_margin_v3'
 
 
 def observed_inputs(sample):
@@ -110,6 +111,32 @@ def restart_command_loss(accel_error):
   return immediate_command_loss(accel_error)
 
 
+def immediate_steering_loss(action,target_action,space,history_xyz):
+  """Supervise the curvature commands that execute before the next replan.
+
+  Course/rotation losses over a long horizon can hide an incorrect first turn
+  command. Scale curvature to lateral acceleration using observed ego speed,
+  without giving route geometry or future signal state to model inference.
+  """
+  import torch
+  speed=torch.linalg.vector_norm(history_xyz[...,-1,:2]-history_xyz[...,-2,:2],dim=-1)/space.dt
+  scale=speed.clamp(1,5).square().unsqueeze(-1)
+  error=(action[...,1]-target_action[...,1])*space.curvature_std.to(action.device)*scale
+  return immediate_command_loss(error)
+
+
+def held_brake_margin_loss(action,space):
+  """Learn a small brake margin on stationary, prohibited-motion references.
+
+  A zero-acceleration target has no margin against small positive command
+  errors accumulating into creep. This label-only term applies after an
+  observed completed stop, and never supplies a stop flag at inference.
+  """
+  import torch
+  acceleration=action[...,0]*space.accel_std.to(action.device)+space.accel_mean.to(action.device)
+  return 50*torch.relu(acceleration[:,:10]+.1).square().mean()
+
+
 def rollout(model,item,*,grad,seed=42):
   import torch
   from torch.utils.checkpoint import checkpoint
@@ -146,8 +173,10 @@ def main():
   parser.add_argument('--paired-stop-go',action='store_true',help='Pair stop/proceed gradients with PCGrad and guarded SGD')
   parser.add_argument('--unit-task-gradients',action='store_true',help='Balance stop/proceed gradient norms before paired projection')
   parser.add_argument('--expanded-expert',action='store_true')
+  parser.add_argument('--executed-commands',action='store_true',help='Supervise immediate steering and all permitted acceleration commands, with stationary hold margin')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
+  objective_revision=EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
   if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
@@ -210,7 +239,7 @@ def main():
   model._sample_actions=capture
   history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':OBJECTIVE_REVISION,'epochs':args.epochs,'history':history,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'epochs':args.epochs,'history':history,'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -266,10 +295,12 @@ def main():
     loss=loss+4*(velocity[:,:20]-ref_velocity[:,:20]).square().mean()+50*(rot-item['target_rot'].cuda()).square().mean()
     if not item['row']['stop_required'] or not item['row'].get('maintain_stop_reference',False):
       loss=loss+proceed_velocity_loss(velocity,ref_velocity)
-    if item['row'].get('restart_required'):
+    if item['row'].get('restart_required') or (args.executed_commands and not item['row']['stop_required']):
       accel_std=model.expert.action_space.accel_std.to(action.device)
       restart_error=(action[...,0]-item['target_action'].to(action.device)[...,0])*accel_std
       loss=loss+restart_command_loss(restart_error)
+    if args.executed_commands:
+      loss=loss+immediate_steering_loss(action,item['target_action'].to(action.device),model.expert.action_space,item['ego_history_xyz'].to(action.device))
     if item['row']['stop_required']:
       held=(torch.linalg.vector_norm(ref_velocity,dim=-1)<.15).float()
       loss=loss+stop_zone_loss(xyz,target,held,item['row']['front_distance_m'])
@@ -284,6 +315,7 @@ def main():
       loss=loss+50*(accel_error[:,:20].square()*held[:,:20]).sum()/held[:,:20].sum().clamp_min(1)
       if item['row'].get('maintain_stop_reference'):
         loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))
+        if args.executed_commands:loss=loss+held_brake_margin_loss(action,model.expert.action_space)
       loss=loss+30*torch.relu(xyz[...,0]-item['row']['front_distance_m']+.2).square().mean()
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
@@ -370,7 +402,7 @@ def main():
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
-    'objective_revision':OBJECTIVE_REVISION,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
+    'objective_revision':objective_revision,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})

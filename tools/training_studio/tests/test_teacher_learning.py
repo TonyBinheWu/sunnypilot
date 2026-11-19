@@ -9,6 +9,39 @@ HAS_TORCH=importlib.util.find_spec('torch') is not None
 
 @unittest.skipUnless(HAS_TORCH,'GPU training environment supplies torch')
 class TeacherLearningTest(unittest.TestCase):
+  def test_immediate_steering_has_correct_symmetric_gradients_and_prioritizes_next_commands(self):
+    import torch
+    from tools.training_studio.teacher_train import immediate_steering_loss
+    space=SimpleNamespace(dt=.1,curvature_std=torch.tensor(.1))
+    history=torch.zeros(1,20,3);history[0,-2,0]=-.5
+    for curvature in (-1.,1.):
+      target=torch.zeros(1,64,2);target[:,:3,1]=curvature
+      prediction=torch.zeros_like(target,requires_grad=True)
+      loss=immediate_steering_loss(prediction,target,space,history);loss.backward()
+      self.assertTrue(torch.isfinite(prediction.grad).all())
+      self.assertTrue(bool((prediction.grad[:,:3,1]*curvature<0).all()))
+      self.assertEqual(float(prediction.grad[...,0].abs().sum()),0.)
+      self.assertEqual(float(prediction.grad[:,20:].abs().sum()),0.)
+      self.assertEqual(float(immediate_steering_loss(target,target,space,history)),0.)
+    early=torch.zeros(1,64,2);early[:,:3,1]=1.
+    late=torch.zeros_like(early);late[:,17:20,1]=1.
+    self.assertGreater(float(immediate_steering_loss(early,torch.zeros_like(early),space,history)),10*float(immediate_steering_loss(late,torch.zeros_like(late),space,history)))
+    parked=torch.zeros_like(history)
+    self.assertGreater(float(immediate_steering_loss(early,torch.zeros_like(early),space,parked)),0.)
+
+  def test_stationary_brake_margin_learns_against_creep_without_penalizing_sufficient_braking(self):
+    import torch
+    from tools.training_studio.teacher_train import held_brake_margin_loss
+    space=SimpleNamespace(accel_std=torch.tensor(2.),accel_mean=torch.tensor(.3))
+    action=torch.zeros(1,64,2);action[...,0]=-.15;action.requires_grad_()
+    loss=held_brake_margin_loss(action,space);loss.backward()
+    self.assertGreater(float(loss),0.)
+    self.assertTrue(bool((action.grad[:,:10,0]>0).all()))
+    self.assertEqual(float(action.grad[:,10:,0].abs().sum()),0.)
+    self.assertEqual(float(action.grad[...,1].abs().sum()),0.)
+    braking=torch.zeros_like(action);braking[...,0]=-.25
+    self.assertEqual(float(held_brake_margin_loss(braking,space)),0.)
+
   def test_moving_approach_commands_supervise_braking_without_forcing_brakes_on_distant_approaches(self):
     import torch
     from tools.training_studio.teacher_train import immediate_command_loss

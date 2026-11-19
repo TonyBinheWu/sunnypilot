@@ -1,5 +1,6 @@
 """Continuous real-expert adaptation; unchanged closed-loop gates control promotion."""
 import argparse
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -14,6 +15,23 @@ import urllib.request
 
 from tools.training_studio.remote import Remote
 from tools.training_studio.store import Store,exclusive_worker,read_json,write_json
+
+
+@contextmanager
+def candidate_publication(store):
+  """Keep a candidate unchanged for its entire closed-loop qualification.
+
+  Intermediate-checkpoint validation uses this same file lock. A completed
+  optimizer must not replace its live teacher while those episodes are running.
+  """
+  import fcntl
+  with (store.root/'teacher-candidate-publication.lock').open('a+') as lock:
+    fcntl.flock(lock,fcntl.LOCK_EX)
+    try:
+      if read_json(store.root/'teacher-qualification-progress.json',{}).get('state')=='passed':
+        raise InterruptedError('preserve exact fully qualified live teacher')
+      yield
+    finally:fcntl.flock(lock,fcntl.LOCK_UN)
 
 
 def require_optimizer_success(returncode,*,authorized):
@@ -217,6 +235,7 @@ def main():
           if settings.get('optimizer')=='paired_pcgrad_sgd':
             args.append('--paired-stop-go')
             if settings.get('unit_task_gradients'): args.append('--unit-task-gradients')
+          if settings.get('executed_commands'):args.append('--executed-commands')
           child=subprocess.Popen(remote.command(command(args)),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)
           with (folder/'train.log').open('w') as log:
             for line in child.stdout:
@@ -242,31 +261,33 @@ def main():
             seen.add(checksum)
             pointer={'path':f'/studio/teacher/cycle-{cycle:03d}/output/'+filename,'sha256':checksum,
               'cycle':cycle,'training_epoch':epoch,'selection':selection,'scope':result.get('adapter_scope','actual_Edge_expert_expanded_LoRA'),'driving_qualified':False}
-            report('qualification',cycle=cycle,selection=selection)
-            health=publish_service(pointer)
-            fingerprint=hashlib.sha256(json.dumps(health['provenance'],sort_keys=True).encode()).hexdigest()
-            batch=folder/('qualification-'+selection)
-            write_json(store.root/'teacher-attempt.json',{'fingerprint':fingerprint,'batch':str(batch),'started':time.time()})
-            run_local('tools.training_studio.qualification',['--root',store.root,'--batch',batch],folder/('qualification-'+selection+'.log'),allowed=(0,2))
-            outcome=read_json(store.root/'teacher-qualification-progress.json',{})
-            remember_tested_scenarios(state,read_json(batch/'qualification.json',{}).get('results',[]))
-            if outcome.get('state')=='passed':
-              from tools.training_studio.teacher_control import finish_adaptation
-              with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(store.config()['teacher_url']+'/health',timeout=10) as response:
-                confirmed=json.load(response)
-              if confirmed.get('provenance',{}).get('action_expert_adapter',{}).get('sha256')!=pointer['sha256']:
-                raise RuntimeError('live teacher changed after qualification; do not adopt it')
-              finish_adaptation(store,confirmed)
-              state.update(parent=pointer,cycle=cycle+1,qualified_sha256=pointer['sha256'])
-              write_json(loop_root/'state.json',state)
-              report('qualified',cycle=cycle)
-              store.event('教師完整資格通過，已結束教師適配；學生等待完整資料組')
-              return
-            score=closed_loop_score(batch)
-            if score>tuple(state.get('best_closed_loop',(-1,))):
-              state['parent']=pointer
-              state['best_closed_loop']=score
-              state['scenario']=outcome.get('scenario','red_light')
+            with candidate_publication(store):
+              if not authorized():raise InterruptedError('teacher adaptation paused')
+              report('qualification',cycle=cycle,selection=selection)
+              health=publish_service(pointer)
+              fingerprint=hashlib.sha256(json.dumps(health['provenance'],sort_keys=True).encode()).hexdigest()
+              batch=folder/('qualification-'+selection)
+              write_json(store.root/'teacher-attempt.json',{'fingerprint':fingerprint,'batch':str(batch),'started':time.time()})
+              run_local('tools.training_studio.qualification',['--root',store.root,'--batch',batch],folder/('qualification-'+selection+'.log'),allowed=(0,2))
+              outcome=read_json(store.root/'teacher-qualification-progress.json',{})
+              remember_tested_scenarios(state,read_json(batch/'qualification.json',{}).get('results',[]))
+              if outcome.get('state')=='passed':
+                from tools.training_studio.teacher_control import finish_adaptation
+                with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(store.config()['teacher_url']+'/health',timeout=10) as response:
+                  confirmed=json.load(response)
+                if confirmed.get('provenance',{}).get('action_expert_adapter',{}).get('sha256')!=pointer['sha256']:
+                  raise RuntimeError('live teacher changed after qualification; do not adopt it')
+                finish_adaptation(store,confirmed)
+                state.update(parent=pointer,cycle=cycle+1,qualified_sha256=pointer['sha256'])
+                write_json(loop_root/'state.json',state)
+                report('qualified',cycle=cycle)
+                store.event('教師完整資格通過，已結束教師適配；學生等待完整資料組')
+                return
+              score=closed_loop_score(batch)
+              if score>tuple(state.get('best_closed_loop',(-1,))):
+                state['parent']=pointer
+                state['best_closed_loop']=score
+                state['scenario']=outcome.get('scenario','red_light')
           state['cycle']=cycle+1
           write_json(loop_root/'state.json',state)
         except InterruptedError: raise
