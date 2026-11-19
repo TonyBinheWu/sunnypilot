@@ -111,6 +111,7 @@ export function createTeslaView(doc,target) {
   const text=(key,fallback)=>target.getUIText?.(key,fallback)||fallback;
   const root=el(doc,'div',{class:'tesla-view'});
   const research=researchMap(target);
+  const remoteGpu=target.__CARROT_BOOTSTRAP__?.visionGpuScene===true;
   const canvas=el(doc,'canvas',{class:'tesla-scene',attrs:{'aria-label':text('vision_tesla_name','Bird’s-eye view')}});
   const notice=el(doc,'div',{class:'tesla-notice'});
   const perceptionStatus=el(doc,'div',{class:'tesla-perception',attrs:{role:'status'}});
@@ -151,7 +152,7 @@ export function createTeslaView(doc,target) {
     zoomFrame=null;if(destroyed||doc.hidden||!viewActive)return;
     if(stamp-zoomPaintedAt>=40){zoomPaintedAt=stamp;render(data,stale,unit,metricVisible,viewActive);}else animateZoom();
   });};
-  const visibility=()=>{if(doc.hidden){stopZoomAnimation();perceptionScene.clear();environment.update({active:false});}};doc.addEventListener?.('visibilitychange',visibility);
+  const visibility=()=>{if(doc.hidden){stopZoomAnimation();perceptionScene.clear();environment.update({active:false});if(remoteGpu)scene3d.pause();}};doc.addEventListener?.('visibilitychange',visibility);
   const editor=el(doc,'div',{class:'tesla-editor'});editor.hidden=true;
   const toggle=el(doc,'button',{class:'tesla-edit',attrs:{type:'button'}});
   let layout=metricLayout(target.CarrotWebSettingsState?.vision_metric_layout),editing=false,dirty=false,saving=false;
@@ -235,7 +236,8 @@ export function createTeslaView(doc,target) {
         return {status:s.status,count:s.count,positioned:s.objects.length,classes,revision:s.revision,videoTime:s.videoTime??null,
           geometryReason:s.geometryReason??null,frameSize:s.frameSize??null,durationMs:s.durationMs??null,delegate:s.delegate??null};};
       const occ=environment.scene();
-      return {objects:describe(perception),road:describe(roadPerception),environment:{status:occ.status,cells:occ.count,drawn:scene3d.snapshot().environmentCells,
+      const external=remoteGpu?scene3d.snapshot():null;
+      return {objects:describe(perception),road:describe(roadPerception),environment:external?{status:external.status,cells:external.cells,drawn:external.cells,raisedCells:external.raised,backend:external.backend}: {status:occ.status,cells:occ.count,drawn:scene3d.snapshot().environmentCells,
         raisedCells:occ.status==='ready'?occ.raisedCells??0:0,ranges:scene3d.snapshot().environmentRanges,supportedRays:occ.supportedRays??0,visibleEmptyIntervals:occ.status==='ready'?occ.visibleEmpty:0,
         latencyMs:occ.durationMs??null,cellMetres:1,coverage:'front',groundTruth:false}};
     },
@@ -263,10 +265,10 @@ export function createTeslaView(doc,target) {
     if(editing&&(!visible||!canEditMetrics(target,now()))){editing=false;editor.hidden=true;drag=null;dirty=false;layout=metricLayout(settings.vision_metric_layout);}
     root.classList.toggle('is-editing',editing);toggle.disabled=!canEditMetrics(target,now())||saving;
     setText(toggle,text(editing?'vision_metric_done':'vision_metric_edit',editing?'Finish editing':'Arrange information'));
-    perceptionScene.startConfigured(tesla&&viewActive&&!doc.hidden&&!bev.frozen,settings);
-    perception.update({active:tesla&&viewActive,frozen:bev.frozen});
-    roadPerception.update({active:tesla&&viewActive,frozen:bev.frozen});
-    const environmentActive=tesla&&!isBev&&viewActive&&!bev.frozen&&!!target.WebGL2RenderingContext;
+    perceptionScene.startConfigured(!remoteGpu&&tesla&&viewActive&&!doc.hidden&&!bev.frozen,settings);
+    perception.update({active:!remoteGpu&&tesla&&viewActive,frozen:bev.frozen});
+    roadPerception.update({active:!remoteGpu&&tesla&&viewActive,frozen:bev.frozen});
+    const environmentActive=!remoteGpu&&tesla&&!isBev&&viewActive&&!bev.frozen&&!!target.WebGL2RenderingContext;
     environment.update({active:environmentActive,frozen:bev.frozen});
     const occ=environment.scene();
     const vision=perception.scene(),road=roadPerception.scene(),liveScene=tesla?{...birdScene(target,now()),vision,road}:{};
@@ -324,7 +326,7 @@ export function createTeslaView(doc,target) {
     parkingPanel.hidden=!parkingEnabled;parkingButton.hidden=!parkingEnabled;parkingButton.disabled=displayStale||speedKph===null||speedKph>20;
     parkingButton.textContent=text(parking.overhead?'parking_view_exit':'parking_view',parking.overhead?'Return to driving view':'Parking overhead');
     parkingButton.setAttribute('aria-pressed',String(parking.overhead));
-    parkingPerception.update(parkingEnabled&&parking.overhead&&viewActive&&!displayStale&&!doc.hidden);
+    parkingPerception.update(!remoteGpu&&parkingEnabled&&parking.overhead&&viewActive&&!displayStale&&!doc.hidden);
     const paint=parkingPerception.scene();scene.parking=paint.slots;
     if(parking.overhead)scene.model=null; // Driving-model path is not a parking trajectory.
     if(parking.overhead)perceptionStatus.textContent=text('parking_candidates','Possible paint markings · occupancy unknown')+' · '+text('scene_status_'+paint.status,paint.status);
@@ -375,7 +377,7 @@ export function createTeslaView(doc,target) {
         root.classList.toggle('has-webgl-scene',!!rendered3d);
         canvas.hidden=!!rendered3d;
         const ctx=rendered3d?null:canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range,drawEgo});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text,night,drawEgo,camera:zoomEnabled||parking.overhead||parking.spin?cameraView:null,lift:!zoomEnabled&&doc.body.dataset.cockpitPanel==='vision'&&vw>740?h*.06:0});}if(rendered3d||ctx)meter.frame(now(),now()-drawStart);lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
-      else if(scene3d.snapshot().backend==='webgl2'&&!isBev)canvas.hidden=true;
+      else if((remoteGpu||scene3d.snapshot().backend==='webgl2')&&!isBev)canvas.hidden=true;
     }
     lastMode=tesla;
   }

@@ -38,7 +38,7 @@ test('paint never changes lamp geometry; active lamps emit, released lamps do no
  assert.equal(new Set(colors.map(JSON.stringify)).size,Object.keys(VEHICLE_PAINTS).length);
  for(const skin of Object.values(VEHICLE_SKINS))for(const paint of Object.keys(VEHICLE_PAINTS))models.get('ego',{skin:paintedVehicle(skin,paint)});
  assert.ok(models.stats().templates<=32);assert.ok(models.stats().geometries<40);models.dispose();
- assert.equal(paintedVehicle(VEHICLE_SKINS.ev6,'url(https://bad)').paintId,'white');
+ assert.equal(paintedVehicle(VEHICLE_SKINS.ev6,'url(https://bad)').paintId,'red');
 });
 test('visual zoom is bounded and reset restores the vehicle pivot without control changes',()=>{
  const orbit=createViewOrbit();assert.equal(orbit.zoom,1);orbit.zoomBy(100);assert.equal(orbit.zoom,1.6);orbit.zoomBy(.0001);assert.equal(orbit.zoom,.6);assert.equal(orbit.setZoom(NaN),false);orbit.key('+');assert.ok(orbit.zoom>.6);orbit.reset();assert.equal(orbit.zoom,1);assert.deepEqual(orbit.pose,{yaw:0,pitch:25});

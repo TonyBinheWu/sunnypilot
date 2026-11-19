@@ -9,7 +9,7 @@ export function readAppearance(storage){
     const old=storage.getItem('carrot_cockpit_night');
     if(old==='true'||old==='false')return old==='true'?'dark':'light';
   }catch{}
-  return 'dark';
+  return 'light';
 }
 export async function setCockpitTextScale(frame,target,percent){
   if(!TEXT_SCALES.includes(percent)||typeof frame?.setWebSettingByKey!=='function')throw Error('unavailable');

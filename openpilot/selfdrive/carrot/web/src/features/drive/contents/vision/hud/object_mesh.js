@@ -18,11 +18,26 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
     face([shoulder[i],shoulder[j],belt[j],belt[i]],(ego?['#c7d2de','#d9e1e9','#eaf0f5','#f1f5f9','#f6f8fb','#e5ebf1','#cfdae4','#bdcad7']:['#a3b0be','#b1bdc9','#b8c4d0','#c4cdd5','#c8d1d9','#bdc7d1','#a5b4c2','#96a6b5'])[i]);
   }
   face([[-2.04,-.66,.82],[rear,-.80,.89],[rear,.80,.89],[-2.04,.66,.82]],'#dce4ec');
-  face([[1.35,-.82,.89],[1.84,-.90,.86],[2.04,-.66,.82],[2.04,.66,.82],[1.84,.90,.86],[1.35,.82,.89]],'#edf2f7');
-  const cabin=[[rear,-.82,.89],[1.35,-.82,.89],[1.35,.82,.89],[rear,.82,.89]];
-  const roof=[[roofShape[0],-.69,roofShape[2]],[roofShape[1],-.69,roofShape[2]],[roofShape[1],.69,roofShape[2]],[roofShape[0],.69,roofShape[2]]];
-  for(let i=0;i<4;i++)face([cabin[i],cabin[(i+1)%4],roof[(i+1)%4],roof[i]],i%2?'#344454':'#455869');
-  face(roof,ego?'#e1e6ec':'#9ba8b6');
+  for(const side of [-1,1]){
+    const hood=[[1.35,.82,.89],[1.65,.85,.88],[1.89,.79,.85],[2.04,.66,.82]];
+    for(let i=1;i<hood.length;i++){
+      const [a,wa,za]=hood[i-1],[b,wb,zb]=hood[i];
+      face([[a,0,za+.035],[b,0,zb+.035],[b,side*wb,zb],[a,side*wa,za]],'#edf2f7');
+    }
+    face([[rear,side*.8,.89],[1.35,side*.8,.89],[1.80,side*.90,.82],[-1.80,side*.90,.82]],'#dce4ec');
+  }
+  const [back,frontRoof,peak]=roofShape;
+  // Taper the glazing at the hatch and bonnet. A shallow crown catches light as the camera orbits.
+  const cabinSections=[[rear,.80,.89],[(rear+back)/2,.755,(peak+.89)/2+.05],[back,.67,peak-.035],
+    [(back+frontRoof)/2,.685,peak],[frontRoof,.66,peak-.045],[(frontRoof+1.35)/2,.75,(peak+.89)/2+.035],[1.35,.80,.89]];
+  for(let i=1;i<cabinSections.length;i++){
+    const [a,wa,za]=cabinSections[i-1],[b,wb,zb]=cabinSections[i],roofBand=i===3||i===4;
+    const glazing=roofBand?(ego?'#e1e6ec':'#9ba8b6'):(i<3?'#344454':'#455869');
+    for(const side of [-1,1]){
+      face([[a,0,za+.032],[b,0,zb+.032],[b,side*wb,zb],[a,side*wa,za]],glazing);
+      face([[a,side*wa,za],[b,side*wb,zb],[b,side*.82,.89],[a,side*.82,.89]],'#455869');
+    }
+  }
   // Roof edge rails, rear spoiler and divided glazing avoid a plain box silhouette.
   for(const side of [-1,1]){
     face([[rear,side*.82,.89],[roofShape[0],side*.69,roofShape[2]],[roofShape[0]+.07,side*.69,roofShape[2]],[rear+.07,side*.82,.89]],'#c5d1dd');
@@ -30,7 +45,15 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
     if(suv)face([[roofShape[0]+.08,side*.65,roofShape[2]+.035],[roofShape[1]-.18,side*.65,roofShape[2]+.035],[roofShape[1]-.18,side*.69,roofShape[2]+.055],[roofShape[0]+.08,side*.69,roofShape[2]+.055]],'#7c8e9f');
   }
   if(ego)face([[rear-.15,-.84,.94],[rear+.15,-.84,.98],[rear+.15,.84,.98],[rear-.15,.84,.94]],'#a7b7c7');
-  if(ego&&['ev6','ev9','sportage'].includes(style))face([[roofShape[0]+.15,-.57,roofShape[2]+.008],[roofShape[1]-.1,-.57,roofShape[2]+.008],[roofShape[1]-.1,.57,roofShape[2]+.008],[roofShape[0]+.15,.57,roofShape[2]+.008]],'#34414e');
+  if(ego&&['ev6','ev9','sportage'].includes(style)){
+    const glass=[[back+.06,.43,.012],[back+.20,.57,.045],[(back+frontRoof)/2,.59,.065],[frontRoof-.19,.54,.042],[frontRoof-.05,.42,.009]];
+    for(let i=1;i<glass.length;i++){
+      const [a,wa,za]=glass[i-1],[b,wb,zb]=glass[i];
+      for(const side of [-1,1]){
+        face([[a,0,peak+za+.025],[b,0,peak+zb+.025],[b,side*wb,peak+zb],[a,side*wa,peak+za]],i<3?'#242d35':'#33404b');
+      }
+    }
+  }
   for(const side of [-1,1]){
     face([[-1.25,side*.835,.82],[1.4,side*.835,.82],[1.35,side*.82,.91],[-1.22,side*.82,.91]],'#c4ced9');
     face([[-.08,side*.77,.9],[.04,side*.77,.9],[.04,side*.69,1.42],[-.08,side*.69,1.42]],'#9eacb9');
@@ -112,7 +135,7 @@ export function drawDetectedMesh(ctx,project,object){
     poly([[-.23,.23,.06],[-.23,-.23,.06],[0,0,.8]],'#f0a365');
     poly([[-.15,.15,.32],[-.15,-.15,.32],[-.1,-.1,.48],[-.1,.1,.48]],'#f6f6ef');return;
   }
-  if(kind==='car'){drawVehicleMesh(ctx,p,{ego:false,outline:'#279fff'});return;}
+  if(kind==='car'){drawVehicleMesh(ctx,p,{ego:true,body:{paint:object.pathFocus?'#659fd7':'#a8a9ac'}});return;}
   if(ANIMALS.includes(kind)){
     const scale=({cat:.45,dog:.65,horse:1.2,sheep:.8,cow:1.2,elephant:2.3,bear:1.1,zebra:1.2,giraffe:1.5})[kind];
     const color=kind==='zebra'?'#b6c1cb':kind==='bear'?'#697c8d':'#93a7b8';

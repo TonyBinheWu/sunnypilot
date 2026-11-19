@@ -8,6 +8,8 @@ In FormosaLink, choose your paired Carrot device, open **Road scene research**, 
 
 ## Carrot Vision object display
 
+Driving View keeps your car in the lower centre. Cockpit starts in daylight with red vehicle paint when no preference has been saved. Choose a different paint in Display settings or restore your preferred theme there. Blue cars are confirmed observations close to the displayed path. A blue car alone does not indicate a collision warning.
+
 The object detector needs a connected front-camera image and fresh calibration. The standard live stream now preserves the full source aspect: C4 uses 672×380; C3/C3X retain 964×604. Update and rebuild the vehicle, reboot while parked, then reconnect the existing APK.
 
 Image-only classifications remain visible when ground projection is unavailable, without assigning a distance. The viewer distinguishes missing calibration or camera height, stale telemetry, incompatible stream aspect and slow inference. First inference has a separate warm-up budget; capture expiry remains 1.2 seconds and old detections never become current merely because inference completed. See the [display recovery guide](../../../tools/carrot_android/OBJECT_DISPLAY_RECOVERY.zh-TW.md) for diagnostics and limits. These display changes do not validate navigation steering.

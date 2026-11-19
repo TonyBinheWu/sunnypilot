@@ -4,10 +4,10 @@ import {scaledFontSize} from '../src/shared/web/display_preferences.js';
 import {nightAppearance,readAppearance,setCockpitTextScale,tireLabels} from '../src/features/cockpit/appearance.js';
 import {drawDrivingScene} from '../src/features/drive/contents/vision/hud/driving_scene.js';
 test('appearance migrates existing day/night preferences and automatic hours are bounded',()=>{
-  assert.equal(readAppearance({getItem:()=>null}),'dark');
+  assert.equal(readAppearance({getItem:()=>null}),'light');
   for(const [old,expected] of [['true','dark'],['false','light']])assert.equal(readAppearance({getItem:k=>k==='carrot_cockpit_night'?old:null}),expected);
   assert.equal(readAppearance({getItem:k=>k==='carrot_cockpit_appearance'?'auto':'true'}),'auto');
-  assert.equal(readAppearance({getItem:()=>{throw Error();}}),'dark');
+  assert.equal(readAppearance({getItem:()=>{throw Error();}}),'light');
   for(const hour of [0,6,18,23])assert.equal(nightAppearance('auto',hour),true);
   for(const hour of [7,12,17])assert.equal(nightAppearance('auto',hour),false);
   assert.equal(nightAppearance('light',22),false);assert.equal(nightAppearance('dark',12),true);
@@ -24,8 +24,8 @@ test('font selection uses the original setter and checks stored value before upd
 test('tire card rejects missing, zero and nonfinite values and never invents units or readings',()=>{
   assert.deepEqual(tireLabels(null),['—','—','—','—']);assert.deepEqual(tireLabels({tpms:{fl:35.12,fr:0,rl:NaN,rr:Infinity}}),['35.1','—','—','—']);
 });
-test('night palette is a supplied presentation option; the regular light renderer stays unchanged',()=>{
-  for(const [night,color] of [[true,'#101114'],[false,'#f2f3f3']]){
+test('night palette is a supplied presentation option; both scenes use the selected road surface',()=>{
+  for(const [night,color] of [[true,'#222b35'],[false,'#f4f4f6']]){
     const fills=[];const ctx=new Proxy({},{get:(t,k)=>t[k]??((...args)=>{if(k==='fillRect')fills.push([t.fillStyle,...args]);}),set:(t,k,v)=>(t[k]=v,true)});
     drawDrivingScene(ctx,800,400,{}, {night,drawEgo:()=>{}});assert.equal(fills[0][0],color);
   }

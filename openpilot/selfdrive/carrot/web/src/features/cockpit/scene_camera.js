@@ -2,14 +2,15 @@
 const finite=Number.isFinite,clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export function sceneCamera(width,height,view={}){
  const w=finite(width)&&width>0?width:1,fullHeight=finite(height)&&height>0?height:1,h=fullHeight*(1-clamp(finite(view?.bottomFraction)?view.bottomFraction:0,0,.45)),aspect=w/h;
- const yaw=(finite(view?.yaw)?view.yaw:0)*Math.PI/180,pitch=clamp(finite(view?.pitch)?view.pitch:25,18,view?.parking===true?82:60)*Math.PI/180;
+ const overview=view?.roadOverview===true&&view.parking!==true;
+ const yaw=(finite(view?.yaw)?view.yaw:0)*Math.PI/180,pitch=clamp((finite(view?.pitch)?view.pitch:25)+(overview?18:0),18,view?.parking===true?82:60)*Math.PI/180;
  const scale=Array.isArray(view?.skinScale)&&view.skinScale.length===3&&view.skinScale.every(n=>finite(n)&&n>.5&&n<2)?view.skinScale:[1.25,1.15,1.55];
- const pivot=[0,0,.78*scale[2]],anchor=view?.parking===true ? .62 : clamp((finite(view?.anchorY)?view.anchorY:.80)-.20,.56,.65);
+ const pivot=[0,0,.78*scale[2]],anchor=view?.parking===true ? .62 : overview ? (aspect<.85?.71:.79) : clamp((finite(view?.anchorY)?view.anchorY:.80)-.20,.56,.65);
  const fov=Math.max(50,Math.min(100,2*Math.atan(Math.tan(Math.PI/8)/Math.max(.25,aspect))*180/Math.PI));
  const tan=Math.tan(fov*Math.PI/360),theta=pitch-Math.atan((anchor*2-1)*tan);
  const cy=Math.cos(yaw),sy=Math.sin(yaw),ct=Math.cos(theta),st=Math.sin(theta);
  const forward=[ct*cy,-ct*sy,-st],right=[-sy,-cy,0],up=[st*cy,-st*sy,ct];
- let range=clamp(finite(view?.distance)?view.distance:9,5,26)*.80,position;
+ let range=clamp(finite(view?.distance)?view.distance:9,5,26)*(overview?1.28:.80),position;
  const depth=(p)=>p.reduce((n,v,i)=>n+v*forward[i],0);
  const extents=[2.42*scale[0],1.16*scale[1],1.66*scale[2]];
  const envelope=[];

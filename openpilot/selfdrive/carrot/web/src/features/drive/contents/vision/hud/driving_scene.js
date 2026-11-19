@@ -1,3 +1,4 @@
+import {roadColors,pathChevrons,nearPathSurface,dashedRibbon,isDashed,nearPathCar} from './road_scene_style.js';
 import {paintStripes} from './road_paint.js';
 import {drawDetectedMesh} from './object_mesh.js';
 import {ANIMALS} from './object_classes.js';
@@ -86,8 +87,8 @@ function paintSceneObject(ctx,project,object,{ego=false,flat=false,night=false,t
 }
 
 export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,drawEgo,night=false,lift=0,camera=null}={}) {
-  ctx.clearRect(0,0,width,height);ctx.fillStyle=night?'#101114':'#f2f3f3';ctx.fillRect(0,0,width,height);
-  const base=drivingProjection(width,height,camera),shift=Number.isFinite(lift)?Math.max(0,Math.min(height*.3,lift)):0;
+  const palette=roadColors(night);ctx.clearRect(0,0,width,height);ctx.fillStyle=palette.road;ctx.fillRect(0,0,width,height);
+  const base=sceneProjection(width,height,{...camera,roadOverview:true}),shift=Number.isFinite(lift)?Math.max(0,Math.min(height*.3,lift)):0;
   const project=(x,y,z=0)=>{const p=base(x,y,z);return p?[p[0],p[1]-shift]:null;},model=scene.model;
   if(base.view){project.view=base.view;project.depth=base.depth;}
   const pathPoints=(path,offset=0)=>{
@@ -98,6 +99,14 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     }
     return points;
   };
+  function fillTriangles(points,color) {
+    ctx.fillStyle=color;ctx.beginPath();
+    for(let i=0;i+8<points.length;i+=9){
+      const a=project(points[i],points[i+1],points[i+2]),b=project(points[i+3],points[i+4],points[i+5]),c=project(points[i+6],points[i+7],points[i+8]);
+      if(a&&b&&c){ctx.moveTo(...a);ctx.lineTo(...b);ctx.lineTo(...c);ctx.closePath();}
+    }
+    ctx.fill();
+  }
   const stroke=(path,color,width,offset=0)=>{
     ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();let started=false;
     for(const p of pathPoints(path,offset)){if(!p){started=false;continue;}if(started)ctx.lineTo(...p);else{ctx.moveTo(...p);started=true;}}
@@ -112,27 +121,28 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
   };
   if(model){
     const edges=model.roadEdges||[],left=pathPoints(edges[0]),right=pathPoints(edges[1]);
-    ctx.fillStyle=night?'#202329':'#e8eaec';
+    ribbon(edges[0],-22,-.08,palette.verge);ribbon(edges[1],.08,22,palette.verge);
+    ctx.fillStyle=palette.road;
     for(let i=1;i<Math.min(left.length,right.length);i++){
       if(!left[i-1]||!left[i]||!right[i]||!right[i-1]
         ||Math.abs(edges[0].x[i]-edges[1].x[i])>.5||Math.abs(edges[0].x[i-1]-edges[1].x[i-1])>.5)continue;
       ctx.beginPath();ctx.moveTo(...left[i-1]);ctx.lineTo(...left[i]);ctx.lineTo(...right[i]);ctx.lineTo(...right[i-1]);ctx.closePath();ctx.fill();
     }
-    (model.roadEdges||[]).slice(0,2).forEach(line=>stroke(line,night?'#737b86':'#c7cdd1',2.5));
+    (model.roadEdges||[]).slice(0,2).forEach(line=>stroke(line,palette.edge,2.5));
     (model.laneLines||[]).slice(0,4).forEach((line,i)=>{
       if((model.laneLineProbs?.[i]??0)<=.3)return;
-      const paint=paintStripes(scene.paint?.[i],i,night?'#e0e5ee':'#b9c1c8');
-      for(const offset of paint.offsets)stroke(line,paint.color,1.6,offset);
+      const paint=paintStripes(scene.paint?.[i],i,palette.lane);
+      for(const offset of paint.offsets){if(isDashed(scene.paint?.[i]))fillTriangles(dashedRibbon(line,offset-.065,offset+.065),paint.color);else stroke(line,paint.color,1.6,offset);}
     });
     if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(model.position,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}
-    else ribbon(model.position,-.75,.75,night?'#0589fff0':'#178fffd9');
+    else {ribbon(model.position,-.83,.83,palette.path);fillTriangles(nearPathSurface(model.position),palette.near);fillTriangles(pathChevrons(model.position),palette.chevron);}
   }
   for(const slot of (scene.parking||[]).slice(0,12)){
     const p=slot.corners?.map(([x,y])=>project(x,y,.065));if(!p||p.length!==4||p.some(v=>!v))continue;
     ctx.strokeStyle='#d69c30';ctx.lineWidth=2;ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.stroke();
   }
   const objects=scene.tracks?[...scene.tracks]:[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
-  objects.sort((a,b)=>project.depth?project.depth(b.x,b.y)-project.depth(a.x,a.y):b.x-a.x).forEach(object=>drawSceneObject(ctx,project,object,{text,night}));
+  objects.sort((a,b)=>project.depth?project.depth(b.x,b.y)-project.depth(a.x,a.y):b.x-a.x).forEach(object=>drawSceneObject(ctx,project,{...object,pathFocus:nearPathCar(object,model?.position)},{text,night}));
   if(drawEgo)drawEgo(ctx,project);
   else drawSceneObject(ctx,project,{kind:'car',x:0,y:0},{ego:true,text});
 }

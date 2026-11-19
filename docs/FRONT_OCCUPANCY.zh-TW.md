@@ -34,6 +34,21 @@
 
 ## 模型、資料與重現
 
+### 開發電腦 GPU 與手機回放
+
+Windows 工作站用 ONNX Runtime DirectML 執行佔用模型，瀏覽器用 WebGL 2 繪製 3D 畫面。手機座艙接收最新一幀，也可調整視角。等待傳送與解碼的時間都計入 900 毫秒的有效期間，逾時便清除舊畫面。請在工作站安裝 NumPy、aiohttp、onnxruntime-directml 與網頁專案相依套件，準備下節指定雜湊的模型及已校正的前鏡頭影片。
+
+以下以 PowerShell 示範。本例內參僅適用於本次校正過的測試影片。請依影片實際裁切、縮放、相機高度及安裝角度填值，角度以弧度表示。
+
+```powershell
+npm ci --prefix openpilot/selfdrive/carrot/web
+python -m tools.carrot_mapping.gpu_preview formosa-front-occupancy-v1.onnx rectified.mp4 --fx 570.75 --fy 570.75 --cx 336 --cy 190 --height-m 1.65 --rpy 0 0 0
+```
+
+在開發電腦開啟 `http://127.0.0.1:7000/render` 播放影片，另開 `http://127.0.0.1:7000/cockpit` 觀看座艙。要用手機觀看，在啟動指令加上 `--listen 電腦區網IP --viewer 手機區網IP`，並讓手機連至該電腦。服務只供這台手機讀取開發回放；手機畫面上的車況為停車測試資料。
+
+RTX 2080 Ti 搭配 Samsung 手機實測，在 35 秒內收到並顯示 119 張新的道路體素畫面。另一項同卡 N16 測試以每幀 50 毫秒為期限，先跑駕駛模型，時間足夠才接受座艙工作；駕駛逾時或座艙超出預估時間時暫停座艙。最近一次 150 幀測試觸發了暫停。此策略目前用於開發回放量測，實車 AMD USB eGPU 共用仍待同卡硬體驗證。可執行 `python -m tools.carrot_mapping.gpu_priority_bench bench --help` 查看量測入口。
+
 單檔 `formosa-front-occupancy-v1.onnx` 共 35,939,304 位元組，SHA-256 為 `d477bac0f82ace6c8663b222d2c0c00987906a6939f545a5fdf60ef81138b787`。車機及觀看端均檢查檔案完整性。[模型與授權附件](https://github.com/TonyBinheWu/sunnypilot/releases/tag/formosa-front-occupancy-research-v1)
 
 骨幹引用 Yang 等人的 Depth Anything V2 戶外 Small（Apache 2.0），固定版本 `fd2c22027eaf20374204f14099b8341e1925ad39`。FORMOSA 新的佔用輸出層以 KITTI 研究資料訓練，以 CC BY-NC-SA 3.0 提供非商業研究使用。資料作者為 Andreas Geiger、Philip Lenz、Christoph Stiller 和 Raquel Urtasun。[骨幹模型](https://huggingface.co/depth-anything/Depth-Anything-V2-Metric-Outdoor-Small-hf) · [KITTI 同步道路影像與光達](https://www.cvlibs.net/datasets/kitti/raw_data.php) · [研究授權](https://creativecommons.org/licenses/by-nc-sa/3.0/)

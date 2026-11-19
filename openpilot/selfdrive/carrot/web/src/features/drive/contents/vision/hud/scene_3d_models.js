@@ -35,7 +35,7 @@ export function createSceneModels(){
     return g;
   }
   function make(kind,skin,lamps){
-    if(kind==='ego'||kind==='car')return vehicle(kind==='ego'?skin:null,kind==='ego'?lamps:{});
+    if(kind==='ego'||kind==='car')return vehicle(kind==='ego'?skin:{paint:'#a8a9ac'},kind==='ego'?lamps:{});
     const g=new T.Group();
     if(kind==='unknown'){
       // Unclassified target: a neutral open volume, NEVER a car-shaped guess.
