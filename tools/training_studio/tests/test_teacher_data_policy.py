@@ -5,13 +5,26 @@ from tools.training_studio.teacher_data import training_seeds
 from tools.training_studio.teacher_train import observed_inputs
 from tools.training_studio.teacher_adapt import closed_loop_score,restore_parent_ranking,remember_tested_scenarios
 from tools.training_studio.store import write_json
-from tools.training_studio.teacher_policy_data import check_source
+from tools.training_studio.teacher_policy_data import check_source,reference
 from tools.training_studio.edge_inputs import MODEL_REVISION
 import hashlib
 import json
 
 
 class TeacherDataPolicyTest(unittest.TestCase):
+  def test_slow_turn_references_cannot_create_stopped_go_labels_or_override_signal_cases(self):
+    provenance={'revision':MODEL_REVISION,'camera_ids':[1,6],'weights_verified':True}
+    fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
+    result={'seed':1027,'scenario':'left_turn','backend':'nvidia_alpamayo2_edge','revision':MODEL_REVISION,'scripted_fallback':False,
+      'model_inputs_include_signal_ground_truth':False,'model_provenance_sha256':fingerprint}
+    with tempfile.TemporaryDirectory() as directory:
+      root=Path(directory);write_json(root/'provenance.json',{'provenance':provenance});write_json(root/'result.json',result)
+      for speed in (0.,-1.,5.1,float('nan'),float('inf')):
+        with self.assertRaisesRegex(ValueError,'turn reference speed'):reference(root,0,root/'output','train',root,turn_reference_speed_mps=speed)
+      write_json(root/'result.json',{**result,'scenario':'red_light'})
+      with self.assertRaisesRegex(ValueError,'simple turn'):reference(root,0,root/'output','train',root,turn_reference_speed_mps=2.)
+      self.assertFalse((root/'output').exists())
+
   def test_rehearsal_keeps_passed_scene_types_without_held_out_samples(self):
     state={'rehearsal':['red_light']}
     remember_tested_scenarios(state,[{'scenario':'lane_center','seed':303,'status':'pass'},

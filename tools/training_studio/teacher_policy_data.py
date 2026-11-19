@@ -26,13 +26,15 @@ def check_source(result,health,split):
   return fingerprint
 
 
-def reference(episode,index,output,split,assets):
+def reference(episode,index,output,split,assets,*,turn_reference_speed_mps=None):
   import numpy as np
-  from openpilot.tools.sim.training.capture_teacher import rotation
-  from openpilot.tools.sim.training.scene import Scene,DT
   episode,output=Path(episode),Path(output)
   result=read_json(episode/'result.json');health=read_json(episode/'provenance.json')
   fingerprint=check_source(result,health,split)
+  if turn_reference_speed_mps is not None and (result.get('scenario') not in ('left_turn','right_turn') or not np.isfinite(turn_reference_speed_mps) or not 1<=turn_reference_speed_mps<=5):
+    raise ValueError('turn reference speed must be finite in [1,5] for a simple turn')
+  from openpilot.tools.sim.training.capture_teacher import rotation
+  from openpilot.tools.sim.training.scene import Scene,DT
   source=episode/f'input-{index:03d}.npz'
   prediction=read_json(episode/f'prediction-{index:03d}.json')
   source_hash=hashlib.sha256(source.read_bytes()).hexdigest()
@@ -81,6 +83,12 @@ def reference(episode,index,output,split,assets):
     for step in range(128):
       latched_stop=latched_stop or (scene.blocked() and in_stop_zone(scene))
       action=scene.expert()
+      if turn_reference_speed_mps is not None:
+        # Offline corrective labels only: retain the original steering policy,
+        # and test whether a slower turn is physically recoverable. Observed
+        # history, source controls and every original failure flag stay intact.
+        speed=scene.state()[-1]
+        action[1]=min(action[1],float(np.clip((turn_reference_speed_mps-speed)*1.5,-3.5,1.6)))
       if latched_stop and scene.blocked(): action[1]=hold_acceleration(scene.vehicle.velocity,scene.vehicle.heading)
       scene.step(action)
       if step%2==1:
@@ -100,6 +108,7 @@ def reference(episode,index,output,split,assets):
         'source_teacher_provenance_sha256':fingerprint,'source_simulation_time_s':moment,'physics_replay_errors':errors,
         'source_lateral_error_m':lateral,'source_heading_change_rad':float(heading_change),
         'hold_control_profile':HOLD_PROFILE,
+        'turn_reference_speed_mps':turn_reference_speed_mps,
         'reference_terminal_front_distance_m':terminal_front,'reference_terminal_speed_mps':terminal[-1],
         'future_permission_frozen_for_red_supervision':blocked and result['scenario']=='red_light',
         'future_actor_motion_frozen':freeze_actor,'source_episode_status':result['status'],
@@ -116,8 +125,9 @@ def main():
   parser.add_argument('--output',type=Path,required=True)
   parser.add_argument('--split',choices=('train','validation'),required=True)
   parser.add_argument('--assets',type=Path,default=Path('build/official-sim/full-assets/assets'))
+  parser.add_argument('--turn-reference-speed-mps',type=float,help='Optional offline speed cap for physically checked simple-turn correction labels')
   args=parser.parse_args()
-  row=reference(args.episode,args.index,args.output,args.split,args.assets)
+  row=reference(args.episode,args.index,args.output,args.split,args.assets,turn_reference_speed_mps=args.turn_reference_speed_mps)
   print(json.dumps({key:row[key] for key in ('seed','source_simulation_time_s','rejected','physics_replay_errors') if key in row}))
 
 
