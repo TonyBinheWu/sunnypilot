@@ -254,7 +254,7 @@ def main():
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
   if args.balanced_stop_modes:optimization_profile='paired_balanced_cross_task_pcgrad_sgd_v4'
   if args.grouped_stop_go:optimization_profile='grouped_six_task_fp64_projection_sgd_v8'
-  if args.correction_warmup:optimization_profile='grouped_six_task_correction_fp64_projection_sgd_v9'
+  if args.correction_warmup:optimization_profile='grouped_six_task_stop_go_correction_fp64_projection_sgd_v10'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:

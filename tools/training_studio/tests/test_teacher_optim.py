@@ -40,6 +40,28 @@ class PairCoverageTest(unittest.TestCase):
     self.assertEqual(covered,set(range(len(items))))
     with self.assertRaises(ValueError):paired_indices(items[:111]+items[111:112],0,balanced_stop_modes=True)
 
+  def test_stop_corrections_are_rehearsed_without_replacing_balanced_groups(self):
+    from tools.training_studio.teacher_optim import paired_groups,stop_mode
+    from tools.training_studio.teacher_reasoning_train import maneuver_class
+    items=[]
+    for mode in ('hold','recover','approach'):
+      for _ in range(4):
+        items.append({'row':{'stop_required':True,'scenario':'red_light','maintain_stop_reference':mode=='hold','front_distance_m':6.},'observed_speed_mps':0. if mode=='recover' else 3.})
+    for scenario in ('lane_center','left_turn','right_turn'):
+      items.extend({'row':{'stop_required':False,'scenario':scenario}} for _ in range(4))
+    targets=[]
+    for _ in range(2):
+      targets.append(len(items));items.append({'row':{'stop_required':True,'scenario':'red_light','maintain_stop_reference':True,'front_distance_m':4.8,'correction_priority':True},'observed_speed_mps':0.})
+    selected=set()
+    for epoch in range(2):
+      ordinary=paired_groups(items,epoch);corrected=paired_groups(items,epoch,correction_warmup=True)
+      self.assertEqual(corrected[1:],ordinary)
+      warmup=corrected[0]
+      self.assertEqual({stop_mode(items[warmup[i]]) for i in (0,2,4)},{'hold','recover','approach'})
+      self.assertEqual({maneuver_class(items[warmup[i]]['row']) for i in (1,3,5)},{'straight','left','right'})
+      selected.update(set(warmup)&set(targets))
+    self.assertEqual(selected,set(targets))
+
   def test_every_training_reference_is_used_with_one_stop_and_one_go_per_step(self):
     items=[{'row':{'stop_required':value}} for value in (True,True,True,False,False)]
     pairs=paired_indices(items,3)

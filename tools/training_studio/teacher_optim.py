@@ -63,14 +63,19 @@ def paired_groups(items,epoch,*,correction_warmup=False):
   groups=[tuple(index for pair in pairs[start:start+3] for index in pair) for start in range(0,len(pairs),3)]
   if correction_warmup:
     from tools.training_studio.teacher_reasoning_train import maneuver_class
-    corrections={}
+    corrections={};stop_corrections={}
     for index,item in enumerate(items):
       if not item['row']['stop_required'] and (item['row'].get('turn_reference_speed_mps') is not None or item['row'].get('correction_priority') is True):
         corrections.setdefault(maneuver_class(item['row']),[]).append(index)
-    if corrections:
+      if item['row']['stop_required'] and item['row'].get('correction_priority') is True:
+        stop_corrections.setdefault(stop_mode(item),[]).append(index)
+    if corrections or stop_corrections:
       warmup=list(groups[0])
       for direction,members in sorted(corrections.items()):
         slot=next(slot for slot in (1,3,5) if maneuver_class(items[warmup[slot]]['row'])==direction)
+        warmup[slot]=members[epoch%len(members)]
+      for mode,members in sorted(stop_corrections.items()):
+        slot=next(slot for slot in (0,2,4) if stop_mode(items[warmup[slot]])==mode)
         warmup[slot]=members[epoch%len(members)]
       # Add a fully guarded six-task group; never replace ordinary samples.
       # A new rare correction otherwise waits several epochs for its turn.
