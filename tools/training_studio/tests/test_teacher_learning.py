@@ -75,6 +75,27 @@ class TeacherLearningTest(unittest.TestCase):
     braking=torch.zeros_like(action);braking[...,0]=-.25
     self.assertEqual(float(held_brake_margin_loss(braking,space)),0.)
 
+  def test_executed_hold_peak_cannot_be_diluted_by_other_braking_commands(self):
+    import torch
+    from tools.training_studio.teacher_train import held_brake_margin_loss
+    space=SimpleNamespace(accel_std=torch.tensor(2.),accel_mean=torch.tensor(.3))
+    sparse=torch.zeros(1,64,2);sparse[...,0]=(-.4-.3)/2
+    sparse[:,7,0]=(.2-.3)/2
+    repeated=sparse.clone();repeated[:,:10,0]=(.2-.3)/2
+    single=held_brake_margin_loss(sparse,space,executed_peak=True)
+    all_pulses=held_brake_margin_loss(repeated,space,executed_peak=True)
+    self.assertGreaterEqual(float(single),.9*float(all_pulses))
+    self.assertLess(float(held_brake_margin_loss(sparse,space)),.2*float(held_brake_margin_loss(repeated,space)))
+
+  def test_executed_hold_peak_ignores_unexecuted_later_commands(self):
+    import torch
+    from tools.training_studio.teacher_train import held_brake_margin_loss
+    space=SimpleNamespace(accel_std=torch.tensor(2.),accel_mean=torch.tensor(.3))
+    action=torch.zeros(1,64,2);action[...,0]=(-.4-.3)/2;action[:,10:,0]=3.;action.requires_grad_()
+    loss=held_brake_margin_loss(action,space,executed_peak=True);loss.backward()
+    self.assertEqual(float(loss.detach()),0.)
+    self.assertEqual(float(action.grad.abs().sum()),0.)
+
   def test_moving_approach_commands_supervise_braking_without_forcing_brakes_on_distant_approaches(self):
     import torch
     from tools.training_studio.teacher_train import immediate_command_loss

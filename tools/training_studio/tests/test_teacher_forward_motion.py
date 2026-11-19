@@ -73,6 +73,15 @@ class ForwardMotionTest(unittest.TestCase):
     with self.assertRaisesRegex(ValueError,'nonfinite observed initial speed'):
       project_actions(self.actions([0.]*64),self.space,self.history,self.rot,t0_states={'v':torch.tensor([float('nan')])})
 
+  def test_executed_peak_margin_never_releases_an_already_applied_brake(self):
+    for acceleration in (-.1,-.2,-.4,-1.):
+      action=self.actions([acceleration]*64).requires_grad_()
+      loss=held_brake_margin_loss(action,self.space,executed_peak=True);loss.backward()
+      self.assertTrue(bool((action.grad[...,0]>=0).all()))
+      self.assertEqual(float(action.grad[...,1].abs().sum()),0.)
+      if acceleration<=-.4:self.assertEqual(float(loss.detach()),0.)
+      else:self.assertGreater(float(loss.detach()),0.)
+
   def test_completed_hold_does_not_train_to_release_an_adequate_brake(self):
     target=self.actions([0.]*64)
     for acceleration in (-.1,-.3,-1.):

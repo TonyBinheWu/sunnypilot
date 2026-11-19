@@ -18,6 +18,7 @@ RECOVERY_OBJECTIVE_REVISION='ten_step_balanced_recovery_interior_stop_margin_v4'
 FORWARD_OBJECTIVE_REVISION='ten_step_forward_physics_consistent_hold_v5'
 AXLE_OBJECTIVE_REVISION='ten_step_observed_rear_axle_forward_hold_v7'
 GENTLE_RECOVERY_OBJECTIVE_REVISION='ten_step_gentle_boundary_recovery_v8'
+PEAK_HOLD_OBJECTIVE_REVISION='ten_step_executed_peak_hold_brake_margin_v9'
 SIGNED_HOLD_OBJECTIVE_REVISION='ten_step_signed_standstill_controls_v6'
 
 
@@ -141,16 +142,20 @@ def immediate_steering_loss(action,target_action,space,history_xyz):
   return immediate_command_loss(error)
 
 
-def held_brake_margin_loss(action,space):
+def held_brake_margin_loss(action,space,*,executed_peak=False):
   """Learn a small brake margin on stationary, prohibited-motion references.
 
   A zero-acceleration target has no margin against small positive command
   errors accumulating into creep. This label-only term applies after an
   observed completed stop, and never supplies a stop flag at inference.
+  Forward execution may additionally constrain the worst command in the
+  first second; a mean penalty can dilute isolated creep-producing pulses.
   """
   import torch
   acceleration=action[...,0]*space.accel_std.to(action.device)+space.accel_mean.to(action.device)
-  return 50*torch.relu(acceleration[:,:10]+.1).square().mean()
+  mean=50*torch.relu(acceleration[:,:10]+.1).square().mean()
+  if not executed_peak:return mean
+  return mean+200*torch.relu(acceleration[:,:10]+.3).square().amax()
 
 
 def acceleration_error(action,target_action,space,*,completed_hold=False,forward_only=False):
@@ -318,6 +323,8 @@ def main():
   if any(row.get('recovery_reference_profile') is not None for row in rows):
     for row in rows:stop_training_margin(row,args.balanced_stop_modes)
     objective_revision=GENTLE_RECOVERY_OBJECTIVE_REVISION
+  if args.forward_only and args.executed_commands and not args.signed_hold_controls:
+    objective_revision=PEAK_HOLD_OBJECTIVE_REVISION
   if {r['seed'] for r in rows if r['split']=='train'} & {r['seed'] for r in rows if r['split']=='validation'}: raise ValueError('seed leakage')
   if any(r['seed'] in (300,301,302,303) for r in rows): raise ValueError('qualification seeds must remain held out')
   captured={}
@@ -411,7 +418,7 @@ def main():
         if args.signed_hold_controls:
           loss=loss+signed_held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device),item['ego_history_rot'].to(action.device))
         else:loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))
-        if args.executed_commands and not args.signed_hold_controls:loss=loss+held_brake_margin_loss(action,model.expert.action_space)
+        if args.executed_commands and not args.signed_hold_controls:loss=loss+held_brake_margin_loss(action,model.expert.action_space,executed_peak=args.forward_only)
       loss=loss+30*torch.relu(xyz[...,0]-item['row']['front_distance_m']+.2).square().mean()
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
