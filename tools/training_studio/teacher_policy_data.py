@@ -15,7 +15,9 @@ def check_source(result,health,split):
   provenance=health.get('provenance',{})
   fingerprint=hashlib.sha256(json.dumps(provenance,sort_keys=True).encode()).hexdigest()
   if not valid_seed: raise ValueError('policy supervision must use separate training/validation seeds')
-  if (result.get('scenario') not in ('red_light','pedestrian','lane_center') or result.get('backend')!='nvidia_alpamayo2_edge' or result.get('revision')!=MODEL_REVISION
+  # Simple turns have no moving permission/actor state to anticipate. Yield and
+  # arrow cases still require their own observed-actor freezing implementation.
+  if (result.get('scenario') not in ('red_light','pedestrian','lane_center','left_turn','right_turn') or result.get('backend')!='nvidia_alpamayo2_edge' or result.get('revision')!=MODEL_REVISION
       or result.get('scripted_fallback') is not False or result.get('model_inputs_include_signal_ground_truth') is not False
       or result.get('model_provenance_sha256')!=fingerprint or provenance.get('weights_verified') is not True
       or provenance.get('revision')!=MODEL_REVISION or provenance.get('camera_ids')!=[1,6]):
@@ -61,6 +63,7 @@ def reference(episode,index,output,split,assets):
       'history_rotation':float(np.max(np.abs(rot_history-sample['ego_history_rot'][0,0])))}
     if max(errors.values())>.002: raise ValueError('physics replay differs from observed policy history: '+str(errors))
     front=scene.stop_s-progress-scene.vehicle.LENGTH/2
+    heading_change=abs((scene.vehicle.heading_theta-scene.initial_heading+np.pi)%(2*np.pi)-np.pi)
     blocked=scene.blocked()
     maintain=blocked and front>0 and (scene.stopped or (front<5 and speed<.15))
     # Freeze a still-crossing actor at its observed position for offline labels.
@@ -93,6 +96,7 @@ def reference(episode,index,output,split,assets):
         'front_distance_m':front,'maintain_stop_reference':maintain,
         'pixel_sha256':hashlib.sha256(sample['image_frames'].tobytes()).hexdigest(),'source_input_sha256':source_hash,
         'source_teacher_provenance_sha256':fingerprint,'source_simulation_time_s':moment,'physics_replay_errors':errors,
+        'source_lateral_error_m':lateral,'source_heading_change_rad':float(heading_change),
         'future_permission_frozen_for_red_supervision':blocked and result['scenario']=='red_light',
         'future_actor_motion_frozen':freeze_actor,'source_episode_status':result['status'],
         'reference_generator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}

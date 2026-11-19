@@ -27,6 +27,9 @@ class TeacherDataPolicyTest(unittest.TestCase):
     self.assertEqual(check_source(result,{'provenance':provenance},'train'),fingerprint)
     self.assertEqual(check_source({**result,'scenario':'pedestrian'},{'provenance':provenance},'train'),fingerprint)
     self.assertEqual(check_source({**result,'scenario':'lane_center'},{'provenance':provenance},'train'),fingerprint)
+    for scenario in ('left_turn','right_turn'):
+      self.assertEqual(check_source({**result,'scenario':scenario},{'provenance':provenance},'train'),fingerprint)
+      with self.assertRaises(ValueError):check_source({**result,'scenario':scenario,'seed':303},{'provenance':provenance},'train')
     for changed,split in (({**result,'seed':300},'train'),(result,'validation'),
       ({**result,'model_inputs_include_signal_ground_truth':True},'train'),({**result,'model_provenance_sha256':'b'*64},'train'),
       ({**result,'scenario':'yield_left'},'train')):

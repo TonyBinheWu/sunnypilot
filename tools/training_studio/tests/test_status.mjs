@@ -2,6 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary,teacherBatchObservation} from '../web/status.mjs';
 
+test('a connected teacher does not make a stale qualification controller look active',()=>{
+  const value={time:100,teacher:{updated:99,connected:true,qualified:false,qualification:{state:'running',updated:50,done:0,total:11}}};
+  assert.match(teacherMessage(value).connection,/已連線/);
+  assert.match(teacherMessage(value).progress,/驗收回報已過期/);
+  assert.doesNotMatch(teacherMessage(value).progress,/資格驗證中/);
+  value.teacher.qualification.updated=99;
+  assert.match(teacherMessage(value).progress,/資格驗證中/);
+  value.teacher.qualification.state='failed';value.teacher.qualification.updated=50;
+  assert.match(teacherMessage(value).progress,/資格未通過/);
+  assert.doesNotMatch(teacherMessage(value).progress,/回報已過期/);
+});
+
 test('batch observations retain measured updates without inventing missing batches or validation',()=>{
   const value={teacher_training:{cycle:24,epoch:1,phase:'training',objective_revision:'v2',batch:3,loss:12,loss_before_step:15}};
   let observed=teacherBatchObservation(value);

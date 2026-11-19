@@ -22,7 +22,8 @@ export function teacherMessage(value){
   const t=value.teacher||{},q=t.qualification||{};
   const fresh=Number.isFinite(t.updated)&&Math.abs(value.time-t.updated)<20;
   const connection=fresh&&t.connected?`教師接口已連線 · ${t.gpu||'GPU'} · ${t.qualified?'完整資格已通過':'尚未取得完整資格'}`:'教師接口尚未連通或心跳過期';
-  const state={running:'資格驗證中',failed:'資格未通過',passed:'資格驗證通過',error:'驗證程序錯誤',interrupted:'驗證已中斷'}[q.state]||'等待資格驗證';
+  const stale=q.state==='running'&&Number.isFinite(q.updated)&&Number.isFinite(value.time)&&value.time-q.updated>20;
+  const state=stale?'驗收回報已過期，請檢查驗收程序':({running:'資格驗證中',failed:'資格未通過',passed:'資格驗證通過',error:'驗證程序錯誤',interrupted:'驗證已中斷'}[q.state]||'等待資格驗證');
   const batch=String(q.batch||'').replaceAll('\\','/').match(/cycle-(\d+)\/qualification-(safety|balanced|latest)(?:-early-epoch(\d+))?(?:-policy-([a-z0-9-]+))?(?:-stage-(visual-decision|small-batch))?$/);
   const candidate=batch?`第 ${Number(batch[1])} 輪 · ${{safety:'安全優先候選',balanced:'綜合損失候選',latest:'最近完整epoch候選'}[batch[2]]}${batch[3]?` · Epoch ${Number(batch[3])} 固定快照`:''}${batch[4]==='crossing-v1'?' · 行人全程停讓指令':batch[4]?' · 輸入設定 '+batch[4]:''}${batch[5]==='visual-decision'?' · 視覺決策微調':batch[5]==='small-batch'?' · 小批次權重更新':''}`:null;
   const reasons={lane_envelope:'超出車道邊界 (lane_envelope)',red_stop_not_sustained:'紅燈停等未持續達標 (red_stop_not_sustained)',red_hold_not_maintained:'紅燈期間未保持停車 (red_hold_not_maintained)',insufficient_progress:'行駛進度不足 (insufficient_progress)',crossed_before_permission:'允許通行前越線 (crossed_before_permission)',stop_not_observed:'未在有效區內形成停等 (stop_not_observed)',resume_not_observed:'未觀察到恢復行駛 (resume_not_observed)'};
