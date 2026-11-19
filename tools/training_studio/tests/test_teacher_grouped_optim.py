@@ -65,9 +65,12 @@ class CommonDescentTest(unittest.TestCase):
     self.assertEqual(paired_groups(items,2,correction_warmup=True),groups)
     correction=next(i for i,item in enumerate(items) if not item['row']['stop_required'] and item['row']['scenario']=='left_turn')
     items[correction]['row']={**items[correction]['row'],'turn_reference_speed_mps':2.}
+    permitted=next(i for i,item in enumerate(items) if not item['row']['stop_required'] and item['row']['scenario']=='lane_center')
+    items[permitted]['row']={**items[permitted]['row'],'correction_priority':True}
     warm=paired_groups(items,2,correction_warmup=True)
     self.assertEqual(warm[1:],groups)
     self.assertIn(correction,warm[0][1::2])
+    self.assertIn(permitted,warm[0][1::2])
     self.assertEqual({stop_mode(items[i]) for i in warm[0][::2]},{'hold','approach','recover'})
     self.assertEqual({maneuver_class(items[i]['row']) for i in warm[0][1::2]},{'left','right','straight'})
     self.assertEqual(warm,paired_groups(items,2,correction_warmup=True))

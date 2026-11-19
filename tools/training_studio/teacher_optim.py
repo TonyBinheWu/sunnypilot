@@ -65,7 +65,7 @@ def paired_groups(items,epoch,*,correction_warmup=False):
     from tools.training_studio.teacher_reasoning_train import maneuver_class
     corrections={}
     for index,item in enumerate(items):
-      if not item['row']['stop_required'] and item['row'].get('turn_reference_speed_mps') is not None:
+      if not item['row']['stop_required'] and (item['row'].get('turn_reference_speed_mps') is not None or item['row'].get('correction_priority') is True):
         corrections.setdefault(maneuver_class(item['row']),[]).append(index)
     if corrections:
       warmup=list(groups[0])
