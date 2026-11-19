@@ -43,7 +43,16 @@ def paired_indices(items,epoch,*,balanced_stop_modes=False):
     if set(groups[0])!={'hold','recover','approach'} or set(groups[1])!={'straight','left','right'}:
       raise ValueError('balanced recovery requires three stop modes and three permitted directions')
     multiple=__import__('math').lcm(*(len(group) for group in groups));count=((max(len(stop),len(go))+multiple-1)//multiple)*multiple
-    return list(zip(*(_balanced_order(group,epoch,count) for group in groups)))
+    stop_order,go_order=(_balanced_order(group,epoch,count) for group in groups)
+    # Independent class marginals are insufficient: identical class shuffles
+    # permanently tie hold/recover/approach to particular directions. Rotate
+    # each balanced direction round so all cross-task combinations are used.
+    crossed_go=[]
+    for start in range(0,count,3):
+      stop_order[start:start+3]=sorted(stop_order[start:start+3],key=lambda index:stop_mode(items[index]))
+      directions=sorted(go_order[start:start+3],key=lambda index:maneuver_class(items[index]['row']));rotation=(epoch+start//3)%3
+      crossed_go.extend(directions[rotation:]+directions[:rotation])
+    return list(zip(stop_order,crossed_go))
   rng=np.random.default_rng(epoch+42)
   stop=rng.permutation(stop).tolist();go=rng.permutation(go).tolist()
   return [(stop[i%len(stop)],go[i%len(go)]) for i in range(max(len(stop),len(go)))]

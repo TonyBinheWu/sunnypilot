@@ -56,10 +56,22 @@ class ForwardMotionTest(unittest.TestCase):
     self.assertAlmostEqual(float(velocity[0,-1]),0.,places=6)
     torch.testing.assert_close(effective[...,1],action[...,1],atol=0,rtol=0)
 
-  def test_reverse_observation_is_rejected_instead_of_silently_relabelled(self):
+  def test_forward_profile_handles_settling_rollback_without_mutating_observations_or_supplied_states(self):
     self.history[0,-2,0]=.01
-    with self.assertRaisesRegex(ValueError,'observed initial speed'):
-      project_actions(self.actions([0.]*64),self.space,self.history,self.rot)
+    history=self.history.clone();states={'v':torch.tensor([-.005]),'heading':torch.tensor([.3])}
+    effective,resolved=project_actions(self.actions([-.3]*64),self.space,self.history,self.rot,t0_states=states)
+    self.assertAlmostEqual(float(resolved['v']),.1,places=6)
+    self.assertAlmostEqual(float(states['v']),-.005,places=6)
+    torch.testing.assert_close(self.history,history,atol=0,rtol=0)
+    self.assertIs(resolved['heading'],states['heading'])
+    self.assertGreaterEqual(float(self.velocities(effective,.1).min()),-1e-6)
+    self.space.action_to_traj=lambda *args,**kwargs:None
+    install(self.space)
+    self.assertAlmostEqual(float(self.space.estimate_t0_states(self.history,self.rot)['v']),.1,places=6)
+
+  def test_nonfinite_observed_speed_still_rejects_the_request(self):
+    with self.assertRaisesRegex(ValueError,'nonfinite observed initial speed'):
+      project_actions(self.actions([0.]*64),self.space,self.history,self.rot,t0_states={'v':torch.tensor([float('nan')])})
 
   def test_completed_hold_does_not_train_to_release_an_adequate_brake(self):
     target=self.actions([0.]*64)

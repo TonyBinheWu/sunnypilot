@@ -233,7 +233,7 @@ def main():
   if args.signed_hold_controls:objective_revision=SIGNED_HOLD_OBJECTIVE_REVISION
   if args.unit_task_gradients and not args.paired_stop_go: raise ValueError('task gradient balancing requires paired stop/go training')
   optimization_profile=('paired_unit_gradient_pcgrad_sgd_v2' if args.unit_task_gradients else 'paired_stop_go_pcgrad_sgd_v1') if args.paired_stop_go else 'single_sample_adamw_backtracking_v1'
-  if args.balanced_stop_modes:optimization_profile='paired_balanced_stop_modes_pcgrad_sgd_v3'
+  if args.balanced_stop_modes:optimization_profile='paired_balanced_cross_task_pcgrad_sgd_v4'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:

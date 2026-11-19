@@ -5,6 +5,23 @@ from tools.training_studio.teacher_optim import paired_indices
 
 
 class PairCoverageTest(unittest.TestCase):
+  def test_balanced_modes_do_not_permanently_alias_hold_to_right_and_recover_to_straight(self):
+    from collections import Counter
+    from tools.training_studio.teacher_optim import stop_mode
+    from tools.training_studio.teacher_reasoning_train import maneuver_class
+    items=[]
+    for mode in ('hold','recover','approach'):
+      items.extend({'row':{'stop_required':True,'scenario':'red_light','maintain_stop_reference':mode=='hold','front_distance_m':6.},'observed_speed_mps':0. if mode=='recover' else 3.} for _ in range(7))
+    for scenario in ('lane_center','left_turn','right_turn'):items.extend({'row':{'stop_required':False,'scenario':scenario}} for _ in range(7))
+    combined=Counter()
+    for epoch in range(3):
+      pairs=paired_indices(items,epoch,balanced_stop_modes=True)
+      counts=Counter((stop_mode(items[a]),maneuver_class(items[b]['row'])) for a,b in pairs)
+      self.assertEqual(len(counts),9)
+      self.assertLessEqual(max(counts.values())-min(counts.values()),1)
+      combined.update(counts)
+    self.assertEqual(set(combined.values()),{7})
+
   def test_balanced_modes_rehearse_rare_recovery_and_cover_common_references_across_epochs(self):
     from collections import Counter
     from tools.training_studio.teacher_optim import stop_mode
