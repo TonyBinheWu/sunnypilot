@@ -1,10 +1,14 @@
-# Formosa 座艙 繁中 0.6.3
+# Formosa 座艙 繁中 0.6.4
 
 獨立的 Android 座艙版，套件 `me.shind0.carrotweb.tw.cockpit`，可與 CarrotAssist 繁中並存。Android 8.0 以上；本版依使用者要求移除語音功能與麥克風權限，原 CarrotAssist 保留語音。介面參考中央觸控螢幕的車況／導航分割、底部快捷列與模式卡片，沿用 Carrot 現有功能，車輛及圖示使用本專案原創繪圖，沒有 Tesla 程式、標誌或車輛模型。
 
-[下載 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.6.3/CarrotCockpit-TW-0.6.3.apk)
+[下載 APK](https://github.com/TonyBinheWu/sunnypilot/releases/download/carrot-cockpit-tw-v0.6.4/CarrotCockpit-TW-0.6.4.apk)
 
 先更新並重新啟動 TonyBinheWu/sunnypilot 的 carrot-wip 車機，再讓 Android 裝置與車機連上同一 Wi-Fi／熱點。首次開啟重新選擇裝置；獨立套件的連線資料與授權分開保存，原版資料不會被匯入或覆寫。尚未支援遠端 FormosaLink 在這個 LAN 版本中直接啟動座艙。
+
+## 0.6.4 停車俯視
+
+更新車機後，到「工具 → 網頁設定 → 駕駛視覺」開啟「停車俯視與標線候選」。前方有有效追蹤點或凸起表面時，畫面會標示相對前鏡頭的約略距離。連續影格辨識到符合條件的白線後，會標示可能的車格。側後方及遮蔽區域的狀態仍未知。座艙的停車辨識在觀看端執行，本版尚未提供 RX 9060 即時停車辨識串流。
 
 ## 駕駛視覺的前車與雙鏡頭
 
