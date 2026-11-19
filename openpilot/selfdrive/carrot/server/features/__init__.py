@@ -10,6 +10,7 @@ from . import (
   cars,
   dashcam,
   egpu_model,
+  environment_model,
   intro,
   mapbox_tokens,
   navigation,
@@ -36,6 +37,7 @@ from . import (
 
 
 def register_all(app: web.Application) -> None:
+  environment_model.register(app)
   from . import training_data
   training_data.register(app)
   from . import road_scenes

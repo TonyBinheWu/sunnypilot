@@ -148,14 +148,14 @@ $('retryDetection').onclick=()=>{
   api.retry();$('visionSettingFeedback').textContent='已重新初始化已啟用的辨識模型；未啟用項目保持關閉。';
 };
 let savingVision=false;
-for(const [id,key] of [['detectionObjects','vision_object_detection'],['detectionRoad','vision_road_detection']])$(id).onchange=async()=>{
+for(const [id,key] of [['detectionObjects','vision_object_detection'],['detectionRoad','vision_road_detection'],['detectionEnvironment','vision_environment_occupancy']])$(id).onchange=async()=>{
   if(savingVision)return;const w=coreWindow(),value=$(id).checked;
-  savingVision=true;$('detectionObjects').disabled=true;$('detectionRoad').disabled=true;
+  savingVision=true;$('detectionEnvironment').disabled=true;$('detectionObjects').disabled=true;$('detectionRoad').disabled=true;
   try{if(typeof w?.setWebSettingByKey!=='function')throw Error();await w.setWebSettingByKey(key,value);
     if(w.CarrotWebSettingsState?.[key]!==value)throw Error();
     $('visionSettingFeedback').textContent='辨識開關已儲存；模型狀態請見上方。';
   }catch{$('visionSettingFeedback').textContent='設定未確認，請確認連線後重試；不會自動重送。';}
-  finally{savingVision=false;$('detectionObjects').disabled=false;$('detectionRoad').disabled=false;}
+  finally{savingVision=false;$('detectionEnvironment').disabled=false;$('detectionObjects').disabled=false;$('detectionRoad').disabled=false;}
 };
 $('searchNav').onclick=()=>{try{const doc=nav.contentDocument,open=!doc.body.classList.contains('search-open');if(!open){closeNavigationSearch();return;}doc.body.classList.add('search-open');$('searchNav').setAttribute('aria-expanded','true');$('searchNav').textContent='關閉搜尋／最愛';doc.getElementById('query').focus();}catch{status('請先等待導航頁載入。');}};
 $('appsButton').onclick=()=>{
@@ -258,8 +258,9 @@ function render(){
   $('connectVision').textContent=report.camera?'影像已連接':'連接前鏡頭';
   $('objectDetectionStatus').textContent=report.objects.text+(report.objects.count?` · 模型回報 ${report.objects.count} 項，其中 ${report.objects.positioned} 項可定位`: '')+(report.objects.classes?`（${report.objects.classes}）`:'');
   $('roadDetectionStatus').textContent=report.road.text+(report.road.count?` · 模型回報 ${report.road.count} 項`: '');
-  if(!savingVision){$('detectionObjects').checked=report.objects.enabled===true;$('detectionRoad').checked=report.road.enabled===true;$('detectionObjects').disabled=report.objects.enabled===null;$('detectionRoad').disabled=report.road.enabled===null;}
-  $('retryDetection').disabled=!report.objects.enabled&&!report.road.enabled;
+  $('environmentDetectionStatus').textContent=report.environment.text;
+  if(!savingVision){$('detectionEnvironment').checked=report.environment.enabled===true;$('detectionEnvironment').disabled=report.environment.enabled===null;$('detectionObjects').checked=report.objects.enabled===true;$('detectionRoad').checked=report.road.enabled===true;$('detectionObjects').disabled=report.objects.enabled===null;$('detectionRoad').disabled=report.road.enabled===null;}
+  $('retryDetection').disabled=!report.objects.enabled&&!report.road.enabled&&!report.environment.enabled;
   $('openBev').textContent=frameWindow?.CarrotWebSettingsState?.vision_presentation==='bev'?'切回道路視角':'切換俯視視角';
   $('resetView').disabled=!frameWindow?.CarrotVisionView||frameWindow?.CarrotWebSettingsState?.vision_presentation==='bev';$('resetViewSetting').disabled=$('resetView').disabled;
   if(view==='vision'&&!frameWindow?.CarrotVisionReplay?.isActive?.()&&frameWindow?.CarrotVisionReplay?.status?.()?.active!==true){

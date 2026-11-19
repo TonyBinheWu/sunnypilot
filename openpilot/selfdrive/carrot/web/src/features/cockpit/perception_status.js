@@ -17,5 +17,9 @@ export function cockpitPerceptionReport(frame){
     return {enabled,status,count,classes,text:detail||STATES[status]||'狀態待確認',positioned:Number.isSafeInteger(value.positioned)?value.positioned:0};
   }
   const objects=row('objects'),road=row('road');
-  return {camera,objects,road,summary:objects.enabled===null?'辨識設定尚未確認':!objects.enabled?'物件辨識未啟用':!camera?'物件辨識：等待前鏡頭':objects.status==='ready'?`影像辨識 · ${objects.count} 個結果`:`物件辨識：${objects.text}`};
+  const enabled=settings.vision_environment_occupancy,env=snapshot?.environment;
+  const status=enabled===false?'off':env?.status;
+  const environment={enabled:typeof enabled==='boolean'?enabled:null,text:status==='ready'?`前方推估 ${env.cells} 格 · 畫面 ${env.drawn??0} 格 · 估距範圍 ${env.ranges??0} 條`:
+    status==='missing'?'環境模型未就緒，請確認車機已更新且可連上 GitHub，再按重試。':status==='calibration'?'等待有效前鏡頭校正':STATES[status]||'等待車機資料'};
+  return {camera,objects,road,environment,summary:objects.enabled===null?'辨識設定尚未確認':!objects.enabled?'物件辨識未啟用':!camera?'物件辨識：等待前鏡頭':objects.status==='ready'?`影像辨識 · ${objects.count} 個結果`:`物件辨識：${objects.text}`};
 }

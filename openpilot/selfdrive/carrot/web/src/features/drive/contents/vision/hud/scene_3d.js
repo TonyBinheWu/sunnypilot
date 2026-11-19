@@ -34,6 +34,39 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
   let renderer=null,failed=false,lost=false,closed=false,scene,world,camera,models,ego,egoKey='',active=false,hud,hudCamera,ground;
   const hudNodes=new Map(),parkingNodes=[];
   const objectNodes=new Map(),pool=new Map(),ribbons=[];
+  let volume=null,lastPositions=null,rangeLines=null,lastRanges=null;
+  function updateRanges(ranges){
+    if(!ranges?.length){if(rangeLines)rangeLines.geometry.setDrawRange(0,0);lastRanges=null;return;}
+    if(lastRanges===ranges)return;
+    if(!rangeLines){
+      const geometry=new T.BufferGeometry();
+      geometry.setAttribute('position',new T.BufferAttribute(new Float32Array(16*9*6),3).setUsage(T.DynamicDrawUsage));
+      rangeLines=new T.LineSegments(geometry,new T.LineBasicMaterial({color:'#aa90e1',transparent:true,opacity:.55,depthWrite:false}));
+      rangeLines.userData.owned=true;rangeLines.frustumCulled=false;world.add(rangeLines);
+    }
+    const points=rangeLines.geometry.attributes.position;
+    points.array.set(ranges);points.needsUpdate=true;rangeLines.geometry.setDrawRange(0,ranges.length/3);
+    lastRanges=ranges;
+  }
+  const voxelTransform=new T.Matrix4();
+  function updateVolume(positions) {
+    if(!positions?.length){if(volume)volume.count=0;lastPositions=null;return;}
+    if(lastPositions===positions)return;
+    if(!volume){
+      volume=new T.InstancedMesh(new T.BoxGeometry(.94,.94,.94),
+        new T.MeshLambertMaterial({color:'#429fa6',transparent:true,opacity:.42,depthWrite:false}),64*36);
+      volume.instanceMatrix.setUsage(T.DynamicDrawUsage);volume.frustumCulled=false;
+      volume.userData.owned=true;world.add(volume);
+    }
+    volume.count=Math.min(64*36,Math.floor(positions.length/3));
+    for(let i=0;i<volume.count;i++){
+      const z=positions[3*i+2];
+      // Show ground-height cells as tiles, so a flat surface never becomes a row of bollards.
+      voxelTransform.makeScale(1,1,z===0?.05:1).setPosition(positions[3*i],positions[3*i+1],z);
+      volume.setMatrixAt(i,voxelTransform);
+    }
+    volume.instanceMatrix.needsUpdate=true;lastPositions=positions;
+  }
   let pooled=0,allocated=0,reused=0,discarded=0,predictedMesh,predictedLine,roadCache=null;
   function acquire(kind) {
     const bin=pool.get(kind);let node;
@@ -60,7 +93,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
   let renderWidth=0,renderHeight=0,lastStats={backend:'not-started',objects:0,classified:0,unknown:0};
   const dispose=()=>{for(const m of ribbons){m.geometry.dispose();m.material.dispose();}ribbons.length=0;models?.dispose();models=null;scene?.traverse(o=>{if(o.userData?.owned){o.geometry?.dispose();o.material?.dispose();}});renderer?.dispose();renderer=null;discarded+=objectNodes.size+pooled;objectNodes.clear();pool.clear();pooled=0;predictedMesh?.dispose();predictedLine?.dispose();roadCache=null;hudNodes.clear();parkingNodes.length=0;ego=null;renderWidth=renderHeight=0;};
   const contextLost=e=>{e.preventDefault();lost=true;canvas.hidden=true;lastStats={...lastStats,backend:'context-lost'};onChange();};
-  const contextRestored=()=>{if(closed)return;lost=false;failed=false;dispose();onChange();};
+  const contextRestored=()=>{if(closed)return;lost=false;failed=false;volume?.dispose();volume=null;lastPositions=null;rangeLines=null;lastRanges=null;dispose();onChange();};
   canvas.addEventListener('webglcontextlost',contextLost);canvas.addEventListener('webglcontextrestored',contextRestored);
   function start(){
     if(failed||lost||closed||!target.WebGL2RenderingContext)return false;if(renderer)return true;
@@ -99,6 +132,16 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       if(renderWidth!==width||renderHeight!==height){renderer.setSize(width,height,false);renderWidth=width;renderHeight=height;}
       const spec=sceneCamera(width,height,{...view,skinScale:skin?.scale});camera.fov=spec.fov;camera.aspect=spec.aspect;camera.position.set(...spec.position);camera.lookAt(...spec.target);camera.updateProjectionMatrix();renderer.setViewport?.(0,spec.bottomInset,width,spec.viewportHeight);
       const bg=night?'#0c1018':'#edf1f8';scene.background.set(bg);scene.fog.color.set(bg);ground.material.color.set(night?'#191e27':'#e8edf5');
+      updateVolume(data.environment);
+      updateRanges(data.environment&&data.environmentRanges);
+      if(rangeLines){
+        rangeLines.position.set(data.environmentMotion?.x||0,data.environmentMotion?.y||0,0);
+        rangeLines.rotation.z=data.environmentMotion?.angle||0;
+      }
+      if(volume){
+        volume.position.set(data.environmentMotion?.x||0,data.environmentMotion?.y||0,0);
+        volume.rotation.z=data.environmentMotion?.angle||0;
+      }
       const model=data.model, paintKey=JSON.stringify(data.paint??null);
       if(!roadCache||roadCache.model!==model||roadCache.paintKey!==paintKey||roadCache.night!==night||roadCache.rainbow!==rainbow){
         roadCache={model,paintKey,night,rainbow};
@@ -139,5 +182,5 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},rendererFactory
       if(hudNodes.size){renderer.setViewport?.(0,0,width,height);renderer.autoClear=false;renderer.clearDepth();renderer.render(hud,hudCamera);}
       lastStats={backend:'webgl2',objects:objects.length,classified:objects.filter(o=>o.kind!=='unknown').length,unknown:objects.filter(o=>o.kind==='unknown').length,imageIcons:hudNodes.size,width,height,drawCalls,triangles,allocated,reused,discarded,pooled,geometries:renderer.info.memory?.geometries??null,textures:renderer.info.memory?.textures??null};canvas.dataset.renderer='webgl2';return true;
     }catch{failed=true;dispose();canvas.hidden=true;lastStats={...lastStats,backend:'canvas-fallback'};return false;}
-  },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats}),destroy(){closed=true;canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);dispose();canvas.remove();}};
+  },pause(){active=false;canvas.hidden=true;},snapshot:()=>({...lastStats,environmentRanges:active&&!lost&&renderer&&lastRanges?lastRanges.length/6:0,environmentCells:active&&!lost&&renderer?volume?.count||0:0}),destroy(){closed=true;canvas.removeEventListener('webglcontextlost',contextLost);canvas.removeEventListener('webglcontextrestored',contextRestored);volume?.dispose();dispose();canvas.remove();}};
 }

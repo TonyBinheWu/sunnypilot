@@ -31,6 +31,8 @@
 
 ## 離線 OSM 與佔用模型
 
+若要直接在車機網頁或座艙 APK 觀看，請參閱[前鏡頭即時 3D 佔用圖層](FRONT_OCCUPANCY.zh-TW.md)。這個圖層由觀看裝置運算。下方的工作站流程提供較高解析度的離線分析。
+
 IIS 後端可直接讀取部署套件隨附的台灣空間索引。自行更新時，下載區域 PBF，在安裝了 Python `osmium` 的工作站執行下列命令，把完成的索引放進後端私有資料目錄的 `scene-osm.sqlite3`。道路查詢在自己的伺服器完成。[台灣 OSM 下載來源](https://download.geofabrik.de/asia/taiwan.html)
 
 ```powershell

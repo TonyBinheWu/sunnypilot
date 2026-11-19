@@ -110,6 +110,7 @@ const WEB_SETTINGS_GROUPS = [
       {id:"vision_vehicle_color",titleKey:"vision_vehicle_color",descKey:"vision_vehicle_color_desc",options:["white","silver","gray","black","red","blue","green","beige","orange"].map(value=>({value,labelKey:`vehicle_color_${value}`}))},
       {id:"vision_object_detection",titleKey:"scene_detection",descKey:"scene_detection_desc"},
       {id:"vision_road_detection",titleKey:"road_detection",descKey:"road_detection_desc"},
+      {id:"vision_environment_occupancy",titleKey:"vision_environment_occupancy",descKey:"vision_environment_occupancy_desc"},
       {id:"vision_bev_range",titleKey:"bev_range",descKey:"bev_range_desc",options:[30,50,75].map(n=>({value:String(n),label:`${n} m`}))},
       {id:"vision_bev_grid",titleKey:"bev_grid",descKey:"bev_grid_desc"},
       {id:"vision_bev_details",titleKey:"bev_details",descKey:"bev_details_desc"},

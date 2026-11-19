@@ -452,6 +452,7 @@ WEB_SETTINGS_SPEC: List[_Field] = [
   _Field("vision_vehicle_color", "enum", "white", choices={"white","silver","gray","black","red","blue","green","beige","orange"}),
   _Field("vision_object_detection", "bool", False),
   _Field("vision_road_detection", "bool", False),
+  _Field("vision_environment_occupancy", "bool", False),
   _Field("vision_parking_assist", "bool", False),
   _Field("vision_parking_map", "bool", False),
   _Field("vision_bev_range", "enum", "50", choices={"30", "50", "75"}),

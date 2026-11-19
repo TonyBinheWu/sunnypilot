@@ -1,9 +1,14 @@
 import {cameraGeometry,cameraTargets,unpositionedTargets,roadCameraTargets,roadImageTargets} from './scene_objects.js';
 
 import {captureIdentity,sceneContributor} from './scene_contribution.js';
+import {OCCUPANCY_TTL_MS} from '../occupancy_grid.js';
 
 export const DETECTION_TTL_MS=1200;
-export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={}) {
+export function createObjectPerception(doc,target,{onChange=()=>{},road=false,occupancy=false}={}) {
+  const ttl=occupancy?OCCUPANCY_TTL_MS:DETECTION_TTL_MS;
+  const setting=occupancy?'vision_environment_occupancy':road?'vision_road_detection':'vision_object_detection';
+  let expiry=null;
+  const profiles=[];
   let worker=null,generation=0,ready=false,busy=false,failed=false,wasEnabled=false,warmed=false,lastAttempt=-Infinity;
   let lastDecoded=null,lastProfile=null,lastTime=null,lastSource=null,lastReplay=null,request=null,timeout=null,revision=0,interval=250;
   let state={status:'off',objects:[],imageObjects:[],count:0,capturedAt:null,revision};
@@ -28,6 +33,8 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
   const clearTimeout=()=>{if(timeout!==null)target.clearTimeout(timeout);timeout=null;};
   const publish=(status,extra={})=>{state={status,objects:[],imageObjects:[],count:0,capturedAt:null,...extra,revision:++revision};onChange();};
   function stop(status='off'){
+    profiles.length=0;
+    if(expiry!==null){target.clearTimeout(expiry);expiry=null;}
     generation++;worker?.terminate();worker=null;ready=false;busy=false;warmed=false;request=null;clearTimeout();
     lastDecoded=null;lastTime=null;lastSource=null;lastReplay=null;lastAttempt=-Infinity;interval=250;
     if(state.status!==status||state.objects.length||state.imageObjects.length)publish(status);
@@ -37,7 +44,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     if(typeof target.Worker!=='function'||typeof target.WebAssembly!=='object'||typeof target.createImageBitmap!=='function'||typeof target.OffscreenCanvas!=='function'){
       fail('unsupported');return;
     }
-    const url=target.CarrotAssetUrl?.resolve?.(road?'vision.road-detector-worker':'vision.object-detector-worker');
+    const url=target.CarrotAssetUrl?.resolve?.(occupancy?'vision.occupancy-worker':road?'vision.road-detector-worker':'vision.object-detector-worker');
     if(!url){fail('load_error');return;}
     try{
       worker=new target.Worker(url);const current=generation;
@@ -46,14 +53,26 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
         if(current!==generation)return;
         clearTimeout();
         if(data.type==='ready'){ready=true;publish('waiting');return;}
-        if(data.type==='error'){fail(data.stage==='load'?'load_error':'inference_error');return;}
+        if(data.type==='error'){fail(occupancy&&data.stage==='missing'?'missing':data.stage==='load'?'load_error':'inference_error');return;}
         if(data.type!=='result'||!request||data.id!==request.id)return;
         busy=false;warmed=true;
         const captured=request;request=null;
         interval=Math.min(1200,Math.max(250,Number(data.durationMs||0)*3));
-        if(now()-captured.capturedAt>DETECTION_TTL_MS){publish('slow',{
+        if(occupancy)interval=Math.max(240,Math.min(600,Number(data.durationMs)||240));
+        if(now()-captured.capturedAt>=ttl){publish('slow',{
           durationMs:data.durationMs,delegate:data.delegate||null,geometryReason:captured.geometryReason,
         });return;}
+        if(occupancy){
+          if(!(data.positions instanceof Float32Array)||data.positions.length>64*36*3||data.positions.length%3){fail('inference_error');return;}
+          if(!(data.ranges instanceof Float32Array)||data.ranges.length>16*9*6||data.ranges.length%6){fail('inference_error');return;}
+          if(expiry!==null)target.clearTimeout(expiry);
+          expiry=target.setTimeout(()=>{expiry=null;if(current===generation&&state.capturedAt===captured.capturedAt)publish('stale');},
+            Math.max(0,ttl-(now()-captured.capturedAt)));
+          publish('ready',{positions:data.positions,ranges:data.ranges,count:data.positions.length/3,raisedCells:data.raisedCells,supportedRays:data.supportedRays,
+            visibleEmpty:data.visibleEmpty,capturedAt:captured.capturedAt,videoTime:captured.videoTime,
+            durationMs:data.durationMs,geometry:captured.geometry});
+          return;
+        }
         const objects=(road?roadCameraTargets:cameraTargets)(data.detections,captured.geometry)
           .map(o=>({...o,capturedAt:captured.capturedAt,videoTime:captured.videoTime}));
         publish(captured.geometry?'ready':'calibration',{
@@ -70,7 +89,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     }catch{fail('load_error');}
   }
   function update({active=true,frozen=false}={}){
-    const enabled=target.CarrotWebSettingsState?.[road?'vision_road_detection':'vision_object_detection']===true;
+    const enabled=target.CarrotWebSettingsState?.[setting]===true;
     if(!enabled){watch(null);failed=false;wasEnabled=false;stop();return;}
     if(!wasEnabled){failed=false;wasEnabled=true;}
     if(!active||frozen||doc.hidden){watch(null);if(!failed)stop('paused');return;}
@@ -78,14 +97,31 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     const video=doc.getElementById?.('carrotRoadVideo');
     watch(video);
     const stream=video?.srcObject, track=stream?.getVideoTracks?.()[0];
-    if(!video||video.ended||stream?.active===false||track?.readyState==='ended'||track?.muted||video.readyState<2||!video.videoWidth||!video.videoHeight||video.seeking){
-      if(state.objects.length||state.imageObjects.length||busy)stop('waiting');else if(state.status!=='loading'&&state.status!=='waiting')publish('waiting');
+    if(!video||video.ended||occupancy&&video.paused||stream?.active===false||track?.readyState==='ended'||track?.muted||video.readyState<2||!video.videoWidth||!video.videoHeight||video.seeking){
+      if(state.objects.length||state.imageObjects.length||state.positions||busy)stop('waiting');else if(state.status!=='loading'&&state.status!=='waiting')publish('waiting');
       return;
     }
     const replay=target.CarrotVisionReplay?.status?.()?.active===true;
+    if(occupancy&&(replay||target.CarrotVisionCompactStateActive===false)){stop('waiting');return;}
     const source=video.srcObject||video.currentSrc||video.src;
     if(worker&&(source!==lastSource||lastReplay!==replay||lastTime!==null&&video.currentTime<lastTime))stop('waiting');
     if(!worker){lastSource=source;lastReplay=replay;start();return;}
+    if(occupancy){
+      const raw=target.CarrotOverlayState,stamps=target.CarrotStateReceivedAtMonotonic||{};
+      const at=Math.max(stamps.liveCalibration,stamps.roadCameraState);
+      const valid=['liveCalibration','roadCameraState'].every(k=>Number.isFinite(stamps[k])&&now()>=stamps[k]&&now()-stamps[k]<2000);
+      const width=Math.min(640,video.videoWidth),height=Math.round(video.videoHeight*width/video.videoWidth);
+      const g=valid&&cameraGeometry(raw,width,height);
+      if(!g){if(busy||state.positions)stop('calibration');else {profiles.length=0;if(state.status!=='calibration')publish('calibration');}return;}
+      const prior=profiles.at(-1);
+      if(prior&&(prior.geometry.sensor!==g.sensor||prior.geometry.width!==width||prior.geometry.height!==height)){
+        stop('calibration');return;
+      }
+      if(!prior||prior.at!==at){
+        profiles.push({at,oldest:Math.min(stamps.liveCalibration,stamps.roadCameraState),geometry:g});
+        if(profiles.length>12)profiles.shift();
+      }
+    }
     if(state.geometry&&!replay){
       const raw=target.CarrotOverlayState, stamps=target.CarrotStateReceivedAtMonotonic||{};
       if(raw?.liveCalibration?._sourceInvalid||raw?.roadCameraState?._sourceInvalid||![1,'calibrated'].includes(raw?.liveCalibration?.calStatus)||raw?.roadCameraState?.sensor!==lastProfile||
@@ -95,7 +131,7 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     }
     // currentTime can advance while the RTC decoder repeats its last image.
     const decoded=video.getVideoPlaybackQuality?.().totalVideoFrames??video.webkitDecodedFrameCount;
-    const newPresented=presented && presented!==lastPresented && now()-presented.at<=DETECTION_TTL_MS;
+    const newPresented=presented && presented!==lastPresented && now()-presented.at<=ttl;
     // A covered video element may suppress frame callbacks on a head unit while its decoder still advances.
     if(!ready||busy||now()-lastAttempt<interval||lastTime===video.currentTime||
       (!newPresented && (decoded>0?decoded===lastDecoded:!!video.requestVideoFrameCallback)))return;
@@ -106,7 +142,9 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     const raw=target.CarrotOverlayState||{},stamps=target.CarrotStateReceivedAtMonotonic||{};
     // A replay source is historical by design. Live calibration/profile must be fresh.
     const fresh=key=>replay||Number.isFinite(stamps[key])&&capturedAt-stamps[key]>=0&&capturedAt-stamps[key]<2000;
-    const geometry=fresh('liveCalibration')&&fresh('roadCameraState')?cameraGeometry(raw,width,height):null;
+    const geometry=occupancy?profiles.slice().reverse().find(p=>p.at<=capturedAt&&capturedAt-p.oldest<2000)?.geometry:
+      fresh('liveCalibration')&&fresh('roadCameraState')?cameraGeometry(raw,width,height):null;
+    if(occupancy&&!geometry){busy=false;if(state.status!=='calibration')publish('calibration');return;}
     lastProfile=raw.roadCameraState?.sensor;
     const geometryReason=geometry?null:!fresh('liveCalibration')||!fresh('roadCameraState')?'telemetry'
       :!['calibrated',1].includes(raw.liveCalibration?.calStatus)?'calibration'
@@ -123,15 +161,15 @@ export function createObjectPerception(doc,target,{onChange=()=>{},road=false}={
     Promise.resolve(capture).then(bitmap=>{
       if(current!==generation){bitmap.close();return;}
       if(bitmap.width!==width||bitmap.height!==height){bitmap.close();fail('unsupported');return;}
-      try{worker.postMessage({type:'frame',bitmap,id:request.id},[bitmap]);}
+      try{worker.postMessage({type:'frame',bitmap,id:request.id,...(occupancy?{geometry}: {})},[bitmap]);}
       catch{bitmap.close();fail('unsupported');}
     }).catch(()=>{if(current===generation)fail('unsupported');});
   }
   return {update,
     retry(){failed=false;stop(wasEnabled?'waiting':'off');},
     scene(){
-      if(state.capturedAt!==null&&now()-state.capturedAt>DETECTION_TTL_MS)
-        return {...state,status:'stale',objects:[],imageObjects:[],count:0};
+      if(state.capturedAt!==null&&now()-state.capturedAt>=ttl)
+        return {...state,status:'stale',positions:undefined,ranges:undefined,supportedRays:0,objects:[],imageObjects:[],count:0};
       return state;
     },
     destroy(){watch(null);stop();},

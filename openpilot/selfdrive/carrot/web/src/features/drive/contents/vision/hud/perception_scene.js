@@ -33,6 +33,7 @@ function combineReferences(items, aliases) {
 export function createPerceptionScene(target) {
   const tracker=createObjectTracker(), stamps=new Map(), aliases=new Map();
   let session=null, autoStarted=false, lastVideo=null, replaySample=null, poseLease=null, acquiring=false;
+  let lastMotion=null;
   function releasePose(){const lease=poseLease;poseLease=null;lease?.release?.();}
   function syncPose(enabled){
     if(!enabled){releasePose();return;}
@@ -41,7 +42,7 @@ export function createPerceptionScene(target) {
     try {poseLease=target.CarrotDriveDataActivity.acquire({owner:'perception_pose',hud:true,overlay:true,ar:true});}
     finally {acquiring=false;}
   }
-  function clear() {tracker.reset();stamps.clear();aliases.clear();lastVideo=null;replaySample=null;}
+  function clear() {tracker.reset();stamps.clear();aliases.clear();lastVideo=null;replaySample=null;lastMotion=null;}
   function update(scene,now,active,replay) {
     if(!active) {clear();releasePose();session=null;return [];}
     syncPose(!replay && target.CarrotDeviceRuntimeState?.isOffroad!==true);
@@ -74,6 +75,7 @@ export function createPerceptionScene(target) {
       yaw=(Math.cos(h)*sp*cr+Math.sin(h)*sr)*angular.x+(Math.sin(h)*sp*cr-Math.cos(h)*sr)*angular.y+Math.cos(p)*cr*angular.z;
     }
     const motion={speed,yaw:Math.abs(yaw??0)<2?yaw:null};
+    lastMotion=motion;
     const connected=replay||target.CarrotVisionCompactStateActive!==false;
     if(scene.radar && !scene.radar._sourceInvalid && connected) {
       const wall=target.CarrotStateUpdatedAt?.radarState;
@@ -94,7 +96,7 @@ export function createPerceptionScene(target) {
     return combineReferences(tracker.sample(now,motion),aliases);
   }
   function startConfigured(active,settings) {
-    const configured=settings.vision_object_detection===true||settings.vision_road_detection===true;
+    const configured=settings.vision_object_detection===true||settings.vision_road_detection===true||settings.vision_environment_occupancy===true;
     if(!configured){autoStarted=false;return;}
     if(!active || autoStarted || ![1,true].includes(target.CarrotDeviceRuntimeState?.carrotVisionEnabled)
       ||target.CarrotVisionReplay?.status?.()?.active || !target.CarrotVisionStart)return;
@@ -103,7 +105,7 @@ export function createPerceptionScene(target) {
     // Never take over another viewer's camera, request full screen or write a camera setting.
     if(!target.CarrotVisionState.active)Promise.resolve(target.CarrotVisionStart({automaticPerception:true})).catch(()=>{});
   }
-  return {update,startConfigured,clear(){clear();releasePose();},tracker};
+  return {update,startConfigured,clear(){clear();releasePose();},tracker,get motion(){return lastMotion;}};
 }
 
 // Count real draws, including fallback. Browser clocks measure submission time, not GPU utilisation.
