@@ -22,7 +22,7 @@ export function createParkingView(){
       if(pending!==null&&now-pending>=750){if(!reducedMotion)spin=now;pending=null;}
       if(spin!==null&&(now-spin>=4000||reducedMotion))spin=null;
       const progress=spin===null?0:Math.min(1,Math.max(0,(now-spin)/4000));
-      return {overhead:speed<=20&&(manual??context),spin:spin!==null,yaw:360*(progress*progress*(3-2*progress))};
+      return {vertical:gear==='R'||manual===true,overhead:speed<=20&&(manual??context),spin:spin!==null,yaw:360*(progress*progress*(3-2*progress))};
     }};
 }
 

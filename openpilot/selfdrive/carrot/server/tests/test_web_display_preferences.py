@@ -6,7 +6,7 @@ def test_unconfigured_display_defaults():
   assert settings['web_text_scale'] == '100'
   assert settings['vision_stream_resolution'] == 'standard'
   assert settings['vision_render_quality'] == 'auto'
-  assert settings['vision_vehicle_color'] == 'red'
+  assert settings['vision_vehicle_color'] == 'white'
   assert web_settings.sanitize_web_settings({'vision_vehicle_color':'white'})['vision_vehicle_color'] == 'white'
 
 
@@ -18,7 +18,7 @@ def test_vehicle_paint_is_display_only_validated_and_persisted(tmp_path, monkeyp
   assert changed['vision_vehicle_color']=='blue'
   assert web_settings.read_web_settings()['vision_vehicle_color']=='blue'
   assert all(changed[key]==value for key,value in before.items() if key!='vision_vehicle_color')
-  assert web_settings.sanitize_web_settings({'vision_vehicle_color':'url(https://bad)'})['vision_vehicle_color']=='red'
+  assert web_settings.sanitize_web_settings({'vision_vehicle_color':'url(https://bad)'})['vision_vehicle_color']=='white'
 
 
 def test_display_choices_are_validated_and_persist_independently(tmp_path, monkeypatch):

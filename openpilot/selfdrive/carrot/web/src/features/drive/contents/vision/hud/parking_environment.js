@@ -3,7 +3,7 @@
 const finite = Number.isFinite;
 const degrees = 180 / Math.PI;
 const reach = 12;
-export const PARKING_VIEW = Object.freeze({parking:true, yaw:0, pitch:82, distance:24});
+export const PARKING_VIEW = Object.freeze({parking:true, yaw:0, pitch:30, distance:13});
 
 export function parkingObservation({tracks=[], environment, environmentMotion}={}) {
   let nearest = null;

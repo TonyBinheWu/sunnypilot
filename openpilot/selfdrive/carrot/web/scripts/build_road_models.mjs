@@ -9,12 +9,12 @@ globalThis.FileReader = class {
   async readAsArrayBuffer(blob) { this.result=await blob.arrayBuffer(); this.onloadend(); }
 };
 
-const paint='#b8bdc1', glass='#40515c', tire='#25282c', rim='#a7aeb2', trim='#50585d';
+const paint='#c8c6c1', glass='#828483', tire='#424245', rim='#979896', trim='#747573';
 const styles = {
   sedan:[4.55,1.82,1.47], suv:[4.78,1.92,1.77], mpv:[5.00,1.94,1.89],
   pickup:[5.35,1.98,1.85], truck:[7.30,2.45,3.35], bus:[10.6,2.49,3.08]
 };
-const material=new T.MeshStandardMaterial({vertexColors:true,roughness:.47,metalness:.12,side:T.DoubleSide});
+const material=new T.MeshStandardMaterial({vertexColors:true,roughness:.79,metalness:.045,side:T.DoubleSide});
 
 function model(name,lod) {
   const parts=[], segments=[20,12,8][lod], pi=Math.PI;

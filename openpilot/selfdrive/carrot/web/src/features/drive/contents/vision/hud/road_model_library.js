@@ -20,7 +20,7 @@ export async function parseRoadLibrary(bytes) {
     materials.add(mesh.material);geometries.add(geometry);
   }
   const focus=assets.get('sedan_lod0').material.clone();
-  focus.color.setRGB(.28,1.03,2.1);
+  focus.color.setRGB(1.12,1.12,1.12);
   materials.add(focus);
   return {get:(kind,level)=>assets.get(kind+'_lod'+level),focus,
     dispose(){for(const g of geometries)g.dispose();for(const m of materials)m.dispose();}};
@@ -33,7 +33,7 @@ export function createRoadLibrary(target,doc,onChange) {
     request=new AbortController();status='loading';
     (async()=>{
       try{
-        const response=await target.fetch(new URL(ROAD_MODEL_FILE,doc.baseURI),{signal:request.signal});
+        const response=await target.fetch(new URL(ROAD_MODEL_FILE,doc.baseURI),{signal:request.signal,cache:'no-cache'});
         if(!response.ok)throw Error('model library unavailable');
         const loaded=await parseRoadLibrary(await response.arrayBuffer());
         if(closed){loaded.dispose();return;}

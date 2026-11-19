@@ -38,8 +38,24 @@ test('paint never changes lamp geometry; active lamps emit, released lamps do no
  assert.equal(new Set(colors.map(JSON.stringify)).size,Object.keys(VEHICLE_PAINTS).length);
  for(const skin of Object.values(VEHICLE_SKINS))for(const paint of Object.keys(VEHICLE_PAINTS))models.get('ego',{skin:paintedVehicle(skin,paint)});
  assert.ok(models.stats().templates<=32);assert.ok(models.stats().geometries<40);models.dispose();
- assert.equal(paintedVehicle(VEHICLE_SKINS.ev6,'url(https://bad)').paintId,'red');
+ assert.equal(paintedVehicle(VEHICLE_SKINS.ev6,'url(https://bad)').paintId,'white');
 });
 test('visual zoom is bounded and reset restores the vehicle pivot without control changes',()=>{
  const orbit=createViewOrbit();assert.equal(orbit.zoom,1);orbit.zoomBy(100);assert.equal(orbit.zoom,1.6);orbit.zoomBy(.0001);assert.equal(orbit.zoom,.6);assert.equal(orbit.setZoom(NaN),false);orbit.key('+');assert.ok(orbit.zoom>.6);orbit.reset();assert.equal(orbit.zoom,1);assert.deepEqual(orbit.pose,{yaw:0,pitch:25});
+});
+
+test('live road camera keeps the ego at the same short-edge scale and horizon after rotation',()=>{
+ for(const skin of Object.values(VEHICLE_SKINS)){
+  for(const view of [{},{parking:true,pitch:30,distance:13}]){
+   const widths=[];
+   for(const [w,h] of [[1920,720],[1024,768],[420,900]]){
+    const p=sceneProjection(w,h,{...view,roadOverview:true,skinScale:skin.scale});
+    const left=p(0,-.95,.78*skin.scale[2]),right=p(0,.95,.78*skin.scale[2]);
+    widths.push((right[0]-left[0])/Math.min(w,h));
+    assert.ok(Math.abs(left[1]/h-.72)<1e-6);
+    if(!view.parking)assert.ok(Math.abs(p(10000,0)[1]/h-.32)<.004);
+   }
+   assert.ok(Math.max(...widths)/Math.min(...widths)<1.12,skin.id+' '+widths);
+  }
+ }
 });

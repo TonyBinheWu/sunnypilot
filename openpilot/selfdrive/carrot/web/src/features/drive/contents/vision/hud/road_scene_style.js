@@ -1,8 +1,8 @@
 // Display geometry in vehicle metres (forward, right, up).
 // Both renderers sample only between consecutive observations.
 export const roadColors = night => night
-  ? {sky:'#17202a',road:'#222b35',verge:'#34404a',edge:'#61707d',lane:'#b6c3cd',path:'#3077b4',near:'#3b87c8',chevron:'#64aeeb'}
-  : {sky:'#f5f5f7',road:'#f4f4f6',verge:'#d4d4d7',edge:'#c2c3c7',lane:'#a9acb0',path:'#bfd5ed',near:'#7fb4eb',chevron:'#438cda'};
+  ? {sky:'#313338',road:'#242529',verge:'#404145',edge:'#757579',lane:'#d2d2cf',path:'#40546b',near:'#47617b',chevron:'#6985a1'}
+  : {sky:'#505257',road:'#333438',verge:'#56575a',edge:'#818184',lane:'#e7e5df',path:'#465b72',near:'#506c87',chevron:'#728eaa'};
 
 const segmentCache=new WeakMap();
 function segments(path) {
@@ -76,3 +76,17 @@ export function dashedRibbon(path,left,right) {
 }
 
 export function isDashed(code){return Number.isInteger(code)&&code>=10&&code<=38&&code%10===0;}
+
+// Project the four observed boundaries with a metric paint width, including the crossbars.
+export function parkingOutline(corners, out=new Float32Array(72)) {
+  if(!Array.isArray(corners)||corners.length!==4||!corners.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)))return null;
+  for(let i=0;i<4;i++){
+    const [x,y]=corners[i],[endX,endY]=corners[(i+1)%4];
+    const dx=endX-x,dy=endY-y,length=Math.hypot(dx,dy);
+    if(length<.01)return null;
+    const nx=-dy*.055/length,ny=dx*.055/length;
+    const a=[x-nx,y-ny,.065],b=[x+nx,y+ny,.065],c=[endX+nx,endY+ny,.065],d=[endX-nx,endY-ny,.065];
+    out.set([...a,...b,...c,...a,...c,...d],i*18);
+  }
+  return out;
+}

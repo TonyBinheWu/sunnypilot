@@ -1,5 +1,5 @@
 import {inclinedProjection, parkingDistanceText, parkingObservation, parkingWheelTicks} from './parking_environment.js';
-import {roadColors,pathChevrons,nearPathSurface,dashedRibbon,isDashed,nearPathCar} from './road_scene_style.js';
+import {roadColors,pathChevrons,nearPathSurface,dashedRibbon,isDashed,nearPathCar,parkingOutline} from './road_scene_style.js';
 import {roadModelKind} from './road_model_selection.js';
 import {paintStripes} from './road_paint.js';
 import {drawDetectedMesh} from './object_mesh.js';
@@ -100,6 +100,13 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
   const base=sceneProjection(width,height,{...camera,roadOverview:true}),shift=Number.isFinite(lift)?Math.max(0,Math.min(height*.3,lift)):0;
   const project=(x,y,z=0)=>{const p=base(x,y,z);return p?[p[0],p[1]-shift]:null;},model=scene.model;
   if(base.view){project.view=base.view;project.depth=base.depth;}
+  // A distant fog band blends into the same asphalt as the hardware renderer.
+  const far=project(100,0),mid=project(30,0);
+  if(far&&mid&&mid[1]>0){
+    const band=Math.max(1,mid[1]),gradient=ctx.createLinearGradient?.(0,0,0,band);
+    if(gradient?.addColorStop){gradient.addColorStop(0,palette.sky);gradient.addColorStop(Math.max(0,Math.min(.98,far[1]/band)),palette.sky);
+      gradient.addColorStop(1,palette.road);ctx.fillStyle=gradient;ctx.fillRect(0,0,width,band);}
+  }
   const pathPoints=(path,offset=0)=>{
     const points=[];
     for(let i=0;i<Math.min(path?.x?.length||0,path?.y?.length||0,256);i++){
@@ -143,8 +150,9 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
       const paint=paintStripes(scene.paint?.[i],i,palette.lane);
       for(const offset of paint.offsets){if(isDashed(scene.paint?.[i]))fillTriangles(dashedRibbon(line,offset-.065,offset+.065),paint.color);else stroke(line,paint.color,1.6,offset);}
     });
-    if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(model.position,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}
-    else {ribbon(model.position,-.83,.83,palette.path);fillTriangles(nearPathSurface(model.position),palette.near);fillTriangles(pathChevrons(model.position),palette.chevron);}
+    const path=camera?.parking?null:model.position;
+    if(rainbow){['#f36d83','#f6b35b','#ece367','#72cba0','#6ab9e9','#a28ade','#d795cf'].forEach((color,i)=>ribbon(path,-.9+i*1.8/7,-.9+(i+1)*1.8/7,color));}
+    else {ribbon(path,-.83,.83,palette.path);fillTriangles(nearPathSurface(path),palette.near);fillTriangles(pathChevrons(path),palette.chevron);}
   }
   // When WebGL is lost mid-frame, keep the same observed near-field surfaces.
   // Draw only calibrated occupied cells, in depth order, with the same ego compensation.
@@ -169,8 +177,8 @@ export function drawDrivingScene(ctx,width,height,scene,{rainbow=false,text,draw
     }
   }
   for(const slot of (scene.parking||[]).slice(0,12)){
-    const p=slot.corners?.map(([x,y])=>project(x,y,.065));if(!p||p.length!==4||p.some(v=>!v))continue;
-    ctx.strokeStyle='#d69c30';ctx.lineWidth=2;ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.stroke();
+    const outline=parkingOutline(slot.corners);
+    if(outline)fillTriangles(outline,'#e9bf72');
   }
   const objects=scene.tracks?[...scene.tracks]:[...surroundingTargets(scene.radar),...(scene.vision?.objects||[]),...(scene.road?.objects||[])];
   objects.sort((a,b)=>project.depth?project.depth(b.x,b.y)-project.depth(a.x,a.y):b.x-a.x).forEach(object=>drawSceneObject(ctx,project,{...object,pathFocus:nearPathCar(object,model?.position)},{text,night}));

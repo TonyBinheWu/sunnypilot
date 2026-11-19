@@ -25,7 +25,7 @@ test('tire card rejects missing, zero and nonfinite values and never invents uni
   assert.deepEqual(tireLabels(null),['—','—','—','—']);assert.deepEqual(tireLabels({tpms:{fl:35.12,fr:0,rl:NaN,rr:Infinity}}),['35.1','—','—','—']);
 });
 test('night palette is a supplied presentation option; both scenes use the selected road surface',()=>{
-  for(const [night,color] of [[true,'#222b35'],[false,'#f4f4f6']]){
+  for(const [night,color] of [[true,'#242529'],[false,'#333438']]){
     const fills=[];const ctx=new Proxy({},{get:(t,k)=>t[k]??((...args)=>{if(k==='fillRect')fills.push([t.fillStyle,...args]);}),set:(t,k,v)=>(t[k]=v,true)});
     drawDrivingScene(ctx,800,400,{}, {night,drawEgo:()=>{}});assert.equal(fills[0][0],color);
   }
