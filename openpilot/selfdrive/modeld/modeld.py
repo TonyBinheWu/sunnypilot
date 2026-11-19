@@ -417,9 +417,13 @@ def main(demo=False):
   prev_action = log.ModelDataV2.Action()
 
   from opendbc.car.tesla.values import TeslaFlags
+  from opendbc.car.volkswagen.values import VolkswagenFlags
   from openpilot.selfdrive.car.voice_indicator import native_indicator
   DH = DesireHelper(fingerprint=CP.carFingerprint, native_voice_signal=native_indicator(CP) is not None,
                     tesla_auto_signals=CP.brand == "tesla" and bool(CP.flags & TeslaFlags.AUTO_TURN_SIGNALS),
+                    # MEB derives these two fields directly from the SMLS lever. Other
+                    # platforms need a physical press counter or verified Tesla driver input.
+                    require_driver_stalk=not (CP.brand == "chrysler" or (CP.brand == "volkswagen" and CP.flags & VolkswagenFlags.MEB)),
                     boundary_indicator_supported=CP.carFingerprint == 'HYUNDAI_IONIQ_5_PE')
   boundary_observer = BoundaryObserver(cloudlog.event) if DH.boundary_indicator_supported else None
   nav_input = MapInput()
@@ -584,8 +588,8 @@ def main(demo=False):
       lane_change_prob = l_lane_change_prob + r_lane_change_prob
       indicator_now = time.monotonic()
       indicator_valid = modelv2_send.valid and all(
-        sm.valid[k] and sm.alive[k] and 0 <= indicator_now-sm.recv_time[k] < .35
-        for k in ('carState', 'carControl'))
+        sm.valid[k] and sm.alive[k] and 0 <= indicator_now-sm.recv_time[k] < .35 and
+        0 <= indicator_now - sm.logMonoTime[k] * 1e-9 < .35 for k in ('carState', 'carControl'))
       turn_hold_allowed, turn_pose = False, None
       pose = sm['livePose']
       indicator_yaw_rate = (pose.angularVelocityDevice.z if sm.valid['livePose'] and sm.alive['livePose'] and
@@ -606,6 +610,7 @@ def main(demo=False):
                 turn_hold_allowed=turn_hold_allowed, turn_pose=turn_pose)
       modelv2_send.modelV2.meta.laneChangeState = DH.lane_change_state
       modelv2_send.modelV2.meta.laneChangeDirection = DH.lane_change_direction
+      modelv2_send.modelV2.meta.driverConfirmedLaneChange = DH.admitted_driver_side
       modelv2_send.modelV2.meta.desireLog = DH.desireLog #carrot
       modelv2_send.modelV2.meta.laneChangeBlinkerHold = DH.blinker_hold_direction
       modelv2_send.modelV2.meta.leverTurn = DH.lever_turn

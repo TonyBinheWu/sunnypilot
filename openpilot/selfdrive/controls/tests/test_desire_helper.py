@@ -7,7 +7,7 @@ from openpilot.selfdrive.controls.lib.desire_helper import DesireHelper
 
 def make_car_state(left_blinker=False):
   return SimpleNamespace(
-    canValid=True,
+    canValid=True, gearShifter="drive",
     leftBlinker=left_blinker,
     rightBlinker=False,
     vEgo=20.0,
@@ -20,7 +20,7 @@ def make_car_state(left_blinker=False):
 
 class TestDesireHelperDriverIntent:
   def setup_method(self):
-    self.helper = DesireHelper()
+    self.helper = DesireHelper(require_driver_stalk=False)
     self.helper._update_params_periodic = lambda: None
     self.helper._process_sides = lambda car, model, radar: None
     self.helper._check_desire_state = lambda model, car, maneuver: None
@@ -57,7 +57,7 @@ class TestDesireHelperDriverIntent:
       lateral_active,
       0.1,
       self.carrot_man,
-      SimpleNamespace(),
+      SimpleNamespace(), indicator_valid=True,
     )
 
   def test_driver_blinker_rearms_lane_change_while_atc_desire_is_already_active(self):
@@ -71,6 +71,7 @@ class TestDesireHelperDriverIntent:
 
     # A new physical blinker request must be treated as fresh driver intent even
     # though the combined ATC/driver desire has no rising edge.
+    self.update()
     self.update(left_blinker=True)
     assert self.helper.lane_change_state == log.LaneChangeState.preLaneChange
 

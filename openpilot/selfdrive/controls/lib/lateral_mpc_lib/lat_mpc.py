@@ -162,18 +162,22 @@ class LateralMpc:
 
   def set_weights(self, path_weight, heading_weight,
                   lat_accel_weight, lat_jerk_weight,
-                  steering_rate_weight):
+                  steering_rate_weight, *, reference_points=N+1):
     values = (path_weight, heading_weight, lat_accel_weight, lat_jerk_weight, steering_rate_weight)
-    key = struct.pack('5d', *values) if all(map(math.isfinite, values)) else None
+    key = (struct.pack('5d', *values), reference_points) if all(map(math.isfinite, values)) else None
     if key is not None and key == self._cost_key and self.solver is self._cost_solver:
       return
     self._cost_key = None
     W = np.asfortranarray(np.diag([path_weight, heading_weight,
                                    lat_accel_weight, lat_jerk_weight,
                                    steering_rate_weight]))
+    tail = W
+    if reference_points <= N:
+      tail = W.copy(order='F')
+      tail[:3, :3] = 0.  # no position, heading or yaw-rate target outside observed lane geometry
     for i in range(N):
-      self.solver.cost_set(i, 'W', W)
-    self.solver.cost_set(N, 'W', W[:COST_E_DIM,:COST_E_DIM])
+      self.solver.cost_set(i, 'W', W if i < reference_points else tail)
+    self.solver.cost_set(N, 'W', tail[:COST_E_DIM,:COST_E_DIM])
     self._cost_key = key
     self._cost_solver = self.solver
 

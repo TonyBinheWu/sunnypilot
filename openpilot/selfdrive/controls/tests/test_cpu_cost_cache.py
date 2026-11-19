@@ -94,3 +94,16 @@ def test_partial_cost_write_failure_never_leaves_old_cache_valid(lateral):
   before = len(solver.calls)
   call()
   assert len(solver.calls) == before + (33 if lateral else 25)
+
+
+def test_lane_reference_horizon_preserves_rate_cost_and_restores_all_normal_weights():
+  set_weights = cost_method(True)
+  obj = NS(solver=Solver(), _cost_key=None, _cost_solver=None)
+  weights = (1., .1, .2, .04, 700.)
+  set_weights(obj, *weights, reference_points=20)
+  assert np.array_equal(obj.solver.values[19, 'W'].diagonal(), weights)
+  assert np.array_equal(obj.solver.values[20, 'W'].diagonal(), (0., 0., 0., .04, 700.))
+  assert not obj.solver.values[32, 'W'].any()
+  set_weights(obj, *weights)
+  assert np.array_equal(obj.solver.values[20, 'W'].diagonal(), weights)
+  assert np.array_equal(obj.solver.values[32, 'W'].diagonal(), weights[:3])

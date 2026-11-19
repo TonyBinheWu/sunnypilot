@@ -168,6 +168,7 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     teslaTrafficStopTakeover @131;
     pandaCanFault @132;
     stockSccFault @133;
+    laneGuardTakeover @134;
 
     soundsUnavailableDEPRECATED @47;
   }
@@ -868,6 +869,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   forceDecel @51 :Bool;
 
   activeLaneLine @67 : Bool;
+  laneGuardTakeoverSince @68 :UInt64; # monotonic ns, zero outside a latched lateral handover
 
   lateralControlState :union {
     pidState @53 :LateralPIDState;
@@ -1122,6 +1124,7 @@ struct ModelDataV2 {
     indicatorPrepareDirection @33 :LaneChangeDirection; # Display only; never an actuation request.
     indicatorPrepareSource @34 :Text;
     assistantLaneSignalId @35 :Text; # Set only after ordinary lane-change admission; direction is laneChangeDirection.
+    driverConfirmedLaneChange @37 :LaneChangeDirection;
     assistantLaneSignalRoute @36 :Text; # Empty outside voice maneuvers, otherwise ordinary, native or the selected adapter instance.
 
 
@@ -1374,6 +1377,13 @@ struct LateralPlan @0xe1e9318e2ae8b51e {
 
   position @35 :XYZTData;
   distances @36 :List(Float32);
+  laneGuard @37 :LaneGuard;
+  enum LaneGuard {
+    off @0;
+    hold @1;
+    takeover @2;
+    released @3;
+  }
 
   struct SolverState {
     x @0 :List(List(Float32));

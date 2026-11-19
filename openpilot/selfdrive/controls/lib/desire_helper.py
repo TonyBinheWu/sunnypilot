@@ -32,7 +32,8 @@ AUTO_APP_WAIT_S = 10.0
 
 
 class DesireHelper:
-  def __init__(self, tesla_auto_signals=False, boundary_indicator_supported=False, *, fingerprint='', native_voice_signal=False):
+  def __init__(self, tesla_auto_signals=False, boundary_indicator_supported=False, *, fingerprint='', native_voice_signal=False,
+               require_driver_stalk=True):
     self.params = Params()
     self.boundary_indicator_supported = boundary_indicator_supported
     self.boundary_indicator_enabled = False
@@ -71,6 +72,12 @@ class DesireHelper:
 
     # blinker/ATC state (원본 변수들 유지)
     self.blinker_ignore = False
+    self.confirmed_driver_side = BLINKER_NONE
+    self.last_driver_sample = None
+    self.admitted_driver_side = BLINKER_NONE
+    self.driver_stalk_required = require_driver_stalk
+    self.stalk_wait_until = 0.
+    self.confirmed_at = 0.
     self.driver_blinker_state = BLINKER_NONE
     self.carrot_blinker_state = BLINKER_NONE
     self.carrot_lane_change_count = 0
@@ -103,7 +110,6 @@ class DesireHelper:
     self.auto_signal_request_id = 0
     self._auto_signal_counter = time.monotonic_ns()
     self._auto_lane_completed = False
-    self._auto_lane_direction = LaneChangeDirection.none
     self._auto_app_direction = BLINKER_NONE
     self._auto_app_wait = 0.0
     self._auto_app_deadline = 0.0
@@ -226,16 +232,18 @@ class DesireHelper:
     if last is None:
       return BLINKER_NONE
     if self.tesla_auto_signals:
-      left_press, right_press = counts[0] != last[0], counts[1] != last[1]
+      steps = tuple((current - previous) % 256 for current, previous in zip(counts, last))
+      left_press, right_press = steps == (1, 0), steps == (0, 1)
       if (carstate.leftBlinker and carstate.rightBlinker) or \
          not getattr(carstate, "turnSignalDriverValid", False) or left_press == right_press:
         return BLINKER_NONE
       direction = BLINKER_LEFT if left_press else BLINKER_RIGHT
       driver = getattr(carstate, "turnSignalDriverDirection", 0)
       return direction if driver in (0, direction) else BLINKER_NONE
-    if counts[0] != last[0]:
+    steps = tuple((current - previous) % 256 for current, previous in zip(counts, last))
+    if steps == (1, 0):
       return BLINKER_LEFT
-    if counts[1] != last[1]:
+    if steps == (0, 1):
       return BLINKER_RIGHT
     return BLINKER_NONE
 
@@ -450,6 +458,32 @@ class DesireHelper:
     driver_st, driver_changed, driver_enabled = self._update_driver_blinker(carstate)
     physical_stalk_press = self._update_stalk(carstate)
     stalk_press = self.boundary_indicator.filter_lamp(physical_stalk_press)
+    lamps = int(carstate.leftBlinker) | (int(carstate.rightBlinker) << 1)
+    valid_driver = (indicator_valid and lateral_active and carstate.canValid and
+                    not getattr(carstate, 'canTimeout', False) and not getattr(carstate, 'vehicleSensorsInvalid', False) and
+                    not trailer_maneuver_blocked and not self.assistant_lane.signal_id and
+                    str(getattr(carstate, 'gearShifter', 'unknown')) == 'drive')
+    now = time.monotonic()
+    continuous = self.last_driver_sample is not None and 0 <= now - self.last_driver_sample < .35
+    self.last_driver_sample = now if valid_driver else None
+    valid_driver = valid_driver and continuous
+    if (not valid_driver or lamps == 3 or now - self.confirmed_at > LEVER_REQUEST_WAIT_S + self.laneChangeDelay
+        or (lamps and lamps != self.confirmed_driver_side and not stalk_press)):
+      self.confirmed_driver_side = BLINKER_NONE
+    # Some platforms can echo a software-generated lamp as a carState blinker.
+    # On those platforms use lever provenance; one-touch needs a lit matching side before admission.
+    preparing = self.lane_change_state in (LaneChangeState.off, LaneChangeState.preLaneChange)
+    if self.tesla_auto_signals and driver_changed and driver_enabled and carstate.turnSignalDriverValid:
+      stalk_press = stalk_press or self.boundary_indicator.filter_lamp(carstate.turnSignalDriverDirection)
+    if preparing and valid_driver and lamps in (BLINKER_NONE, stalk_press) and stalk_press in (BLINKER_LEFT, BLINKER_RIGHT):
+      self.confirmed_at = now
+      self.stalk_wait_until = now + .5
+      self.confirmed_driver_side = stalk_press
+    elif preparing and valid_driver and driver_enabled and driver_changed and driver_st == lamps and not self.driver_stalk_required:
+      self.confirmed_at = now
+      self.confirmed_driver_side = driver_st
+    if not lamps and (driver_changed or now > self.stalk_wait_until) and not stalk_press:
+      self.confirmed_driver_side = BLINKER_NONE
     lever = getattr(carstate, "blinkerLever", 0)
     forced_turn = self.lever_forced_turn.update(lever, getattr(carstate, "blinkerLamp", 0))
     if self.lever_wait.update(self.laneChangeLeverWait, stalk_press, lever, driver_st, self.lane_change_state,
@@ -475,6 +509,8 @@ class DesireHelper:
       signal_driver_busy = not self.tesla_auto_signals and (
         (raw_lamps and raw_lamps != expected_lamps) or
         ((lever or physical_stalk_press) and not self.assistant_lane.own_tap(carstate)))
+      matching_driver = bool(self.assistant_lane.active and valid_driver and
+                             self.confirmed_driver_side == driver_st == lamps == (1 if voice_side == 'left' else 2))
       assistant_state = {
         'valid': assistant_valid and carstate.canValid and not getattr(carstate, 'vehicleSensorsInvalid', True),
         'lateral_active': lateral_active, 'drive': str(getattr(carstate, 'gearShifter', '')) == 'drive',
@@ -482,8 +518,8 @@ class DesireHelper:
         'phase': {LaneChangeState.off: 'off', LaneChangeState.preLaneChange: 'preLaneChange',
                   LaneChangeState.laneChangeStarting: 'laneChangeStarting', LaneChangeState.laneChangeFinishing: 'laneChangeFinishing'
                   }.get(self.lane_change_state, 'unknown'),
-        'driver_busy': bool(driver_enabled or stalk_press or opposite_torque),
-        'indicator_driver_busy': signal_driver_busy,
+        'driver_busy': bool(opposite_torque or ((driver_enabled or stalk_press) and not matching_driver)),
+        'indicator_driver_busy': signal_driver_busy and not matching_driver,
         'driver_override': bool(stalk_press or opposite_torque or (owned_signal and signal_driver_busy)),
         'other_request': bool(remote or self.desire_disable_count or self.turn_desire_state or self.turn_direction != TurnDirection.none or
                               carrotMan.atcType not in ('', 'none', 'none prepare', 'straight', 'straight prepare') or
@@ -690,45 +726,17 @@ class DesireHelper:
                                     not atc_lane_change_retry_line_blocked
               start_gate = (side.lane_change_available_geom and self.lane_change_delay == 0) or \
                            side.lane_line_info_edge_detect or solid_line_blocked or block_released_auto or atc_line_release
-              # Only automatic Tesla requests wait for their own echoed, physically confirmed lamp session.
-              signal_ready = (not self.tesla_auto_signals or driver_enabled or
-                              (self.auto_signal_request_id != 0 and
-                               getattr(carstate, "autoTurnSignalReadyRequestId", 0) == self.auto_signal_request_id))
-              can_start = False
-              if start_gate and not lever_undecided and signal_ready:
-                if solid_line_blocked:
-                  if atc_line_release or (torque_applied and not (bsd_active and block_lanechange_bsd)):
-                    can_start = True
-                elif bsd_active:
-                  if torque_applied and (not block_lanechange_bsd):
-                    can_start = True
-                elif self.laneChangeNeedTorque > 0 or self.next_lane_change:
-                  if torque_applied:
-                    can_start = True
-                elif driver_enabled:
-                  # driver blinker면 바로 시작(원본 유지)
-                  # 단, object/bzd 막힘은 side.lane_change_available에서 걸림
-                  if side.lane_change_available or atc_line_release:
-                    can_start = True
-                else:
-                  if torque_applied or ((not atc_lane_change_manual_only) and (
-                    auto_lane_change_trigger or side.lane_line_info_edge_detect or block_released_auto
-                  )):
-                    # 여기서는 시작 직전 안전성 체크
-                    if side.lane_change_available or atc_line_release:
-                      can_start = True
-              if can_start and assistant_direction and not self.tesla_auto_signals and self.assistant_lane.signal_route != 'ordinary':
-                # Reserve our lamp before publishing its intent. A delayed blink must never become driver input.
-                self.boundary_indicator.own(time.monotonic(), blinker_state)
-                can_start = self.assistant_lane.request_signal(assistant_direction, carstate)
-              elif self.assistant_lane.signal_id:
-                # Once armed, losing admission cancels the attempt rather than rearming a delayed maneuver.
-                can_start = False
-                self.assistant_lane.publish('rejected', 'lane_conditions_changed')
-                self.carrot_lane_change_count = 0
-                self.lane_change_state = LaneChangeState.off
-                self.lane_change_direction = LaneChangeDirection.none
-              if can_start:
+              driver_confirmed = (driver_enabled and valid_driver and
+                                  driver_st == blinker_state == lamps == self.confirmed_driver_side)
+              if solid_line_blocked or bsd_active:
+                maneuver_allowed = torque_applied and not (bsd_active and block_lanechange_bsd)
+              elif self.laneChangeNeedTorque > 0 or self.next_lane_change:
+                maneuver_allowed = torque_applied
+              else:
+                maneuver_allowed = side.lane_change_available or atc_line_release
+              if driver_confirmed and start_gate and not lever_undecided and maneuver_allowed:
+                self.admitted_driver_side = driver_st
+                self.confirmed_driver_side = BLINKER_NONE
                 self.lane_change_state = LaneChangeState.laneChangeStarting
 
         elif self.lane_change_state == LaneChangeState.laneChangeStarting:
@@ -739,6 +747,9 @@ class DesireHelper:
           since_crossing = self.crossing.update(modeldata, self.lane_change_direction == LaneChangeDirection.left)
           if stalk_press != BLINKER_NONE and since_crossing >= 0.0:
             self.queued_lane_change = stalk_press
+            if valid_driver and lamps == stalk_press:
+              self.confirmed_at = now
+              self.confirmed_driver_side = stalk_press
           self.lane_change_ll_prob = max(self.lane_change_ll_prob - 2 * DT_MDL, 0.0)
           if lane_change_prob < 0.02 and self.lane_change_ll_prob < 0.01:
             self.lane_change_state = LaneChangeState.laneChangeFinishing
@@ -749,6 +760,9 @@ class DesireHelper:
           crossed = self.crossing.since >= 0.0  # the crossing was seen during laneChangeStarting
           if stalk_press != BLINKER_NONE and (crossed or self.finishing_timer >= STALK_QUEUE_GUARD_S):
             self.queued_lane_change = stalk_press
+            if valid_driver and lamps == stalk_press:
+              self.confirmed_at = now
+              self.confirmed_driver_side = stalk_press
           self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL, 1.0)
           if self.lane_change_ll_prob > 0.99:
             self.lane_change_direction = LaneChangeDirection.none
@@ -798,6 +812,8 @@ class DesireHelper:
       (carstate.steeringTorque < 0 and cancel_blinker_state == BLINKER_LEFT) or
       (carstate.steeringTorque > 0 and cancel_blinker_state == BLINKER_RIGHT)
     )
+    if steering_pressed_cancel:
+      self.confirmed_driver_side = BLINKER_NONE
     if steering_pressed_cancel and self.lane_change_state != LaneChangeState.off:
       self.lane_change_direction = LaneChangeDirection.none
       self.lane_change_state = LaneChangeState.off
@@ -827,6 +843,9 @@ class DesireHelper:
       hold = self.queued_lane_change
     self.blinker_hold_direction = {BLINKER_LEFT: LaneChangeDirection.left,
                                    BLINKER_RIGHT: LaneChangeDirection.right}.get(hold, LaneChangeDirection.none)
+
+    if self.lane_change_state not in (LaneChangeState.laneChangeStarting, LaneChangeState.laneChangeFinishing):
+      self.admitted_driver_side = BLINKER_NONE
 
     # final desire
     if self.turn_direction != TurnDirection.none:
@@ -871,9 +890,6 @@ class DesireHelper:
       if turning and self.atc_type in ("turn left", "turn right"):
         self.auto_turn_signal = self.lane_change_direction
         self.auto_turn_signal_lane_change = False
-      elif self.lane_change_state == LaneChangeState.laneChangeStarting and atc_lane_change_only:
-        self.auto_turn_signal = self.lane_change_direction
-        self.auto_turn_signal_lane_change = True
     return self.desire
 
   def _update_auto_signal(self, carstate, carrot_man, lateral_active, atc_enabled, atc_st, driver_st, previous,
@@ -900,22 +916,6 @@ class DesireHelper:
     turn_desire = (1 if self.desire == log.Desire.turnLeft else 2 if self.desire == log.Desire.turnRight else 0) if atc_enabled else 0
     direction = self.auto_turn_journey.update(time.monotonic(), carstate, turn_pose, self.atc_type,
       getattr(carrot_man, "xDistToTurn", None), turn_desire, common and (lateral_active or stopped_hold), lateral_active)
-    permitted = common and lateral_active
-    if not permitted or self.lane_change_state == LaneChangeState.off or self._auto_lane_completed:
-      if not permitted and self._auto_lane_direction != LaneChangeDirection.none:
-        self._auto_lane_completed = True
-      self._auto_lane_direction = LaneChangeDirection.none
-    elif (atc_enabled and self._auto_lane_direction == LaneChangeDirection.none and
-          (self.lane_change_state == LaneChangeState.preLaneChange or previous == LaneChangeState.preLaneChange)):
-      # The existing FSM owns the maneuver, including a bounded App preparation wait.
-      self._auto_lane_direction = LaneChangeDirection.left if atc_st == BLINKER_LEFT else LaneChangeDirection.right
-    if permitted and not direction and not self.auto_turn_journey.consumed:
-      if self._auto_lane_direction != LaneChangeDirection.none:
-        direction = self._auto_lane_direction
-      elif (not self._auto_lane_completed and self.atc_active != 2 and not self.blinker_ignore and
-            self.atc_type in ("atc left", "atc right") and getattr(carrot_man, "xTurnInfo", 0) in (1, 2) and
-            0 < getattr(carrot_man, "xDistToTurn", 0) <= min(250, max(40, carstate.vEgo * 8 + 20))):
-        direction = LaneChangeDirection.left if carrot_man.xTurnInfo == 1 else LaneChangeDirection.right
     if direction != LaneChangeDirection.none and direction != self.auto_signal_direction:
       self._auto_signal_counter += 1
     self.auto_signal_direction = direction

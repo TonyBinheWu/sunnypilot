@@ -394,6 +394,8 @@ class SelfdriveD:
                                                     LaneChangeState.laneChangeFinishing):
       self.events.add(EventName.laneChange)
 
+    if self.sm.alive['controlsState'] and self.sm['controlsState'].laneGuardTakeoverSince:
+      self.events.add(EventName.laneGuardTakeover)
     if self.vehicle_fault_monitor.update_pandas(
         self.sm['pandaStates'], self.sm.logMonoTime['pandaStates'] * 1e-9,
         valid=self.sm.all_checks(['pandaStates'])):

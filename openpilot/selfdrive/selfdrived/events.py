@@ -1,3 +1,4 @@
+import time
 #!/usr/bin/env python3
 import bisect
 import copy
@@ -212,6 +213,13 @@ class ImmediateDisableAlert(Alert):
                      AlertStatus.critical, AlertSize.full,
                      Priority.HIGHEST, VisualAlert.steerRequired,
                      AudibleAlert.warningImmediate, 4.),
+
+
+def lane_guard_takeover_alert(CP, CS, sm, metric, soft_disable_time, personality):
+  elapsed = time.monotonic() - sm['controlsState'].laneGuardTakeoverSince * 1e-9
+  if elapsed < 4.:
+    return ImmediateDisableAlert("Lane keeping unavailable: steer manually")
+  return NormalPermanentAlert("Steer manually", "Lane assist paused until parked", priority=Priority.HIGH)
 
 
 class EngagementAlert(Alert):
@@ -1027,6 +1035,10 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("CAN Controller Fault"),
     ET.NO_ENTRY: NoEntryAlert("CAN Controller Fault: Check Connections"),
     ET.PERMANENT: NormalPermanentAlert("CAN Controller Fault: Check Connections"),
+  },
+
+  EventName.laneGuardTakeover: {
+    ET.PERMANENT: lane_guard_takeover_alert,
   },
 
   EventName.stockSccFault: {
