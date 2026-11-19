@@ -43,5 +43,26 @@ class ExpertMlpTest(unittest.TestCase):
       x=torch.randn(2,3,4);torch.testing.assert_close(restored.expert.expert.layers[0].mlp(x),model.expert.expert.layers[0].mlp(x),rtol=0,atol=0)
       self.assertEqual(set(adapter_parameters(restored)),set(adapter_parameters(model)))
 
+  def test_mlp_only_update_keeps_visual_attention_and_action_parameters_unchanged(self):
+    from tools.training_studio.teacher_lora import install,expand,train_mlp_only
+    torch.manual_seed(42);model=self.model();install(model);expand(model);selected=train_mlp_only(model)
+    self.assertEqual(len(selected),4)
+    self.assertTrue(all('.mlp.fc1.' in name or '.mlp.fc2.' in name for name in selected))
+    frozen={name:p.detach().clone() for name,p in model.named_parameters() if name not in selected}
+    self.assertTrue(all(not p.requires_grad for name,p in model.named_parameters() if name in frozen))
+    before={name:p.detach().clone() for name,p in selected.items()}
+    optimizer=torch.optim.SGD(selected.values(),lr=.01);x=torch.randn(2,3,4)
+    model.expert.action_out_proj(model.expert.expert.layers[0].mlp(x)).square().sum().backward();optimizer.step()
+    self.assertTrue(any(not torch.equal(before[name],p) for name,p in selected.items()))
+    self.assertTrue(all(torch.equal(value,dict(model.named_parameters())[name]) for name,value in frozen.items()))
+    # A continuation selects existing deltas without resetting their learned values.
+    learned={name:p.detach().clone() for name,p in selected.items()};model.requires_grad_(True);resumed=train_mlp_only(model)
+    self.assertEqual(set(resumed),set(selected));self.assertTrue(all(torch.equal(learned[name],p) for name,p in resumed.items()))
+
+  def test_mlp_only_rejects_a_parent_without_expanded_mlp_adapters(self):
+    from tools.training_studio.teacher_lora import install,train_mlp_only
+    model=self.model();install(model)
+    with self.assertRaisesRegex(ValueError,'expanded expert'):train_mlp_only(model)
+
 
 if __name__=='__main__':unittest.main()

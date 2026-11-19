@@ -125,3 +125,16 @@ def adapter_parameters(model):
       result[name+'.delta_weight']=module.delta_weight
       result[name+'.delta_bias']=module.delta_bias
   return result
+
+
+def train_mlp_only(model):
+  """Train expert fc1/fc2 deltas while retaining the visual, attention and head weights."""
+  model.requires_grad_(False)
+  parameters={}
+  for name,module in model.named_modules():
+    if (isinstance(module,DeltaLinear) and name.startswith('expert.expert.')
+        and name.endswith(('.mlp.fc1','.mlp.fc2'))):
+      for leaf in ('a','b'):
+        parameter=getattr(module,leaf);parameter.requires_grad_(True);parameters[name+'.'+leaf]=parameter
+  if not parameters:raise ValueError('MLP-only training requires expanded expert fc1/fc2 adapters')
+  return parameters
