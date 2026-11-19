@@ -672,6 +672,8 @@ window.CarrotTranslations.register("en", {
     parking_lights_unknown: "Headlamp state unavailable",
     parking_door_open: "Door open",
     parking_spin: "Parked · vehicle presentation, not a camera view",
+    parking_usb_model: "Vehicle USB eGPU model",
+    parking_paint_verified: "Parking markings verified by vehicle camera",
     parking_forward: "Front view",
     parking_shape_target: "Tracked object",
     parking_shape_surface: "Estimated surface",

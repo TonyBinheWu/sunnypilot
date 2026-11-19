@@ -7,7 +7,8 @@ import {nightAppearance,readAppearance,setCockpitTextScale,tireLabels} from '../
 import {createObjectTracker} from '../features/drive/contents/vision/hud/object_tracker.js';
 import {surroundingTargets,createModelLeadSource,mergeModelLead} from '../features/drive/contents/vision/hud/scene_objects.js';
 import {trackingReport} from '../features/drive/contents/vision/hud/perception_scene.js';
-import {PARKING_VIEW} from '../features/drive/contents/vision/hud/parking_environment.js';
+import {combineParking,vehicleParkingSource} from '../features/drive/contents/vision/hud/vehicle_parking.js';
+import {parkingObservation,PARKING_VIEW} from '../features/drive/contents/vision/hud/parking_environment.js';
 import {drawDrivingScene} from '../features/drive/contents/vision/hud/driving_scene.js';
 import {createCockpitState,telemetry,cockpitHudPayload,SERVICES,MODES} from '../features/cockpit/state.js';
 import {drawCockpitVehicle,createVehicleSkinCache} from '../features/cockpit/vehicle.js';
@@ -325,7 +326,7 @@ function render(){
   document.body.dataset.hasRoute=String(Boolean(route?.known && (route.active || route.mapReady)));
   applyAppearance();
   const c=$('scene'),r=$('scene-surface').getBoundingClientRect();
-  if(!r.width||!r.height||visibleCore()==='vision'){preview3d?.pause();return;}
+  if(!r.width||!r.height||visibleCore()==='vision'){vehicleParking.update(false);preview3d?.pause();return;}
   const scale=Math.min(devicePixelRatio||1,1.5),w=Math.max(1,Math.round(r.width*scale)),h=Math.max(1,Math.round(r.height*scale));if(c.width!==w||c.height!==h){c.width=w;c.height=h;}ctx.setTransform(scale,0,0,scale,0,0);
   const at=performance.now(),car=state.get('carState'),motion={speed:car?.vEgo,yaw:car?.yawRate};
   previewModelLead.update(model,state.stamp('modelV2'),at,motion);
@@ -334,6 +335,13 @@ function render(){
   const preview={model:t.parked?null:model,radar,tracks:mergeModelLead(previewTracker.sample(at,motion),at)};
   const parkingAssist=coreWindow()?.CarrotWebSettingsState?.vision_parking_assist===true;
   const camera=t.parked&&parkingAssist?PARKING_VIEW:null,night=document.body.classList.contains('night');
+  vehicleParking.update(!!camera&&coreWindow()?.__CARROT_BOOTSTRAP__?.vehicleParkingScene===true&&!document.hidden&&!paused);
+  const observed=vehicleParking.sample();
+  if(camera){
+    preview.parkingCue=parkingObservation(preview);
+    combineParking(preview,observed);
+    if(observed)$('sceneStatus').textContent='停車俯視 · 車機 USB eGPU 模型'+(preview.parkingCue?' · 距前鏡頭約 '+Math.round(preview.parkingCue.distance)+' m':'')+(observed.slots.length?' · 影像覆核車格 '+observed.slots.length:'');
+  }
   const lamps=vehicleLamps(car,!car,at);
   const factory=coreWindow()?.CarrotCreateDrivingScene3D;
   if(previewOwner!==factory){releasePreview();if(factory){
@@ -342,6 +350,7 @@ function render(){
   const rendered=!!preview3d?.render(w,h,preview,{night,view:camera,skin,lamps});
   c.hidden=rendered;
   if(!rendered)drawDrivingScene(ctx,r.width,r.height,preview,{camera,night,drawEgo:(context,project)=>drawCockpitVehicle(context,project,{skin,lamps}),text:(k,f)=>({scene_kind_person:'行人',scene_kind_motorcycle:'機車',scene_kind_bicycle:'自行車',scene_kind_bus:'公車',scene_kind_truck:'貨車'})[k]||f});
+  if(camera)vehicleParking.drawn(observed,preview);
 }
 async function modeRead(){try{const r=await fetch('/api/params_bulk?names=MyDrivingMode,MyDrivingModeAuto',{cache:'no-store'});if(!r.ok)throw Error();const d=await r.json();currentMode=Number(d.values?.MyDrivingMode);document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('current',Number(b.dataset.mode)===currentMode));$('profileStatus').textContent=Number(d.values?.MyDrivingModeAuto)>0?'自動駕駛模式目前開啟，實際模式可能依路況切換。':'選擇後會先確認；此處只在停車 P 檔開放修改。';}catch{$('profileStatus').textContent='無法讀取模式，請確認車機連線。';currentMode=null;}}
 let pendingMode=null;
@@ -361,5 +370,6 @@ $('modeApply').onclick=async()=>{
   catch{$('profileStatus').textContent='結果未確認；不會自動重送，請到控制與設定查看。';}finally{busy=false;document.querySelectorAll('[data-mode]').forEach(x=>x.disabled=false);}
 };
 window.CarrotCockpit={layoutVersion:12,back(){const dialog=document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}if(view==='navigation'&&nav.contentDocument?.body.classList.contains('search-open')){closeNavigationSearch();return true;}if(view!=='navigation'&&closeEmbeddedDialog(coreWindow()))return true;if(view==='setting'&&coreWindow()?.CarrotCockpitControls?.back?.())return true;if(view==='vision'&&document.body.classList.contains('advanced-vision')){advancedVision(false);return true;}if(!['vision','navigation'].includes(view)){panel(primary);return true;}return false;},pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(visibleCore());connect();}};
+const vehicleParking=vehicleParkingSource(window);
 const updateClock=()=>{$('clock').textContent=cockpitClock();};updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',updateClock);
 panel(view);connect();setInterval(()=>{if(!paused)render();},100);render();

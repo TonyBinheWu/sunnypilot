@@ -37,6 +37,8 @@ from . import (
 
 
 def register_all(app: web.Application) -> None:
+  from . import parking_scene
+  parking_scene.register(app)
   environment_model.register(app)
   from . import training_data
   training_data.register(app)

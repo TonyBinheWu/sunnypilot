@@ -688,6 +688,8 @@ window.CarrotTranslations.register("ko", {
     parking_lights_unknown: "전조등 상태 없음",
     parking_door_open: "문 열림",
     parking_spin: "주차 완료 · 차량 전시, 카메라 영상 아님",
+    parking_usb_model: "차량 USB eGPU 모델",
+    parking_paint_verified: "차량 영상으로 확인한 주차선",
     parking_forward: "전방 시야",
     parking_shape_target: "추적 물체",
     parking_shape_surface: "추정 표면",
