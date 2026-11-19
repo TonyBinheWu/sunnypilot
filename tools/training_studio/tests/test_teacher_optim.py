@@ -55,12 +55,37 @@ class PairCoverageTest(unittest.TestCase):
     selected=set()
     for epoch in range(2):
       ordinary=paired_groups(items,epoch);corrected=paired_groups(items,epoch,correction_warmup=True)
-      self.assertEqual(corrected[1:],ordinary)
+      self.assertEqual(corrected[2:],ordinary)
       warmup=corrected[0]
       self.assertEqual({stop_mode(items[warmup[i]]) for i in (0,2,4)},{'hold','recover','approach'})
       self.assertEqual({maneuver_class(items[warmup[i]]['row']) for i in (1,3,5)},{'straight','left','right'})
-      selected.update(set(warmup)&set(targets))
+      selected.update(index for group in corrected[:2] for index in group if index in targets)
     self.assertEqual(selected,set(targets))
+
+  def test_appended_five_corrections_are_all_seen_immediately_and_older_ones_rotate(self):
+    from tools.training_studio.teacher_optim import paired_groups,stop_mode
+    from tools.training_studio.teacher_reasoning_train import maneuver_class
+    items=[]
+    for mode in ('hold','recover','approach'):
+      items.extend({'row':{'stop_required':True,'scenario':'red_light','maintain_stop_reference':mode=='hold','front_distance_m':6.},'observed_speed_mps':0. if mode=='recover' else 3.} for _ in range(4))
+    for scenario in ('lane_center','left_turn','right_turn'):
+      items.extend({'row':{'stop_required':False,'scenario':scenario}} for _ in range(4))
+    corrections=[]
+    for _ in range(13):
+      corrections.append(len(items));items.append({'row':{'stop_required':True,'scenario':'red_light','maintain_stop_reference':True,'front_distance_m':4.8,'correction_priority':True},'observed_speed_mps':0.})
+    covered=set()
+    for epoch in range(13):
+      ordinary=paired_groups(items,epoch);actual=paired_groups(items,epoch,correction_warmup=True)
+      self.assertEqual(actual[6:],ordinary)
+      self.assertEqual(actual,paired_groups(items,epoch,correction_warmup=True))
+      seen={index for group in actual[:5] for index in group if index in corrections}
+      self.assertEqual(seen,set(corrections[-5:]))
+      seen.update(index for index in actual[5] if index in corrections)
+      covered.update(seen)
+      for group in actual[:6]:
+        self.assertEqual({stop_mode(items[i]) for i in group[::2]},{'hold','recover','approach'})
+        self.assertEqual({maneuver_class(items[i]['row']) for i in group[1::2]},{'straight','left','right'})
+    self.assertEqual(covered,set(corrections))
 
   def test_every_training_reference_is_used_with_one_stop_and_one_go_per_step(self):
     items=[{'row':{'stop_required':value}} for value in (True,True,True,False,False)]

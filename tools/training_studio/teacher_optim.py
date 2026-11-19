@@ -70,16 +70,22 @@ def paired_groups(items,epoch,*,correction_warmup=False):
       if item['row']['stop_required'] and item['row'].get('correction_priority') is True:
         stop_corrections.setdefault(stop_mode(item),[]).append(index)
     if corrections or stop_corrections:
-      warmup=list(groups[0])
-      for direction,members in sorted(corrections.items()):
-        slot=next(slot for slot in (1,3,5) if maneuver_class(items[warmup[slot]]['row'])==direction)
-        warmup[slot]=members[epoch%len(members)]
-      for mode,members in sorted(stop_corrections.items()):
-        slot=next(slot for slot in (0,2,4) if stop_mode(items[warmup[slot]])==mode)
-        warmup[slot]=members[epoch%len(members)]
-      # Add a fully guarded six-task group; never replace ordinary samples.
-      # A new rare correction otherwise waits several epochs for its turn.
-      groups.insert(0,tuple(warmup))
+      # New data are appended to the manifest. Rehearse a bounded window
+      # newest-first every epoch, plus a rotating older rehearsal group.
+      # Retain every ordinary group and every six-task post-step guard.
+      width=min(5,max(len(members) for members in (*corrections.values(),*stop_corrections.values())))
+      warmups=[]
+      replay=any(len(members)>width for members in (*corrections.values(),*stop_corrections.values()))
+      for offset in range(width+int(replay)):
+        warmup=list(groups[offset%len(groups)])
+        for direction,members in sorted(corrections.items()):
+          slot=next(slot for slot in (1,3,5) if maneuver_class(items[warmup[slot]]['row'])==direction)
+          warmup[slot]=members[epoch%len(members)] if offset==width else members[-1-(epoch+offset)%min(width,len(members))]
+        for mode,members in sorted(stop_corrections.items()):
+          slot=next(slot for slot in (0,2,4) if stop_mode(items[warmup[slot]])==mode)
+          warmup[slot]=members[epoch%len(members)] if offset==width else members[-1-(epoch+offset)%min(width,len(members))]
+        warmups.append(tuple(warmup))
+      groups=warmups+groups
   return groups
 
 
