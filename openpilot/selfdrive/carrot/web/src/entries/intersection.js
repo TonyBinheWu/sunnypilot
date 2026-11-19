@@ -10,8 +10,8 @@ const x=[0,2,4,8,12,14,15,16,18,20,23,25,27,29,30,33,40,50,65,82];
 const widening=[0,0,0,0,0,.2,1,3,18,18,18,15,3,.7,.2,0,0,0,0,0];
 const path=(offset,edge=0)=>({x,y:x.map((v,i)=>offset+(edge?widening[i]*edge:0))});
 const lane=(y)=>({x:[0,5,12,15,NaN,30,35,42,55,80],y:Array(10).fill(y)});
-const model={position:path(0),roadEdges:[path(-6.8,-1),path(6.5,1)],laneLines:[lane(-5.2),lane(-1.95),lane(1.9),lane(5.35)],laneLineProbs:[.9,.98,.97,.85]};
-const skin=paintedVehicle(VEHICLE_SKINS.generic,'red');
+const model={roadEdges:[path(-6.8,-1),path(6.5,1)],laneLines:[lane(-5.2),lane(-1.95),lane(1.9),lane(5.35)],laneLineProbs:[.9,.98,.97,.85]};
+const skin=paintedVehicle(VEHICLE_SKINS.generic,'white');
 
 let yaw=0, distance=9,night=false,t=0,previous=performance.now(),moving=true;
 const tracker=createObjectTracker(),motion={speed:0,yaw:0};
@@ -21,6 +21,8 @@ function observe(s){
   const car=(x,y,h)=>observations.push({kind:'car',x,y,heading:h,probability:.96});
   car(7,-3.5,Math.PI);
   car(46,-3.3,Math.PI);
+  // Waiting traffic belongs only to the explicitly labelled intersection demo.
+  for(const [x,y] of [[3.4,3.65],[11.5,3.65],[34,1.0],[42,1.0],[50,1.0],[38,4.5],[46,4.5]])car(x,y,0);
   for(let n=-1;n<=Math.ceil(s/9)+1;n++){
     const u=s-n*9;
     const crossY=.7+4.4*u;

@@ -1,3 +1,4 @@
+export const VEHICLE_CONTACT_SHADOW='#16161970';
 import {ANIMALS} from './object_classes.js';
 // Original closed sedan mesh. Dimensions and styling are illustrative, never inferred.
 export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=true,body=null,lamps={},outline=null}={}){
@@ -99,7 +100,7 @@ export function drawVehicleMesh(ctx,project,{view=project.view||[-8,0,6],ego=tru
     if(ego){tail(y-.13,y+.13,.51,.57,amber);front(y-.13,y+.13,.53,.58,amber);face([[.9,side*1.085,.94],[1.13,side*1.085,.94],[1.13,side*1.085,.97],[.9,side*1.085,.97]],amber);}
   }
   const shadow=ring(.02,2.3,1.02).map(p=>project(...transform(p)));ctx.save();
-  if(shadow.every(Boolean)){ctx.beginPath();shadow.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fillStyle='#50607020';ctx.fill();}
+  if(shadow.every(Boolean)){ctx.beginPath();shadow.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fillStyle=VEHICLE_CONTACT_SHADOW;ctx.fill();}
   for(const f of faces.sort((a,b)=>a.depth-b.depth)){
     const p=f.points.map(v=>project(...v));if(p.some(v=>!v))continue;
     ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.fillStyle=f.color;
@@ -143,7 +144,7 @@ export function drawDetectedMesh(ctx,project,object){
     poly([[-.23,.23,.06],[-.23,-.23,.06],[0,0,.8]],'#f0a365');
     poly([[-.15,.15,.32],[-.15,-.15,.32],[-.1,-.1,.48],[-.1,.1,.48]],'#f6f6ef');return;
   }
-  if(kind==='car'){drawVehicleMesh(ctx,p,{ego:true,body:{paint:object.pathFocus?'#659fd7':'#a8a9ac'}});return;}
+  if(kind==='car'){drawVehicleMesh(ctx,p,{ego:true,body:{paint:object.pathFocus?'#d6d3cb':'#c4c2be'}});return;}
   if(ANIMALS.includes(kind)){
     const scale=({cat:.45,dog:.65,horse:1.2,sheep:.8,cow:1.2,elephant:2.3,bear:1.1,zebra:1.2,giraffe:1.5})[kind];
     const color=kind==='zebra'?'#b6c1cb':kind==='bear'?'#697c8d':'#93a7b8';

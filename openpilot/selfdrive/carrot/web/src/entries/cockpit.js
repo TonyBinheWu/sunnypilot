@@ -332,14 +332,15 @@ function render(){
   previewModelLead.update(model,state.stamp('modelV2'),at,motion);
   if(!radar||radar._sourceInvalid){previewTracker.drop('radar');previewRadar=null;}
   else if(previewRadar!==radar){previewRadar=radar;previewTracker.ingest('radar',{stamp:state.stamp('radarState'),objects:surroundingTargets(radar)},at,motion);}
-  const preview={model:t.parked?null:model,radar,tracks:mergeModelLead(previewTracker.sample(at,motion),at)};
   const parkingAssist=coreWindow()?.CarrotWebSettingsState?.vision_parking_assist===true;
-  const camera=t.parked&&parkingAssist?PARKING_VIEW:null,night=document.body.classList.contains('night');
+  const preview={model:t.parked&&!parkingAssist?null:model,radar,tracks:mergeModelLead(previewTracker.sample(at,motion),at)};
+  const camera=t.parked&&parkingAssist?{...PARKING_VIEW}:null,night=document.body.classList.contains('night');
   vehicleParking.update(!!camera&&coreWindow()?.__CARROT_BOOTSTRAP__?.vehicleParkingScene===true&&!document.hidden&&!paused);
   const observed=vehicleParking.sample();
   if(camera){
     preview.parkingCue=parkingObservation(preview);
     combineParking(preview,observed);
+    camera.parkingPoints=preview.parking?.flatMap(slot=>slot.corners);
     if(observed)$('sceneStatus').textContent='停車俯視 · 車機 USB eGPU 模型'+(preview.parkingCue?' · 距前鏡頭約 '+Math.round(preview.parkingCue.distance)+' m':'')+(observed.slots.length?' · 影像覆核車格 '+observed.slots.length:'');
   }
   const lamps=vehicleLamps(car,!car,at);

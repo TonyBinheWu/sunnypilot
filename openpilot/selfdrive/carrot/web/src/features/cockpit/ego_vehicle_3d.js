@@ -14,7 +14,7 @@ export function createEgoVehicle3D(target,doc,onChange){
     if(request||closed||asset||!doc.baseURI||!target.fetch||Date.now()<retryAt)return;
     request=new AbortController();
     try{
-      const response=await target.fetch(new URL('assets/ego-cuv-v1.glb',doc.baseURI),{signal:request.signal});
+      const response=await target.fetch(new URL('assets/ego-cuv-v1.glb',doc.baseURI),{signal:request.signal,cache:'no-cache'});
       if(!response.ok)throw Error('ego asset unavailable');
       const {scene}=await new GLTFLoader().parseAsync(await response.arrayBuffer(),'');
       if(closed){free(scene);return;}

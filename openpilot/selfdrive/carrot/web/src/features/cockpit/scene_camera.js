@@ -2,15 +2,25 @@
 const finite=Number.isFinite,clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export function sceneCamera(width,height,view={}){
  const w=finite(width)&&width>0?width:1,fullHeight=finite(height)&&height>0?height:1,h=fullHeight*(1-clamp(finite(view?.bottomFraction)?view.bottomFraction:0,0,.45)),aspect=w/h;
- const overview=view?.roadOverview===true&&view.parking!==true;
- const yaw=(finite(view?.yaw)?view.yaw:0)*Math.PI/180,pitch=clamp((finite(view?.pitch)?view.pitch:25)+(overview?18:0),18,view?.parking===true?82:60)*Math.PI/180;
- const scale=Array.isArray(view?.skinScale)&&view.skinScale.length===3&&view.skinScale.every(n=>finite(n)&&n>.5&&n<2)?view.skinScale:[1.25,1.15,1.55];
- const pivot=[0,0,.78*scale[2]],anchor=view?.parking===true ? .62 : overview ? (aspect<.85?.71:.79) : clamp((finite(view?.anchorY)?view.anchorY:.80)-.20,.56,.65);
- const fov=Math.max(50,Math.min(100,2*Math.atan(Math.tan(Math.PI/8)/Math.max(.25,aspect))*180/Math.PI));
- const tan=Math.tan(fov*Math.PI/360),theta=pitch-Math.atan((anchor*2-1)*tan);
+ const framed=view?.roadOverview===true, overview=framed&&view.parking!==true;
+ // One metre has the same apparent size relative to the short edge after rotation.
+ const shortSide=Math.min(w,h);
+ const yaw=(finite(view?.yaw)?view.yaw:0)*Math.PI/180;
+ const requestedPitch=finite(view?.pitch)?view.pitch:25;
+ const scale=Array.isArray(view?.skinScale)&&view.skinScale.length===3&&view.skinScale.every(n=>finite(n)&&n>.5&&n<2)?view.skinScale:framed?[1,1,1.08]:[1.25,1.15,1.55];
+ const pivot=[0,0,.78*scale[2]],anchor=framed ? .72 : view?.parking===true ? .62 : clamp((finite(view?.anchorY)?view.anchorY:.80)-.20,.56,.65);
+ const fov=framed ? 2*Math.atan(h/(2*shortSide*1.07))*180/Math.PI : Math.max(50,Math.min(100,2*Math.atan(Math.tan(Math.PI/8)/Math.max(.25,aspect))*180/Math.PI));
+ const tan=Math.tan(fov*Math.PI/360),centreAngle=Math.atan((anchor*2-1)*tan);
+ // Frame the vanishing point at one third of the usable height. A portrait
+ // screen needs a higher camera elevation for the same composition.
+ const referencePitch=(Math.atan(.36*tan)+centreAngle)*180/Math.PI;
+ const pitch=clamp(framed&&requestedPitch<80?referencePitch+requestedPitch-25:requestedPitch,12,view?.parking===true?82:60)*Math.PI/180;
+ const theta=pitch-centreAngle;
  const cy=Math.cos(yaw),sy=Math.sin(yaw),ct=Math.cos(theta),st=Math.sin(theta);
  const forward=[ct*cy,-ct*sy,-st],right=[-sy,-cy,0],up=[st*cy,-st*sy,ct];
- let range=clamp(finite(view?.distance)?view.distance:9,5,26)*(overview?1.28:.80),position;
+ let range=clamp(finite(view?.distance)?view.distance:9,5,26)*(overview?1.38:framed?1:.80),position;
+ // Correct the off-axis depth of the pivot as the screen rotates.
+ if(framed)range*=Math.max(1,scale[0],.85*scale[2])/Math.cos(centreAngle);
  const depth=(p)=>p.reduce((n,v,i)=>n+v*forward[i],0);
  const extents=[2.42*scale[0],1.16*scale[1],1.66*scale[2]];
  const envelope=[];

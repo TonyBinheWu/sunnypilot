@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {toCreasedNormals} from 'three/addons/utils/BufferGeometryUtils.js';
-import {drawVehicleMesh} from './object_mesh.js';
+import {drawVehicleMesh,VEHICLE_CONTACT_SHADOW} from './object_mesh.js';
 import {ANIMALS} from './object_classes.js';
 
 // Original illustrative geometry, not manufacturer CAD or estimated dimensions.
@@ -19,13 +19,13 @@ export function createSceneModels(){
     // Reuse the canonical skin/lamps mesh so both rendering backends stay alike.
     const positions=[],colors=[],emission=[];let polygon=[],color='#fff';
     const capture={save(){},restore(){},beginPath(){polygon=[];},moveTo(...p){polygon.push(p);},lineTo(...p){polygon.push(p);},closePath(){},stroke(){},fill(){
-      if(color==='#50607020')return;const c=new T.Color(color);
+      if(color===VEHICLE_CONTACT_SHADOW)return;const c=new T.Color(color);
       for(let i=1;i<polygon.length-1;i++)for(const p of [polygon[0],polygon[i],polygon[i+1]]){positions.push(...p.slice(0,3));colors.push(c.r,c.g,c.b);emission.push(color==='#ff343d'||color==='#ffb126'||color==='#f4f9ff'?1:0);}
     },set fillStyle(c){color=c;}};
     const project=(x,y,z)=>[x,y,z];project.view=[-8,0,6];drawVehicleMesh(capture,project,{body:skin,lamps,ego:true});
     const g=new T.Group(),buffer=geometry(new T.BufferGeometry());
     buffer.setAttribute('position',new T.Float32BufferAttribute(positions,3));buffer.setAttribute('color',new T.Float32BufferAttribute(colors,3));buffer.setAttribute('formosaLamp',new T.Float32BufferAttribute(emission,1));buffer.computeVertexNormals();toCreasedNormals(buffer,Math.PI/4);
-    const paint=new T.MeshPhongMaterial({vertexColors:true,side:T.DoubleSide,shininess:75});
+    const paint=new T.MeshPhongMaterial({vertexColors:true,side:T.DoubleSide,shininess:30});
     paint.onBeforeCompile=shader=>{
       shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float formosaLamp; varying float vFormosaLamp;').replace('#include <begin_vertex>','#include <begin_vertex>\nvFormosaLamp = formosaLamp;');
       shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float vFormosaLamp;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance += vFormosaLamp * vColor.rgb * 0.7;');
@@ -35,7 +35,7 @@ export function createSceneModels(){
     return g;
   }
   function make(kind,skin,lamps){
-    if(kind==='ego'||kind==='car')return vehicle(kind==='ego'?skin:{paint:'#a8a9ac'},kind==='ego'?lamps:{});
+    if(kind==='ego'||kind==='car')return vehicle(kind==='ego'?skin:{paint:'#c4c2be'},kind==='ego'?lamps:{});
     const g=new T.Group();
     if(kind==='unknown'){
       // Unclassified target: a neutral open volume, NEVER a car-shaped guess.

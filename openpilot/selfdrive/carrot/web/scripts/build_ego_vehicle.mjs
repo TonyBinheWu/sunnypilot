@@ -8,7 +8,7 @@ globalThis.FileReader=class {async readAsArrayBuffer(blob){this.result=await blo
 const scene=new T.Scene();
 const materials={};
 for(const [name,color,metalness,roughness] of [
-  ['Paint','#eef0f2',.45,.28],['Glass','#253039',.3,.18],['Trim','#26282a',.08,.7],
+  ['Paint','#f0efeb',.12,.46],['Glass','#323538',.12,.33],['Trim','#26282a',.08,.7],
   ['Alloy','#a6aeb3',.65,.32],['RearLens','#681e25',.15,.26],
   ['IndicatorLeft','#56391c',.1,.3],['IndicatorRight','#56391c',.1,.3],['Headlamp','#b0c8d1',.18,.22]
 ]){
@@ -42,7 +42,16 @@ for(const level of [0,1,2]){
   shell('Paint',[[.44,1.84,4.55,0],[.66,1.90,4.65,0],[.87,1.86,4.49,-.02],[.99,1.78,4.17,-.1]]);
   shell('Glass',[[.96,1.78,3.45,-.31],[1.26,1.67,2.97,-.33],[1.54,1.44,2.16,-.4]]);
   shell('Paint',[[1.51,1.48,2.24,-.41],[1.59,1.43,2.18,-.43],[1.62,1.25,1.90,-.43]]);
-  bar('RearLens',0,.84,-2.25,1.58,.056,.085);
+  // Flush panoramic glazing leaves a narrow body-colour frame and rear spoiler.
+  shell('Glass',[[1.611,1.14,1.75,-.41],[1.632,1.09,1.68,-.41]]);
+  bar('Paint',0,1.52,-1.52,1.33,.038,.14);
+  bar('Trim',0,.58,-2.305,.48,.145,.026);
+  bar('Alloy',0,.585,-2.323,.35,.087,.015);
+  bar('RearLens',0,.845,-2.25,1.56,.027,.064);
+  for(const side of [-1,1]){
+    bar('RearLens',side*.66,.835,-2.215,.30,.068,.13);
+    bar('RearLens',side*.79,.815,-2.15,.06,.087,.17);
+  }
   for(const side of [-1,1]){
     const indicator=side===1?'IndicatorLeft':'IndicatorRight';
     bar(indicator,side*.77,.85,-2.18,.18,.064,.19);

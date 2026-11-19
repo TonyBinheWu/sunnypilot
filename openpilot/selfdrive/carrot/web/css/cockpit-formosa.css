@@ -10,7 +10,6 @@ body.night{--bg:#121925;--surface:#1c2635;--ink:#edf2fa;--muted:#adb9ca;--line:#
 body:has(#apps[open]) .dock button.selected:not(#appsButton){background:transparent;color:var(--muted);box-shadow:none}body:has(#apps[open]) .dock #appsButton{background:#087bff;color:#fff}
 .workspace{background:var(--surface)}.instrument-speed>b{font-weight:600;letter-spacing:-.065em}.gear-strip{font-weight:600;letter-spacing:.10em}.instrument-state{font-weight:600}
 #vehicleDock{display:none}
-body:not(.night)[data-panel="vision"] .vision-instruments{color:var(--ink);text-shadow:none}body:not(.night)[data-panel="vision"] .instrument-speed>span,body:not(.night)[data-panel="vision"] .instrument-state,body:not(.night)[data-panel="vision"] .instrument-limits small{color:var(--muted)}
 body:not(.night)[data-panel="vision"] .top{background:transparent;color:var(--ink)}
 body:not(.night)[data-panel="vision"] #driveStatusPill{background:#f6f8fddd;border-color:#d4dbeb;color:#286ead}
 dialog{border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 48px #14274730;background:var(--surface)}
@@ -75,3 +74,11 @@ dialog{border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 48px #1
 #intersectionDialog form{display:flex;justify-content:flex-end;padding:4px 8px}
 #intersectionDialog .close{position:static}
 #intersectionDialog iframe{position:static;min-height:0;flex:1;width:100%;border:0}
+
+/* Instrument contrast follows the road surface in both cockpit shell themes. */
+body[data-panel="vision"] .vision-instruments{color:#f6f6f3;text-shadow:0 1px 3px #25262a66}
+body[data-panel="vision"] .gear-strip span:not(.active){color:#c4c4c7}
+body[data-panel="vision"]:not(.night) .instrument-speed>span,
+body[data-panel="vision"]:not(.night) .instrument-state,
+body[data-panel="vision"]:not(.night) .instrument-limits small{color:#d6d7d9}
+body[data-panel="vision"]:not(.night) .instrument-limits>div:first-child small{color:#202125}
