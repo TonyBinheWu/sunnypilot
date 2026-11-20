@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary,teacherBatchObservation,teacherTrainingLoss} from '../web/status.mjs';
+import {teacherExperiment,teacherExperimentSummary,eventMessage,workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary,teacherBatchObservation,teacherTrainingLoss} from '../web/status.mjs';
 
 test('a connected teacher does not make a stale qualification controller look active',()=>{
   const value={time:100,teacher:{updated:99,connected:true,qualified:false,qualification:{state:'running',updated:50,done:0,total:11}}};
@@ -158,4 +158,17 @@ test('nine-task safety profile keeps measured group substeps and loss labels',()
   assert.match(teacherValidationSummary(value),/三項獨立停止安全約束/);
   assert.match(teacherValidationSummary(value),/8 \/ 9/);
   assert.deepEqual(teacherTrainingLoss(value),{label:'最近完成組 loss',value:12});
+});
+
+
+test('isolated teacher telemetry keeps real losses separate and marks stale reports',()=>{
+  const p={experiment_only:true,cycle:163,phase:'training',epoch:1,epochs:1,batch:2,batches:37,updated:100,batch_history:[{batch:1,loss:4,loss_before_step:5}],history:[]};
+  const value={time:300,events:[{message:'unrelated'},{message:'teacher_experiment_progress:'+JSON.stringify(p)}]};
+  assert.deepEqual(teacherExperiment(value),p);
+  assert.match(teacherExperimentSummary(value),/5.00000 → 4.00000/);
+  assert.match(teacherExperimentSummary(value),/回報已過期/);
+  assert.match(eventMessage(value.events[1],value),/尚未取得完整行車資格/);
+  assert.equal(teacherExperiment({events:[{message:'teacher_experiment_progress:{broken'}]}),null);
+  p.batch_history[0].loss='fake';
+  assert.equal(teacherExperiment({events:[{message:'teacher_experiment_progress:'+JSON.stringify(p)}]}),null);
 });

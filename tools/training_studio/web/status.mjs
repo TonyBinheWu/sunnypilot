@@ -103,3 +103,27 @@ export function reasoningSummary(value){
   const classes=navigation?Object.entries({wait:'停等',straight:'直行',left:'左轉',right:'右轉'}).map(([key,label])=>last?.maneuver_classes?.[key]?`${label}首字 ${last.maneuver_classes[key].correct}/${last.maneuver_classes[key].samples}`:null).filter(Boolean).join(' · '):'';
   return `隔離視覺決策實驗${navigation?' · 四類均衡導航決策':''} · ${phase} · Epoch ${p.epoch||0} / ${p.epochs||'—'} · ${counter} · ${loss}${Number.isFinite(last?.decision_correct)?` · 首決策 token 命中 ${last.decision_correct} / ${last.decision_samples} · 決策 CE ${last.decision_ce.toFixed(5)}`:''}${classes?' · '+classes:''}${!fresh&&!['completed','interrupted'].includes(p.phase)?' · 回報已過期':''} · 此處不是完整行車資格結果`;
 }
+
+
+export function teacherExperiment(value){
+  for(const event of value.events||[]){
+    if(!event.message?.startsWith('teacher_experiment_progress:'))continue;
+    try{
+      const p=JSON.parse(event.message.slice('teacher_experiment_progress:'.length));
+      if(p.experiment_only===true&&Number.isInteger(p.cycle)&&p.cycle>0&&Number.isFinite(p.updated)&&Array.isArray(p.batch_history)&&p.batch_history.every(r=>Number.isInteger(r.batch)&&r.batch>0&&Number.isFinite(r.loss)&&Number.isFinite(r.loss_before_step))&&Array.isArray(p.history)&&p.history.every(r=>['train_loss','validation_loss','red_safe_count','red_samples','lateral_trajectory_mse'].every(k=>Number.isFinite(r[k]))))return p;
+    }catch{}
+  }
+  return null;
+}
+
+export function teacherExperimentSummary(value){
+  const p=teacherExperiment(value);if(!p)return null;
+  const fresh=Number.isFinite(value.time)&&Math.abs(value.time-p.updated)<120;
+  const phase=p.stage==='validation'?`獨立驗證 ${p.validation_sample} / ${p.validation_samples}`:({prefill:`建立上下文 ${p.sample||0} / ${p.samples||'—'}`,training:`實際更新 ${p.batch||0} / ${p.batches||'—'} 組`,training_complete:'試訓完成／待完整驗收',rejected_independent_validation_regression:'獨立驗證退步，候選已拒收',error:'試訓錯誤'}[p.phase]||p.phase);
+  const last=p.batch_history.at(-1),row=p.history.at(-1);
+  return `隔離試訓 ${p.cycle} · ${phase} · Epoch ${p.epoch||0} / ${p.epochs||'—'}${last?` · 最近完成組 loss ${last.loss_before_step.toFixed(5)} → ${last.loss.toFixed(5)}`:''}${row?` · 完整驗證 loss ${row.validation_loss.toFixed(5)} · 停止區 ${row.red_safe_count}/${row.red_samples} · 車道 MSE ${row.lateral_trajectory_mse.toFixed(5)}`:''}${!fresh&&['prefill','training'].includes(p.phase)?' · 回報已過期':''} · 尚未取得完整行車資格`;
+}
+
+export function eventMessage(event,value){
+  return event.message?.startsWith('teacher_experiment_progress:')?(teacherExperimentSummary({...value,events:[event]})||'隔離試訓回報格式無效'):event.message;
+}
