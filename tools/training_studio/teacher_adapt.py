@@ -267,6 +267,14 @@ def main():
             candidates.append(('latest',latest['file'],latest['epoch']))
           seen=set()
           for selection,filename,epoch in candidates:
+            if result.get('baseline',{}).get('validation_guard') is not None:
+              from tools.training_studio.teacher_quality import checkpoint_quality
+              metrics=next((row for row in result['history'] if row['epoch']==epoch),{})
+              quality=checkpoint_quality(metrics,result['baseline'],result.get('validation_guard_reference'))
+              write_json(folder/f'checkpoint-quality-{selection}.json',{'epoch':epoch,'metrics':metrics,'baseline':result['baseline'],**quality})
+              if not quality['passed']:
+                store.event(f'第{cycle}輪{selection}候選拒收：完整驗證及固定壓力驗證條件未同時符合；保留權重與失敗指標，不進行資格推廣')
+                continue
             remote.download(destination+'/output/'+filename,folder/filename)
             checksum=hashlib.sha256((folder/filename).read_bytes()).hexdigest()
             if selection=='latest' and checksum!=latest['sha256']:raise ValueError('completed epoch checkpoint digest changed')

@@ -75,6 +75,16 @@ class TeacherLearningTest(unittest.TestCase):
     braking=torch.zeros_like(action);braking[...,0]=-.25
     self.assertEqual(float(held_brake_margin_loss(braking,space)),0.)
 
+  def test_validation_guard_reports_its_own_stop_and_go_denominators(self):
+    from tools.training_studio.teacher_train import validation_guard_metrics
+    rows=[{'stop_required':True,'validation_loss':2.,'lateral_trajectory_mse':3.,'red_safe':1,'red_hold_speed_mse':.2,'go_velocity_mse':None},
+          {'stop_required':False,'validation_loss':4.,'lateral_trajectory_mse':5.,'red_safe':None,'red_hold_speed_mse':None,'go_velocity_mse':.7}]
+    guard=validation_guard_metrics(rows)
+    self.assertEqual(guard,{'validation_samples':2,'validation_loss':3.,'red_safe_count':1,'red_samples':1,'red_hold_speed_mse':.2,'lateral_trajectory_mse':4.,'go_velocity_mse':.7,'go_samples':1})
+    self.assertIsNone(validation_guard_metrics(rows[:1])['go_velocity_mse'])
+    self.assertIsNone(validation_guard_metrics(rows[1:])['red_hold_speed_mse'])
+    with self.assertRaises(ValueError):validation_guard_metrics([])
+
   def test_executed_steering_peak_protects_short_symmetric_turn_entry_in_physical_units(self):
     import torch
     from tools.training_studio.teacher_train import immediate_steering_loss

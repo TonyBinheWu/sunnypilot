@@ -175,6 +175,18 @@ def acceleration_error(action,target_action,space,*,completed_hold=False,forward
   return (action[...,0]-target_action.to(action.device)[...,0])*std
 
 
+def validation_guard_metrics(records):
+  """Report a fixed validation subset separately; never hide its regressions in a mean."""
+  import numpy as np
+  if not records:raise ValueError('validation guard must contain observed validation results')
+  stops=[r for r in records if r['stop_required']];go=[r for r in records if not r['stop_required']]
+  return {'validation_samples':len(records),'validation_loss':float(np.mean([r['validation_loss'] for r in records])),
+    'red_safe_count':sum(r['red_safe'] for r in stops),'red_samples':len(stops),
+    'red_hold_speed_mse':float(np.mean([r['red_hold_speed_mse'] for r in stops])) if stops else None,
+    'lateral_trajectory_mse':float(np.mean([r['lateral_trajectory_mse'] for r in records])),
+    'go_velocity_mse':float(np.mean([r['go_velocity_mse'] for r in go])) if go else None,'go_samples':len(go)}
+
+
 def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False,signed_hold_controls=False,optimization_profile=None,rear_axle_offset_m=0.,fp32_expert=False,mlp_only=False):
   """Keep every completed epoch available for the authoritative driving suite.
 
@@ -323,6 +335,9 @@ def main():
   settings={'seed':42,'num_traj_sets':1,'num_traj_samples':1,'top_p':.98,'top_k':None,'temperature':.6,'max_generation_length':256,'diffusion_kwargs':{'inference_step':10}}
   manifest=json.loads((args.data/'manifest.json').read_text())
   rows=manifest['samples']
+  validation_guard=set(manifest.get('validation_guard_sha256s',[]))
+  if not validation_guard<={row['sha256'] for row in rows if row['split']=='validation'}:
+    raise ValueError('validation guard must reference only existing held-out packets')
   from tools.training_studio.teacher_standstill import stop_training_margin
   if any(row.get('recovery_reference_profile') is not None for row in rows):
     for row in rows:stop_training_margin(row,args.balanced_stop_modes)
@@ -341,7 +356,7 @@ def main():
   model._sample_actions=capture
   history=[];checkpoints=[];batch_history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'validation_guard_reference':manifest.get('validation_guard_reference'),'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -427,7 +442,7 @@ def main():
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
   def validate(epoch=None):
-    values=[]; red=0; lateral=[]; hold=[]; proceed=[]
+    values=[]; red=0; lateral=[]; hold=[]; proceed=[]; guard_records=[]
     with torch.no_grad():
       for item in validation:
         loss,xyz,velocity=objective(item,False)
@@ -435,12 +450,17 @@ def main():
         lateral.append(float((xyz-item['target'].cuda())[...,1].square().mean()))
         if item['row']['stop_required']:
           speed=torch.linalg.vector_norm(velocity,dim=-1)
-          red+=int(bool(valid_stopped_trajectory(xyz,velocity,item['row']['front_distance_m'])))
+          safe=int(bool(valid_stopped_trajectory(xyz,velocity,item['row']['front_distance_m'])));red+=safe
           hold.append(float(speed[:,-10:].square().mean()))
         else:
           target=item['target'].cuda()
           reference_velocity=torch.diff(torch.cat((torch.zeros_like(target[:,:1]),target),dim=1),dim=1)/.1
           proceed.append(float((velocity[:,:20]-reference_velocity[:,:20]).square().sum(-1).mean()))
+        if item['row']['sha256'] in validation_guard:
+          guard_records.append({'validation_loss':values[-1],'lateral_trajectory_mse':lateral[-1],
+            'stop_required':item['row']['stop_required'],'red_safe':safe if item['row']['stop_required'] else None,
+            'red_hold_speed_mse':hold[-1] if item['row']['stop_required'] else None,
+            'go_velocity_mse':proceed[-1] if not item['row']['stop_required'] else None})
         del loss,xyz,velocity
         load_prefix.cache_clear()
         release_prefix_pages(item['prefix_path'])
@@ -448,7 +468,11 @@ def main():
         emit('prefill' if epoch is None else 'training',epoch=epoch or 0,
           stage='validation',validation_sample=len(values),validation_samples=len(validation),
           **({'baseline':baseline} if epoch is not None else {}))
-    return {'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral)),'stop_metric':'valid_stop_zone_v2','go_velocity_mse':float(np.mean(proceed)) if proceed else None,'go_samples':len(proceed)}
+    metrics={'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral)),'stop_metric':'valid_stop_zone_v2','go_velocity_mse':float(np.mean(proceed)) if proceed else None,'go_samples':len(proceed)}
+    if validation_guard:
+      if len(guard_records)!=len(validation_guard):raise ValueError('validation guard coverage changed')
+      metrics['validation_guard']=validation_guard_metrics(guard_records)
+    return metrics
   baseline=validate()
   best_metrics,best_epoch=baseline,0
   balanced_metrics,balanced_epoch=baseline,0
@@ -513,7 +537,7 @@ def main():
       balanced_metrics,balanced_epoch=metrics,epoch+1
       save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(args.output/'balanced.safetensors'))
     emit('training',epoch=epoch+1,baseline=baseline,**metrics)
-  write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'best':best_metrics,'best_epoch':best_epoch,
+  write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'validation_guard_reference':manifest.get('validation_guard_reference'),'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'checkpoints':checkpoints,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
     'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'signed_hold_controls':args.signed_hold_controls,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
