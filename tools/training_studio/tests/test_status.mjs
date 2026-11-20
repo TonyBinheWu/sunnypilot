@@ -141,3 +141,13 @@ test('visual decision experiment remains distinct from actual driving qualificat
   value.time=500;assert.match(reasoningSummary(value),/回報已過期/);
   value.teacher_reasoning.phase='completed';assert.doesNotMatch(reasoningSummary(value),/回報已過期/);
 });
+
+
+test('current grouped optimizer reports measured guard backtracks and separate fixed validation metrics',()=>{
+  const value={teacher_training:{optimization_profile:'grouped_six_task_recent5_correction_fp64_projection_sgd_v11',phase:'training',group_stage:'verify',group_task:4,group_tasks:6,backtracks:3}};
+  assert.match(teacherValidationSummary(value),/檢查更新 4 \/ 6 · 回退 3 次/);
+  assert.doesNotMatch(teacherValidationSummary(value),/固定壓力驗證/);
+  value.teacher_training.history=[{validation_guard:{validation_samples:6,validation_loss:10.5,lateral_trajectory_mse:2.25}}];
+  assert.match(teacherValidationSummary(value),/固定壓力驗證 6 筆 · loss 10.50000 · 車道 MSE 2.25000/);
+  value.teacher_training.stage='validation';assert.doesNotMatch(teacherValidationSummary(value),/回退/);
+});

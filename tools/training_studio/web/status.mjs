@@ -41,7 +41,7 @@ export function teacherValidationSummary(value){
   const parts=[];
   if(row?.stop_metric==='valid_stop_zone_v2'&&Number.isFinite(row.red_safe_count)&&Number.isFinite(row.red_samples))parts.push(`停止區樣本 ${row.red_safe_count} / ${row.red_samples}`);
   if(Number.isFinite(row?.go_velocity_mse))parts.push(`放行速度 MSE ${row.go_velocity_mse.toFixed(4)}`);
-  if(['paired_stop_go_pcgrad_sgd_v1','paired_unit_gradient_pcgrad_sgd_v2','paired_balanced_stop_modes_pcgrad_sgd_v3','paired_balanced_cross_task_pcgrad_sgd_v4','grouped_six_task_unit_descent_sgd_v6','grouped_six_task_correction_replay_sgd_v7'].includes(progress.optimization_profile)){
+  if(progress.optimization_profile?.startsWith('grouped_six_task_')||['paired_stop_go_pcgrad_sgd_v1','paired_unit_gradient_pcgrad_sgd_v2','paired_balanced_stop_modes_pcgrad_sgd_v3','paired_balanced_cross_task_pcgrad_sgd_v4'].includes(progress.optimization_profile)){
     const grouped=progress.optimization_profile.startsWith('grouped_six_task_');
     if(grouped&&progress.phase==='training'&&progress.stage!=='validation'&&Number.isFinite(progress.group_task)&&Number.isFinite(progress.group_tasks))parts.push(`${progress.group_stage==='gradient'?'計算梯度':'檢查更新'} ${progress.group_task} / ${progress.group_tasks}${progress.group_stage==='verify'&&progress.backtracks?` · 回退 ${progress.backtracks} 次`:''}`);
     parts.push(progress.optimization_profile==='grouped_six_task_correction_replay_sgd_v7'?'六類共同更新／修正樣本優先重播':grouped?'六類共同更新／逐類損失檢查':progress.optimization_profile==='paired_balanced_cross_task_pcgrad_sgd_v4'?'停止狀態 × 通行方向九種交錯配對':progress.optimization_profile==='paired_balanced_stop_modes_pcgrad_sgd_v3'?'停等／接近／提早停車恢復均衡配對':'停止／通行成對最佳化');
@@ -51,6 +51,8 @@ export function teacherValidationSummary(value){
       if(Number.isFinite(progress.step_scale))parts.push(progress.step_scale===0?'本次更新已撤回':`採用步幅 ${progress.step_scale}`);
     }
   }
+  const guard=row?.validation_guard;
+  if(guard&&Number.isFinite(guard.validation_samples)&&Number.isFinite(guard.validation_loss)&&Number.isFinite(guard.lateral_trajectory_mse))parts.push(`固定壓力驗證 ${guard.validation_samples} 筆 · loss ${guard.validation_loss.toFixed(5)} · 車道 MSE ${guard.lateral_trajectory_mse.toFixed(5)}`);
   const qualified=progress.qualified_candidate;
   if(progress.phase==='qualified'&&qualified)parts.push(`採用第 ${qualified.cycle} 輪 Epoch ${qualified.training_epoch} 固定快照 · 最佳化實際完成 ${progress.optimizer_completed_epochs} 個 epoch`);
   return parts.join(' · ');
