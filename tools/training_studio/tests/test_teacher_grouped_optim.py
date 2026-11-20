@@ -99,6 +99,16 @@ class CommonDescentTest(unittest.TestCase):
     xyz.zero_();velocity[:,-1,0]=.2
     self.assertGreater(float(stop_safety_loss(xyz,velocity,3.)),0.)
 
+  def test_completed_hold_near_both_legal_boundaries_never_gets_a_forward_or_reverse_target(self):
+    from tools.training_studio.teacher_train import stop_safety_loss
+    for front in (.01,4.7,4.95,4.9999):
+      xyz=torch.zeros(1,64,3,requires_grad=True);velocity=torch.zeros_like(xyz)
+      loss=stop_safety_loss(xyz,velocity,front,completed_hold=True)
+      self.assertEqual(float(loss.detach()),0.)
+      loss.backward();torch.testing.assert_close(xyz.grad,torch.zeros_like(xyz))
+    xyz=torch.zeros(1,64,3);velocity=torch.zeros_like(xyz);velocity[:,-1,0]=.2
+    self.assertGreater(float(stop_safety_loss(xyz,velocity,4.95,completed_hold=True)),0.)
+
   def test_realistic_grouped_sampling_covers_every_task_in_each_update(self):
     from tools.training_studio.teacher_optim import paired_groups,stop_mode
     from tools.training_studio.teacher_reasoning_train import maneuver_class

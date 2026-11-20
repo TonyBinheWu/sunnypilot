@@ -108,18 +108,22 @@ def valid_stopped_trajectory(xyz,velocity,front_distance):
   return ((xyz[...,0].amax(dim=-1)<=front_distance)&((final_front>=0)&(final_front<5)).all(dim=-1)&(speed[...,-10:].amax(dim=-1)<.15)).all()
 
 
-def stop_safety_loss(xyz,velocity,front_distance):
+def stop_safety_loss(xyz,velocity,front_distance,*,completed_hold=False):
   """Label-only strict-interior stopping objective, separate from mean trajectory loss.
 
   The original acceptance remains zero to five metres and speed below .15 m/s.
-  Training uses interior margins so a mean trajectory gain cannot buy a small
+  Moving approaches use interior margins; completed holds keep their legal
+  location. A mean trajectory gain cannot buy a small
   violation at a tail point. This term never enters model inference.
   """
   import torch
   front=front_distance-xyz[...,-10:,0]
   speed=torch.linalg.vector_norm(velocity[...,-10:,:],dim=-1)
-  zone=torch.relu(.1-front).square()+torch.relu(front-4.5).square()
-  overrun=torch.relu(xyz[...,0]-front_distance+.1).square().amax()
+  # An already completed legal stop must not acquire a new forward target.
+  # Only moving approaches/recovery use an interior stopping margin.
+  lower,upper,overrun_margin=(0.,5.,0.) if completed_hold else (.1,4.5,.1)
+  zone=torch.relu(lower-front).square()+torch.relu(front-upper).square()
+  overrun=torch.relu(xyz[...,0]-front_distance+overrun_margin).square().amax()
   return 200*(zone.amax()+overrun+torch.relu(speed-.1).square().amax())
 
 
@@ -478,7 +482,7 @@ def main():
     if not item['row']['stop_required']:raise ValueError('safety task requires a stop reference')
     action,xyz,_=rollout(model,item,grad=grad)
     velocity=torch.diff(torch.cat((torch.zeros_like(xyz[:,:1]),xyz),dim=1),dim=1)/.1
-    loss=stop_safety_loss(xyz,velocity,item['row']['front_distance_m'])
+    loss=stop_safety_loss(xyz,velocity,item['row']['front_distance_m'],completed_hold=bool(item['row'].get('maintain_stop_reference')))
     if item['row'].get('maintain_stop_reference'):
       loss=loss+held_brake_margin_loss(action,model.expert.action_space,executed_peak=True)
       loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))
