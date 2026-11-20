@@ -1,0 +1,18 @@
+--- a/EN-MaxAngleFrames(89).md
++++ b/EN-MaxAngleFrames(89).md
+@@ -34,3 +34,5 @@
+ Adjusts how many consecutive steering-request frames are allowed at large steering angles.
+-
++
++For Hyundai and Kia torque steering, the controller starts with 89 frames. Older 80–88 settings use 89 to meet Panda’s minimum. If a later reading is missing or outside 80–100, it keeps the last valid value and resumes sending its request after the two-frame pause.
++
+ - **Higher:** Allows steering requests for more frames at large steering angles.
+--- a/KO-MaxAngleFrames(89).md
++++ b/KO-MaxAngleFrames(89).md
+@@ -34,3 +34,5 @@
+ 큰 조향각에서 연속 조향 요청을 유지할 수 있는 프레임 수를 조정합니다.
+-
++
++현대·기아 토크 조향에서는 89프레임으로 시작합니다. 기존 80~88 설정은 Panda의 최소 요건에 따라 89로 적용합니다. 이후 설정이 없거나 80~100 범위를 벗어나면 마지막 유효값을 유지하고, 두 프레임 동안 중단한 뒤 조향 요청을 다시 보냅니다.
++
+ - **값을 높이면:** 큰 조향각에서 조향 요청을 유지할 수 있는 프레임 수가 늘어납니다.

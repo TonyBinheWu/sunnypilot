@@ -360,6 +360,8 @@ VW MEB(ID.4 포함)에도 수동 조향비와 학습 비율이 적용됩니다. 
 | 차량 보조 | `MaxAngleFrames`, `SpeedFromPCM` | 최대 조향각 관련 프레임과 순정 SCC 속도 제어 방식 |
 | 기기 하드웨어 | `CommaPedalEnabled`, `HardwareC3xLite` | ACC 미장착 차량의 Comma Pedal 허용 설정, C3X Lite 하드웨어 구성 |
 
+현대·기아 토크 조향에서 `MaxAngleFrames`의 초기값은 89입니다. 기존 80~88 설정은 Panda가 두 프레임의 요청 중단을 허용하도록 89로 적용합니다. 설정이 없거나 80~100 범위를 벗어나면 마지막 유효값을 유지합니다. 큰 조향각을 유지하는 동안에도 두 프레임 동안 요청을 중단한 뒤 다시 보냅니다.
+
 > [!CAUTION]
 > `HyundaiCameraSCC`, `CanfdHDA2`, `EnableRadarTracks`, `CarrotRadarMode`, `CarrotRadarCutInSensitivity`, `SpeedFromPCM`은 잘못 설정하면 차량 인식, SCC, 레이더와 가감속 동작이 달라질 수 있습니다. 차종, 연식, HDA 구성, 하네스 연결 위치와 순정 ACC 사용 여부를 확인한 뒤 변경하세요.
 
