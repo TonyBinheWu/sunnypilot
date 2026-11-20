@@ -41,10 +41,10 @@ export function teacherValidationSummary(value){
   const parts=[];
   if(row?.stop_metric==='valid_stop_zone_v2'&&Number.isFinite(row.red_safe_count)&&Number.isFinite(row.red_samples))parts.push(`停止區樣本 ${row.red_safe_count} / ${row.red_samples}`);
   if(Number.isFinite(row?.go_velocity_mse))parts.push(`放行速度 MSE ${row.go_velocity_mse.toFixed(4)}`);
-  if(progress.optimization_profile?.startsWith('grouped_six_task_')||['paired_stop_go_pcgrad_sgd_v1','paired_unit_gradient_pcgrad_sgd_v2','paired_balanced_stop_modes_pcgrad_sgd_v3','paired_balanced_cross_task_pcgrad_sgd_v4'].includes(progress.optimization_profile)){
-    const grouped=progress.optimization_profile.startsWith('grouped_six_task_');
+  if(progress.optimization_profile?.startsWith('grouped_')||['paired_stop_go_pcgrad_sgd_v1','paired_unit_gradient_pcgrad_sgd_v2','paired_balanced_stop_modes_pcgrad_sgd_v3','paired_balanced_cross_task_pcgrad_sgd_v4'].includes(progress.optimization_profile)){
+    const grouped=progress.optimization_profile.startsWith('grouped_');
     if(grouped&&progress.phase==='training'&&progress.stage!=='validation'&&Number.isFinite(progress.group_task)&&Number.isFinite(progress.group_tasks))parts.push(`${progress.group_stage==='gradient'?'計算梯度':'檢查更新'} ${progress.group_task} / ${progress.group_tasks}${progress.group_stage==='verify'&&progress.backtracks?` · 回退 ${progress.backtracks} 次`:''}`);
-    parts.push(progress.optimization_profile==='grouped_six_task_correction_replay_sgd_v7'?'六類共同更新／修正樣本優先重播':grouped?'六類共同更新／逐類損失檢查':progress.optimization_profile==='paired_balanced_cross_task_pcgrad_sgd_v4'?'停止狀態 × 通行方向九種交錯配對':progress.optimization_profile==='paired_balanced_stop_modes_pcgrad_sgd_v3'?'停等／接近／提早停車恢復均衡配對':'停止／通行成對最佳化');
+    parts.push(progress.optimization_profile==='grouped_nine_task_separate_stop_safety_fp64_projection_sgd_v12'?'六類總損失＋三項獨立停止安全約束':progress.optimization_profile==='grouped_six_task_correction_replay_sgd_v7'?'六類共同更新／修正樣本優先重播':grouped?'六類共同更新／逐類損失檢查':progress.optimization_profile==='paired_balanced_cross_task_pcgrad_sgd_v4'?'停止狀態 × 通行方向九種交錯配對':progress.optimization_profile==='paired_balanced_stop_modes_pcgrad_sgd_v3'?'停等／接近／提早停車恢復均衡配對':'停止／通行成對最佳化');
     if(progress.phase==='training'&&progress.stage!=='validation'&&!grouped&&Number.isFinite(progress.stop_loss_before_step)&&Number.isFinite(progress.go_loss_before_step)){
       parts.push(`${grouped?'本組三類':'本對'}停止 loss ${progress.stop_loss_before_step.toFixed(3)} → ${progress.stop_loss.toFixed(3)}`);
       parts.push(`${grouped?'本組三向':'本對'}通行 loss ${progress.go_loss_before_step.toFixed(3)} → ${progress.go_loss.toFixed(3)}`);
@@ -70,8 +70,8 @@ export function teacherBatchObservation(value,previous={}){
   const valid=Number.isInteger(cycle)&&cycle>0&&Number.isInteger(epoch)&&epoch>0;
   const same=valid&&previous.cycle===cycle&&previous.epoch===epoch&&previous.objective===objective;
   const recorded=Array.isArray(p.batch_history);
-  const entries=!recorded&&!p.optimization_profile?.startsWith('grouped_six_task_')&&same&&Array.isArray(previous.entries)?previous.entries.filter(row=>Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.before)).slice(-200):[];
-  const candidates=recorded?p.batch_history:(p.phase==='training'&&p.stage!=='validation'&&!p.optimization_profile?.startsWith('grouped_six_task_')?[p]:[]);
+  const entries=!recorded&&!p.optimization_profile?.startsWith('grouped_')&&same&&Array.isArray(previous.entries)?previous.entries.filter(row=>Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.before)).slice(-200):[];
+  const candidates=recorded?p.batch_history:(p.phase==='training'&&p.stage!=='validation'&&!p.optimization_profile?.startsWith('grouped_')?[p]:[]);
   for(const row of candidates){
     if(valid&&Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.loss_before_step)&&!entries.some(entry=>entry.batch===row.batch))entries.push({batch:row.batch,loss:row.loss,before:row.loss_before_step});
   }
@@ -82,10 +82,10 @@ export function teacherBatchObservation(value,previous={}){
 
 export function teacherTrainingLoss(value){
   const p=value.teacher_training||{};
-  if(p.optimization_profile?.startsWith('grouped_six_task_')){
+  if(p.optimization_profile?.startsWith('grouped_')){
     const row=p.batch_history?.at(-1);
     if(row)return {label:'最近完成組 loss',value:row.loss};
-    if(p.task_count===6&&Number.isFinite(p.loss))return {label:'最近回報組 loss',value:p.loss};
+    if([6,9].includes(p.task_count)&&Number.isFinite(p.loss))return {label:'最近回報組 loss',value:p.loss};
     return {label:'最近完整 epoch loss',value:p.history?.at(-1)?.train_loss};
   }
   return {label:'loss',value:p.loss??p.history?.at(-1)?.train_loss};

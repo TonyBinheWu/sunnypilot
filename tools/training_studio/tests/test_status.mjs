@@ -151,3 +151,11 @@ test('current grouped optimizer reports measured guard backtracks and separate f
   assert.match(teacherValidationSummary(value),/固定壓力驗證 6 筆 · loss 10.50000 · 車道 MSE 2.25000/);
   value.teacher_training.stage='validation';assert.doesNotMatch(teacherValidationSummary(value),/回退/);
 });
+
+
+test('nine-task safety profile keeps measured group substeps and loss labels',()=>{
+  const value={teacher_training:{cycle:163,phase:'training',epoch:1,optimization_profile:'grouped_nine_task_separate_stop_safety_fp64_projection_sgd_v12',group_stage:'verify',group_task:8,group_tasks:9,batch_history:[{batch:1,loss:12,loss_before_step:13}]}};
+  assert.match(teacherValidationSummary(value),/三項獨立停止安全約束/);
+  assert.match(teacherValidationSummary(value),/8 \/ 9/);
+  assert.deepEqual(teacherTrainingLoss(value),{label:'最近完成組 loss',value:12});
+});
