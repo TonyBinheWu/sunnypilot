@@ -241,7 +241,7 @@ window.CarrotTranslations.register("ko", {
     egpu_model_retry_confirm: "진단 보고서를 보존하고 다음 전체 재부팅 때 파일 검사와 시험 추론을 다시 진행할까요? 지금 GPU를 시작하지는 않습니다.",
     egpu_model_retry_pending: "재검증을 예약했습니다. 주차 상태에서 콤마를 한 번 재부팅하세요. 모델 파일과 진단 기록은 삭제하지 않았습니다.",
     egpu_model_retry_offroad: "시동을 끄고 오프로드 화면으로 돌아오면 재검증을 예약할 수 있습니다. 예약 후 주차 상태에서 콤마를 재부팅하세요.",
-    egpu_model_blocked_device: "GPU/USB 시간초과 또는 멈춤으로 이번 부팅에서 모델 사용을 중단했습니다. 콤마를 전체 재부팅하면 파일 검사와 시험 추론을 자동 재시도합니다. 반복되면 장치·전원·USB 원인 확인이 필요합니다.",
+    egpu_model_blocked_device: "eGPU 또는 USB 연결에 오류가 발생했습니다. 주차 후 GPU 전원을 확인하고 콤마를 완전히 재부팅하세요. 파일 검사와 시작 추론 테스트를 다시 실행합니다.",
     egpu_model_blocked_verify: "검증 실패로 이 모델이 차단됐습니다. 다음 재부팅에 한 번 재검증하도록 예약할 수 있습니다. 파일·출력 검사는 유지되며 다시 실패하면 내부 모델을 사용합니다.",
     egpu_model_blocked_missing: "모델이 차단됐지만 진단 기록이 없거나 식별값이 맞지 않습니다. 진단 보고서를 보내 주세요. 자동 해제는 지원하지 않습니다.",
     egpu_model_failure_runtime: "eGPU를 사용할 수 없어 내부 모델을 선택했습니다.",
