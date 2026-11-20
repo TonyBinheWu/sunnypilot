@@ -56,6 +56,33 @@ class CommonDescentTest(unittest.TestCase):
     torch.testing.assert_close(base,unchanged)
     with self.assertRaises(ValueError):paired_step({'expert':parameter},torch.optim.SGD([parameter],lr=.1),objective,*items[:2],extra_items=items[2:])
 
+  def test_separate_safety_tasks_prevent_composite_loss_from_buying_unsafe_motion(self):
+    from tools.training_studio.teacher_optim import paired_step
+    parameter=torch.nn.Parameter(torch.zeros(9))
+    items=[{'row':{'stop_required':i%2==0},'axis':i} for i in range(6)]
+    def composite(item,grad):
+      k=item['axis'];loss=(parameter[k]-1).square()
+      return loss+(-.2*parameter[6+k//2] if k%2==0 else 0)
+    def safety(item,grad):return (parameter[6+item['axis']//2]+1).square()
+    before=[float(safety(item,False).detach()) for item in items[::2]]
+    result=paired_step({'expert':parameter},torch.optim.SGD([parameter],lr=.1),composite,*items[:2],unit_gradients=True,extra_items=items[2:],safety_objective=safety)
+    after=[float(safety(item,False).detach()) for item in items[::2]]
+    self.assertEqual(result['task_count'],9)
+    self.assertEqual(len(result['task_losses_after']),9)
+    self.assertTrue(all(a<b for a,b in zip(after,before)))
+    self.assertTrue(all(a<=b for a,b in zip(result['task_losses_after'],result['task_losses_before'])))
+    self.assertGreater(result['parameter_delta_norm'],0)
+
+  def test_stop_safety_loss_separates_boundary_speed_and_overshoot(self):
+    from tools.training_studio.teacher_train import stop_safety_loss
+    xyz=torch.zeros(1,64,3);velocity=torch.zeros_like(xyz)
+    self.assertEqual(float(stop_safety_loss(xyz,velocity,3.)),0.)
+    self.assertGreater(float(stop_safety_loss(xyz,velocity,6.)),0.)
+    xyz[...,0]=4.
+    self.assertGreater(float(stop_safety_loss(xyz,velocity,3.)),0.)
+    xyz.zero_();velocity[:,-1,0]=.2
+    self.assertGreater(float(stop_safety_loss(xyz,velocity,3.)),0.)
+
   def test_realistic_grouped_sampling_covers_every_task_in_each_update(self):
     from tools.training_studio.teacher_optim import paired_groups,stop_mode
     from tools.training_studio.teacher_reasoning_train import maneuver_class

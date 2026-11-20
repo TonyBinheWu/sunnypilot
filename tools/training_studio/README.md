@@ -243,3 +243,5 @@ node --check formosalink/web/training-data.js
 `teacher_train --mlp-output-residual` 搭配 `--parent`、`--expanded-expert`，微調 MLP 適配器並新增零初始化的動作輸出殘差；與 `--mlp-only` 互斥。新增的 `output_residual_weight`／`output_residual_bias` 從動作專家隱藏特徵學習煞停與轉向讀出，原有視覺、注意力及輸出適配張量保持凍結。檢查點記錄獨立訓練範圍與新增張量，載入時驗證完整拓撲及精確形狀。
 
 此試驗沿用既有損失、六任務更新保護、完整驗證及固定壓力驗證。候選仍須以同一份權重與運算設定通過原始 11 項閉迴路模擬資格；實際 loss、訓練步數與資格結果各自記錄。
+
+`--separate-stop-safety` 在既有六類總損失之外，將三筆停止樣本的停止區、末端速度及已停等煞車裕度分別加入共同下降與更新後檢查，共九項約束。標籤僅供離線訓練；完整驗證仍使用原有損失與標準。每次完整驗證另保存逐樣本停止區及速度診斷，避免平均 loss 掩蓋安全退步。

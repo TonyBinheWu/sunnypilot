@@ -108,6 +108,21 @@ def valid_stopped_trajectory(xyz,velocity,front_distance):
   return ((xyz[...,0].amax(dim=-1)<=front_distance)&((final_front>=0)&(final_front<5)).all(dim=-1)&(speed[...,-10:].amax(dim=-1)<.15)).all()
 
 
+def stop_safety_loss(xyz,velocity,front_distance):
+  """Label-only strict-interior stopping objective, separate from mean trajectory loss.
+
+  The original acceptance remains zero to five metres and speed below .15 m/s.
+  Training uses interior margins so a mean trajectory gain cannot buy a small
+  violation at a tail point. This term never enters model inference.
+  """
+  import torch
+  front=front_distance-xyz[...,-10:,0]
+  speed=torch.linalg.vector_norm(velocity[...,-10:,:],dim=-1)
+  zone=torch.relu(.1-front).square()+torch.relu(front-4.5).square()
+  overrun=torch.relu(xyz[...,0]-front_distance+.1).square().amax()
+  return 200*(zone.amax()+overrun+torch.relu(speed-.1).square().amax())
+
+
 def proceed_velocity_loss(velocity,reference_velocity):
   """Match immediate permitted motion rather than postponing a restart at every replan."""
   error=(velocity[:,:20]-reference_velocity[:,:20]).square().sum(-1)
@@ -259,6 +274,7 @@ def main():
   parser.add_argument('--signed-hold-controls',action='store_true',help='Train stationary controls against the unchanged signed-motion simulator; do not add a negative brake bias')
   parser.add_argument('--grouped-stop-go',action='store_true',help='Guard three stop modes and three permitted directions together with a common descent update')
   parser.add_argument('--correction-warmup',action='store_true',help='Prepend a guarded six-task group for rare physically checked correction labels each epoch')
+  parser.add_argument('--separate-stop-safety',action='store_true',help='Guard three label-only stop safety objectives independently alongside the original six tasks')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
   if args.mlp_output_residual and (args.mlp_only or not (args.parent and args.expanded_expert)):raise ValueError('MLP output residual requires an expanded parent and its own explicit scope')
@@ -271,6 +287,7 @@ def main():
   if args.signed_hold_controls and (args.forward_only or not args.balanced_stop_modes):raise ValueError('signed standstill requires balanced recovery and the original signed decoder')
   if args.grouped_stop_go and not (args.paired_stop_go and args.unit_task_gradients and args.balanced_stop_modes):raise ValueError('grouped updates require balanced paired unit gradients')
   if args.correction_warmup and not args.grouped_stop_go:raise ValueError('correction warmup requires six-task guarded updates')
+  if args.separate_stop_safety and not (args.grouped_stop_go and args.forward_only):raise ValueError('separate safety requires grouped forward-only training')
   objective_revision=RECOVERY_OBJECTIVE_REVISION if args.balanced_stop_modes else EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
   if args.forward_only:objective_revision=FORWARD_OBJECTIVE_REVISION
   if args.rear_axle_offset_m:objective_revision=AXLE_OBJECTIVE_REVISION
@@ -280,6 +297,7 @@ def main():
   if args.balanced_stop_modes:optimization_profile='paired_balanced_cross_task_pcgrad_sgd_v4'
   if args.grouped_stop_go:optimization_profile='grouped_six_task_fp64_projection_sgd_v8'
   if args.correction_warmup:optimization_profile='grouped_six_task_recent5_correction_fp64_projection_sgd_v11'
+  if args.separate_stop_safety:optimization_profile='grouped_nine_task_separate_stop_safety_fp64_projection_sgd_v12'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:
@@ -445,8 +463,17 @@ def main():
       loss=loss+30*torch.relu(xyz[...,0]-item['row']['front_distance_m']+.2).square().mean()
     if not torch.isfinite(loss): raise ValueError('nonfinite actual rollout loss')
     return loss,xyz,velocity
+  def safety_objective(item,grad):
+    if not item['row']['stop_required']:raise ValueError('safety task requires a stop reference')
+    action,xyz,_=rollout(model,item,grad=grad)
+    velocity=torch.diff(torch.cat((torch.zeros_like(xyz[:,:1]),xyz),dim=1),dim=1)/.1
+    loss=stop_safety_loss(xyz,velocity,item['row']['front_distance_m'])
+    if item['row'].get('maintain_stop_reference'):
+      loss=loss+held_brake_margin_loss(action,model.expert.action_space,executed_peak=True)
+      loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))
+    return loss
   def validate(epoch=None):
-    values=[]; red=0; lateral=[]; hold=[]; proceed=[]; guard_records=[]
+    values=[]; red=0; lateral=[]; hold=[]; proceed=[]; guard_records=[]; sample_records=[]
     with torch.no_grad():
       for item in validation:
         loss,xyz,velocity=objective(item,False)
@@ -460,6 +487,7 @@ def main():
           target=item['target'].cuda()
           reference_velocity=torch.diff(torch.cat((torch.zeros_like(target[:,:1]),target),dim=1),dim=1)/.1
           proceed.append(float((velocity[:,:20]-reference_velocity[:,:20]).square().sum(-1).mean()))
+        sample_records.append({'sha256':item['row']['sha256'],'scenario':item['row']['scenario'],'stop_required':item['row']['stop_required'],'loss':values[-1],'lateral_mse':lateral[-1],**({'red_safe':safe,'front_min_m':float((item['row']['front_distance_m']-xyz[...,-10:,0]).min()),'front_max_m':float((item['row']['front_distance_m']-xyz[...,-10:,0]).max()),'tail_speed_max_mps':float(speed[...,-10:].max()),'max_progress_m':float(xyz[...,0].max()),'front_distance_m':item['row']['front_distance_m']} if item['row']['stop_required'] else {})})
         if item['row']['sha256'] in validation_guard:
           guard_records.append({'validation_loss':values[-1],'lateral_trajectory_mse':lateral[-1],
             'stop_required':item['row']['stop_required'],'red_safe':safe if item['row']['stop_required'] else None,
@@ -472,6 +500,7 @@ def main():
         emit('prefill' if epoch is None else 'training',epoch=epoch or 0,
           stage='validation',validation_sample=len(values),validation_samples=len(validation),
           **({'baseline':baseline} if epoch is not None else {}))
+    write_json(args.output/('validation-baseline-samples.json' if epoch is None else f'validation-epoch-{epoch:03d}-samples.json'),sample_records)
     metrics={'validation_loss':float(np.mean(values)),'red_safe_count':red,'red_samples':len(hold),'red_hold_speed_mse':float(np.mean(hold)) if hold else 0.,'lateral_trajectory_mse':float(np.mean(lateral)),'stop_metric':'valid_stop_zone_v2','go_velocity_mse':float(np.mean(proceed)) if proceed else None,'go_samples':len(proceed)}
     if validation_guard:
       if len(guard_records)!=len(validation_guard):raise ValueError('validation guard coverage changed')
@@ -492,7 +521,7 @@ def main():
       for batch,indices in enumerate(pairs,1):
         stop_index,go_index,*extra=indices
         def group_progress(**fields):emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**fields)
-        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients,extra_items=tuple(train[i] for i in extra),progress=group_progress if extra else None)
+        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients,extra_items=tuple(train[i] for i in extra),progress=group_progress if extra else None,safety_objective=safety_objective if args.separate_stop_safety else None)
         values.append(outcome['loss'])
         batch_history.append({'batch':batch,'loss':outcome['loss'],'loss_before_step':outcome['loss_before_step']})
         emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**outcome)

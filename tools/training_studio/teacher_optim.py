@@ -113,7 +113,7 @@ def project_pair(stop,go,*,unit_gradients=False):
 
 
 def project_group(gradients):
-  """Minimum-norm convex combination of up to six unit task gradients.
+  """Minimum-norm convex combination of up to nine unit task gradients.
 
   Small-task exact active-set solve of the MGDA subproblem described in
   https://proceedings.neurips.cc/paper/2018/hash/432aca3a1e345e339f35a30c8f65edce-Abstract.html
@@ -123,8 +123,8 @@ def project_group(gradients):
   import itertools
   import numpy as np
   import torch
-  if not 2<=len(gradients)<=6 or any(g.ndim!=1 or g.shape!=gradients[0].shape or not g.numel() for g in gradients):
-    raise ValueError('two to six matching flat task gradients required')
+  if not 2<=len(gradients)<=9 or any(g.ndim!=1 or g.shape!=gradients[0].shape or not g.numel() for g in gradients):
+    raise ValueError('two to nine matching flat task gradients required')
   matrix=torch.stack(gradients)
   if not bool(torch.isfinite(matrix).all()):raise ValueError('nonfinite grouped gradient')
   # Near-opposed tasks can cancel below FP32 Gram/cross-sum precision. Compute
@@ -153,7 +153,7 @@ def project_group(gradients):
   return joint,weights.tolist(),float(gains.min()),bool((gram<-1e-6).any())
 
 
-def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=8,*,unit_gradients=False,extra_items=(),progress=None):
+def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=8,*,unit_gradients=False,extra_items=(),progress=None,safety_objective=None):
   import torch
   from tools.training_studio.teacher_train import load_prefix,release_prefix_pages
   if not stop_item['row']['stop_required'] or go_item['row']['stop_required']: raise ValueError('one stop and one proceed example required')
@@ -161,8 +161,13 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
   items=(stop_item,go_item,*extra_items);names=list(parameters);params=list(parameters.values())
   if extra_items and (len(items)!=6 or not unit_gradients or any(bool(item['row']['stop_required'])!=(i%2==0) for i,item in enumerate(items))):
     raise ValueError('grouped update requires three alternating stop/proceed pairs and unit gradients')
-  def objective_loss(item,grad):
-    result=objective(item,grad)
+  original_count=len(items)
+  if safety_objective is not None and not extra_items:raise ValueError("separate safety tasks require a six-task group")
+  objectives=[objective]*original_count
+  if safety_objective is not None:
+    items=(*items,*items[::2]);objectives.extend([safety_objective]*3)
+  def objective_loss(item,grad,fn):
+    result=fn(item,grad)
     return result[0] if isinstance(result,(tuple,list)) else result
   def release_mappings():
     # Keep this pair's clean pages resident until both post-step checks finish.
@@ -170,10 +175,10 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
     load_prefix.cache_clear()
   try:
     gradients=[];before_losses=[]
-    for task,item in enumerate(items,1):
+    for task,(item,fn) in enumerate(zip(items,objectives),1):
       if progress:progress(group_stage='gradient',group_task=task,group_tasks=len(items))
       optimizer.zero_grad(set_to_none=True)
-      result=objective(item,True);loss=result[0] if isinstance(result,(tuple,list)) else result
+      result=fn(item,True);loss=result[0] if isinstance(result,(tuple,list)) else result
       if loss.numel()!=1 or not bool(torch.isfinite(loss)): raise ValueError('invalid paired rollout loss')
       before_losses.append(float(loss.detach()));loss.backward()
       gradients.append(torch.cat([(p.grad.detach() if p.grad is not None else torch.zeros_like(p)).reshape(-1) for p in params]))
@@ -198,9 +203,9 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
     def check():
       with torch.no_grad():
         values=[]
-        for task,item in enumerate(items,1):
+        for task,(item,fn) in enumerate(zip(items,objectives),1):
           if progress:progress(group_stage='verify',group_task=task,group_tasks=len(items),backtracks=backtracks)
-          loss=objective_loss(item,False);values.append(float(loss));del loss;release_mappings()
+          loss=objective_loss(item,False,fn);values.append(float(loss));del loss;release_mappings()
       if not all(__import__('math').isfinite(value) for value in values): raise ValueError('nonfinite paired post-step loss')
       return values
     observed=check()
@@ -215,8 +220,10 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
         for name,p in parameters.items():p.copy_(before[name])
       optimizer.state.clear();scale=0.;observed=before_losses.copy()
     change=float(torch.stack([(p.detach()-before[name]).square().sum() for name,p in parameters.items()]).sum().sqrt())
-    count=len(items)//2
-    if extra_items:grouped.update(task_losses_before=before_losses,task_losses_after=observed)
+    count=original_count//2
+    if extra_items:grouped.update(task_losses_before=before_losses.copy(),task_losses_after=observed.copy())
+    if safety_objective is not None:grouped.update(safety_losses_before=before_losses[original_count:],safety_losses_after=observed[original_count:])
+    observed=observed[:original_count];before_losses=before_losses[:original_count];task_norms=task_norms[:original_count]
     return {'loss':sum(observed)/len(items),'loss_before_step':sum(before_losses)/len(items),'stop_loss':sum(observed[::2])/count,'go_loss':sum(observed[1::2])/count,
       'stop_loss_before_step':sum(before_losses[::2])/count,'go_loss_before_step':sum(before_losses[1::2])/count,'step_scale':scale,'backtracks':backtracks,
       'gradient_cosine':cosine,'gradient_projected':conflict,'parameter_delta_norm':change,'gradient_norm_before_clip':float(norm),
