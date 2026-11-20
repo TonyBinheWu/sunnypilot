@@ -161,6 +161,14 @@ def immediate_steering_loss(action,target_action,space,history_xyz,*,executed_pe
   return loss+200*error[:,:10].square().amax() if executed_peak else loss
 
 
+def lateral_safety_loss(action,target_action,space,history_xyz,xyz,target,rot,target_rot):
+  """Separate steering/pose supervision from permitted longitudinal speed loss."""
+  error=xyz[...,1]-target[...,1]
+  return (20*error.square().mean()+10*error[:,:20].square().mean()
+    +50*(rot-target_rot).square().mean()
+    +immediate_steering_loss(action,target_action,space,history_xyz,executed_peak=True))
+
+
 def held_brake_margin_loss(action,space,*,executed_peak=False):
   """Learn a small brake margin on stationary, prohibited-motion references.
 
@@ -275,6 +283,7 @@ def main():
   parser.add_argument('--grouped-stop-go',action='store_true',help='Guard three stop modes and three permitted directions together with a common descent update')
   parser.add_argument('--correction-warmup',action='store_true',help='Prepend a guarded six-task group for rare physically checked correction labels each epoch')
   parser.add_argument('--separate-stop-safety',action='store_true',help='Guard three label-only stop safety objectives independently alongside the original six tasks')
+  parser.add_argument('--separate-lateral-safety',action='store_true',help='Also guard straight/left/right steering independently from longitudinal speed; twelve tasks total')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
   if args.mlp_output_residual and (args.mlp_only or not (args.parent and args.expanded_expert)):raise ValueError('MLP output residual requires an expanded parent and its own explicit scope')
@@ -287,6 +296,7 @@ def main():
   if args.signed_hold_controls and (args.forward_only or not args.balanced_stop_modes):raise ValueError('signed standstill requires balanced recovery and the original signed decoder')
   if args.grouped_stop_go and not (args.paired_stop_go and args.unit_task_gradients and args.balanced_stop_modes):raise ValueError('grouped updates require balanced paired unit gradients')
   if args.correction_warmup and not args.grouped_stop_go:raise ValueError('correction warmup requires six-task guarded updates')
+  if args.separate_lateral_safety and not args.separate_stop_safety:raise ValueError('separate lateral safety requires separate stopping safety')
   if args.separate_stop_safety and not (args.grouped_stop_go and args.forward_only):raise ValueError('separate safety requires grouped forward-only training')
   objective_revision=RECOVERY_OBJECTIVE_REVISION if args.balanced_stop_modes else EXECUTED_OBJECTIVE_REVISION if args.executed_commands else OBJECTIVE_REVISION
   if args.forward_only:objective_revision=FORWARD_OBJECTIVE_REVISION
@@ -298,6 +308,7 @@ def main():
   if args.grouped_stop_go:optimization_profile='grouped_six_task_fp64_projection_sgd_v8'
   if args.correction_warmup:optimization_profile='grouped_six_task_recent5_correction_fp64_projection_sgd_v11'
   if args.separate_stop_safety:optimization_profile='grouped_nine_task_separate_stop_safety_fp64_projection_sgd_v12'
+  if args.separate_lateral_safety:optimization_profile='grouped_twelve_task_separate_stop_lateral_safety_fp64_projection_sgd_v13'
   if args.learning_rate is None: args.learning_rate=.01 if args.paired_stop_go else 3e-5
   if not 0<args.learning_rate<=(.1 if args.paired_stop_go else .001): raise ValueError('invalid optimizer learning rate')
   if args.lease:
@@ -472,6 +483,11 @@ def main():
       loss=loss+held_brake_margin_loss(action,model.expert.action_space,executed_peak=True)
       loss=loss+held_command_loss(action,model.expert.action_space,item['ego_history_xyz'].to(action.device))
     return loss
+  def lateral_objective(item,grad):
+    if item['row']['stop_required']:raise ValueError('lateral safety task requires a permitted reference')
+    action,xyz,rot=rollout(model,item,grad=grad)
+    return lateral_safety_loss(action,item['target_action'].to(action.device),model.expert.action_space,
+      item['ego_history_xyz'].to(action.device),xyz,item['target'].to(action.device),rot,item['target_rot'].to(action.device))
   def validate(epoch=None):
     values=[]; red=0; lateral=[]; hold=[]; proceed=[]; guard_records=[]; sample_records=[]
     with torch.no_grad():
@@ -521,7 +537,7 @@ def main():
       for batch,indices in enumerate(pairs,1):
         stop_index,go_index,*extra=indices
         def group_progress(**fields):emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**fields)
-        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients,extra_items=tuple(train[i] for i in extra),progress=group_progress if extra else None,safety_objective=safety_objective if args.separate_stop_safety else None)
+        outcome=paired_step(parameters,optimizer,objective,train[stop_index],train[go_index],unit_gradients=args.unit_task_gradients,extra_items=tuple(train[i] for i in extra),progress=group_progress if extra else None,safety_objective=safety_objective if args.separate_stop_safety else None,lateral_objective=lateral_objective if args.separate_lateral_safety else None)
         values.append(outcome['loss'])
         batch_history.append({'batch':batch,'loss':outcome['loss'],'loss_before_step':outcome['loss_before_step']})
         emit('training',epoch=epoch+1,batch=batch,batches=len(pairs),batch_examples=len(indices),baseline=baseline,**outcome)

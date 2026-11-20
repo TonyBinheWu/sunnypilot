@@ -113,7 +113,7 @@ def project_pair(stop,go,*,unit_gradients=False):
 
 
 def project_group(gradients):
-  """Minimum-norm convex combination of up to nine unit task gradients.
+  """Minimum-norm convex combination of up to twelve unit task gradients.
 
   Small-task exact active-set solve of the MGDA subproblem described in
   https://proceedings.neurips.cc/paper/2018/hash/432aca3a1e345e339f35a30c8f65edce-Abstract.html
@@ -123,8 +123,8 @@ def project_group(gradients):
   import itertools
   import numpy as np
   import torch
-  if not 2<=len(gradients)<=9 or any(g.ndim!=1 or g.shape!=gradients[0].shape or not g.numel() for g in gradients):
-    raise ValueError('two to nine matching flat task gradients required')
+  if not 2<=len(gradients)<=12 or any(g.ndim!=1 or g.shape!=gradients[0].shape or not g.numel() for g in gradients):
+    raise ValueError('two to twelve matching flat task gradients required')
   matrix=torch.stack(gradients)
   if not bool(torch.isfinite(matrix).all()):raise ValueError('nonfinite grouped gradient')
   # Near-opposed tasks can cancel below FP32 Gram/cross-sum precision. Compute
@@ -153,7 +153,7 @@ def project_group(gradients):
   return joint,weights.tolist(),float(gains.min()),bool((gram<-1e-6).any())
 
 
-def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=8,*,unit_gradients=False,extra_items=(),progress=None,safety_objective=None):
+def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=8,*,unit_gradients=False,extra_items=(),progress=None,safety_objective=None,lateral_objective=None):
   import torch
   from tools.training_studio.teacher_train import load_prefix,release_prefix_pages
   if not stop_item['row']['stop_required'] or go_item['row']['stop_required']: raise ValueError('one stop and one proceed example required')
@@ -166,6 +166,9 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
   objectives=[objective]*original_count
   if safety_objective is not None:
     items=(*items,*items[::2]);objectives.extend([safety_objective]*3)
+  if lateral_objective is not None:
+    if safety_objective is None:raise ValueError('lateral safety requires separate stopping safety tasks')
+    items=(*items,*items[1:original_count:2]);objectives.extend([lateral_objective]*3)
   def objective_loss(item,grad,fn):
     result=fn(item,grad)
     return result[0] if isinstance(result,(tuple,list)) else result
@@ -222,7 +225,8 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
     change=float(torch.stack([(p.detach()-before[name]).square().sum() for name,p in parameters.items()]).sum().sqrt())
     count=original_count//2
     if extra_items:grouped.update(task_losses_before=before_losses.copy(),task_losses_after=observed.copy())
-    if safety_objective is not None:grouped.update(safety_losses_before=before_losses[original_count:],safety_losses_after=observed[original_count:])
+    if safety_objective is not None:grouped.update(safety_losses_before=before_losses[original_count:original_count+3],safety_losses_after=observed[original_count:original_count+3])
+    if lateral_objective is not None:grouped.update(lateral_losses_before=before_losses[original_count+3:],lateral_losses_after=observed[original_count+3:])
     observed=observed[:original_count];before_losses=before_losses[:original_count];task_norms=task_norms[:original_count]
     return {'loss':sum(observed)/len(items),'loss_before_step':sum(before_losses)/len(items),'stop_loss':sum(observed[::2])/count,'go_loss':sum(observed[1::2])/count,
       'stop_loss_before_step':sum(before_losses[::2])/count,'go_loss_before_step':sum(before_losses[1::2])/count,'step_scale':scale,'backtracks':backtracks,

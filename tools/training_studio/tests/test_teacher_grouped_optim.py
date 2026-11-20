@@ -73,6 +73,22 @@ class CommonDescentTest(unittest.TestCase):
     self.assertTrue(all(a<=b for a,b in zip(result['task_losses_after'],result['task_losses_before'])))
     self.assertGreater(result['parameter_delta_norm'],0)
 
+  def test_twelve_task_update_protects_steering_and_stopping_separately(self):
+    from tools.training_studio.teacher_optim import paired_step
+    parameter=torch.nn.Parameter(torch.zeros(12))
+    items=[{'row':{'stop_required':i%2==0},'axis':i} for i in range(6)]
+    def composite(item,grad):
+      k=item['axis'];side=6+k//2 if k%2==0 else 9+k//2
+      return (parameter[k]-1).square()-.2*parameter[side]
+    def stop(item,grad):return (parameter[6+item['axis']//2]+1).square()
+    def lateral(item,grad):return (parameter[9+item['axis']//2]+1).square()
+    result=paired_step({'expert':parameter},torch.optim.SGD([parameter],lr=.1),composite,*items[:2],unit_gradients=True,extra_items=items[2:],safety_objective=stop,lateral_objective=lateral)
+    self.assertEqual(result['task_count'],12)
+    self.assertEqual(len(result['safety_losses_after']),3)
+    self.assertEqual(len(result['lateral_losses_after']),3)
+    self.assertTrue(all(a<b for a,b in zip(result['task_losses_after'],result['task_losses_before'])))
+    self.assertGreater(result['parameter_delta_norm'],0)
+
   def test_stop_safety_loss_separates_boundary_speed_and_overshoot(self):
     from tools.training_studio.teacher_train import stop_safety_loss
     xyz=torch.zeros(1,64,3);velocity=torch.zeros_like(xyz)

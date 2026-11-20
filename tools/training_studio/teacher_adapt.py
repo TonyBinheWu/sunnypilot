@@ -239,6 +239,7 @@ def main():
           if settings.get('balanced_stop_modes'):args.append('--balanced-stop-modes')
           if settings.get('grouped_stop_go'):args.append('--grouped-stop-go')
           if settings.get('separate_stop_safety'):args.append('--separate-stop-safety')
+          if settings.get('separate_lateral_safety'):args.append('--separate-lateral-safety')
           if settings.get('correction_warmup'):args.append('--correction-warmup')
           if settings.get('forward_only'):args.append('--forward-only')
           if settings.get('fp32_expert'):args.append('--fp32-expert')
