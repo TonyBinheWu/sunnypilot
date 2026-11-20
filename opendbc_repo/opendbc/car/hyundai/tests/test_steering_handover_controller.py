@@ -52,7 +52,8 @@ def step(controller, cs, cc, *, fresh=True):
 
 
 @pytest.mark.parametrize("previous, invalid", [(None, None), (None, -1), (None, 101), (92, 0)])
-def test_high_angle_request_recovers_after_two_frames_with_invalid_setting(monkeypatch, previous, invalid):
+@pytest.mark.parametrize("sign", [-1, 1], ids=["right", "left"])
+def test_high_angle_request_recovers_after_two_frames_with_invalid_setting(monkeypatch, previous, invalid, sign):
   model = CAR.KIA_SORENTO_2024
   specs = model.config.specs
   cp = structs.CarParams(brand="hyundai", carFingerprint=model, flags=int(HyundaiFlags.CANFD),
@@ -60,7 +61,7 @@ def test_high_angle_request_recovers_after_two_frames_with_invalid_setting(monke
   controller, cs, cc, settings = setup_controller(monkeypatch, angle=False, camera=False, cp_override=cp)
   cs.out.steeringPressed = False
   cs.out.steeringTorque = 0
-  cc.actuators.torque = 0.4
+  cc.actuators.torque = sign * 0.4
   if previous is not None:
     settings["MaxAngleFrames"] = previous
     for _ in range(50):
@@ -70,21 +71,26 @@ def test_high_angle_request_recovers_after_two_frames_with_invalid_setting(monke
   else:
     settings["MaxAngleFrames"] = invalid
 
-  cs.out.steeringAngleDeg = carcontroller.MAX_ANGLE
+  cs.out.steeringAngleDeg = sign * carcontroller.MAX_ANGLE
   lfa = DBC("hyundai_canfd_generated").name_to_msg["LFA"]
+  torque_signal = lfa.sigs["TORQUE_REQUEST"]
   frames = previous or carcontroller.MAX_ANGLE_FRAMES
   expected_cycle = [1] * frames + [0] * carcontroller.MAX_ANGLE_CONSECUTIVE_FRAMES
   requests = []
   for _ in range(2 * len(expected_cycle) + 1):
-    _, messages = step(controller, cs, cc)
+    output, messages = step(controller, cs, cc)
     data = next(data for addr, data, _ in messages if addr == lfa.address)
     requests.append(get_raw_value(data, lfa.sigs["STEER_REQ"]))
+    wire_torque = get_raw_value(data, torque_signal) * torque_signal.factor + torque_signal.offset
+    assert wire_torque == output.torqueOutputCan
+    assert sign * wire_torque > 0
   assert requests == expected_cycle * 2 + [1]
 
   cc.latActive = False
   _, messages = step(controller, cs, cc)
   data = next(data for addr, data, _ in messages if addr == lfa.address)
   assert get_raw_value(data, lfa.sigs["STEER_REQ"]) == 0
+  assert get_raw_value(data, torque_signal) * torque_signal.factor + torque_signal.offset == 0
 
 
 @pytest.mark.parametrize("camera", [False, True])

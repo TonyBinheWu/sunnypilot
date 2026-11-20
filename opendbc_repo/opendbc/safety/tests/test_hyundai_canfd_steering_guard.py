@@ -253,6 +253,46 @@ def test_real_controller_stream_passes_production_panda_and_rx_paced_forwarding(
   controller_stream(monkeypatch, camera, sign)
 
 
+@pytest.mark.parametrize("camera", [False, True])
+@pytest.mark.parametrize("sign", [-1, 1])
+def test_sorento_sustained_turn_with_missing_angle_frames(monkeypatch, camera, sign):
+  from opendbc.car.hyundai.tests.test_steering_handover_controller import setup_controller, step
+  from opendbc.car.hyundai.values import CAR, HyundaiFlags
+
+  model = CAR.KIA_SORENTO_2024
+  flags = HyundaiFlags.CANFD | (HyundaiFlags.CAMERA_SCC if camera else 0)
+  specs = model.config.specs
+  cp = CarParams(brand="hyundai", carFingerprint=model, flags=int(flags), steerControlType="torque",
+                 wheelbase=specs.wheelbase, steerRatio=specs.steerRatio)
+  controller, cs, cc, settings = setup_controller(monkeypatch, angle=False, camera=camera, cp_override=cp)
+  del settings["MaxAngleFrames"]
+  cs.out.gearShifter = "drive"
+  cs.out.vEgo = cs.out.vEgoRaw = 30 / 3.6
+  cs.out.steeringPressed = False
+  cs.out.steeringTorque = 0
+  cc.actuators.torque = sign * 0.4
+  guard = Guard(int(F.CAMERA_SCC) if camera else 0)
+  bend_torques = []
+  for frame in range(1410):  # 2 s straight, 12 s in the bend, then disengage
+    in_bend = 200 <= frame < 1400
+    cs.out.steeringAngleDeg = sign * 87 if in_bend else 0
+    cc.latActive = frame < 1400
+    guard.now += 10000
+    guard.s.set_timer(guard.now)
+    guard.sensors(30, 0)
+    guard.s.set_controls_allowed(cc.latActive)
+    output, messages = step(controller, cs, cc)
+    addr, data, bus = next(m for m in messages if m[0] == 0x12A)
+    assert guard.s.safety_tx_hook(libsafety_py.make_CANPacket(addr, bus, data)), frame
+    if in_bend:
+      bend_torques.append(output.torqueOutputCan)
+    elif not cc.latActive:
+      assert output.torqueOutputCan == 0
+
+  assert sign * bend_torques[0] > 0
+  assert all(torque == bend_torques[0] for torque in bend_torques)
+
+
 def controller_stream(monkeypatch, camera, sign, *, fingerprint=None, phase1=None):
   from opendbc.car.hyundai.tests.test_low_speed_steer_reserve import torque_fixture
   from opendbc.car.hyundai.tests.test_steering_handover_controller import step
