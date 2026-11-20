@@ -356,7 +356,7 @@ These settings describe the car, harness, and device hardware configuration. Do 
 | Vehicle assistance | `MaxAngleFrames`, `SpeedFromPCM` | Steering-angle frames and stock-SCC speed control |
 | Device hardware | `CommaPedalEnabled`, `HardwareC3xLite` | Comma Pedal permission for vehicles without ACC, and C3X Lite hardware configuration |
 
-Hyundai and Kia torque steering starts with `MaxAngleFrames` set to 89. Older values of 80–88 use 89 so that Panda can accept the two-frame request pause. If the setting is missing or outside 80–100, the controller keeps the last valid value and resumes sending its request after the two-frame pause in a sustained turn.
+The default stored value of `MaxAngleFrames` is 89. On the 2024 Kia Sorento with camera SCC and torque steering, the effective range is 92–94 host frames because the factory camera forwards slightly fewer frames per second. The controller applies this range automatically even with low-speed assist off. Other Hyundai and Kia torque steering configurations keep the 89-frame minimum. Missing or invalid settings retain the last valid interval. The two-frame request pause still applies.
 
 On the 2024 Kia Sorento, low-speed steering assistance builds torque at the factory rate when the torque reserve is enabled, including through Phase 1 Assist. The reserve can still supply the requested torque as it builds. A steering fault reported by the vehicle suspends assistance.
 

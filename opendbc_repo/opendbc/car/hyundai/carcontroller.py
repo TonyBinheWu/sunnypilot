@@ -214,7 +214,16 @@ class CarController(CarControllerBase):
     self.hyundai_jerk = HyundaiJerk()
     self.speedCameraHapticEndFrame = 0
     self.hapticFeedbackWhenSpeedCamera = 0
-    self.max_angle_frames = MAX_ANGLE_FRAMES
+    # CAMERA_SCC forwards LFA at the OEM camera cadence. With 100 Hz host
+    # requests and ~98 Hz forwarding, 89 host frames can yield only 87-88
+    # on the wire. Leave room for the 89-frame Panda check and the 1 s EPS
+    # deadline, including the two request-off frames.
+    if (CP.carFingerprint == CAR.KIA_SORENTO_2024 and CP.flags & HyundaiFlags.CAMERA_SCC
+        and not CP.flags & HyundaiFlags.ANGLE_CONTROL):
+      self.angle_frame_bounds = (92, 94)
+    else:
+      self.angle_frame_bounds = (MAX_ANGLE_FRAMES, 100)
+    self.max_angle_frames = self.angle_frame_bounds[0]
     self.blinking_signal = False # 1Hz
     self.blinking_frame = int(1.0 / DT_CTRL)
     self.soft_hold_mode = 2
@@ -283,7 +292,8 @@ class CarController(CarControllerBase):
       if 80 <= max_angle_frames <= 100:
         # Older settings allowed 80–88. Panda requires 89 valid requests between
         # nonzero-torque request cuts on both Hyundai CAN and CAN-FD.
-        self.max_angle_frames = max(MAX_ANGLE_FRAMES, max_angle_frames)
+        lower, upper = self.angle_frame_bounds
+        self.max_angle_frames = max(lower, min(max_angle_frames, upper))
       steerMax = params.get_int("CustomSteerMax")
       self.reserve_enabled = self.reserve_supported and (params.get_bool("LowSpeedSteerReserve") or phase1_enabled(self.CP, params))
       steerDeltaUp = params.get_int("CustomSteerDeltaUp")

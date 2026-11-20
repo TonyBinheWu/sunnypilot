@@ -253,13 +253,14 @@ def test_real_controller_stream_passes_production_panda_and_rx_paced_forwarding(
   controller_stream(monkeypatch, camera, sign)
 
 
-@pytest.mark.parametrize("camera", [False, True])
+@pytest.mark.parametrize("camera_period_us", [None, 10000, 10150, 10200, 10250])
 @pytest.mark.parametrize("sign", [-1, 1])
-@pytest.mark.parametrize("saved_frames", [None, 80, 88, 89, 100])
-def test_sorento_sustained_turn_request_interval(monkeypatch, camera, sign, saved_frames):
+@pytest.mark.parametrize("saved_frames", [None, 80, 88, 89, 93, 100])
+def test_sorento_sustained_turn_request_interval(monkeypatch, camera_period_us, sign, saved_frames):
   from opendbc.car.hyundai.tests.test_steering_handover_controller import setup_controller, step
   from opendbc.car.hyundai.values import CAR, HyundaiFlags
 
+  camera = camera_period_us is not None
   model = CAR.KIA_SORENTO_2024
   flags = HyundaiFlags.CANFD | (HyundaiFlags.CAMERA_SCC if camera else 0)
   specs = model.config.specs
@@ -277,11 +278,36 @@ def test_sorento_sustained_turn_request_interval(monkeypatch, camera, sign, save
   cc.actuators.torque = sign * 0.4
   guard = Guard(int(F.CAMERA_SCC) if camera else 0)
   bend_torques = []
+  # Host runs at 100 Hz. The physical camera on the affected platform runs
+  # closer to 98 Hz, so forwarding can see fewer requests than host TX.
+  next_camera_us = guard.now + 3500
+  cut_starts = []
+  previous_request = True
   for frame in range(1410):  # 2 s straight, 12 s in the bend, then disengage
     in_bend = 200 <= frame < 1400
     cs.out.steeringAngleDeg = sign * 87 if in_bend else 0
     cc.latActive = frame < 1400
-    guard.now += 10000
+    next_host_us = guard.now + 10000
+    while camera and next_camera_us < next_host_us:
+      guard.s.set_timer(next_camera_us)
+      stock = guard.command(0, bus=2, request=False)
+      destination = guard.s.safety_fwd_hook_packet_test(stock)
+      if in_bend:
+        assert destination == 0, (frame, "forwarding rejected")
+        data = stock[0].data
+        forwarded_torque = (((data[6] & 15) << 7) | (data[5] >> 1)) - 1024
+        assert sign * forwarded_torque > 0
+        if bend_torques:
+          assert forwarded_torque == bend_torques[0]
+        request = bool(data[6] & 0x10)
+        if previous_request and not request:
+          cut_starts.append(next_camera_us)
+        previous_request = request
+      if not cc.latActive and frame > 1400 and destination == 0:
+        assert not stock[0].data[6] & 0x10
+        assert (((stock[0].data[6] & 15) << 7) | (stock[0].data[5] >> 1)) == 1024
+      next_camera_us += camera_period_us
+    guard.now = next_host_us
     guard.s.set_timer(guard.now)
     guard.sensors(30, 0)
     guard.s.set_controls_allowed(cc.latActive)
@@ -295,6 +321,9 @@ def test_sorento_sustained_turn_request_interval(monkeypatch, camera, sign, save
 
   assert sign * bend_torques[0] > 0
   assert all(torque == bend_torques[0] for torque in bend_torques)
+  if camera:
+    assert len(cut_starts) >= 11
+    assert all(0 < b - a < 1000000 for a, b in zip(cut_starts, cut_starts[1:]))
 
 
 def controller_stream(monkeypatch, camera, sign, *, fingerprint=None, phase1=None):
