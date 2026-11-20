@@ -3525,7 +3525,7 @@
       "cgroup": "启动设置",
       "ctitle": "最大角度帧数 (89)",
       "cdescr": "推荐 89",
-      "min": 80,
+      "min": 89,
       "max": 100,
       "default": 89,
       "unit": 1,

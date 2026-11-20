@@ -280,8 +280,10 @@ class CarController(CarControllerBase):
       # get_int returns zero for an absent value. At a sustained high angle
       # that would clear the steering request on every frame, including recovery.
       max_angle_frames = params.get_int("MaxAngleFrames")
-      if 80 <= max_angle_frames <= 100:  # supported MaxAngleFrames settings
-        self.max_angle_frames = max_angle_frames
+      if 80 <= max_angle_frames <= 100:
+        # Older settings allowed 80–88. Panda requires 89 valid requests between
+        # nonzero-torque request cuts on both Hyundai CAN and CAN-FD.
+        self.max_angle_frames = max(MAX_ANGLE_FRAMES, max_angle_frames)
       steerMax = params.get_int("CustomSteerMax")
       self.reserve_enabled = self.reserve_supported and (params.get_bool("LowSpeedSteerReserve") or phase1_enabled(self.CP, params))
       steerDeltaUp = params.get_int("CustomSteerDeltaUp")

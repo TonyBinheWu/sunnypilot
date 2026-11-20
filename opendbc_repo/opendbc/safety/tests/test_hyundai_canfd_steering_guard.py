@@ -255,7 +255,8 @@ def test_real_controller_stream_passes_production_panda_and_rx_paced_forwarding(
 
 @pytest.mark.parametrize("camera", [False, True])
 @pytest.mark.parametrize("sign", [-1, 1])
-def test_sorento_sustained_turn_with_missing_angle_frames(monkeypatch, camera, sign):
+@pytest.mark.parametrize("saved_frames", [None, 80, 88, 89, 100])
+def test_sorento_sustained_turn_request_interval(monkeypatch, camera, sign, saved_frames):
   from opendbc.car.hyundai.tests.test_steering_handover_controller import setup_controller, step
   from opendbc.car.hyundai.values import CAR, HyundaiFlags
 
@@ -265,7 +266,10 @@ def test_sorento_sustained_turn_with_missing_angle_frames(monkeypatch, camera, s
   cp = CarParams(brand="hyundai", carFingerprint=model, flags=int(flags), steerControlType="torque",
                  wheelbase=specs.wheelbase, steerRatio=specs.steerRatio)
   controller, cs, cc, settings = setup_controller(monkeypatch, angle=False, camera=camera, cp_override=cp)
-  del settings["MaxAngleFrames"]
+  if saved_frames is None:
+    del settings["MaxAngleFrames"]
+  else:
+    settings["MaxAngleFrames"] = saved_frames
   cs.out.gearShifter = "drive"
   cs.out.vEgo = cs.out.vEgoRaw = 30 / 3.6
   cs.out.steeringPressed = False
