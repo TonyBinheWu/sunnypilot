@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Any
 
 from openpilot.selfdrive.carrot.web_upload import (
+  UploadLimitError,
   create_web_upload_session,
   send_web_upload_complete,
   upload_device_id,
@@ -544,6 +545,8 @@ async def run_upload_segments(
           "files": files,
           "error": str(e),
         }
+        if isinstance(e, UploadLimitError):
+          results[idx0]["errorCode"] = e.code
         if job:
           append(job, f"[{idx}/{total}] {segment} FAILED: {e}")
     # post-upload bookkeeping runs synchronously (atomic between awaits)

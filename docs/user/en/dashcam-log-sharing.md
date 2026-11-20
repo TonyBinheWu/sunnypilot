@@ -107,6 +107,7 @@ A screen recording alone may not contain enough data to determine the control ca
 | Recording or incomplete-segment error | Wait for that segment to be finalized, then select it again. |
 | Another upload is already running | Carrot Web rechecks the existing device-side job and restores its progress. If it is genuinely running, wait for it to finish or cancel it. A job with no activity for 30 minutes is released automatically. |
 | Upload stalls or fails | Check the device's internet connection and retry only the failed segment. |
+| Daily upload allowance reached | The default receiver resets its allowance at 00:00 UTC. Retry only failed segments after the reset. A single-file limit applies separately. |
 | Only some files succeeded | Read the completion result and resend the segment containing the failed item. |
 | The required log is gone | Check whether `Tools > delete all logs` or storage cleanup was used. Deleted logs cannot be restored or uploaded from Carrot Web. |
 

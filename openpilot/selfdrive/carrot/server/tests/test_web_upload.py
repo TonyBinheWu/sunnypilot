@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from aiohttp import web
+from aiohttp.test_utils import TestServer
 
 from openpilot.selfdrive.carrot import web_upload
 from openpilot.selfdrive.carrot.server.features.dashcam import catalog
@@ -767,6 +768,33 @@ def test_dashcam_web_upload_retries_size_mismatch(tmp_path: Path, monkeypatch):
     "token",
   ))
   assert len(FakeSession.instances[-1].requests) == 2
+
+
+@pytest.mark.parametrize("receiver,detail,code", [
+  (web_upload.DEFAULT_WEB_UPLOAD_URL, "Maximum request body size 1073741824 exceeded, actual body size 1081599701", "daily_upload_quota"),
+  (web_upload.DEFAULT_WEB_UPLOAD_URL, "Maximum request body size 4 exceeded, actual body size 5", "upload_limit"),
+  (web_upload.DEFAULT_WEB_UPLOAD_URL, "Payload Too Large", "upload_limit"),
+  ("https://private.example", "Maximum request body size 50 exceeded, actual body size 80", "upload_limit"),
+])
+def test_upload_limit_reported_without_resending_file(tmp_path, monkeypatch, receiver, detail, code):
+  (tmp_path / "rlog.zst").write_bytes(b"small")
+  attempts = []
+
+  async def reject(request):
+    attempts.append(await request.read())
+    return web.json_response({"ok": False, "error": detail}, status=413)
+
+  async def run():
+    app = web.Application()
+    app.router.add_put("/upload", reject)
+    async with TestServer(app) as server:
+      monkeypatch.setattr(web_upload, "api_url", lambda *args: str(server.make_url("/upload")))
+      with pytest.raises(web_upload.UploadLimitError, match=r"rlog\.zst: HTTP 413") as error:
+        await web_upload.upload_folder_to_web(str(tmp_path), "device", "route--0", receiver, "test")
+      assert error.value.code == code
+      assert attempts == [b"small"]
+
+  asyncio.run(run())
 
 
 def test_dashcam_web_upload_requires_session_before_network(tmp_path: Path, monkeypatch):

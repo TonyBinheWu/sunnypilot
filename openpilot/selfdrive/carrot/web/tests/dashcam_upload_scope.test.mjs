@@ -7,6 +7,22 @@ import { dashcamUploadStats } from "../src/features/logs/upload_summary.js";
 const source = await readFile(new URL("../src/features/logs/dashcam.js", import.meta.url), "utf8");
 const uploadFunction = source.slice(source.indexOf("async function uploadDashcamSegments("), source.indexOf("async function uploadRecentDashcamSegments("));
 
+test("completion dialog explains each receiver limit once, including failures outside the visible rows", () => {
+  const render = source.slice(source.indexOf("function dashcamUploadResultHtml("), source.indexOf("async function showDashcamUploadResult("));
+  const context = vm.createContext({
+    dashcamUploadStats, DASHCAM_UPLOAD_RESULT_VISIBLE_LIMIT: 1,
+    getUIText: (key) => key, escapeHtml: String, dashcamUploadSummaryLabel: (stats) => `bytes=${stats.bytes}`,
+  });
+  vm.runInContext(render, context);
+  const results = ["upload_limit", "daily_upload_quota", "daily_upload_quota"].map((errorCode) => ({ ok: false, errorCode, totalSize: 100 }));
+  results.push({ ok: true, totalSize: 24 });
+  const html = context.dashcamUploadResultHtml({ results });
+  assert.equal(html.match(/upload_daily_quota/g)?.length, 1);
+  assert.equal(html.match(/upload_receiver_limit/g)?.length, 1);
+  assert.match(html, /bytes=24</);
+  assert.doesNotMatch(context.dashcamUploadResultHtml({ results: [{ ok: true }] }), /upload_daily_quota|upload_receiver_limit/);
+});
+
 async function runUpload(scope, confirm = true) {
   const requests = [];
   const summaries = [];

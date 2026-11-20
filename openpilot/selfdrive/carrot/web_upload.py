@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 import urllib.parse
 from collections.abc import Callable, Mapping, Sequence
@@ -13,6 +14,18 @@ from aiohttp import ClientSession, ClientTimeout
 
 DEFAULT_WEB_UPLOAD_URL = "https://upload.shind0.synology.me"
 DEFAULT_TMUX_WEB_UPLOAD_URL = "https://tmux.carrotpilot.app/upload"
+
+
+class UploadLimitError(RuntimeError):
+  def __init__(self, filename: str, detail: str, file_size: int, base_url: str):
+    self.code = "upload_limit"
+    # The DSM receiver also uses aiohttp's body-size error for cumulative daily usage.
+    # A single file within the reported limit cannot account for that larger total.
+    sizes = re.fullmatch(r"Maximum request body size (\d+) exceeded, actual body size (\d+)", detail)
+    if base_url.rstrip("/") == DEFAULT_WEB_UPLOAD_URL and sizes and file_size <= int(sizes[1]) < int(sizes[2]):
+      self.code = "daily_upload_quota"
+      detail = f"Daily upload quota reached (resets at 00:00 UTC). {detail}"
+    super().__init__(f"{filename}: HTTP 413: {detail}")
 
 
 def normalize_base_url(value: Any, default: str = "") -> str:
@@ -265,15 +278,21 @@ async def upload_folder_to_web(
               body = json.loads(text)
             except Exception:
               body = None
-            if not 200 <= resp.status < 300 or not (body or {}).get("ok"):
-              error = str((body or {}).get("error") or text or "")[:200]
+            if not isinstance(body, dict):
+              body = {}
+            if resp.status == 413:
+              raise UploadLimitError(filename, str(body.get("error") or text)[:200], file_size, base_url)
+            if not 200 <= resp.status < 300 or not body.get("ok"):
+              error = str(body.get("error") or text or "")[:200]
               raise RuntimeError(f"HTTP {resp.status}: {error}")
-            raw_size = (body or {}).get("size")
+            raw_size = body.get("size")
             remote_size = int(raw_size) if raw_size is not None else -1
             if remote_size != sent:
               raise RuntimeError(f"size mismatch for {filename}: sent {sent}, remote {remote_size}")
           last_error = None
           break
+        except UploadLimitError:
+          raise
         except Exception as e:
           check_cancel()
           last_error = e

@@ -1291,7 +1291,7 @@ function dashcamUploadConfirmHtml(stats) {
 
 function dashcamUploadResultHtml(result) {
   const results = Array.isArray(result?.results) ? result.results : [];
-  const stats = dashcamUploadStats(results);
+  const stats = dashcamUploadStats(results.filter((item) => item?.ok === true));
   const failedResults = results.filter((item) => item?.ok !== true);
   const visibleResults = results.length <= DASHCAM_UPLOAD_RESULT_VISIBLE_LIMIT
     ? results
@@ -1317,6 +1317,13 @@ function dashcamUploadResultHtml(result) {
   const resultList = segmentRows || overflowRow
     ? `<div class="app-dialog__metaResultList">${segmentRows}${overflowRow}</div>`
     : "";
+  const limitHints = [];
+  if (failedResults.some((item) => item?.errorCode === "daily_upload_quota")) {
+    limitHints.push(getUIText("upload_daily_quota", "Daily upload allowance reached. Retry failed segments after 00:00 UTC."));
+  }
+  if (failedResults.some((item) => item?.errorCode === "upload_limit")) {
+    limitHints.push(getUIText("upload_receiver_limit", "The receiver rejected the upload size. Copy the result for details."));
+  }
   const qcameraLabel = getUIText("upload_kind_count", "{name} {count}", {
     name: "qcamera",
     count: Number(stats.qcamera || 0),
@@ -1331,6 +1338,7 @@ function dashcamUploadResultHtml(result) {
       total: Number(result?.total || 0),
     }))}</div>
     ${resultList}
+    ${limitHints.map((hint) => `<div class="app-dialog__metaOverflow">${escapeHtml(hint)}</div>`).join("")}
     <div class="app-dialog__metaSummary">
       <span>${escapeHtml(qcameraLabel)}</span>
       <span>${escapeHtml(rlogLabel)}</span>

@@ -1738,6 +1738,8 @@ window.CarrotTranslations.register("zh-tw", {
     upload_segments_label: "片段",
     upload_segment_progress: "片段 {current}/{total}",
     upload_more_failed: "另有 {count} 個失敗",
+    upload_daily_quota: "已達每日上傳額度。額度在台灣時間上午 8 點重設，屆時只需重傳失敗的片段。",
+    upload_receiver_limit: "接收端拒絕了這次傳輸的大小。請點「複製」查看詳細原因。",
     upload_segment_count: "{count} 個片段",
     upload_kind_count: "{name} {count} 個",
     upload_summary_label: "傳送摘要",
