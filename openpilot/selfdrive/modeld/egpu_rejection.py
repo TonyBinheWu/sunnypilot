@@ -43,7 +43,7 @@ def rejection_status(root: Path) -> dict:
     from openpilot.selfdrive.modeld.precompiled_model import gpu_restart_failure
     automatic = (isinstance(failure.get('boot_id'), str) and bool(failure['boot_id']) and
                  failure.get('phase') in ('load', 'boot_validation', 'inference') and
-                 gpu_restart_failure(failure.get('error', ''), manifest))
+                 gpu_restart_failure(failure.get('error', ''), manifest, failure['phase']))
     result.update(can_request=bool(boot_identity()), phase=failure.get('phase'),
                   error=error_summary(failure.get('error', '')),
                   reason='device_restart_required' if automatic else 'verification_required')

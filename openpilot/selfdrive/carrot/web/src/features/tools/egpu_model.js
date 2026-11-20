@@ -46,7 +46,7 @@ const FALLBACK_STRINGS = {
   retry_confirm: "Keep the diagnostic report and retry file checks and a startup inference test after the next full reboot? This does not start the GPU now.",
   retry_pending: "Verification is scheduled. Reboot comma once while parked. No files or diagnostics have been deleted.",
   retry_offroad: "Turn ignition off and wait for the offroad screen to schedule verification. Then reboot comma while parked.",
-  blocked_device: "GPU/USB timeout or hang: this model is blocked for this boot. A full reboot automatically retries file checks and startup inference. Repeated failures need device/power/USB diagnosis.",
+  blocked_device: "The eGPU or its USB connection failed. Park, confirm the GPU has power, and fully reboot the comma device to retry file checks and startup inference.",
   blocked_verify: "This model is blocked after a failed check. You can schedule one new verification after reboot. File and output checks remain mandatory; another failure falls back to the internal model.",
   blocked_missing: "This model is blocked, but its diagnostic identity is missing or inconsistent. Send the diagnostic report for support; automatic release is unavailable.",
   failure_runtime: "The eGPU could not start or continue running. The internal model is selected.",

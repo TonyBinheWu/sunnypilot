@@ -206,7 +206,7 @@ window.CarrotTranslations.register("zh-tw", {
     egpu_model_retry_confirm: "保留診斷報告，並在下次完整重新啟動後重試檔案檢查與啟動推論測試？這不會立即啟動 GPU。",
     egpu_model_retry_pending: "已安排驗證。請停車後重新啟動 comma 一次；未刪除任何檔案或診斷資料。",
     egpu_model_retry_offroad: "請關閉點火，等待非行駛畫面出現後安排驗證，再於停車時重新啟動 comma。",
-    egpu_model_blocked_device: "GPU／USB 逾時或無回應：本次啟動已停用此模型。完整重新啟動會自動重試檔案檢查與啟動推論；若持續失敗，須檢查裝置、電源與 USB。",
+    egpu_model_blocked_device: "eGPU 或 USB 連線發生錯誤。請停妥車輛，確認顯卡有供電，再完整重新啟動車機。系統會重新檢查檔案並測試模型推論。",
     egpu_model_blocked_verify: "檢查失敗後已停用此模型。可安排重新啟動後再驗證一次；仍須通過檔案與輸出檢查，再次失敗時會使用內建模型。",
     egpu_model_blocked_missing: "此模型已停用，但診斷識別資料缺失或不一致。請提供診斷報告以取得支援，無法自動解除。",
     egpu_model_failure_runtime: "eGPU 無法啟動或持續運作，已選用內建模型。",

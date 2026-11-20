@@ -141,6 +141,11 @@ from active inference losing its connection, a real error or excessive heat.
 Do not suppress real faults to clear a warning. The eGPU model compilation button
 is unavailable for a Jetson-only installation.
 
+If N16's USB bridge rejects PCIe bus setup during startup, the eGPU model stays
+disabled for that boot. Park, confirm the eGPU has power, and fully reboot the
+comma device. Existing reports of this specific failure qualify for the same
+file checks and startup inference test. Check the eGPU status card for the active model.
+
 Jetson runtimes with automatic power setup select the board's installed NVIDIA
 `MAXN_SUPER` profile at startup and configure its clocks. Power-mode selection
 is automatic. A missing-profile or firmware-clock-limit message on the status

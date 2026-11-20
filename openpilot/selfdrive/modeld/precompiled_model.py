@@ -16,7 +16,7 @@ from urllib.request import Request, urlopen
 
 from openpilot.selfdrive.modeld.big_model import active_manifest, model_cache_dir, model_path
 from openpilot.selfdrive.modeld.precompiled_artifact import SERIALIZATIONS
-from openpilot.selfdrive.modeld.egpu_usb_wait import VERIFIED_USB_RUNTIMES
+from openpilot.selfdrive.modeld.egpu_usb_wait import RUNTIME_SHA, VERIFIED_USB_RUNTIMES
 from openpilot.selfdrive.modeld.egpu_events import error_summary, log_event
 
 PROTOCOL = 1
@@ -171,17 +171,21 @@ def gpu_usb_link_failure(detail: str, manifest: dict) -> bool:
           re.search(r'^(?:RuntimeError: )?AMD(?::[0-9]+)? failed with -?1\Z', detail.rstrip(), re.MULTILINE) is not None)
 
 
-def gpu_restart_failure(detail: str, manifest: dict) -> bool:
-  """A latched USB timeout/hang needs a new boot, not a different model.
-
-  In these hash-pinned runtimes -7 is LIBUSB_ERROR_TIMEOUT in the link error
-  word. Device hang is the terminal exception from AMD's hang handler. Neither
-  proves damaged weights; neither enables the live background recovery loop.
-  """
+def gpu_restart_failure(detail: str, manifest: dict, phase: str = '') -> bool:
+  """Recognize verified device failures eligible for another attempt after a reboot."""
   runtime = manifest.get('runtime')
-  return (isinstance(runtime, dict) and runtime.get('sha256') in VERIFIED_USB_RUNTIMES and
-          re.search(r'^(?:RuntimeError: )?(?:AMD(?::[0-9]+)? failed with -7|Device hang detected)\Z',
-                    detail.rstrip(), re.MULTILINE) is not None)
+  if not isinstance(runtime, dict) or runtime.get('sha256') not in VERIFIED_USB_RUNTIMES:
+    return False
+  if re.search(r'^(?:RuntimeError: )?(?:AMD(?::[0-9]+)? failed with -7|Device hang detected)\Z', detail.rstrip(), re.MULTILINE):
+    return True
+  # The N16 USB runtime can receive an unsupported completion while setting up
+  # the bridge's primary bus. An identical completion during inference is unrelated.
+  if runtime['sha256'] != RUNTIME_SHA or phase not in ('load', 'boot_validation'):
+    return False
+  trace = detail.rsplit('Traceback (most recent call last):', 1)[-1].rstrip()
+  return (trace.endswith('\nRuntimeError: TLP completion status: Unsupported Request: 0x1000018') and
+          re.search(r'^  File "[^"\n]*/tinygrad/runtime/support/system\.py", line [0-9]+, in pci_setup_usb_bars\n'
+                    r' +usb\.pcie_cfg_req\(pci\.PCI_PRIMARY_BUS,', trace, re.MULTILINE) is not None)
 
 
 def retry_usb_rejection(root: Path, pickle_sha256: str) -> bool:
@@ -207,7 +211,7 @@ def retry_usb_rejection(root: Path, pickle_sha256: str) -> bool:
     manifest = json.loads((root / 'installed.json').read_text())
     return (isinstance(manifest, dict) and isinstance(manifest.get('pickle'), dict) and
             manifest['pickle'].get('sha256') == pickle_sha256 and
-            (gpu_usb_link_failure(failure['error'], manifest) or gpu_restart_failure(failure['error'], manifest) or
+            (gpu_usb_link_failure(failure['error'], manifest) or gpu_restart_failure(failure['error'], manifest, failure['phase']) or
              re.search(r'^(?:RuntimeError: )?PCIe link not up \(LTSSM=0x[0-9a-fA-F]+\)\Z',
                        failure['error'].rstrip(), re.MULTILINE) is not None))
   except (OSError, ValueError, TypeError):
@@ -319,7 +323,7 @@ def record_failure(path: Path, error: BaseException | str, phase: str) -> bool:
                gpu_bootloader_timeout(detail, phase) or gpu_mapping_timeout(detail, phase) or
                'precompiled eGPU worker timed out' in detail or 'precompiled eGPU worker exited' in detail)
   from openpilot.selfdrive.modeld.egpu_worker_progress import boot_identity
-  classification = 'transient_device' if transient else 'device_restart_required' if gpu_restart_failure(detail, value) else 'artifact_blocked'
+  classification = 'transient_device' if transient else 'device_restart_required' if gpu_restart_failure(detail, value, phase) else 'artifact_blocked'
   failure = {'time': time.time(), 'phase': phase, 'rejected': not transient, 'classification': classification,  # noqa: TID251
              'pickle_sha256': value['pickle']['sha256'], 'error': detail[-16384:], 'boot_id': boot_identity()}
   if isinstance(worker := getattr(error, 'worker_diagnostics', None), dict):

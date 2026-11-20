@@ -7,7 +7,57 @@ import pytest
 from openpilot.selfdrive.modeld import egpu_worker_progress, precompiled_model as pm
 from openpilot.selfdrive.modeld.tests.test_precompiled_model import Response, catalog
 from openpilot.selfdrive.modeld import egpu_rejection as rejection
-from openpilot.selfdrive.modeld.egpu_usb_wait import VERIFIED_USB_RUNTIMES
+from openpilot.selfdrive.modeld.egpu_usb_wait import RUNTIME_SHA, VERIFIED_USB_RUNTIMES
+
+
+BRIDGE_SETUP_ERROR = '''Traceback (most recent call last):
+  File "/runtime/tinygrad/runtime/support/system.py", line 142, in pci_setup_usb_bars
+    usb.pcie_cfg_req(pci.PCI_PRIMARY_BUS, bus=bus, dev=0, fn=0, value=buses, size=4)
+  File "/runtime/tinygrad/runtime/support/usb.py", line 133, in pcie_request
+    raise RuntimeError(message)
+RuntimeError: TLP completion status: Unsupported Request: 0x1000018
+'''
+
+
+@pytest.mark.parametrize('phase', ['load', 'boot_validation'])
+def test_bridge_setup_failure_requires_new_boot(tmp_path, monkeypatch, phase):
+  from openpilot.selfdrive.modeld.egpu_recovery import retryable_preparation
+  value = {'pickle': {'sha256': 'a' * 64}, 'runtime': {'sha256': RUNTIME_SHA}}
+  (tmp_path / 'installed.json').write_text(json.dumps(value))
+  receipt = tmp_path / 'boot_validation.json'
+  receipt.write_text('{}')
+  monkeypatch.setattr(egpu_worker_progress, 'boot_identity', lambda: 'first')
+  assert pm.record_failure(tmp_path / 'model.pkl', BRIDGE_SETUP_ERROR, phase)
+  saved = tmp_path / 'last_failure.json'
+  failure = json.loads(saved.read_text())
+  assert failure['classification'] == 'device_restart_required'
+  assert not receipt.exists() and (tmp_path / 'rejected').exists()
+  assert not retryable_preparation(RuntimeError(BRIDGE_SETUP_ERROR), value)
+  # A report saved by the previous release must follow the same boot boundary.
+  saved.write_text(json.dumps(failure | {'classification': 'artifact_blocked'}))
+  original = saved.read_bytes()
+  assert rejection.rejection_status(tmp_path)['reason'] == 'device_restart_required'
+  assert not pm.retry_usb_rejection(tmp_path, 'a' * 64)
+  monkeypatch.setattr(egpu_worker_progress, 'boot_identity', lambda: 'second')
+  assert pm.retry_usb_rejection(tmp_path, 'a' * 64)
+  assert not pm.retry_usb_rejection(tmp_path, 'b' * 64)
+  assert saved.read_bytes() == original and (tmp_path / 'rejected').exists()
+
+
+@pytest.mark.parametrize('detail,phase,runtime', [
+  (BRIDGE_SETUP_ERROR, 'inference', RUNTIME_SHA),
+  (BRIDGE_SETUP_ERROR, 'load', 'unknown'),
+  (BRIDGE_SETUP_ERROR.replace('0x1000018', '0x1000020'), 'load', RUNTIME_SHA),
+  (BRIDGE_SETUP_ERROR.replace('pci_setup_usb_bars', 'do_inference'), 'load', RUNTIME_SHA),
+  (BRIDGE_SETUP_ERROR.splitlines()[-1], 'load', RUNTIME_SHA),
+  (BRIDGE_SETUP_ERROR + 'ValueError: checksum mismatch', 'load', RUNTIME_SHA),
+  (BRIDGE_SETUP_ERROR + 'Traceback (most recent call last):\nRuntimeError: TLP completion status: Unsupported Request: 0x1000018', 'load', RUNTIME_SHA),
+])
+def test_unrelated_failures_remain_blocked(tmp_path, detail, phase, runtime):
+  value = {'pickle': {'sha256': 'a' * 64}, 'runtime': {'sha256': runtime}}
+  (tmp_path / 'installed.json').write_text(json.dumps(value))
+  assert pm.record_failure(tmp_path / 'model.pkl', detail, phase)
+  assert json.loads((tmp_path / 'last_failure.json').read_text())['classification'] == 'artifact_blocked'
 
 
 @pytest.mark.parametrize('runtime', sorted(VERIFIED_USB_RUNTIMES))

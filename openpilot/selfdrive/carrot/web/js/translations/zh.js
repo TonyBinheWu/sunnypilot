@@ -156,6 +156,7 @@ window.CarrotTranslations.register("zh", {
     egpu_model_compiling_detail: "请保持车辆停车和点火。编译完成后画面会自动更新。",
     egpu_model_compiled_detail: "eGPU 大模型已准备完成，将自动选择。",
     egpu_model_error_detail: "内部模型仍可使用。请检查连接并在下次重启时重试。",
+    egpu_model_blocked_device: "eGPU 或 USB 连接发生错误。请先停车，确认显卡有供电，再完整重启车机。系统会重新检查文件并测试模型推理。",
     egpu_model_restart: "重启并编译",
     egpu_model_restart_confirm: "请安全停车并保持点火。现在重启并编译 eGPU 大模型吗？",
     egpu_model_restart_requested: "已请求重启，将在启动时开始编译。",
