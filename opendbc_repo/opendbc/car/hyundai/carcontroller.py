@@ -352,6 +352,10 @@ class CarController(CarControllerBase):
       self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN = self.low_speed_steer_reserve.rates(
         requested=max(-reserve_max, min(new_torque, reserve_max)), previous=self.apply_torque_last, base=self.params.STEER_MAX,
         up=self.steerDeltaUpOrg, down=self.steerDeltaDownOrg)
+      if self.CP.carFingerprint == CAR.KIA_SORENTO_2024:
+        # Panda can see new driver torque before the host's low-speed ramp reaches it.
+        # Grow torque at the factory rate even while using the reserve.
+        self.params.STEER_DELTA_UP = self.steerDeltaUpOrg
     apply_torque = apply_driver_steer_torque_limits(new_torque, self.apply_torque_last, CS.out.steeringTorque,
                                                    self.params, steer_max=reserve_max)
 

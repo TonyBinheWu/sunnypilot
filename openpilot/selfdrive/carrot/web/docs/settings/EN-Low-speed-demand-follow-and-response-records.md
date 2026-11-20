@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested headroom up to 409 at ≤30 km/h and demand-dependent command slew up to 4/4 per 10 ms. Taper at 30–40 km/h; ≥40 uses factory scaling and 2/3. Stored manual values and tuning remain. Records never raise limits. Requires updated Panda firmware, reboot and vehicle validation. For supported EV6/Ioniq 5/Carnival/Sorento variants, HkgPhase1Assist also enables this bounded low-speed path. Turn both switches off to restore stored manual limits.
+Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested headroom up to 409 at ≤30 km/h and demand-dependent command slew up to 4/4 per 10 ms. Taper at 30–40 km/h; ≥40 uses factory scaling and 2/3. Stored manual values and tuning remain. Records never raise limits. Requires updated Panda firmware, reboot and vehicle validation. For supported EV6/Ioniq 5/Carnival/Sorento variants, HkgPhase1Assist also enables this bounded low-speed path. Turn both switches off to restore stored manual limits. The 2024 Sorento uses the factory torque rise rate in this mode.
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="7574906d6f95bcb6980402a26f5226d08f30779e7d9ef6805e01b284cc0e3eae" semantic="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="7c300a3501e166c400c1d96c69c8c3447f9456f3703bca9199b5f3889cbaed27" semantic="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`
@@ -26,13 +26,14 @@ Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested h
 <!-- CARROT:AUTO:END LowSpeedSteerReserve -->
 
 <!-- CARROT:MANUAL:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:REVIEW reviewed-for="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" reviewed-at="2026-11-18T00:00:00+08:00" -->
+<!-- CARROT:REVIEW reviewed-for="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" reviewed-at="2026-11-20T17:30:00+08:00" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### Behavior
 
 Only Hyundai/Kia CAN-FD torque steering is supported. Sustained near-baseline demand for 0.30 s qualifies additional torque up to 409 at ≤30 km/h. The gap to the bounded requested command also selects host increase/decrease limits from factory 2/3 up to 4/4 CAN units per 10 ms; near the target they return to factory rates. Both headroom and extra slew taper over 30–40 km/h; integer commands use discrete steps, and ≥40 km/h uses factory scaling and rates.
 
 Stored CustomSteerMax and CustomSteerDelta values are not overwritten; while enabled, factory normalization remains the baseline. Turning the mode off restores the manual values, but Panda now rejects commands outside its enforced bounds. Gains, live torque tuning and angle-control behavior are not increased by this feature.
+The 2024 Sorento builds steering torque at the factory rate in this mode.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

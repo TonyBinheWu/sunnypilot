@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-僅 Hyundai／Kia CAN-FD 扭力控制。持續需求 0.30 秒後，≤30 km/h 按需提供最高 409，指令增加／減少速率依需求最高 4／4（每 10 毫秒）。30–40 漸退；≥40 使用車型預設比例與 2／3。保留手動值與學習參數；紀錄不會提高上限。需更新 Panda 韌體並重啟，尚待實車驗證。 支援的 EV6／Ioniq 5／Carnival／Sorento 也可由 HkgPhase1Assist 啟用此低速路徑；兩個開關都關閉後才恢復已存手動限制。
+僅 Hyundai／Kia CAN-FD 扭力控制。持續需求 0.30 秒後，≤30 km/h 按需提供最高 409，指令增加／減少速率依需求最高 4／4（每 10 毫秒）。30–40 漸退；≥40 使用車型預設比例與 2／3。保留手動值與學習參數；紀錄不會提高上限。需更新 Panda 韌體並重啟，尚待實車驗證。 支援的 EV6／Ioniq 5／Carnival／Sorento 也可由 HkgPhase1Assist 啟用此低速路徑；兩個開關都關閉後才恢復已存手動限制。 2024 年式 Sorento 在此模式下以原廠速率增加轉向扭力。
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="cf8ebd287c6ef981e39228336221bde40ad8a9e40204b78d4fece85d493eea50" semantic="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="fdedd0d1ce4945185eacef1b29ee61855c477b1a81fc1beaaedfb96ab6a6bd8a" semantic="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 開關
 - **預設值:** `0`
@@ -26,13 +26,14 @@
 <!-- CARROT:AUTO:END LowSpeedSteerReserve -->
 
 <!-- CARROT:MANUAL:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:REVIEW reviewed-for="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" reviewed-at="2026-11-18T00:00:00+08:00" -->
+<!-- CARROT:REVIEW reviewed-for="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" reviewed-at="2026-11-20T17:30:00+08:00" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 運作方式
 
 僅支援 Hyundai／Kia CAN-FD 扭力轉向。需求接近預設上限並持續 0.30 秒後，≤30 km/h 可依需求提供最高 409。控制器也依「允許的需求指令與目前輸出之差」選擇指令增加／減少速率，從預設 2／3 到最高 4／4 個 CAN 單位／每 10 毫秒；接近目標時回到預設速率。扭力餘量與額外速率都在 30–40 km/h 漸退；整數指令採離散級距，≥40 km/h 使用車型預設比例與速率。
 
 儲存的 CustomSteerMax 與 CustomSteerDelta 不會被覆寫，開啟時以車型預設換算比例為基準。關閉後恢復手動值，但超出 Panda 已恢復執行的限制之指令會遭拒絕。本功能不增加控制增益、即時扭力學習值或角度控制權限。
+2024 年式 Sorento 在此模式下以原廠速率增加轉向扭力。
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

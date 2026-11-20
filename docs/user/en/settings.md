@@ -358,6 +358,8 @@ These settings describe the car, harness, and device hardware configuration. Do 
 
 Hyundai and Kia torque steering starts with `MaxAngleFrames` set to 89. Older values of 80–88 use 89 so that Panda can accept the two-frame request pause. If the setting is missing or outside 80–100, the controller keeps the last valid value and resumes sending its request after the two-frame pause in a sustained turn.
 
+On the 2024 Kia Sorento, low-speed steering assistance builds torque at the factory rate when the torque reserve is enabled, including through Phase 1 Assist. The reserve can still supply the requested torque as it builds. A steering fault reported by the vehicle suspends assistance.
+
 > [!CAUTION]
 > Incorrect `HyundaiCameraSCC`, `CanfdHDA2`, `EnableRadarTracks`, `CarrotRadarMode`, `CarrotRadarCutInSensitivity`, or `SpeedFromPCM` values can change vehicle identification, SCC, radar, or longitudinal behavior. Confirm the vehicle, model year, HDA generation, harness location, and whether stock ACC is retained.
 

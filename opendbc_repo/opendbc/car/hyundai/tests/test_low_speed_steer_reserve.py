@@ -6,6 +6,7 @@ from opendbc.car import structs
 from opendbc.car.hyundai import carcontroller
 from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
 from opendbc.car.hyundai.tests.test_steering_handover_controller import setup_controller, step
+from opendbc.car.hyundai.values import CAR, HyundaiFlags
 
 
 def state(**kw):
@@ -65,8 +66,8 @@ def test_filtered_speed_cannot_hide_fast_raw_speed():
   assert set(warm(LowSpeedSteerReserve(), cs)) == {270}
 
 
-def torque_fixture(monkeypatch, enabled=True):
-  controller, cs, cc, settings = setup_controller(monkeypatch, angle=False, camera=False)
+def torque_fixture(monkeypatch, enabled=True, cp=None):
+  controller, cs, cc, settings = setup_controller(monkeypatch, angle=False, camera=False, cp_override=cp)
   # Fixture CP is generic: this test explicitly selects supported Hyundai torque control.
   controller.reserve_supported = True
   settings['LowSpeedSteerReserve'] = int(enabled)
@@ -75,6 +76,29 @@ def torque_fixture(monkeypatch, enabled=True):
   cs.out = state()
   cc.actuators.torque = 1.5
   return controller, cs, cc, settings
+
+
+@pytest.mark.parametrize('sign', [-1, 1])
+@pytest.mark.parametrize('camera_scc', [False, True])
+def test_sorento_reserve_reaches_target_at_factory_rise_rate(monkeypatch, sign, camera_scc):
+  model = CAR.KIA_SORENTO_2024
+  flags = HyundaiFlags.CANFD | (HyundaiFlags.CANFD_HDA2 | HyundaiFlags.CAMERA_SCC if camera_scc else 0)
+  cp = structs.CarParams(brand='hyundai', carFingerprint=model, flags=int(flags),
+                         steerControlType='torque', wheelbase=model.config.specs.wheelbase, steerRatio=model.config.specs.steerRatio)
+  cp.lateralTuning.init('torque')
+  controller, cs, cc, settings = torque_fixture(monkeypatch, enabled=False, cp=cp)
+  settings['HkgPhase1Assist'] = 1
+  cc.actuators.torque = sign * 1.5
+  previous = 0
+  for _ in range(250):
+    _, messages = step(controller, cs, cc)
+    payload = next(data for addr, data, _ in messages if addr == 0x12a)
+    torque = ((int.from_bytes(payload, 'little') >> 41) & 0x7ff) - 1024
+    assert 0 <= sign * (torque - previous) <= 2
+    previous = torque
+  assert previous == sign * 405
+  cc.latActive = False
+  assert step(controller, cs, cc)[0].torqueOutputCan == 0
 
 
 @pytest.mark.parametrize('sign', [-1, 1])
