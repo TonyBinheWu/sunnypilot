@@ -280,6 +280,8 @@ def main():
             if selection=='latest' and checksum!=latest['sha256']:raise ValueError('completed epoch checkpoint digest changed')
             if checksum in seen: continue
             seen.add(checksum)
+            if result.get('baseline',{}).get('validation_guard') is not None:
+              write_json(store.root/'teacher-quality'/f'{checksum}.json',{'candidate_sha256':checksum,'cycle':cycle,'epoch':epoch,'metrics':metrics,'baseline':result['baseline'],'guard_reference':result.get('validation_guard_reference'),**quality})
             pointer={'path':f'/studio/teacher/cycle-{cycle:03d}/output/'+filename,'sha256':checksum,
               'cycle':cycle,'training_epoch':epoch,'selection':selection,'scope':result.get('adapter_scope','actual_Edge_expert_expanded_LoRA'),'forward_only':result.get('forward_only',False),'fp32_expert':result.get('fp32_expert',False),'rear_axle_offset_m':result.get('rear_axle_offset_m',0.),'signed_hold_controls':result.get('signed_hold_controls',False),'driving_qualified':False}
             with candidate_publication(store):
