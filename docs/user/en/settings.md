@@ -354,6 +354,8 @@ These settings describe the car, harness, and device hardware configuration. Do 
 | Vehicle assistance | `MaxAngleFrames`, `SpeedFromPCM` | Steering-angle frames and stock-SCC speed control |
 | Device hardware | `CommaPedalEnabled`, `HardwareC3xLite` | Comma Pedal permission for vehicles without ACC, and C3X Lite hardware configuration |
 
+Hyundai and Kia torque steering starts with `MaxAngleFrames` set to 89. If the setting is missing or outside its 80–100 range, the controller keeps the last valid value and resumes sending its request after the two-frame pause in a sustained turn.
+
 > [!CAUTION]
 > Incorrect `HyundaiCameraSCC`, `CanfdHDA2`, `EnableRadarTracks`, `CarrotRadarMode`, `CarrotRadarCutInSensitivity`, or `SpeedFromPCM` values can change vehicle identification, SCC, radar, or longitudinal behavior. Confirm the vehicle, model year, HDA generation, harness location, and whether stock ACC is retained.
 

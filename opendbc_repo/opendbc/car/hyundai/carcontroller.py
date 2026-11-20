@@ -277,7 +277,11 @@ class CarController(CarControllerBase):
 
     if self.frame % 50 == 0:
       params = Params()
-      self.max_angle_frames = params.get_int("MaxAngleFrames")
+      # get_int returns zero for an absent value. At a sustained high angle
+      # that would clear the steering request on every frame, including recovery.
+      max_angle_frames = params.get_int("MaxAngleFrames")
+      if 80 <= max_angle_frames <= 100:  # supported MaxAngleFrames settings
+        self.max_angle_frames = max_angle_frames
       steerMax = params.get_int("CustomSteerMax")
       self.reserve_enabled = self.reserve_supported and (params.get_bool("LowSpeedSteerReserve") or phase1_enabled(self.CP, params))
       steerDeltaUp = params.get_int("CustomSteerDeltaUp")
