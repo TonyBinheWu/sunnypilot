@@ -261,6 +261,9 @@ def main():
           child=None; active_container=None
           remote.download(destination+'/output/result.json',folder/'result.json')
           result=read_json(folder/'result.json')
+          if settings.get('external_supervisor'):
+            report('completed',cycle=cycle,history=result['history'],baseline=result['baseline'],loss_convention=result.get('loss_convention'),completed_epochs=len(result['history']))
+            return  # The durable supervisor audits, qualifies and advances the next cycle.
           candidates=[]
           if result['adapter_saved']: candidates.append(('safety','best.safetensors',result.get('best_epoch')))
           if result.get('balanced_adapter_saved'): candidates.append(('balanced','balanced.safetensors',result.get('balanced_epoch')))
@@ -330,6 +333,7 @@ def main():
           child=None; active_container=None
           state['cycle']=cycle+1
           write_json(loop_root/'state.json',state)
+          if settings.get('external_supervisor'):return
           stop.wait(10)
     except InterruptedError:
       report('paused',cycle=state['cycle'])

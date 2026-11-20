@@ -249,3 +249,19 @@ node --check formosalink/web/training-data.js
 `--separate-lateral-safety` 需搭配獨立停止安全約束，再將直行／左轉／右轉的曲率及橫向姿態誤差從縱向速度 loss 中拆開，總共十二項共同下降與更新後檢查。此選項不改動驗證 loss、推論輸入、原始驗收程式或門檻。
 
 加入新驗證場景時，可在不可變 manifest 綁定 `parent_validation_sha256s` 與 `parent_validation_reference`，保留原驗證集合的逐項比較。候選須同時通過擴增後完整集合、固定壓力組及原集合參考；增加資料不能稀釋原集合的退步。
+
+### 不使用 Codex 的常駐閉環
+
+`closed_loop.py` 是一般 Python 常駐程式，由工作站的 systemd 使用者服務管理。它不呼叫 Codex／OpenAI API：DGX 進行教師最佳化，本機執行不可變驗證、原 11 關及資料佇列。連線逾時重試，不會被當成張量不一致；真正的完整性失敗會保護停止。每個完整 epoch 保留，資格未過就接續單一完整權重，原154筆與固定6筆比較不可放寬。教師通過全部原關卡後鎖定線上同一權重，完整獨立實車資料組收齊即交給現有學生工作程序。發布仍需人工選擇。
+
+已設定 `closed_loop` 的不可變參考與 `teacher_adaptation.external_supervisor` 後，可用：
+
+```bash
+PYTHONPATH=. python -m tools.training_studio.install_autonomy --root /path/to/workspace/build/training-studio
+systemctl --user status formosapilot-studio formosapilot-worker formosapilot-teacher-loop
+journalctl --user -u formosapilot-teacher-loop -n 80 --no-pager
+```
+
+工作站與 DGX 須保持開機、連線；關閉 Codex 對話不影響這些服務。WSL 使用者需啟用 linger，Windows 登入時啟動 WSL；`/run/WSL/1_interop` 用於既有 Windows 網路代理，避免依賴 Codex 的互通工作階段。資料與權重完整性問題、資料不足或磁碟容量不足仍需操作人員處理，程式不會自行改驗收標準或修改程式碼。
+
+十二項約束早期版本的主要 loss 統計分母錯用了總約束數。新版本以 `loss_convention=mean_primary_objectives_v2` 標示修正；歷史顯示由原紀錄換算，驗證 loss、原始檔、權重與資格判定保持原值。

@@ -228,7 +228,7 @@ def paired_step(parameters,optimizer,objective,stop_item,go_item,max_backtracks=
     if safety_objective is not None:grouped.update(safety_losses_before=before_losses[original_count:original_count+3],safety_losses_after=observed[original_count:original_count+3])
     if lateral_objective is not None:grouped.update(lateral_losses_before=before_losses[original_count+3:],lateral_losses_after=observed[original_count+3:])
     observed=observed[:original_count];before_losses=before_losses[:original_count];task_norms=task_norms[:original_count]
-    return {'loss':sum(observed)/len(items),'loss_before_step':sum(before_losses)/len(items),'stop_loss':sum(observed[::2])/count,'go_loss':sum(observed[1::2])/count,
+    return {'loss':sum(observed)/original_count,'loss_before_step':sum(before_losses)/original_count,'stop_loss':sum(observed[::2])/count,'go_loss':sum(observed[1::2])/count,
       'stop_loss_before_step':sum(before_losses[::2])/count,'go_loss_before_step':sum(before_losses[1::2])/count,'step_scale':scale,'backtracks':backtracks,
       'gradient_cosine':cosine,'gradient_projected':conflict,'parameter_delta_norm':change,'gradient_norm_before_clip':float(norm),
       'task_gradients_normalized':unit_gradients,'stop_gradient_norm':sum(task_norms[::2])/count,'go_gradient_norm':sum(task_norms[1::2])/count,**grouped}

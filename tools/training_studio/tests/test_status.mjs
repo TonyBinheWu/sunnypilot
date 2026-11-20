@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {teacherExperiment,teacherExperimentSummary,eventMessage,workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary,teacherBatchObservation,teacherTrainingLoss} from '../web/status.mjs';
+import {closedLoopSummary,teacherLossScale,teacherExperiment,teacherExperimentSummary,eventMessage,workerLabel,pipelineNotice,collectionMessage,teacherMessage,teacherLossHistory,teacherValidationSummary,reasoningSummary,teacherBatchObservation,teacherTrainingLoss} from '../web/status.mjs';
 
 test('a connected teacher does not make a stale qualification controller look active',()=>{
   const value={time:100,teacher:{updated:99,connected:true,qualified:false,qualification:{state:'running',updated:50,done:0,total:11}}};
@@ -154,7 +154,7 @@ test('current grouped optimizer reports measured guard backtracks and separate f
 
 
 test('nine-task safety profile keeps measured group substeps and loss labels',()=>{
-  const value={teacher_training:{cycle:163,phase:'training',epoch:1,optimization_profile:'grouped_nine_task_separate_stop_safety_fp64_projection_sgd_v12',group_stage:'verify',group_task:8,group_tasks:9,batch_history:[{batch:1,loss:12,loss_before_step:13}]}};
+  const value={teacher_training:{cycle:163,phase:'training',epoch:1,loss_convention:'mean_primary_objectives_v2',optimization_profile:'grouped_nine_task_separate_stop_safety_fp64_projection_sgd_v12',group_stage:'verify',group_task:8,group_tasks:9,batch_history:[{batch:1,loss:12,loss_before_step:13}]}};
   assert.match(teacherValidationSummary(value),/三項獨立停止安全約束/);
   assert.match(teacherValidationSummary(value),/8 \/ 9/);
   assert.deepEqual(teacherTrainingLoss(value),{label:'最近完成組 loss',value:12});
@@ -164,11 +164,20 @@ test('nine-task safety profile keeps measured group substeps and loss labels',()
 test('isolated teacher telemetry keeps real losses separate and marks stale reports',()=>{
   const p={experiment_only:true,cycle:163,phase:'training',epoch:1,epochs:1,batch:2,batches:37,updated:100,batch_history:[{batch:1,loss:4,loss_before_step:5}],history:[]};
   const value={time:300,events:[{message:'unrelated'},{message:'teacher_experiment_progress:'+JSON.stringify(p)}]};
-  assert.deepEqual(teacherExperiment(value),p);
+  assert.deepEqual(teacherExperiment(value),{...p,loss_convention:'mean_primary_objectives_v2'});
   assert.match(teacherExperimentSummary(value),/5.00000 → 4.00000/);
   assert.match(teacherExperimentSummary(value),/回報已過期/);
   assert.match(eventMessage(value.events[1],value),/原11關驗收為準/);
   assert.equal(teacherExperiment({events:[{message:'teacher_experiment_progress:{broken'}]}),null);
   p.batch_history[0].loss='fake';
   assert.equal(teacherExperiment({events:[{message:'teacher_experiment_progress:'+JSON.stringify(p)}]}),null);
+});
+
+
+test('legacy twelve-task reporting is corrected without changing validation or stored records',()=>{
+  const p={experiment_only:true,cycle:171,phase:'training_complete',epoch:1,updated:100,optimization_profile:'grouped_twelve_task_separate_stop_lateral_safety_fp64_projection_sgd_v13',batch_history:[{batch:1,loss:5,loss_before_step:6}],history:[{train_loss:7,validation_loss:8,red_safe_count:2,red_samples:3,lateral_trajectory_mse:4}]};
+  const value={events:[{message:'teacher_experiment_progress:'+JSON.stringify(p)}]};
+  const displayed=teacherExperiment(value);assert.equal(displayed.batch_history[0].loss,10);assert.equal(displayed.history[0].train_loss,14);assert.equal(displayed.history[0].validation_loss,8);assert.equal(p.batch_history[0].loss,5);assert.equal(teacherLossScale(displayed),1);
+  assert.match(closedLoopSummary({time:110,closed_loop:{active:true,phase:'waiting_real_data',updated:100,missing_splits:['validation']}}),/不呼叫 Codex／OpenAI API/);
+  assert.match(closedLoopSummary({time:110,closed_loop:{active:false,phase:'stopped',updated:100}}),/已停止/);
 });

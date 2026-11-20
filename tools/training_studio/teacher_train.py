@@ -396,7 +396,7 @@ def main():
   model._sample_actions=capture
   history=[];checkpoints=[];batch_history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'mlp_output_residual':args.mlp_output_residual,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'validation_guard_reference':manifest.get('validation_guard_reference'),'updated':time.time(),
+    value={'phase':phase,'loss_convention':'mean_primary_objectives_v2','optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'mlp_output_residual':args.mlp_output_residual,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'validation_guard_reference':manifest.get('validation_guard_reference'),'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -598,7 +598,7 @@ def main():
       balanced_metrics,balanced_epoch=metrics,epoch+1
       save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(args.output/'balanced.safetensors'))
     emit('training',epoch=epoch+1,baseline=baseline,**metrics)
-  write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'validation_guard_reference':manifest.get('validation_guard_reference'),'best':best_metrics,'best_epoch':best_epoch,
+  write_json(args.output/'result.json',{'revision':MODEL_REVISION,'loss_convention':'mean_primary_objectives_v2','baseline':baseline,'validation_guard_reference':manifest.get('validation_guard_reference'),'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'checkpoints':checkpoints,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
     'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'mlp_output_residual':args.mlp_output_residual,'signed_hold_controls':args.signed_hold_controls,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,

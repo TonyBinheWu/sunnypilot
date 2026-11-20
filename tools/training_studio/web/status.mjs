@@ -60,9 +60,9 @@ export function teacherValidationSummary(value){
 
 export function teacherLossHistory(value){
   const current=value.teacher_training||{};
-  if(current.history?.length)return {history:current.history,label:`第 ${current.cycle} 輪實際訓練／驗證 loss`};
+  if(current.history?.length)return {history:current.history.map(row=>({...row,train_loss:row.train_loss*teacherLossScale(current)})),label:`第 ${current.cycle} 輪實際訓練／驗證 loss`};
   const saved=value.teacher_runs?.find(row=>row.history?.length);
-  return saved?{history:saved.history,label:`顯示第 ${saved.cycle} 輪${saved.completed===false?'中斷前的實際':'已完成的'} loss；第 ${current.cycle||'—'} 輪尚無完成的 epoch。`}:{history:[],label:'本輪尚無實際 loss'};
+  return saved?{history:saved.history.map(row=>({...row,train_loss:row.train_loss*teacherLossScale(saved)})),label:`顯示第 ${saved.cycle} 輪${saved.completed===false?'中斷前的實際':'已完成的'} loss；第 ${current.cycle||'—'} 輪尚無完成的 epoch。`}:{history:[],label:'本輪尚無實際 loss'};
 }
 
 export function teacherBatchObservation(value,previous={}){
@@ -73,7 +73,7 @@ export function teacherBatchObservation(value,previous={}){
   const entries=!recorded&&!p.optimization_profile?.startsWith('grouped_')&&same&&Array.isArray(previous.entries)?previous.entries.filter(row=>Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.before)).slice(-200):[];
   const candidates=recorded?p.batch_history:(p.phase==='training'&&p.stage!=='validation'&&!p.optimization_profile?.startsWith('grouped_')?[p]:[]);
   for(const row of candidates){
-    if(valid&&Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.loss_before_step)&&!entries.some(entry=>entry.batch===row.batch))entries.push({batch:row.batch,loss:row.loss,before:row.loss_before_step});
+    if(valid&&Number.isInteger(row.batch)&&row.batch>0&&Number.isFinite(row.loss)&&Number.isFinite(row.loss_before_step)&&!entries.some(entry=>entry.batch===row.batch))entries.push({batch:row.batch,loss:row.loss*teacherLossScale(p),before:row.loss_before_step*teacherLossScale(p)});
   }
   entries.sort((a,b)=>a.batch-b.batch);
   const retained=entries.slice(-200);
@@ -84,9 +84,9 @@ export function teacherTrainingLoss(value){
   const p=value.teacher_training||{};
   if(p.optimization_profile?.startsWith('grouped_')){
     const row=p.batch_history?.at(-1);
-    if(row)return {label:'最近完成組 loss',value:row.loss};
-    if([6,9,12].includes(p.task_count)&&Number.isFinite(p.loss))return {label:'最近回報組 loss',value:p.loss};
-    return {label:'最近完整 epoch loss',value:p.history?.at(-1)?.train_loss};
+    if(row)return {label:'最近完成組 loss',value:row.loss*teacherLossScale(p)};
+    if([6,9,12].includes(p.task_count)&&Number.isFinite(p.loss))return {label:'最近回報組 loss',value:p.loss*teacherLossScale(p)};
+    return {label:'最近完整 epoch loss',value:scaledTeacherLoss(p.history?.at(-1)?.train_loss,p)};
   }
   return {label:'loss',value:p.loss??p.history?.at(-1)?.train_loss};
 }
@@ -110,7 +110,7 @@ export function teacherExperiment(value){
     if(!event.message?.startsWith('teacher_experiment_progress:'))continue;
     try{
       const p=JSON.parse(event.message.slice('teacher_experiment_progress:'.length));
-      if(p.experiment_only===true&&Number.isInteger(p.cycle)&&p.cycle>0&&Number.isFinite(p.updated)&&Array.isArray(p.batch_history)&&p.batch_history.every(r=>Number.isInteger(r.batch)&&r.batch>0&&Number.isFinite(r.loss)&&Number.isFinite(r.loss_before_step))&&Array.isArray(p.history)&&p.history.every(r=>['train_loss','validation_loss','red_safe_count','red_samples','lateral_trajectory_mse'].every(k=>Number.isFinite(r[k]))))return p;
+      if(p.experiment_only===true&&Number.isInteger(p.cycle)&&p.cycle>0&&Number.isFinite(p.updated)&&Array.isArray(p.batch_history)&&p.batch_history.every(r=>Number.isInteger(r.batch)&&r.batch>0&&Number.isFinite(r.loss)&&Number.isFinite(r.loss_before_step))&&Array.isArray(p.history)&&p.history.every(r=>['train_loss','validation_loss','red_safe_count','red_samples','lateral_trajectory_mse'].every(k=>Number.isFinite(r[k]))))return {...p,batch_history:p.batch_history.map(r=>({...r,loss:r.loss*teacherLossScale(p),loss_before_step:r.loss_before_step*teacherLossScale(p)})),history:p.history.map(r=>({...r,train_loss:r.train_loss*teacherLossScale(p)})),loss_convention:'mean_primary_objectives_v2'};
     }catch{}
   }
   return null;
@@ -126,4 +126,20 @@ export function teacherExperimentSummary(value){
 
 export function eventMessage(event,value){
   return event.message?.startsWith('teacher_experiment_progress:')?(teacherExperimentSummary({...value,events:[event]})||'隔離試訓回報格式無效'):event.message;
+}
+
+
+function scaledTeacherLoss(value,p){return Number.isFinite(value)?value*teacherLossScale(p):value;}
+
+export function teacherLossScale(p){
+  if(p.loss_convention==='mean_primary_objectives_v2')return 1;
+  if(p.optimization_profile==='grouped_twelve_task_separate_stop_lateral_safety_fp64_projection_sgd_v13')return 2;
+  if(p.optimization_profile==='grouped_nine_task_separate_stop_safety_fp64_projection_sgd_v12')return 1.5;
+  return 1;
+}
+
+export function closedLoopSummary(value){
+  const p=value.closed_loop;if(!p?.phase)return null;
+  const phase={preparing_data:'準備固定資料集',transferring_data:'打包與傳送訓練資料',building_context:'建立真實模型上下文',training:'教師持續訓練',starting_training:'啟動教師訓練',auditing_frozen_tensors:'核對凍結張量',auditing_continuation:'核對接續權重',qualifying_original_cases:'固定教師原11關驗收',retrying:'連線或工作程序重試中',blocked_integrity:'完整性檢查未通過，已保護停止',teacher_disabled:'教師訓練已停用',waiting_real_data:'教師已合格，等待獨立實車資料組',student_pipeline:'學生資料管線持續執行',paused:'已暫停',stopped:'常駐程式已停止'}[p.phase]||p.phase;
+  return `自治閉環 · ${phase}${p.cycle?` · 第 ${p.cycle} 輪`:''} · 不呼叫 Codex／OpenAI API${p.missing_splits?.length?' · 缺少 '+p.missing_splits.join('、'):''}${p.last_error?' · '+p.last_error:''}${Number.isFinite(p.updated)&&value.time-p.updated>120?' · 回報已過期':''}`;
 }

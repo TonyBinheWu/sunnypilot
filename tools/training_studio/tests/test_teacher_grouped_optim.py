@@ -89,6 +89,19 @@ class CommonDescentTest(unittest.TestCase):
     self.assertTrue(all(a<b for a,b in zip(result['task_losses_after'],result['task_losses_before'])))
     self.assertGreater(result['parameter_delta_norm'],0)
 
+  def test_zero_extra_constraints_do_not_change_reported_primary_loss(self):
+    from tools.training_studio.teacher_optim import paired_step
+    results=[];weights=[]
+    items=[{'row':{'stop_required':i%2==0},'axis':i} for i in range(6)]
+    for count in (6,9,12):
+      p=torch.nn.Parameter(torch.zeros(6))
+      def objective(item,grad):return (p[item['axis']]-1).square()
+      def zero(item,grad):return p[0]*0
+      result=paired_step({'expert':p},torch.optim.SGD([p],lr=.1),objective,*items[:2],unit_gradients=True,extra_items=items[2:],safety_objective=zero if count>=9 else None,lateral_objective=zero if count==12 else None)
+      results.append(result);weights.append(p.detach().clone())
+    for result,weight in zip(results[1:],weights[1:]):
+      torch.testing.assert_close(weight,weights[0]);self.assertAlmostEqual(result['loss'],results[0]['loss']);self.assertAlmostEqual(result['loss_before_step'],results[0]['loss_before_step'])
+
   def test_stop_safety_loss_separates_boundary_speed_and_overshoot(self):
     from tools.training_studio.teacher_train import stop_safety_loss
     xyz=torch.zeros(1,64,3);velocity=torch.zeros_like(xyz)
