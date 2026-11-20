@@ -1,5 +1,17 @@
 "use strict";
 globalThis.CarrotNavigationZhTw = Object.freeze({
+  "Continue straight": "直行",
+  "Turn left": "左轉",
+  "Turn right": "右轉",
+  "Bear left": "向左前方行駛",
+  "Bear right": "向右前方行駛",
+  "Sharp left": "向左急轉",
+  "Sharp right": "向右急轉",
+  "Make a U-turn": "迴轉",
+  "Keep left": "靠左行駛",
+  "Keep right": "靠右行駛",
+  "Roundabout": "進入圓環",
+  "Arrive": "抵達目的地",
   "Taiwan offline map": "台灣離線地圖",
   "Download Taiwan map": "下載台灣離線地圖",
   "Update Taiwan map": "更新台灣離線地圖",

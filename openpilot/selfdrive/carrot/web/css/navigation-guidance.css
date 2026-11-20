@@ -1,0 +1,15 @@
+.map-guidance #mapManeuver:not([hidden]) {
+  display:grid; grid-template-columns:auto minmax(0,1fr); gap:2px 12px; align-items:center;
+  background:#07594d; color:white; border:0; line-height:1.25;
+}
+#mapTurnIcon { width:clamp(30px,5vw,48px); height:auto; align-self:center; }
+#mapTurnPath { fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round }
+#mapTurnIcon[hidden], #mapDirection:empty, #mapRoad:empty { display:none }
+#mapDirection { font-size:.9em; font-weight:600 }
+#mapRoad { grid-column:1/-1; line-height:1.35 }
+.map-guidance #mapManeuver:has(#mapTurnIcon[hidden]) {grid-template-columns:minmax(0,1fr)}
+.map-step-copy {min-width:0}
+.map-location {display:grid;place-items:center;pointer-events:none}
+.map-location .map-course {width:30px;height:34px;fill:#1673ef;stroke:white;stroke-width:2;filter:drop-shadow(0 1px 2px #0007)}
+.map-location .map-fix {width:16px;height:16px;border-radius:50%;background:#1673ef;border:3px solid white;box-shadow:0 1px 4px #0006}
+@media(max-height:400px) {#mapTurnIcon{width:30px}.map-guidance #mapManeuver:not([hidden]){gap:1px 7px}}

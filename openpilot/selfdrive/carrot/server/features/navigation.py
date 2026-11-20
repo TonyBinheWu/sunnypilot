@@ -41,10 +41,10 @@ def destination(value):
 
 async def page(request):
   html = Path(WEB_DIR, 'navigation.html').read_text(encoding='utf-8')
-  for asset in ('/js/generated/offline-map.js', '/js/pages/navigation_zh_tw.js', '/js/pages/navigation_osm.js', '/js/pages/navigation_map.js'):
+  for asset in ('/css/navigation-guidance.css', '/js/generated/offline-map.js', '/js/pages/navigation_zh_tw.js', '/js/pages/navigation_osm.js', '/js/pages/navigation_map.js'):
     fingerprint = fingerprint_static_asset(WEB_DIR, asset)
     if fingerprint:
-      html = html.replace(f'src="{asset}"', f'src="{asset}?v={fingerprint}"')
+      html = html.replace(f'"{asset}"', f'"{asset}?v={fingerprint}"')
   return web.Response(text=html, content_type='text/html', headers={'Cache-Control': 'no-store'})
 
 

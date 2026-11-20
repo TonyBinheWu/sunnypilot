@@ -171,3 +171,54 @@ html.cockpit-night .cockpit-controls{--md-surface:#202124;--md-surface-cont-h:#3
 .cockpit-control-nav-list .selected { box-shadow:inset 3px 0 var(--md-primary); border-radius:8px }
 .cockpit-control-pane :is(button,input,select):focus-visible,
 .cockpit-control-nav-list button:focus-visible { outline:2px solid var(--md-primary); outline-offset:-2px }
+
+/* The legacy settings page has a 320px minimum. A split WebView can be shorter
+   than that after Android, the title bar and the dock take their space. */
+html.cockpit-controls-mode body[data-cockpit-panel="setting"],
+html.cockpit-controls-mode body[data-cockpit-panel="setting"] #pageSetting {
+  min-height:0!important; height:100%!important; max-height:100%!important;
+}
+
+/* One scrolling page below the app bar, shared by lists, search and device actions. */
+.cockpit-settings-content {
+  flex:1 1 0; min-height:0; min-width:0; overflow:auto; overscroll-behavior:contain;
+  padding-bottom:max(16px,env(safe-area-inset-bottom)); scroll-padding-block:12px;
+}
+html.cockpit-controls-mode body[data-cockpit-panel="setting"] .cockpit-settings-content #settingScreenHost,
+.cockpit-settings-content #settingInlineSearchResults,
+.cockpit-settings-content .cockpit-quick-controls {
+  overflow:visible!important; height:auto!important; max-height:none!important;
+}
+.cockpit-settings-content .cockpit-control-device #deviceGroupList,
+.cockpit-settings-content .cockpit-control-tabs {
+  display:flex; flex-wrap:nowrap; overflow-x:auto; align-items:stretch;
+  scrollbar-width:thin; padding-block:4px 10px;
+}
+.cockpit-settings-content .cockpit-control-tabs:empty,
+.cockpit-controls[data-search="true"] .cockpit-control-tabs,
+.cockpit-controls[data-overview="true"] .cockpit-control-tabs {display:none}
+.cockpit-control-device #deviceGroupList .groupBtn {flex:0 0 auto; width:auto; white-space:nowrap}
+.cockpit-control-device #deviceGroupList .active {background:var(--md-primary);color:var(--md-on-primary)}
+.cockpit-settings-content .device-setting .settingTop {
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.75fr); align-items:center; gap:12px;
+}
+.cockpit-settings-content .device-setting :is(.title,.descr,.ctrl,.device-value) {
+  max-width:100%; min-width:0; white-space:normal; overflow-wrap:anywhere;
+}
+.cockpit-settings-content .device-setting .ctrl {flex-wrap:wrap}
+.cockpit-settings-content .device-setting .ctrl button {min-height:44px; white-space:normal}
+.cockpit-control-header #settingFabMenu {position:static;flex:none;transform:none}
+.cockpit-control-header #settingFabActions:not([hidden]) {
+  position:absolute; inset:64px 12px auto auto; z-index:210;
+  width:min(320px,calc(100% - 24px)); max-height:calc(100% - 80px); box-sizing:border-box;
+  overflow:auto; overscroll-behavior:contain; padding:8px; border-radius:14px;
+  background:var(--md-surface); box-shadow:0 6px 28px #0003;
+}
+.cockpit-control-header #settingFabActions .setting-fab-action {
+  width:100%; justify-content:flex-start; min-height:48px; text-align:start; white-space:normal;
+}
+@media(max-width:560px){
+  html.cockpit-controls-mode body[data-cockpit-panel="setting"] .cockpit-control-main,
+  .cockpit-settings-content .device-setting .settingTop {grid-template-columns:minmax(0,1fr)}
+  .cockpit-settings-content .cockpit-control-tabs button:only-child {display:none}
+}

@@ -20,6 +20,10 @@ def write_navigation_view(route, gps, route_id, *, instruction=None, path=VIEW_P
   """
   now = time.time() if now is None else now
   position = None if gps is None else {'lat': gps.latitude, 'lng': gps.longitude}
+  if position is not None:
+    bearing, speed = getattr(gps, 'bearing', None), getattr(gps, 'speed', 0.)
+    if bearing is not None and math.isfinite(bearing) and 0 <= bearing < 360 and math.isfinite(speed) and speed >= 1.5:
+      position['bearing'] = bearing
   payload = {'generated_at': now, 'route_id': int(route_id), 'position': position,
              'coordinates': [[float(lon), float(lat)] for lon, lat in route] if route_id else []}
   payload['instruction'] = None
@@ -28,6 +32,8 @@ def write_navigation_view(route, gps, route_id, *, instruction=None, path=VIEW_P
     if all(math.isfinite(value) and 0 <= value <= 1e8 for value in distances):
       payload['instruction'] = dict(zip(('distance', 'remaining_m', 'remaining_s'), distances))
       payload['instruction'].update(text=str(instruction.maneuverPrimaryText)[:256], modifier=str(instruction.maneuverModifier)[:40])
+      if kind := getattr(instruction, 'maneuverType', ''):
+        payload['instruction']['type'] = str(kind)[:40]
   temporary = path.with_suffix('.tmp')
   temporary.write_text(json.dumps(payload, allow_nan=False, separators=(',', ':')), encoding='utf-8')
   os.replace(temporary, path)

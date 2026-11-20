@@ -41,6 +41,13 @@ def test_exact_route_ui_copy_freshness_and_no_model_file_write(monkeypatch, tmp_
   assert json.loads(asyncio.run(navigation.route_view(None)).text)['position'] is None
 
 
+@pytest.mark.parametrize(('speed','bearing','expected'), [(8., 270., 270.), (0., 90., None), (5., float('nan'), None)])
+def test_map_course_requires_a_moving_position(tmp_path, speed, bearing, expected):
+  path = tmp_path / 'view.json'
+  write_navigation_view([], NS(latitude=25., longitude=121., bearing=bearing, speed=speed), 0, path=path)
+  assert json.loads(path.read_text())['position'].get('bearing') == expected
+
+
 def test_ui_instruction_copy_is_bounded_and_removed_when_no_fresh_instruction(tmp_path):
   path=tmp_path/'view.json'
   instruction=NS(maneuverPrimaryText='台灣測試路',maneuverModifier='left',maneuverDistance=230,distanceRemaining=4500,timeRemaining=370)
