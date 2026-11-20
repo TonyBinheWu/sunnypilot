@@ -131,7 +131,7 @@ def main():
       label=remote.call('docker inspect studio-teacher --format \'{{index .Config.Labels "formosapilot.owner"}}\'',capture_output=True,text=True).stdout.strip()
       if label!='training-studio': raise RuntimeError('refusing to replace a foreign teacher container')
       call(['docker','rm','-f','studio-teacher'])
-    call(['docker','run','-d','--name','studio-teacher','--label',owner,'--gpus','all','--network','bridge','--memory','32g','--user','1000:1000',
+    call(['docker','run','-d','--restart','unless-stopped','--name','studio-teacher','--label',owner,'--gpus','all','--network','bridge','--memory','32g','--user','1000:1000',
       '-p','127.0.0.1:8767:8767','-v',remote.root+':/studio','-v',model_root+':/teacher:ro',
       '-v',settings['legacy_deps_root']+':/old:ro','-w','/studio','-e','HF_HUB_OFFLINE=1',
       '-e','PYTHONPATH=/teacher/deps:/old/deps:/teacher/source/src:'+container_program,'--entrypoint','python',remote.image,

@@ -53,7 +53,7 @@ if existing:
  label=r.call('docker inspect studio-teacher --format \'{{index .Config.Labels "formosapilot.owner"}}\'',capture_output=True,text=True).stdout.strip()
  if label!='training-studio':raise RuntimeError('foreign teacher sidecar')
  r.call(shlex.join(['docker','rm','-f','studio-teacher']))
-command=['docker','run','-d','--name','studio-teacher','--label','formosapilot.owner=training-studio','--gpus','all','--network','bridge','--memory','32g','--user','1000:1000','-p','127.0.0.1:8767:8767','-v',r.root+':/studio','-v',settings['model_root']+':/teacher:ro','-v',settings['legacy_deps_root']+':/old:ro','-w','/studio','-e','HF_HUB_OFFLINE=1','-e','PYTHONPATH=/teacher/deps:/old/deps:/teacher/source/src:'+container_program,'--entrypoint','python',r.image,'-u','-m','tools.training_studio.teacher_service','--listen','0.0.0.0','--model','/teacher/model','--receipt','/teacher/model-receipt.json','--adapter','/studio/'+relative]
+command=['docker','run','-d','--restart','unless-stopped','--name','studio-teacher','--label','formosapilot.owner=training-studio','--gpus','all','--network','bridge','--memory','32g','--user','1000:1000','-p','127.0.0.1:8767:8767','-v',r.root+':/studio','-v',settings['model_root']+':/teacher:ro','-v',settings['legacy_deps_root']+':/old:ro','-w','/studio','-e','HF_HUB_OFFLINE=1','-e','PYTHONPATH=/teacher/deps:/old/deps:/teacher/source/src:'+container_program,'--entrypoint','python',r.image,'-u','-m','tools.training_studio.teacher_service','--listen','0.0.0.0','--model','/teacher/model','--receipt','/teacher/model-receipt.json','--adapter','/studio/'+relative]
 r.call(shlex.join(command));opener=urllib.request.build_opener(urllib.request.ProxyHandler({}));deadline=time.monotonic()+180
 while time.monotonic()<deadline:
  try:
