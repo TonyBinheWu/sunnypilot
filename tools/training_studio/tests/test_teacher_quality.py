@@ -25,6 +25,18 @@ class CheckpointQualityTest(unittest.TestCase):
     stricter=self.baseline();stricter['red_safe_count']=3
     self.assertFalse(checkpoint_quality(candidate,baseline,stricter)['passed'])
 
+  def test_new_validation_samples_do_not_relax_immutable_original_subset(self):
+    baseline=self.baseline();baseline['parent_validation']=self.baseline();baseline['parent_validation_reference']=self.baseline()
+    candidate=copy.deepcopy(baseline);candidate['validation_loss']=8.
+    self.assertTrue(checkpoint_quality(candidate,baseline)['passed'])
+    candidate['parent_validation']['red_safe_count']=1
+    self.assertFalse(checkpoint_quality(candidate,baseline)['passed'])
+    candidate=copy.deepcopy(baseline);del candidate['parent_validation']
+    self.assertFalse(checkpoint_quality(candidate,baseline)['passed'])
+    baseline['parent_validation']['lateral_trajectory_mse']=6.
+    candidate=copy.deepcopy(baseline)
+    self.assertFalse(checkpoint_quality(candidate,baseline)['passed'])
+
   def test_all_five_metrics_are_required(self):
     baseline=self.baseline()
     for name in ('validation_loss','red_hold_speed_mse','lateral_trajectory_mse','go_velocity_mse'):

@@ -375,6 +375,9 @@ def main():
   validation_guard=set(manifest.get('validation_guard_sha256s',[]))
   if not validation_guard<={row['sha256'] for row in rows if row['split']=='validation'}:
     raise ValueError('validation guard must reference only existing held-out packets')
+  parent_validation=set(manifest.get('parent_validation_sha256s',[]))
+  if bool(parent_validation)!=bool(manifest.get('parent_validation_reference')) or not parent_validation<={row['sha256'] for row in rows if row['split']=='validation'}:
+    raise ValueError('immutable parent comparison requires a bound, held-out packet subset and reference metrics')
   from tools.training_studio.teacher_standstill import stop_training_margin
   if any(row.get('recovery_reference_profile') is not None for row in rows):
     for row in rows:stop_training_margin(row,args.balanced_stop_modes)
@@ -493,7 +496,7 @@ def main():
     return lateral_safety_loss(action,item['target_action'].to(action.device),model.expert.action_space,
       item['ego_history_xyz'].to(action.device),xyz,item['target'].to(action.device),rot,item['target_rot'].to(action.device))
   def validate(epoch=None):
-    values=[]; red=0; lateral=[]; hold=[]; proceed=[]; guard_records=[]; sample_records=[]
+    values=[]; red=0; lateral=[]; hold=[]; proceed=[]; guard_records=[]; parent_records=[]; sample_records=[]
     with torch.no_grad():
       for item in validation:
         loss,xyz,velocity=objective(item,False)
@@ -508,11 +511,12 @@ def main():
           reference_velocity=torch.diff(torch.cat((torch.zeros_like(target[:,:1]),target),dim=1),dim=1)/.1
           proceed.append(float((velocity[:,:20]-reference_velocity[:,:20]).square().sum(-1).mean()))
         sample_records.append({'sha256':item['row']['sha256'],'scenario':item['row']['scenario'],'stop_required':item['row']['stop_required'],'loss':values[-1],'lateral_mse':lateral[-1],**({'red_safe':safe,'front_min_m':float((item['row']['front_distance_m']-xyz[...,-10:,0]).min()),'front_max_m':float((item['row']['front_distance_m']-xyz[...,-10:,0]).max()),'tail_speed_max_mps':float(speed[...,-10:].max()),'max_progress_m':float(xyz[...,0].max()),'front_distance_m':item['row']['front_distance_m']} if item['row']['stop_required'] else {})})
-        if item['row']['sha256'] in validation_guard:
-          guard_records.append({'validation_loss':values[-1],'lateral_trajectory_mse':lateral[-1],
-            'stop_required':item['row']['stop_required'],'red_safe':safe if item['row']['stop_required'] else None,
-            'red_hold_speed_mse':hold[-1] if item['row']['stop_required'] else None,
-            'go_velocity_mse':proceed[-1] if not item['row']['stop_required'] else None})
+        record={'validation_loss':values[-1],'lateral_trajectory_mse':lateral[-1],
+          'stop_required':item['row']['stop_required'],'red_safe':safe if item['row']['stop_required'] else None,
+          'red_hold_speed_mse':hold[-1] if item['row']['stop_required'] else None,
+          'go_velocity_mse':proceed[-1] if not item['row']['stop_required'] else None}
+        if item['row']['sha256'] in validation_guard:guard_records.append(record)
+        if item['row']['sha256'] in parent_validation:parent_records.append(record)
         del loss,xyz,velocity
         load_prefix.cache_clear()
         release_prefix_pages(item['prefix_path'])
@@ -525,6 +529,10 @@ def main():
     if validation_guard:
       if len(guard_records)!=len(validation_guard):raise ValueError('validation guard coverage changed')
       metrics['validation_guard']=validation_guard_metrics(guard_records)
+    if parent_validation:
+      if len(parent_records)!=len(parent_validation):raise ValueError('immutable parent validation coverage changed')
+      metrics['parent_validation']=validation_guard_metrics(parent_records)
+      metrics['parent_validation_reference']=manifest['parent_validation_reference']
     return metrics
   baseline=validate()
   best_metrics,best_epoch=baseline,0

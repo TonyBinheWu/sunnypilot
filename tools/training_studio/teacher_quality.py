@@ -18,4 +18,7 @@ def checkpoint_quality(candidate,baseline,guard_reference=None):
   if baseline.get('validation_guard') is not None or guard_reference is not None:
     groups['validation_guard']=quality_conditions(candidate.get('validation_guard'),baseline.get('validation_guard'))
     if guard_reference is not None:groups['guard_reference']=quality_conditions(candidate.get('validation_guard'),guard_reference)
+  if baseline.get('parent_validation') is not None or baseline.get('parent_validation_reference') is not None:
+    groups['parent_validation']=quality_conditions(candidate.get('parent_validation'),baseline.get('parent_validation'))
+    groups['parent_reference']=quality_conditions(candidate.get('parent_validation'),baseline.get('parent_validation_reference'))
   return {'passed':all(all(group.values()) for group in groups.values()),'conditions':groups}

@@ -247,3 +247,5 @@ node --check formosalink/web/training-data.js
 `--separate-stop-safety` 在既有六類總損失之外，將三筆停止樣本的停止區、末端速度及已停等煞車裕度分別加入共同下降與更新後檢查，共九項約束。標籤僅供離線訓練；完整驗證仍使用原有損失與標準。每次完整驗證另保存逐樣本停止區及速度診斷，避免平均 loss 掩蓋安全退步。
 
 `--separate-lateral-safety` 需搭配獨立停止安全約束，再將直行／左轉／右轉的曲率及橫向姿態誤差從縱向速度 loss 中拆開，總共十二項共同下降與更新後檢查。此選項不改動驗證 loss、推論輸入、原始驗收程式或門檻。
+
+加入新驗證場景時，可在不可變 manifest 綁定 `parent_validation_sha256s` 與 `parent_validation_reference`，保留原驗證集合的逐項比較。候選須同時通過擴增後完整集合、固定壓力組及原集合參考；增加資料不能稀釋原集合的退步。
