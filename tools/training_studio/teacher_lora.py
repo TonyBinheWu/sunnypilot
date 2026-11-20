@@ -27,11 +27,15 @@ class DenseActionDelta(nn.Module):
     self.base=base
     self.delta_weight=nn.Parameter(torch.zeros_like(base.weight,dtype=torch.float32))
     self.delta_bias=nn.Parameter(torch.zeros(base.out_features,device=base.weight.device,dtype=torch.float32))
+    self.register_parameter('output_residual_weight',None)
+    self.register_parameter('output_residual_bias',None)
 
   def forward(self,x):
     result=self.base(x)
     with torch.autocast(x.device.type,enabled=False):
       delta=F.linear(x.float(),self.delta_weight,self.delta_bias)
+      if self.output_residual_weight is not None:
+        delta=delta+F.linear(x.float(),self.output_residual_weight,self.output_residual_bias)
     return (result.float()+delta).to(result.dtype)
 
   @classmethod
@@ -76,11 +80,13 @@ def load(model,path):
     if not isinstance(base,nn.Linear): raise ValueError('Unsupported dense action residual')
     model.expert.action_out_proj=DenseActionDelta(base)
     paths.append('expert.action_out_proj')
+  if 'expert.action_out_proj.output_residual_weight' in saved:enable_output_residual(model)
   parameters={name:p for name,p in model.named_parameters() if p.requires_grad}
   if set(parameters)!=set(saved):
     raise RuntimeError('Edge adapter topology mismatch')
   with torch.no_grad():
     for name,p in parameters.items():
+      if p.shape!=saved[name].shape:raise RuntimeError('Edge adapter tensor shape mismatch: '+name)
       p.copy_(saved[name].to(p.device))
   return paths
 
@@ -124,6 +130,9 @@ def adapter_parameters(model):
     elif isinstance(module,DenseActionDelta):
       result[name+'.delta_weight']=module.delta_weight
       result[name+'.delta_bias']=module.delta_bias
+      if module.output_residual_weight is not None:
+        result[name+'.output_residual_weight']=module.output_residual_weight
+        result[name+'.output_residual_bias']=module.output_residual_bias
   return result
 
 
@@ -137,4 +146,24 @@ def train_mlp_only(model):
       for leaf in ('a','b'):
         parameter=getattr(module,leaf);parameter.requires_grad_(True);parameters[name+'.'+leaf]=parameter
   if not parameters:raise ValueError('MLP-only training requires expanded expert fc1/fc2 adapters')
+  return parameters
+
+
+def enable_output_residual(model):
+  """Add a zero-initialized learned readout, retaining the original head parameters."""
+  head=model.expert.action_out_proj
+  if not isinstance(head,DenseActionDelta):raise ValueError('output residual requires an expanded dense action head')
+  if head.output_residual_weight is None:
+    head.output_residual_weight=nn.Parameter(torch.zeros_like(head.delta_weight))
+    head.output_residual_bias=nn.Parameter(torch.zeros_like(head.delta_bias))
+  return head
+
+
+def train_mlp_with_output_residual(model):
+  head=model.expert.action_out_proj
+  if not isinstance(head,DenseActionDelta) or head.output_residual_weight is None:
+    raise ValueError('learned output residual must be installed before selecting trainable parameters')
+  parameters=train_mlp_only(model)
+  for leaf in ('output_residual_weight','output_residual_bias'):
+    parameter=getattr(head,leaf);parameter.requires_grad_(True);parameters['expert.action_out_proj.'+leaf]=parameter
   return parameters

@@ -187,7 +187,7 @@ def validation_guard_metrics(records):
     'go_velocity_mse':float(np.mean([r['go_velocity_mse'] for r in go])) if go else None,'go_samples':len(go)}
 
 
-def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False,signed_hold_controls=False,optimization_profile=None,rear_axle_offset_m=0.,fp32_expert=False,mlp_only=False):
+def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha256,objective_revision,forward_only=False,signed_hold_controls=False,optimization_profile=None,rear_axle_offset_m=0.,fp32_expert=False,mlp_only=False,mlp_output_residual=False):
   """Keep every completed epoch available for the authoritative driving suite.
 
   Validation ranking may reject a model without testing it in closed loop.
@@ -203,7 +203,7 @@ def save_epoch_checkpoint(model,output,epoch,metrics,*,dataset_sha256,parent_sha
   save_file({name:p.detach().float().cpu().contiguous() for name,p in adapter_parameters(model).items()},str(path))
   pointer={'file':path.name,'epoch':epoch,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'metrics':metrics,
     'dataset_sha256':dataset_sha256,'parent_sha256':parent_sha256,'objective_revision':objective_revision,
-    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'signed_hold_controls':signed_hold_controls,'optimization_profile':optimization_profile,'rear_axle_offset_m':rear_axle_offset_m,'fp32_expert':fp32_expert,'mlp_only':mlp_only,'driving_qualified':False}
+    'script_sha256':IMPLEMENTATION_SHA256,'forward_only':forward_only,'signed_hold_controls':signed_hold_controls,'optimization_profile':optimization_profile,'rear_axle_offset_m':rear_axle_offset_m,'fp32_expert':fp32_expert,'mlp_only':mlp_only,'mlp_output_residual':mlp_output_residual,'driving_qualified':False}
   write_json(path.with_suffix('.json'),pointer)
   return pointer
 
@@ -250,6 +250,7 @@ def main():
   parser.add_argument('--unit-task-gradients',action='store_true',help='Balance stop/proceed gradient norms before paired projection')
   parser.add_argument('--expanded-expert',action='store_true')
   parser.add_argument('--mlp-only',action='store_true',help='Train only expert fc1/fc2 LoRA; preserve visual, attention and output weights')
+  parser.add_argument('--mlp-output-residual',action='store_true',help='Train MLP deltas and a new neural readout; freeze all original visual, attention and head adapters')
   parser.add_argument('--executed-commands',action='store_true',help='Supervise immediate steering and all permitted acceleration commands, with stationary hold margin')
   parser.add_argument('--balanced-stop-modes',action='store_true',help='Balance held, approaching and early-stopped recovery references; train non-held stops inside the legal zone')
   parser.add_argument('--forward-only',action='store_true',help='Use forward-only physical decoding and consistent completed-stop braking supervision')
@@ -260,6 +261,7 @@ def main():
   parser.add_argument('--correction-warmup',action='store_true',help='Prepend a guarded six-task group for rare physically checked correction labels each epoch')
   parser.add_argument('--lease',type=Path)
   args=parser.parse_args()
+  if args.mlp_output_residual and (args.mlp_only or not (args.parent and args.expanded_expert)):raise ValueError('MLP output residual requires an expanded parent and its own explicit scope')
   if args.mlp_only and not (args.parent and args.expanded_expert):raise ValueError('MLP-only training requires a parent and expanded expert adapters')
   from tools.training_studio.teacher_reference_frame import validate_offset
   args.rear_axle_offset_m=validate_offset(args.rear_axle_offset_m)
@@ -298,7 +300,7 @@ def main():
   from alpamayo2_edge.helper import get_processor,to_device
   from alpamayo2_edge.inference import predict
   from tools.training_studio.edge_inputs import MODEL_REVISION,prepare_front_inputs
-  from tools.training_studio.teacher_lora import install,load,expand,adapter_parameters,train_mlp_only
+  from tools.training_studio.teacher_lora import install,load,expand,adapter_parameters,train_mlp_only,enable_output_residual,train_mlp_with_output_residual
   from tools.training_studio.store import write_json
   args.output.mkdir(parents=True,exist_ok=False)
   prefix_directory=tempfile.TemporaryDirectory(prefix='prefix-',dir=args.output)
@@ -314,6 +316,7 @@ def main():
     load(model,args.parent)
   else: install(model)
   if args.expanded_expert: expand(model)
+  if args.mlp_output_residual:enable_output_residual(model)
   from tools.training_studio.teacher_precision import install as install_precision
   install_precision(model,args.fp32_expert)
   # A saved visual-decision adapter is part of the parent, but this stage
@@ -328,9 +331,10 @@ def main():
     from tools.training_studio.teacher_reference_frame import install as install_reference
     install_reference(model.expert.action_space,args.rear_axle_offset_m)
   model.eval()
-  parameters=train_mlp_only(model) if args.mlp_only else {name:p for name,p in model.named_parameters() if p.requires_grad}
+  parameters=train_mlp_with_output_residual(model) if args.mlp_output_residual else train_mlp_only(model) if args.mlp_only else {name:p for name,p in model.named_parameters() if p.requires_grad}
   adapter_scope='actual_Edge_expert_and_VLM_LoRA' if any(name.startswith('vlm.') for name in adapter_parameters(model)) else 'actual_Edge_expert_expanded_LoRA'
   if args.mlp_only:adapter_scope='actual_Edge_MLP_LoRA_only_frozen_visual_attention_and_output'
+  if args.mlp_output_residual:adapter_scope='actual_Edge_MLP_and_new_output_residual_frozen_original_adapters'
   processor=get_processor(model.tokenizer,model.config)
   settings={'seed':42,'num_traj_sets':1,'num_traj_samples':1,'top_p':.98,'top_k':None,'temperature':.6,'max_generation_length':256,'diffusion_kwargs':{'inference_step':10}}
   manifest=json.loads((args.data/'manifest.json').read_text())
@@ -356,7 +360,7 @@ def main():
   model._sample_actions=capture
   history=[];checkpoints=[];batch_history=[]
   def emit(phase,**fields):
-    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'validation_guard_reference':manifest.get('validation_guard_reference'),'updated':time.time(),
+    value={'phase':phase,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,'adapter_scope':adapter_scope,'stage':None,'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'mlp_output_residual':args.mlp_output_residual,'signed_hold_controls':args.signed_hold_controls,'epochs':args.epochs,'history':history,'batch_history':batch_history,'latest_checkpoint':checkpoints[-1] if checkpoints else None,'validation_guard_reference':manifest.get('validation_guard_reference'),'updated':time.time(),
       'cuda_budget_gib':cuda_budget/1024**3,'cuda_allocated_gib':torch.cuda.memory_allocated()/1024**3,
       'cuda_reserved_gib':torch.cuda.memory_reserved()/1024**3,'cuda_peak_allocated_gib':torch.cuda.max_memory_allocated()/1024**3,**fields}
     write_json(args.output/'progress.json',value)
@@ -527,7 +531,7 @@ def main():
     history.append({'epoch':epoch+1,'train_loss':float(np.mean(values)),**metrics})
     checkpoints.append(save_epoch_checkpoint(model,args.output,epoch+1,history[-1],
       dataset_sha256=hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
-      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only,signed_hold_controls=args.signed_hold_controls,optimization_profile=optimization_profile,rear_axle_offset_m=args.rear_axle_offset_m,fp32_expert=args.fp32_expert,mlp_only=args.mlp_only))
+      parent_sha256=hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,objective_revision=objective_revision,forward_only=args.forward_only,signed_hold_controls=args.signed_hold_controls,optimization_profile=optimization_profile,rear_axle_offset_m=args.rear_axle_offset_m,fp32_expert=args.fp32_expert,mlp_only=args.mlp_only,mlp_output_residual=args.mlp_output_residual))
     score=(metrics['red_safe_count'],-metrics['red_hold_speed_mse'],-metrics['validation_loss'])
     if score>best_score:
       best_score=score
@@ -540,7 +544,7 @@ def main():
   write_json(args.output/'result.json',{'revision':MODEL_REVISION,'baseline':baseline,'validation_guard_reference':manifest.get('validation_guard_reference'),'best':best_metrics,'best_epoch':best_epoch,
     'balanced_best':balanced_metrics,'balanced_epoch':balanced_epoch,'balanced_adapter_saved':(args.output/'balanced.safetensors').is_file(),
     'history':history,'checkpoints':checkpoints,'adapter_saved':(args.output/'best.safetensors').is_file(),'qualified':False,'objective':'actual_ten_step_Euler_rollout',
-    'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'signed_hold_controls':args.signed_hold_controls,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
+    'objective_revision':objective_revision,'forward_only':args.forward_only,'rear_axle_offset_m':args.rear_axle_offset_m,'fp32_expert':args.fp32_expert,'mlp_only':args.mlp_only,'mlp_output_residual':args.mlp_output_residual,'signed_hold_controls':args.signed_hold_controls,'adapter_scope':adapter_scope,'optimization_profile':optimization_profile,'learning_rate':args.learning_rate,
     'script_sha256':IMPLEMENTATION_SHA256,'dataset_sha256':hashlib.sha256((args.data/'manifest.json').read_bytes()).hexdigest(),
     'parent_sha256':hashlib.sha256(args.parent.read_bytes()).hexdigest() if args.parent else None,'official_sampling_max_error':sampling_error,
     'disk_sampling_max_error':disk_difference})

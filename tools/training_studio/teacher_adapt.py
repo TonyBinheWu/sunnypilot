@@ -242,6 +242,7 @@ def main():
           if settings.get('forward_only'):args.append('--forward-only')
           if settings.get('fp32_expert'):args.append('--fp32-expert')
           if settings.get('mlp_only'):args.append('--mlp-only')
+          if settings.get('mlp_output_residual'):args.append('--mlp-output-residual')
           if settings.get('rear_axle_offset_m'):args.extend(['--rear-axle-offset-m',str(settings['rear_axle_offset_m'])])
           if settings.get('signed_hold_controls'):args.append('--signed-hold-controls')
           child=subprocess.Popen(remote.command(command(args)),stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,start_new_session=True)

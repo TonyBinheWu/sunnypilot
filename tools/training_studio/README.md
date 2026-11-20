@@ -236,3 +236,10 @@ node --check formosalink/web/training-data.js
 ```
 
 另外已用真正的固定 N16 完成 action／trajectory PyTorch↔ONNX FP16 比對、兩個 synthetic epochs、非零權重更新及完整 ONNX 匯出。這是實作測試，不是 Alpamayo 真實行車蒸餾結果；測試產物放在 `build/training-studio-tests/`，不會混入正式版本登錄。
+
+
+### 離線教師神經輸出殘差試驗
+
+`teacher_train --mlp-output-residual` 搭配 `--parent`、`--expanded-expert`，微調 MLP 適配器並新增零初始化的動作輸出殘差；與 `--mlp-only` 互斥。新增的 `output_residual_weight`／`output_residual_bias` 從動作專家隱藏特徵學習煞停與轉向讀出，原有視覺、注意力及輸出適配張量保持凍結。檢查點記錄獨立訓練範圍與新增張量，載入時驗證完整拓撲及精確形狀。
+
+此試驗沿用既有損失、六任務更新保護、完整驗證及固定壓力驗證。候選仍須以同一份權重與運算設定通過原始 11 項閉迴路模擬資格；實際 loss、訓練步數與資格結果各自記錄。
