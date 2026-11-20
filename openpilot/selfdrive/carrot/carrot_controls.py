@@ -5,6 +5,7 @@ class CarrotControls:
   def __init__(self, CP):
     self.CP = CP
     self.params = Params()
+    self.lat_suspend_angle = self.params.get_default_value("LatSuspendAngleDeg")
     self.lat_suspend_active = False
     self.lat_suspend_enter_t = 0.0
     self.lat_suspend_hold_t = 0.0
@@ -16,7 +17,13 @@ class CarrotControls:
 
     # 1) enter condition timer
     if not self.lat_suspend_active:
-      enter_cond = CS.steeringPressed and abs(CS.steeringAngleDeg) > float(self.params.get_int("LatSuspendAngleDeg"))
+      if CS.steeringPressed:
+        # A missing file reads as 0 through get_int(). Keep the last usable
+        # threshold (the registered factory default until the first valid read).
+        angle = self.params.get("LatSuspendAngleDeg")
+        if angle is not None and angle > 0:
+          self.lat_suspend_angle = angle
+      enter_cond = CS.steeringPressed and abs(CS.steeringAngleDeg) > self.lat_suspend_angle
       if enter_cond:
         self.lat_suspend_enter_t += DT_CTRL
         if self.lat_suspend_enter_t >= delay_sec:
