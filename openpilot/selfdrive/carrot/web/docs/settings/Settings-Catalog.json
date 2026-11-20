@@ -1,6 +1,6 @@
 {
   "catalogCommit": "581b146d79165588681c8b5ea9611f6c18b6549f",
-  "contentHash": "9382120296711bd8a534d44d13140097f7bf0f4b9eb567b1e5a7746173ec3460",
+  "contentHash": "28e5982b18a7550fad2a57f6289f131d8b03e56a1e1abcce4ddfe3a69a8358dd",
   "generatedAt": "2026-11-20T07:10:17Z",
   "locales": [
     "ko",
@@ -10219,5 +10219,6 @@
       "reviewStatus": "current",
       "semanticHash": "b3ca6436f7051d2fd82ae24a9dc3974abf6b5ee32c633d085c3eb4bee630c364"
     }
-  }
+  },
+  "wikiCommit": "f80a09a581ba7ad2bd1cbb76ff7c5387bd9cd1aa"
 }
