@@ -79,9 +79,11 @@ def torque_fixture(monkeypatch, enabled=True, cp=None):
 
 
 @pytest.mark.parametrize('sign', [-1, 1])
-def test_sorento_reserve_reaches_target_at_factory_rise_rate(monkeypatch, sign):
+@pytest.mark.parametrize('camera_scc', [False, True])
+def test_sorento_reserve_reaches_target_at_factory_rise_rate(monkeypatch, sign, camera_scc):
   model = CAR.KIA_SORENTO_2024
-  cp = structs.CarParams(brand='hyundai', carFingerprint=model, flags=int(HyundaiFlags.CANFD),
+  flags = HyundaiFlags.CANFD | (HyundaiFlags.CANFD_HDA2 | HyundaiFlags.CAMERA_SCC if camera_scc else 0)
+  cp = structs.CarParams(brand='hyundai', carFingerprint=model, flags=int(flags),
                          steerControlType='torque', wheelbase=model.config.specs.wheelbase, steerRatio=model.config.specs.steerRatio)
   cp.lateralTuning.init('torque')
   controller, cs, cc, settings = torque_fixture(monkeypatch, enabled=False, cp=cp)
