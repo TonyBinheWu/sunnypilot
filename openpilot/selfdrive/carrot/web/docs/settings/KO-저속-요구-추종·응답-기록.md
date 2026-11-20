@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-현대/기아 CAN-FD 토크 전용. 0.30초 지속 요구 후 ≤30 km/h에서 필요한 출력만 최대 409, 명령 증가/감소율은 최대 4/4(10 ms당)까지 조정합니다. 30–40 km/h에서 감쇠하고 ≥40은 공장 기본 비율과 2/3을 사용합니다. 수동 값과 학습값은 보존하며 기록으로 한계를 높이지 않습니다. Panda 업데이트와 재시작 및 실차 검증이 필요합니다. 지원 EV6/Ioniq 5/Carnival/Sorento에서는 HkgPhase1Assist도 이 저속 경로를 켭니다. 저장된 수동 한계를 복원하려면 두 스위치를 모두 끄십시오.
+현대/기아 CAN-FD 토크 전용. 0.30초 지속 요구 후 ≤30 km/h에서 필요한 출력만 최대 409, 명령 증가/감소율은 최대 4/4(10 ms당)까지 조정합니다. 30–40 km/h에서 감쇠하고 ≥40은 공장 기본 비율과 2/3을 사용합니다. 수동 값과 학습값은 보존하며 기록으로 한계를 높이지 않습니다. Panda 업데이트와 재시작 및 실차 검증이 필요합니다. 지원 EV6/Ioniq 5/Carnival/Sorento에서는 HkgPhase1Assist도 이 저속 경로를 켭니다. 저장된 수동 한계를 복원하려면 두 스위치를 모두 끄십시오. 2024년형 쏘렌토는 이 모드에서 순정 속도로 조향 토크를 높입니다.
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="34b4d740533cf94066d7a8cc5f5b6a35012619f566bee55dc64f01f6559d8713" semantic="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="0811660900fe7ed35ff5309ee89c169a0a60c399dea1c74baaf0f3c14447ab8c" semantic="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" review="current" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
@@ -26,13 +26,14 @@
 <!-- CARROT:AUTO:END LowSpeedSteerReserve -->
 
 <!-- CARROT:MANUAL:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:REVIEW reviewed-for="05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca" reviewed-at="2026-11-18T00:00:00+08:00" -->
+<!-- CARROT:REVIEW reviewed-for="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" reviewed-at="2026-11-20T17:30:00+08:00" -->
 <!-- CARROT:SECTION:BEGIN BEHAVIOR -->
 ### 동작
 
 현대/기아 CAN-FD 토크 조향에만 적용됩니다. 기본 한계 부근 요구가 0.30초 지속되면 ≤30 km/h에서 최대 409까지 필요한 여유를 제공합니다. 허용된 요구 명령과 현재 출력의 차이에 따라 호스트 명령 증가/감소율을 공장 기본 2/3에서 10 ms당 최대 4/4 CAN 단위까지 조정하며 목표에 가까워지면 기본 변화율로 돌아갑니다. 30–40 km/h에서 토크 여유와 추가 변화율을 감쇠하고 정수 명령은 계단식으로 바뀌며 ≥40 km/h에서 공장 기본 비율과 변화율을 사용합니다.
 
 저장된 CustomSteerMax 및 CustomSteerDelta는 덮어쓰지 않고 켜진 동안 공장 기본 정규화를 사용합니다. 끄면 수동 값을 복원하지만 Panda 제한을 넘는 명령은 차단됩니다. 제어 계수, 실시간 토크 학습값과 각도 제어 권한은 늘리지 않습니다.
+2024년형 쏘렌토는 이 모드에서 순정 속도로 조향 토크를 높입니다.
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

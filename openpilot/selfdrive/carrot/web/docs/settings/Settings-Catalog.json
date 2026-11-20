@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "581b146d79165588681c8b5ea9611f6c18b6549f",
-  "contentHash": "28e5982b18a7550fad2a57f6289f131d8b03e56a1e1abcce4ddfe3a69a8358dd",
-  "generatedAt": "2026-11-20T07:10:17Z",
+  "catalogCommit": "47555f336ed95f1453673f1ecc66aeb5ffdefc3b",
+  "contentHash": "8434c2ad810afdc4ad4ae41066f17c880ef1bda37309efbd4e997044ff9c2651",
+  "generatedAt": "2026-11-20T09:33:26Z",
   "locales": [
     "ko",
     "en",
@@ -486,8 +486,8 @@
       "hash": "b5523344a4795db00ab320c59287f5cb0dd5b1a1f047526b49e79ed41b848e52"
     },
     "EN-Low-speed-demand-follow-and-response-records.md": {
-      "bytes": 4610,
-      "hash": "2bef7816701372d9f79a77463dd3694aa503af69249d6db8118a27b4ff301d4e"
+      "bytes": 4749,
+      "hash": "6b7c982fe37ee677a3e565c5bcec853f63fcbf8ca7b871d25ed649c50edcaa7f"
     },
     "EN-Manual-lane-change-indicator-(trial).md": {
       "bytes": 5060,
@@ -1510,8 +1510,8 @@
       "hash": "98010b69e61dd9d2fbc9f2f47b201082a5939619975f340c58247746f20f193a"
     },
     "KO-저속-요구-추종·응답-기록.md": {
-      "bytes": 5048,
-      "hash": "a596f461b702f2c7394071087df91283b7bf29effd1727c94740b9d4f39b29aa"
+      "bytes": 5226,
+      "hash": "867dc5041e12cd2c31ef9570e9cf798a9e49c4933583d9da6f7abc27261dc0b8"
     },
     "KO-저속조향제한해제.md": {
       "bytes": 2188,
@@ -1946,8 +1946,8 @@
       "hash": "2278d4866eecf73ec1b9d6067ef62195945a4b3e78e743cd66e19e70de9b67cd"
     },
     "ZH-TW-低速需求跟隨與反應記錄.md": {
-      "bytes": 4464,
-      "hash": "616a7fa30a74a2ed10025753393da93f86f290e07814c064fb2528f283ac1391"
+      "bytes": 4608,
+      "hash": "9e65e5e95f72936be47a1b588ea829045cd0662844c87950c73a2f29d38a68dd"
     },
     "ZH-TW-使用-HDP-(CCNC).md": {
       "bytes": 1730,
@@ -2722,8 +2722,8 @@
       "hash": "aaecc6b34b45bf9bf598a228f0b40733fd2a9abf1c530256afb7abd95501f287"
     },
     "ZH-低速需求跟随与反应记录.md": {
-      "bytes": 4453,
-      "hash": "442a2829595649fcffab48ab11a1a74ee70d83ca51a4b9c5a90f499fdd574f1d"
+      "bytes": 4597,
+      "hash": "329f861b03c161d762b611cc0623148fcee65031508a057162bc6bd83dc8dd5e"
     },
     "ZH-使用-HDP-(CCNC).md": {
       "bytes": 1054,
@@ -7589,31 +7589,31 @@
       "locales": {
         "en": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "7574906d6f95bcb6980402a26f5226d08f30779e7d9ef6805e01b284cc0e3eae",
+          "factsHash": "7c300a3501e166c400c1d96c69c8c3447f9456f3703bca9199b5f3889cbaed27",
           "page": "EN-Low-speed-demand-follow-and-response-records.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "34b4d740533cf94066d7a8cc5f5b6a35012619f566bee55dc64f01f6559d8713",
+          "factsHash": "0811660900fe7ed35ff5309ee89c169a0a60c399dea1c74baaf0f3c14447ab8c",
           "page": "KO-저속-요구-추종·응답-기록.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "a77175bb3adecabdf299a0866b0dbbf3522114f58115fa903e9bcafe39511461",
+          "factsHash": "7ac2ee85c100c5da42ac6814f81b7b3827796a069cff37dc7465e2c69d2749b0",
           "page": "ZH-低速需求跟随与反应记录.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "cf8ebd287c6ef981e39228336221bde40ad8a9e40204b78d4fece85d493eea50",
+          "factsHash": "fdedd0d1ce4945185eacef1b29ee61855c477b1a81fc1beaaedfb96ab6a6bd8a",
           "page": "ZH-TW-低速需求跟隨與反應記錄.md",
           "reviewStatus": "current"
         }
       },
       "reviewStatus": "current",
-      "semanticHash": "05773fac37388eba54150837211290f6a9cc34ac8b7cbf4b05951077284ba4ca"
+      "semanticHash": "05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc"
     },
     "ManualLaneChangeIndicator": {
       "group": "STEER_LANECHANGE",
