@@ -1742,6 +1742,8 @@ window.CarrotTranslations.register("ko", {
     upload_segments_label: "세그먼트",
     upload_segment_progress: "세그먼트 {current}/{total}",
     upload_more_failed: "외 {count}개 실패",
+    upload_daily_quota: "하루 전송 한도에 도달했습니다. 한국 시간 오전 9시 이후 실패한 구간만 다시 전송하세요.",
+    upload_receiver_limit: "서버가 전송 크기를 거부했습니다. 결과를 복사해 제한 사항을 확인하세요.",
     upload_segment_count: "세그먼트 {count}개",
     upload_kind_count: "{name} {count}개",
     upload_summary_label: "전송 요약",

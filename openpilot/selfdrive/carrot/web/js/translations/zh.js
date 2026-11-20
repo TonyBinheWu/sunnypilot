@@ -1569,6 +1569,8 @@ window.CarrotTranslations.register("zh", {
     upload_segments_label: "片段",
     upload_segment_progress: "片段 {current}/{total}",
     upload_more_failed: "另有 {count} 个失败",
+    upload_daily_quota: "已达每日上传额度。额度在北京时间上午 8 点重置，届时仅需重传失败的片段。",
+    upload_receiver_limit: "接收端拒绝了本次传输大小。请点“复制”查看详情。",
     upload_segment_count: "{count} 个片段",
     upload_kind_count: "{name} {count} 个",
     upload_summary_label: "发送摘要",

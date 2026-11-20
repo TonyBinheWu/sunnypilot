@@ -1728,6 +1728,8 @@ window.CarrotTranslations.register("en", {
     upload_segments_label: "Segments",
     upload_segment_progress: "Segments {current}/{total}",
     upload_more_failed: "{count} more failed",
+    upload_daily_quota: "Daily upload allowance reached. Retry failed segments after 00:00 UTC.",
+    upload_receiver_limit: "The receiver rejected the upload size. Copy the result for details.",
     upload_segment_count: "{count} segments",
     upload_kind_count: "{name} {count}",
     upload_summary_label: "Upload summary",
