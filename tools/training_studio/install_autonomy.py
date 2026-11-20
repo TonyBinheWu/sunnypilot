@@ -28,7 +28,7 @@ def main():
   for name,command in commands.items():
     environment=['Environment=PYTHONUTF8=1','Environment=PYTHONPATH='+str(workspace),'Environment=DISPLAY='+config.get('qualification_display',':0')]
     if Path('/run/WSL/1_interop').exists():environment.append('Environment=WSL_INTEROP=/run/WSL/1_interop')
-    body='[Unit]\nDescription='+name+'\nAfter=network-online.target\n\n[Service]\nType=simple\nWorkingDirectory='+unit_argument(workspace)+'\n'+ '\n'.join(environment)+'\nExecStart='+ ' '.join(unit_argument(v) for v in command)+'\nRestart=on-failure\nRestartSec=5\nTimeoutStopSec=40\nKillMode=control-group\n\n[Install]\nWantedBy=default.target\n'
+    body='[Unit]\nDescription='+name+'\nAfter=network-online.target\n\n[Service]\nType=simple\nWorkingDirectory='+str(workspace).replace('%','%%')+'\n'+ '\n'.join(environment)+'\nExecStart='+ ' '.join(unit_argument(v) for v in command)+'\nRestart=on-failure\nRestartSec=5\nTimeoutStopSec=40\nKillMode=control-group\n\n[Install]\nWantedBy=default.target\n'
     if name=='formosapilot-worker':body=body.replace('Restart=on-failure','StandardOutput=append:'+str(store.root/'worker.log')+'\nStandardError=append:'+str(store.root/'worker.log')+'\nRestart=on-failure')
     (units/(name+'.service')).write_text(body)
   subprocess.run(['systemctl','--user','daemon-reload'],check=True)

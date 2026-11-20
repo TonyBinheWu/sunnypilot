@@ -39,7 +39,7 @@ class ClosedLoopTest(unittest.TestCase):
       with patch('pathlib.Path.home',return_value=root),patch('sys.executable',str(venv)),patch('sys.argv',['install','--root',str(data),'--install-only']),patch('tools.training_studio.install_autonomy.subprocess.run') as run:
         main()
       unit=(root/'.config/systemd/user/formosapilot-teacher-loop.service').read_text()
-      self.assertIn(str(venv),unit);self.assertIn('Restart=on-failure',unit)
+      self.assertIn(str(venv),unit);self.assertIn('Restart=on-failure',unit);self.assertNotIn('WorkingDirectory=\"',unit)
       self.assertFalse(any('start' in call.args[0] for call in run.call_args_list))
 
   def test_hosted_llm_endpoint_is_rejected_before_remote_setup(self):
