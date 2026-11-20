@@ -167,7 +167,7 @@ test('isolated teacher telemetry keeps real losses separate and marks stale repo
   assert.deepEqual(teacherExperiment(value),p);
   assert.match(teacherExperimentSummary(value),/5.00000 → 4.00000/);
   assert.match(teacherExperimentSummary(value),/回報已過期/);
-  assert.match(eventMessage(value.events[1],value),/尚未取得完整行車資格/);
+  assert.match(eventMessage(value.events[1],value),/原11關驗收為準/);
   assert.equal(teacherExperiment({events:[{message:'teacher_experiment_progress:{broken'}]}),null);
   p.batch_history[0].loss='fake';
   assert.equal(teacherExperiment({events:[{message:'teacher_experiment_progress:'+JSON.stringify(p)}]}),null);

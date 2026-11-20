@@ -121,7 +121,7 @@ export function teacherExperimentSummary(value){
   const fresh=Number.isFinite(value.time)&&Math.abs(value.time-p.updated)<120;
   const phase=p.stage==='validation'?`獨立驗證 ${p.validation_sample} / ${p.validation_samples}`:({prefill:`建立上下文 ${p.sample||0} / ${p.samples||'—'}`,training:`實際更新 ${p.batch||0} / ${p.batches||'—'} 組`,cancelled_before_optimization:'已在權重更新前中止，保留零更新紀錄',training_complete:'試訓完成／待完整驗收',rejected_independent_validation_regression:'獨立驗證退步，候選已拒收',error:'試訓錯誤'}[p.phase]||p.phase);
   const last=p.batch_history.at(-1),row=p.history.at(-1);
-  return `隔離試訓 ${p.cycle} · ${phase} · Epoch ${p.epoch||0} / ${p.epochs||'—'}${last?` · 最近完成組 loss ${last.loss_before_step.toFixed(5)} → ${last.loss.toFixed(5)}`:''}${row?` · 完整驗證 loss ${row.validation_loss.toFixed(5)} · 停止區 ${row.red_safe_count}/${row.red_samples} · 車道 MSE ${row.lateral_trajectory_mse.toFixed(5)}`:''}${!fresh&&['prefill','training'].includes(p.phase)?' · 回報已過期':''} · 尚未取得完整行車資格`;
+  return `隔離試訓 ${p.cycle} · ${phase} · Epoch ${p.epoch||0} / ${p.epochs||'—'}${last?` · 最近完成組 loss ${last.loss_before_step.toFixed(5)} → ${last.loss.toFixed(5)}`:''}${row?` · 完整驗證 loss ${row.validation_loss.toFixed(5)} · 停止區 ${row.red_safe_count}/${row.red_samples} · 車道 MSE ${row.lateral_trajectory_mse.toFixed(5)}`:''}${!fresh&&['prefill','training'].includes(p.phase)?' · 回報已過期':''} · 完整資格以上方原11關驗收為準`;
 }
 
 export function eventMessage(event,value){
