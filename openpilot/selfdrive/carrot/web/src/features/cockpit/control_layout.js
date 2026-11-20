@@ -69,7 +69,11 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
   const back=create('button','cockpit-control-back','‹');back.type='button';back.hidden=true;back.setAttribute('aria-label','返回設定列表');back.onclick=()=>target.history.back();
   const searchForm=doc.getElementById('settingInlineSearch');if(searchForm)searchSlot.append(searchForm);
   const menu=doc.getElementById('btnSettingSearch')||create('button','cockpit-control-menu','⋯');menu.classList.add('cockpit-control-menu');menu.type='button';menu.setAttribute('aria-label','設定檔、收藏與其他操作');
-  header.append(categoryToggle,back,heading,searchSlot,menu);
+  // The legacy menu handles outside taps by testing containment of its trigger.
+  const menuGroup=doc.getElementById('settingFabMenu');
+  const menuIcon=menu.querySelector('path');
+  if(menuIcon)menuIcon.setAttribute('d','M5 12h1m5 0h1m5 0h1');
+  header.append(categoryToggle,back,heading,searchSlot,menuGroup||menu);
   const tabs=create('div','cockpit-control-tabs'),results=create('div','cockpit-control-results'),message=create('p','cockpit-control-message');
   const overview=create('section','cockpit-quick-controls');overview.hidden=true;overview.setAttribute('aria-label','常用控制');
   const quick=[['profile','駕駛模式','選擇既有行車模式','M4 18a8 8 0 1 1 16 0M12 14l4-5'],['vision','鏡頭與辨識','連線與辨識狀態','M3 5h18v14H3ZM16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z'],['vehicle','車況','胎壓與目前導航','M3 15V9l3-4h12l3 4v6M3 12h18M6 15v4m12-4v4'],['display','顯示','外觀與文字大小','M3 4h18v13H3Zm5 17h8m-4-4v4'],['connection','連線','裝置狀態與重新連線','M3 9a14 14 0 0 1 18 0M6 12a9 9 0 0 1 12 0m-8 4a3 3 0 0 1 4 0M12 20h.01'],['diagnostics','診斷與工具','檢查問題與服務','M4 20l8-8m-1-8a6 6 0 0 0 8 8l-4-4 3-4a6 6 0 0 0-7 0Z']];
@@ -78,12 +82,15 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
   results.hidden=true;message.setAttribute('role','status');
   const device=doc.getElementById('deviceTabContent'),deviceNav=create('div','cockpit-control-device');if(device)deviceNav.append(device);
   const retry=create('button','cockpit-control-retry','重新讀取設定');retry.type='button';retry.hidden=true;retry.onclick=()=>void load();
-  pane.append(header,tabs,message,retry,results,overview,deviceNav,host);shell.append(dismissNav,nav,pane);page.prepend(shell);doc.documentElement.classList.add('cockpit-controls-mode');
+  const content=create('div','cockpit-settings-content');
+  content.append(tabs,message,retry,results,overview,deviceNav,host);
+  pane.append(header,content);shell.append(dismissNav,nav,pane);page.prepend(shell);doc.documentElement.classList.add('cockpit-controls-mode');
   let catalog=null,sections=[],current=null,loading=false,selection=0,pendingSection=null;
+  let catalogRequested=false;
   const lastGroups=new Map();
   const clearSearch=()=>{target.exitSettingInlineSearchSurface?.();results.hidden=true;host.hidden=false;};
   async function selectGroup(group){
-    shell.dataset.overview='false';overview.hidden=true;
+    content.scrollTop=0;shell.dataset.overview='false';overview.hidden=true;
     const token=++selection;clearSearch();setNav(false);shell.dataset.device='false';searchSlot.hidden=false;await target.switchSettingTab?.('carrot');if(token!==selection)return;
     if(current)lastGroups.set(current.id,group.id);target.selectGroup?.(group.id,false);
     tabs.querySelectorAll('button').forEach(b=>{const active=b.dataset.group===group.id;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});
@@ -104,10 +111,19 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
     }
     const favorite=create('button','','收藏');favorite.type='button';favorite.dataset.section='favorites';favorite.onclick=()=>choose({id:'favorites',title:'收藏',groups:[{id:'__setting_favorites__',label:'收藏設定'}]});navList.append(favorite);
     const deviceButton=create('button','','裝置');deviceButton.type='button';deviceButton.onclick=async()=>{
-      const token=++selection;clearSearch();setNav(false);shell.dataset.device='true';searchSlot.hidden=true;heading.textContent='裝置';tabs.replaceChildren();
+      const token=++selection;clearSearch();setNav(false);content.scrollTop=0;shell.dataset.overview='false';overview.hidden=true;shell.dataset.device='true';searchSlot.hidden=true;heading.textContent='裝置';tabs.replaceChildren();
       navList.querySelectorAll('button').forEach(b=>{b.classList.remove('selected');b.setAttribute('aria-current','false');});deviceButton.classList.add('selected');deviceButton.setAttribute('aria-current','page');await target.switchSettingTab?.('device');if(token!==selection)return;
       doc.querySelector('#deviceGroupList button')?.click();
     };navList.append(deviceButton);
+  }
+  function openCatalog(){
+    if(!sections.length){catalogRequested=true;return;}
+    catalogRequested=false;
+    // On a phone the category list is its own first screen. On a wide
+    // display it is already visible beside the first group of settings.
+    choose(sections[0]);
+    shell.dataset.overview='false';overview.hidden=true;
+    if(categoryToggle.offsetWidth>0)setNav(true);
   }
   async function load(){
     if(loading||catalog)return;loading=true;retry.hidden=true;message.textContent='正在讀取可用設定…';
@@ -116,6 +132,7 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
       const response=await target.fetch('/api/settings',{cache:'no-store',credentials:'same-origin',signal:controller.signal});if(!response.ok)throw Error();
       catalog=await response.json();sections=cockpitControlSections(catalog);renderNav();message.textContent='';
       if(sections.length)choose(sections.find(s=>s.id===pendingSection)||sections[0]);else message.textContent='車機尚未提供可用設定。';pendingSection=null;
+      if(catalogRequested&&sections.length)openCatalog();
     }catch{message.textContent='無法讀取設定分類，請確認車機連線後重試。';retry.hidden=false;}
     finally{target.clearTimeout(timer);loading=false;}
   }
@@ -123,8 +140,9 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
   // screens, move the original result surface out of the retired group list.
   const syncSearch=()=>{
     const nativeResults=doc.getElementById('settingInlineSearchResults');
-    if(nativeResults&&nativeResults.parentElement!==pane){pane.insertBefore(nativeResults,host);observer.observe(nativeResults,{childList:true,subtree:true});decorate(nativeResults);}
+    if(nativeResults&&nativeResults.parentElement!==content){content.insertBefore(nativeResults,host);observer.observe(nativeResults,{childList:true,subtree:true});decorate(nativeResults);}
     const detail=doc.getElementById('settingScreenItems')?.classList.contains('setting-screen-items--detail')===true;
+    if(back.hidden===detail)content.scrollTop=0;
     back.hidden=!detail;
     const inline=!detail&&doc.getElementById('carrotTabContent')?.classList.contains('is-inline-search')===true;
     shell.dataset.search=String(inline);if(nativeResults)nativeResults.hidden=!inline;
@@ -133,7 +151,8 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
   const decorate=node=>{if(node.nodeType!==1)return;if(node.matches('.setting'))composeCockpitControl(node,target);for(const row of node.querySelectorAll('.setting'))composeCockpitControl(row,target);};
   const observer=new target.MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)decorate(node);syncSearch();});observer.observe(host,{childList:true,subtree:true});const nativeSearch=doc.getElementById('carrotTabContent');if(nativeSearch)observer.observe(nativeSearch,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});const itemsScreen=doc.getElementById('settingScreenItems');if(itemsScreen)observer.observe(itemsScreen,{attributes:true,attributeFilter:['class']});decorate(host);syncSearch();
   const active=()=>{if(doc.body.dataset.cockpitPanel==='setting')void load();};target.addEventListener('carrot:cockpitpanelchange',active);active();
-  const api={shell,refresh:active,back(){
+  const api={shell,refresh:active,openCatalog,back(){
+    if(menuGroup?.classList.contains('is-open')){menu.click();menu.focus();return true;}
     if(shell.dataset.navOpen==='true'){setNav(false);return true;}
     if(doc.getElementById('settingScreenItems')?.classList.contains('setting-screen-items--detail')){target.history.back();return true;}
     if(doc.getElementById('carrotTabContent')?.classList.contains('is-inline-search')){clearSearch();return true;}

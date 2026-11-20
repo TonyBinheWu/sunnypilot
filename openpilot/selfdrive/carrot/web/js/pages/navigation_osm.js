@@ -2,13 +2,38 @@
 'use strict';
 (() => {
   const coordinate = (lat, lng) => Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 85.05112878 && Math.abs(lng) <= 180 ? [lat,lng] : null;
+  const maneuvers = new Map([
+    ['straight', ['M16 28V4m-8 8 8-8 8 8','직진','Continue straight']],
+    ['left', ['M25 28V16a5 5 0 0 0-5-5H5m7-7-7 7 7 7','좌회전','Turn left']],
+    ['slight left', ['M23 28v-7L8 6m0 10V6h10','왼쪽으로 완만하게','Bear left']],
+    ['sharp left', ['M24 28V10q0-6-5-2L6 20m0-10v10h10','왼쪽으로 크게','Sharp left']],
+    ['uturn', ['M25 28V12a8 8 0 0 0-16 0v10m-6-6 6 6 6-6','유턴','Make a U-turn']],
+    ['fork', ['M19 28V17L7 5m0 9V5h9M19 18l7-10','왼쪽 갈림길','Keep left']],
+    ['roundabout', ['M16 29v-7a8 8 0 1 0-8-8m-4-3 4 4 4-4','회전교차로','Roundabout']],
+    ['arrive', ['M8 28V4l17 3-7 4 7 5-17-2','도착','Arrive']],
+  ]);
+  const rightLabels = {left:['우회전','Turn right'],'slight left':['오른쪽으로 완만하게','Bear right'],
+    'sharp left':['오른쪽으로 크게','Sharp right'],fork:['오른쪽 갈림길','Keep right']};
+  function maneuverIcon(step) {
+    const type=step.type, modifier=step.modifier;
+    const right=['right','slight right','sharp right'].includes(modifier);
+    let key=right?modifier.replace('right','left'):modifier;
+    if(type==='arrive')key='arrive';
+    else if(['roundabout','rotary','roundabout turn'].includes(type))key='roundabout';
+    else if(['off ramp','on ramp','fork'].includes(type)&&['left','slight left'].includes(key))key='fork';
+    const icon=maneuvers.get(key);
+    if(!icon)return null;
+    const mirror=right&&Object.hasOwn(rightLabels,key);
+    return {path:icon[0],mirror,labels:mirror?rightLabels[key]:icon.slice(1)};
+  }
   function normalize(view) {
     const position=view?.position, point=coordinate(position?.lat,position?.lng);
     const raw=Array.isArray(view?.coordinates)&&view.coordinates.length<=4096?view.coordinates:[];
     const route=raw.map(p=>Array.isArray(p)?coordinate(p[1],p[0]):null);
     const step=view?.instruction;
     const instruction=Number(view?.route_id)>0&&point&&step&&[step.distance,step.remaining_m,step.remaining_s].every(n=>Number.isFinite(n)&&n>=0&&n<=1e8)?{...step,text:String(step.text||'').slice(0,256),modifier:String(step.modifier||'').slice(0,40)}:null;
-    return {point,route:route.every(Boolean)&&Number(view?.route_id)>0?route:[],instruction};
+    const course=position?.bearing;
+    return {point,bearing:point&&Number.isFinite(course)&&course>=0&&course<360?course:null,route:route.every(Boolean)&&Number(view?.route_id)>0?route:[],instruction};
   }
   function start({tr,isVisible}) {
     const host=document.getElementById('osmMap'),status=document.getElementById('mapStatus');
@@ -17,8 +42,15 @@
     const distance=n=>n>=1000?`${(n/1000).toFixed(1)} km`:`${Math.round(n)} m`;
     function instruction(value){
       maneuver.hidden=trip.hidden=!value;if(!value)return;
-      const arrows={'left':'←','slight left':'↖','sharp left':'↙','right':'→','slight right':'↗','sharp right':'↘','uturn':'↶'};
-      document.getElementById('mapTurn').textContent=`${arrows[value.modifier]||'↑'} ${distance(value.distance)}`;
+      const icon=maneuverIcon(value), graphic=document.getElementById('mapTurnIcon');
+      graphic.toggleAttribute('hidden',!icon);
+      if(icon){
+        const path=document.getElementById('mapTurnPath');
+        path.setAttribute('d',icon.path);
+        path.setAttribute('transform',icon.mirror?'translate(32 0) scale(-1 1)':'');
+      }
+      document.getElementById('mapTurn').textContent=distance(value.distance);
+      document.getElementById('mapDirection').textContent=icon?tr(...icon.labels):'';
       document.getElementById('mapRoad').textContent=value.text;
       document.getElementById('mapRemaining').textContent=`${distance(value.remaining_m)} · ${Math.ceil(value.remaining_s/60)} ${tr('분','min')}`;
     }
@@ -83,6 +115,19 @@
         failed.add(event.tile);tileMessage=failureText;updateStatus();
       }).on('tileunload',forgetTile).on('tileload',forgetTile).addTo(map);
     }
+    let lastBearing;
+    function updateMarker(point,bearing) {
+      if(!point){if(marker)map.removeLayer(marker);marker=null;lastBearing=undefined;return;}
+      if(!marker||bearing!==lastBearing){
+        const html=bearing===null?'<i class="map-fix"></i>':
+          `<svg class="map-course" viewBox="0 0 32 36" style="transform:rotate(${bearing}deg)" aria-hidden="true"><path d="M16 3 28 31 16 25 4 31Z"/></svg>`;
+        const icon=globalThis.L.divIcon({className:'map-location',html,iconSize:[36,36],iconAnchor:[18,18]});
+        if(marker)marker.setIcon(icon);
+        else marker=globalThis.L.marker(point,{icon,interactive:false,keyboard:false}).addTo(map);
+        lastBearing=bearing;
+      }
+      marker.setLatLng(point);
+    }
     function ensureMap(){
       if(map)return true;if(!tileUrl)return false;
       const L=globalThis.L;
@@ -117,11 +162,11 @@
           if(!response.ok)throw Error();const view=normalize(await response.json());
           if(visible()){
           route.setLatLngs(view.route);lastPoint=view.point;instruction(view.instruction);
-          if(marker){map.removeLayer(marker);marker=null;}
-          if(view.point){marker=globalThis.L.circleMarker(view.point,{radius:9,color:'#fff',weight:3,fillColor:'#087bff',fillOpacity:1}).addTo(map);if(follow){map.setView(view.point,firstFix?Math.max(map.getZoom(),16):map.getZoom(),{animate:false});firstFix=false;}}
+          updateMarker(view.point,view.bearing);
+          if(view.point&&follow){map.setView(view.point,firstFix?Math.max(map.getZoom(),16):map.getZoom(),{animate:false});firstFix=false;}
           showDestination();message(view.point||selected?'':tr('현재 GPS 위치를 기다리는 중입니다.','Waiting for a current GPS position.'));
           }
-        }catch{route?.setLatLngs([]);instruction(null);if(marker){map.removeLayer(marker);marker=null;}lastPoint=null;message(tr('차량과 연결할 수 없습니다.','Unable to read map status. Check your connection to the vehicle.'));}
+        }catch{route?.setLatLngs([]);instruction(null);updateMarker(null,null);lastPoint=null;message(tr('차량과 연결할 수 없습니다.','Unable to read map status. Check your connection to the vehicle.'));}
         finally{clearTimeout(deadline);busy=false;}
       }
       if(!stopped)timer=setTimeout(refresh,1000);
@@ -130,5 +175,5 @@
     window.addEventListener('pagehide',()=>{stopped=true;clearTimeout(timer);offline?.stop();},{once:true});
     return {setDestination,normalize};
   }
-  globalThis.CarrotNavigationOsm=Object.freeze({start,normalize});
+  globalThis.CarrotNavigationOsm=Object.freeze({start,normalize,maneuverIcon});
 })();

@@ -58,6 +58,7 @@ function coreWindow(){try{return coreReady&&core.contentWindow.location.origin==
 function selectCore(next){const w=coreWindow();if(!w||typeof w.showPage!=='function')return false;w.document.body.dataset.cockpitPanel=next;w.showPage(next==='vision'?'carrot':next,false);w.CarrotVisionRaw?.syncDataActivity?.();w.CarrotVisionRaw?.markHudDirty?.();w.dispatchEvent?.(new w.Event('carrot:cockpitpanelchange'));return true;}
 let appReturn = null;
 let soundRequested = false;
+let catalogRequested = false;
 
 function bindAppDialog(shortcut, dialog, open) {
   $(shortcut).onclick = () => {
@@ -98,7 +99,7 @@ function syncSplit(){
 vehicleLayout?.addEventListener?.('change',syncSplit);
 function panel(next){
   appReturn = null;
-  soundRequested = false;
+  soundRequested = catalogRequested = false;
   $('resetView').hidden=next!=='vision';
   if(!titles[next])return;if(['navigation','vision'].includes(next))primary=next;view=next;document.body.dataset.panel=next;document.body.classList.remove('scene-full');nav.hidden=next!=='navigation';core.hidden=next==='navigation'&&!splitNavigation();$('searchNav').hidden=next!=='navigation';$('visionTools').hidden=next!=='vision';$('vehicleButton').hidden=next!=='vision';$('panelTitle').textContent=titles[next];$('closePanel').hidden=['navigation','vision'].includes(next);$('miniNav').hidden=next!=='vision';
   if(next!=='navigation')closeNavigationSearch();
@@ -118,6 +119,10 @@ core.addEventListener('load',()=>{
       if(++attempts<40)setTimeout(ready,250);else coreFailure('功能頁尚未就緒。請確認車機連線後重新載入。');return;
     }
     coreReady=true;coreFaulted=false;installCockpitHelp(w.document);installCockpitControlLayout(w.document,w,{onAction:cockpitAction});selectCore(visibleCore());status('');
+    if (catalogRequested && view === 'setting') {
+      w.CarrotCockpitControls?.openCatalog();
+      catalogRequested=false;
+    }
     if (soundRequested && view === 'setting') {
       w.CarrotCockpitControls?.selectSection('sound');
       soundRequested = false;
@@ -213,6 +218,10 @@ document.querySelectorAll('button[data-panel]').forEach(button => button.onclick
   if (fromApps) $('apps').close();
   const trip = next === 'navigation' ? navigationView()?.snapshot() : null;
   panel(!fromApps && next === 'setting' && view === 'setting' ? primary : next);
+  if(fromApps && next==='setting'){
+    const controls=core.contentWindow?.CarrotCockpitControls;
+    if(controls)controls.openCatalog();else catalogRequested=true;
+  }
   if (trip?.known && !trip.busy && !trip.active && !trip.mapReady) openNavigationSearch();
 });
 // Every road-view entry uses the same camera/classification renderer. The old

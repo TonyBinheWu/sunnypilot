@@ -36,6 +36,24 @@ test('category changes preserve each last tab and dismiss the narrow navigation 
   byClass('cockpit-category-toggle').onclick();media[0]();assert.equal(shell.dataset.navOpen,'false');assert.equal(byClass('cockpit-control-pane').inert,false);
 });
 
+test('All settings opens the catalog directly, with a category picker on narrow screens',async()=>{
+  const {api,selected}=await fixture({onAction(){}});
+  const toggle=api.shell.querySelector('.cockpit-category-toggle');
+  toggle.offsetWidth=44;
+  api.openCatalog();await new Promise(setImmediate);
+  assert.equal(api.shell.dataset.navOpen,'true');
+  assert.equal(api.shell.dataset.overview,'false');
+  assert.equal(selected.at(-1),'START_AUTO');
+});
+test('opening Device directly from the overview reveals the shared settings list',async()=>{
+  const {api}=await fixture({onAction(){}});
+  assert.equal(api.shell.dataset.overview,'true');
+  const buttons=api.shell.querySelector('.cockpit-control-nav-list').children;
+  await buttons.at(-1).onclick();
+  assert.equal(api.shell.dataset.device,'true');
+  assert.equal(api.shell.dataset.overview,'false');
+  assert.equal(api.shell.querySelector('.cockpit-quick-controls').hidden,true);
+});
 test('a delayed tab switch cannot overwrite a newer category selection',async()=>{
   const {api,target,selected}=await fixture();const pending=[];target.switchSettingTab=()=>new Promise(resolve=>pending.push(resolve));
   const nav=api.shell.querySelector('.cockpit-control-nav-list');

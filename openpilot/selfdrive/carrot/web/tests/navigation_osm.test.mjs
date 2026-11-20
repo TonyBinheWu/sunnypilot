@@ -6,14 +6,14 @@ const source=await readFile(new URL('../js/pages/navigation_osm.js',import.meta.
 const settle=()=>new Promise(r=>setImmediate(r));
 function fixture(installed=null){
  const elements=new Map(),calls=[],timers=[],layers=[],listeners={};let visible=true;
- const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,dataset:{}});return elements.get(id);};
+ const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,dataset:{},toggleAttribute(k,v){this[k]=!!v;},setAttribute(k,v){this[k]=v;}});return elements.get(id);};
  let center;
  const map={getCenter:()=>center,setView(p,z){center={lat:p[0],lng:p[1]};calls.push(['center',p,z]);return this;},getZoom:()=>16,on:(e,f)=>listeners[e]=f,removeLayer:l=>calls.push(['remove',l]),invalidateSize(){}};
  const tileEvents={};
  const layer={on(name,action){tileEvents[name]=action;return this;},addTo(){return this;}};
  const route={addTo(){return this;},setLatLngs(points){layers.push(points);}};
  let view={position:{lat:25,lng:121},route_id:1,coordinates:[[121,25],[121.1,25.1]]};
- const target={document:{hidden:false,getElementById:element},window:{addEventListener(){}},AbortController,setTimeout:f=>{timers.push(f);return f;},clearTimeout(){},L:{map:()=>map,control:{zoom:()=>layer},tileLayer:(url,options)=>{calls.push(['tiles',url,options]);return layer;},polyline:()=>route,circleMarker:(p)=>({addTo(){calls.push(['point',p]);return this;}})},fetch:async url=>{calls.push(['fetch',url]);return {ok:true,json:async()=>url.endsWith('/config')?{osm_tile_url:'/fixture-osm/{z}/{x}/{y}.png'}:view};}};
+ const target={document:{hidden:false,getElementById:element},window:{addEventListener(){}},AbortController,setTimeout:f=>{timers.push(f);return f;},clearTimeout(){},L:{map:()=>map,control:{zoom:()=>layer},tileLayer:(url,options)=>{calls.push(['tiles',url,options]);return layer;},polyline:()=>route,divIcon:spec=>spec,marker:(point,options)=>({addTo(){calls.push(['marker',options.icon]);return this;},setIcon(icon){calls.push(['icon',icon]);},setLatLng(p){calls.push(['point',p]);}}),circleMarker:(p)=>({addTo(){calls.push(['point',p]);return this;}})},fetch:async url=>{calls.push(['fetch',url]);return {ok:true,json:async()=>url.endsWith('/config')?{osm_tile_url:'/fixture-osm/{z}/{x}/{y}.png'}:view};}};
  if(installed)target.CarrotOfflineMap={start:()=>({info:()=>installed,refresh:async()=>{},layer:()=>{calls.push(['local',installed.version]);return layer;}})};
  vm.runInNewContext(source,target);
  const api=target.CarrotNavigationOsm.start({tr:(k,e)=>e,isVisible:()=>visible});
@@ -39,10 +39,27 @@ test('malformed or unbounded geometry is removed instead of drawing arbitrary co
 });
 test('turn and remaining-distance cards are sourced from fresh route data and removed on expiry',async()=>{
  const p=fixture();await settle();p.setView({position:{lat:25,lng:121},route_id:4,coordinates:[[121,25]],instruction:{text:'實際測試路',modifier:'left',distance:230,remaining_m:4500,remaining_s:370}});await p.next();
- assert.equal(p.element('mapManeuver').hidden,false);assert.equal(p.element('mapTurn').textContent,'← 230 m');assert.equal(p.element('mapRemaining').textContent,'4.5 km · 7 min');assert.equal(p.element('mapRoad').textContent,'實際測試路');
+ assert.equal(p.element('mapManeuver').hidden,false);assert.equal(p.element('mapTurn').textContent,'230 m');assert.equal(p.element('mapDirection').textContent,'Turn left');assert.equal(p.element('mapRemaining').textContent,'4.5 km · 7 min');assert.equal(p.element('mapRoad').textContent,'實際測試路');
  p.setView({position:null,coordinates:[],route_id:0});await p.next();assert.equal(p.element('mapManeuver').hidden,true);assert.equal(p.element('mapTrip').hidden,true);
 });
 
+test('course marker reuses its layer and clears the direction when heading is absent',async()=>{
+ const p=fixture();await settle();
+ for(const bearing of [90,90,361]){
+   p.setView({position:{lat:25.1,lng:121,bearing},route_id:0});await p.next();
+ }
+ assert.equal(p.calls.filter(c=>c[0]==='marker').length,1);
+ const icons=p.calls.filter(c=>c[0]==='icon').map(c=>c[1].html);
+ assert.equal(icons.length,2);assert.match(icons[0],/rotate\(90deg\)/);assert.match(icons[1],/map-fix/);
+ p.setView({position:null});await p.next();assert.ok(p.calls.some(c=>c[0]==='remove'));
+});
+test('fork follows the specified side and an unknown maneuver does not imply straight ahead',async()=>{
+ const p=fixture();await settle();
+ for(const [type,modifier,label] of [['fork','slight right','Keep right'],['rotary','','Roundabout'],['invalid','','']]){
+   p.setView({position:{lat:25,lng:121},route_id:1,instruction:{type,modifier,distance:200,remaining_m:300,remaining_s:35}});
+   await p.next();assert.equal(p.element('mapDirection').textContent,label);assert.equal(p.element('mapTurnIcon').hidden,!label);
+ }
+});
 test('tile failures stay visible across GPS updates until the affected tiles recover or leave',async()=>{
  const p=fixture();await settle();
  const a={},b={},status=p.element('mapStatus');
