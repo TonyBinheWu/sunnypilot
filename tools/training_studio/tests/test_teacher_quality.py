@@ -37,6 +37,16 @@ class CheckpointQualityTest(unittest.TestCase):
     candidate=copy.deepcopy(baseline)
     self.assertFalse(checkpoint_quality(candidate,baseline)['passed'])
 
+  def test_continuing_from_rejected_checkpoint_cannot_lower_immutable_fixed_guard(self):
+    baseline=self.baseline();baseline['validation_guard']=self.baseline()
+    reference=self.baseline();reference['validation_guard']=self.baseline();reference['validation_guard']['red_safe_count']=3
+    baseline['parent_validation']=self.baseline();baseline['parent_validation_reference']=reference
+    candidate=copy.deepcopy(baseline)
+    decision=checkpoint_quality(candidate,baseline,self.baseline())
+    self.assertFalse(decision['passed']);self.assertFalse(decision['conditions']['parent_fixed_guard']['red_safe_count'])
+    candidate['validation_guard']['red_safe_count']=3
+    self.assertTrue(checkpoint_quality(candidate,baseline,self.baseline())['passed'])
+
   def test_all_five_metrics_are_required(self):
     baseline=self.baseline()
     for name in ('validation_loss','red_hold_speed_mse','lateral_trajectory_mse','go_velocity_mse'):
