@@ -54,9 +54,21 @@ def read_json(path, default=None):
 
 
 def split_for(group):
-  # Whole routes stay together, independent of discovery order or future rounds.
+  # Once every split has a route, use the original 80/10/10 hash buckets.
   bucket = int(hashlib.sha256(group.encode()).hexdigest()[:8], 16) % 10
   return "test" if bucket == 0 else "validation" if bucket == 1 else "train"
+
+
+def assign_route_split(db, group):
+  """Called under the same write transaction as the first verified segment."""
+  existing = db.execute("SELECT split FROM datasets WHERE route_group=? LIMIT 1", (group,)).fetchone()
+  if existing:
+    return existing[0]
+  occupied = {row[0] for row in db.execute("SELECT DISTINCT split FROM datasets")}
+  for split in ("train", "validation", "test"):
+    if split not in occupied:
+      return split
+  return split_for(group)
 
 
 def teacher_runs(root):
@@ -82,6 +94,7 @@ class Store:
         INSERT OR IGNORE INTO control VALUES(1,0);
         CREATE TABLE IF NOT EXISTS datasets(id TEXT PRIMARY KEY, route_group TEXT NOT NULL, split TEXT NOT NULL,
           path TEXT NOT NULL, bytes INTEGER NOT NULL, created REAL NOT NULL);
+        CREATE INDEX IF NOT EXISTS datasets_by_route ON datasets(route_group,split);
         CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY, state TEXT NOT NULL, stage TEXT NOT NULL,
           created REAL NOT NULL, updated REAL NOT NULL, snapshot TEXT NOT NULL, error TEXT, parent TEXT);
         CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT, time REAL, job TEXT, message TEXT);
@@ -151,7 +164,10 @@ class Store:
             size += entry["size"]
           write_json(destination / "complete.json", manifest)
           with self.db() as db:
-            db.execute("INSERT INTO datasets VALUES(?,?,?,?,?,?)", (identity, manifest["route_group"], split_for(manifest["route_group"]), str(destination), size, time.time()))
+            db.execute("BEGIN IMMEDIATE")
+            group = manifest["route_group"]
+            split = assign_route_split(db, group)
+            db.execute("INSERT INTO datasets VALUES(?,?,?,?,?,?)", (identity, group, split, str(destination), size, time.time()))
           imported += 1
           self.event("已驗證並匯入行車片段 " + identity[:12])
         except (ValueError, OSError, KeyError, TypeError) as exc:

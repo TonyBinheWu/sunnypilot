@@ -32,19 +32,20 @@ class StoreTest(unittest.TestCase):
     self.inbox.mkdir()
     self.store=initialize(self.root/"studio",[str(self.inbox)])
 
-  def add(self,split):
+  def add(self,split,*,route=None,segment=""):
     number=0
     while True:
       group=hashlib.sha256((split+str(number)).encode()).hexdigest()
       if split_for(group)==split:
         break
       number+=1
-    path=self.inbox/(split+str(number))
+    group = route or group
+    path=self.inbox/(split+str(number)+segment)
     path.mkdir()
     entries=[]
     for name in ("rlog.zst","fcamera.hevc","ecamera.hevc"):
       file=path/name
-      file.write_bytes((name+split).encode())
+      file.write_bytes((name+split+segment).encode())
       entries.append({"filename":name,"size":file.stat().st_size,"sha256":digest_file(file)})
     write_json(path/"complete.json",{"policy":POLICY,"route_group":group,"files":entries})
     return path
@@ -81,10 +82,31 @@ class StoreTest(unittest.TestCase):
     self.assertEqual(self.store.discover(),0)
     self.assertEqual(self.store.state()["datasets"],[])
 
-  def test_group_assignment_stable(self):
-    group="a"*64
-    self.assertEqual(split_for(group),split_for(group))
-    self.assertIn(split_for(group),("train","validation","test"))
+  def test_next_independent_route_fills_empty_holdout_after_upgrade(self):
+    train = self.add("train")
+    test = self.add("test")
+    self.store.discover()
+    # Reproduce a pre-upgrade store with only train and test represented.
+    with self.store.db() as db:
+      for path, split in ((train, "train"), (test, "test")):
+        db.execute("UPDATE datasets SET split=? WHERE route_group=?",
+                   (split, read_json(path/"complete.json")["route_group"]))
+    self.add("train", segment="-late")
+    self.store.discover()
+    self.assertIsNone(self.store.enqueue())
+    # Both independent arrivals hash to train under the old rule.
+    groups = [hashlib.sha256(str(i).encode()).hexdigest() for i in range(20)]
+    new, later = [group for group in groups if split_for(group) == "train"][:2]
+    self.add("train", route=new, segment="-new")
+    self.store.discover()
+    self.store = Store(self.store.root)
+    self.add("train", route=new, segment="-resumed")
+    self.add("train", route=later, segment="-later")
+    self.store.discover()
+    plan = read_json(self.store.root/"runs"/self.store.enqueue()/"plan.json")
+    self.assertEqual(plan["counts"], {"train":3, "validation":2, "test":1})
+    self.assertEqual({row["route_group"] for row in plan["datasets"] if row["split"] == "validation"}, {new})
+    self.assertEqual(self.store.discover(), 0)
 
   def test_waiting_reason_preserves_whole_route_holdouts(self):
     self.add('train')
