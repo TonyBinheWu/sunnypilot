@@ -13,10 +13,10 @@
 
 `MaxAngleFrames`
 
-推薦 89
+建議保留 89。2024 Sorento 使用鏡頭 SCC 與扭力轉向時，控制器會依鏡頭更新頻率的特性，自動將有效設定限制在 92 至 94 幀。
 
 <!-- CARROT:AUTO:BEGIN MaxAngleFrames -->
-<!-- CARROT:AUTO:SOURCE facts="99846f122e5f744ccca44d7b243dbfa4a14ceae69885ff18ea516760f727dc95" semantic="aadd13587f26d0ba8c735cd6d2f1046e452209566b5b646d638b1f0aa806348c" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="122e8d49f13053a354777643c14f286c990f413a7a1fd174b4a3e3149ab657e0" semantic="1ed546e0abdc6d700858338cf8462a7210f582b9b9cefadc69fe75b66788aaa6" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 數值
 - **預設值:** `89`
