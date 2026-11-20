@@ -16,11 +16,11 @@
 89 Recommeded
 
 <!-- CARROT:AUTO:BEGIN MaxAngleFrames -->
-<!-- CARROT:AUTO:SOURCE facts="ef51ac5ed189ed14f4379ba77bcceb7b3c94b72a3275d91ca41fb422ec2693ce" semantic="c21f5b2f6d919fcc7d07af6ad5fe3f43c01fc42b1a190dd097bbd44f74ebad29" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="9a3c6fe3303b21fd51bccd9212cec13cd0cc9dd310e4e4e2b312189638ec68f6" semantic="aadd13587f26d0ba8c735cd6d2f1046e452209566b5b646d638b1f0aa806348c" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Number
 - **Default:** `89`
-- **Range:** `80` ~ `100`
+- **Range:** `89` ~ `100`
 - **Step:** `1`
 - **Menu:** Vehicle & Hardware \> Vehicle Aux
 <!-- CARROT:SECTION:END OVERVIEW -->

@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "50886f191a78c49f14db7994be4c6ed3dfa7dd7b",
-  "contentHash": "dac010123f3c2c899f8b0024b6cf84caa4075500b4ce740378115632a7f6ff01",
-  "generatedAt": "2026-11-17T16:52:11Z",
+  "catalogCommit": "581b146d79165588681c8b5ea9611f6c18b6549f",
+  "contentHash": "9382120296711bd8a534d44d13140097f7bf0f4b9eb567b1e5a7746173ec3460",
+  "generatedAt": "2026-11-20T07:10:17Z",
   "locales": [
     "ko",
     "en",
@@ -506,8 +506,8 @@
       "hash": "f4935ce8433533bff94389ce4298f3ac80ab91ac48605a1c4a6d1bd1eff33bb9"
     },
     "EN-MaxAngleFrames(89).md": {
-      "bytes": 2008,
-      "hash": "6703a71538653fe5694dbad35d62d36fb1cdfc29fd48ca26e0126a5a88d9aa42"
+      "bytes": 2013,
+      "hash": "ac8285efa7b9636c238f52da8c4fd018a63b8c78df955a61af777c007facada3"
     },
     "EN-Model-Speed-Apply-Ratio.md": {
       "bytes": 2355,
@@ -1002,8 +1002,8 @@
       "hash": "01985fe469e53f639d3934ac040f5310c54da4d4fb61c4182ccdffe7aa74a822"
     },
     "KO-MaxAngleFrames(89).md": {
-      "bytes": 2114,
-      "hash": "2e3c0893ba5e17d50e6010a8378f22e8076d37edab2a7c158cdd5fe8ac5e0140"
+      "bytes": 2119,
+      "hash": "93ae39678f52ebcdd5d7c3a569cd70af6d4712e6ce26770bac9fa3016586c78b"
     },
     "KO-NNFF-토크-제어.md": {
       "bytes": 1629,
@@ -2227,7 +2227,7 @@
     },
     "ZH-TW-最大角度幀數-(89).md": {
       "bytes": 1878,
-      "hash": "8c78f54906ba7ea9cfa9e9144c5c925badabf6e470451b18c11a93ff8f1e3a24"
+      "hash": "015c530a7fede60b7d2336bff622b78eb037933653f5521f41b0909196d4c5ee"
     },
     "ZH-TW-模型意圖轉向燈(試驗).md": {
       "bytes": 3971,
@@ -3143,7 +3143,7 @@
     },
     "ZH-最大角度帧数-(89).md": {
       "bytes": 1119,
-      "hash": "48c44fa7268ed56feda0a75ea162aa80fcd5af2c8a03a8d4b606b0d198a5f4e4"
+      "hash": "e7db23d5b4c90ff451ceca59f8ce4f6b9b8a90828388986a4d6f66dafdb54cbf"
     },
     "ZH-来自-PCM-的速度-(原厂-SCC).md": {
       "bytes": 1836,
@@ -7744,31 +7744,31 @@
       "locales": {
         "en": {
           "anchor": "MaxAngleFrames",
-          "factsHash": "ef51ac5ed189ed14f4379ba77bcceb7b3c94b72a3275d91ca41fb422ec2693ce",
+          "factsHash": "9a3c6fe3303b21fd51bccd9212cec13cd0cc9dd310e4e4e2b312189638ec68f6",
           "page": "EN-MaxAngleFrames(89).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "MaxAngleFrames",
-          "factsHash": "9424d9f101db6e32704e7fcba55f38568cdc6d2178988594ebded61fb3cff6b5",
+          "factsHash": "07ba7736b3be5e46517a92e5e6436b1e4ed6992751b606ce2cf43e255212fd65",
           "page": "KO-MaxAngleFrames(89).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "MaxAngleFrames",
-          "factsHash": "2e3c567e71850f152d321da810860f030bd2eaa9b83a4df612376e3cfec69a73",
+          "factsHash": "abf1357642c481fef32b4400bbc77aefb9fd6d24d05b884e435ae0c48f775d0e",
           "page": "ZH-最大角度帧数-(89).md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "MaxAngleFrames",
-          "factsHash": "40d00772bee7120c924bf1d965e43353f712e9fae1e0e19090cb4f6fa97f439a",
+          "factsHash": "99846f122e5f744ccca44d7b243dbfa4a14ceae69885ff18ea516760f727dc95",
           "page": "ZH-TW-最大角度幀數-(89).md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "c21f5b2f6d919fcc7d07af6ad5fe3f43c01fc42b1a190dd097bbd44f74ebad29"
+      "semanticHash": "aadd13587f26d0ba8c735cd6d2f1046e452209566b5b646d638b1f0aa806348c"
     },
     "MaxTimeOffroadMin": {
       "group": "SYS_RECORD_BASIC",
@@ -10219,6 +10219,5 @@
       "reviewStatus": "current",
       "semanticHash": "b3ca6436f7051d2fd82ae24a9dc3974abf6b5ee32c633d085c3eb4bee630c364"
     }
-  },
-  "wikiCommit": "f80a09a581ba7ad2bd1cbb76ff7c5387bd9cd1aa"
+  }
 }

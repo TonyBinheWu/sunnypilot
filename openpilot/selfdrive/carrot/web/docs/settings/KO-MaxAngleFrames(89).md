@@ -16,11 +16,11 @@
 89 권장
 
 <!-- CARROT:AUTO:BEGIN MaxAngleFrames -->
-<!-- CARROT:AUTO:SOURCE facts="9424d9f101db6e32704e7fcba55f38568cdc6d2178988594ebded61fb3cff6b5" semantic="c21f5b2f6d919fcc7d07af6ad5fe3f43c01fc42b1a190dd097bbd44f74ebad29" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="07ba7736b3be5e46517a92e5e6436b1e4ed6992751b606ce2cf43e255212fd65" semantic="aadd13587f26d0ba8c735cd6d2f1046e452209566b5b646d638b1f0aa806348c" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 숫자
 - **기본값:** `89`
-- **범위:** `80` ~ `100`
+- **범위:** `89` ~ `100`
 - **변경 단위:** `1`
 - **메뉴:** 차량·하드웨어 \> 차량 보조
 <!-- CARROT:SECTION:END OVERVIEW -->

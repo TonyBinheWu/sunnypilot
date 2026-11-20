@@ -16,11 +16,11 @@
 推薦 89
 
 <!-- CARROT:AUTO:BEGIN MaxAngleFrames -->
-<!-- CARROT:AUTO:SOURCE facts="40d00772bee7120c924bf1d965e43353f712e9fae1e0e19090cb4f6fa97f439a" semantic="c21f5b2f6d919fcc7d07af6ad5fe3f43c01fc42b1a190dd097bbd44f74ebad29" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="99846f122e5f744ccca44d7b243dbfa4a14ceae69885ff18ea516760f727dc95" semantic="aadd13587f26d0ba8c735cd6d2f1046e452209566b5b646d638b1f0aa806348c" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 數值
 - **預設值:** `89`
-- **範圍:** `80` ~ `100`
+- **範圍:** `89` ~ `100`
 - **步長:** `1`
 - **選單:** 車輛與硬體 \> 車輛輔助
 <!-- CARROT:SECTION:END OVERVIEW -->
