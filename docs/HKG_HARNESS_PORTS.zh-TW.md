@@ -22,6 +22,21 @@
 
 Tucson HEV 有一段巡航持續介入，兩段資料通過兩種主動相容性檢查。該車兩段都是原廠 SCC，尚無該線組主機縱向加速、減速、接管及解除的閉環證據。Kona、Sonata HEV 與 Tucson 汽油在目標控制器重播時，Panda 均曾拒收 LFA 轉向訊息；目前無法據此歸因為實車縱向故障。來源命令在 Panda 允許控制時仍被拒收的數量為 Kona 第 6 段 1 筆、Santa Cruz 第 14 段 52 筆、Sonata HEV 第 4 段 208 筆、K5 第 44 段 15 筆。目標控制器產生的 LFA 拒收則全部發生在 Panda 未允許控制時。原廠鏡頭線路與改裝線路在目標分支共用軟體旗標。針對本批原廠 ccNC 線組，已排除由主機重送轉向柱扭力、方向盤觸摸與煞車控制器回報；回放會逐筆檢查這三個訊息的發送者。仍需核對原廠訊息透過線組的實際轉送與 ECU 接收。即使 Panda 接受一批訊息，也無法證明原車 ECU 已依預期接手或解除控制。
 
+### 接上同一趟行程的前一分鐘
+
+上述 15 段獨立測試以外，另取得 6 段直接相鄰的實車 rlog，使 Panda 與車輛控制器能從前一段延續狀態。確認相鄰 CAN 時間戳後，重新統計表中列出的後段。因此共使用 21 個不同片段，6 組連續測試與單段表內的目標片段重疊。
+
+| 車型、相鄰片段 | 重播來源命令 A | 重算目標命令 B |
+| --- | --- | --- |
+| Kona 汽油 5 → 6 | 通過 | 5,887 筆轉向訊息遭拒 |
+| Santa Cruz 13 → 14 | 通過 | 通過 |
+| Sonata HEV 3 → 4 | 通過 | 通過 |
+| Tucson 汽油 9 → 10 | 1,976 筆轉向訊息遭拒 | 1,976 筆轉向訊息遭拒 |
+| K4 3 → 4 | 1 筆轉向訊息遭拒 | 通過 |
+| K5 43 → 44 | 通過 | 通過 |
+
+兩種測法各有 4/6 通過。所有連續回放的後段均無無效 RX，必要訊息健康檢查也都通過。表內剩下的拒收全部發生在 Panda 未允許控制時。這讓單段起始歷史的影響可以區分出來；Kona 汽油更顯示，同樣的原始資料能讓來源命令通過，換目標控制器重算仍遭拒收。這六組均未測量實車煞車或加速度回應。
+
 ## 沒有原廠 SCC 的車型
 
 一般定速由車輛維持設定速度，本批接收邏輯依汽油、油電／插電與純電平台分別判讀。這九款均缺少本分支已驗證的主機加減速介面。來源分支標成 dashcam 的車型也列出，避免將車型登錄誤認為實車控制支援。
@@ -64,5 +79,7 @@ python tools/signal_validation/run.py tools/signal_validation/test_hkg_harness_r
 HKG_ACTIVE_PROBE=recorded python tools/signal_validation/run.py tools/signal_validation/test_hkg_harness_replay.py
 HKG_ACTIVE_PROBE=generated python tools/signal_validation/run.py tools/signal_validation/test_hkg_harness_replay.py
 ```
+
+要重現連續測試，將上一段的 rlog 命名為「平台列舉名稱.上一段編號.pre」，再於 A 或 B 命令加上環境變數 `HKG_PREROLL=1`。程式會使用具備前段的目標片段；先確認車型與相鄰時間，再延續解析器、Panda 與控制器狀態。只有後段進入表中統計。
 
 離線工作程序會封鎖車機 IPC、使用測試設定，依 rlog 傳入訊息與時間戳。兩種主動模式皆只在記憶體中執行。它們無法測到車輛 ECU 的實際回應、線組的物理轉送或實車煞車效果。
