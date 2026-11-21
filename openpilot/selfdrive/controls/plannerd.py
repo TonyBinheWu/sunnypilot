@@ -63,7 +63,6 @@ def main():
     ignore_avg_freq=['radarState'],
   )
   carrot = CarrotPlanner()
-  model_frame = 0
   last_longitudinal_trigger_mono_ns = 0
   diagnostics = RuntimeDiagnostics('plannerd', cloudlog.event)
 
@@ -168,13 +167,12 @@ def main():
     if sm.updated['modelV2']:
       lateral_start = time.monotonic()
       timings['model_age_at_lateral_ms'] = (lateral_start - sm.logMonoTime['modelV2'] * 1e-9) * 1000
-      model_frame += 1
       lateral_planner.update(sm, carrot)
       lateral_planner.publish(sm, pm, carrot)
 
-      ldw.update(model_frame, sm['modelV2'], sm['carState'], sm['carControl'])
       msg = messaging.new_message('driverAssistance')
       msg.valid = sm.all_checks(['carState', 'carControl', 'modelV2', 'liveParameters'])
+      ldw.update(sm.logMonoTime['modelV2'] * 1e-9, sm['modelV2'], sm['carState'], sm['carControl'], valid=msg.valid)
       msg.driverAssistance.leftLaneDeparture = ldw.left
       msg.driverAssistance.rightLaneDeparture = ldw.right
       pm.send('driverAssistance', msg)

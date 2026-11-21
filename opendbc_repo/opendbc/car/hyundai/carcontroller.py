@@ -393,6 +393,9 @@ class CarController(CarControllerBase):
 
     # steering torque
     new_torque = int(round(actuators.torque * self.params.STEER_MAX))
+    if self.CP.carFingerprint == CAR.KIA_EV6 and not angle_control and CS.out.steeringPressed and new_torque * CS.out.steeringTorque < 0:
+      # Release opposing assist through the normal wire-rate limiter during a confirmed driver override.
+      new_torque = 0
     reserve_max = self.low_speed_steer_reserve.update(
       enabled=self.reserve_enabled, active=CC.latActive, cs=CS.out, base=self.params.STEER_MAX,
       model_frame=CS.modelV2.frameId if CS.modelV2 is not None else None, demand=actuators.torque)

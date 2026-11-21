@@ -197,6 +197,7 @@ jobs:
             -o opendbc_repo/opendbc/safety/tests/libsafety/libsafety.so
           python -m pytest -o addopts='' -q \
             openpilot/selfdrive/controls/tests/test_hkg_phase1.py \
+            openpilot/selfdrive/controls/tests/test_assisted_ldw.py \
             openpilot/selfdrive/controls/tests/test_hkg_phase1_regression.py \
             openpilot/selfdrive/controls/tests/test_low_speed_steer_reserve.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_low_speed_steer_reserve.py \

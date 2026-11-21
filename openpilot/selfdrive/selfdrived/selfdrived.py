@@ -352,7 +352,7 @@ class SelfdriveD:
         self.events.add(EventName.calibrationInvalid)
 
     # Lane departure warning
-    if self.is_ldw_enabled and self.sm.valid['driverAssistance']:
+    if self.is_ldw_enabled and self.sm.alive['driverAssistance'] and self.sm.valid['driverAssistance']:
       if self.sm['driverAssistance'].leftLaneDeparture or self.sm['driverAssistance'].rightLaneDeparture:
         self.events.add(EventName.ldw)
 
