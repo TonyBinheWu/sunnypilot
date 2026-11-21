@@ -181,6 +181,42 @@ def apply_steer_angle_limits_physics(desired_sw_deg: float,
   cmd_sw = cmd_rw * steer_ratio
   return clip_float(cmd_sw, -steer_sw_max_deg, steer_sw_max_deg)
 
+
+class CameraLfaCadence:
+  """Pace ordinary torque updates using newly observed stock LFA frames."""
+  MAX_AGE_NS = 50_000_000  # five nominal LFA periods
+
+  def __init__(self):
+    self.last_batch_ns = 0
+    self.last_counter = None
+    self.last_progress_ns = None
+    self.pending = 0
+
+  def poll(self, parser, now_nanos):
+    interrupted = (self.last_progress_ns is not None and
+                   not 0 <= now_nanos - self.last_progress_ns <= self.MAX_AGE_NS)
+    if parser is not None:
+      stamp = parser.ts_nanos.get("LFA", {}).get("COUNTER", 0)
+      if stamp > self.last_batch_ns:
+        self.last_batch_ns = stamp
+        # CAN timestamps and the controller clock can have different origins.
+        if 0 <= parser._last_update_nanos - stamp <= self.MAX_AGE_NS:
+          for counter in parser.vl_all.get("LFA", {}).get("COUNTER", ()):
+            if counter != self.last_counter:
+              self.last_counter = counter
+              self.last_progress_ns = now_nanos
+              # A two-frame RX batch can cover the following host tick. Never
+              # infer frames from counter gaps or build a backlog after a stall.
+              self.pending = min(2, self.pending + 1)
+    if interrupted or self.last_progress_ns is None:
+      self.pending = 0
+      return False, False
+    if self.pending:
+      self.pending -= 1
+      return True, True
+    return True, False
+
+
 class CarController(CarControllerBase):
   def __init__(self, dbc_names, CP):
     super().__init__(dbc_names, CP)
@@ -214,12 +250,12 @@ class CarController(CarControllerBase):
     self.hyundai_jerk = HyundaiJerk()
     self.speedCameraHapticEndFrame = 0
     self.hapticFeedbackWhenSpeedCamera = 0
-    # CAMERA_SCC forwards LFA at the OEM camera cadence. With 100 Hz host
-    # requests and ~98 Hz forwarding, 89 host frames can yield only 87-88
-    # on the wire. Leave room for the 89-frame Panda check and the 1 s EPS
-    # deadline, including the two request-off frames.
+    # Panda forwards this Sorento's torque commands on physical camera LFA frames.
+    self.lfa_cadence = None
+    self.lfa_active_last = False
     if (CP.carFingerprint == CAR.KIA_SORENTO_2024 and CP.flags & HyundaiFlags.CAMERA_SCC
         and not CP.flags & HyundaiFlags.ANGLE_CONTROL):
+      self.lfa_cadence = CameraLfaCadence()
       self.angle_frame_bounds = (92, 94)
     else:
       self.angle_frame_bounds = (MAX_ANGLE_FRAMES, 100)
@@ -273,13 +309,15 @@ class CarController(CarControllerBase):
 
   def update(self, CC, CS, now_nanos):
 
-    if not self.steering_template_ready and self.CP.flags & HyundaiFlags.CANFD and self.CP.flags & HyundaiFlags.CAMERA_SCC:
-      template = CS.lfa_alt if self.CP.flags & HyundaiFlags.ANGLE_CONTROL else CS.lfa
-      self.steering_template_ready = template is not None
-      if not self.steering_template_ready and CC.latActive:
-        # Do not run an invisible steering ramp while camera TX discovery is
-        # pending. Inactive handling below tracks the wheel and clears torque
-        # and handover history, so the first emitted command starts bounded.
+    lfa_fresh, lfa_due = True, True
+    if self.lfa_cadence is not None:
+      lfa_fresh, lfa_due = self.lfa_cadence.poll(CS.cp_cam, now_nanos)
+    if self.CP.flags & HyundaiFlags.CANFD and self.CP.flags & HyundaiFlags.CAMERA_SCC:
+      if not self.steering_template_ready:
+        template = CS.lfa_alt if self.CP.flags & HyundaiFlags.ANGLE_CONTROL else CS.lfa
+        self.steering_template_ready = template is not None
+      if CC.latActive and (not self.steering_template_ready or not lfa_fresh):
+        # Start and recover from zero after the camera stream is unavailable.
         CC = CC.as_builder()
         CC.latActive = False
         CC = CC.as_reader()
@@ -541,6 +579,13 @@ class CarController(CarControllerBase):
     # Hold torque with induced temporary fault when cutting the actuation bit
     torque_fault = CC.latActive and not apply_steer_req
 
+    # Never postpone a release or a scheduled high-angle request cut. Count
+    # high-angle time in host ticks as before. Ordinary torque steps, however,
+    # must only advance when we actually publish a command for forwarding.
+    send_lfa = lfa_due or torque_fault or not lfa_fresh or (self.lfa_active_last and not CC.latActive)
+    self.lfa_active_last = CC.latActive
+    if not send_lfa:
+      apply_torque = self.apply_torque_last
     self.apply_torque_last = apply_torque
 
     # accel + longitudinal
@@ -601,7 +646,7 @@ class CarController(CarControllerBase):
       hda2_long = hda2 and self.CP.openpilotLongitudinalControl
       # steering control
       if camera_scc:
-        can_sends.extend(hyundaicanfd.create_steering_messages_camera_scc(self.frame, self.packer, self.CP, self.CAN, CC, apply_steer_req, apply_torque, CS, apply_angle, steering_authority, angle_control))
+        can_sends.extend(hyundaicanfd.create_steering_messages_camera_scc(self.frame, self.packer, self.CP, self.CAN, CC, apply_steer_req, apply_torque, CS, apply_angle, steering_authority, angle_control, send_torque=send_lfa))
       else:
         can_sends.extend(hyundaicanfd.create_steering_messages(self.packer, self.CP, self.CAN, CC.enabled, apply_steer_req, apply_torque, apply_angle, steering_authority, angle_control))
 
