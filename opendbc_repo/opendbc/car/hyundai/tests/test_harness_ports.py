@@ -1,10 +1,13 @@
+from types import SimpleNamespace
+
 import pytest
 
 from opendbc.can import CANPacker, CANParser
 from opendbc.car import gen_empty_fingerprint, structs
 from opendbc.car.fw_versions import match_fw_to_car_exact
-from opendbc.car.hyundai.fingerprints import FW_VERSIONS
 from opendbc.car.hyundai.factory_cruise import update_ccnc_cruise, update_non_scc_state
+from opendbc.car.hyundai.fingerprints import FW_VERSIONS
+from opendbc.car.hyundai.hyundaicanfd import create_steering_messages_camera_scc
 from opendbc.car.hyundai.interface import CarInterface
 from opendbc.car.hyundai.tests.test_experimental_longitudinal import configure_params
 from opendbc.car.hyundai.values import CAR, CCNC_PORT_CAR, NON_SCC_CAR, HyundaiFlags
@@ -99,3 +102,12 @@ def test_factory_emergency_braking_uses_observed_bus_and_expires(model, source):
     update_non_scc_state(ret, cp, pt, cam, 1)
     assert ret.stockAeb == (source == bus)
     assert not ret.stockFcw
+
+
+def test_original_ccnc_driver_feedback_is_receive_only():
+  state = SimpleNamespace(mdps={}, steer_touch_2af={}, adrv_0x161=None, lfa=None)
+  cp = structs.CarParams(carFingerprint=CAR.HYUNDAI_TUCSON_HEV_2025)
+  bus = SimpleNamespace(CAM=2, ECAN=0)
+  messages = create_steering_messages_camera_scc(0, CANPacker("hyundai_canfd_generated"),
+                                                cp, bus, None, False, 0, state, 0, 0, False)
+  assert not messages

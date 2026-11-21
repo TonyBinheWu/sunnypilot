@@ -5,7 +5,7 @@ from opendbc.car.hyundai.scalar import clip_float
 from opendbc.car import CanBusBase, DT_CTRL
 from opendbc.car.carlog import carlog
 from opendbc.car.crc import CRC16_XMODEM
-from opendbc.car.hyundai.values import CAR, HyundaiFlags, HyundaiExtFlags
+from opendbc.car.hyundai.values import CAR, CCNC_PORT_CAR, HyundaiFlags, HyundaiExtFlags
 from opendbc.car.hyundai.stopping import MOVING_SPEED, STOP_LOWER_BAND
 from opendbc.car.hyundai.stop_object import apply_signal_stop_object
 from openpilot.common.params import Params
@@ -160,8 +160,10 @@ def create_steering_messages_camera_scc(frame, packer, CP, CAN, CC, lat_active, 
     emergency_steering = values["ALERTS_1"] in [11, 12, 13, 14, 15, 21, 22, 23, 24, 25, 26]
 
 
+  # The stock ccNC harness carries the original driver torque and hands-on sensors.
+  retrofit_feedback = getattr(CP, "carFingerprint", None) not in CCNC_PORT_CAR
   ret = []
-  if CS.mdps is not None:
+  if retrofit_feedback and CS.mdps is not None:
     values = copy.copy(CS.mdps)
     # Seed once from RX; subsequent counters follow actual transmissions, not RX timing.
     rx_counter = values.pop("COUNTER", None)
@@ -176,7 +178,7 @@ def create_steering_messages_camera_scc(frame, packer, CP, CAN, CC, lat_active, 
       values["STEERING_COL_TORQUE"] += 220
     ret.append(packer.make_can_msg("MDPS", CAN.CAM, values, rx_counter=rx_counter))
 
-  if frame % 10 == 0:
+  if retrofit_feedback and frame % 10 == 0:
     if CS.steer_touch_2af is not None:
       values = copy.copy(CS.steer_touch_2af)
       if frame % 1000 < 40:

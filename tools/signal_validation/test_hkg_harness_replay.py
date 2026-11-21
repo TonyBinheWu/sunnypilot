@@ -15,7 +15,7 @@ from opendbc.car import gen_empty_fingerprint, structs
 from opendbc.car.fw_versions import match_fw_to_car
 from opendbc.car.hyundai import carcontroller, carstate, interface
 from opendbc.car.hyundai.tests.test_experimental_longitudinal import configure_params
-from opendbc.car.hyundai.values import CAR, DBC, HyundaiFlags, HyundaiSafetyFlags
+from opendbc.car.hyundai.values import CAR, CCNC_PORT_CAR, DBC, HyundaiFlags, HyundaiSafetyFlags
 from opendbc.safety.tests.libsafety import libsafety_py
 
 
@@ -127,6 +127,8 @@ def test_recorded_harness(monkeypatch, path):
     elif typ == "carControl" and controller is not None and counts["car_states"]:
       _, outgoing = controller.update(e.carControl, state, t)
       for addr, data, bus in outgoing:
+        if model in CCNC_PORT_CAR:
+          assert addr not in (0xea, 0x175, 0x2af), "original MDPS, TCS and hands-on feedback belong to the vehicle"
         counts["generated"] += 1
         if not panda.safety_tx_hook(libsafety_py.make_CANPacket(addr, bus, data)):
           blocked[addr] += 1
