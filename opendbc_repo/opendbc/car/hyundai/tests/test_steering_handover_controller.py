@@ -40,15 +40,24 @@ def setup_controller(monkeypatch, *, mode=None, angle=True, camera=True, cp_over
   cs = NS(out=structs.CarState(canValid=True, steeringPressed=True, steeringTorque=300, vEgoRaw=15),
           modelV2=NS(frameId=1, position=NS(yStd=[0.1] * 33)), is_metric=True,
           adrv_0x161=None, mdps=None, steer_touch_2af=None, lfa_alt={}, lfa={})
+  cs.cp_cam = NS(ts_nanos={}, vl_all={}, _last_update_nanos=0, counter=255)
   cc = structs.CarControl(enabled=True, latActive=True)
   cc.actuators.steeringAngleDeg = 0.5
   return controller, cs, cc, settings
 
 
-def step(controller, cs, cc, *, fresh=True):
+def step(controller, cs, cc, *, fresh=True, camera_frames=1):
+  now = (controller.frame + 1) * 10_000_000
+  if controller.lfa_cadence is not None:
+    cs.cp_cam._last_update_nanos = now
+    counters = [(cs.cp_cam.counter + n + 1) % 256 for n in range(camera_frames)]
+    cs.cp_cam.vl_all["LFA"] = {"COUNTER": counters}
+    if counters:
+      cs.cp_cam.counter = counters[-1]
+      cs.cp_cam.ts_nanos["LFA"] = {"COUNTER": now}
   if fresh:
     cs.modelV2.frameId = controller.frame // 5 + 1
-  return controller.update(cc.as_reader(), cs, (controller.frame + 1) * 10_000_000)
+  return controller.update(cc.as_reader(), cs, now)
 
 
 @pytest.mark.parametrize("previous, invalid", [(None, None), (None, -1), (None, 101), (92, 0)])
@@ -273,3 +282,56 @@ def test_initial_template_guard_does_not_rearm_during_operation(monkeypatch, ang
   cc.latActive = True
   output, _ = step(controller, cs, cc)
   assert output.torqueOutputCan > 0 and controller.steering_template_ready
+
+
+def test_sorento_camera_release_and_clean_restart_without_fresh_lfa(monkeypatch):
+  model = CAR.KIA_SORENTO_2024
+  cp = structs.CarParams(brand="hyundai", carFingerprint=model, flags=int(HyundaiFlags.CANFD | HyundaiFlags.CAMERA_SCC),
+                         steerControlType="torque", wheelbase=model.config.specs.wheelbase, steerRatio=model.config.specs.steerRatio)
+  controller, cs, cc, _ = setup_controller(monkeypatch, angle=False, cp_override=cp)
+  cs.out.steeringPressed = False
+  cs.out.steeringTorque = 0
+  cs.mdps = {"STEERING_COL_TORQUE": 0}
+  cs.lfa = {"STEER_REQ": 0}
+  cc.actuators.torque = 0.6
+
+  def commands(count):
+    output, messages = step(controller, cs, cc, camera_frames=count)
+    assert any(addr == 0xEA for addr, _, _ in messages)
+    return output.torqueOutputCan, [payload for addr, payload, _ in messages if addr == 0x12A]
+
+  for _ in range(30):
+    last, _ = commands(1)
+  assert last > 10
+  assert commands(0) == (last, [])
+  cc.latActive = False
+  torque, packets = commands(0)
+  assert torque == 0 and len(packets) == 1 and not packets[0][6] & 16
+  cc.latActive = True
+  assert commands(1)[0] == 2
+  for _ in range(8):
+    torque, packets = commands(0)
+  assert torque == 0 and len(packets) == 1 and not packets[0][6] & 16
+  assert commands(1)[0] == 0  # first frame after an interruption is neutral
+  assert commands(1)[0] == 2
+
+
+def test_camera_lfa_cadence_does_not_replay_batches_or_infer_missing_frames():
+  cadence = carcontroller.CameraLfaCadence()
+  parser = NS(ts_nanos={}, vl_all={}, _last_update_nanos=0)
+
+  def poll(ms, counters, *, batch_ms=None):
+    parser._last_update_nanos = ms * 1_000_000
+    parser.ts_nanos["LFA"] = {"COUNTER": (ms if batch_ms is None else batch_ms) * 1_000_000}
+    parser.vl_all["LFA"] = {"COUNTER": counters}
+    return cadence.poll(parser, (ms + 1000) * 1_000_000)
+
+  assert poll(10, [254, 255]) == (True, True)
+  assert poll(20, [254, 255], batch_ms=10) == (True, True)
+  assert poll(30, [255]) == (True, False)
+  assert poll(40, [0]) == (True, True)
+  assert poll(50, [15]) == (True, True)
+  assert poll(60, [15]) == (True, False)
+  assert poll(130, [16], batch_ms=65) == (False, False)
+  assert poll(140, [17]) == (False, False)
+  assert poll(150, [18]) == (True, True)
