@@ -5,7 +5,7 @@ from opendbc.car.hyundai.scalar import clip_float
 from opendbc.car import CanBusBase, DT_CTRL
 from opendbc.car.carlog import carlog
 from opendbc.car.crc import CRC16_XMODEM
-from opendbc.car.hyundai.values import HyundaiFlags, HyundaiExtFlags
+from opendbc.car.hyundai.values import CAR, HyundaiFlags, HyundaiExtFlags
 from opendbc.car.hyundai.stopping import MOVING_SPEED, STOP_LOWER_BAND
 from opendbc.car.hyundai.stop_object import apply_signal_stop_object
 from openpilot.common.params import Params
@@ -230,7 +230,8 @@ def create_steering_messages_camera_scc(frame, packer, CP, CAN, CC, lat_active, 
     values["HAS_LANE_SAFETY"] = 0
     values["LKA_ACTIVE"] = 0 # NEW_SIGNAL_1
 
-    values["DampingGain"] = 0 if lat_active else 100
+    # The ccNC Sorento uses the same MDPS damping with and without a torque request.
+    values["DampingGain"] = 0 if lat_active and CP.carFingerprint != CAR.KIA_SORENTO_2024 else 100
     #values["VALUE63"] = 0
 
     #values["VALUE82_SET256"] = 0

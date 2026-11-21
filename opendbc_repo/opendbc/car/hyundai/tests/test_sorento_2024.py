@@ -11,7 +11,7 @@ import pytest
 
 from opendbc.car import Bus, STD_CARGO_KG, gen_empty_fingerprint
 from opendbc.car.hyundai.fingerprints import FW_VERSIONS
-from opendbc.car.hyundai.values import CAR, CANFD_CAR, CANFD_FUZZY_WHITELIST, HyundaiFlags, get_platform_codes
+from opendbc.car.hyundai.values import CAR, CANFD_CAR, CANFD_FUZZY_WHITELIST, CarControllerParams, HyundaiFlags, get_platform_codes
 from opendbc.car.selected_car import get_selected_car_platform
 from opendbc.car.structs import CarParams
 
@@ -59,7 +59,7 @@ def test_port_has_source_torque_baseline_without_duplicate_mapping():
   root = Path(__file__).resolve().parents[2]/"torque_data"
   tables = [tomllib.loads((root/name).read_text()) for name in ("params.toml", "substitute.toml", "override.toml")]
   assert sum("KIA_SORENTO_2024" in table for table in tables) == 1
-  assert tables[2]["KIA_SORENTO_2024"] == tables[2]["KIA_SORENTO_4TH_GEN"]
+  assert tables[2]["KIA_SORENTO_2024"] == [2.5, 2.5, 0.1]
 
 
 @pytest.mark.parametrize("variant", [0, 1])
@@ -97,9 +97,44 @@ def test_interface_uses_existing_capability_and_safety_paths(monkeypatch, angle,
   assert cp.mass == pytest.approx(1794.86500809 + STD_CARGO_KG)
   assert cp.wheelbase == pytest.approx(2.81)
   assert cp.steerRatio == pytest.approx(13.5)
+  assert cp.steerActuatorDelay == pytest.approx(0.1)
+  assert cp.steerLimitTimer == pytest.approx(0.4)
+  limits = CarControllerParams(cp)
+  assert (limits.STEER_MAX, limits.STEER_DELTA_UP, limits.STEER_DELTA_DOWN) == (270, 2, 3)
   assert not cp.flags & (HyundaiFlags.CANFD_HDA2 | HyundaiFlags.HYBRID | HyundaiFlags.EV)
   assert cp.safetyConfigs[-1].safetyModel == CarParams.SafetyModel.hyundaiCanfd
   assert cp.openpilotLongitudinalControl == bool(alpha_long or camera_scc)
   assert bool(cp.flags & HyundaiFlags.CAMERA_SCC) == bool(camera_scc)
   assert bool(cp.flags & HyundaiFlags.ANGLE_CONTROL) == angle
   assert interfaces.get_torque_params()[CAR.KIA_SORENTO_2024] == interfaces.get_torque_params()[CAR.KIA_SORENTO_4TH_GEN]
+
+
+@pytest.mark.parametrize("model,camera,angle,active_gain,inactive_gain", [
+  (CAR.KIA_SORENTO_2024, True, False, 100, 100),
+  (CAR.KIA_SORENTO_2024, False, False, 100, 100),
+  (CAR.KIA_SORENTO_2024, True, True, 43, 43),
+  (CAR.KIA_EV6, True, False, 0, 100),
+])
+def test_lfa_rack_damping(monkeypatch, model, camera, angle, active_gain, inactive_gain):
+  from opendbc.car.hyundai.tests.test_steering_handover_controller import setup_controller, step
+
+  flags = HyundaiFlags.CANFD
+  if camera:
+    flags |= HyundaiFlags.CAMERA_SCC
+  if angle:
+    flags |= HyundaiFlags.ANGLE_CONTROL
+  specs = model.config.specs
+  cp = CarParams(brand="hyundai", carFingerprint=model, flags=int(flags), steerControlType="angle" if angle else "torque",
+                 wheelbase=specs.wheelbase, steerRatio=specs.steerRatio)
+  controller, cs, cc, _ = setup_controller(monkeypatch, angle=angle, camera=camera, cp_override=cp)
+  cs.lfa = {"DampingGain": 43}
+  cs.out.steeringPressed = False
+  cs.out.steeringTorque = 0
+  cc.actuators.torque = 0.4
+  for active, expected in ((True, active_gain), (False, inactive_gain)):
+    cc.latActive = active
+    _, messages = step(controller, cs, cc)
+    data, = [data for addr, data, bus in messages if addr == 0x12A and bus == controller.CAN.ECAN]
+    # ccNC's LFA Damping_Gain and carrot's DampingGain both occupy byte 13.
+    assert data[13] == expected
+    assert bool(data[6] & 0x10) == (active and not angle)
