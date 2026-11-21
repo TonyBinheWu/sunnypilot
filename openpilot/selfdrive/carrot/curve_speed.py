@@ -123,10 +123,12 @@ class VisionCurveSpeed:
           self.geometry.clear()
         return self.speed * self.direction
       self.last_model_time = stamp
-      if self.geometry and (now < self.geometry[-1][0] or now - self.geometry[-1][0] > GEOMETRY_MIN_SPAN):
+      if self.geometry and (now < self.geometry[-1][0] or now - self.geometry[-1][0] > GEOMETRY_MIN_SPAN + 1e-9):
         self.geometry.clear()
       self.geometry.append((now, result.approach_kph))
-      while self.geometry and now - self.geometry[0][0] > GEOMETRY_RELEASE_WINDOW + 1e-9:
+      # At 5–8 Hz three independent samples span more than 250 ms. Keep the
+      # most recent three if the continuity check above accepted every gap.
+      while len(self.geometry) > 3 and now - self.geometry[0][0] > GEOMETRY_RELEASE_WINDOW + 1e-9:
         self.geometry.popleft()
       target = result.approach_kph
       confirmed = len(self.geometry) >= 3 and now - self.geometry[0][0] >= GEOMETRY_MIN_SPAN - 1e-9

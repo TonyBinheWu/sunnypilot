@@ -55,6 +55,12 @@ class TogglesLayout(Widget):
         "experimental_white.png",
         False,
       ),
+      "DynamicExperimentalControl": (
+        lambda: tr("Dynamic Experimental Control"),
+        tr_noop("In Experimental Mode, switch between adaptive cruise and vision-based longitudinal planning."),
+        "experimental_white.png",
+        False,
+      ),
       "RainbowMode": (
         lambda: tr("Rainbow Road (SP style)"),
         DESCRIPTIONS["RainbowMode"],
@@ -200,6 +206,8 @@ class TogglesLayout(Widget):
     else:
       self._toggles["ExperimentalMode"].set_description(e2e_description)
 
+    self._toggles["DynamicExperimentalControl"].action_item.set_enabled(
+      ui_state.CP is not None and ui_state.has_longitudinal_control and "DynamicExperimentalControl" not in self._locked_toggles)
     self._update_experimental_mode_icon()
 
     # TODO: make a param control list item so we don't need to manage internal state as much here

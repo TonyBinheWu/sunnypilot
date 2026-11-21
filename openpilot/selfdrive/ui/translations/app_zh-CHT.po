@@ -2578,3 +2578,9 @@ msgstr "請確認車況並自行操作方向燈"
 #: openpilot/selfdrive/ui/lane_change_notice.py
 msgid "Indicator on; check surrounding traffic"
 msgstr "方向燈已開啟，請確認周圍車況"
+
+msgid "Dynamic Experimental Control"
+msgstr "動態實驗模式控制（DEC）"
+
+msgid "In Experimental Mode, switch between adaptive cruise and vision-based longitudinal planning."
+msgstr "啟用實驗模式時，依據前車與預測路徑，在自適應巡航與視覺縱向規劃之間切換。"

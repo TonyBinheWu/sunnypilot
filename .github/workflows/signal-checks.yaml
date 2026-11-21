@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - run: pip install Cython==3.2.9 setuptools scons pytest pytest-subtests numpy pycapnp cffi setproctitle requests pycryptodome zstandard pyserial parameterized
+      - run: pip install Cython==3.2.9 setuptools scons pytest pytest-subtests numpy pycapnp cffi setproctitle requests pycryptodome zstandard pyserial parameterized tqdm
       - name: Build production CAN kernels and safety hooks
         run: |
           scons -f tools/native_cpu/SConstruct -j2
@@ -93,6 +93,9 @@ jobs:
       - name: Vehicle fault admission and CAN FD signal-stop object
         run: |
           python tools/signal_validation/run.py \
+            openpilot/selfdrive/controls/tests/test_dynamic_experimental.py \
+            openpilot/selfdrive/carrot/tests/test_curve_speed.py \
+            opendbc_repo/opendbc/car/hyundai/tests/test_experimental_longitudinal.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_hda2_raw_radar.py \
             openpilot/selfdrive/car/tests/test_cruise_settings.py \
             openpilot/selfdrive/controls/tests/test_controlsd_publish.py \

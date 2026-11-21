@@ -1,6 +1,6 @@
 from opendbc.car import Bus, get_safety_config, structs
 from opendbc.car.hyundai.hyundaicanfd import CanBus
-from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, CANFD_RADAR_SCC_CAR, \
+from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
                                                    CANFD_UNSUPPORTED_LONGITUDINAL_CAR, \
                                                    UNSUPPORTED_LONGITUDINAL_CAR, HyundaiSafetyFlags, HyundaiExtFlags, \
                                                    CANFD_HYBRID_STATUS_ADDR, CANFD_HYBRID_STATUS_DLC, \
@@ -45,8 +45,11 @@ class CarInterface(CarInterfaceBase):
       ret.extFlags |= HyundaiExtFlags.RADAR_GROUP4.value
 
     cam_can = CanBus(None, fingerprint).CAM if camera_scc == 0 else 1
-    hda2 = False #0x50 in fingerprint[cam_can] or 0x110 in fingerprint[cam_can]
-    hda2 = hda2 or params.get_int("CanfdHDA2") > 0
+    adas_present = any(fw.ecu == Ecu.adas for fw in car_fw)
+    hda2 = params.get_int("CanfdHDA2") > 0 or (
+      bool(ret.flags & HyundaiFlags.CANFD) and camera_scc == 0 and adas_present and
+      (fingerprint[cam_can].get(0x50) == 16 or fingerprint[cam_can].get(0x110) == 32)
+    )
     CAN = CanBus(None, fingerprint, hda2)
 
     # Prefer the current camera wiring, while supporting recorded src=1 wiring.
@@ -58,7 +61,9 @@ class CarInterface(CarInterfaceBase):
 
     if ret.flags & HyundaiFlags.CANFD:
       # Shared configuration for CAN-FD cars
-      ret.alphaLongitudinalAvailable = True #candidate not in (CANFD_UNSUPPORTED_LONGITUDINAL_CAR | CANFD_RADAR_SCC_CAR)
+      ret.alphaLongitudinalAvailable = candidate not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR and (
+        not hda2 or adas_present or camera_scc in (1, 2)
+      )
       #ret.enableBsm = 0x1e5 in fingerprint[CAN.ECAN]
       ret.enableBsm = 0x1ba in fingerprint[CAN.ECAN] # BLINDSPOTS_REAR_CORNERS 0x1ba(442)
 
@@ -170,7 +175,7 @@ class CarInterface(CarInterfaceBase):
 
     else:
       # Shared configuration for non CAN-FD cars
-      ret.alphaLongitudinalAvailable = True #candidate not in (UNSUPPORTED_LONGITUDINAL_CAR | CAMERA_SCC_CAR)
+      ret.alphaLongitudinalAvailable = candidate not in UNSUPPORTED_LONGITUDINAL_CAR and not bool(ret.flags & HyundaiFlags.CC_ONLY_CAR)
       ret.enableBsm = 0x58b in fingerprint[0]
       print(f"$$$ enableBsm = {ret.enableBsm}")
 
@@ -211,18 +216,14 @@ class CarInterface(CarInterfaceBase):
     # Common longitudinal control setup
 
     ret.radarUnavailable = RADAR_START_ADDR not in fingerprint[1] or Bus.radar not in DBC[ret.carFingerprint]
-    ret.openpilotLongitudinalControl = alpha_long and ret.alphaLongitudinalAvailable
-
-    # carrot, if camera_scc enabled, enable openpilotLongitudinalControl
     enable_radar_tracks = params.get_int("EnableRadarTracks")
-    if ret.flags & HyundaiFlags.CAMERA_SCC.value or enable_radar_tracks > 0 or enable_radar_tracks == -2:
+    radar_long = enable_radar_tracks > 0 or enable_radar_tracks == -2
+    if ret.flags & HyundaiFlags.CAMERA_SCC or radar_long:
       ret.radarUnavailable = False
-      ret.openpilotLongitudinalControl = True if camera_scc < 3 else False
-      print(f"$$$OenpilotLongitudinalControl = True, CAMERA_SCC({ret.flags & HyundaiFlags.CAMERA_SCC.value}) or RadarTracks{enable_radar_tracks}")
-    else:
-      print(f"$$$OenpilotLongitudinalControl = {alpha_long}")
-
-    #ret.radarUnavailable = False  # TODO: canfd... carrot, hyundai cars have radar
+    # A factory camera-SCC fingerprint identifies the RX bus, not a driver's
+    # request to hand over acceleration. Preserve explicit retrofit/radar modes.
+    ret.alphaLongitudinalAvailable = ret.alphaLongitudinalAvailable and camera_scc < 3
+    ret.openpilotLongitudinalControl = ret.alphaLongitudinalAvailable and (alpha_long or camera_scc in (1, 2) or radar_long)
 
     ret.radarTimeStep = 0.05 #if params.get_int("EnableRadarTracks") > 0 else 0.02
 
@@ -305,7 +306,7 @@ class CarInterface(CarInterfaceBase):
     bosch_passive = bool(CP.extFlags & HyundaiExtFlags.BOSCH_RADAR) and params.get_int("EnableRadarTracks") > 0
     pedal_interceptor = get_pedal_interceptor_params(CP) is not None
     if CP.openpilotLongitudinalControl and not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC) and not pedal_interceptor and not bosch_passive:
-      addr, bus = 0x7d0, 0
+      addr, bus = 0x7d0, CanBus(CP).ECAN if CP.flags & HyundaiFlags.CANFD else 0
       if CP.flags & HyundaiFlags.CANFD_HDA2.value:
         addr, bus = 0x730, CanBus(CP).ECAN
       disable_ecu(can_recv, can_send, bus=bus, addr=addr, com_cont_req=b'\x28\x83\x01')

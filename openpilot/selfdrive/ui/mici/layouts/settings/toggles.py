@@ -17,6 +17,7 @@ class TogglesLayoutMici(NavScroller):
     self._personality_toggle = BigMultiParamToggle(tr("driving personality"), "LongitudinalPersonality",
                                                  [tr("aggressive"), tr("standard"), tr("relaxed"), tr("moreRelaxed")])
     self._experimental_btn = BigParamControl(tr("experimental mode"), "ExperimentalMode")
+    self._dec_btn = BigParamControl(tr("Dynamic Experimental Control"), "DynamicExperimentalControl")
     is_metric_toggle = BigParamControl(tr("use metric units"), "IsMetric")
     rainbow_toggle = BigParamControl(tr("Rainbow Road (SP style)"), "RainbowMode")
     ldw_toggle = BigParamControl(tr("lane departure warnings"), "IsLdwEnabled")
@@ -28,6 +29,7 @@ class TogglesLayoutMici(NavScroller):
     self._scroller.add_widgets([
       self._personality_toggle,
       self._experimental_btn,
+      self._dec_btn,
       is_metric_toggle,
       rainbow_toggle,
       ldw_toggle,
@@ -40,6 +42,7 @@ class TogglesLayoutMici(NavScroller):
     # Toggle lists
     self._refresh_toggles = (
       ("ExperimentalMode", self._experimental_btn),
+      ("DynamicExperimentalControl", self._dec_btn),
       ("IsMetric", is_metric_toggle),
       ("RainbowMode", rainbow_toggle),
       ("IsLdwEnabled", ldw_toggle),
@@ -76,6 +79,7 @@ class TogglesLayoutMici(NavScroller):
     ui_state.update_params()
 
     # CP gating for experimental mode
+    self._dec_btn.set_visible(ui_state.CP is not None and ui_state.has_longitudinal_control)
     if ui_state.CP is not None:
       if ui_state.has_longitudinal_control:
         self._experimental_btn.set_visible(True)

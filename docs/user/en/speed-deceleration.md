@@ -389,3 +389,7 @@ Automatic CAN diagnostic logs are generated only when currently received vehicle
 - Setting ranges/defaults: `openpilot/selfdrive/carrot_settings.json`, `openpilot/common/params_keys.h`
 
 [Back to Understanding Settings](settings.md)
+
+## Experimental longitudinal control
+
+With openpilot longitudinal control active, Experimental Mode uses model acceleration and braking within cruise and obstacle constraints. Dynamic Experimental Control (DEC) switches between adaptive cruise and the vision planner using lead and trajectory data. DEC defaults off. Alpha longitudinal availability depends on the vehicle and wiring.

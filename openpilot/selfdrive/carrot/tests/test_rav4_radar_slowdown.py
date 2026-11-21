@@ -117,7 +117,8 @@ def planner_input(brand, cap=80., curvature=0., risk=None, gas=False, inactive=F
                             forceDecel=False, desiredCurvature=0., curvature=0.)}
   carrot = NS(update=lambda *args: consume_cap(cap), mode='acc', soft_hold_active=False,
               get_carrot_accel=lambda _: 1.6, leadAccelResponse=5, lane_change_active=False)
-  planner = NS(CP=NS(brand=brand, openpilotLongitudinalControl=True),
+  planner = NS(experimental_mode=NS(select=lambda *_: 'acc'), dec_enabled=False,
+               hkg_phase1_enabled=False, update_hkg_curve_speed=lambda sm, cruise, reset: cruise, CP=NS(brand=brand, openpilotLongitudinalControl=True),
                mpc=NS(set_accel_limits=capture, set_cur_state=stop), coasting_param_time=0., dt=DT_MDL,
                a_desired=0., reset_decel_timer=0, output_should_stop=False,
                v_desired_filter=NS(update=lambda value: value), parse_model=lambda _: (0., 0., 0., 0., 1.),
