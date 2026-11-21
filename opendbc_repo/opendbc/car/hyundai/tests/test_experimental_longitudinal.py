@@ -105,3 +105,17 @@ def test_kona_2022_donor_firmware_requires_matching_powertrain():
   electric = FW_VERSIONS[CAR.HYUNDAI_KONA_EV_2022]
   live[(0x7d0, None)] = {electric[(structs.CarParams.Ecu.fwdRadar, 0x7d0, None)][0]}
   assert platform not in match_fw_to_car_exact(live, 'hyundai', log=False)
+
+
+@pytest.mark.parametrize('alpha,camera,tracks', [(False, 0, 0), (True, 0, 0), (False, 1, 0), (True, 3, 1)])
+def test_catalog_control_owner_agrees_with_panda(monkeypatch, alpha, camera, tracks):
+  fingerprint = gen_empty_fingerprint()
+  configure_params(monkeypatch, {'FingerPrints': repr(fingerprint), 'HyundaiCameraSCC': camera, 'EnableRadarTracks': tracks})
+  for platform in CAR:
+    cp = interface.CarInterface.get_params(platform, fingerprint, [], alpha, False, False)
+    assert cp.pcmCruise != cp.openpilotLongitudinalControl, platform
+    assert bool(cp.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.LONG) == cp.openpilotLongitudinalControl, platform
+    if cp.openpilotLongitudinalControl:
+      assert cp.alphaLongitudinalAvailable, platform
+    if camera == 3 or not (alpha or camera or tracks):
+      assert not cp.openpilotLongitudinalControl, platform
