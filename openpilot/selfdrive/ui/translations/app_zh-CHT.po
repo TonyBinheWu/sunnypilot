@@ -2578,3 +2578,12 @@ msgstr "請確認車況並自行操作方向燈"
 #: openpilot/selfdrive/ui/lane_change_notice.py
 msgid "Indicator on; check surrounding traffic"
 msgstr "方向燈已開啟，請確認周圍車況"
+
+msgid "Lane keeping unavailable: steer manually"
+msgstr "無法可靠維持本車道，請立即接管方向盤"
+
+msgid "Steer manually"
+msgstr "請手動掌控方向盤"
+
+msgid "Lane assist paused until parked"
+msgstr "橫向輔助已暫停，請停穩並排入 P 檔"

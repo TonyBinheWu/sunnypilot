@@ -52,7 +52,7 @@ class TestDesireHelperStalkRequest:
     with patch('openpilot.selfdrive.controls.lib.desire_helper.Params'), \
          patch('openpilot.selfdrive.controls.lib.desire_helper.CommandReader') as reader:
       reader.return_value.read.return_value = None
-      self.helper = DesireHelper()
+      self.helper = DesireHelper(require_driver_stalk=False)  # fixture blinkers originate from the lever
     self.helper._update_params_periodic = lambda: None
     self.helper._process_sides = lambda car, model, radar: None
     self.helper._check_desire_state = lambda model, car, maneuver: None
@@ -79,12 +79,13 @@ class TestDesireHelperStalkRequest:
   def update(self, left_blinker=True, lane_change_prob=0.5, press=False, counters=True, lever=0, v_kph=90.0, lines=None):
     if press:
       self.left_count = (self.left_count + 1) % 256
-    car = SimpleNamespace(canValid=True, leftBlinker=left_blinker, rightBlinker=False, vEgo=v_kph / 3.6, aEgo=0.0,
+    car = SimpleNamespace(canValid=True, canTimeout=False, gearShifter="drive", leftBlinker=left_blinker, rightBlinker=False, vEgo=v_kph / 3.6, aEgo=0.0,
                           trailerConnected=False, steeringTorque=0.0, steeringPressed=False, blinkerLever=lever)
     if counters:
       car.leftBlinkerStalkCount, car.rightBlinkerStalkCount = self.left_count, 0
     model = SimpleNamespace(laneLines=[SimpleNamespace(y=[y]) for y in (-5.0, *lines, 5.0)]) if lines else SimpleNamespace()
-    self.helper.update(car, model, True, lane_change_prob, self.carrot_man, SimpleNamespace())
+    model.frameId = self.helper.frame
+    self.helper.update(car, model, True, lane_change_prob, self.carrot_man, SimpleNamespace(), indicator_valid=True)
     return self.helper.lane_change_state
 
   def start_and_cross(self, counters=True):
@@ -398,23 +399,12 @@ class TestAtcPhysicalIndicator:
     self.start_and_cross()
     assert self.helper.auto_turn_signal == LCD.none
 
-  def test_atc_waits_until_actual_start_and_holds_through_finishing(self):
+  def test_atc_geometry_without_driver_never_starts_or_illuminates_signal(self):
     self.carrot_man.atcType = "atc right"
     self.update(left_blinker=False)
     self.update(left_blinker=False)
-    assert self.helper.lane_change_state == LCS.preLaneChange
-    for _ in range(5):
-      self.update(left_blinker=False)
-      assert self.helper.auto_turn_signal == LCD.none
     self.helper.right.lane_line_info_edge_detect = True
-    self.update(left_blinker=False)
-    assert self.helper.lane_change_state == LCS.laneChangeStarting
-    assert self.helper.auto_turn_signal == LCD.right
-    assert self.helper.auto_turn_signal_lane_change
-    for _ in range(12):
-      self.update(left_blinker=False,lane_change_prob=0.)
-    assert self.helper.lane_change_state == LCS.laneChangeFinishing
-    assert self.helper.auto_turn_signal == LCD.right
-    for _ in range(24):
-      self.update(left_blinker=False,lane_change_prob=0.)
-    assert self.helper.auto_turn_signal == LCD.none
+    for _ in range(36):
+      self.update(left_blinker=False, lane_change_prob=0.)
+      assert self.helper.lane_change_state == LCS.preLaneChange
+      assert self.helper.auto_turn_signal == LCD.none

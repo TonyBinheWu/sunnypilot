@@ -14,12 +14,14 @@ def voice(tmp_path):
   base = StalkFixture()
   base.setup_method()
   helper = base.helper
+  helper.driver_stalk_required = True
   now = [100.]
   helper.assistant_lane = AssistantLane(tmp_path, lambda: now[0])
   cs = car.CarState(canValid=True, gearShifter='drive', vEgo=25, vehicleSensorsInvalid=False)
   def tick(**kwargs):
     now[0] += .05
-    helper.update(cs, SimpleNamespace(), True, kwargs.get('prob', .5), base.carrot_man, SimpleNamespace(), assistant_valid=kwargs.get('valid', True))
+    helper.update(cs, SimpleNamespace(frameId=helper.frame), True, kwargs.get('prob', .5), base.carrot_man, SimpleNamespace(),
+                  indicator_valid=kwargs.get('valid', True), assistant_valid=kwargs.get('valid', True))
     return helper.lane_change_state
   def request(direction='left'):
     atomic_json(tmp_path / 'request.json', {'id': 'a' * 43, 'time': now[0], 'direction': direction})
@@ -32,6 +34,9 @@ def test_voice_enters_existing_lane_change_fsm_once(voice, direction):
   tick()
   request(direction)
   assert tick() == log.LaneChangeState.preLaneChange
+  assert tick() == log.LaneChangeState.preLaneChange
+  setattr(cs, direction+'BlinkerStalkCount', 1)
+  setattr(cs, direction+'Blinker', True)
   assert tick() == log.LaneChangeState.laneChangeStarting
   assert result()['status'] == 'running'
   assert not cs.steeringPressed and not cs.buttonEvents
@@ -67,14 +72,16 @@ def test_tesla_voice_waits_for_real_signal_acknowledgement(voice):
   for _ in range(5):
     tick()
     assert helper.lane_change_state != log.LaneChangeState.laneChangeStarting
-  assert helper.auto_signal_request_id > 0
+  assert not helper.auto_signal_request_id
   cs.autoTurnSignalDirection = 1
   cs.leftBlinker = True
   cs.autoTurnSignalReadyRequestId = helper.auto_signal_request_id
   for _ in range(3):
     tick()
-  assert helper.lane_change_state == log.LaneChangeState.laneChangeStarting
-  assert result()['status'] == 'running'
+  assert helper.lane_change_state != log.LaneChangeState.laneChangeStarting
+  cs.turnSignalDriverDirection = 1
+  cs.leftBlinkerStalkCount = 1
+  assert tick() == log.LaneChangeState.laneChangeStarting
 
 
 @pytest.fixture(params=['HYUNDAI_IONIQ_5_PE', 'TEST_OTHER_PLATFORM'])
@@ -88,62 +95,18 @@ def signal_vehicle(voice, request):
 
 
 @pytest.mark.parametrize('direction', ['left', 'right'])
-def test_adapter_signal_and_lane_change_start_together(signal_vehicle, direction, monkeypatch):
-  from pathlib import Path
-  monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[4] / 'tools/jetlink'))
-  from blink_voice import VoiceLaneSignal
-  from blink_policy import Policy
-
+def test_adapter_presence_never_supplies_manual_confirmation(signal_vehicle, direction):
   helper, cs, tick, request, result = signal_vehicle
-  policy, lamp = Policy(), VoiceLaneSignal()
-  atomic_json(helper.assistant_lane.root/'indicator-device.json',
-              {'fingerprint':helper.assistant_lane.fingerprint, 'route':lamp.route, 'time':helper.assistant_lane.clock()})
-  dark = SimpleNamespace(leftBlinker=False, rightBlinker=False)
-  now = helper.assistant_lane.clock
-  def update_lamp(meta, active_id=None):
-    intent = lamp.select(meta, cs, allowed=True, peer_ready=True, hold=policy.hold, busy=False)
-    _, hold = policy.update(now(), 2, True, [], 25., 0., 'drive', False, intent)
-    lamp.bind(hold)
-    if lamp.confirmed(hold, active_id, {'accepted_id': active_id}, cs):
-      atomic_json(helper.assistant_lane.root/'signal.json', {'id':lamp.request, 'route':lamp.route, 'direction':lamp.direction, 'time':now(), 'confirmed':True})
-    return hold
-
   tick()
-  update_lamp(SimpleNamespace(assistantLaneSignalId='', laneChangeDirection='none', laneChangeState='off'))
   request(direction)
   assert tick() == log.LaneChangeState.preLaneChange
-  assert not helper.assistant_lane.signal_id  # delay, torque and classifier gates run before requesting a lamp
-  assert tick() == log.LaneChangeState.laneChangeStarting
-  identity = helper.assistant_lane.signal_id
-  assert identity == 'a' * 43
-  meta = SimpleNamespace(assistantLaneSignalId=identity, assistantLaneSignalRoute=lamp.route, laneChangeDirection=direction, laneChangeState='laneChangeStarting')
-  hold = update_lamp(meta)
-  assert hold['direction'] == direction and hold['source'] == 'lane'
-  assert not lamp.confirmed(hold, hold['id'], {'accepted_id':hold['id']}, dark)
-  assert tick() == log.LaneChangeState.laneChangeStarting
-  setattr(cs, direction + 'Blinker', True)
-  # Reproduce the recorded S3 behavior: the lamp lights but the tap never
-  # receives its completion ACK. Lamp feedback cannot start a second maneuver.
-  update_lamp(meta)
+  for _ in range(12):
+    assert tick() == log.LaneChangeState.preLaneChange
+    assert not helper.assistant_lane.signal_id
+  setattr(cs, direction+'BlinkerStalkCount', 1)
+  setattr(cs, direction+'Blinker', True)
   assert tick() == log.LaneChangeState.laneChangeStarting
   assert result()['status'] == 'running'
-  meta.laneChangeState = 'laneChangeStarting'
-  assert update_lamp(meta)['id'] == hold['id']
-  phases = {log.LaneChangeState.laneChangeStarting:'laneChangeStarting', log.LaneChangeState.laneChangeFinishing:'laneChangeFinishing'}
-  seen_finishing = False
-  for _ in range(60):
-    phase = tick(prob=0.)
-    meta.assistantLaneSignalId = helper.assistant_lane.signal_id
-    meta.laneChangeState = phases.get(phase, 'off')
-    remaining = update_lamp(meta)
-    if not meta.assistantLaneSignalId:
-      assert remaining is None
-      break
-    assert remaining['id'] == hold['id']
-    seen_finishing |= phase == log.LaneChangeState.laneChangeFinishing
-  assert seen_finishing and not helper.assistant_lane.signal_id
-  for _ in range(10):
-    assert tick() != log.LaneChangeState.laneChangeStarting
 
 
 @pytest.mark.parametrize('fault', ['bsd', 'lane', 'torque', 'opposite', 'hazards', 'cancel'])
@@ -180,16 +143,14 @@ def test_adapter_tap_echo_requires_this_request_and_never_confirms_lamp(signal_v
   tick()
   request(direction)
   tick()
-  tick()
-  now = helper.assistant_lane.clock()
-  side = 1 if direction == 'left' else 2
-  setattr(cs, direction+'BlinkerStalkCount', 1)
-  cs.blinkerLever = 2 if physical_override else 1
   atomic_json(helper.assistant_lane.root/'signal.json', {
-    'id':helper.assistant_lane.signal_id, 'route':'v'*43, 'time':now, 'direction':direction, 'confirmed':False,
-    'tap':{'id':'hold:1', 'direction':side, 'request':0., 'start':now, 'counts':[0, 0]}})
+    'id':'a'*43, 'route':'v'*43, 'time':helper.assistant_lane.clock(),
+    'direction':direction, 'confirmed':True})
+  setattr(cs, direction+'Blinker', True)
+  if physical_override:
+    setattr(cs, direction+'BlinkerStalkCount', 1)
   tick()
-  assert result()['status'] == ('interrupted' if physical_override else 'running')
+  assert (helper.lane_change_state == log.LaneChangeState.laneChangeStarting) == physical_override
 
 
 @pytest.mark.parametrize('fingerprint', ['HYUNDAI_IONIQ_5_PE', 'TEST_OTHER_PLATFORM'])
@@ -207,6 +168,9 @@ def test_optional_indicator_keeps_normal_lane_change(voice, fingerprint, fault, 
   request(direction)
   assert tick() == log.LaneChangeState.preLaneChange
   assert helper.assistant_lane.signal_route == 'ordinary'
+  assert tick() == log.LaneChangeState.preLaneChange
+  setattr(cs, direction+'Blinker', True)
+  setattr(cs, direction+'BlinkerStalkCount', 1)
   assert tick() == log.LaneChangeState.laneChangeStarting
   assert not helper.assistant_lane.signal_id
 
@@ -218,9 +182,9 @@ def test_selected_adapter_is_not_replaced_if_it_disconnects(signal_vehicle):
   tick()
   (helper.assistant_lane.root/'indicator-device.json').unlink()
   cs.rightBlinker = False
-  assert tick() == log.LaneChangeState.laneChangeStarting
+  assert tick() == log.LaneChangeState.preLaneChange
   assert helper.assistant_lane.signal_route == 'v'*43
-  assert result()['status'] == 'running'
+  assert result()['status'] == 'waiting'
 
 @pytest.mark.parametrize('output', ['EA_02', 'SPAS2'])
 @pytest.mark.parametrize('direction', ['left', 'right'])
@@ -237,9 +201,9 @@ def test_native_signal_needs_transmitted_command_and_physical_lamp(voice, output
   request(direction)
   tick()
   tick()
-  assert lane.signal_route == 'native' and lane.signal_id
+  assert lane.signal_route == 'native' and not lane.signal_id
   left = direction == 'left'
-  cc = SimpleNamespace(assistantLaneSignalId=lane.signal_id, latActive=True, leftBlinker=left, rightBlinker=not left)
+  cc = SimpleNamespace(assistantLaneSignalId='a'*43, latActive=True, leftBlinker=left, rightBlinker=not left)
   body = SimpleNamespace(left_blinker_active=False, right_blinker_active=False)
   packer = CANPacker('vw_meb' if output == 'EA_02' else 'hyundai_canfd_generated')
   field, value = ('EA_Blinken', 1 if left else 2) if output == 'EA_02' else ('BLINKER_CONTROL', 3 if left else 4)
@@ -252,14 +216,14 @@ def test_native_signal_needs_transmitted_command_and_physical_lamp(voice, output
   driver.update(now(), cc, cs, body, [wrong])
   lamps(True)
   driver.update(now(), cc, cs, body, [])
-  assert tick() == log.LaneChangeState.preLaneChange
+  assert tick() in (log.LaneChangeState.off, log.LaneChangeState.preLaneChange)
   lamps(False)
   driver.update(now(), cc, cs, body, [frame])
-  assert tick() == log.LaneChangeState.preLaneChange
+  assert tick() in (log.LaneChangeState.off, log.LaneChangeState.preLaneChange)
   lamps(True)
   driver.update(now(), cc, cs, body, [])
-  assert tick() == log.LaneChangeState.laneChangeStarting
-  assert result()['status'] == 'running'
+  tick()
+  assert helper.lane_change_state != log.LaneChangeState.laneChangeStarting
 
 
 def test_native_indicator_requires_enabled_vehicle_interface():
@@ -285,7 +249,8 @@ def test_native_indicator_requires_enabled_vehicle_interface():
 def test_existing_native_blinker_output_is_bound_only_for_native_voice(route, armed, active, sends):
   from openpilot.selfdrive.car.voice_indicator import set_lane_change_blinkers
   meta = log.ModelDataV2.new_message().meta
-  meta.laneChangeState = 'preLaneChange'
+  meta.driverConfirmedLaneChange = 'right'
+  meta.laneChangeState = 'laneChangeStarting'
   meta.laneChangeDirection = 'right'
   meta.assistantLaneSignalRoute = route
   meta.assistantLaneSignalId = 'n'*43 if armed else ''
