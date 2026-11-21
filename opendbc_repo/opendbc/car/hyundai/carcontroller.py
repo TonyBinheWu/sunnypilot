@@ -17,7 +17,7 @@ from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.vehicle_model import VehicleModel
-from opendbc.car.hyundai.values import get_pedal_interceptor_params
+from opendbc.car.hyundai.values import CCNC_PORT_CAR, get_pedal_interceptor_params
 from opendbc.car.pedal_interceptor import PedalInterceptor
 from openpilot.common.filter_simple import MyMovingAverage
 
@@ -696,7 +696,8 @@ class CarController(CarControllerBase):
             )
             if msg is not None:
               can_sends.append(msg)
-            can_sends.extend(hyundaicanfd.create_tcs_messages(self.packer, self.CAN, CS)) # for sorento SCC radar...
+            if self.car_fingerprint not in CCNC_PORT_CAR:
+              can_sends.extend(hyundaicanfd.create_tcs_messages(self.packer, self.CAN, CS))
           else:
             msg, self.accel_value_last = hyundaicanfd.create_acc_control(
               self.packer, self.CAN, CC.enabled, self.accel_last, accel, stopping,

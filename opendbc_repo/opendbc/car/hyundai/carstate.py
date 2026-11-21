@@ -20,7 +20,8 @@ from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, Buttons, CarContr
                                        EV_MODE_ACTIVE_VALUES, EV_MODE_STATUS_ADDR, EV_MODE_STATUS_DLC, EV_MODE_STATUS_MSG, \
                                        EV_MODE_STATUS_SIGNAL
 from opendbc.car.interfaces import CarStateBase
-from opendbc.car.hyundai.values import get_pedal_interceptor_params
+from opendbc.car.hyundai.factory_cruise import update_ccnc_cruise, update_non_scc_state
+from opendbc.car.hyundai.values import CCNC_PORT_CAR, NON_SCC_CAR, get_pedal_interceptor_params
 from opendbc.car.pedal_interceptor import (PEDAL_INTERCEPTOR_BUS,
                                          PEDAL_INTERCEPTOR_RX_FREQUENCY, PedalInterceptorState)
 
@@ -580,6 +581,9 @@ class CarState(CarStateBase):
       ret.cruiseState.enabled = cp.vl["TCS13"]["ACC_REQ"] == 1
       ret.cruiseState.standstill = False
       ret.cruiseState.nonAdaptive = False
+    elif self.CP.carFingerprint in NON_SCC_CAR:
+      update_non_scc_state(ret, self.CP, cp, cp_cam, speed_conv)
+      self.main_enabled = ret.cruiseState.available
     elif not self.CP.flags & HyundaiFlags.CC_ONLY_CAR:
       self.main_enabled = ret.cruiseState.available = cp_cruise.vl["SCC11"]["MainMode_ACC"] == 1
       ret.cruiseState.enabled = cp_cruise.vl["SCC12"]["ACCMode"] != 0
@@ -607,13 +611,13 @@ class CarState(CarStateBase):
 
     # TODO: Find brake pressure
     ret.brake = 0
-    if not self.CP.flags & HyundaiFlags.CC_ONLY_CAR or self.pedal_interceptor_params is not None:
+    if not self.CP.flags & HyundaiFlags.CC_ONLY_CAR or self.CP.carFingerprint in NON_SCC_CAR or self.pedal_interceptor_params is not None:
       ret.brakePressed = cp.vl["TCS13"]["DriverOverride"] == 2  # 2 includes regen braking by user on HEV/EV
       ret.brakeHoldActive = cp.vl["TCS15"]["AVH_LAMP"] == 2  # 0 OFF, 1 ERROR, 2 ACTIVE, 3 READY
       ret.parkingBrake = cp.vl["TCS13"]["PBRAKE_ACT"] == 1
       ret.espDisabled = cp.vl["TCS11"]["TCS_PAS"] == 1
       ret.espActive = cp.vl["TCS11"]["ABS_ACT"] == 1
-      ret.accFaulted = cp.vl["TCS13"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
+      ret.accFaulted = self.CP.carFingerprint not in NON_SCC_CAR and cp.vl["TCS13"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
       ret.brakeLights = bool(cp.vl["TCS13"]["BrakeLight"] or ret.brakePressed)
 
     if self.pedal_interceptor_state is not None:
@@ -1499,6 +1503,9 @@ class CarState(CarStateBase):
       acc_req = cp.vl["TCS"]["ACC_REQ"]
       ret.cruiseState.enabled = acc_req == 1
       ret.cruiseState.standstill = False
+    elif self.CP.carFingerprint in CCNC_PORT_CAR:
+      update_ccnc_cruise(ret, cp, cp_cam, speed_factor)
+      self.main_enabled = ret.cruiseState.available
     else:
       cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else cp
       ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
@@ -1515,7 +1522,9 @@ class CarState(CarStateBase):
 
     speed_limit_cam = False
     corner = False
-    corner_infos = [info for info in (self.adrv_0x1ea, self.ccnc_0x162) if info is not None]
+    # On these ccNC harnesses 0x162 carries cluster/FCA graphics.
+    corner_162 = None if self.CP.carFingerprint in CCNC_PORT_CAR else self.ccnc_0x162
+    corner_infos = [info for info in (self.adrv_0x1ea, corner_162) if info is not None]
     if corner_infos:
       def corner_max(signal):
         return max(info[signal] for info in corner_infos)

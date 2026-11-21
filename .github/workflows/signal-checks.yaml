@@ -96,6 +96,7 @@ jobs:
             openpilot/selfdrive/controls/tests/test_dynamic_experimental.py \
             openpilot/selfdrive/carrot/tests/test_curve_speed.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_experimental_longitudinal.py \
+            opendbc_repo/opendbc/car/hyundai/tests/test_harness_ports.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_hda2_raw_radar.py \
             openpilot/selfdrive/car/tests/test_cruise_settings.py \
             openpilot/selfdrive/controls/tests/test_controlsd_publish.py \
