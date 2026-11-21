@@ -87,6 +87,30 @@ class TestDesireHelperStalkRequest:
     self.helper.update(car, model, True, lane_change_prob, self.carrot_man, SimpleNamespace())
     return self.helper.lane_change_state
 
+  def test_no_route_driver_and_model_corroborate_slow_left_and_right_turns(self):
+    for direction in (1, 2):
+      for case in ('normal', 'opposite vision', 'no torque', 'stale radar', 'blind spot', 'hazards', 'high speed',
+                   'one touch', 'with route', 'driver only', 'trailer'):
+        self.setup_method()
+        side = self.helper.left if direction == 1 else self.helper.right
+        side.lane_available = side.edge_available = False
+        # No four-metre edge opening: previously the classifier returned none here.
+        sign = 1 if direction == 1 else -1
+        car = SimpleNamespace(canValid=True, leftBlinker=direction == 1 or case == 'hazards',
+                              rightBlinker=direction == 2 or case == 'hazards',
+                              vEgo=25. if case == 'high speed' else 3., aEgo=0., gearShifter='drive',
+                              trailerConnected=case == 'trailer', steeringTorque=2.*sign,
+                              steeringPressed=case != 'no torque', steeringAngleDeg=25.*sign,
+                              blinkerLever=1 if case == 'one touch' else 2,
+                              leftBlindspot=case == 'blind spot', rightBlindspot=case == 'blind spot')
+        desires = [0., 0., 0.]
+        desires[3 - direction if case == 'opposite vision' else direction] = 0. if case == 'driver only' else .8
+        model = SimpleNamespace(meta=SimpleNamespace(desireState=desires))
+        self.helper.update(car, model, True, .5, self.carrot_man, SimpleNamespace(), indicator_valid=True,
+                           assistant_valid=case != 'stale radar', no_navigation=case != 'with route')
+        expected = (log.Desire.turnLeft if direction == 1 else log.Desire.turnRight) if case == 'normal' else log.Desire.none
+        assert self.helper.desire == expected, (direction, case, self.helper.desire)
+
   def start_and_cross(self, counters=True):
     """off -> pre -> starting with the left blinker, then hold starting until the model says done."""
     self.update(left_blinker=False, counters=counters)

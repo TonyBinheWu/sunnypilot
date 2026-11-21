@@ -21,8 +21,8 @@ from openpilot.selfdrive.controls.lib.desire_lib.constants import (
   DESIRES, TURN_DESIRES
 )
 from openpilot.selfdrive.controls.lib.desire_lib.side_state import SideState
-from openpilot.selfdrive.controls.lib.desire_lib.maneuver_classifier import classify_maneuver_type
-from openpilot.selfdrive.controls.lib.desire_lib.lever import LEVER_REQUEST_WAIT_S, LaneCrossing, LeverForcedTurn, LeverRequestWait, lever_maneuver
+from openpilot.selfdrive.controls.lib.desire_lib.maneuver_classifier import classify_maneuver_type, driver_started_turn, signalled_turn_probability
+from openpilot.selfdrive.controls.lib.desire_lib.lever import LEVER_LATCHED, LEVER_REQUEST_WAIT_S, LaneCrossing, LeverForcedTurn, LeverRequestWait, lever_maneuver
 
 # Without a model-detected crossing, a lever press this early in laneChangeFinishing is still the driver
 # re-lighting the lamp of the change that just crossed, not a request for the next one.
@@ -388,7 +388,7 @@ class DesireHelper:
   # ─────────────────────────────────────────────
   def update(self, carstate, modeldata, lateral_active, lane_change_prob, carrotMan, radarState, *,
              indicator_valid=False, indicator_curvature=None, assistant_valid=False, turn_hold_allowed=False, turn_pose=None,
-             indicator_yaw_rate=None):
+             indicator_yaw_rate=None, no_navigation=False):
     self.frame += 1
     self._update_params_periodic()
     if self.boundary_indicator_supported:
@@ -574,14 +574,20 @@ class DesireHelper:
     else:
       # classify maneuver type using selected side
       if desire_enabled and side is not None:
+        manual_no_route = no_navigation and driver_enabled and not atc_enabled
+        probability = signalled_turn_probability(modeldata, driver_st) if manual_no_route else 0.
         new_type = classify_maneuver_type(
           blinker_state=blinker_state,
           carstate=carstate,
           side=side,
-          turn_desire_state=self.turn_desire_state,
+          turn_desire_state=(probability > .1 if manual_no_route else self.turn_desire_state),
           atc_type=self.atc_type,
           old_type=self.maneuver_type,
         )
+        if (manual_no_route and indicator_valid and assistant_valid and lever == LEVER_LATCHED
+            and self.blinkerLatchedTurn == 0 and self.lane_change_state == LaneChangeState.off
+            and driver_started_turn(carstate, side, driver_st, probability)):
+          new_type = "turn"
       else:
         new_type = "none"
       if self.tesla_auto_signals and self._auto_app_direction:
