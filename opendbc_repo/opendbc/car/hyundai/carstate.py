@@ -462,7 +462,13 @@ class CarState(CarStateBase):
             add_and_cache(cp_cruise, "SCC13", "scc13")
             add_and_cache(cp_cruise, "SCC14", "scc14")
       else: # canfd
-        if self.controls_ready_count == 120:
+        # With host longitudinal and the stock SCC ECU disabled, a frame seen
+        # during startup is not a running RX source. Camera SCC still needs its
+        # real OEM template, and factory ACC still needs its cruise feedback.
+        stock_scc_disabled = (self.CP.openpilotLongitudinalControl and self.CP.flags & HyundaiFlags.CANFD_HDA2 and
+                              not self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC and
+                              not self.CP.extFlags & HyundaiExtFlags.BOSCH_RADAR)
+        if self.controls_ready_count == 120 and not stock_scc_disabled:
           cp_cruise = self.cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else self.cp
           add_and_cache(cp_cruise, "SCC_CONTROL", "scc_control")
         elif self.controls_ready_count == 121:

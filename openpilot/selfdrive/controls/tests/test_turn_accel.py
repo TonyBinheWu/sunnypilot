@@ -182,7 +182,8 @@ def test_planner_passes_preview_ceiling_to_mpc_with_existing_slew_limit(previous
   def stop(*args):
     raise StopBeforeSolver
 
-  planner = SimpleNamespace(hkg_phase1_enabled=False, coasting_param_time=0., dt=.05, CP=SimpleNamespace(openpilotLongitudinalControl=True),
+  planner = SimpleNamespace(experimental_mode=SimpleNamespace(select=lambda *_: 'acc'), dec_enabled=False,
+                            hkg_phase1_enabled=False, coasting_param_time=0., dt=.05, CP=SimpleNamespace(openpilotLongitudinalControl=True),
                             mpc=SimpleNamespace(set_accel_limits=lambda *args: captured.extend(args), set_cur_state=stop),
                             a_desired=previous_accel, reset_decel_timer=0, output_should_stop=False,
                             update_hkg_curve_speed=lambda sm, cruise, reset: cruise,

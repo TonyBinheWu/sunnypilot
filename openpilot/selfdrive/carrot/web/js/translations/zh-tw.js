@@ -647,6 +647,7 @@ window.CarrotTranslations.register("zh-tw", {
     no: "No",
     enable_openpilot: "啟用 openpilot",
     experimental_mode: "實驗模式",
+    dynamic_experimental_control: "動態實驗模式控制（DEC）",
     experimental_mode_confirm: "實驗模式會啟用尚未適合普通模式的 Alpha 功能。要啟用實驗模式嗎？",
     disengage_on_accelerator: "踩油門時退出輔助",
     enable_ldw: "啟用車道偏離警示",

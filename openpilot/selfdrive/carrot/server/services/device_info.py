@@ -76,6 +76,7 @@ DEVICE_SETTING_GROUPS: tuple[tuple[str, tuple[tuple[str, Any], ...]], ...] = (
   ("Toggles", (
     ("OpenpilotEnabledToggle", False),
     ("ExperimentalMode", False),
+    ("DynamicExperimentalControl", False),
     ("ExperimentalModeConfirmed", False),
     ("DisengageOnAccelerator", False),
     ("IsLdwEnabled", False),

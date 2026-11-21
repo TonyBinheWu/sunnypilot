@@ -76,7 +76,7 @@ def test_reset_does_not_apply_optional_constraint(native):
 def planner_factory(native, monkeypatch):
   from openpilot.selfdrive.controls.lib import longitudinal_planner as module
 
-  params = NS(get_int=lambda key: 0, get_float=lambda key: 50. if key == "VEgoStopping" else 20.)
+  params = NS(get_bool=lambda key: False, get_int=lambda key: 0, get_float=lambda key: 50. if key == "VEgoStopping" else 20.)
   monkeypatch.setattr(module, "Params", lambda: params)
   monkeypatch.setattr(module.cloudlog, "event", lambda *args, **kwargs: None)
   clock = [N]

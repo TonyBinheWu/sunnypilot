@@ -232,6 +232,9 @@ jobs:
         run: |
           python -m pytest -o addopts='' -q \
             opendbc_repo/opendbc/car/hyundai/tests/test_radar.py \
+            openpilot/selfdrive/controls/tests/test_dynamic_experimental.py \
+            openpilot/selfdrive/carrot/tests/test_curve_speed.py \
+            opendbc_repo/opendbc/car/hyundai/tests/test_experimental_longitudinal.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_hda2_raw_radar.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_bosch_mature_retention.py \
             opendbc_repo/opendbc/car/hyundai/tests/test_bosch_camera_extended.py \

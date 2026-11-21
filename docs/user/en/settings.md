@@ -624,3 +624,5 @@ Selecting Traditional Chinese (`zh-tw`) loads the 212 per-setting reference page
 ## FormosaLink on carrot-wip
 
 Open Device → FormosaLink (C3X) or Settings → FormosaLink (C4) for independent QR pairing. `FormosaLinkEnabled` defaults on for the background agent; pairing remains required. `FormosaLinkRemoteWeb` is a separate, default-off local grant for the full native Carrot web, including its existing tools and terminal. It requires fresh parked/ignition-off state and closes when permission, ownership or state expires. `FormosaLinkRemoteSettings` does not grant full web access. The portal's Carrot adapter reports health; setting edits use Carrot's own web validation. The Live section provides owner-leased wide-road/driver MJPEG video. Update the device and IIS backend together; see [deployment and limits](../../../formosalink/docs/CARROT_REMOTE.md).
+
+[Experimental longitudinal control](speed-deceleration.md) · `ExperimentalMode` / `DynamicExperimentalControl` / `AlphaLongitudinalEnabled`

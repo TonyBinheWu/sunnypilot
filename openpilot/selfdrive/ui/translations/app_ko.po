@@ -2054,3 +2054,9 @@ msgstr "주변을 확인하고 직접 방향지시등을 조작하세요"
 #: openpilot/selfdrive/ui/lane_change_notice.py
 msgid "Indicator on; check surrounding traffic"
 msgstr "방향지시등 켜짐 · 주변을 확인하세요"
+
+msgid "Dynamic Experimental Control"
+msgstr "동적 실험 모드 제어"
+
+msgid "In Experimental Mode, switch between adaptive cruise and vision-based longitudinal planning."
+msgstr "실험 모드에서 어댑티브 크루즈와 비전 기반 종방향 주행 계획을 전환합니다."

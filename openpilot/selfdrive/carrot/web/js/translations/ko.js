@@ -589,6 +589,7 @@ window.CarrotTranslations.register("ko", {
     no: "아니오",
     enable_openpilot: "오픈파일럿 활성화",
     experimental_mode: "실험 모드",
+    dynamic_experimental_control: "동적 실험 모드 제어 (DEC)",
     experimental_mode_confirm: "실험 모드는 아직 일반 모드에 준비되지 않은 알파 기능을 활성화합니다. 실험 모드를 켜시겠습니까?",
     disengage_on_accelerator: "가속 페달 조작 시 해제",
     enable_ldw: "차선 이탈 경고 활성화",

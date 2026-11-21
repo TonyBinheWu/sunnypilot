@@ -573,6 +573,7 @@ window.CarrotTranslations.register("en", {
     no: "No",
     enable_openpilot: "Enable openpilot",
     experimental_mode: "Experimental Mode",
+    dynamic_experimental_control: "Dynamic Experimental Control (DEC)",
     experimental_mode_confirm: "Experimental Mode enables alpha-level features that are not ready for chill mode. Enable Experimental Mode?",
     disengage_on_accelerator: "Disengage on Accelerator",
     enable_ldw: "Enable Lane Departure Warnings",
