@@ -1515,7 +1515,12 @@ BO_ 913 BCM_PO_11: 8 Vector__XXX
  SG_ BCM_Shift_R_MT_SW_Status : 39|2@0+ (1,0) [0|3] "" PT_ESC_ABS
  SG_ LFA_Pressed : 4|1@0+ (1,0) [0|1] "" XXX
 
+BO_ 1429 E_CRUISE_CONTROL: 8 XXX
+ SG_ CRUISE_LAMP_M : 50|1@0+ (1,0) [0|1] "" XXX
+ SG_ CRUISE_LAMP_S : 51|1@0+ (1,0) [0|1] "" XXX
+
 BO_ 1426 LABEL11: 8 XXX
+ SG_ CC_ACT : 35|1@1+ (1,0) [0|1] "" XXX
  SG_ CC_React : 34|1@1+ (1,0) [0|1] "" XXX
 
 BO_ 910 WHL_SPD12_FS: 5 iBAU

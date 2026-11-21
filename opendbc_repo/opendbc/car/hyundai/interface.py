@@ -1,6 +1,6 @@
 from opendbc.car import Bus, get_safety_config, structs
 from opendbc.car.hyundai.hyundaicanfd import CanBus
-from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
+from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, CCNC_PORT_CAR, NON_SCC_CAR, \
                                                    CANFD_UNSUPPORTED_LONGITUDINAL_CAR, \
                                                    UNSUPPORTED_LONGITUDINAL_CAR, HyundaiSafetyFlags, HyundaiExtFlags, \
                                                    CANFD_HYBRID_STATUS_ADDR, CANFD_HYBRID_STATUS_DLC, \
@@ -35,6 +35,11 @@ class CarInterface(CarInterfaceBase):
 
     params = Params()
     camera_scc = params.get_int("HyundaiCameraSCC")
+    # Factory camera-SCC wiring on the new ccNC harnesses is independent of
+    # the retrofit setting. A partial or different fingerprint stays passive.
+    port_candidate = candidate in CCNC_PORT_CAR or candidate in NON_SCC_CAR
+    if port_candidate:
+      camera_scc = 0
     if camera_scc > 0:
       ret.flags |= HyundaiFlags.CAMERA_SCC.value
       print("$$$CAMERA_SCC toggled...")
@@ -46,11 +51,13 @@ class CarInterface(CarInterfaceBase):
 
     cam_can = CanBus(None, fingerprint).CAM if camera_scc == 0 else 1
     adas_present = any(fw.ecu == Ecu.adas for fw in car_fw)
-    hda2 = params.get_int("CanfdHDA2") > 0 or (
+    hda2 = (not port_candidate and params.get_int("CanfdHDA2") > 0) or (
       bool(ret.flags & HyundaiFlags.CANFD) and camera_scc == 0 and adas_present and
       (fingerprint[cam_can].get(0x50) == 16 or fingerprint[cam_can].get(0x110) == 32)
     )
     CAN = CanBus(None, fingerprint, hda2)
+    if candidate in CCNC_PORT_CAR and not hda2 and fingerprint[CAN.CAM].get(0x1a0) == 32:
+      ret.flags |= HyundaiFlags.CANFD_CAMERA_SCC.value
 
     # Prefer the current camera wiring, while supporting recorded src=1 wiring.
     bosch_bus = bosch_mrrevo14f_bus(candidate, ret.flags, fingerprint, (CAN.CAM, CAN.ACAN))
@@ -78,7 +85,7 @@ class CarInterface(CarInterfaceBase):
 
       # Tucson can broadcast LFA_ALT while using LFA torque steering.
       # Keep its torque controller instead of inferring angle support from 0xCB alone.
-      if candidate != CAR.HYUNDAI_TUCSON_4TH_GEN and 0xCB in fingerprint[CAN.CAM]:  # LFA_ALT
+      if candidate != CAR.HYUNDAI_TUCSON_4TH_GEN and candidate not in CCNC_PORT_CAR and 0xCB in fingerprint[CAN.CAM]:  # LFA_ALT
         print("##### Anglecontrol detected (LFA_ALT)")
         ret.flags |= HyundaiFlags.ANGLE_CONTROL.value
 
@@ -218,7 +225,7 @@ class CarInterface(CarInterfaceBase):
     ret.radarUnavailable = RADAR_START_ADDR not in fingerprint[1] or Bus.radar not in DBC[ret.carFingerprint]
     enable_radar_tracks = params.get_int("EnableRadarTracks")
     radar_long = enable_radar_tracks > 0 or enable_radar_tracks == -2
-    if ret.flags & HyundaiFlags.CAMERA_SCC or radar_long:
+    if not port_candidate and (ret.flags & HyundaiFlags.CAMERA_SCC or radar_long):
       ret.radarUnavailable = False
     # A factory camera-SCC fingerprint identifies the RX bus, not a driver's
     # request to hand over acceleration. Preserve explicit retrofit/radar modes.
@@ -295,10 +302,23 @@ class CarInterface(CarInterfaceBase):
     # TODO: Optima Hybrid 2017 uses a different SCC12 checksum
     #ret.dashcamOnly = candidate in {CAR.KIA_OPTIMA_H, }
 
+    if port_candidate:
+      # Until the target controller and Panda both pass this harness replay,
+      # publish receiver state with no actuator or ECU initialization authority.
+      ret.dashcamOnly = True
+      ret.alphaLongitudinalAvailable = False
+      ret.openpilotLongitudinalControl = False
+      ret.pcmCruise = True
+      ret.autoResumeSng = False
+      ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.noOutput)]
+
     return ret
 
   @staticmethod
   def init(CP, can_recv, can_send):
+
+    if CP.dashcamOnly:
+      return
 
     Params().put_int('LongitudinalPersonalityMax', 4)
 
