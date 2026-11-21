@@ -6,12 +6,14 @@ import json
 import math
 import tempfile
 import time
+from functools import partial
 from pathlib import Path
 from types import SimpleNamespace
 
 from aiohttp import web
 
 from openpilot.selfdrive.carrot.realtime.compact_state import encode_carrot_state_batch, encode_carrot_state_frame
+from openpilot.selfdrive.carrot.server.services import navigation_ui
 from openpilot.selfdrive.carrot.server.services.web_settings import web_settings_client_spec
 from .gpu_objects import INPUT, WorkstationObjects
 from .gpu_scene_relay import GpuSceneRelay
@@ -156,17 +158,22 @@ def make_app(args, inference, lens_profiles=None):
       boot = {"visionGpuScene": True, "webSettings": settings, "webSettingsSpec": web_settings_client_spec(), "deviceLanguage": "zh-CHT", "intro": {"shouldShow": False}}
       html = html.replace("<head>", "<head><script>window.__CARROT_BOOTSTRAP__="+json.dumps(boot)+";</script>", 1)
     else:
+      html = navigation_ui.version_assets(html, ASSETS, ("/js/generated/cockpit.js",))
       html = html.replace("</body>", '<script>const label=document.querySelector("header strong");if(label)label.textContent="GPU 影片回放";</script></body>')
     return web.Response(text=html, content_type="text/html", headers={"Cache-Control":"no-store"})
 
   async def info(request):
+    if request.match_info["name"] == "navigation/map.png":
+      return web.Response(status=204, headers={"X-Nav-Map-Status":"offroad","Cache-Control":"no-store"})
     answers = {"carrot_navi/capabilities":{"ok":True,"feature":"carrotNavi"}, "web_settings":{"settings":settings},
                "params_bulk":{"ok":True,"values":{}}, "settings/snapshot":{"ok":True,"settings":{},"values":{}},
-               "navigation/destination":{"ok":True,"destination":None}}
+               "navigation/destination":{"destination":None,"map_ready":False},
+               "navigation/favorites":{"favorites":[]}, "navigation/route_view":{"position":None,"coordinates":[],"route_id":0},
+               "navigation/parking":{"status":"disabled","areas":[]}, "navigation/offline":{"installed":None,"stage":"idle"}}
     value = answers.get(request.match_info["name"])
     if value is None:
       raise web.HTTPNotFound()
-    return web.json_response(value)
+    return web.json_response(value, headers={"Cache-Control":"no-store"})
 
   app = web.Application(middlewares=[access], client_max_size=1048577)
   app.router.add_get("/render", host)
@@ -175,6 +182,8 @@ def make_app(args, inference, lens_profiles=None):
   app.router.add_post(BASE+"/publish", publish)
   app.router.add_post(BASE+"/view", view_update)
   app.router.add_get(BASE+"/frame", relay.read)
+  app.router.add_get("/navigation", partial(navigation_ui.page, replay=True))
+  app.router.add_get("/api/navigation/config", navigation_ui.map_config)
   app.router.add_get("/api/{name:.*}", info)
   app.router.add_get("/ws/compact_state", parked_state)
   app.router.add_get("/", page)

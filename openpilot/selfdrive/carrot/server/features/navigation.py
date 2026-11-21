@@ -3,7 +3,6 @@ import asyncio
 import json
 import math
 from dataclasses import dataclass, field
-from pathlib import Path
 import time
 import unicodedata
 
@@ -11,9 +10,9 @@ import aiohttp
 from aiohttp import web
 
 from openpilot.common.params import Params
-from ..config import WEB_DIR, CARROT_NAVIGATION_FAVORITES_PATH
+from ..config import CARROT_NAVIGATION_FAVORITES_PATH
 from ..services.navigation_favorites import FavoritesFull, NavigationFavorites, google_reference, query_reference
-from ..services.static_assets import fingerprint_static_asset
+from ..services.navigation_ui import map_config, page
 from ..services.params import get_param_value, set_param_value
 from openpilot.selfdrive.navigation.preview import PREVIEW_PATH, VIEW_PATH, WEB_DEMAND_PATH, preview_fresh, preview_reason
 
@@ -37,22 +36,6 @@ def destination(value):
   if not math.isfinite(lat) or not math.isfinite(lon) or abs(lat) > 85.05112878 or abs(lon) > 180:
     raise ValueError('invalid coordinates')
   return {'latitude': lat, 'longitude': lon, 'place_name': str(value.get('place_name', 'Destination'))[:256]}
-
-
-async def page(request):
-  html = Path(WEB_DIR, 'navigation.html').read_text(encoding='utf-8')
-  for asset in ('/css/navigation-guidance.css', '/js/generated/offline-map.js', '/js/pages/navigation_zh_tw.js', '/js/pages/navigation_osm.js', '/js/pages/navigation_map.js'):
-    fingerprint = fingerprint_static_asset(WEB_DIR, asset)
-    if fingerprint:
-      html = html.replace(f'"{asset}"', f'"{asset}?v={fingerprint}"')
-  return web.Response(text=html, content_type='text/html', headers={'Cache-Control': 'no-store'})
-
-
-async def map_config(_request):
-  return web.json_response({'provider': 'openstreetmap', 'basemaps': ['openstreetmap'],
-                            'search': 'mapbox', 'routing': 'mapbox', 'model': 'mapsd',
-                            'osm_tile_url': 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'},
-                           headers={'Cache-Control': 'no-store'})
 
 
 async def route_view(_request):

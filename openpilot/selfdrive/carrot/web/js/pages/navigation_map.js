@@ -13,6 +13,10 @@
   document.documentElement.lang = traditional ? "zh-Hant" : language.startsWith("ko") ? "ko" : "en";
   $("title").textContent = tr("Carrot 내비게이션", "Carrot Navigation");
   $("searchTitle").textContent = tr("목적지 검색", "Find a destination");
+  const readOnly = document.documentElement.hasAttribute?.('data-navigation-replay') === true;
+  if (readOnly) {
+    $('navigationReplayNote').textContent = tr('PC 재생에서는 지도를 볼 수 있습니다. 목적지 검색 및 안내는 차량에 연결하세요.', 'Browse the map in PC replay. Connect to the vehicle to search for a destination and navigate.');
+  }
   $("search").textContent = tr("검색", "Search");
   $("clear").textContent = tr("현재 내비게이션 종료", "End current navigation");
   $("note").textContent = tr("키 등록 후 목적지를 검색하고 선택하세요. 선택한 위치는 현재 주행 세션에만 사용되며, 주행이 끝나거나 장치가 재시작되면 지워집니다. 경로 지도는 주행 화면이 켜져 있고 현재 위치와 안내 경로가 있을 때 표시됩니다. 외부 내비 안내가 우선이며, 연결이 끝나면 현재 주행의 Mapbox 목적지를 사용합니다.", "After saving your Public key, search for and select a destination. The selected place is used only for the current drive and is cleared when the drive ends or the device restarts. The route map needs the driving screen, a current position and route guidance. External navigation takes priority; the current drive's Mapbox destination resumes after it disconnects.");
@@ -90,6 +94,7 @@
     return {ended:true};
   }
   globalThis.CarrotNavigationView=Object.freeze({
+    readOnly,
     snapshot:()=>({known:destinationKnown,mapReady:destinationKnown && mapReady,busy:destinationBusy||destinationReadBusy,active:destinationKnown&&!!currentPlace,label:currentPlace?.place_name||'',error:destinationError}),
     refresh:readDestination,end:endNavigation,
     refreshIfDue:()=>{if(Date.now()-lastDestinationRead>=5000)return readDestination();},

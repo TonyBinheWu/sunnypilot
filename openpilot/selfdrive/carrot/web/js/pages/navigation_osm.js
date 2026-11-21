@@ -164,7 +164,10 @@
           route.setLatLngs(view.route);lastPoint=view.point;instruction(view.instruction);
           updateMarker(view.point,view.bearing);
           if(view.point&&follow){map.setView(view.point,firstFix?Math.max(map.getZoom(),16):map.getZoom(),{animate:false});firstFix=false;}
-          showDestination();message(view.point||selected?'':tr('현재 GPS 위치를 기다리는 중입니다.','Waiting for a current GPS position.'));
+          const noPosition = document.documentElement?.hasAttribute?.('data-navigation-replay')
+            ? tr('PC 재생 · 실시간 차량 위치 없음', 'PC replay · no live vehicle position.')
+            : tr('현재 GPS 위치를 기다리는 중입니다.','Waiting for a current GPS position.');
+          showDestination();message(view.point||selected?'':noPosition);
           }
         }catch{route?.setLatLngs([]);instruction(null);updateMarker(null,null);lastPoint=null;message(tr('차량과 연결할 수 없습니다.','Unable to read map status. Check your connection to the vehicle.'));}
         finally{clearTimeout(deadline);busy=false;}

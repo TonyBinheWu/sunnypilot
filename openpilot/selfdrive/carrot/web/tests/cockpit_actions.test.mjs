@@ -256,6 +256,20 @@ test('the driving split follows confirmed guidance and ignores an old thumbnail'
   snapshot.known=false;assert.equal(value(),'false');
 });
 
+test('entering navigation in GPU replay opens the map and keeps the replay note optional',()=>{
+  const h=harness(),nav=h.el('navigation');
+  h.register('query',{focus(){},blur(){}});
+  nav.contentWindow.CarrotNavigationView={readOnly:true,snapshot:()=>({known:true,active:false}),refresh(){}};
+  h.panel('vision').onclick();
+  h.panel('navigation').onclick();
+  assert.equal(nav.contentDocument.body.classList.contains('search-open'),false);
+  assert.equal(h.el('searchNav').textContent,'回放說明');
+  h.el('searchNav').onclick();
+  assert.equal(nav.contentDocument.body.classList.contains('search-open'),true);
+  h.el('searchNav').onclick();
+  assert.equal(nav.contentDocument.body.classList.contains('search-open'),false);
+});
+
 test('an early sound shortcut opens its section after the embedded page is ready',()=>{
   const h=harness(),sections=[];
   h.frame.CarrotCockpitControls=undefined;h.el('soundShortcut').onclick();
