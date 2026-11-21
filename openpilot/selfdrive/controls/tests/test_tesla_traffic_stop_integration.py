@@ -127,6 +127,37 @@ def planner_factory(native, monkeypatch):
   return create
 
 
+def test_hyundai_dec_selects_mpc_mode_and_keeps_model_stop(planner_factory):
+  import time
+
+  planner, sm, carrot, update = planner_factory(brand="hyundai", mode="blended")
+  planner.dec_enabled = True
+  def pass_mode(_, cruise, selected):
+    carrot.mode = selected
+    return cruise
+  carrot.update = pass_mode
+  model = sm["modelV2"].as_builder()
+  model.orientation.x = [0.] * 33
+  model.position.x = [float(i * 6) for i in range(33)]
+  sm["modelV2"] = model
+  sm.recv_time = {"modelV2": time.monotonic()}
+  sm.logMonoTime = {"modelV2": N, "carState": N}
+  update(0.)
+  assert planner.mpc.mode == "acc"
+
+  # Fresh synchronized input after a gap starts a new observation history.
+  model.position.x = [i / 8. for i in range(33)]
+  model.action.shouldStop = True
+  sm.recv_time["modelV2"] = time.monotonic()
+  sm.logMonoTime = {"modelV2": N + 500_000_000, "carState": N + 500_000_000}
+  update(.5)
+  assert planner.mpc.mode == "blended"
+  assert planner.output_should_stop
+  sm["selfdriveState"].experimentalMode = False
+  update(.55)
+  assert planner.mpc.mode == "acc"
+
+
 @pytest.mark.parametrize("brand", ["hyundai", "toyota", "volkswagen", "tesla"])
 def test_complete_planner_disabled_and_foreign_misconfigured_switch_are_identical(planner_factory, brand):
   original, _, _, original_step = planner_factory(brand, False)
