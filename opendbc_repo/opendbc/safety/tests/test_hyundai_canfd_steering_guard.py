@@ -297,6 +297,7 @@ def test_sorento_sustained_turn_request_interval(monkeypatch, camera_period_us, 
       if in_bend:
         assert destination == 0, (frame, "forwarding rejected")
         data = stock[0].data
+        assert data[13] == 100  # ccNC Sorento MDPS damping, including request cuts
         forwarded_torque = (((data[6] & 15) << 7) | (data[5] >> 1)) - 1024
         assert sign * forwarded_torque > 0
         if bend_torques:
