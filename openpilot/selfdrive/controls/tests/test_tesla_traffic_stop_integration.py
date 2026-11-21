@@ -131,7 +131,8 @@ def test_hyundai_dec_selects_mpc_mode_and_keeps_model_stop(planner_factory):
   import time
 
   planner, sm, carrot, update = planner_factory(brand="hyundai", mode="blended")
-  planner.dec_enabled = True
+  planner.params.get_bool = lambda key: key == "DynamicExperimentalControl"
+
   def pass_mode(_, cruise, selected):
     carrot.mode = selected
     return cruise
