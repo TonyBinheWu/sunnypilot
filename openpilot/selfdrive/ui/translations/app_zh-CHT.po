@@ -2584,3 +2584,42 @@ msgstr "動態實驗模式控制（DEC）"
 
 msgid "In Experimental Mode, switch between adaptive cruise and vision-based longitudinal planning."
 msgstr "啟用實驗模式時，依據前車與預測路徑，在自適應巡航與視覺縱向規劃之間切換。"
+
+msgid "Auto experimental longitudinal"
+msgstr "自動適配實驗縱向"
+
+msgid "Requires a development branch"
+msgstr "需使用開發分支"
+
+msgid "Vehicle identification needed"
+msgstr "等待辨識車型"
+
+msgid "Vehicle controls unavailable"
+msgstr "目前無車輛控制權"
+
+msgid "Stock cruise selected"
+msgstr "已選用原廠巡航"
+
+msgid "Set for a different vehicle"
+msgstr "已為其他車型設定"
+
+msgid "Experimental mode available"
+msgstr "可開啟實驗模式"
+
+msgid "Verify at next vehicle start"
+msgstr "下次啟動時比對車型與線組"
+
+msgid "Experimental longitudinal unavailable"
+msgstr "此配置不支援實驗縱向"
+
+msgid "Factory AEB may become unavailable with experimental longitudinal control."
+msgstr "啟用實驗縱向後，原廠自動緊急煞車（AEB）可能無法作用。"
+
+msgid "Factory AEB may turn off. Slide to enable."
+msgstr "原廠 AEB 可能停用。滑動以啟用"
+
+msgid "CAN wiring mismatch"
+msgstr "CAN 線組與設定不符"
+
+msgid "Vehicle match unconfirmed"
+msgstr "尚未確認車型相符"

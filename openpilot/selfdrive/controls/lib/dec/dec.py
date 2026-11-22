@@ -205,8 +205,9 @@ class DynamicExperimentalController:
     else:
       self._standstill_count = max(0, self._standstill_count - 1)
 
-    # Lead detection
-    self._lead_filter.add_data(float(lead_one.status))
+    # The radar ACC preference requires a sensor-backed lead. Vision-only
+    # leads still reach the longitudinal planner through radarState.
+    self._lead_filter.add_data(float(lead_one.status and lead_one.radar))
     lead_value = self._lead_filter.get_value() or 0.0
     self._has_lead_filtered = lead_value > WMACConstants.LEAD_PROB
 

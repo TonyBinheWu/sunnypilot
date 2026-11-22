@@ -66,3 +66,46 @@ def test_only_valid_manual_selection_skips_fw_query(monkeypatch, forced_candidat
   assert CI.CP.fingerprintSource == expected_source
   assert CI.CP.carFw == []
   assert CI.CP.carVin == VIN_UNKNOWN
+
+
+@pytest.mark.parametrize("detected,source,exact,release,wanted,expect_alpha", [
+  ("CAR", "fw", True, False, "CAR", True),
+  ("CAR", "can", True, False, "CAR", True),
+  ("OTHER", "fw", True, False, "MOCK", False),
+  ("CAR", "fw", False, False, "MOCK", False),
+  ("CAR", "fixed", True, False, "MOCK", False),
+  (None, "can", True, False, "MOCK", False),
+  ("CAR", "fw", True, True, "CAR", False),
+])
+def test_vehicle_scoped_alpha_identification(monkeypatch, detected, source, exact, release, wanted, expect_alpha):
+  class Params:
+    def get(self, key):
+      return {"CarSelected3": "Selected car", "AutoExperimentalPlatform": "CAR"}.get(key)
+
+    def get_bool(self, key):
+      assert key == "IsReleaseBranch"
+      return release
+
+    def put(self, key, value):
+      pass
+
+  cached = object()
+  def fingerprint(*args, skip_fw_query):
+    assert args[-1] is (cached if release else None)
+    assert skip_fw_query == release
+    return detected, {}, VIN_UNKNOWN, [], getattr(CarParams.FingerprintSource, source), exact
+
+  class Interface:
+    @staticmethod
+    def get_params(platform, fp, fw, alpha, is_release, docs):
+      assert alpha == expect_alpha
+      return SimpleNamespace(carFingerprint=platform, brand="test")
+
+    def __init__(self, cp):
+      self.CP = cp
+
+  monkeypatch.setattr(car_helpers, "Params", Params)
+  monkeypatch.setattr(car_helpers, "fingerprint", fingerprint)
+  monkeypatch.setattr(car_helpers, "get_selected_car_platform", lambda name: "CAR")
+  monkeypatch.setattr(car_helpers, "interfaces", {"CAR": Interface, "MOCK": Interface})
+  assert car_helpers.get_car(None, None, None, False, True, cached_params=cached).CP.carFingerprint == wanted

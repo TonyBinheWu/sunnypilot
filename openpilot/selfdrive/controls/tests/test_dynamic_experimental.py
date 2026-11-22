@@ -14,12 +14,13 @@ class Messages(dict):
     return self.healthy and all(key in self for key in services)
 
 
-def observation(endpoint=200., lead=False):
+def observation(endpoint=200., lead=False, radar_lead=True):
   model = log.ModelDataV2.new_message()
   model.position.x = [endpoint * i / 32 for i in range(33)]
   model.orientation.x = [0.] * 33
   radar = log.RadarState.new_message()
   radar.leadOne.status = lead
+  radar.leadOne.radar = lead and radar_lead
   sm = Messages(carState=car.CarState.new_message(vEgo=15., vCruise=70.),
                 selfdriveState=log.SelfdriveState.new_message(experimentalMode=True),
                 modelV2=model, radarState=radar)
@@ -95,3 +96,9 @@ def test_clock_discontinuity_discards_prior_stop_history(delta):
   sm.logMonoTime['modelV2'] += delta
   sm.logMonoTime['carState'] += delta
   assert mode.select(sm, True) == 'acc'
+
+
+def test_vision_only_lead_does_not_override_model_stop_with_radar_acc():
+  mode = selector(radarless=False)
+  sm = observation(5., lead=True, radar_lead=False)
+  assert mode.select(sm, True) == 'blended'

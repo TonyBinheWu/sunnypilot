@@ -262,6 +262,11 @@ bool safety_tx_hook(CANPacket_t *to_send) {
     allowed = true;
   }
 
+  // Classic Hyundai records accepted replacements for its timed OEM forwarding.
+  if (((current_safety_mode == SAFETY_HYUNDAI) || (current_safety_mode == SAFETY_HYUNDAI_LEGACY)) &&
+      (!allowed || relay_malfunction)) {
+    return false;
+  }
   const bool safety_allowed = current_hooks->tx(to_send);
 
   /*
@@ -619,13 +624,8 @@ int ROUND(float val) {
 
 // Safety checks for longitudinal actuation
 bool longitudinal_accel_checks(int desired_accel, const LongitudinalLimits limits) {
-    if(desired_accel != 0) {
-      if(!controls_allowed) print("@@@@@@@@ longitudinal_accel_checks... auto controls_allowed enabled...\n");
-      controls_allowed = true;
-    }
-    //bool accel_valid = get_longitudinal_allowed() && !max_limit_check(desired_accel, limits.max_accel, limits.min_accel);
-    bool accel_valid = !max_limit_check(desired_accel, limits.max_accel, limits.min_accel);
-    bool accel_inactive = desired_accel == limits.inactive_accel;
+  const bool accel_valid = get_longitudinal_allowed() && !max_limit_check(desired_accel, limits.max_accel, limits.min_accel);
+  const bool accel_inactive = desired_accel == limits.inactive_accel;
   return !(accel_valid || accel_inactive);
 }
 
@@ -657,11 +657,10 @@ bool longitudinal_interceptor_checks(const CANPacket_t *to_send) {
 }
 
 // Safety checks for torque-based steering commands
-bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueSteeringLimits limits) {
+bool steer_torque_cmd_checks_with_authority(int desired_torque, int steer_req, const TorqueSteeringLimits limits, bool aol_allowed) {
   bool violation = false;
   uint32_t ts = microsecond_timer_get();
 
-  bool aol_allowed = true;
   if (controls_allowed) acc_main_on = controls_allowed;
   
   if (controls_allowed || aol_allowed) {
@@ -743,6 +742,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueStee
   }
 
   return violation;
+}
+
+bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueSteeringLimits limits) {
+  return steer_torque_cmd_checks_with_authority(desired_torque, steer_req, limits, true);
 }
 
 // Safety checks for angle-based steering commands

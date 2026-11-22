@@ -20,7 +20,7 @@ from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, Buttons, CarContr
                                        EV_MODE_ACTIVE_VALUES, EV_MODE_STATUS_ADDR, EV_MODE_STATUS_DLC, EV_MODE_STATUS_MSG, \
                                        EV_MODE_STATUS_SIGNAL
 from opendbc.car.interfaces import CarStateBase
-from opendbc.car.hyundai.values import get_pedal_interceptor_params
+from opendbc.car.hyundai.values import disables_stock_scc, get_pedal_interceptor_params
 from opendbc.car.pedal_interceptor import (PEDAL_INTERCEPTOR_BUS,
                                          PEDAL_INTERCEPTOR_RX_FREQUENCY, PedalInterceptorState)
 
@@ -239,6 +239,7 @@ class CarState(CarStateBase):
 
     self.params = CarControllerParams(CP)
     self.op_params = Params()
+    self.stock_scc_disabled = disables_stock_scc(CP, self.op_params.get_int("EnableRadarTracks"))
     # Diagnostic only: retain this onroad session's observed camera-bus SCC.
     self.camera_scc_hint_enabled = self.op_params.get_int("HyundaiCameraSCC") == 0 and not (CP.flags & HyundaiFlags.CAMERA_SCC)
     self.camera_scc_hint = False
@@ -465,10 +466,7 @@ class CarState(CarStateBase):
         # With host longitudinal and the stock SCC ECU disabled, a frame seen
         # during startup is not a running RX source. Camera SCC still needs its
         # real OEM template, and factory ACC still needs its cruise feedback.
-        stock_scc_disabled = (self.CP.openpilotLongitudinalControl and self.CP.flags & HyundaiFlags.CANFD_HDA2 and
-                              not self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC and
-                              not self.CP.extFlags & HyundaiExtFlags.BOSCH_RADAR)
-        if self.controls_ready_count == 120 and not stock_scc_disabled:
+        if self.controls_ready_count == 120 and not self.stock_scc_disabled:
           cp_cruise = self.cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else self.cp
           add_and_cache(cp_cruise, "SCC_CONTROL", "scc_control")
         elif self.controls_ready_count == 121:
@@ -582,7 +580,8 @@ class CarState(CarStateBase):
       ret.cruiseState.nonAdaptive = False
     elif not self.CP.flags & HyundaiFlags.CC_ONLY_CAR:
       self.main_enabled = ret.cruiseState.available = cp_cruise.vl["SCC11"]["MainMode_ACC"] == 1
-      ret.cruiseState.enabled = cp_cruise.vl["SCC12"]["ACCMode"] != 0
+      self.ACCMode = cp_cruise.vl["SCC12"]["ACCMode"]
+      ret.cruiseState.enabled = self.ACCMode != 0
       ret.cruiseState.standstill = cp_cruise.vl["SCC11"]["SCCInfoDisplay"] == 4.
       ret.cruiseState.nonAdaptive = cp_cruise.vl["SCC11"]["SCCInfoDisplay"] == 2.  # Shows 'Cruise Control' on dash
       ret.cruiseState.speed = cp_cruise.vl["SCC11"]["VSetDis"] * speed_conv
@@ -1501,7 +1500,8 @@ class CarState(CarStateBase):
       ret.cruiseState.standstill = False
     else:
       cp_cruise_info = cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else cp
-      ret.cruiseState.enabled = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"] in (1, 2)
+      self.ACCMode = cp_cruise_info.vl["SCC_CONTROL"]["ACCMode"]
+      ret.cruiseState.enabled = self.ACCMode in (1, 2)
       if cp_cruise_info.vl["SCC_CONTROL"]["MainMode_ACC"] == 1: # carrot
         ret.cruiseState.available = self.main_enabled = True
         ret.pcmCruiseGap = int(np.clip(cp_cruise_info.vl["SCC_CONTROL"]["DISTANCE_SETTING"], 1, 4))

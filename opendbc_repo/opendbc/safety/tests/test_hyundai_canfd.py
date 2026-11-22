@@ -14,11 +14,13 @@ class TestHyundaiCanfdBase(HyundaiButtonBase, common.PandaCarSafetyTest, common.
 
   TX_MSGS = [[0x50, 0], [0x1CF, 1], [0x2A4, 0]]
   STANDSTILL_THRESHOLD = 12  # 0.375 kph
-  FWD_BLACKLISTED_ADDRS = {2: [0x50, 0x2a4]}
+  # Initial forwarding before an accepted host replacement arms timed suppression.
+  FWD_BLACKLISTED_ADDRS = {0: [0x4B9]}
 
   MAX_RATE_UP = 2
   MAX_RATE_DOWN = 3
-  MAX_TORQUE = 270
+  # Absolute board ceiling, independent of the stock host torque target.
+  MAX_TORQUE = 512
 
   MAX_RT_DELTA = 112
   RT_INTERVAL = 250000
@@ -55,7 +57,7 @@ class TestHyundaiCanfdBase(HyundaiButtonBase, common.PandaCarSafetyTest, common.
     return self.packer.make_can_msg_panda(self.STEER_MSG, self.STEER_BUS, values)
 
   def _speed_msg(self, speed):
-    values = {f"WHL_Spd{pos}Val": speed * 0.03125 for pos in ["FL", "FR", "RL", "RR"]}
+    values = {f"WHEEL_SPEED_{wheel}": speed * 0.03125 for wheel in range(1, 5)}
     return self.packer.make_can_msg_panda("WHEEL_SPEEDS", self.PT_BUS, values)
 
   def _user_brake_msg(self, brake):
@@ -82,9 +84,9 @@ class TestHyundaiCanfdBase(HyundaiButtonBase, common.PandaCarSafetyTest, common.
 
 class TestHyundaiCanfdLFASteeringBase(TestHyundaiCanfdBase):
 
-  TX_MSGS = [[0x12A, 0], [0x1A0, 1], [0x1CF, 0], [0x1E0, 0]]
+  # LFA and HUD on ECAN, factory cruise buttons towards CAM.
+  TX_MSGS = [[0x12A, 0], [0x1A0, 0], [0x1CF, 2], [0x1AA, 2], [0x1E0, 0], [0x161, 0]]
   RELAY_MALFUNCTION_ADDRS = {0: (0x12A,)}  # LFA
-  FWD_BLACKLISTED_ADDRS = {2: [0x12A, 0x1E0]}
 
   STEER_MSG = "LFA"
   BUTTONS_TX_BUS = 2
@@ -98,7 +100,18 @@ class TestHyundaiCanfdLFASteeringBase(TestHyundaiCanfdBase):
       cls.safety = None
       raise unittest.SkipTest
 
+  def expected_tx_msgs(self):
+    msgs = list(type(self).TX_MSGS)
+    camera = self.SAFETY_PARAM & HyundaiSafetyFlags.CAMERA_SCC
+    if camera:
+      msgs += [[0xCB, 0], [0xEA, 2], [0x2AF, 2]]
+    if isinstance(self, HyundaiLongitudinalBase):
+      msgs += [[0x160, 0]]
+      msgs += [[0x10B, 2], [0x175, 2], [0x162, 0], [0x200, 0]] if camera else [[0x7D0, 0]]
+    return msgs
+
   def setUp(self):
+    self.TX_MSGS = self.expected_tx_msgs()
     self.packer = CANPackerPanda("hyundai_canfd_generated")
     self.safety = libsafety_py.libsafety
     self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd, self.SAFETY_PARAM)
@@ -138,26 +151,26 @@ class TestHyundaiCanfdLFASteeringAltButtons(TestHyundaiCanfdLFASteeringBase):
   SAFETY_PARAM: int
 
   def setUp(self):
+    self.TX_MSGS = self.expected_tx_msgs()
     self.packer = CANPackerPanda("hyundai_canfd_generated")
     self.safety = libsafety_py.libsafety
     self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd, HyundaiSafetyFlags.CANFD_ALT_BUTTONS | self.SAFETY_PARAM)
     self.safety.init_tests()
 
-  def _button_msg(self, buttons, main_button=0, bus=1):
+  def _button_msg(self, buttons, main_button=0, bus=None):
     values = {
       "CRUISE_BUTTONS": buttons,
       "ADAPTIVE_CRUISE_MAIN_BTN": main_button,
     }
-    return self.packer.make_can_msg_panda("CRUISE_BUTTONS_ALT", self.PT_BUS, values)
+    return self.packer.make_can_msg_panda("CRUISE_BUTTONS_ALT", self.PT_BUS if bus is None else bus, values)
 
   def _acc_cancel_msg(self, cancel, accel=0):
     values = {"ACCMode": 4 if cancel else 0, "aReqRaw": accel, "aReqValue": accel}
     return self.packer.make_can_msg_panda("SCC_CONTROL", self.PT_BUS, values)
 
   def test_button_sends(self):
-    """
-      No button send allowed with alt buttons.
-    """
+    # Check both the command guard on CAM and rejection on the physical RX bus.
+    super().test_button_sends()
     for enabled in (True, False):
       for btn in range(8):
         self.safety.set_controls_allowed(enabled)
@@ -176,7 +189,6 @@ class TestHyundaiCanfdLKASteeringEV(TestHyundaiCanfdBase):
 
   TX_MSGS = [[0x50, 0], [0x1CF, 1], [0x2A4, 0]]
   RELAY_MALFUNCTION_ADDRS = {0: (0x50,)}  # LKAS
-  FWD_BLACKLISTED_ADDRS = {2: [0x50, 0x2a4]}
 
   PT_BUS = 1
   SCC_BUS = 1
@@ -195,7 +207,6 @@ class TestHyundaiCanfdLKASteeringAltEV(TestHyundaiCanfdBase):
 
   TX_MSGS = [[0x110, 0], [0x1CF, 1], [0x362, 0]]
   RELAY_MALFUNCTION_ADDRS = {0: (0x110,)}  # LKAS_ALT
-  FWD_BLACKLISTED_ADDRS = {2: [0x110, 0x362]}
 
   PT_BUS = 1
   SCC_BUS = 1
@@ -211,6 +222,10 @@ class TestHyundaiCanfdLKASteeringAltEV(TestHyundaiCanfdBase):
 
 
 class TestHyundaiCanfdLKASteeringLongEV(HyundaiLongitudinalBase, TestHyundaiCanfdLKASteeringEV):
+
+  # Hyundai longitudinal controller bounds (m/s^2).
+  MIN_ACCEL = -4.0
+  MAX_ACCEL = 2.5
 
   TX_MSGS = [[0x50, 0], [0x1CF, 1], [0x2A4, 0], [0x51, 0], [0x730, 1], [0x12a, 1], [0x160, 1],
              [0x1e0, 1], [0x1a0, 1], [0x1ea, 1], [0x200, 1], [0x345, 1], [0x1da, 1]]
@@ -251,8 +266,9 @@ class TestHyundaiCanfdLKASteeringLongEV(HyundaiLongitudinalBase, TestHyundaiCanf
   {"GAS_MSG": ("ACCELERATOR_ALT", "ACCELERATOR_PEDAL"), "SCC_BUS": 2, "SAFETY_PARAM": HyundaiSafetyFlags.HYBRID_GAS | HyundaiSafetyFlags.CAMERA_SCC},
 ])
 class TestHyundaiCanfdLFASteeringLong(HyundaiLongitudinalBase, TestHyundaiCanfdLFASteeringBase):
+  MIN_ACCEL = -4.0
+  MAX_ACCEL = 2.5
 
-  FWD_BLACKLISTED_ADDRS = {2: [0x12a, 0x1e0, 0x1a0, 0x160]}
 
   RELAY_MALFUNCTION_ADDRS = {0: (0x12A, 0x1a0)}  # LFA, SCC_CONTROL
 
@@ -266,6 +282,7 @@ class TestHyundaiCanfdLFASteeringLong(HyundaiLongitudinalBase, TestHyundaiCanfdL
       raise unittest.SkipTest
 
   def setUp(self):
+    self.TX_MSGS = self.expected_tx_msgs()
     self.packer = CANPackerPanda("hyundai_canfd_generated")
     self.safety = libsafety_py.libsafety
     self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd, HyundaiSafetyFlags.LONG | self.SAFETY_PARAM)

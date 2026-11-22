@@ -2,6 +2,10 @@
 
 [한국어](../ko/settings.md)
 
+## Auto experimental longitudinal
+
+On a development build, open **Settings → Toggles** while parked. Select **Auto experimental longitudinal** and confirm for the identified vehicle. At the next vehicle start, the system checks the vehicle and available control configuration. A stock-cruise configuration keeps factory cruise. Factory automatic emergency braking (AEB) may be unavailable when experimental longitudinal control is active.
+
 ## Road scene research
 
 In FormosaLink, choose your paired Carrot device, open **Road scene research**, and select **Start sharing**. The portal shows recent road geometry and nearby OpenStreetMap roads. Stop sharing, erase the data, or download your observations from the same panel. Camera classifications require a connected viewer with detection enabled. [Data fields and evaluation](../../ROAD_SCENE_RESEARCH.zh-TW.md)

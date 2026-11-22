@@ -14,10 +14,10 @@ from opendbc.car.hyundai.phase1 import phase1_enabled
 from opendbc.car.hyundai.steering_observations import SteeringObservations
 from opendbc.car.carlog import carlog
 from opendbc.car.hyundai.hyundaicanfd import CanBus
-from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags
+from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags, HyundaiSafetyFlags
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.vehicle_model import VehicleModel
-from opendbc.car.hyundai.values import get_pedal_interceptor_params
+from opendbc.car.hyundai.values import disables_stock_scc, get_pedal_interceptor_params
 from opendbc.car.pedal_interceptor import PedalInterceptor
 from openpilot.common.filter_simple import MyMovingAverage
 
@@ -293,6 +293,8 @@ class CarController(CarControllerBase):
     self.handover_model_time = 0
 
     self.lkas11_active = False
+    self.casper_fca_status = (CP.carFingerprint == CAR.HYUNDAI_CASPER_EV and bool(CP.safetyConfigs) and
+                              bool(CP.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.CLASSIC_CASPER_FCA))
 
     self.canfd_debug = 0
     self.MainMode_ACC_trigger = 0
@@ -300,6 +302,7 @@ class CarController(CarControllerBase):
 
     self.activeCarrot = 0
     self.camera_scc_params = Params().get_int("HyundaiCameraSCC")
+    self.stock_scc_disabled = disables_stock_scc(CP, Params().get_int("EnableRadarTracks"))
     self.is_ldws_car = Params().get_bool("IsLdwsCar")
     self.enable_corner_radar = 0
     self.paddle_mode = Params().get_int("PaddleMode")
@@ -343,7 +346,7 @@ class CarController(CarControllerBase):
       if self.reserve_enabled:
         steerMax = steerDeltaUp = steerDeltaDown = steerDeltaUpLC = steerDeltaDownLC = 0
       if steerMax > 0:
-        self.params.STEER_MAX = steerMax
+        self.params.STEER_MAX = steerMax if self.CP.flags & HyundaiFlags.CANFD else min(steerMax, self.default_steer_max)
       else:
         self.params.STEER_MAX = self.default_steer_max
       if steerDeltaUp > 0:
@@ -388,6 +391,10 @@ class CarController(CarControllerBase):
     else:
       self.params.STEER_DELTA_UP = self.steerDeltaUp
       self.params.STEER_DELTA_DOWN = self.steerDeltaDown
+
+    if not (self.CP.flags & HyundaiFlags.CANFD):
+      self.params.STEER_DELTA_UP = min(self.params.STEER_DELTA_UP, self.steerDeltaUpOrg)
+      self.params.STEER_DELTA_DOWN = min(self.params.STEER_DELTA_DOWN, self.steerDeltaDownOrg)
 
     angle_control = self.CP.flags & HyundaiFlags.ANGLE_CONTROL
 
@@ -589,7 +596,7 @@ class CarController(CarControllerBase):
     self.apply_torque_last = apply_torque
 
     # accel + longitudinal
-    accel = clip_float(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+    accel = clip_float(actuators.accel, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
     stopping = actuators.longControlState == LongCtrlState.stopping
     set_speed_in_units = hud_control.setSpeed * (CV.MS_TO_KPH if CS.is_metric else CV.MS_TO_MPH)
 
@@ -633,7 +640,8 @@ class CarController(CarControllerBase):
       addr, bus = 0x7d0, self.CAN.ECAN if self.CP.flags & HyundaiFlags.CANFD else 0
       if self.CP.flags & HyundaiFlags.CANFD_HDA2.value:
         addr, bus = 0x730, self.CAN.ECAN
-      can_sends.append(make_tester_present_msg(addr, bus, suppress_response=True))
+      if self.stock_scc_disabled:
+        can_sends.append(make_tester_present_msg(addr, bus, suppress_response=True))
 
       # for blinkers
       if self.CP.flags & HyundaiFlags.ENABLE_BLINKERS:
@@ -738,7 +746,7 @@ class CarController(CarControllerBase):
 
           can_sends.extend(hyundaican.create_acc_commands_scc(self.packer, CC.enabled, accel, self.hyundai_jerk, int(self.frame / 2),
                                                           hud_control, set_speed_in_units, stopping,
-                                                          CC.cruiseControl.override, casper_ev, CS, self.soft_hold_mode))
+                                                          CC.cruiseControl.override, self.casper_fca_status, CS, self.soft_hold_mode))
         else:
           can_sends.extend(hyundaican.create_acc_commands(self.packer, CC.enabled, accel, self.hyundai_jerk, int(self.frame / 2),
                                                 hud_control, set_speed_in_units, stopping,
@@ -747,7 +755,8 @@ class CarController(CarControllerBase):
 
       # 20 Hz LFA MFA message
       if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
-        can_sends.append(hyundaican.create_lfahda_mfc(self.packer, CC, self.blinking_signal))
+        can_sends.append(hyundaican.create_lfahda_mfc(self.packer, CC, self.blinking_signal,
+                                                     short_frame=bool(self.CP.extFlags & HyundaiExtFlags.CLASSIC_LFA_SHORT)))
 
       # 5 Hz ACC options
       if self.frame % 20 == 0 and self.CP.openpilotLongitudinalControl and self.pedal_interceptor is None:
@@ -822,7 +831,10 @@ class CarController(CarControllerBase):
 
       if self.last_button_frame != self.frame:
         send_button = self.make_spam_button(CC, CS)
-        if send_button > 0:
+        if send_button == Buttons.RES_ACCEL and not (CC.enabled and CS.out.cruiseState.enabled):
+          send_button = Buttons.NONE
+        send_button = hyundaicanfd.stock_speed_request(CS, send_button)
+        if send_button > 0 and not CS.clu11["CF_Clu_CruiseSwMain"]:
           can_sends.append(hyundaican.create_clu11_button(self.packer, self.frame, CS.clu11, send_button, self.CP))
 
     else:
@@ -895,7 +907,7 @@ class CarController(CarControllerBase):
     if alt_buttons and cruise_buttons_msg_values is None:
       return None
 
-    send_button = self.make_spam_button(CC, CS)
+    send_button = hyundaicanfd.stock_speed_request(CS, self.make_spam_button(CC, CS))
     if send_button > 0:
       if alt_buttons:
         return hyundaicanfd.alt_cruise_buttons(self.packer, self.CP, self.CAN, send_button, cruise_buttons_msg_values, self.cruise_buttons_msg_cnt)
