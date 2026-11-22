@@ -6,8 +6,9 @@ import pytest
 from opendbc.can import CANPacker, CANParser
 from opendbc.car import Bus, gen_empty_fingerprint, interfaces, structs
 from opendbc.car.hyundai import carstate, hyundaicanfd, interface
+from opendbc.car.hyundai.carcontroller import CarController
 from opendbc.car.hyundai.fingerprints import FW_VERSIONS
-from opendbc.car.hyundai.values import CAR, HyundaiExtFlags, HyundaiFlags, HyundaiSafetyFlags
+from opendbc.car.hyundai.values import Buttons, CAR, HyundaiExtFlags, HyundaiFlags, HyundaiSafetyFlags
 
 
 @pytest.mark.parametrize('longitudinal,hda2,camera,bosch,expects_scc', [
@@ -171,3 +172,15 @@ def test_catalog_control_owner_agrees_with_panda(monkeypatch, alpha, camera, tra
       assert cp.alphaLongitudinalAvailable, platform
     if camera == 3 or not (alpha or camera or tracks):
       assert not cp.openpilotLongitudinalControl, platform
+
+
+@pytest.mark.parametrize("mode,gas,valid,expected", [
+  (1, False, True, True), (2, True, True, False), (1, True, True, False), (1, False, False, False),
+])
+def test_stock_speed_decrease_yields_to_driver(mode, gas, valid, expected):
+  controller = SimpleNamespace(CP=SimpleNamespace(flags=HyundaiFlags.CANFD_HDA2), CAN=SimpleNamespace(ECAN=1),
+                               packer=CANPacker("hyundai_canfd_generated"), make_spam_button=lambda cc, cs: Buttons.SET_DECEL)
+  state = SimpleNamespace(canValid=valid, standstill=False, gasPressed=gas, brakePressed=False, regenBraking=False)
+  cs = SimpleNamespace(ACCMode=mode, buttons_counter=0, out=state)
+  packet = CarController.canfd_speed_control_pcm(controller, None, cs, None)
+  assert (packet is not None) == expected

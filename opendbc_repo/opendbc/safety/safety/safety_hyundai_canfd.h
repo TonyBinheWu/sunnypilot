@@ -17,6 +17,14 @@ const CanMsg HYUNDAI_CANFD_HDA2_ALT_STEERING_TX_MSGS[] = {
   {0x1AA, 1, 16}, // CRUISE_ALT_BUTTONS , carrot
 };
 
+// Direct HDA2 harness with standard LKAS and cruise buttons.
+const CanMsg HYUNDAI_CANFD_HDA2_DIRECT_LONG_TX_MSGS[] = {
+  {0x50, 0, 16}, {0x2A4, 0, 24}, {0x51, 0, 32},
+  {0x1CF, 1, 8}, {0x730, 1, 8}, {0x12A, 1, 16}, {0x160, 1, 16},
+  {0x1E0, 1, 16}, {0x1A0, 1, 32}, {0x1EA, 1, 32}, {0x200, 1, 8},
+  {0x345, 1, 8}, {0x1DA, 1, 32},
+};
+
 const CanMsg HYUNDAI_CANFD_HDA2_LONG_TX_MSGS[] = {
   {0x10B, 2, 16}, // ALT2 button intent; consumed, never sent directly
   {0x50, 0, 16},  // LKAS
@@ -488,7 +496,10 @@ static bool canfd_bfwd_reuse_last(CanfdBufferedFwd* st, CANPacket_t* pkt) {
 
 #include "safety_hyundai_canfd_steering.h"
 
+static bool hyundai_canfd_stock_acc_active;
+
 static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
+  const bool long_was_allowed = get_longitudinal_allowed();
   hyundai_canfd_stock_angle_rx(to_push);
   hyundai_spas_rx(to_push, microsecond_timer_get());
   int bus = GET_BUS(to_push);
@@ -556,10 +567,11 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
 
   if (bus == scc_bus) {
     // cruise state
-    if ((addr == 0x1a0) && !hyundai_longitudinal) {
+    if ((addr == 0x1a0) && (GET_LEN(to_push) == 32U) && !hyundai_longitudinal) {
       // 1=enabled, 2=driver override
       int cruise_status = ((GET_BYTE(to_push, 8) >> 4) & 0x7U);
       bool cruise_engaged = (cruise_status == 1) || (cruise_status == 2);
+      hyundai_canfd_stock_acc_active = cruise_status == 1;
       hyundai_common_cruise_state_check(cruise_engaged);
     }
   }
@@ -573,7 +585,22 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
     stock_ecu_detected = stock_ecu_detected || ((addr == 0x1a0) && (bus == stock_scc_bus));
   }
   generic_rx_checks(stock_ecu_detected);
+  if (hyundai_canfd_buffered_fwd && long_was_allowed && !get_longitudinal_allowed()) {
+    CanfdBufferedFwd *accel_queue = canfd_bfwd_find(0x1A0, 0);
+    if (accel_queue != NULL) {
+      canfd_bfwd_reset(accel_queue);
+    }
+  }
 
+}
+
+static bool hyundai_canfd_accel_violation(const CANPacket_t *msg) {
+  const int value = (int)(((GET_BYTE(msg, 17) & 0x7U) << 8U) | GET_BYTE(msg, 16)) - 1023;
+  const int raw = (int)(((GET_BYTE(msg, 18) & 0x7FU) << 4U) | (GET_BYTE(msg, 17) >> 4U)) - 1023;
+  if (!hyundai_longitudinal) {
+    return (value != 0) || (raw != 0);
+  }
+  return longitudinal_accel_checks(value, HYUNDAI_LONG_LIMITS) || longitudinal_accel_checks(raw, HYUNDAI_LONG_LIMITS);
 }
 
 static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send_const) {
@@ -616,55 +643,34 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send_const) {
   // Reject before a forwarding cache can retain a replacement command.
   violation |= hyundai_canfd_steering_tx_check(to_send);
 
-#if 0
-  // cruise buttons check
-  if (addr == 0x1cf) {
-    int button = GET_BYTE(to_send, 2) & 0x7U;
-    bool is_cancel = (button == HYUNDAI_BTN_CANCEL);
-    bool is_resume = (button == HYUNDAI_BTN_RESUME);
-    bool is_set = (button == HYUNDAI_BTN_SET);
-
-    bool allowed = (is_cancel && cruise_engaged_prev) || (is_resume && controls_allowed) || (is_set && controls_allowed);
-    if (!allowed) {
-      tx = false;
-    }
+  if ((addr == 0x1cf) && hyundai_canfd_hda2 && !hyundai_camera_scc && !hyundai_canfd_alt_buttons) {
+    const int button = GET_BYTE(to_send, 2) & 0x7U;
+    const bool cancel = (button == HYUNDAI_BTN_CANCEL) && cruise_engaged_prev;
+    const bool resume = (button == HYUNDAI_BTN_RESUME) && controls_allowed;
+    // SET lowers the target on an already active factory cruise. Never use it
+    // to engage cruise or restart from standstill.
+    const uint32_t now = microsecond_timer_get();
+    const bool decrease = (button == HYUNDAI_BTN_SET) && !hyundai_longitudinal && hyundai_canfd_stock_acc_active &&
+                          vehicle_moving && get_longitudinal_allowed() && !brake_pressed && !regen_braking &&
+                          hyundai_canfd_pt_rx_fresh(0x1A0, now) && hyundai_canfd_pt_rx_fresh(0xA0, now);
+    violation |= !(cancel || resume || decrease) || GET_BIT(to_send, 19U);
   }
-#endif
 
   // UDS: only tester present ("\x02\x3E\x80\x00\x00\x00\x00\x00") allowed on diagnostics address
-  if ((addr == 0x730) && hyundai_canfd_hda2) {
+  if (((addr == 0x730) && hyundai_canfd_hda2) || ((addr == 0x7D0) && !hyundai_canfd_hda2)) {
+    if (!hyundai_longitudinal || hyundai_camera_scc) {
+      return false;
+    }
     if ((GET_BYTES(to_send, 0, 4) != 0x00803E02U) || (GET_BYTES(to_send, 4, 4) != 0x0U)) {
       tx = false;
     }
   }
 
-  // ACCEL: safety check
   if (addr == 0x1a0) {
-    int desired_accel_raw = (((GET_BYTE(to_send, 17) & 0x7U) << 8) | GET_BYTE(to_send, 16)) - 1023U;
-    int desired_accel_val = ((GET_BYTE(to_send, 18) << 4) | (GET_BYTE(to_send, 17) >> 4)) - 1023U;
-
-
-    if (hyundai_longitudinal) {
-      int cruise_status = ((GET_BYTE(to_send, 8) >> 4) & 0x7U);
-      bool cruise_engaged = (cruise_status == 1) || (cruise_status == 2) || (cruise_status == 4);
-      if (cruise_engaged) {
-        if (!controls_allowed) print("automatic controls_allowed enabled....\n");
-        controls_allowed = true;
-      }
-      violation |= longitudinal_accel_checks(desired_accel_raw, HYUNDAI_LONG_LIMITS);
-      violation |= longitudinal_accel_checks(desired_accel_val, HYUNDAI_LONG_LIMITS);
-      if (violation) {
-        print("long violation"); putui((uint32_t)desired_accel_raw); print(","); putui((uint32_t)desired_accel_val); print("\n");
-      }
-
+    if (!hyundai_longitudinal && hyundai_canfd_alt_buttons && !hyundai_canfd_hda2) {
+      violation |= ((GET_BYTE(to_send, 8) >> 4U) & 7U) != 4U;
     }
-    else {
-      // only used to cancel on here
-      if ((desired_accel_raw != 0) || (desired_accel_val != 0)) {
-        violation = true;
-        print("no long violation\n");
-      }
-    }
+    violation |= hyundai_canfd_accel_violation(to_send);
   }
 
   if (violation) {
@@ -673,6 +679,9 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send_const) {
   else if (hyundai_canfd_buffered_fwd) {
     CanfdBufferedFwd* bfwd = canfd_bfwd_find(addr, GET_BUS(to_send));
     if (bfwd != NULL) {
+      if (relay_malfunction || !tx_msg_safety_check(to_send, current_safety_config.tx_msgs, current_safety_config.tx_msgs_len)) {
+        return false;
+      }
       canfd_bfwd_push(bfwd, to_send);
       extern bool safety_tx_buffered_for_fwd;
       safety_tx_buffered_for_fwd = true;
@@ -762,6 +771,10 @@ static int hyundai_canfd_fwd_hook(CANPacket_t* to_send) {
       }
 
       if (use_buffered) {
+        if ((addr == 0x1A0) && hyundai_canfd_accel_violation(&buffered_pkt)) {
+          canfd_bfwd_reset(bfwd);
+          return -1;
+        }
         if (((addr == 0x12A) || (addr == 0xCB)) && hyundai_canfd_steering_forward_check(&buffered_pkt)) {
           canfd_bfwd_reset(bfwd);
           return -1;
@@ -808,6 +821,7 @@ static safety_config hyundai_canfd_init(uint16_t param) {
 
   hyundai_common_init(param);
   hyundai_canfd_steer_reset(param);
+  hyundai_canfd_stock_acc_active = false;
   hyundai_spas_init(GET_FLAG(param, 4096), (hyundai_canfd_hda2 && !hyundai_camera_scc) ? 1 : 0);
 
   gen_crc_lookup_table_16(0x1021, hyundai_canfd_crc_lut);
@@ -834,7 +848,8 @@ static safety_config hyundai_canfd_init(uint16_t param) {
         }
         else {
             if (hyundai_camera_scc) ret = BUILD_SAFETY_CFG(hyundai_canfd_hda2_long_rx_checks_scc2, HYUNDAI_CANFD_HDA2_LONG_TX_MSGS);
-            else ret = BUILD_SAFETY_CFG(hyundai_canfd_hda2_long_rx_checks, HYUNDAI_CANFD_HDA2_LONG_TX_MSGS);
+            else if (hyundai_canfd_hda2_alt_steering) ret = BUILD_SAFETY_CFG(hyundai_canfd_hda2_long_rx_checks, HYUNDAI_CANFD_HDA2_LONG_TX_MSGS);
+            else ret = BUILD_SAFETY_CFG(hyundai_canfd_hda2_long_rx_checks, HYUNDAI_CANFD_HDA2_DIRECT_LONG_TX_MSGS);
         }
     } else {
       if(hyundai_canfd_alt_buttons) print("hyundai safety canfd_hda1 long alt_buttons\n");
@@ -863,7 +878,7 @@ static safety_config hyundai_canfd_init(uint16_t param) {
         }
         else {
             ret = hyundai_canfd_hda2_alt_steering ? BUILD_SAFETY_CFG(hyundai_canfd_hda2_rx_checks, HYUNDAI_CANFD_HDA2_LONG_TX_MSGS) : \
-                BUILD_SAFETY_CFG(hyundai_canfd_hda2_rx_checks, HYUNDAI_CANFD_HDA2_LONG_TX_MSGS);
+                BUILD_SAFETY_CFG(hyundai_canfd_hda2_rx_checks, HYUNDAI_CANFD_HDA2_TX_MSGS);
         }
     } else if (!hyundai_camera_scc) {
       static RxCheck hyundai_canfd_radar_scc_alt_buttons_rx_checks[] = {

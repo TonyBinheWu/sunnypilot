@@ -896,6 +896,11 @@ class CarController(CarControllerBase):
       return None
 
     send_button = self.make_spam_button(CC, CS)
+    if (send_button == Buttons.SET_DECEL and self.CP.flags & HyundaiFlags.CANFD_HDA2 and
+        not (alt_buttons or self.CP.flags & HyundaiFlags.CAMERA_SCC)):
+      if (not CS.out.canValid or CS.ACCMode != 1 or CS.out.standstill or
+          CS.out.gasPressed or CS.out.brakePressed or CS.out.regenBraking):
+        return None
     if send_button > 0:
       if alt_buttons:
         return hyundaicanfd.alt_cruise_buttons(self.packer, self.CP, self.CAN, send_button, cruise_buttons_msg_values, self.cruise_buttons_msg_cnt)

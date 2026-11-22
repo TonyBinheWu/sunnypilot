@@ -14,11 +14,13 @@ class TestHyundaiCanfdBase(HyundaiButtonBase, common.PandaCarSafetyTest, common.
 
   TX_MSGS = [[0x50, 0], [0x1CF, 1], [0x2A4, 0]]
   STANDSTILL_THRESHOLD = 12  # 0.375 kph
-  FWD_BLACKLISTED_ADDRS = {2: [0x50, 0x2a4]}
+  # Initial forwarding before an accepted host replacement arms timed suppression.
+  FWD_BLACKLISTED_ADDRS = {0: [0x4B9]}
 
   MAX_RATE_UP = 2
   MAX_RATE_DOWN = 3
-  MAX_TORQUE = 270
+  # Absolute board ceiling, independent of the stock host torque target.
+  MAX_TORQUE = 512
 
   MAX_RT_DELTA = 112
   RT_INTERVAL = 250000
@@ -84,7 +86,6 @@ class TestHyundaiCanfdLFASteeringBase(TestHyundaiCanfdBase):
 
   TX_MSGS = [[0x12A, 0], [0x1A0, 1], [0x1CF, 0], [0x1E0, 0]]
   RELAY_MALFUNCTION_ADDRS = {0: (0x12A,)}  # LFA
-  FWD_BLACKLISTED_ADDRS = {2: [0x12A, 0x1E0]}
 
   STEER_MSG = "LFA"
   BUTTONS_TX_BUS = 2
@@ -176,7 +177,6 @@ class TestHyundaiCanfdLKASteeringEV(TestHyundaiCanfdBase):
 
   TX_MSGS = [[0x50, 0], [0x1CF, 1], [0x2A4, 0]]
   RELAY_MALFUNCTION_ADDRS = {0: (0x50,)}  # LKAS
-  FWD_BLACKLISTED_ADDRS = {2: [0x50, 0x2a4]}
 
   PT_BUS = 1
   SCC_BUS = 1
@@ -195,7 +195,6 @@ class TestHyundaiCanfdLKASteeringAltEV(TestHyundaiCanfdBase):
 
   TX_MSGS = [[0x110, 0], [0x1CF, 1], [0x362, 0]]
   RELAY_MALFUNCTION_ADDRS = {0: (0x110,)}  # LKAS_ALT
-  FWD_BLACKLISTED_ADDRS = {2: [0x110, 0x362]}
 
   PT_BUS = 1
   SCC_BUS = 1
@@ -211,6 +210,10 @@ class TestHyundaiCanfdLKASteeringAltEV(TestHyundaiCanfdBase):
 
 
 class TestHyundaiCanfdLKASteeringLongEV(HyundaiLongitudinalBase, TestHyundaiCanfdLKASteeringEV):
+
+  # Hyundai longitudinal controller bounds (m/s^2).
+  MIN_ACCEL = -4.0
+  MAX_ACCEL = 2.5
 
   TX_MSGS = [[0x50, 0], [0x1CF, 1], [0x2A4, 0], [0x51, 0], [0x730, 1], [0x12a, 1], [0x160, 1],
              [0x1e0, 1], [0x1a0, 1], [0x1ea, 1], [0x200, 1], [0x345, 1], [0x1da, 1]]
@@ -251,8 +254,9 @@ class TestHyundaiCanfdLKASteeringLongEV(HyundaiLongitudinalBase, TestHyundaiCanf
   {"GAS_MSG": ("ACCELERATOR_ALT", "ACCELERATOR_PEDAL"), "SCC_BUS": 2, "SAFETY_PARAM": HyundaiSafetyFlags.HYBRID_GAS | HyundaiSafetyFlags.CAMERA_SCC},
 ])
 class TestHyundaiCanfdLFASteeringLong(HyundaiLongitudinalBase, TestHyundaiCanfdLFASteeringBase):
+  MIN_ACCEL = -4.0
+  MAX_ACCEL = 2.5
 
-  FWD_BLACKLISTED_ADDRS = {2: [0x12a, 0x1e0, 0x1a0, 0x160]}
 
   RELAY_MALFUNCTION_ADDRS = {0: (0x12A, 0x1a0)}  # LFA, SCC_CONTROL
 
