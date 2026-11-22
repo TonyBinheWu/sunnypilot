@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "devices": {
+    "c3x": {
+      "order": [
+        "device",
+        "network",
+        "toggles",
+        "software",
+        "firehose",
+        "developer",
+        "egpu"
+      ],
+      "menu_font": 65,
+      "menu_spacing": 110,
+      "hud_x": 0,
+      "hud_y": 0,
+      "speed_font": 120,
+      "speed_x": 0,
+      "speed_y": 0,
+      "cruise_font": 60,
+      "cruise_x": 0,
+      "cruise_y": 0
+    },
+    "c4": {
+      "order": [
+        "toggles",
+        "network",
+        "device",
+        "language",
+        "pair",
+        "firehose",
+        "egpu",
+        "developer",
+        "formosalink"
+      ],
+      "menu_font": 64,
+      "menu_spacing": 20,
+      "hud_x": 0,
+      "hud_y": 0,
+      "speed_font": 80,
+      "speed_x": 0,
+      "speed_y": 0,
+      "cruise_font": 40,
+      "cruise_x": 0,
+      "cruise_y": 0
+    }
+  }
+}

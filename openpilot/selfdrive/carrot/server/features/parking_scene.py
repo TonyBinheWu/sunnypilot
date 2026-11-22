@@ -17,6 +17,11 @@ from ..services.web_settings import read_web_settings
 from openpilot.sunnypilot.formosalink.cameras import camera_clock
 
 
+# A connected cockpit polls several times per second. Release both camera
+# mappings and model subscriptions once that client leaves the parking view.
+PARKING_IDLE_SECONDS = 5.0
+
+
 class ParkingSource:
   def __init__(self):
     self.sm = None
@@ -27,6 +32,11 @@ class ParkingSource:
     self.history = Confirm()
     self.cameras.clear()
     return {"status": status, "slots": [], "target": None}
+
+  def close(self):
+    self.cameras.clear()
+    self.sm = None
+    self.history = Confirm()
 
   def observe_paint(self, lens, model, frame_id, stamp):
     from msgq.visionipc import VisionIpcClient, VisionStreamType
@@ -134,26 +144,49 @@ class ParkingSource:
 
 
 def register(app):
-  source = ParkingSource()
+  source = None
+  idle_timer = None
   receipts = DisplayReceipts()
   executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="parking-display")
   pending = result = None
   last = -math.inf
 
+  def release():
+    nonlocal source, idle_timer, pending, result, last
+    if idle_timer is not None:
+      idle_timer.cancel()
+      idle_timer = None
+    if source is not None:
+      # The same worker owns sample() and cleanup, including in-flight samples.
+      executor.submit(source.close)
+      source = pending = result = None
+      last = -math.inf
+
   async def snapshot(request):
-    nonlocal pending, result, last
+    nonlocal source, idle_timer, pending, result, last
     receipts.acknowledge(request.headers.get("X-Carrot-Parking-Draw"), request.headers.get("User-Agent", ""), time.monotonic(), time.time())
     if read_web_settings().get("vision_parking_assist") is not True:
+      release()
       return web.json_response({"status": "off"}, headers={"Cache-Control": "no-store"})
     loop = asyncio.get_running_loop()
+    if idle_timer is not None:
+      idle_timer.cancel()
+    idle_timer = loop.call_later(PARKING_IDLE_SECONDS, release)
+    if source is None:
+      source = ParkingSource()
     if pending is None and loop.time() - last >= 0.16:
       pending = loop.run_in_executor(executor, source.sample)
     if pending is not None:
-      work = pending
+      session, work = source, pending
       try:
-        result = await asyncio.shield(work)
+        sample = await asyncio.shield(work)
+        if source is not session:
+          return web.json_response({"status": "stale"}, headers={"Cache-Control": "no-store"})
+        result = sample
       except Exception:
         logging.getLogger(__name__).debug("Parking source unavailable", exc_info=True)
+        if source is not session:
+          return web.json_response({"status": "stale"}, headers={"Cache-Control": "no-store"})
         result = {"status": "unavailable"}
       finally:
         if work.done() and pending is work:
@@ -172,7 +205,8 @@ def register(app):
     return web.json_response(receipts.summary, headers={"Cache-Control": "no-store"})
 
   async def close(_app):
-    await asyncio.to_thread(executor.shutdown, wait=True, cancel_futures=True)
+    release()
+    await asyncio.to_thread(executor.shutdown, wait=True)
 
   app.on_cleanup.append(close)
   app.router.add_get("/api/vision/parking-scene", snapshot)

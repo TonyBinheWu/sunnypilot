@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>車機版面編輯器 · FormosaPilot</title><link rel="stylesheet" href="/studio.css"><script defer src="/studio.js"></script></head>
+<body><header><div class="brand"><i aria-hidden="true"></i>FormosaPilot</div><span class="workspace">本機工作區</span></header><main>
+<div class="heading"><div><h1>車機版面編輯器</h1><p id="status" role="status">載入版面中…</p></div><button id="export" class="primary" disabled>輸出版面 ↗</button></div>
+<section class="preview" aria-label="車機預覽"><div class="bar"><div class="device-group group" aria-label="裝置"><button data-device="c3x">C3X</button><button data-device="c4">C4</button></div><span id="resolution"></span></div>
+<div class="stage"><div class="bezel"><div id="viewport"><div id="screen"></div></div></div></div>
+<div class="toolbar"><div class="group" aria-label="畫面"><button data-view="settings">設定選單</button><button data-view="driving">駕駛畫面</button></div><span class="mode">模擬預覽</span></div></section>
+<div class="design"><section class="panel"><div class="section-head"><h2 id="structure-title"></h2><span id="count"></span></div><div id="structure"></div></section>
+<section class="panel controls"><div class="section-head"><h2 id="inspector-title"></h2><span>px</span></div><div id="inspector"></div></section></div>
+<footer><button id="publish" class="primary" hidden disabled>推送至 carrot-wip</button><button id="reset">還原此裝置預設值</button><button id="reload">載入已輸出版面</button></footer>
+<dialog id="confirm"><form method="dialog"><h2 id="dialog-title"></h2><p id="dialog-text"></p><div><button value="cancel">取消</button><button value="ok" class="primary">確認</button></div></form></dialog>
+</main></body></html>

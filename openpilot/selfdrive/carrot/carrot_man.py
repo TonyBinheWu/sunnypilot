@@ -12,6 +12,7 @@ import time
 import numpy as np
 import zmq
 from datetime import datetime
+from functools import cache
 import traceback
 from typing import Any, Dict, List, Optional
 
@@ -47,11 +48,14 @@ from openpilot.selfdrive.carrot.web_upload import (
 
 from openpilot.common.gps import get_gps_location_service
 
-try:
-  from shapely.geometry import LineString
-  SHAPELY_AVAILABLE = True
-except ImportError:
-  SHAPELY_AVAILABLE = False
+@cache
+def _route_line_type():
+  # GEOS is only needed for resampling an active route.
+  try:
+    from shapely.geometry import LineString
+    return LineString
+  except ImportError:
+    return None
 
 NetworkType = log.DeviceState.NetworkType
 NAVI_HTTP_PORT = 7713
@@ -503,11 +507,16 @@ class CarrotMan:
   def carrot_navi_route(self):
 
     is_onroad = self.params.get_bool("IsOnroad")
-    if not is_onroad or not self.navi_points_active or not SHAPELY_AVAILABLE or (self.carrot_serv.active_carrot <= 1 and not self.navd_active):
+    if not is_onroad or not self.navi_points_active or (self.carrot_serv.active_carrot <= 1 and not self.navd_active):
       # RouteSource owns geometry lifetime. Pausing computation offroad must not
       # consume a route received before the car starts.
       self.active_carrot_last = self.carrot_serv.active_carrot
       return [],[],300
+
+    line_type = _route_line_type()
+    if line_type is None:
+      self.active_carrot_last = self.carrot_serv.active_carrot
+      return [], [], 300
 
     current_position = (self.carrot_serv.vpPosPointLon, self.carrot_serv.vpPosPointLat)
     heading_deg = self.carrot_serv.bearing
@@ -520,7 +529,7 @@ class CarrotMan:
         #relative_coords = gps_to_relative_xy(path, current_position, heading_deg)
         relative_coords = gps_to_relative_xy(path, start_point, heading_deg)
         # Resample relative_coords at 5m intervals using LineString
-        line = LineString(relative_coords)
+        line = line_type(relative_coords)
         resampled_points = []
         resampled_distances = []
         current_distance = 0

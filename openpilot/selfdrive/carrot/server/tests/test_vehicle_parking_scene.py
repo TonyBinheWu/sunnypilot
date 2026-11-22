@@ -114,3 +114,50 @@ def test_padded_nv12_excludes_chroma_and_nonvisible_ground():
   assert 0 < np.count_nonzero(central) < np.count_nonzero(white)
   buf[uv_offset::2] = 190
   assert not ground_paint(f, proj)[0].any()
+
+
+def test_idle_parked_cameras_released_on_sample_worker_and_reopened(monkeypatch):
+  import asyncio
+  import json
+  import threading
+  from aiohttp import web
+  from aiohttp.test_utils import TestClient, TestServer
+  from openpilot.selfdrive.carrot.server.features import parking_scene
+
+  async def run():
+    released = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    sequence = []
+    class Source:
+      def sample(self):
+        sequence.append(("sample", self, threading.get_ident()))
+        return {"status": "ready"}
+
+      def close(self):
+        sequence.append(("close", self, threading.get_ident()))
+        loop.call_soon_threadsafe(released.set)
+
+    monkeypatch.setattr(parking_scene, "ParkingSource", Source)
+    monkeypatch.setattr(parking_scene, "PARKING_IDLE_SECONDS", 0.05)
+    enabled = {"vision_parking_assist": True}
+    monkeypatch.setattr(parking_scene, "read_web_settings", lambda: enabled)
+    app = web.Application()
+    parking_scene.register(app)
+    async with TestClient(TestServer(app)) as client:
+      async def request():
+        response = await client.get("/api/vision/parking-scene")
+        return json.loads(await response.text())["status"]
+
+      assert await request() == "ready"
+      await asyncio.wait_for(released.wait(), 2)
+      assert [v[0] for v in sequence] == ["sample", "close"]
+      assert sequence[0][1:] == sequence[1][1:]
+      released.clear()
+      assert await request() == "ready"
+      enabled["vision_parking_assist"] = False
+      assert await request() == "off"
+      await asyncio.wait_for(released.wait(), 2)
+      assert sequence[2][1] is not sequence[0][1]
+      assert sequence[2][1:] == sequence[3][1:]
+
+  asyncio.run(run())

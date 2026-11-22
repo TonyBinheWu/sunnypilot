@@ -2,6 +2,7 @@ import time
 import pyray as rl
 from dataclasses import dataclass
 from openpilot.common.constants import CV
+from openpilot.selfdrive.ui.layout_profile import large_display_layout
 from openpilot.selfdrive.carrot.deceleration_source import deceleration_source_presentation
 from openpilot.selfdrive.ui.onroad.exp_button import ExpButton
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
@@ -12,6 +13,8 @@ from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.lib.text_draw import draw_text_ui_style
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.lib.overlay_cache import OverlayLayer, DisplayClock
+
+HUD_LAYOUT = large_display_layout()
 
 # Constants
 SET_SPEED_NA = 255
@@ -688,7 +691,7 @@ class HudRenderer(Widget):
     cur_text = str(cur_speed_int)
 
     draw_text_ui_style(
-      cur_text, bx, by + 50, 120, rl.WHITE,
+      cur_text, bx + HUD_LAYOUT["speed_x"], by + 50 + HUD_LAYOUT["speed_y"], HUD_LAYOUT["speed_font"], rl.WHITE,
       font=self._font_display,
       border_width=3.0,
       shadow_offset=8.0,
@@ -704,7 +707,7 @@ class HudRenderer(Widget):
       cruise_text = "--"
 
     draw_text_ui_style(
-      cruise_text, bx + 170, by + 15, 60, COLORS.CARROT_GREEN,
+      cruise_text, bx + 170 + HUD_LAYOUT["cruise_x"], by + 15 + HUD_LAYOUT["cruise_y"], HUD_LAYOUT["cruise_font"], COLORS.CARROT_GREEN,
       font=self._font_display,
       border_width=1.0,
       shadow_offset=5.0,
@@ -772,9 +775,9 @@ class HudRenderer(Widget):
 
     start_x = rect.x + rect.width / 2.0
     start_y = rect.y + rect.height - 400.0
-    target_x = rect.x + 140.0 + 170.0
-    target_y = rect.y + rect.height - 230.0 + 15.0
-    target_size = 60
+    target_x = rect.x + 310 + HUD_LAYOUT["hud_x"] + HUD_LAYOUT["cruise_x"]
+    target_y = rect.y + rect.height - 215 + HUD_LAYOUT["hud_y"] + HUD_LAYOUT["cruise_y"]
+    target_size = HUD_LAYOUT["cruise_font"]
 
     x = int((start_x * interpolation_time + target_x * (CRUISE_SPEED_ANIMATION_MAX - interpolation_time)) /
             CRUISE_SPEED_ANIMATION_MAX)
@@ -1395,8 +1398,8 @@ class HudRenderer(Widget):
   def _draw_set_speed_carrot(self, rect: rl.Rectangle) -> None:
 
     # C drawHud anchor
-    bx = int(rect.x + 140)
-    by = int(rect.y + rect.height - 230)
+    bx = int(rect.x + 140 + HUD_LAYOUT["hud_x"])
+    by = int(rect.y + rect.height - 230 + HUD_LAYOUT["hud_y"])
 
     speed_limit_info = self._get_speed_limit_info()
     self._draw_carrot_main_background(bx, by, speed_limit_info)

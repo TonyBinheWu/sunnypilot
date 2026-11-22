@@ -175,3 +175,37 @@ class TestNoFifoAnywhereInUi:
     for p, src in self._prod_sources():
       for s in legacy:
         assert s not in src, f"{p.name}: 과거 로그 문자열 잔존 — {s}"
+
+
+@pytest.mark.parametrize("fault", ["slow", "dropped", "old", "invalid", "dead"])
+def test_c4_display_yields_to_model_and_recovers_after_stable_updates(fault):
+  model = types.SimpleNamespace(modelExecutionTime=0.025, frameDropPerc=0)
+  class Bus(dict):
+    recv_time = {"modelV2": 10.0}
+    valid = {"modelV2": True}
+    alive = {"modelV2": True}
+
+  bus = Bus(modelV2=model)
+  rate = cus.C4DisplayRate()
+  assert rate.target(False, bus, 10.0) == 60
+  assert rate.target(True, bus, 10.0) == 20
+  for frame in range(1, 41):
+    now = 10.0 + frame * 0.05
+    bus.recv_time["modelV2"] = now
+    assert rate.target(True, bus, now) == (60 if frame == 40 else 20)
+  if fault == "slow":
+    model.modelExecutionTime = 0.051
+  elif fault == "dropped":
+    model.frameDropPerc = 2
+  elif fault == "old":
+    bus.recv_time["modelV2"] -= 0.25
+  elif fault == "dead":
+    bus.alive["modelV2"] = False
+  else:
+    bus.valid["modelV2"] = False
+  assert rate.target(True, bus, now) == 20
+  model.modelExecutionTime, model.frameDropPerc = 0.025, 0
+  bus.valid["modelV2"] = bus.alive["modelV2"] = True
+  bus.recv_time["modelV2"] = now
+  assert rate.target(True, bus, now) == 20
+  assert rate.target(False, bus, now) == 60

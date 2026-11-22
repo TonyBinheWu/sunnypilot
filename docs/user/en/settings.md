@@ -2,6 +2,11 @@
 
 [한국어](../ko/settings.md)
 
+## Native display layout
+
+On the development computer, run `python tools/layout_studio/server.py` and open the local address it prints. Add `--publish` on the prepared layout branch to enable **推送至 carrot-wip** after export. Confirming that action publishes the branch update. Choose C3X or C4, then Settings or Driving. Move menu items with the arrows, adjust text size and spacing, or drag the speed readouts in the driving preview. Each device has its own browser draft. **輸出版面** writes both profiles to the checkout. The native UI reads the exported profile on its next launch after the branch update. The preview uses sample vehicle data.
+
+
 ## Road scene research
 
 In FormosaLink, choose your paired Carrot device, open **Road scene research**, and select **Start sharing**. The portal shows recent road geometry and nearby OpenStreetMap roads. Stop sharing, erase the data, or download your observations from the same panel. Camera classifications require a connected viewer with detection enabled. [Data fields and evaluation](../../ROAD_SCENE_RESEARCH.zh-TW.md)

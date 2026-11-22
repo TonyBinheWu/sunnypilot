@@ -1,4 +1,3 @@
-import pyray as rl
 import numpy as np
 import time
 import threading
@@ -161,7 +160,7 @@ class UIState:
         # Check ignition status across all pandas
         if self.panda_type != log.PandaState.PandaType.unknown:
           self.ignition = any(state.ignitionLine or state.ignitionCan for state in panda_states)
-    elif self.sm.frame - self.sm.recv_frame["pandaStates"] > 5 * rl.get_fps():
+    elif time.monotonic() - self.sm.recv_time["pandaStates"] > 5.0:
       self.panda_type = log.PandaState.PandaType.unknown
 
     # Handle wide road camera state updates
@@ -260,7 +259,7 @@ class Device:
     self._last_brightness: int = 0
     self._brightness_filter = FirstOrderFilter(BACKLIGHT_OFFROAD, 2.00, 1 / gui_app.target_fps)
     self._brightness_thread: threading.Thread | None = None
-    self._brightness_timer: int = 20
+    self._brightness_hold_until = time.monotonic() + 1.0
 
   @property
   def awake(self) -> bool:
@@ -319,13 +318,11 @@ class Device:
           clipped_brightness *= auto_ratio
         except Exception:
           pass
-      elif self._brightness_timer <= 0:
+      elif time.monotonic() >= self._brightness_hold_until:
         clipped_brightness *= ratio
-      else:
-        self._brightness_timer -= 1
 
     else:
-      self._brightness_timer = 20
+      self._brightness_hold_until = time.monotonic() + 1.0
 
     brightness = round(self._brightness_filter.update(clipped_brightness))
     if not self._awake:
@@ -344,7 +341,7 @@ class Device:
 
     if ignition_just_turned_off or any(ev.left_down for ev in gui_app.mouse_events):
       self._reset_interactive_timeout()
-      self._brightness_timer = 20
+      self._brightness_hold_until = time.monotonic() + 1.0
 
     interaction_timeout = time.monotonic() > self._interaction_time
     if interaction_timeout and not self._prev_timed_out:

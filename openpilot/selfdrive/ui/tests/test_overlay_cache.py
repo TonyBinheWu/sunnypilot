@@ -217,11 +217,13 @@ def test_speed_popup_duration_does_not_depend_on_paint_cadence(layer_env, family
   constants = [n for n in tree.body if isinstance(n, ast.Assign) and
                any(isinstance(t, ast.Name) and t.id.startswith('CRUISE_SPEED_ANIMATION_') for t in n.targets)]
   draws = []
-  namespace = {'rl': rl, 'COLORS': SimpleNamespace(CARROT_GREEN=rl.GREEN), 'time': SimpleNamespace(monotonic=lambda: clock.now),
+  from openpilot.selfdrive.ui.layout_profile import defaults
+  layout = defaults()['devices']['c4' if family.startswith('mici') else 'c3x']
+  namespace = {'rl': rl, 'HUD_LAYOUT': layout, 'COLORS': SimpleNamespace(CARROT_GREEN=rl.GREEN), 'time': SimpleNamespace(monotonic=lambda: clock.now),
                'draw_text_ui_style': lambda *a, **kw: draws.append((a[1], a[2], a[3]))}
   exec(compile(ast.Module(body=constants+methods, type_ignores=[]), str(source), 'exec'), namespace)
   midpoints = []
-  for period in (.05, .1):
+  for period in (1/60, .05, .1):
     renderer = SimpleNamespace(_cruise_speed_text_last='', _cruise_speed_animation_time=0,
                                _cruise_speed_animation_text='', _font_display=object(),
                                _txt_speed_bg=SimpleNamespace(width=350, height=150))
@@ -237,4 +239,4 @@ def test_speed_popup_duration_does_not_depend_on_paint_cadence(layer_env, family
     namespace['_draw_cruise_speed_animation'](renderer, rect)
     assert len(draws) == before
     assert renderer._cruise_speed_animation_time == 0
-  assert midpoints[0] == midpoints[1]
+  assert midpoints[0] == midpoints[1] == midpoints[2]

@@ -5,6 +5,7 @@ import pyray as rl
 from dataclasses import dataclass
 from typing import Optional
 from openpilot.common.constants import CV
+from openpilot.selfdrive.ui.layout_profile import device_layout
 from openpilot.selfdrive.carrot.deceleration_source import (
   deceleration_source_presentation,
   external_navigation_connected,
@@ -28,6 +29,8 @@ from opendbc.car import ACCELERATION_DUE_TO_GRAVITY
 
 EventName = log.OnroadEvent.EventName
 
+HUD_LAYOUT = device_layout("c4")
+
 # Constants
 SET_SPEED_NA = 255
 KM_TO_MILE = 0.621371
@@ -39,7 +42,7 @@ CRUISE_SPEED_ANIMATION_START = 120
 CRUISE_SPEED_ANIMATION_MAX = 100
 CRUISE_SPEED_ANIMATION_STEP = 12
 CRUISE_SPEED_ANIMATION_START_SIZE = 96
-CRUISE_SPEED_ANIMATION_TARGET_SIZE = 40
+CRUISE_SPEED_ANIMATION_TARGET_SIZE = HUD_LAYOUT["cruise_font"]
 
 @dataclass(frozen=True)
 class SetSpeedOverrideState:
@@ -398,8 +401,8 @@ class HudRenderer(Widget):
     panel_y = rect.y + rect.height - self._txt_speed_bg.height - 10.0
     start_x = rect.x + rect.width * 0.5
     start_y = rect.y + rect.height * 0.45
-    target_x = panel_x + self._txt_speed_bg.width * 0.76
-    target_y = panel_y + self._txt_speed_bg.height * 0.33
+    target_x = panel_x + self._txt_speed_bg.width * 0.76 + HUD_LAYOUT["hud_x"] + HUD_LAYOUT["cruise_x"]
+    target_y = panel_y + self._txt_speed_bg.height * 0.33 + HUD_LAYOUT["hud_y"] + HUD_LAYOUT["cruise_y"]
 
     x = int((start_x * interpolation_time + target_x * (CRUISE_SPEED_ANIMATION_MAX - interpolation_time)) /
             CRUISE_SPEED_ANIMATION_MAX)
@@ -766,8 +769,8 @@ class HudRenderer(Widget):
     panel_w = bg.width
     panel_h = bg.height
 
-    margin_x = 10
-    margin_y = 10
+    margin_x = 10 + HUD_LAYOUT["hud_x"]
+    margin_y = 10 - HUD_LAYOUT["hud_y"]
     panel_x = int(rect.x + margin_x)
     panel_y = int(rect.y + rect.height - panel_h - margin_y)
 
@@ -782,11 +785,11 @@ class HudRenderer(Widget):
 
     cur_text = str(cur_speed_int)
 
-    cur_font = 80
+    cur_font = HUD_LAYOUT["speed_font"]
     cur_size = measure_text_cached(self._font_display, cur_text, cur_font)
-    cur_x = panel_x + 18
+    cur_x = panel_x + 18 + HUD_LAYOUT["speed_x"]
 
-    cur_y = int(panel_y + panel_h * 0.48 - cur_size.y * 0.5) - 2
+    cur_y = int(panel_y + panel_h * 0.48 - cur_size.y * 0.5) - 2 + HUD_LAYOUT["speed_y"]
 
     draw_text_ui_style(cur_text, cur_x, cur_y, cur_font, rl.WHITE, font=self._font_display, border_width=2.0, shadow_offset=3.0, align="left_top", y_offset=0.0)
 
@@ -820,10 +823,10 @@ class HudRenderer(Widget):
       if self._debug_speed_panel:
         set_text = str(123)
 
-      set_font = 40
+      set_font = HUD_LAYOUT["cruise_font"]
       set_size = measure_text_cached(self._font_display, set_text, set_font)
-      set_x = int(panel_x + panel_w * 0.76 - set_size.x * 0.5)
-      set_y = int(panel_y + panel_h * 0.33 - set_size.y * 0.5)
+      set_x = int(panel_x + panel_w * 0.76 - set_size.x * 0.5) + HUD_LAYOUT["cruise_x"]
+      set_y = int(panel_y + panel_h * 0.33 - set_size.y * 0.5) + HUD_LAYOUT["cruise_y"]
       draw_text_ui_style(set_text, set_x, set_y, set_font, set_color, font=self._font_display, border_width=1.0, shadow_offset=3.0, align="left_top", y_offset=0.0)
       if ov.active:
         set_speed = ov.speed_kph

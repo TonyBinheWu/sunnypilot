@@ -26,8 +26,8 @@ from openpilot.system.ui.lib.multilang import multilang
 from openpilot.common.realtime import Ratekeeper
 import datetime
 
-#_DEFAULT_FPS = int(os.getenv("FPS", {'tizi': 20}.get(HARDWARE.get_device_type(), 60)))
-_DEFAULT_FPS = 20 
+C4_DISPLAY = not PC and HARDWARE.get_device_type() == "mici"
+_DEFAULT_FPS = 60 if C4_DISPLAY else 20
 FPS_LOG_INTERVAL = 5  # Seconds between logging FPS drops
 FPS_DROP_THRESHOLD = 0.9  # FPS drop threshold for triggering a warning
 FPS_CRITICAL_THRESHOLD = 0.5  # Critical threshold for triggering strict actions
@@ -416,7 +416,7 @@ class GuiApplication:
     # declared input rate must match that real capture rate; otherwise the
     # encoded video plays back exactly `_record_every_n` times too fast.
     capture_fps = fps / max(1, self._record_every_n)
-    output_fps = fps * record_speed
+    output_fps = (min(fps, 20) if C4_DISPLAY else fps) * record_speed
 
     ffmpeg_args = [
       "ffmpeg",
@@ -500,6 +500,12 @@ class GuiApplication:
   def target_fps(self):
     return self._target_fps
 
+  def set_display_rate(self, fps: int):
+    if fps != self._target_fps:
+      rl.set_target_fps(fps)
+      self._target_fps = fps
+      self._record_every_n = max(1, round(fps * 3 / 20))
+
   def request_close(self):
     self._window_close_requested = True
 
@@ -515,7 +521,7 @@ class GuiApplication:
       atexit.register(self.close)
 
       flags = rl.ConfigFlags.FLAG_MSAA_4X_HINT
-      if ENABLE_VSYNC:
+      if ENABLE_VSYNC or (C4_DISPLAY and not OFFSCREEN):
         flags |= rl.ConfigFlags.FLAG_VSYNC_HINT
       rl.set_config_flags(flags)
 
@@ -564,6 +570,9 @@ class GuiApplication:
       rl.set_target_fps(0 if OFFSCREEN else fps)
 
       self._target_fps = fps
+      if C4_DISPLAY and not RECORD:
+        # The manual screen recorder samples ~6.7 frames/s at the original 20 Hz.
+        self._record_every_n = max(1, round(fps * 3 / 20))
       self._load_fonts(font_weights)
       self._patch_text_functions()
       self._patch_scissor_mode()
@@ -898,7 +907,7 @@ class GuiApplication:
         if not self._should_render:
           if PC:
             rl.poll_input_events()
-          time.sleep(1 / self._target_fps)
+          time.sleep(1 / min(self._target_fps, 20))
           yield False
           continue
 

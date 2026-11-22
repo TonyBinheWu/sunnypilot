@@ -29,3 +29,23 @@ def ensure_ui_sched_other() -> None:
       return
   cloudlog.critical(f"UISCHED: UI could not be verified SCHED_OTHER (policy={policy}); fail-stop")
   raise RuntimeError("UI must run SCHED_OTHER (realtime preemption contract)")
+
+
+class C4DisplayRate:
+  """Give modeld its 50 ms cycle before using spare time for display frames."""
+  def __init__(self):
+    self.healthy_since = None
+
+  def target(self, started, sm, now):
+    if not started:
+      self.healthy_since = None
+      return 60
+    model = sm["modelV2"]
+    healthy = (sm.valid["modelV2"] and sm.alive["modelV2"] and 0 <= now - sm.recv_time["modelV2"] < 0.15
+               and 0 < model.modelExecutionTime <= 0.045 and 0 <= model.frameDropPerc < 1)
+    if not healthy:
+      self.healthy_since = None
+      return 20
+    if self.healthy_since is None:
+      self.healthy_since = now
+    return 60 if now - self.healthy_since >= 2.0 else 20

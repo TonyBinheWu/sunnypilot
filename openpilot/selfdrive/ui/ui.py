@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import gc
+import time
 
 from openpilot.system.hardware import HARDWARE, TICI
 from openpilot.common.realtime import set_core_affinity
 from openpilot.common.display_scheduling import DisplayScheduler
-from openpilot.selfdrive.ui.carrot_ui_sched import ensure_ui_sched_other
-from openpilot.system.ui.lib.application import gui_app
+from openpilot.selfdrive.ui.carrot_ui_sched import C4DisplayRate, ensure_ui_sched_other
+from openpilot.system.ui.lib.application import C4_DISPLAY, OFFSCREEN, RECORD, gui_app
 from openpilot.selfdrive.ui.layouts.main import MainLayout
 from openpilot.selfdrive.ui.mici.layouts.main import MiciMainLayout
 from openpilot.selfdrive.ui.ui_state import ui_state
@@ -34,10 +35,13 @@ def main():
   else:
     MiciMainLayout()
   impact_prompt = ImpactDashcamPrompt()
+  display_rate = C4DisplayRate() if C4_DISPLAY and not OFFSCREEN and not RECORD else None
 
   for rendered in gui_app.render():
     ui_state.update()
     scheduler.update(ui_state.started)
+    if display_rate is not None:
+      gui_app.set_display_rate(display_rate.target(ui_state.started, ui_state.sm, time.monotonic()))
     if rendered:
       impact_prompt.render()
 

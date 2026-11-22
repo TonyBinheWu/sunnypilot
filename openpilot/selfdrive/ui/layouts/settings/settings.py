@@ -2,6 +2,7 @@ import pyray as rl
 from dataclasses import dataclass
 from enum import IntEnum
 from collections.abc import Callable
+from openpilot.selfdrive.ui.layout_profile import large_display_layout
 from openpilot.selfdrive.ui.layouts.settings.developer import DeveloperLayout
 from openpilot.selfdrive.ui.layouts.settings.device import DeviceLayout
 from openpilot.selfdrive.ui.layouts.settings.firehose import FirehoseLayout
@@ -19,7 +20,7 @@ from openpilot.system.ui.widgets.network import NetworkUI
 SIDEBAR_WIDTH = 500
 CLOSE_BTN_SIZE = 200
 CLOSE_ICON_SIZE = 70
-NAV_BTN_HEIGHT = 110
+LAYOUT = large_display_layout()
 PANEL_MARGIN = 50
 
 # Colors
@@ -67,6 +68,7 @@ class SettingsLayout(Widget):
       PanelType.EGPU: PanelInfo(tr_noop("eGPU"), UsbGpuLayout()),
     }
 
+    self._panels = {PanelType[key.upper()]: self._panels[PanelType[key.upper()]] for key in LAYOUT["order"]}
     self._font_medium = gui_app.font(FontWeight.MEDIUM)
     self._close_icon = gui_app.texture("icons/close2.png", CLOSE_ICON_SIZE, CLOSE_ICON_SIZE)
 
@@ -120,23 +122,23 @@ class SettingsLayout(Widget):
     # Navigation buttons
     y = rect.y + 300
     for panel_type, panel_info in self._panels.items():
-      button_rect = rl.Rectangle(rect.x + 50, y, rect.width - 150, NAV_BTN_HEIGHT)
+      button_rect = rl.Rectangle(rect.x + 50, y, rect.width - 150, LAYOUT["menu_spacing"])
 
       # Button styling
       is_selected = panel_type == self._current_panel
       text_color = TEXT_SELECTED if is_selected else TEXT_NORMAL
       # Draw button text (right-aligned)
       panel_name = tr(panel_info.name)
-      text_size = measure_text_cached(self._font_medium, panel_name, 65)
+      text_size = measure_text_cached(self._font_medium, panel_name, LAYOUT["menu_font"])
       text_pos = rl.Vector2(
         button_rect.x + button_rect.width - text_size.x, button_rect.y + (button_rect.height - text_size.y) / 2
       )
-      rl.draw_text_ex(self._font_medium, panel_name, text_pos, 65, 0, text_color)
+      rl.draw_text_ex(self._font_medium, panel_name, text_pos, LAYOUT["menu_font"], 0, text_color)
 
       # Store button rect for click detection
       panel_info.button_rect = button_rect
 
-      y += NAV_BTN_HEIGHT
+      y += LAYOUT["menu_spacing"]
 
   def _draw_current_panel(self, rect: rl.Rectangle):
     rl.draw_rectangle_rounded(

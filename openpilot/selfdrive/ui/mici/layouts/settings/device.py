@@ -5,6 +5,7 @@ from enum import IntEnum
 from collections.abc import Callable
 
 from openpilot.common.basedir import BASEDIR
+from openpilot.selfdrive.ui.layout_profile import device_layout
 from openpilot.common.params import Params
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.ui.widgets.scroller import NavRawScrollPanel, NavScroller
@@ -136,7 +137,7 @@ class PairBigButton(BigButton):
     super().__init__(tr("pair"), "connect.comma.ai", gui_app.texture("icons_mici/settings/comma_icon.png", 33, 60))
 
   def _get_label_font_size(self):
-    return 64
+    return device_layout("c4")["menu_font"]
 
   def _update_state(self):
     super()._update_state()

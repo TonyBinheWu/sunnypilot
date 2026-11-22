@@ -1,5 +1,6 @@
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.common.params import Params
+from openpilot.selfdrive.ui.layout_profile import device_layout
 from openpilot.system.ui.widgets.scroller import NavScroller
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton
 from openpilot.selfdrive.ui.mici.layouts.settings.language import LanguageLayoutMici
@@ -15,12 +16,13 @@ from openpilot.system.ui.lib.application import gui_app, FontWeight
 
 class SettingsBigButton(BigButton):
   def _get_label_font_size(self):
-    return 64
+    return device_layout("c4")["menu_font"]
 
 
 class SettingsLayout(NavScroller):
   def __init__(self):
-    super().__init__()
+    layout = device_layout("c4")
+    super().__init__(spacing=layout["menu_spacing"])
     self._params = Params()
 
     toggles_panel = TogglesLayoutMici()
@@ -53,19 +55,10 @@ class SettingsLayout(NavScroller):
     language_btn = SettingsBigButton(tr("Language"), "", gui_app.texture("icons_mici/settings.png", 64, 64))
     language_btn.set_click_callback(lambda: gui_app.push_widget(language_panel))
 
-    self._scroller.add_widgets([
-      toggles_btn,
-      network_btn,
-      device_btn,
-      language_btn,
-      PairBigButton(),
-      #BigDialogButton("manual", "", "icons_mici/settings/manual_icon.png", "Check out the mici user\nmanual at comma.ai/setup"),
-      firehose_btn,
-      usbgpu_btn,
-      developer_btn,
-    ])
-
-    from openpilot.sunnypilot.formosalink.ui import add_mici_pair_button
-    add_mici_pair_button(self._scroller)
+    from openpilot.sunnypilot.formosalink.ui import mici_pair_button
+    buttons = {"toggles": toggles_btn, "network": network_btn, "device": device_btn, "language": language_btn,
+               "pair": PairBigButton(), "firehose": firehose_btn, "egpu": usbgpu_btn, "developer": developer_btn,
+               "formosalink": mici_pair_button()}
+    self._scroller.add_widgets([buttons[key] for key in layout["order"]])
 
     self._font_medium = gui_app.font(FontWeight.MEDIUM)

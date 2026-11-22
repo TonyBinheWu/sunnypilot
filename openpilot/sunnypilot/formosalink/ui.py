@@ -67,18 +67,23 @@ def formosalink_button():
   return button_item(lambda: "FormosaLink", lambda: text("scan"), callback=open_pairing, enabled=ui_state.is_offroad)
 
 
-def add_mici_pair_button(scroller):
+def mici_pair_button():
+  from openpilot.selfdrive.ui.layout_profile import device_layout
   from openpilot.selfdrive.ui.mici.widgets.button import BigButton
   class PairButton(BigButton):
     def _get_label_font_size(self):
-      return 56
+      return round(device_layout("c4")["menu_font"] * 0.875)
 
     def _update_state(self):
       self.set_value(text("scan"))
   button = PairButton("FormosaLink", text("scan"), gui_app.texture("icons_mici/settings/comma_icon.png", 33, 60))
   button.set_click_callback(open_pairing)
   button.set_enabled(ui_state.is_offroad)
-  scroller.add_widget(button)
+  return button
+
+
+def add_mici_pair_button(scroller):
+  scroller.add_widget(mici_pair_button())
 
 
 class FormosaConnectionCard(Widget):
