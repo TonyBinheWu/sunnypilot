@@ -652,11 +652,10 @@ bool longitudinal_interceptor_checks(const CANPacket_t *to_send) {
 }
 
 // Safety checks for torque-based steering commands
-bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueSteeringLimits limits) {
+bool steer_torque_cmd_checks_with_authority(int desired_torque, int steer_req, const TorqueSteeringLimits limits, bool aol_allowed) {
   bool violation = false;
   uint32_t ts = microsecond_timer_get();
 
-  bool aol_allowed = true;
   if (controls_allowed) acc_main_on = controls_allowed;
   
   if (controls_allowed || aol_allowed) {
@@ -738,6 +737,10 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueStee
   }
 
   return violation;
+}
+
+bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueSteeringLimits limits) {
+  return steer_torque_cmd_checks_with_authority(desired_torque, steer_req, limits, true);
 }
 
 // Safety checks for angle-based steering commands

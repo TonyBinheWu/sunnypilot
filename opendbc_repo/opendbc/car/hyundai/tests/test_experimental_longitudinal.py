@@ -16,14 +16,18 @@ from opendbc.car.hyundai.values import Buttons, CAR, HyundaiExtFlags, HyundaiFla
   (False, True, False, False, True),
   (True, True, True, False, True),
   (True, True, False, True, True),
-  (True, False, False, False, True),
+  (True, False, False, False, False),
+  (False, False, False, False, True),
+  (True, False, True, False, True),
+  (True, False, False, True, True),
 ])
 def test_startup_scc_frame_and_required_brake_feedback(monkeypatch, longitudinal, hda2, camera, bosch, expects_scc):
   monkeypatch.setattr(carstate, 'Params', lambda: SimpleNamespace(get_bool=lambda key: True))
   flags = HyundaiFlags.CANFD | (HyundaiFlags.CANFD_HDA2 if hda2 else 0) | (HyundaiFlags.CANFD_CAMERA_SCC if camera else 0)
   cp = structs.CarParams(carFingerprint=str(CAR.KIA_EV6), flags=int(flags), openpilotLongitudinalControl=longitudinal,
                          extFlags=int(HyundaiExtFlags.BOSCH_RADAR) if bosch else 0)
-  state = SimpleNamespace(CP=cp, controls_ready_count=119, scc_control=None,
+  state = SimpleNamespace(CP=cp, stock_scc_disabled=carstate.disables_stock_scc(cp, int(bosch)),
+                          controls_ready_count=119, scc_control=None,
                           _update_camera_scc_hint=lambda *_: None, _discover_canfd_camera_tx_messages=lambda *_: None)
   dbc = 'hyundai_canfd_generated'
   pt = CANParser(dbc, [], 1)
@@ -184,3 +188,30 @@ def test_stock_speed_decrease_yields_to_driver(mode, gas, valid, expected):
   cs = SimpleNamespace(ACCMode=mode, buttons_counter=0, out=state)
   packet = CarController.canfd_speed_control_pcm(controller, None, cs, None)
   assert (packet is not None) == expected
+
+
+@pytest.mark.parametrize("camera", [False, True])
+def test_auto_setup_requires_physical_classic_cruise_and_feedback(camera):
+  fp = gen_empty_fingerprint()
+  observed = 2 if camera else 0
+  cp = structs.CarParams(flags=int(HyundaiFlags.CAMERA_SCC) if camera else 0)
+  fp[0].update({0x251: 8, 0x386: 8, 0x394: 8})
+  fp[2 - observed].update({0x420: 8, 0x421: 8})
+  assert not interface.CarInterface.auto_longitudinal_bus_valid(cp, fp, [])
+  fp[observed].update({0x420: 8, 0x421: 8})
+  assert interface.CarInterface.auto_longitudinal_bus_valid(cp, fp, [])
+  fp[0][0x394] = 4
+  assert not interface.CarInterface.auto_longitudinal_bus_valid(cp, fp, [])
+
+@pytest.mark.parametrize("driver_button,requested,expected", [
+  (Buttons.NONE, Buttons.SET_DECEL, Buttons.NONE),
+  (Buttons.CANCEL, Buttons.SET_DECEL, Buttons.CANCEL),
+  (Buttons.SET_DECEL, Buttons.NONE, Buttons.SET_DECEL),
+])
+def test_stock_camera_button_preserves_driver_input_during_override(driver_button, requested, expected):
+  packer = CANPacker("hyundai_canfd_generated")
+  cs = SimpleNamespace(cruise_buttons_msg={"CRUISE_BUTTONS": driver_button}, cruise_btns_msg_canfd="CRUISE_BUTTONS",
+                       ACCMode=2, out=SimpleNamespace(canValid=True))
+  (packet,) = hyundaicanfd.forward_button_message(packer, SimpleNamespace(CAM=2), 0, cs, requested, 0, 0)
+  assert packet[2] == 2 and packet[1][2] & 7 == expected
+  assert cs.cruise_buttons_msg["CRUISE_BUTTONS"] == driver_button

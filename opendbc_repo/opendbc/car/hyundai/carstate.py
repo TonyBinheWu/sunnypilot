@@ -20,7 +20,7 @@ from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, Buttons, CarContr
                                        EV_MODE_ACTIVE_VALUES, EV_MODE_STATUS_ADDR, EV_MODE_STATUS_DLC, EV_MODE_STATUS_MSG, \
                                        EV_MODE_STATUS_SIGNAL
 from opendbc.car.interfaces import CarStateBase
-from opendbc.car.hyundai.values import get_pedal_interceptor_params
+from opendbc.car.hyundai.values import disables_stock_scc, get_pedal_interceptor_params
 from opendbc.car.pedal_interceptor import (PEDAL_INTERCEPTOR_BUS,
                                          PEDAL_INTERCEPTOR_RX_FREQUENCY, PedalInterceptorState)
 
@@ -239,6 +239,7 @@ class CarState(CarStateBase):
 
     self.params = CarControllerParams(CP)
     self.op_params = Params()
+    self.stock_scc_disabled = disables_stock_scc(CP, self.op_params.get_int("EnableRadarTracks"))
     # Diagnostic only: retain this onroad session's observed camera-bus SCC.
     self.camera_scc_hint_enabled = self.op_params.get_int("HyundaiCameraSCC") == 0 and not (CP.flags & HyundaiFlags.CAMERA_SCC)
     self.camera_scc_hint = False
@@ -465,10 +466,7 @@ class CarState(CarStateBase):
         # With host longitudinal and the stock SCC ECU disabled, a frame seen
         # during startup is not a running RX source. Camera SCC still needs its
         # real OEM template, and factory ACC still needs its cruise feedback.
-        stock_scc_disabled = (self.CP.openpilotLongitudinalControl and self.CP.flags & HyundaiFlags.CANFD_HDA2 and
-                              not self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC and
-                              not self.CP.extFlags & HyundaiExtFlags.BOSCH_RADAR)
-        if self.controls_ready_count == 120 and not stock_scc_disabled:
+        if self.controls_ready_count == 120 and not self.stock_scc_disabled:
           cp_cruise = self.cp_cam if self.CP.flags & HyundaiFlags.CANFD_CAMERA_SCC else self.cp
           add_and_cache(cp_cruise, "SCC_CONTROL", "scc_control")
         elif self.controls_ready_count == 121:

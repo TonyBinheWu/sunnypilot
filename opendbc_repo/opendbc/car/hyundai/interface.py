@@ -1,6 +1,6 @@
 from opendbc.car import Bus, get_safety_config, structs
 from opendbc.car.hyundai.hyundaicanfd import CanBus
-from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
+from opendbc.car.hyundai.values import HyundaiFlags, CAN_GEARS, CAR, DBC, \
                                                    CANFD_UNSUPPORTED_LONGITUDINAL_CAR, \
                                                    UNSUPPORTED_LONGITUDINAL_CAR, HyundaiSafetyFlags, HyundaiExtFlags, \
                                                    CANFD_HYBRID_STATUS_ADDR, CANFD_HYBRID_STATUS_DLC, \
@@ -11,7 +11,7 @@ from opendbc.car.disable_ecu import disable_ecu
 from opendbc.car.hyundai.carcontroller import CarController
 from opendbc.car.hyundai.carstate import CarState
 from opendbc.car.hyundai.radar_interface import RadarInterface
-from opendbc.car.hyundai.values import PEDAL_INTERCEPTOR_PARAMS, get_pedal_interceptor_params
+from opendbc.car.hyundai.values import PEDAL_INTERCEPTOR_PARAMS, disables_stock_scc, get_pedal_interceptor_params
 from opendbc.car.pedal_interceptor import PEDAL_INTERCEPTOR_SENSOR_ADDR, PEDAL_INTERCEPTOR_BUS
 
 from openpilot.common.params import Params
@@ -33,7 +33,16 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def auto_longitudinal_bus_valid(cp, fingerprint, car_fw):
     if not (cp.flags & HyundaiFlags.CANFD):
-      return True
+      pt = fingerprint.get(0, {})
+      if any(pt.get(addr) != 8 for addr in (0x251, 0x386, 0x394)):  # MDPS12, wheels, TCS13
+        return False
+      pedal = get_pedal_interceptor_params(cp)
+      if pedal is not None:
+        return (fingerprint.get(PEDAL_INTERCEPTOR_BUS, {}).get(PEDAL_INTERCEPTOR_SENSOR_ADDR) == 6 and
+                pt.get(pedal.cruise_enabled_bit[0]) == 8 and
+                all(addr not in fingerprint.get(bus, {}) for bus in (0, 2) for addr in (0x420, 0x421)))
+      scc_bus = 2 if cp.flags & HyundaiFlags.CAMERA_SCC else 0
+      return all(fingerprint.get(scc_bus, {}).get(addr) == 8 for addr in (0x420, 0x421))
     buses = CanBus(cp)
     camera_scc = bool(cp.flags & HyundaiFlags.CANFD_CAMERA_SCC)
     scc_bus = buses.CAM if camera_scc else buses.ECAN
@@ -229,6 +238,12 @@ class CarInterface(CarInterfaceBase):
     if ret.flags & HyundaiFlags.ALT_LIMITS:
       ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.ALT_LIMITS.value
 
+    if not (ret.flags & HyundaiFlags.CANFD) and ret.flags & HyundaiFlags.ALT_LIMITS_2:
+      ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.ALT_LIMITS_2.value
+
+    if not (ret.flags & HyundaiFlags.CANFD) and candidate in CAN_GEARS["send_mdps12"]:
+      ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.CLASSIC_MDPS12.value
+
     # Common longitudinal control setup
 
     ret.radarUnavailable = RADAR_START_ADDR not in fingerprint[1] or Bus.radar not in DBC[ret.carFingerprint]
@@ -321,7 +336,7 @@ class CarInterface(CarInterfaceBase):
     params = Params()
     bosch_passive = bool(CP.extFlags & HyundaiExtFlags.BOSCH_RADAR) and params.get_int("EnableRadarTracks") > 0
     pedal_interceptor = get_pedal_interceptor_params(CP) is not None
-    if CP.openpilotLongitudinalControl and not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC) and not pedal_interceptor and not bosch_passive:
+    if disables_stock_scc(CP, params.get_int("EnableRadarTracks")):
       addr, bus = 0x7d0, CanBus(CP).ECAN if CP.flags & HyundaiFlags.CANFD else 0
       if CP.flags & HyundaiFlags.CANFD_HDA2.value:
         addr, bus = 0x730, CanBus(CP).ECAN

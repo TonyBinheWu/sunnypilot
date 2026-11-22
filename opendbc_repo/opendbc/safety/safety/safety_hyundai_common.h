@@ -77,9 +77,8 @@ void hyundai_common_cruise_state_check(const bool cruise_engaged) {
 
   // enter controls on rising edge of ACC and recent user button press, exit controls when ACC off
   if (!hyundai_longitudinal) {
-    const bool require_driver_button = hyundai_canfd_hda2 && !hyundai_camera_scc;
     const bool driver_enable = !cruise_engaged_prev && (hyundai_last_button_interaction < HYUNDAI_PREV_BUTTON_SAMPLES);
-    if (cruise_engaged && (!require_driver_button || driver_enable)) {
+    if (cruise_engaged && driver_enable) {
       controls_allowed = true;
     }
 

@@ -17,7 +17,7 @@ from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.vehicle_model import VehicleModel
-from opendbc.car.hyundai.values import get_pedal_interceptor_params
+from opendbc.car.hyundai.values import disables_stock_scc, get_pedal_interceptor_params
 from opendbc.car.pedal_interceptor import PedalInterceptor
 from openpilot.common.filter_simple import MyMovingAverage
 
@@ -300,6 +300,7 @@ class CarController(CarControllerBase):
 
     self.activeCarrot = 0
     self.camera_scc_params = Params().get_int("HyundaiCameraSCC")
+    self.stock_scc_disabled = disables_stock_scc(CP, Params().get_int("EnableRadarTracks"))
     self.is_ldws_car = Params().get_bool("IsLdwsCar")
     self.enable_corner_radar = 0
     self.paddle_mode = Params().get_int("PaddleMode")
@@ -343,7 +344,7 @@ class CarController(CarControllerBase):
       if self.reserve_enabled:
         steerMax = steerDeltaUp = steerDeltaDown = steerDeltaUpLC = steerDeltaDownLC = 0
       if steerMax > 0:
-        self.params.STEER_MAX = steerMax
+        self.params.STEER_MAX = steerMax if self.CP.flags & HyundaiFlags.CANFD else min(steerMax, self.default_steer_max)
       else:
         self.params.STEER_MAX = self.default_steer_max
       if steerDeltaUp > 0:
@@ -388,6 +389,10 @@ class CarController(CarControllerBase):
     else:
       self.params.STEER_DELTA_UP = self.steerDeltaUp
       self.params.STEER_DELTA_DOWN = self.steerDeltaDown
+
+    if not (self.CP.flags & HyundaiFlags.CANFD):
+      self.params.STEER_DELTA_UP = min(self.params.STEER_DELTA_UP, self.steerDeltaUpOrg)
+      self.params.STEER_DELTA_DOWN = min(self.params.STEER_DELTA_DOWN, self.steerDeltaDownOrg)
 
     angle_control = self.CP.flags & HyundaiFlags.ANGLE_CONTROL
 
@@ -589,7 +594,7 @@ class CarController(CarControllerBase):
     self.apply_torque_last = apply_torque
 
     # accel + longitudinal
-    accel = clip_float(actuators.accel, CarControllerParams.ACCEL_MIN, CarControllerParams.ACCEL_MAX)
+    accel = clip_float(actuators.accel, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
     stopping = actuators.longControlState == LongCtrlState.stopping
     set_speed_in_units = hud_control.setSpeed * (CV.MS_TO_KPH if CS.is_metric else CV.MS_TO_MPH)
 
@@ -633,7 +638,8 @@ class CarController(CarControllerBase):
       addr, bus = 0x7d0, self.CAN.ECAN if self.CP.flags & HyundaiFlags.CANFD else 0
       if self.CP.flags & HyundaiFlags.CANFD_HDA2.value:
         addr, bus = 0x730, self.CAN.ECAN
-      can_sends.append(make_tester_present_msg(addr, bus, suppress_response=True))
+      if self.stock_scc_disabled:
+        can_sends.append(make_tester_present_msg(addr, bus, suppress_response=True))
 
       # for blinkers
       if self.CP.flags & HyundaiFlags.ENABLE_BLINKERS:
@@ -895,12 +901,7 @@ class CarController(CarControllerBase):
     if alt_buttons and cruise_buttons_msg_values is None:
       return None
 
-    send_button = self.make_spam_button(CC, CS)
-    if (send_button == Buttons.SET_DECEL and self.CP.flags & HyundaiFlags.CANFD_HDA2 and
-        not (alt_buttons or self.CP.flags & HyundaiFlags.CAMERA_SCC)):
-      if (not CS.out.canValid or CS.ACCMode != 1 or CS.out.standstill or
-          CS.out.gasPressed or CS.out.brakePressed or CS.out.regenBraking):
-        return None
+    send_button = hyundaicanfd.stock_speed_request(CS, self.make_spam_button(CC, CS))
     if send_button > 0:
       if alt_buttons:
         return hyundaicanfd.alt_cruise_buttons(self.packer, self.CP, self.CAN, send_button, cruise_buttons_msg_values, self.cruise_buttons_msg_cnt)

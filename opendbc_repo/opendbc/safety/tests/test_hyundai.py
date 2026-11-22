@@ -206,6 +206,14 @@ class TestHyundaiLongitudinalSafety(HyundaiLongitudinalBase, TestHyundaiSafety):
     self.safety.set_safety_hooks(CarParams.SafetyModel.hyundai, HyundaiSafetyFlags.LONG)
     self.safety.init_tests()
 
+  def test_host_cruise_state_cannot_enable_controls(self):
+    for mode in range(4):
+      self.safety.set_controls_allowed(False)
+      msg = self.packer.make_can_msg_panda("SCC12", 0, {"ACCMode": mode, "aReqRaw": 0, "aReqValue": 0})
+      self.assertEqual(self._tx(msg), mode == 0)
+      self.assertFalse(self.safety.get_controls_allowed())
+      self.assertFalse(self._tx(self._accel_msg(0.5)))
+
   def _accel_msg(self, accel, aeb_req=False, aeb_decel=0):
     values = {
       "aReqRaw": accel,

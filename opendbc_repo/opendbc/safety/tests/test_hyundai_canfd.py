@@ -84,7 +84,8 @@ class TestHyundaiCanfdBase(HyundaiButtonBase, common.PandaCarSafetyTest, common.
 
 class TestHyundaiCanfdLFASteeringBase(TestHyundaiCanfdBase):
 
-  TX_MSGS = [[0x12A, 0], [0x1A0, 1], [0x1CF, 0], [0x1E0, 0]]
+  # LFA and HUD on ECAN, factory cruise buttons towards CAM.
+  TX_MSGS = [[0x12A, 0], [0x1A0, 0], [0x1CF, 2], [0x1AA, 2], [0x1E0, 0], [0x161, 0]]
   RELAY_MALFUNCTION_ADDRS = {0: (0x12A,)}  # LFA
 
   STEER_MSG = "LFA"
@@ -99,7 +100,18 @@ class TestHyundaiCanfdLFASteeringBase(TestHyundaiCanfdBase):
       cls.safety = None
       raise unittest.SkipTest
 
+  def expected_tx_msgs(self):
+    msgs = list(type(self).TX_MSGS)
+    camera = self.SAFETY_PARAM & HyundaiSafetyFlags.CAMERA_SCC
+    if camera:
+      msgs += [[0xCB, 0], [0xEA, 2], [0x2AF, 2]]
+    if isinstance(self, HyundaiLongitudinalBase):
+      msgs += [[0x160, 0]]
+      msgs += [[0x10B, 2], [0x175, 2], [0x162, 0], [0x200, 0]] if camera else [[0x7D0, 0]]
+    return msgs
+
   def setUp(self):
+    self.TX_MSGS = self.expected_tx_msgs()
     self.packer = CANPackerPanda("hyundai_canfd_generated")
     self.safety = libsafety_py.libsafety
     self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd, self.SAFETY_PARAM)
@@ -139,26 +151,26 @@ class TestHyundaiCanfdLFASteeringAltButtons(TestHyundaiCanfdLFASteeringBase):
   SAFETY_PARAM: int
 
   def setUp(self):
+    self.TX_MSGS = self.expected_tx_msgs()
     self.packer = CANPackerPanda("hyundai_canfd_generated")
     self.safety = libsafety_py.libsafety
     self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd, HyundaiSafetyFlags.CANFD_ALT_BUTTONS | self.SAFETY_PARAM)
     self.safety.init_tests()
 
-  def _button_msg(self, buttons, main_button=0, bus=1):
+  def _button_msg(self, buttons, main_button=0, bus=None):
     values = {
       "CRUISE_BUTTONS": buttons,
       "ADAPTIVE_CRUISE_MAIN_BTN": main_button,
     }
-    return self.packer.make_can_msg_panda("CRUISE_BUTTONS_ALT", self.PT_BUS, values)
+    return self.packer.make_can_msg_panda("CRUISE_BUTTONS_ALT", self.PT_BUS if bus is None else bus, values)
 
   def _acc_cancel_msg(self, cancel, accel=0):
     values = {"ACCMode": 4 if cancel else 0, "aReqRaw": accel, "aReqValue": accel}
     return self.packer.make_can_msg_panda("SCC_CONTROL", self.PT_BUS, values)
 
   def test_button_sends(self):
-    """
-      No button send allowed with alt buttons.
-    """
+    # Check both the command guard on CAM and rejection on the physical RX bus.
+    super().test_button_sends()
     for enabled in (True, False):
       for btn in range(8):
         self.safety.set_controls_allowed(enabled)
@@ -270,6 +282,7 @@ class TestHyundaiCanfdLFASteeringLong(HyundaiLongitudinalBase, TestHyundaiCanfdL
       raise unittest.SkipTest
 
   def setUp(self):
+    self.TX_MSGS = self.expected_tx_msgs()
     self.packer = CANPackerPanda("hyundai_canfd_generated")
     self.safety = libsafety_py.libsafety
     self.safety.set_safety_hooks(CarParams.SafetyModel.hyundaiCanfd, HyundaiSafetyFlags.LONG | self.SAFETY_PARAM)
