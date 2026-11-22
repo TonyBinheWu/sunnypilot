@@ -65,6 +65,8 @@ globalThis.CarrotNavigationZhTw = Object.freeze({
   "The route map is available when the vehicle's driving screen is active. Select a destination below first.": "裝置顯示行車畫面時才會提供路線地圖，請先在下方選擇目的地。",
   "Waiting for the map service. Check your destination and current position.": "正在等待地圖服務，請確認目的地與目前位置。",
   "Waiting for a current GPS position.": "正在等待目前的 GPS 位置。",
+  "PC replay · no live vehicle position.": "電腦回放 · 無即時車輛定位",
+  "Browse the map in PC replay. Connect to the vehicle to search for a destination and navigate.": "電腦回放可瀏覽地圖。搜尋目的地與開始導航，請連上車機。",
   "Waiting for current route instructions.": "正在等待目前路線的導航指示。",
   "Current position is away from the route.": "目前位置已偏離導航路線。",
   "Loading map data. Please wait.": "地圖資料載入中，請稍候。",

@@ -1,3 +1,7 @@
+#navigationReplayNote,
+html[data-navigation-replay] .layout > section:nth-child(2) > :not(#navigationReplayNote) { display:none }
+html[data-navigation-replay] #navigationReplayNote { display:block }
+
 .map-guidance #mapManeuver:not([hidden]) {
   display:grid; grid-template-columns:auto minmax(0,1fr); gap:2px 12px; align-items:center;
   background:#07594d; color:white; border:0; line-height:1.25;

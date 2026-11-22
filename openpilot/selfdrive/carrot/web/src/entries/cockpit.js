@@ -35,7 +35,7 @@ function closeNavigationSearch(restoreFocus = false) {
     nav.contentDocument?.body.classList.remove('search-open');
     nav.contentDocument?.getElementById('query')?.blur?.();
   } catch {}
-  $('searchNav').textContent = '搜尋目的地／最愛';
+  $('searchNav').textContent = navigationView()?.readOnly ? '回放說明' : '搜尋目的地／最愛';
   $('searchNav').setAttribute('aria-expanded', 'false');
   if (restoreFocus) $('searchNav').focus();
 }
@@ -151,6 +151,7 @@ nav.addEventListener('load',()=>{try{
     }
   });
   nav.contentWindow.addEventListener("carrot-navigation-started",()=>{closeNavigationSearch();});
+  if (navigationView()?.readOnly) closeNavigationSearch();
   syncNavigationTextScale();
 }catch{status('導航頁面無法載入。',true);}});
 function showVehicle(){$('vehicleDetails').showModal();void navigationView()?.refresh();}
@@ -222,7 +223,7 @@ document.querySelectorAll('button[data-panel]').forEach(button => button.onclick
     const controls=core.contentWindow?.CarrotCockpitControls;
     if(controls)controls.openCatalog();else catalogRequested=true;
   }
-  if (trip?.known && !trip.busy && !trip.active && !trip.mapReady) openNavigationSearch();
+  if (trip?.known && !navigationView()?.readOnly && !trip.busy && !trip.active && !trip.mapReady) openNavigationSearch();
 });
 // Every road-view entry uses the same camera/classification renderer. The old
 // parent-only expansion had model/radar data but no classified camera objects.
