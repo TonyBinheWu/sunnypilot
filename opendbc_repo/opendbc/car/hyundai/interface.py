@@ -31,6 +31,22 @@ class CarInterface(CarInterfaceBase):
   RadarInterface = RadarInterface
 
   @staticmethod
+  def auto_longitudinal_bus_valid(cp, fingerprint, car_fw):
+    if not (cp.flags & HyundaiFlags.CANFD):
+      return True
+    buses = CanBus(cp)
+    camera_scc = bool(cp.flags & HyundaiFlags.CANFD_CAMERA_SCC)
+    scc_bus = buses.CAM if camera_scc else buses.ECAN
+    if fingerprint[buses.ECAN].get(0x175) != 24 or fingerprint[scc_bus].get(0x1a0) != 32:
+      return False
+    steer_bus = buses.ACAN if camera_scc else buses.CAM
+    has_lkas = fingerprint[steer_bus].get(0x50) == 16 or fingerprint[steer_bus].get(0x110) == 32
+    hda2 = bool(cp.flags & HyundaiFlags.CANFD_HDA2)
+    if not camera_scc and any(fw.ecu == Ecu.adas for fw in car_fw) != hda2:
+      return False
+    return has_lkas == hda2
+
+  @staticmethod
   def _get_params(ret: structs.CarParams, candidate, fingerprint, car_fw, alpha_long, is_release, docs) -> structs.CarParams:
 
     params = Params()

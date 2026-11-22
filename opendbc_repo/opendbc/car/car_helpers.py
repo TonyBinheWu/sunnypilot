@@ -171,15 +171,26 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
 
 def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multiplexing: ObdCallback, alpha_long_allowed: bool,
             is_release: bool, num_pandas: int = 1, cached_params: CarParamsT | None = None):
-  selected_car = Params().get("CarSelected3")
+  params = Params()
+  selected_car = params.get("CarSelected3")
   forced_candidate = get_selected_car_platform(selected_car) if selected_car else None
 
-  # A valid manual selection doesn't need active VIN, ECU presence, or firmware queries.
-  # Keep passive CAN fingerprinting since interfaces use it to detect buses and optional equipment.
-  candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(can_recv, can_send, set_obd_multiplexing, num_pandas,
-                                                                          cached_params, skip_fw_query=forced_candidate is not None)
+  requested_platform = params.get("AutoExperimentalPlatform")
+  auto_setup = bool(requested_platform) and not params.get_bool("IsReleaseBranch") and (
+    not selected_car or requested_platform == forced_candidate
+  )
+  # A saved name or cached firmware cannot establish the current configuration
+  # for a new longitudinal controller. Keep the existing manual fast path otherwise.
+  candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(
+    can_recv, can_send, set_obd_multiplexing, num_pandas, None if auto_setup else cached_params,
+    skip_fw_query=forced_candidate is not None and not auto_setup)
 
-  if forced_candidate is not None:
+  if auto_setup:
+    if not exact_match or source == CarParams.FingerprintSource.fixed or candidate != requested_platform:
+      params.put("AutoExperimentalIssue", "identity")
+      candidate = None
+    alpha_long_allowed = candidate == requested_platform
+  elif forced_candidate is not None:
     candidate = forced_candidate
     source = CarParams.FingerprintSource.fixed
     exact_match = True
@@ -189,17 +200,23 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
     candidate = "MOCK"
 
   print(f"SelectedCar = {candidate}")
-  Params().put("CarName", str(candidate))
+  params.put("CarName", str(candidate))
 
-  Params().put("FingerPrints", str(fingerprints))
+  params.put("FingerPrints", str(fingerprints))
   CarInterface = interfaces[candidate]
   CP: CarParams = CarInterface.get_params(candidate, fingerprints, car_fw, alpha_long_allowed, is_release, docs=False)
+  verify_wiring = auto_setup and CP.brand == "hyundai" and (CP.openpilotLongitudinalControl or params.get_int("HyundaiCameraSCC") == 3)
+  if verify_wiring and not CarInterface.auto_longitudinal_bus_valid(CP, fingerprints, car_fw):
+    carlog.warning("CAN fingerprint does not confirm the selected longitudinal wiring; using observation only")
+    params.put("AutoExperimentalIssue", "wiring")
+    candidate = MOCK.MOCK
+    CP = interfaces[candidate].get_params(candidate, fingerprints, car_fw, False, is_release, docs=False)
+    params.put("CarName", str(candidate))
   CP.carVin = vin
   CP.carFw = car_fw
   CP.fingerprintSource = source
   CP.fuzzyFingerprint = not exact_match
 
-  params = Params()
   print("Carrot GitBranch = {}, {}".format(format_git_source(params.get("GitRemote"), params.get("GitBranch")),
                                          params.get("GitCommitDate")))
 
