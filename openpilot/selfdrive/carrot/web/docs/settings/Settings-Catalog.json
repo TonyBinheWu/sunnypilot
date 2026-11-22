@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "dc620133ceccc51ae82094b72659b02310d4b749",
-  "contentHash": "ff025f7ce15b51f57fabe38b56f43a3dfe02b74cf558159e8d3b883218ee088b",
-  "generatedAt": "2026-11-20T13:03:35Z",
+  "catalogCommit": "1db521f958333405ff923faa0b86939c5eed47ab",
+  "contentHash": "b7368acc7e7f8660fdd01f878dc19afb5611e340649af0c308afd8eee97493d2",
+  "generatedAt": "2026-11-22T00:00:00Z",
   "locales": [
     "ko",
     "en",
@@ -12,10 +12,6 @@
     "EN-AChangeCostStarting.md": {
       "bytes": 2203,
       "hash": "d8b28077707c7563324faacaf876532769d03ab2495a32e1b593507d65f920e1"
-    },
-    "EN-ATC-AutoTurnControl.md": {
-      "bytes": 2192,
-      "hash": "95d84a9f0f447ba980ac132d9e333838b3312be474a8cbae19f9690a1972a0b8"
     },
     "EN-ATC-Helper-Map-display(0).md": {
       "bytes": 2027,
@@ -28,6 +24,10 @@
     "EN-ATC-Turn-Speed(20).md": {
       "bytes": 2041,
       "hash": "20362728ab13e0a3f7020ae62907867363e229db1930038689e542fd4d0f0864"
+    },
+    "EN-ATC-route-guidance-and-speed.md": {
+      "bytes": 2024,
+      "hash": "f97613b10bc2df7b0a6ebe02f96165e45ca473ce45cd66567a18ec303ab8e5d0"
     },
     "EN-AccelSet0-0km-h(160).md": {
       "bytes": 1946,
@@ -102,8 +102,8 @@
       "hash": "132252ab24d7f8cc44bb0e64f4a1f11f87d7d848dfee8662c16caa4dd28dff6f"
     },
     "EN-Automatic-turn-signals.md": {
-      "bytes": 3829,
-      "hash": "40f086fe0d104903ec053c766c9a42f44df218f92a9dabfa3a7b288eacf6e8bc"
+      "bytes": 1975,
+      "hash": "90426e59e1c85be6fe31a216c79836d71bba8e89557101099cfa43476abf7ee4"
     },
     "EN-BSD-Confidence-Threshold.md": {
       "bytes": 1632,
@@ -605,9 +605,9 @@
       "bytes": 1905,
       "hash": "17dfdfbd24de8c71f975450f198ba7db6bbcd9a5b152a8ca70c673d877eab8dd"
     },
-    "EN-Right-lane-change-distance-before-a-turn-(m).md": {
-      "bytes": 2964,
-      "hash": "56d2f41d4360fda11c9d480efe7b1231814b7f5bdeff1c872d3ada33a480c902"
+    "EN-Right-turn-advisory-distance-(m).md": {
+      "bytes": 1954,
+      "hash": "7c4f8e6468e44b1ea23e0542c9fcdc663fc3d312c3620e555d6e3b28b53220af"
     },
     "EN-RoadSpeedLimitOffset(-1).md": {
       "bytes": 2138,
@@ -881,13 +881,13 @@
       "bytes": 2354,
       "hash": "f619a1733a5f74342b466c02edba87be3dacd59211100c5b9caa1ab113c4f951"
     },
-    "KO-ATC-AutoTurnControl(0).md": {
-      "bytes": 2343,
-      "hash": "32541b721b60f5f4f4cb10d9c3424fd18b6395890dbb77760cffb90895866cb7"
-    },
     "KO-ATC-Helper-맵전환(0).md": {
       "bytes": 2121,
       "hash": "97efaec9aea2fc1f69b76277f82751c62be4e74ced12ef09035399d06a177959"
+    },
+    "KO-ATC-경로-안내-및-감속.md": {
+      "bytes": 2139,
+      "hash": "250c770b90163b4460976790c836ea52bee8dc29cb31b4f743c66866b6e3b0b1"
     },
     "KO-ATC-시간거리(3).md": {
       "bytes": 1897,
@@ -1238,8 +1238,8 @@
       "hash": "5a7c70016a6b6b0f51fc63244b8db21004f9be54c9f8c810a4165fa2f843721c"
     },
     "KO-깜박이-자동제어.md": {
-      "bytes": 4258,
-      "hash": "a0ebe7e68007dd957b691f31857a7c0b703556c63885a651f7e43977abb945db"
+      "bytes": 2082,
+      "hash": "661dc7132bddd47e1f9a1eff5feda56fe051b4d405d8dac92d74fee229e09df2"
     },
     "KO-깜빡이-레버로-회전-차선변경-구분-(km-h,-0=끔).md": {
       "bytes": 2563,
@@ -1473,9 +1473,9 @@
       "bytes": 2877,
       "hash": "339de54e3270a74b458624a7fa7ac71dd80a215e34fae2f5edf4ac890b730e6c"
     },
-    "KO-우회전-전-자동-차선변경-거리(m).md": {
-      "bytes": 3235,
-      "hash": "f21e60bfbee9f1f9ec7b2dfb2b7a2fd5b446d0fdd29c3a7affc8ce364e073a81"
+    "KO-우회전-안내-거리(m).md": {
+      "bytes": 2058,
+      "hash": "1f9ea456eb5cfeea9dbf21516f0c9f72a1e56c7f1e4a95c9050adfe5fec31369"
     },
     "KO-운전자-감시-모드.md": {
       "bytes": 6489,
@@ -1746,12 +1746,12 @@
       "hash": "c36b52d2f81711770bb6532877ab8c359e6f5d670cc0ff058db0b0c834b7e810"
     },
     "Settings-Catalog.md": {
-      "bytes": 146440,
-      "hash": "1e380708759185c082aad80a73670daa04a0bc276d3dcf4db28b364f319b8ccb"
+      "bytes": 146436,
+      "hash": "307fedf1276a5a48b70707bb374c1a4b8ed336474d588213878773efc90e9d13"
     },
-    "ZH-ATC-自动转向控制.md": {
-      "bytes": 2106,
-      "hash": "f2777594d4d76fde13acee6ac6b834ad2acb9ccd12d5764d5735965c975d913b"
+    "ZH-ATC-路口提示与速度控制.md": {
+      "bytes": 1980,
+      "hash": "33b767d6db265b2865e6115b3dcf3f3f6841e44b6780df5b2ab3375d88569989"
     },
     "ZH-ATC-转向速度(20).md": {
       "bytes": 1307,
@@ -1841,9 +1841,9 @@
       "bytes": 3220,
       "hash": "72503122febbdcf63178cd0cb274a16b53fb26c1b588ae271dfd5f213d47c932"
     },
-    "ZH-TW-ATC-自動轉向控制.md": {
-      "bytes": 2109,
-      "hash": "cb1af72a137d86f9de4cd47976114f5fe876fb1f6e0ecd0b23115efd13db2180"
+    "ZH-TW-ATC-路口提示與速度控制.md": {
+      "bytes": 2010,
+      "hash": "8e987fa3f72e5278ffe7ceb03b1bcd793b40040d94ba99c24179fb544d6a1b35"
     },
     "ZH-TW-ATC-輔助地圖顯示(0).md": {
       "bytes": 1928,
@@ -2045,9 +2045,9 @@
       "bytes": 1949,
       "hash": "aae45e39a74010f962ca97e6093b27da1b86cb0c51f11e12f3dce75eccd89164"
     },
-    "ZH-TW-右轉前自動變道距離(米).md": {
-      "bytes": 2675,
-      "hash": "01ab62f390e38f7079aa61ad60a0431a0e1ae2abb5c203e5bd93c9bae266ee3f"
+    "ZH-TW-右轉提示距離(公尺).md": {
+      "bytes": 1922,
+      "hash": "da8d1f019f94531ca0b986555fd9ecb6801eef2428075b0fbdcb2ab3acf566e0"
     },
     "ZH-TW-啟動加速度限制.md": {
       "bytes": 2127,
@@ -2398,8 +2398,8 @@
       "hash": "25a055050066211f80c2e88e0269ba9ca2b8ca0f13ced4b91c8cc204e9cc4e8a"
     },
     "ZH-TW-自動轉向燈.md": {
-      "bytes": 3436,
-      "hash": "76585be012230bb8d8719fbf7e01b6fbdd36ddfdd4b1cdafc5b7ba3de37f99aa"
+      "bytes": 1907,
+      "hash": "068d63f2d2d13dc3f4a71f4ea335ce7b64c516bf7f4dba4b66884e499619a725"
     },
     "ZH-TW-自動道路限速調整-(50).md": {
       "bytes": 2072,
@@ -2877,9 +2877,9 @@
       "bytes": 1228,
       "hash": "e5d5262ec38e12c9a7afff3547cd7cbf1dc84c685b082e805b9d8ae3bb0166bb"
     },
-    "ZH-右转前自动变道距离(米).md": {
-      "bytes": 2672,
-      "hash": "afbabe8a0428179175369966c53f86026f68ce525b3d560df7d2ea923b6f3023"
+    "ZH-右转提示距离(米).md": {
+      "bytes": 1873,
+      "hash": "bbc874a3df517b7b8bf643e474b53b061adc6394b8ca9931ed49951095508b4d"
     },
     "ZH-后向摄像头通过后保持距离(m).md": {
       "bytes": 2966,
@@ -3282,8 +3282,8 @@
       "hash": "10bbc50eac8276ffe051d54ff94e1e9fde1b5f249008847a29be926510e8228e"
     },
     "ZH-自动转向灯.md": {
-      "bytes": 3433,
-      "hash": "6f4adc6cebec5fb6b5d0ad15db1a1e8f968586195baaaff01072f09eb95dc494"
+      "bytes": 1916,
+      "hash": "ef1faeec27e50a64d3af31e3cbc0d0e1398ad484f91c2e5a2c6eaf9b0a581bd1"
     },
     "ZH-自动道路限速调整-(50).md": {
       "bytes": 1290,
@@ -3621,31 +3621,31 @@
       "locales": {
         "en": {
           "anchor": "AutoBlinkerControl",
-          "factsHash": "db4cd3bd53a8f3018322d460d821b9b9976a87ebd16b6677108fb996a31f9bd1",
+          "factsHash": "93f8d8992f53f70cff61de8c3b9b8922f9532211537fb57ae0151e0bef697143",
           "page": "EN-Automatic-turn-signals.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "AutoBlinkerControl",
-          "factsHash": "b573fd1dccdd9f626fd55dbe2ea7da5ac13f06706ad0f3a0209c7374a50bea10",
+          "factsHash": "70c2d56822d1b0325bb554cfe5a3cc82f7ee43792c73bccc6e93dcb4abbed01f",
           "page": "KO-깜박이-자동제어.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "AutoBlinkerControl",
-          "factsHash": "746d97b59d9aa5567e7800090c8265dc03e28b7d162065af32348bc750a3adc5",
+          "factsHash": "1efb0e75f5f8a1f48c99802b372c588607866348f5cba3a80314c85bba8f1f63",
           "page": "ZH-自动转向灯.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "AutoBlinkerControl",
-          "factsHash": "f3085c76dc1576320b39e25749089d6d81e1b2f42cefcff1091230f7781c2d18",
+          "factsHash": "493cf3ce8bd46965844eed2b852c80d8ece3199e2d6d8e8ba7b19db6b7499e34",
           "page": "ZH-TW-自動轉向燈.md",
           "reviewStatus": "current"
         }
       },
       "reviewStatus": "current",
-      "semanticHash": "edd05659292aebc71be712906d3faaadf71c30551e5a372287abb2bf65bd60ca"
+      "semanticHash": "6a1867189f6b090ec92c031c906f21c613b4aa48685d0feccb1587057093bf19"
     },
     "AutoCruiseControl": {
       "group": "BASIC_AUTOCRUISE",
@@ -4241,62 +4241,62 @@
       "locales": {
         "en": {
           "anchor": "AutoTurnControl",
-          "factsHash": "64653571dbab02bb4fa4e0a769088d32ba07e3b3e10ab903da2d6a077c0eb171",
-          "page": "EN-ATC-AutoTurnControl.md",
+          "factsHash": "048e98d51b90d1784c61f57ca50c31276ed49a97cd4749714f6a31058b0e66bc",
+          "page": "EN-ATC-route-guidance-and-speed.md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "AutoTurnControl",
-          "factsHash": "f3a8a67a911690494be79e9e0b046b4346d4b8086ea1221974ce23bdcc281b70",
-          "page": "KO-ATC-AutoTurnControl(0).md",
+          "factsHash": "dad6ea86d73c0e0f413be901334a33cd8682d830949da969a4b293277f7d0521",
+          "page": "KO-ATC-경로-안내-및-감속.md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "AutoTurnControl",
-          "factsHash": "3d0e31c8b1f9f8ea943a70ef47c4b99a502d197a20beec1975fd764860a7f31b",
-          "page": "ZH-ATC-自动转向控制.md",
+          "factsHash": "f0126f44b86dca328563912abde4c22847b08a15d3ae5fcb509dd7393860e9e6",
+          "page": "ZH-ATC-路口提示与速度控制.md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "AutoTurnControl",
-          "factsHash": "0485f3de174eae3c28f416c4668530f0e5b13c3533234d6d7076b0e8364acc9b",
-          "page": "ZH-TW-ATC-自動轉向控制.md",
+          "factsHash": "26a54ff6b270f92997011df69f32bcd1b0a3bf7213758af0c05b0145edba3e86",
+          "page": "ZH-TW-ATC-路口提示與速度控制.md",
           "reviewStatus": "current"
         }
       },
       "reviewStatus": "current",
-      "semanticHash": "e075079f91a03599fc073d2fd981a0d2f880dba4f6b9252ca9cc7782a5ecb64d"
+      "semanticHash": "c60e74ae9f02f3b4ca847ca4e7f0b5d7a9e4b85043058d06861a116e22426191"
     },
     "AutoTurnControlRightLaneChange": {
       "group": "STEER_LANECHANGE",
       "locales": {
         "en": {
           "anchor": "AutoTurnControlRightLaneChange",
-          "factsHash": "69f345289c078e233e7e0546de33c7004169918a0234a9843b4b9667bcc7e3ca",
-          "page": "EN-Right-lane-change-distance-before-a-turn-(m).md",
+          "factsHash": "691595ec59c5d8825c0476b84365324d83997a62f9ba60b2650189f2afee31f0",
+          "page": "EN-Right-turn-advisory-distance-(m).md",
           "reviewStatus": "current"
         },
         "ko": {
           "anchor": "AutoTurnControlRightLaneChange",
-          "factsHash": "2ce0eb39ba7fd3168a5d0e67859dd95f9e10600aba3cdee6ef0833c39a797e16",
-          "page": "KO-우회전-전-자동-차선변경-거리(m).md",
+          "factsHash": "05dbaa25a3b0a13c3c0654656d3f3ced8e08ae3dc9a421dbcb50a96af0b7be3f",
+          "page": "KO-우회전-안내-거리(m).md",
           "reviewStatus": "current"
         },
         "zh": {
           "anchor": "AutoTurnControlRightLaneChange",
-          "factsHash": "1ef251bdf4ed77a75adec8ba99c887ca893b07f5c36bc58023c1fa7723c3a510",
-          "page": "ZH-右转前自动变道距离(米).md",
+          "factsHash": "f03ba60d0339cabe72a3d1b33832620ea9ad2c4da27934a68b0706540f9961b9",
+          "page": "ZH-右转提示距离(米).md",
           "reviewStatus": "current"
         },
         "zh-tw": {
           "anchor": "AutoTurnControlRightLaneChange",
-          "factsHash": "39ecc892d2c12e21d9ea37b0679121c936c901f371547d3c3bf2e183a2ed7f16",
-          "page": "ZH-TW-右轉前自動變道距離(米).md",
+          "factsHash": "196ae9618be670c447fdd300768bc92ea372f99cf6b69f5addc7d95c0bb42089",
+          "page": "ZH-TW-右轉提示距離(公尺).md",
           "reviewStatus": "current"
         }
       },
       "reviewStatus": "current",
-      "semanticHash": "3008498ad9b26c4e6721da72acaa56057939a66d7d15c51954adbc9bb64b1584"
+      "semanticHash": "517c131dc727f1d4463382c4d3c83de1677184ce198f650ff90d5937e35160e1"
     },
     "AutoTurnControlSpeedTurn": {
       "group": "STEER_LANECHANGE",
@@ -10219,5 +10219,6 @@
       "reviewStatus": "current",
       "semanticHash": "b3ca6436f7051d2fd82ae24a9dc3974abf6b5ee32c633d085c3eb4bee630c364"
     }
-  }
+  },
+  "wikiCommit": "f80a09a581ba7ad2bd1cbb76ff7c5387bd9cd1aa"
 }

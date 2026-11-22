@@ -31,7 +31,7 @@ from openpilot.common.file_chunker import open_file_chunked
 from openpilot.selfdrive.modeld.camera_sync import FrameMeta
 from openpilot.selfdrive.modeld.camera_gap import CameraGapTrace
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan
-from openpilot.selfdrive.navigation.map_client import MapInput
+from openpilot.selfdrive.modeld.driving_inputs import driver_maneuver_command, driving_model_inputs
 from openpilot.selfdrive.modeld.lane_change_advisory import LaneChangeAdvisory
 from openpilot.selfdrive.modeld.signal_shadow import ShadowClient
 from openpilot.selfdrive.modeld.helpers import (get_tg_input_devices, load_oob, modeld_pkl_path,
@@ -385,7 +385,7 @@ def main(demo=False):
   # messaging
   pm = PubMaster(["modelV2", "drivingModelData", "cameraOdometry"])
   sm = SubMaster(["deviceState", "carState", "roadCameraState", "liveCalibration", "driverMonitoringState", "carControl",
-                  "selfdriveState", "livePose", "liveDelay", "carrotMan", "radarState", "navInstructionCarrot", "navRoute"])
+                  "selfdriveState", "livePose", "liveDelay", "carrotMan", "radarState", "navInstructionCarrot"])
 
   publish_state = PublishState()
   params = Params()
@@ -422,7 +422,6 @@ def main(demo=False):
                     tesla_auto_signals=CP.brand == "tesla" and bool(CP.flags & TeslaFlags.AUTO_TURN_SIGNALS),
                     boundary_indicator_supported=CP.carFingerprint == 'HYUNDAI_IONIQ_5_PE')
   boundary_observer = BoundaryObserver(cloudlog.event) if DH.boundary_indicator_supported else None
-  nav_input = MapInput()
   lane_advisory = LaneChangeAdvisory()
 
 
@@ -481,13 +480,6 @@ def main(demo=False):
       model_transform_extra = get_warp_matrix(device_from_calib_euler, dc.ecam.intrinsics if has_wide_camera else dc.fcam.intrinsics, True).astype(np.float32)
       live_calib_seen = True
 
-    traffic_convention = np.zeros(2)
-    traffic_convention[int(is_rhd)] = 1
-
-    vec_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
-    if desire >= 0 and desire < ModelConstants.DESIRE_LEN:
-      vec_desire[desire] = 1
-
     # tracked dropped frames
     vipc_dropped_frames = max(0, meta_main.frame_id - last_vipc_frame_id - 1)
     frames_dropped = frame_dropped_filter.update(min(vipc_dropped_frames, 10))
@@ -507,13 +499,7 @@ def main(demo=False):
     action_delay = DT_MDL / 2 # middle of the interval between model output (current state) and next frame (expected state)
     lat_action_t = lat_delay_dynamic + frame_delay + action_delay
     long_action_t = long_delay + frame_delay + action_delay
-    inputs: dict[str, np.ndarray] = {
-      'desire_pulse': vec_desire,
-      'traffic_convention': traffic_convention,
-      'action_t': np.array([lat_action_t, long_action_t], dtype=np.float32),
-    }
-
-    inputs.update(nav_input.update(model, sm, v_ego))
+    inputs = driving_model_inputs(desire, is_rhd, lat_action_t, long_action_t)
 
     inference_started = time.monotonic()
     mt1 = time.perf_counter()
@@ -601,7 +587,8 @@ def main(demo=False):
           time.clock_gettime_ns(getattr(time, "CLOCK_BOOTTIME", time.CLOCK_MONOTONIC)),
           not sm['carControl'].latActive and params.get_bool("AlwaysLateral"))
         turn_hold_allowed &= indicator_valid
-      DH.update(sm['carState'], modelv2_send.modelV2, sm['carControl'].latActive, lane_change_prob, sm['carrotMan'], sm['radarState'],
+      DH.update(sm['carState'], modelv2_send.modelV2, sm['carControl'].latActive, lane_change_prob,
+                driver_maneuver_command(sm['carrotMan']), sm['radarState'],
                 indicator_valid=indicator_valid, indicator_curvature=sm['carControl'].actuators.curvature,
                 indicator_yaw_rate=indicator_yaw_rate,
                 assistant_valid=indicator_valid and sm.valid['radarState'] and sm.alive['radarState'] and

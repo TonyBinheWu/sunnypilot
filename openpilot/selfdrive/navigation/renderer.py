@@ -15,14 +15,12 @@ try:
 except ImportError:
   _native_draw_segments = None
 
+from openpilot.selfdrive.navigation.map_geometry import FORWARD_OFFSET, METERS_PER_PIXEL, SIZE
 from openpilot.selfdrive.navigation.pmtiles import PMTiles
 from openpilot.selfdrive.navigation.route import MAX_LATITUDE
 from openpilot.selfdrive.navigation.vector_tile import Road, decode_roads
 
-SIZE = 256
 ZOOM = 15  # tile zoom; the style zoom is derived from METERS_PER_PIXEL
-METERS_PER_PIXEL = 1.0
-FORWARD_OFFSET = 64.0  # the ego sits three quarters down the frame
 EARTH_CIRCUMFERENCE = 40075016.68557849
 BACKGROUND = 0
 ROAD_INTENSITY = 255

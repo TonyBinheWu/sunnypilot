@@ -15,7 +15,7 @@ from openpilot.selfdrive.controls.lib.desire_lib.assistant_lane import ROOT as A
 from blink_tbt import TbtBlinker, right_front_clear
 from blink_turn_location import observations as turn_observations, navigation_cancelled
 from blink_boundary import BoundaryEvents, vehicle_allowed as boundary_vehicle_allowed
-from blink_observation import ObservationSignals, LowSpeedOwnership, wire_hold, allowed as observation_allowed
+from blink_observation import ObservationSignals, wire_hold, allowed as observation_allowed
 from blink_turn_journey import Travel
 from blink_display import Publisher
 from blink_feedback import ObservationFeedback
@@ -32,12 +32,9 @@ def vehicle_ready(sm, now, fingerprint, spas=False):
           len(sm['pandaStates']) > 0)
 
 
-def automatic_control_allowed(cs, cc, ss, always_lateral, holding_turn):
-  # latActive is an actuator-output gate: it drops at a stop and during steering
-  # suspension. Neither completes an already-owned physical turn indication.
-  # A fresh audio cue may start with lateral permission during a stop or temporary
-  # steering suspension; physical turn indication is independent of torque output.
-  # Lane-change indications still require actual lateral activation below.
+def automatic_control_allowed(cs, cc, ss, always_lateral):
+  # Vehicle-level permission stays available through a stop. Individual
+  # maneuver requests still check lateral activation where required.
   if str(cs.gearShifter) != 'drive':
     return False
   return cc.latActive or ((ss.active or always_lateral) and cs.latEnabled and
@@ -112,7 +109,7 @@ def main(fd, spas=False, ble=False):
   tbt = TbtBlinker()
   boundary = BoundaryEvents(read_json(RUNTIME/'boundary-indicator.json', {}))
   observation = ObservationSignals(read_json(RUNTIME/'boundary-indicator.json', {}))
-  low_speed_ownership, travel = LowSpeedOwnership(), Travel()
+  travel = Travel()
   display = Publisher()
   feedback, activated_id = {}, None
   observation_feedback, tap_echo = ObservationFeedback(), TapEcho()
@@ -162,42 +159,39 @@ def main(fd, spas=False, ble=False):
                      fresh(sm.recv_time[k], now, 1.0 if k == 'carrotMan' and automatic.direction else .35)
                      for k in ('modelV2', 'carrotMan'))
     travelled = travel.update(now, cs.vEgo, ok)
-    auto_valid = not auto_paused and auto_fresh and ok and automatic_control_allowed(
-      cs, sm['carControl'], sm['selfdriveState'], params.get_bool('AlwaysLateral'), automatic.direction is not None)
-    auto_valid = auto_valid and not navigation_cancelled(sm, now)
-    auto = None
+    model_fresh = ('modelV2' in sm.services and sm.valid['modelV2'] and sm.alive['modelV2'] and fresh(sm.recv_time['modelV2'], now, .35))
+    auto_valid = not auto_paused and model_fresh and ok and automatic_control_allowed(
+      cs, sm['carControl'], sm['selfdriveState'], params.get_bool('AlwaysLateral'))
+    guidance_valid = auto_valid and auto_fresh and not navigation_cancelled(sm, now)
+    navigation_hint = None
     if auto_fresh:
       meta, ss = sm['modelV2'].meta, sm['selfdriveState']
       position, target = turn_observations(sm, now)
-      auto = automatic.update(now, mode, auto_valid,
-                              ss.atcTurnStartMonoTime / 1e9, str(ss.atcTurnDirection), sm['carrotMan'].atcType,
-                              str(meta.desire), str(meta.autoTurnSignal) if meta.autoTurnSignalLaneChange and sm['carControl'].latActive else None,
-                              speed=cs.vEgo, angle=cs.steeringAngleDeg, heading=turn_heading(sm, now),
-                              distance=sm['carrotMan'].xDistToTurn, position=position, target=target,
-                              travel=travelled, use_travel=True,
-                              pressed=getattr(cs, 'steeringPressed', False), torque=getattr(cs, 'steeringTorque', 0.))
+      navigation_hint = automatic.update(
+        now, mode, guidance_valid,
+        ss.atcTurnStartMonoTime / 1e9, str(ss.atcTurnDirection), sm['carrotMan'].atcType,
+        str(meta.desire), str(meta.autoTurnSignal) if meta.autoTurnSignalLaneChange and sm['carControl'].latActive else None,
+        speed=cs.vEgo, angle=cs.steeringAngleDeg, heading=turn_heading(sm, now),
+        distance=sm['carrotMan'].xDistToTurn, position=position, target=target,
+        travel=travelled, use_travel=True,
+        pressed=getattr(cs, 'steeringPressed', False), torque=getattr(cs, 'steeringTorque', 0.))
     else:
       automatic.update(now, mode, False, 0., 'none', '', 'none', use_travel=True)
-    # The ATC add-on lights the real right indicator. Its CAN feedback goes through the
-    # unchanged driver-blinker lane-change path; no LANECHANGE command is sent.
+    # Route cues are presentation-only: a synthetic lamp could feed back through
+    # carState and be mistaken for driver confirmation by the maneuver planner.
     tbt_distance = right_lane_change_distance(params)
     tbt_enabled = (not spas and mode == 2 and params.get_int('AutoTurnControl') in (1, 2) and
                    tbt_distance > 0)
     front_clear = (tbt_enabled and front_radar_available and 'radarState' in sm.services and sm.valid['radarState'] and
                    sm.alive['radarState'] and fresh(sm.recv_time['radarState'], now, .35) and
                    right_front_clear(sm['radarState']))
-    tbt_auto = tbt.update(now, enabled=tbt_enabled, distance_limit=tbt_distance,
-                          front_clear=front_clear,
-                          valid=(auto_valid and fresh(sm.recv_time['carrotMan'], now, .35) and
-                                 sm['carControl'].latActive and params.get_int('LaneChangeNeedTorque') == 0),
-                          cs=cs, model=sm['modelV2'] if auto_fresh else None, nav=sm['carrotMan'] if auto_fresh else None,
-                          manual=bool(commands) or (fresh(feedback.get('stamp'), now, .35) and feedback.get('state') == 'driver_override'),
-                          busy=auto is not None or (policy.hold is not None and tbt.phase not in ('waiting', 'changing', 'finishing')))
-    if tbt_auto is not None:
-      if tbt_auto[0] != 'tbt_display' or low_speed_ownership.ready(now, tbt.started, sm['modelV2'].meta,
-          record_ownership):
-        auto = tbt_auto
-    model_fresh = ('modelV2' in sm.services and sm.valid['modelV2'] and sm.alive['modelV2'] and fresh(sm.recv_time['modelV2'], now, .35))
+    tbt.update(now, enabled=tbt_enabled, distance_limit=tbt_distance,
+               front_clear=front_clear,
+               valid=(guidance_valid and fresh(sm.recv_time['carrotMan'], now, .35) and
+                      sm['carControl'].latActive and params.get_int('LaneChangeNeedTorque') == 0),
+               cs=cs, model=sm['modelV2'] if auto_fresh else None, nav=sm['carrotMan'] if auto_fresh else None,
+               manual=bool(commands) or (fresh(feedback.get('stamp'), now, .35) and feedback.get('state') == 'driver_override'),
+               busy=navigation_hint is not None or (policy.hold is not None and tbt.phase not in ('waiting', 'changing', 'finishing')))
     meta = sm['modelV2'].meta if model_fresh else None
     observed_source = str(getattr(meta, 'observedIndicatorSource', ''))
     observation_enabled = (params.get_bool('ManualLaneChangeIndicator') if observed_source == 'manual' else
@@ -206,15 +200,13 @@ def main(fd, spas=False, ble=False):
                            params.get_bool('ModelDesireIndicator') if observed_source in ('model_desire', 'model_turn') else False)
     own_tap = (observation.owned is not None and tap_echo.matches(
       now, cs, observation.owned[1], observation.owned[0], observation_feedback.value))
-    observe_auto = observation.update(now, meta,
+    auto = observation.update(now, meta,
       allowed=(not auto_paused and not spas and mode in (1, 2) and observation_enabled and ok and model_fresh and
                observation_allowed(cs, sm['carControl'], sm['modelV2'], observed_source, now, observation.owned is not None, own_tap) and
                (observation.owned is not None or fresh(feedback.get('stamp'), now, .35) and feedback.get('state') == 'ready')),
-      busy=bool(commands) or auto is not None or (policy.hold is not None and policy.hold['source'] != 'observation') or
+      busy=bool(commands) or (policy.hold is not None and policy.hold['source'] != 'observation') or
            (fresh(feedback.get('stamp'), now, .35) and feedback.get('state') == 'driver_override'),
       record=record_ownership)
-    if auto is None and observe_auto:
-      auto = observe_auto
     peer_fresh = fresh(feedback.get('stamp'), now, .35)
     # Only a worker with live receiver feedback for this vehicle advertises a path.
     # Bind a request to that worker for its lifetime, even across adapter handoff.
@@ -240,16 +232,9 @@ def main(fd, spas=False, ble=False):
     observation_feedback.prepare(now, hold, meta, cs)
     receiver_override = fresh(feedback.get('stamp'), now, .35) and feedback.get('state') == 'driver_override'
     native_hold = not ble or fingerprint == 'HYUNDAI_IONIQ_5_PE'
-    tbt_turn_hold = bool(not spas and native_hold and hold and hold['source'] == 'turn' and automatic.journey.active)
-    # A confirmed TBT lamp is maintained by the comma-side lease. Receiver
-    # one-touch ownership ending must not erase the ongoing turn. This cannot
-    # activate a hold whose initial send and lamp were never acknowledged.
-    continuing_turn = (tbt_turn_hold and activated_id == hold['id'] and fresh(feedback.get('stamp'), now, .35) and
-                       feedback.get('state') in ('ready', 'waiting', 'driver_override') and
-                       feedback.get('accepted_id') in (None, hold['id']))
-    hold = policy.acknowledged(now, activated_id, receiver_override and not tbt_turn_hold)
+    hold = policy.acknowledged(now, activated_id, receiver_override)
     acknowledged = (hold and fresh(feedback.get('stamp'), now, .35) and feedback.get('accepted_id') == hold['id'] and
-                    feedback.get('state') in ('ready', 'waiting', 'waiting_previous_signal')) or continuing_turn
+                    feedback.get('state') in ('ready', 'waiting', 'waiting_previous_signal'))
     if not acknowledged:
       if activated_id is not None:
         release_until = now+.8
@@ -258,18 +243,15 @@ def main(fd, spas=False, ble=False):
           (hold['direction'] == 'right' and cs.rightBlinker and not cs.leftBlinker)):
       activated_id = hold['id']
     activated_id = observation_feedback.activation(now, hold, cs, feedback, acknowledged, activated_id, ok)
-    if feedback.get('state') == 'driver_override' and not continuing_turn:
+    if feedback.get('state') == 'driver_override':
       release_until = 0.
     if commands or ((spas or not native_hold) and feedback.get('state') == 'driver_override'):
       automatic.pending = None
       automatic.journey.pending = None
       automatic.journey.active = None
       automatic.journey.cancelled_until = now+3.
-    if not spas and policy.relight(now, activated_id, acknowledged and not receiver_override, cs.leftBlinker, cs.rightBlinker,
-                                  retry_unlit=auto_valid and automatic.direction is not None and feedback.get('state') == 'ready'):
+    if not spas and policy.relight(now, activated_id, acknowledged and not receiver_override, cs.leftBlinker, cs.rightBlinker):
       hold, activated_id = policy.hold, None
-    model_fresh = ('modelV2' in sm.services and sm.valid['modelV2'] and sm.alive['modelV2'] and fresh(sm.recv_time['modelV2'], now, .35))
-    meta = sm['modelV2'].meta if model_fresh else None
     boundary_direction = {'left':1, 'right':2}.get(str(getattr(meta, 'manualLaneIndicator', 'none')), 0)
     boundary_commands = boundary.read(now, boundary_direction,
       getattr(meta, 'manualLaneIndicatorMonoTime', 0)/1e9,
@@ -285,7 +267,7 @@ def main(fd, spas=False, ble=False):
       activated=hold is not None and activated_id == hold['id'],
       peer=feedback.get('state') if fresh(feedback.get('stamp'), now, .35) else 'missing',
       automatic=automatic, tbt=tbt, tbt_enabled=tbt_enabled and auto_fresh, front_clear=front_clear,
-      observed_source=observed_source, auto_valid=auto_valid, atc_type=sm['carrotMan'].atcType if auto_fresh else '')
+      navigation_hint=navigation_hint, observed_source=observed_source, auto_valid=guidance_valid, atc_type=sm['carrotMan'].atcType if auto_fresh else '')
     devices = [mac for mac in status.get('grabbed', []) if fresh(status.get('time'), now) and
                settings.get('devices', {}).get(mac, {}).get('enabled') is True and
                not (learning.get('address') == mac and learning.get('until', 0) > now)]

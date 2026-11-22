@@ -1,40 +1,69 @@
+import math
+
 from openpilot.cereal import log
-from openpilot.common.realtime import DT_CTRL
 from openpilot.common.constants import CV
 
 
 CAMERA_OFFSET = 0.04
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
+LEFT_MARGIN = 1.08 + CAMERA_OFFSET
+RIGHT_MARGIN = 1.08 - CAMERA_OFFSET
+
 
 class LaneDepartureWarning:
   def __init__(self):
-    self.left = False
-    self.right = False
-    self.last_blinker_frame = 0
+    self.left = self.right = False
+    self.last_sample = None
+    self.last_frame_id = None
+    self.quiet_until = 0.
+    self.candidate = None
+    self.since = 0.
 
-  def update(self, frame, modelV2, CS, CC):
+  def update(self, now, modelV2, CS, CC, *, valid):
+    self.left = self.right = False
+    continuous = self.last_sample is not None and 0 < now - self.last_sample <= .2
+    if not continuous:
+      self.candidate = None
+    if self.last_sample is None or now < self.last_sample:
+      self.quiet_until = now + 5.
+    self.last_sample = now
     if CS.leftBlinker or CS.rightBlinker:
-      self.last_blinker_frame = frame
+      self.quiet_until = now + 5.
+    old_frame = self.last_frame_id
+    self.last_frame_id = modelV2.frameId
+    if (not valid or not math.isfinite(now) or not math.isfinite(CS.vEgo) or CS.vEgo <= LDW_MIN_SPEED or now < self.quiet_until or
+        (old_frame is not None and modelV2.frameId <= old_frame)):
+      self.candidate = None
+      return
 
-    recent_blinker = (frame - self.last_blinker_frame) * DT_CTRL < 5.0  # 5s blinker cooldown
-    ldw_allowed = CS.vEgo > LDW_MIN_SPEED and not recent_blinker and not CC.latActive
+    lines, probs = modelV2.laneLines, modelV2.laneLineProbs
+    if len(lines) < 3 or len(probs) < 3 or not len(lines[1].y) or not len(lines[2].y):
+      self.candidate = None
+      return
+    left, right = -lines[1].y[0], lines[2].y[0]
+    if not CC.latActive:
+      self.candidate = None
+      prediction = modelV2.meta.desirePrediction
+      if len(prediction) > log.Desire.laneChangeRight:
+        self.left = bool(probs[1] > .5 and left < LEFT_MARGIN and prediction[log.Desire.laneChangeLeft] > LANE_DEPARTURE_THRESHOLD)
+        self.right = bool(probs[2] > .5 and right < RIGHT_MARGIN and prediction[log.Desire.laneChangeRight] > LANE_DEPARTURE_THRESHOLD)
+      return
 
-    desire_prediction = modelV2.meta.desirePrediction
-    if len(desire_prediction) and ldw_allowed:
-      right_lane_visible = modelV2.laneLineProbs[2] > 0.5
-      left_lane_visible = modelV2.laneLineProbs[1] > 0.5
-      l_lane_change_prob = desire_prediction[log.Desire.laneChangeLeft]
-      r_lane_change_prob = desire_prediction[log.Desire.laneChangeRight]
-
-      lane_lines = modelV2.laneLines
-      l_lane_close = left_lane_visible and (lane_lines[1].y[0] > -(1.08 + CAMERA_OFFSET))
-      r_lane_close = right_lane_visible and (lane_lines[2].y[0] < (1.08 - CAMERA_OFFSET))
-
-      self.left = bool(l_lane_change_prob > LANE_DEPARTURE_THRESHOLD and l_lane_close)
-      self.right = bool(r_lane_change_prob > LANE_DEPARTURE_THRESHOLD and r_lane_close)
-    else:
-      self.left, self.right = False, False
+    # The planner may intend to stay in lane even while tracking close to its edge.
+    # Require agreement from both inner lines and sustained proximity on the same side.
+    side = None
+    if (.9 <= probs[1] <= 1. and .9 <= probs[2] <= 1. and
+        2.6 <= left + right <= 4.2 and modelV2.meta.desire == log.Desire.none and
+        modelV2.meta.laneChangeState == log.LaneChangeState.off):
+      if left < LEFT_MARGIN:
+        side = 'left'
+      elif right < RIGHT_MARGIN:
+        side = 'right'
+    if side != self.candidate:
+      self.candidate, self.since = side, now
+    if side is not None and now - self.since >= .35:
+      self.left, self.right = side == 'left', side == 'right'
 
   @property
   def warning(self) -> bool:

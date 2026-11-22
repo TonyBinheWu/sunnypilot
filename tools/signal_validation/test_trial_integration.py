@@ -42,7 +42,7 @@ def test_non_tesla_desire_never_runs_tesla_intent_machine():
   assert fixture.helper.auto_signal_request_id == 0
 
 
-def test_model_publishes_both_indicators_without_losing_nav_initialization():
+def test_model_publishes_both_indicators_and_keeps_route_guidance_in_advisory():
   tree = ast.parse((ROOT / 'openpilot/selfdrive/modeld/modeld.py').read_text(encoding='utf-8'))
   assignments = [n for n in ast.walk(tree) if isinstance(n, ast.Assign) and
                  any(ast.unparse(t).startswith('modelv2_send.modelV2.meta.autoTurnSignal') for t in n.targets)]
@@ -53,4 +53,7 @@ def test_model_publishes_both_indicators_without_losing_nav_initialization():
        {'modelv2_send': NS(modelV2=msg), 'DH': h})
   assert str(msg.meta.autoTurnSignal) == 'left' and msg.meta.autoTurnSignalLaneChange
   assert str(msg.meta.autoTurnSignalDirection) == 'right' and msg.meta.autoTurnSignalRequestId == 71
-  assert any(isinstance(n, ast.Assign) and ast.unparse(n) == 'nav_input = MapInput()' for n in ast.walk(tree))
+  calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)]
+  assert any(ast.unparse(n.func) == 'lane_advisory.update' and any(k.arg == 'navigation' for k in n.keywords) for n in calls)
+  assert any(ast.unparse(n.func) == 'driving_model_inputs' for n in calls)
+  assert all(ast.unparse(n.func) != 'MapInput' for n in calls)

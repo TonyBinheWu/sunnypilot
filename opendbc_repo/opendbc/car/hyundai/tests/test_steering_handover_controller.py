@@ -102,6 +102,47 @@ def test_high_angle_request_recovers_after_two_frames_with_invalid_setting(monke
   assert get_raw_value(data, torque_signal) * torque_signal.factor + torque_signal.offset == 0
 
 
+@pytest.mark.parametrize("side", [-1, 1], ids=["right", "left"])
+@pytest.mark.parametrize("hda2", [False, True])
+def test_ev6_confirmed_countersteer_yields_at_the_wire_rate(monkeypatch, side, hda2):
+  flags = HyundaiFlags.CANFD | HyundaiFlags.EV
+  if hda2:
+    flags |= HyundaiFlags.CANFD_HDA2
+  cp = structs.CarParams(carFingerprint=CAR.KIA_EV6, flags=int(flags), wheelbase=2.9, steerRatio=14.26)
+  controller, cs, cc, _ = setup_controller(monkeypatch, angle=False, camera=False, cp_override=cp)
+  cs.cam_0x362 = cs.cam_0x2a4 = None
+  cs.out.vEgo = cs.out.vEgoRaw = 23.
+  cc.actuators.torque = side * .35
+  cs.out.steeringPressed = False
+  cs.out.steeringTorque = 0
+  for _ in range(70):
+    output, _ = step(controller, cs, cc)
+  baseline = side * output.torqueOutputCan
+  assert baseline > 50
+  lfa = DBC("hyundai_canfd_generated").name_to_msg["LKAS" if hda2 else "LFA"]
+  signal = lfa.sigs["TORQUE_REQUEST"]
+
+  def wire_torque():
+    _, messages = step(controller, cs, cc)
+    payload = next(data for addr, data, _ in messages if addr == lfa.address)
+    assert get_raw_value(payload, lfa.sigs["STEER_REQ"]) == 1
+    return side * (get_raw_value(payload, signal) * signal.factor + signal.offset)
+
+  cs.out.steeringTorque = -side * (controller.params.STEER_THRESHOLD + 15)
+  # The raw sample alone is insufficient. CarState confirms driver pressure.
+  assert wire_torque() == baseline
+  cs.out.steeringPressed = True
+  previous = baseline
+  for _ in range(60):
+    current = wire_torque()
+    assert max(0, previous - controller.params.STEER_DELTA_DOWN) <= current <= previous
+    previous = current
+  assert previous == 0
+  # Same-direction input still permits assistance, with normal ramp-up.
+  cs.out.steeringTorque *= -1
+  assert 0 < wire_torque() <= controller.params.STEER_DELTA_UP
+
+
 @pytest.mark.parametrize("camera", [False, True])
 def test_experimental_output_reaches_can_without_mutating_legacy(monkeypatch, camera):
   controller, cs, cc, _ = setup_controller(monkeypatch, mode=3, camera=camera)

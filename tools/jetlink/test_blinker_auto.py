@@ -281,7 +281,7 @@ def test_audio_cue_schema_roundtrip():
     assert read.atcTurnStartMonoTime==11000000000 and str(read.atcTurnDirection)=='left'
 
 
-def test_actual_source_loop_starts_from_audio_cue_before_model_turn(monkeypatch):
+def test_route_audio_cue_never_starts_a_physical_indicator(monkeypatch):
   import blink_source as source
   import json
   import types
@@ -323,12 +323,8 @@ def test_actual_source_loop_starts_from_audio_cue_before_model_turn(monkeypatch)
   monkeypatch.setattr(model,'config',dict)
   monkeypatch.setattr(model,'atomic_json',lambda *a:None)
   source.main(0)
-  assert sent[0]['hold'] is None
-  assert sent[1]['hold']['source']=='turn' and sent[1]['hold']['direction']=='left'
-  assert sent[2]['hold']['id']==sent[1]['hold']['id']
-  assert all(s['hold']['id']==sent[1]['hold']['id'] for s in sent[2:7])
-  # Stopped approach survives, but measured turn + wheel return ends at i=7.
-  assert all(s['hold'] is None for s in sent[7:])
+  assert all(record['hold'] is None and not record['events'] for record in sent)
+  assert any(record['turn_phase'] == 'approach' for record in sent)
 
 
 @pytest.mark.parametrize('fault', ['disabled','lat_disabled','temporary','permanent','reverse','moving_no_intent'])
@@ -350,7 +346,7 @@ def test_held_turn_does_not_bypass_driver_permission_or_steering_faults(fault):
     cs.gearShifter='reverse'
   if fault=='moving_no_intent':
     cs.vEgo=5.
-  assert not automatic_control_allowed(cs,cc,ss,always,True)
+  assert not automatic_control_allowed(cs,cc,ss,always)
 
 
 def test_audio_cue_needs_lateral_permission_even_during_temporary_steering_suspension():
@@ -359,12 +355,10 @@ def test_audio_cue_needs_lateral_permission_even_during_temporary_steering_suspe
   sm=Vehicle(speed=0.,engaged=False)
   cs, cc, ss = sm['carState'], sm['carControl'], sm['selfdriveState']
   cs.standstill = True
-  assert automatic_control_allowed(cs, cc, ss, True, True)
-  assert automatic_control_allowed(cs, cc, ss, True, False)
-  assert not automatic_control_allowed(cs, cc, ss, False, False)
+  assert automatic_control_allowed(cs, cc, ss, True)
+  assert not automatic_control_allowed(cs, cc, ss, False)
   cs.vEgo, cs.standstill = 1., False
-  assert automatic_control_allowed(cs, cc, ss, True, False)
-  assert automatic_control_allowed(cs, cc, ss, True, True)
+  assert automatic_control_allowed(cs, cc, ss, True)
 
 
 @pytest.mark.parametrize('direction,angle', [('left',-60.),('right',60.)])
@@ -483,7 +477,7 @@ def test_missing_heading_cancels_turn_without_blocking_lane_mode():
 
 @pytest.mark.parametrize('initial_ack', [False, True])
 @pytest.mark.parametrize('peer_after', ['driver_override', 'stale', 'error', 'guard_expired'])
-def test_tbt_source_preserves_confirmed_hold_through_receiver_override(monkeypatch, initial_ack, peer_after):
+def test_tbt_cannot_create_physical_lease_even_with_receiver_feedback(monkeypatch, initial_ack, peer_after):
   import blink_source as source
   import json
   import types
@@ -544,12 +538,8 @@ def test_tbt_source_preserves_confirmed_hold_through_receiver_override(monkeypat
   source.main(0)
   assert len(leases) == 100
   assert all(not record['events'] for record in sent)
-  if initial_ack and peer_after == 'driver_override':
-    assert all(value['direction'] == 'left' and value['override'] for value in leases[8:80])
-    assert len({record['hold']['id'] for record in sent[1:80]}) == 1
-  else:
-    assert all(value['direction'] is None for value in leases[8:])
-  assert all(value['direction'] is None for value in leases[80:])
+  assert all(record['hold'] is None for record in sent)
+  assert all(value['direction'] is None and not value['override'] for value in leases)
   assert all(record['turn_phase'] == 'approach' for record in sent[8:60])
 
 

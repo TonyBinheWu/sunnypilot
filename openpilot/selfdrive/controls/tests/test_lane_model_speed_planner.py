@@ -84,7 +84,7 @@ def inputs(speed=30.0, start=30.0, end=30.0, lane_speed=1):
 
 
 def update(planner, sm):
-  planner.update(sm, SimpleNamespace(atc_active=False))
+  planner.update(sm)
   return planner.lanelines_active
 
 
@@ -99,6 +99,19 @@ def test_actual_planner_immediately_routes_mismatched_speed_to_laneless():
   for _ in range(20):
     assert not update(planner, inputs())
   assert update(planner, inputs())
+
+
+def test_exit_guidance_keeps_lane_weight_until_driver_maneuver():
+  plan = make_planner()
+  sm = inputs()
+  for cue in ('none', 'fork left', 'turn right', 'none'):
+    sm['carrotMan'].atcType = cue
+    sm['carrotMan'].xDistToTurn = 25
+    update(plan, sm)
+    assert plan.LP.lane_change_multiplier == 1.
+  sm['modelV2'].meta.desire = 3  # laneChangeLeft
+  update(plan, sm)
+  assert plan.LP.lane_change_multiplier == 0.
 
 
 def test_original_deceleration_and_explicit_laneless_remain_effective():
