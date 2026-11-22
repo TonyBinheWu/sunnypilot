@@ -42,10 +42,12 @@ def choices(current, body, makers):
   car, lang, hda, preset = (body[key] for key in ('car', 'lang', 'hda', 'preset'))
   if not isinstance(car, str) or not car.strip() or len(car) > 200 or 'mock' in car.lower() or not isinstance(lang, str) or lang not in LANGUAGES:
     raise SetupError('invalid_selection')
-  if car != current['car'] and not any(car in names for names in makers.values()):
+  if car != 'AUTO' and car != current['car'] and not any(car in names for names in makers.values()):
     raise SetupError('unknown_car')
   if hda is not None and (type(hda) is not int or hda not in (0, 1) or car.split(' ', 1)[0] not in {'Hyundai', 'Kia', 'Genesis'}):
     raise SetupError('invalid_hda')
+  if car == 'AUTO' and preset is not None:
+    raise SetupError('invalid_preset')
   if preset is not None and (not isinstance(preset, str) or preset not in PRESET_NAMES):
     raise SetupError('invalid_preset')
   desired = {'CarSelected3': car}

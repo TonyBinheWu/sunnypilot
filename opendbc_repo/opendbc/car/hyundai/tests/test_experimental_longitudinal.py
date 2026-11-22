@@ -186,13 +186,14 @@ def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus
   ("", "no_adas", True, "stock", 1),
   ("", "ev6", False, "observer", 1),
 ])
-def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, valid_bus, owner, retries):
+@pytest.mark.parametrize("selection", ["AUTO", "Kia EV6 (with HDA II) 2022-24"])
+def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, valid_bus, owner, retries, selection):
   from opendbc.car import car_helpers, fw_versions
   from opendbc.car.mock.values import CAR as MOCK
 
   fp = gen_empty_fingerprint()
   fp[1][0x175], fp[1][0x1a0], fp[2][0x50] = 24, 32, 16 if valid_bus else 8
-  settings = {"AutoExperimentalPlatform": str(CAR.KIA_EV6), "CarSelected3": "Kia EV6 (with HDA II) 2022-24",
+  settings = {"AutoExperimentalPlatform": str(CAR.KIA_EV6), "CarSelected3": selection,
               "CanfdHDA2": 1, "HyundaiCameraSCC": 0, "FingerPrints": repr(fp)}
   configure_params(monkeypatch, settings)
   monkeypatch.setattr(car_helpers, "Params", lambda: SimpleNamespace(

@@ -66,7 +66,7 @@ globalThis.CarrotIntro = (() => {
   const get = (id) => steps.find((s) => s.id === id) || null;
 
   /* 진행 표시용 — 현재 조건에서 실제로 거치게 될 단계들 */
-  const flow = () => steps.filter((s) => s.flow && (!s.hkgOnly || isHkg()));
+  const flow = () => steps.filter((s) => s.flow && (!s.hkgOnly || isHkg()) && (ctx.car !== "AUTO" || s.id !== "control"));
 
   /* 문구 */
   const t = (key) => {

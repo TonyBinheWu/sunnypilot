@@ -49,18 +49,45 @@ CarrotIntro.register({
     el.innerHTML = `
       ${CarrotIntroIcons.car}
       <h2 class="intro-title" data-title>${t("carTitle")}</h2>
-      <div class="intro-list" data-list></div>`;
+      <button class="intro-cta" type="button" data-auto>${t("carAuto")}</button>
+      <p class="intro-lead">${t("carAutoWait")}</p>
+      <button class="intro-ghost" type="button" data-manual>${t("carManual")}</button>
+      <div class="intro-list" data-list hidden></div>`;
 
     const title = el.querySelector("[data-title]");
     const list = el.querySelector("[data-list]");
 
     let mode = "makers";   // "makers" | "models"
     let alive = true;
-    if(ctx.reconfigure&&ctx.baseline.car&&!ctx.baseline.car.toLowerCase().includes('mock')){
+    if(ctx.reconfigure&&ctx.baseline.car&&ctx.baseline.car!=='AUTO'&&!ctx.baseline.car.toLowerCase().includes('mock')){
       const keep=document.createElement('button');keep.className='intro-ghost';keep.type='button';
       keep.textContent=`${t('againKeepCar')} · ${ctx.baseline.car}`;
       keep.onclick=()=>{ctx.car=ctx.baseline.car;ctx.maker=ctx.car.split(' ',1)[0];if(!isHkg())ctx.hda=null;CarrotIntroShell.goTo(isHkg()?'hda':'control');};el.appendChild(keep);
     }
+
+    const automatic = el.querySelector("[data-auto]");
+    automatic.onclick = async () => {
+      el.inert = true;
+      automatic.disabled = true;
+      CarrotIntroShell.setApplying(true);
+      try {
+        await CarrotIntroApi.setCar("AUTO", t("carAutoWait"));
+        if (!alive) return;
+        Object.assign(ctx, {car: "AUTO", maker: "", hda: null, preset: null});
+      } catch (error) {
+        CarrotIntroShell.error(error.message);
+        return;
+      } finally {
+        el.inert = false;
+        automatic.disabled = false;
+        CarrotIntroShell.setApplying(false);
+      }
+      CarrotIntroShell.goTo("legal");
+    };
+    el.querySelector("[data-manual]").onclick = () => {
+      list.hidden = false;
+      drawMakers();
+    };
 
     const makersOf = () => (CARS && CARS.makers) || {};
 

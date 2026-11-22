@@ -161,7 +161,11 @@ def _experimental_setup(params, change=None):
     except Exception:
       pass
   selected = params.get("CarSelected3")
-  if params.get_bool("IsReleaseBranch") or (selected and get_selected_car_platform(selected) != platform):
+  if selected == "AUTO":
+    selected_platform = params.get("AutoCarModelResult")
+  else:
+    selected_platform = get_selected_car_platform(selected) if selected else platform
+  if params.get_bool("IsReleaseBranch") or selected_platform != platform:
     platform = ""
   if change is not None:
     enabled, expected = change

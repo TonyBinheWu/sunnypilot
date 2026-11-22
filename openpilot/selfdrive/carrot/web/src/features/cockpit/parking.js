@@ -10,11 +10,18 @@ export function insidePolygon(point,ring){
 // Presentation only. Never request a gear change, parking manoeuvre or control.
 export function createParkingView(){
   let previous=null,pending=null,spin=null,manual=null,context=false;
-  return {interact(){pending=spin=null;manual=false;},toggle(){pending=spin=null;manual=!(manual??context);},
+  let departureUntil = null, lastSample = null;
+  return {interact(){departureUntil=null;pending=spin=null;manual=false;},toggle(){pending=spin=null;manual=!(manual??context);},
     update({enabled=false,fresh=false,speed=null,gear=null,inLot=false,active=true,reducedMotion=false,now=0}={}){
       const valid=enabled&&fresh&&active&&finite(speed)&&speed>=0&&['P','D','R','N','S'].includes(gear);
-      if(!valid){previous=null;pending=spin=null;context=false;manual=null;return {overhead:false,spin:false,yaw:0};}
-      const nextContext=speed<=15&&(inLot||gear==='R'||(gear==='P'&&speed<.36));
+      if(!valid){departureUntil=lastSample=null;previous=null;pending=spin=null;context=false;manual=null;return {overhead:false,spin:false,yaw:0};}
+      // Keep the near-field view briefly as the driver starts moving out.
+      const continuous = lastSample !== null && now >= lastSample && now - lastSample < 1000;
+      if (!continuous || gear !== 'D' || speed > 8 || (departureUntil !== null && now >= departureUntil)) departureUntil = null;
+      if (continuous && (previous === 'P' || previous === 'R') && gear === 'D' && speed <= 3) departureUntil = now + 5000;
+      lastSample = now;
+      const departing = departureUntil !== null;
+      const nextContext=speed<=15&&(inLot||gear==='R'||(gear==='P'&&speed<.36)||departing);
       if(nextContext!==context)manual=null;context=nextContext;
       if(previous&&previous!=='P'&&gear==='P'&&speed<.36)pending=now;
       previous=gear;
@@ -22,7 +29,7 @@ export function createParkingView(){
       if(pending!==null&&now-pending>=750){if(!reducedMotion)spin=now;pending=null;}
       if(spin!==null&&(now-spin>=4000||reducedMotion))spin=null;
       const progress=spin===null?0:Math.min(1,Math.max(0,(now-spin)/4000));
-      return {vertical:gear==='R'||manual===true,overhead:speed<=20&&(manual??context),spin:spin!==null,yaw:360*(progress*progress*(3-2*progress))};
+      return {departing,vertical:gear==='R'||manual===true,overhead:speed<=20&&(manual??context),spin:spin!==null,yaw:360*(progress*progress*(3-2*progress))};
     }};
 }
 

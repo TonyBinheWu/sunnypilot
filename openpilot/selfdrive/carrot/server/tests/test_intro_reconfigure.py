@@ -76,6 +76,15 @@ def test_invalid_choices_write_nothing(change):
   assert p.values == before and web['web_language'] == 'zh-tw'
 
 
+def test_auto_uses_no_manual_platform_or_wiring_preset():
+  p, _, _, body, apply = fixture()
+  for extra in (dict(hda=1), dict(preset='radar_long')):
+    with pytest.raises(setup.SetupError):
+      apply({**body, 'car': 'AUTO', **extra})
+  assert apply({**body, 'car': 'AUTO'})['applied'] == {'CarSelected3': 'AUTO'}
+  assert p.values['CanfdHDA2'] == '1'
+
+
 def test_other_client_edits_invalidate_open_draft_without_overwriting_them():
   p, _, _, body, apply = fixture()
   p.values['CanfdHDA2'] = '0'

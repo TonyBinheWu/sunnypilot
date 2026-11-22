@@ -84,3 +84,23 @@ test('parking projections reserve the dynamic cockpit controls area',()=>{
   assert.ok(spec.bottomInset>=h*.4);
  }
 });
+
+test('departure view needs a fresh low-speed transition and expires even when stopped', () => {
+  for (const gear of ['P', 'R']) {
+    const view = createParkingView();
+    const frame = (gear, speed, now, fresh = true) => view.update({gear, speed, now, fresh, enabled:true});
+    frame(gear, 0, 0);
+    assert.equal(frame('D', 1, 200).departing, true);
+    assert.equal(frame('D', 3, 400).overhead, true);
+    for (let t = 600; t < 5200; t += 200) frame('D', 0, t);
+    assert.equal(frame('D', 0, 5200).overhead, false);
+    frame(gear, 0, 6000);
+    assert.equal(frame('D', 0, 7200).departing, false);
+    frame(gear, 0, 7400);
+    frame('D', 0, 7500);
+    assert.equal(frame('D', 9, 7600).overhead, false);
+    frame(gear, 0, 7800);
+    frame('D', 0, 7900, false);
+    assert.equal(frame('D', 0, 8000).overhead, false);
+  }
+});

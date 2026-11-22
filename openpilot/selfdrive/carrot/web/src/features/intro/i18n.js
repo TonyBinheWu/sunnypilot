@@ -20,6 +20,9 @@ globalThis.CarrotIntroI18n = {
     preview: "미리보기 · 저장되지 않음",
     previewClose: "닫기",
 
+    carAuto: "차량 자동 인식",
+    carAutoWait: "다음 차량 시동 시 인식합니다",
+    carManual: "차량 직접 선택",
     carTitle: "차량을 선택하세요",
     carBackToList: "목록으로",
     carEmpty: "지원 차량 목록을 불러오지 못했어요.",
@@ -77,6 +80,9 @@ globalThis.CarrotIntroI18n = {
     preview: "Preview · Not saved",
     previewClose: "Close",
 
+    carAuto: "Detect my vehicle automatically",
+    carAutoWait: "Waiting for the next vehicle start",
+    carManual: "Choose a vehicle manually",
     carTitle: "Choose your car",
     carBackToList: "Back to list",
     carEmpty: "Could not load the supported car list.",
@@ -125,6 +131,9 @@ globalThis.CarrotIntroI18n = {
     preview: "预览 · 不保存",
     previewClose: "关闭",
 
+    carAuto: "自动识别车型",
+    carAutoWait: "下次启动车辆时识别",
+    carManual: "手动指定车型",
     carTitle: "请选择车辆",
     carBackToList: "返回列表",
     carEmpty: "无法加载支持的车辆列表。",
@@ -172,6 +181,9 @@ globalThis.CarrotIntroI18n = {
     preview: "預覽 · 不儲存",
     previewClose: "關閉",
 
+    carAuto: "自動辨識車型",
+    carAutoWait: "下次啟動車輛時辨識",
+    carManual: "手動指定車型",
     carTitle: "請選擇車輛",
     carBackToList: "返回列表",
     carEmpty: "無法載入支援的車輛列表。",

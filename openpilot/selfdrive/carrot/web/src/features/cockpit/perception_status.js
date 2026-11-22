@@ -1,3 +1,4 @@
+import {surroundingTargets} from '../drive/contents/vision/hud/scene_objects.js';
 import {OBJECT_NAMES} from '../drive/contents/vision/hud/object_classes.js';
 const STATES=Object.freeze({off:'未啟用',paused:'已暫停',waiting:'等待前鏡頭影像',loading:'正在載入模型',
   ready:'辨識中',calibration:'已有影像辨識；3D 定位資料不足或影像規格不符',stale:'影像或辨識結果已過期',slow:'辨識運算超過時限；請先關閉道路附加辨識與其他高負載 App',
@@ -7,6 +8,11 @@ export function modelPerceptionSource(model,stamp,now){
   const lens={road:'前方遠距',wide:'前方廣角',roadWide:'前方遠距＋廣角'}[model.visionCameraInputs];
   const compute={usbGpu:'USB eGPU',nonUsb:'未使用 USB eGPU'}[model.visionCompute];
   return lens&&compute?`駕駛模型前車來源：${lens}（${compute}）`:'';
+}
+export function radarObservationSummary(radar, stamp, now) {
+  if (!Number.isFinite(stamp) || now < stamp || now - stamp >= 350) return '';
+  const count = surroundingTargets(radar).filter(target => target.radarUsed === true).length;
+  return count ? `原車雷達有回報的目標：${count} 個` : '';
 }
 export function cockpitPerceptionReport(frame){
   let snapshot;try{snapshot=frame?.CarrotVisionPerception?.snapshot?.();}catch{}

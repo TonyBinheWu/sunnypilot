@@ -91,6 +91,10 @@ def test_web_longitudinal_request_is_scoped_and_cancellable_after_failed_identif
     params.update(original)
   with pytest.raises(SetupError, match="settings_changed"):
     _experimental_setup(params, (True, "KIA_SORENTO"))
+  params["CarSelected3"] = "AUTO"
+  assert _experimental_setup(params)["platform"] == ""
+  params["AutoCarModelResult"] = platform
+  assert "AutoCarModelResult" in INTERNAL_SESSION_PARAMS
   assert "AutoExperimentalPlatform" in INTERNAL_SESSION_PARAMS
   assert _experimental_setup(params, (True, platform)) == {"platform": platform, "requested": platform, "owner": "stock"}
   assert "AlphaLongitudinalEnabled" not in params and "ExperimentalMode" not in params
@@ -139,3 +143,23 @@ def test_web_longitudinal_route_requires_offroad_and_rechecks_live_guard(monkeyp
       assert writes == [(True, "KIA_EV6")]
 
   asyncio.run(run())
+
+
+def test_switch_to_auto_clears_previous_receipt_and_confirms_storage(monkeypatch):
+  import pytest
+  from openpilot.selfdrive.carrot.server.services import params
+
+  class Store(dict):
+    def remove(self, name):
+      self.pop(name, None)
+
+  store = Store(CarSelected3="Kia EV6", AutoCarModelResult="KIA_EV6")
+  monkeypatch.setattr(params, "HAS_PARAMS", True)
+  monkeypatch.setattr(params, "Params", lambda: store)
+  monkeypatch.setattr(params, "put_typed", lambda storage, name, value, meta: storage.update({name: value}))
+  params.set_param_value("CarSelected3", "AUTO")
+  assert store == {"CarSelected3": "AUTO"}
+  store["CarSelected3"] = "Kia EV6"
+  monkeypatch.setattr(params, "put_typed", lambda *args: None)
+  with pytest.raises(RuntimeError, match="not saved"):
+    params.set_param_value("CarSelected3", "AUTO")

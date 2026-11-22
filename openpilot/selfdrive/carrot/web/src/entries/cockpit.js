@@ -1,6 +1,6 @@
 import {paintedVehicle,vehiclePaint} from '../features/cockpit/vehicle_paint.js';
 import {createCockpitSceneActivity} from '../features/cockpit/scene_activity.js';
-import {cockpitPerceptionReport,modelPerceptionSource} from '../features/cockpit/perception_status.js';
+import {cockpitPerceptionReport,modelPerceptionSource,radarObservationSummary} from '../features/cockpit/perception_status.js';
 import {installCockpitControlLayout} from '../features/cockpit/control_layout.js';
 import {installCockpitDialogHeaders,closeEmbeddedDialog} from '../features/cockpit/interactions.js';
 import {nightAppearance,readAppearance,setCockpitTextScale,tireLabels} from '../features/cockpit/appearance.js';
@@ -28,7 +28,7 @@ let preview3d=null,previewOwner=null;
 function releasePreview(){preview3d?.destroy();preview3d=previewOwner=null;}
 window.addEventListener('pagehide',event=>{if(event.persisted)preview3d?.pause();else releasePreview();});
 let socket=null,retry=null,guard=null,failures=0,transportPhase='connecting',transportReason='',epoch=0,view='vision',primary='vision',busy=false,currentMode=null,coreReady=false,coreFaulted=false,dismissed=false,hudHadData=false;
-const core=$('features'),nav=$('navigation'),titles={navigation:'導航地圖',vision:'Carrot Vision',setting:'控制與設定',tools:'工具／診斷',logs:'行車紀錄'};
+const core=$('features'),nav=$('navigation'),titles={navigation:'導航地圖',vision:'Reality View',setting:'控制與設定',tools:'工具／診斷',logs:'行車紀錄'};
 function syncNavigationTextScale(){try{if(nav.contentWindow.location.origin===location.origin)nav.contentWindow.CarrotDisplayPreferences?.apply({web_text_scale:Number(document.documentElement.dataset.textScale)||100});}catch{}}
 function closeNavigationSearch(restoreFocus = false) {
   try {
@@ -104,7 +104,7 @@ function panel(next){
   if(!titles[next])return;if(['navigation','vision'].includes(next))primary=next;view=next;document.body.dataset.panel=next;document.body.classList.remove('scene-full');nav.hidden=next!=='navigation';core.hidden=next==='navigation'&&!splitNavigation();$('searchNav').hidden=next!=='navigation';$('visionTools').hidden=next!=='vision';$('vehicleButton').hidden=next!=='vision';$('panelTitle').textContent=titles[next];$('closePanel').hidden=['navigation','vision'].includes(next);$('miniNav').hidden=next!=='vision';
   if(next!=='navigation')closeNavigationSearch();
   document.querySelectorAll('button[data-panel]').forEach(b=>b.classList.toggle('selected',b.dataset.panel===next));
-  $('shellPageName').textContent=next==='vision'?'駕駛視覺':titles[next];
+  $('shellPageName').textContent=next==='vision'?'Reality View 駕駛視覺':titles[next];
   $('closePanel').textContent=primary==='navigation'?'返回導航':'返回駕駛';
   if(next==='vision'&&document.body.classList.contains('advanced-vision')){$('closePanel').hidden=false;$('closePanel').textContent='收起工具';}
   syncDock();
@@ -318,8 +318,10 @@ function render(){
   const cameraButton=frameWindow?.document.getElementById('btnStartVision');
   const visionState=frameWindow?.CarrotVisionState;
   const cameraProgress=visionState&&!['inactive','unavailable'].includes(visionState.phase)?[visionState.statusText,visionState.detailText].filter(Boolean).join(' · '):'';
-  const modelSource=modelPerceptionSource(model,state.stamp('modelV2'),performance.now());
-  $('visionCameraStatus').textContent=[report.camera?'已取得影像；辨識結果仍依下列模型狀態更新。':cameraButton?.disabled?(cameraButton.title||'車機尚未啟用 Carrot Vision，請至工具／診斷確認。'):cameraProgress||'等待自動連線至前鏡頭。',modelSource].filter(Boolean).join(' ');
+  const sensorTime = performance.now();
+  const modelSource = modelPerceptionSource(model, state.stamp('modelV2'), sensorTime);
+  const radarSource = radarObservationSummary(radar, state.stamp('radarState'), sensorTime);
+  $('visionCameraStatus').textContent=[report.camera?'已取得影像；辨識結果仍依下列模型狀態更新。':cameraButton?.disabled?(cameraButton.title||'車機尚未啟用 Carrot Vision，請至工具／診斷確認。'):cameraProgress||'等待自動連線至前鏡頭。',modelSource,radarSource].filter(Boolean).join(' ');
   $('objectDetectionStatus').textContent=report.objects.text+(report.objects.count?` · 模型回報 ${report.objects.count} 項，其中 ${report.objects.positioned} 項可定位`: '')+(report.objects.classes?`（${report.objects.classes}）`:'');
   $('roadDetectionStatus').textContent=report.road.text+(report.road.count?` · 模型回報 ${report.road.count} 項`: '');
   $('environmentDetectionStatus').textContent=report.environment.text;

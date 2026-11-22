@@ -111,3 +111,39 @@ def test_vehicle_scoped_alpha_identification(monkeypatch, detected, source, exac
   monkeypatch.setattr(car_helpers, "get_selected_car_platform", lambda name: "CAR")
   monkeypatch.setattr(car_helpers, "interfaces", {"CAR": Interface, "MOCK": Interface})
   assert car_helpers.get_car(None, None, None, False, True, cached_params=cached).CP.carFingerprint == wanted
+
+
+@pytest.mark.parametrize("detected,source,requested,expected,alpha,result", [
+  ("CAR", "fw", "", "CAR", False, "CAR"),
+  (None, "can", "", "MOCK", False, "unknown"),
+  ("CAR", "fixed", "", "MOCK", False, "unknown"),
+  ("CAR", "fw", "CAR", "CAR", True, "CAR"),
+  ("OTHER", "fw", "CAR", "MOCK", False, "OTHER"),
+])
+def test_explicit_auto_reads_vehicle_and_reports_result(monkeypatch, detected, source, requested, expected, alpha, result):
+  class Store(dict):
+    put = dict.__setitem__
+
+    def get_bool(self, name):
+      return False
+
+  store = Store(CarSelected3="AUTO", AutoExperimentalPlatform=requested)
+  def scan(*args, skip_fw_query, verify_ev6):
+    assert args[-1] is None and not skip_fw_query
+    return detected, {}, VIN_UNKNOWN, [], getattr(CarParams.FingerprintSource, source), True
+
+  class Interface:
+    def __init__(self, cp):
+      self.CP = cp
+
+    @staticmethod
+    def get_params(candidate, fingerprints, fw, allow_alpha, release, docs):
+      assert allow_alpha == alpha
+      return SimpleNamespace(carFingerprint=candidate, brand="test")
+
+  monkeypatch.setattr(car_helpers, "Params", lambda: store)
+  monkeypatch.setattr(car_helpers, "fingerprint", scan)
+  monkeypatch.setattr(car_helpers, "interfaces", {"CAR": Interface, "MOCK": Interface})
+  ci = car_helpers.get_car(None, None, None, True, False, cached_params=object())
+  assert ci.CP.carFingerprint == expected
+  assert store["AutoCarModelResult"] == result

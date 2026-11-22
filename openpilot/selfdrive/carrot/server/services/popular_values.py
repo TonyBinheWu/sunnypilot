@@ -212,7 +212,7 @@ def build_snapshot_payload() -> dict[str, Any] | None:
     return None
 
   params = Params()
-  car_key = _param_text(params, "CarSelected3")
+  car_key = _selection_key(params)
   if not car_key:
     return None
   device_id = _device_id(params)
@@ -259,10 +259,18 @@ def _current_settings_hash() -> str:
     return ""
 
 
+def _selection_key(params) -> str:
+  selected = _param_text(params, "CarSelected3")
+  if selected != "AUTO":
+    return selected
+  detected = _param_text(params, "AutoCarModelResult")
+  return detected if detected and detected == _param_text(params, "CarName") else ""
+
+
 def _current_car_key() -> str:
   if not HAS_PARAMS:
     return ""
-  return _param_text(Params(), "CarSelected3")
+  return _selection_key(Params())
 
 
 def _empty_cache(car_key: str = "", settings_hash: str = "") -> dict[str, Any]:
@@ -286,7 +294,7 @@ def read_popular_values_memory() -> dict[str, Any]:
   current_settings_hash = _current_settings_hash()
   cached_car_key = str(data.get("car_key") or "")
   cached_settings_hash = str(data.get("settings_hash") or "")
-  if current_car_key and cached_car_key and current_car_key != cached_car_key:
+  if cached_car_key and current_car_key != cached_car_key:
     return _empty_cache(current_car_key, current_settings_hash)
   if current_settings_hash and cached_settings_hash and current_settings_hash != cached_settings_hash:
     return _empty_cache(current_car_key, current_settings_hash)
@@ -362,7 +370,7 @@ async def download_popular_values_once(session: ClientSession) -> dict[str, Any]
     return None
   params = Params()
   url = _popular_url(params)
-  car_key = _param_text(params, "CarSelected3")
+  car_key = _selection_key(params)
   settings_hash = _current_settings_hash()
   if not url or not car_key:
     return None

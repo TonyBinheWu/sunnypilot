@@ -2,6 +2,10 @@
 
 [한국어](../ko/settings.md)
 
+## Automatic vehicle identification
+
+While parked, open **Tools → Car Select** in Carrot Web and choose **Detect my vehicle automatically**. At the next vehicle start, the cockpit shows the identification result. If the vehicle is unidentified, the device stays in dashcam mode and offers manual selection. After identification, check the longitudinal control status to see which system controls acceleration and braking.
+
 ## Auto experimental longitudinal
 
 On a development build, open **Settings → Toggles** while parked. Select **Auto experimental longitudinal** and confirm for the identified vehicle. At the next vehicle start, the system checks the vehicle and available control configuration. A stock-cruise configuration keeps factory cruise. Factory automatic emergency braking (AEB) may be unavailable when experimental longitudinal control is active.
