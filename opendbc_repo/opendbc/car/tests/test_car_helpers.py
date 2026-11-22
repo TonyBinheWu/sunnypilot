@@ -17,9 +17,10 @@ def test_skip_fw_query_keeps_can_fingerprint(monkeypatch):
   monkeypatch.setattr(car_helpers, "get_vin", unexpected_query)
   monkeypatch.setattr(car_helpers, "get_present_ecus", unexpected_query)
   monkeypatch.setattr(car_helpers, "get_fw_versions_ordered", unexpected_query)
+  monkeypatch.setattr(car_helpers, "get_fw_versions", unexpected_query)
   monkeypatch.setattr(car_helpers, "can_fingerprint", lambda can_recv: (None, fingerprint))
 
-  result = car_helpers.fingerprint(lambda **kwargs: [], lambda msg: None, obd_multiplexing.append, 1, None, skip_fw_query=True)
+  result = car_helpers.fingerprint(lambda **kwargs: [], lambda msg: None, obd_multiplexing.append, 1, None, skip_fw_query=True, verify_ev6=True)
 
   assert result[1] == fingerprint
   assert result[2] == VIN_UNKNOWN
@@ -90,7 +91,8 @@ def test_vehicle_scoped_alpha_identification(monkeypatch, detected, source, exac
       pass
 
   cached = object()
-  def fingerprint(*args, skip_fw_query):
+  def fingerprint(*args, skip_fw_query, verify_ev6):
+    assert not verify_ev6
     assert args[-1] is (cached if release else None)
     assert skip_fw_query == release
     return detected, {}, VIN_UNKNOWN, [], getattr(CarParams.FingerprintSource, source), exact

@@ -7,7 +7,8 @@ from opendbc.car.can_definitions import CanRecvCallable, CanSendCallable
 from opendbc.car.carlog import carlog
 from opendbc.car.structs import CarParams, CarParamsT
 from opendbc.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
-from opendbc.car.fw_versions import ObdCallback, get_fw_versions_ordered, get_present_ecus, match_fw_to_car
+from opendbc.car.fw_versions import ObdCallback, get_fw_versions, get_fw_versions_ordered, get_present_ecus, match_fw_to_car
+from opendbc.car.hyundai.values import CAR as HYUNDAI
 from opendbc.car.hyundai.values import CANFD_CAR, CANFD_UNSUPPORTED_LONGITUDINAL_CAR, HyundaiFlags
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.selected_car import get_selected_car_platform
@@ -102,8 +103,8 @@ def can_fingerprint(can_recv: CanRecvCallable) -> tuple[str | None, dict[int, di
 
 # **** for use live only ****
 def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multiplexing: ObdCallback, num_pandas: int,
-                cached_params: CarParamsT | None, skip_fw_query: bool = False) -> tuple[str | None, dict, str, list[CarParams.CarFw],
-                                                                                      CarParams.FingerprintSource, bool]:
+                cached_params: CarParamsT | None, skip_fw_query: bool = False,
+                verify_ev6: bool = False) -> tuple[str | None, dict, str, list[CarParams.CarFw], CarParams.FingerprintSource, bool]:
   fixed_fingerprint = os.environ.get('FINGERPRINT', "")
   skip_fw_query = skip_fw_query or bool(fixed_fingerprint) or bool(os.environ.get('SKIP_FW_QUERY', False))
   disable_fw_cache = os.environ.get('DISABLE_FW_CACHE', False)
@@ -129,6 +130,13 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
       cached = False
 
     exact_fw_match, fw_candidates = match_fw_to_car(car_fw, vin)
+    # The initial ECU presence scan can finish before the EV6 replies. In that
+    # case the ordered scan skips Hyundai entirely. Read its firmware once;
+    # the normal matcher still decides among all platforms using the replies.
+    if verify_ev6 and not cached and not fw_candidates and not any(fw.brand == "hyundai" and not fw.logging for fw in car_fw):
+      carlog.warning("No identifying Hyundai firmware in discovery; querying for EV6 identification")
+      car_fw.extend(get_fw_versions(can_recv, can_send, set_obd_multiplexing, query_brand="hyundai", num_pandas=num_pandas))
+      exact_fw_match, fw_candidates = match_fw_to_car(car_fw, vin)
   else:
     carlog.warning("Skipping VIN & FW query")
     vin_rx_addr, vin_rx_bus, vin = -1, -1, VIN_UNKNOWN
@@ -193,7 +201,8 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
   # for a new longitudinal controller. Keep the existing manual fast path otherwise.
   candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(
     can_recv, can_send, set_obd_multiplexing, num_pandas, None if auto_setup else cached_params,
-    skip_fw_query=forced_candidate is not None and not auto_setup)
+    skip_fw_query=forced_candidate is not None and not auto_setup,
+    verify_ev6=auto_setup and requested_platform == HYUNDAI.KIA_EV6 and params.get_int("HyundaiCameraSCC") == 0)
 
   if auto_setup:
     standard_canfd = requested_platform in CANFD_CAR and params.get_int("HyundaiCameraSCC") == 0

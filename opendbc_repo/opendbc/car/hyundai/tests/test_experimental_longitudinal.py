@@ -157,7 +157,8 @@ def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus
   params = SimpleNamespace(get=settings.get, put=settings.__setitem__, get_bool=lambda key: False, get_int=lambda key: int(settings[key]))
   monkeypatch.setattr(car_helpers, "Params", lambda: params)
   fw = [] if fw_match == "missing_adas" else [structs.CarParams.CarFw(ecu="adas")]
-  def fingerprint(*args, skip_fw_query):
+  def fingerprint(*args, skip_fw_query, verify_ev6):
+    assert verify_ev6 == (mode == 0)
     assert args[-1] is None and not skip_fw_query
     source = structs.CarParams.FingerprintSource.can if fw_match == "can" else structs.CarParams.FingerprintSource.fw
     return CAR.KIA_EV6, fp, "", fw, source, fw_match != "fuzzy"
@@ -172,6 +173,66 @@ def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus
   if expected != "observer":
     assert cp.pcmCruise == (expected == "stock")
     assert bool(cp.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.LONG) == (expected == "host")
+
+
+@pytest.mark.parametrize("first,second,valid_bus,owner,retries", [
+  ("", "ev6", True, "host", 1),
+  ("ev6", "", True, "host", 0),
+  ("logging_only", "ev6", True, "host", 1),
+  ("", "", True, "observer", 1),
+  ("", "pe", True, "observer", 1),
+  ("pe", "ev6", True, "observer", 0),
+  ("mixed", "ev6", True, "observer", 0),
+  ("", "no_adas", True, "stock", 1),
+  ("", "ev6", False, "observer", 1),
+])
+def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, valid_bus, owner, retries):
+  from opendbc.car import car_helpers, fw_versions
+  from opendbc.car.mock.values import CAR as MOCK
+
+  fp = gen_empty_fingerprint()
+  fp[1][0x175], fp[1][0x1a0], fp[2][0x50] = 24, 32, 16 if valid_bus else 8
+  settings = {"AutoExperimentalPlatform": str(CAR.KIA_EV6), "CarSelected3": "Kia EV6 (with HDA II) 2022-24",
+              "CanfdHDA2": 1, "HyundaiCameraSCC": 0, "FingerPrints": repr(fp)}
+  configure_params(monkeypatch, settings)
+  monkeypatch.setattr(car_helpers, "Params", lambda: SimpleNamespace(
+    get=settings.get, put=settings.__setitem__, get_bool=lambda k: bool(settings.get(k)), get_int=lambda k: int(settings[k])))
+  def responses(kind):
+    if not kind:
+      return []
+    if kind == "logging_only":
+      return [structs.CarParams.CarFw(brand="hyundai", ecu="hvac", address=0x7b3, logging=True, fwVersion=b"test")]
+    fw = []
+    for (ecu, addr, _), versions in FW_VERSIONS[CAR.KIA_EV6_PE if kind == "pe" else CAR.KIA_EV6].items():
+      if kind == "mixed" and ecu == structs.CarParams.Ecu.fwdCamera:
+        versions = FW_VERSIONS[CAR.KIA_EV6_PE][(ecu, addr, None)]
+      fw.append(structs.CarParams.CarFw(brand="hyundai", ecu=ecu, address=addr, fwVersion=versions[0]))
+    if kind != "no_adas":
+      fw.append(structs.CarParams.CarFw(brand="hyundai", ecu="adas", address=0x730, logging=True, fwVersion=b"test"))
+    return fw
+
+  monkeypatch.delenv("FINGERPRINT", raising=False)
+  monkeypatch.delenv("SKIP_FW_QUERY", raising=False)
+  monkeypatch.setattr(car_helpers, "get_vin", lambda *a: (-1, -1, car_helpers.VIN_UNKNOWN))
+  monkeypatch.setattr(car_helpers, "get_present_ecus", lambda *a, **kw: {(0x7cc, None, 1)} if first else set())
+  monkeypatch.setattr(fw_versions, "get_fw_versions", lambda *a, query_brand, **kw: responses(first) if query_brand == "hyundai" else [])
+  calls = []
+  def targeted(*args, query_brand, num_pandas):
+    calls.append((query_brand, num_pandas))
+    return responses(second)
+
+  monkeypatch.setattr(car_helpers, "get_fw_versions", targeted)
+  monkeypatch.setattr(car_helpers, "can_fingerprint", lambda recv: (None, fp))
+  for platform in (CAR.KIA_EV6, MOCK.MOCK):
+    monkeypatch.setattr(car_helpers.interfaces[platform], "__init__", lambda self, cp: setattr(self, "CP", cp))
+  obd = []
+  cp = car_helpers.get_car(lambda: [], None, obd.append, False, True).CP
+  assert calls == [("hyundai", 1)] * retries
+  assert obd[-1] is False
+  assert cp.carFingerprint == (MOCK.MOCK if owner == "observer" else CAR.KIA_EV6)
+  assert cp.openpilotLongitudinalControl == (owner == "host")
+  if owner != "observer":
+    assert bool(cp.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.LONG) == (owner == "host")
 
 
 @pytest.mark.parametrize('alpha,camera,tracks', [(False, 0, 0), (True, 0, 0), (False, 1, 0), (True, 3, 1)])
