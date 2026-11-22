@@ -120,3 +120,25 @@ def test_received_invalid_map_revokes_cached_valid_map(monkeypatch, pixels, rout
   assert metadata[0] is None
   if not admitted:
     assert len(metadata) == 1  # Never revive the previous valid map provenance.
+
+
+@pytest.mark.parametrize('kind,modifier,distance,admitted', [
+  ('off ramp', 'right', 38000, False), ('fork', 'left', 193, False), ('on ramp', 'right', 500, False),
+  ('off ramp', 'right', 192, True), ('fork', 'left', 100, True), ('turn', 'right', 250, True),
+])
+def test_ramp_context_only_admitted_in_forward_view(monkeypatch, kind, modifier, distance, admitted):
+  from openpilot.selfdrive.navigation import map_client
+  monkeypatch.setattr(map_client.time, 'monotonic', lambda: 10.)
+  client = MapInput()
+  client.client = NS(is_connected=lambda: True, recv=lambda _: None)
+  client.image, client.image_time, client.route_time = np.ones((256, 256), np.uint8), 9.9, 123
+  class SM(dict):
+    pass
+  sm = SM(navInstructionCarrot=NS(allManeuvers=[NS(type=kind, modifier=modifier, distance=distance)]),
+          navRoute=NS(carrotRouteId=123))
+  sm.valid = {'navInstructionCarrot': True, 'navRoute': True}
+  sm.recv_time = {'navInstructionCarrot': 10.}
+  provenance = []
+  result = client.update(NS(views={'nav_map': None}, set_nav_metadata=provenance.append), sm, 0)
+  assert set(result) == ({'navigation', 'nav_map'} if admitted else set())
+  assert (provenance[-1] is not None) == admitted

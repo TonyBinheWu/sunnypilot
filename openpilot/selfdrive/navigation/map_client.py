@@ -3,7 +3,15 @@ import time
 
 import numpy as np
 
-from openpilot.selfdrive.navigation.helpers import navigation_input
+from openpilot.selfdrive.navigation.helpers import VALHALLA_SIDED_TYPES, navigation_input
+from openpilot.selfdrive.navigation.map_geometry import FORWARD_VIEW_METERS
+
+
+RAMP_AND_FORK_COMMANDS = frozenset(command for kind in ('on ramp', 'off ramp', 'fork') for command in VALHALLA_SIDED_TYPES[kind])
+
+
+def distant_branch(navigation):
+  return navigation[-1] > np.float32(FORWARD_VIEW_METERS / 100) and any(navigation[i] for i in RAMP_AND_FORK_COMMANDS)
 
 
 class MapInput:
@@ -44,8 +52,13 @@ class MapInput:
           self.route_time = self.client.timestamp_sof
     result = {}
     if sm.valid['navInstructionCarrot'] and 0 <= now - sm.recv_time['navInstructionCarrot'] < 2:
-      result['navigation'] = navigation_input(sm['navInstructionCarrot'].allManeuvers,
-                                             max(0., speed) * (now - sm.recv_time['navInstructionCarrot']))
+      command = navigation_input(sm['navInstructionCarrot'].allManeuvers,
+                                 max(0., speed) * (now - sm.recv_time['navInstructionCarrot']))
+      # A road-level route cannot identify the current lane. Keep remote ramp/fork
+      # preparation on the display until the branch can enter the model raster.
+      if distant_branch(command):
+        return {}
+      result['navigation'] = command
       if (self.image is not None and 0 <= now - self.image_time < .5
           and self.route_time != 0 and self.route_time == sm['navRoute'].carrotRouteId and sm.valid['navRoute']):
         result['nav_map'] = self.image
