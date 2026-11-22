@@ -95,12 +95,12 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 
 ##### 차로 변경 (자동 턴)
 
-- [ATC: AutoTurnControl(0)](https://github.com/ajouatom/openpilot/wiki/KO-ATC-AutoTurnControl%280%29) — `AutoTurnControl`
+- [ATC 경로 안내 및 감속](https://github.com/ajouatom/openpilot/wiki/KO-ATC-%EA%B2%BD%EB%A1%9C-%EC%95%88%EB%82%B4-%EB%B0%8F-%EA%B0%90%EC%86%8D) — `AutoTurnControl`
 - [수동 차선변경 깜박이(시험)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%88%98%EB%8F%99-%EC%B0%A8%EC%84%A0%EB%B3%80%EA%B2%BD-%EA%B9%9C%EB%B0%95%EC%9D%B4%28%EC%8B%9C%ED%97%98%29) — `ManualLaneChangeIndicator`
 - [수동 턴 자동깜박이(시험)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%88%98%EB%8F%99-%ED%84%B4-%EC%9E%90%EB%8F%99%EA%B9%9C%EB%B0%95%EC%9D%B4%28%EC%8B%9C%ED%97%98%29) — `ManualTurnIndicator`
 - [모델 desire 자동깜박이(시험)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%AA%A8%EB%8D%B8-desire-%EC%9E%90%EB%8F%99%EA%B9%9C%EB%B0%95%EC%9D%B4%28%EC%8B%9C%ED%97%98%29) — `ModelDesireIndicator`
 - [모델 경로 자동깜박이(시험)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%AA%A8%EB%8D%B8-%EA%B2%BD%EB%A1%9C-%EC%9E%90%EB%8F%99%EA%B9%9C%EB%B0%95%EC%9D%B4%28%EC%8B%9C%ED%97%98%29) — `ModelPathIndicator`
-- [우회전 전 자동 차선변경 거리(m)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%9A%B0%ED%9A%8C%EC%A0%84-%EC%A0%84-%EC%9E%90%EB%8F%99-%EC%B0%A8%EC%84%A0%EB%B3%80%EA%B2%BD-%EA%B1%B0%EB%A6%AC%28m%29) — `AutoTurnControlRightLaneChange`
+- [우회전 안내 거리(m)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%9A%B0%ED%9A%8C%EC%A0%84-%EC%95%88%EB%82%B4-%EA%B1%B0%EB%A6%AC%28m%29) — `AutoTurnControlRightLaneChange`
 - [ATC: 턴속도(20)](https://github.com/ajouatom/openpilot/wiki/KO-ATC-%ED%84%B4%EC%86%8D%EB%8F%84%2820%29) — `AutoTurnControlSpeedTurn`
 - [ATC: 시간거리(3)](https://github.com/ajouatom/openpilot/wiki/KO-ATC-%EC%8B%9C%EA%B0%84%EA%B1%B0%EB%A6%AC%283%29) — `AutoTurnControlTurnEnd`
 - [ATC Helper 맵전환(0)](https://github.com/ajouatom/openpilot/wiki/KO-ATC-Helper-%EB%A7%B5%EC%A0%84%ED%99%98%280%29) — `AutoTurnMapChange`
@@ -473,12 +473,12 @@ Per-setting pages generated from the current settings catalog.
 
 ##### Lane Change (Auto Turn)
 
-- [ATC: AutoTurnControl](https://github.com/ajouatom/openpilot/wiki/EN-ATC-AutoTurnControl) — `AutoTurnControl`
+- [ATC route guidance and speed](https://github.com/ajouatom/openpilot/wiki/EN-ATC-route-guidance-and-speed) — `AutoTurnControl`
 - [Manual lane-change indicator (trial)](https://github.com/ajouatom/openpilot/wiki/EN-Manual-lane-change-indicator-%28trial%29) — `ManualLaneChangeIndicator`
 - [Manual turn indicator (trial)](https://github.com/ajouatom/openpilot/wiki/EN-Manual-turn-indicator-%28trial%29) — `ManualTurnIndicator`
 - [Model desire indicator (trial)](https://github.com/ajouatom/openpilot/wiki/EN-Model-desire-indicator-%28trial%29) — `ModelDesireIndicator`
 - [Model path indicator (trial)](https://github.com/ajouatom/openpilot/wiki/EN-Model-path-indicator-%28trial%29) — `ModelPathIndicator`
-- [Right lane-change distance before a turn (m)](https://github.com/ajouatom/openpilot/wiki/EN-Right-lane-change-distance-before-a-turn-%28m%29) — `AutoTurnControlRightLaneChange`
+- [Right-turn advisory distance (m)](https://github.com/ajouatom/openpilot/wiki/EN-Right-turn-advisory-distance-%28m%29) — `AutoTurnControlRightLaneChange`
 - [ATC: Turn Speed(20)](https://github.com/ajouatom/openpilot/wiki/EN-ATC-Turn-Speed%2820%29) — `AutoTurnControlSpeedTurn`
 - [ATC: Speed Ctrl left Time(3)](https://github.com/ajouatom/openpilot/wiki/EN-ATC-Speed-Ctrl-left-Time%283%29) — `AutoTurnControlTurnEnd`
 - [ATC Helper Map display(0)](https://github.com/ajouatom/openpilot/wiki/EN-ATC-Helper-Map-display%280%29) — `AutoTurnMapChange`
@@ -851,12 +851,12 @@ Per-setting pages generated from the current settings catalog.
 
 ##### 变道 (自动转向)
 
-- [ATC: 自动转向控制](https://github.com/ajouatom/openpilot/wiki/ZH-ATC-%E8%87%AA%E5%8A%A8%E8%BD%AC%E5%90%91%E6%8E%A7%E5%88%B6) — `AutoTurnControl`
+- [ATC 路口提示与速度控制](https://github.com/ajouatom/openpilot/wiki/ZH-ATC-%E8%B7%AF%E5%8F%A3%E6%8F%90%E7%A4%BA%E4%B8%8E%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6) — `AutoTurnControl`
 - [手动变道转向灯（试验）](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%89%8B%E5%8A%A8%E5%8F%98%E9%81%93%E8%BD%AC%E5%90%91%E7%81%AF%28%E8%AF%95%E9%AA%8C%29) — `ManualLaneChangeIndicator`
 - [手动转弯转向灯（试验）](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%89%8B%E5%8A%A8%E8%BD%AC%E5%BC%AF%E8%BD%AC%E5%90%91%E7%81%AF%28%E8%AF%95%E9%AA%8C%29) — `ManualTurnIndicator`
 - [模型意图转向灯（试验）](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%A8%A1%E5%9E%8B%E6%84%8F%E5%9B%BE%E8%BD%AC%E5%90%91%E7%81%AF%28%E8%AF%95%E9%AA%8C%29) — `ModelDesireIndicator`
 - [模型路径转向灯（试验）](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E5%BE%84%E8%BD%AC%E5%90%91%E7%81%AF%28%E8%AF%95%E9%AA%8C%29) — `ModelPathIndicator`
-- [右转前自动变道距离(米)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8F%B3%E8%BD%AC%E5%89%8D%E8%87%AA%E5%8A%A8%E5%8F%98%E9%81%93%E8%B7%9D%E7%A6%BB%28%E7%B1%B3%29) — `AutoTurnControlRightLaneChange`
+- [右转提示距离（米）](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8F%B3%E8%BD%AC%E6%8F%90%E7%A4%BA%E8%B7%9D%E7%A6%BB%28%E7%B1%B3%29) — `AutoTurnControlRightLaneChange`
 - [ATC: 转向速度(20)](https://github.com/ajouatom/openpilot/wiki/ZH-ATC-%E8%BD%AC%E5%90%91%E9%80%9F%E5%BA%A6%2820%29) — `AutoTurnControlSpeedTurn`
 - [ATC: 速度控制剩余时间(3)](https://github.com/ajouatom/openpilot/wiki/ZH-ATC-%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6%E5%89%A9%E4%BD%99%E6%97%B6%E9%97%B4%283%29) — `AutoTurnControlTurnEnd`
 - [ATC 辅助地图显示(0)](https://github.com/ajouatom/openpilot/wiki/ZH-ATC-%E8%BE%85%E5%8A%A9%E5%9C%B0%E5%9B%BE%E6%98%BE%E7%A4%BA%280%29) — `AutoTurnMapChange`
@@ -1229,12 +1229,12 @@ Per-setting pages generated from the current settings catalog.
 
 ##### 變道 (自動轉向)
 
-- [ATC: 自動轉向控制](https://github.com/ajouatom/openpilot/wiki/ZH-TW-ATC-%E8%87%AA%E5%8B%95%E8%BD%89%E5%90%91%E6%8E%A7%E5%88%B6) — `AutoTurnControl`
+- [ATC 路口提示與速度控制](https://github.com/ajouatom/openpilot/wiki/ZH-TW-ATC-%E8%B7%AF%E5%8F%A3%E6%8F%90%E7%A4%BA%E8%88%87%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6) — `AutoTurnControl`
 - [手動變道轉向燈（試驗）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%89%8B%E5%8B%95%E8%AE%8A%E9%81%93%E8%BD%89%E5%90%91%E7%87%88%28%E8%A9%A6%E9%A9%97%29) — `ManualLaneChangeIndicator`
 - [手動轉彎轉向燈（試驗）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%89%8B%E5%8B%95%E8%BD%89%E5%BD%8E%E8%BD%89%E5%90%91%E7%87%88%28%E8%A9%A6%E9%A9%97%29) — `ManualTurnIndicator`
 - [模型意圖轉向燈（試驗）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%A8%A1%E5%9E%8B%E6%84%8F%E5%9C%96%E8%BD%89%E5%90%91%E7%87%88%28%E8%A9%A6%E9%A9%97%29) — `ModelDesireIndicator`
 - [模型路徑轉向燈（試驗）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%A8%A1%E5%9E%8B%E8%B7%AF%E5%BE%91%E8%BD%89%E5%90%91%E7%87%88%28%E8%A9%A6%E9%A9%97%29) — `ModelPathIndicator`
-- [右轉前自動變道距離(米)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8F%B3%E8%BD%89%E5%89%8D%E8%87%AA%E5%8B%95%E8%AE%8A%E9%81%93%E8%B7%9D%E9%9B%A2%28%E7%B1%B3%29) — `AutoTurnControlRightLaneChange`
+- [右轉提示距離（公尺）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8F%B3%E8%BD%89%E6%8F%90%E7%A4%BA%E8%B7%9D%E9%9B%A2%28%E5%85%AC%E5%B0%BA%29) — `AutoTurnControlRightLaneChange`
 - [ATC: 轉向速度(20)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-ATC-%E8%BD%89%E5%90%91%E9%80%9F%E5%BA%A6%2820%29) — `AutoTurnControlSpeedTurn`
 - [ATC: 速度控制剩餘時間(3)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-ATC-%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6%E5%89%A9%E9%A4%98%E6%99%82%E9%96%93%283%29) — `AutoTurnControlTurnEnd`
 - [ATC 輔助地圖顯示(0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-ATC-%E8%BC%94%E5%8A%A9%E5%9C%B0%E5%9C%96%E9%A1%AF%E7%A4%BA%280%29) — `AutoTurnMapChange`
