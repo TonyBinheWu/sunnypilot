@@ -8,6 +8,7 @@ from ..services.device_info import (
   get_device_network_snapshot,
   get_device_setting_group_names,
   get_device_setting_values,
+  get_longitudinal_setup_status,
 )
 from ..services.param_changes import observe_param_values
 from ..services.params import HAS_PARAMS, ParamKeyType, Params, get_param_values
@@ -65,6 +66,7 @@ def _settings_snapshot_payload() -> dict:
     "settings": catalog,
     "values": values,
     "device_values": get_device_setting_values(ssh_status),
+    "longitudinal_setup": get_longitudinal_setup_status(),
     # The web reads its Device tab parameter names from here rather than
     # restating them, so the two lists cannot drift apart.
     "device_groups": get_device_setting_group_names(),

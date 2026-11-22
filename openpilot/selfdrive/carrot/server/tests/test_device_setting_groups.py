@@ -43,3 +43,19 @@ def test_the_mapping_is_a_copy_callers_cannot_corrupt():
   first = device_info.get_device_setting_group_names()
   first["Device"].append("Injected")
   assert "Injected" not in device_info.get_device_setting_group_names()["Device"]
+
+
+def test_longitudinal_setup_uses_vehicle_capability_instead_of_saved_toggles():
+  from openpilot.cereal import car
+
+  params = {"ExperimentalMode": True, "AlphaLongitudinalEnabled": True}
+  assert device_info.get_longitudinal_setup_status(params) == "unknown"
+  params["CarParamsPersistent"] = b"bad"
+  assert device_info.get_longitudinal_setup_status(params) == "unknown"
+  for host, passive, expected in [(False, False, "stock"), (True, False, "openpilot"), (True, True, "observer")]:
+    cp = car.CarParams.new_message(brand="hyundai", carFingerprint="KIA_EV6", openpilotLongitudinalControl=host, passive=passive)
+    params["CarParamsPersistent"] = cp.to_bytes()
+    assert device_info.get_longitudinal_setup_status(params) == expected
+  for issue in ("identity", "wiring", "adas"):
+    params["AutoExperimentalIssue"] = issue
+    assert device_info.get_longitudinal_setup_status(params) == issue

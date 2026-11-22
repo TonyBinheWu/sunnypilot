@@ -132,12 +132,16 @@ def test_auto_setup_checks_live_ev6_wiring(monkeypatch, camera, adas, tcs_bus, s
   assert interface.CarInterface.auto_longitudinal_bus_valid(cp, fp, fw) is ok
 
 
-@pytest.mark.parametrize("mode,brake_bus,scc_bus,lkas_bus,expected", [
-  (0, 1, 1, 2, "host"),
-  (3, 0, 2, 1, "stock"),
-  (3, 1, 1, 2, "observer"),
+@pytest.mark.parametrize("mode,brake_bus,scc_bus,lkas_bus,expected,web_alpha,fw_match", [
+  (0, 1, 1, 2, "host", False, "exact"),
+  (0, 1, 1, 2, "host", True, "exact"),
+  (0, 0, 2, 1, "observer", True, "exact"),
+  (0, 1, 1, 2, "observer", True, "fuzzy"),
+  (0, 1, 1, 2, "stock", True, "missing_adas"),
+  (3, 0, 2, 1, "stock", False, "exact"),
+  (3, 1, 1, 2, "observer", False, "exact"),
 ])
-def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus, scc_bus, lkas_bus, expected):
+def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus, scc_bus, lkas_bus, expected, web_alpha, fw_match):
   from opendbc.car import car_helpers
   from opendbc.car.mock.values import CAR as MOCK
 
@@ -145,20 +149,23 @@ def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus
   fp[brake_bus][0x175], fp[scc_bus][0x1a0], fp[lkas_bus][0x50] = 24, 32, 16
   settings = {"CarSelected3": "Kia EV6 (with HDA II) 2022-24", "AutoExperimentalPlatform": str(CAR.KIA_EV6),
               "CanfdHDA2": 1, "HyundaiCameraSCC": mode, "FingerPrints": repr(fp)}
+  if web_alpha:
+    del settings["AutoExperimentalPlatform"]
   configure_params(monkeypatch, settings)
   params = SimpleNamespace(get=settings.get, put=settings.__setitem__, get_bool=lambda key: False, get_int=lambda key: int(settings[key]))
   monkeypatch.setattr(car_helpers, "Params", lambda: params)
-  fw = [structs.CarParams.CarFw(ecu="adas")]
+  fw = [] if fw_match == "missing_adas" else [structs.CarParams.CarFw(ecu="adas")]
   def fingerprint(*args, skip_fw_query):
     assert args[-1] is None and not skip_fw_query
-    return CAR.KIA_EV6, fp, "", fw, structs.CarParams.FingerprintSource.fw, True
+    return CAR.KIA_EV6, fp, "", fw, structs.CarParams.FingerprintSource.fw, fw_match != "fuzzy"
   monkeypatch.setattr(car_helpers, "fingerprint", fingerprint)
   for platform in (CAR.KIA_EV6, MOCK.MOCK):
     monkeypatch.setattr(car_helpers.interfaces[platform], "__init__", lambda self, cp: setattr(self, "CP", cp))
-  cp = car_helpers.get_car(None, None, None, False, True).CP
+  cp = car_helpers.get_car(None, None, None, web_alpha, True, cached_params=object()).CP
   assert cp.openpilotLongitudinalControl == (expected == "host")
   assert cp.dashcamOnly == (expected == "observer")
-  assert settings.get("AutoExperimentalIssue") == ("wiring" if expected == "observer" else None)
+  issue = {"fuzzy": "identity", "missing_adas": "adas"}.get(fw_match, "wiring" if expected == "observer" else None)
+  assert settings.get("AutoExperimentalIssue") == issue
   if expected != "observer":
     assert cp.pcmCruise == (expected == "stock")
     assert bool(cp.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.LONG) == (expected == "host")

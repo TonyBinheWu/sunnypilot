@@ -8,6 +8,7 @@ let CURRENT_DEVICE_GROUP = "Device";
 let deviceParamValues = {};
 let deviceGroupLoadPromises = new Map();
 let deviceNetworkInfo = null;
+let longitudinalSetup = "unknown";
 let deviceNetworkLoadPromise = null;
 let deviceSshStatus = null;
 let deviceSshRefreshTimer = null;
@@ -87,6 +88,7 @@ function normalizeDeviceSshStatus(status) {
 function hydrateDeviceSettingsSnapshot(snapshot) {
   if (!snapshot || typeof snapshot !== "object") return false;
   hydrateDeviceGroupParamNames(snapshot.device_groups);
+  longitudinalSetup = snapshot.longitudinal_setup || "unknown";
   mergeDeviceParamValues(snapshot.device_values || {});
   if (snapshot.device_network && typeof snapshot.device_network === "object") {
     deviceNetworkInfo = { ...snapshot.device_network };
@@ -524,16 +526,27 @@ function renderDeviceGroupItems(groupId, values) {
 }
 
 function renderDeviceToggleItems(values) {
-  let html = "";
+  const labels = {
+    openpilot: ["long_owner_openpilot", "openpilot"],
+    stock: ["long_owner_stock", "Factory cruise"],
+    observer: ["long_owner_observer", "Observation only"],
+    identity: ["long_owner_identity", "Vehicle identity unconfirmed"],
+    wiring: ["long_owner_wiring", "CAN wiring mismatch"],
+    adas: ["long_owner_adas", "ADAS ECU unconfirmed"],
+    unknown: ["long_owner_unknown", "Awaiting vehicle identification"],
+  };
+  const label = Object.hasOwn(labels, longitudinalSetup) ? labels[longitudinalSetup] : labels.unknown;
+  let html = renderDeviceInfoRow(getUIText("long_owner_title", "Last identified longitudinal control"), getUIText(...label));
   DEVICE_TOGGLES.forEach((toggle) => {
     html += renderDeviceToggleRow(
       toggle.param,
       getUIText(toggle.labelKey, toggle.defaultLabel),
-      Boolean(values[toggle.param]),
+      isTruthyDeviceFlag(values[toggle.param]),
       {
         confirmKey: toggle.confirmKey || "",
+        description: toggle.param === "DynamicExperimentalControl" ? getUIText("dec_vision_hint", "Turn off to keep the vision-based experimental planner selected.") : "",
         confirmedParam: toggle.confirmedParam || "",
-        confirmed: Boolean(values[toggle.confirmedParam]),
+        confirmed: isTruthyDeviceFlag(values[toggle.confirmedParam]),
       },
     );
   });
@@ -556,7 +569,7 @@ function renderDeviceDeveloperItems(values) {
     html += renderDeviceToggleRow(
       toggle.param,
       getUIText(toggle.labelKey, toggle.defaultLabel),
-      Boolean(values[toggle.param]),
+      isTruthyDeviceFlag(values[toggle.param]),
       { disabled: toggle.disabled === true, confirmKey: toggle.confirmKey || "" },
     );
   });

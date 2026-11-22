@@ -8,6 +8,7 @@ from opendbc.car.carlog import carlog
 from opendbc.car.structs import CarParams, CarParamsT
 from opendbc.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
 from opendbc.car.fw_versions import ObdCallback, get_fw_versions_ordered, get_present_ecus, match_fw_to_car
+from opendbc.car.hyundai.values import CANFD_CAR, CANFD_UNSUPPORTED_LONGITUDINAL_CAR, HyundaiFlags
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.selected_car import get_selected_car_platform
 from opendbc.car.values import BRANDS
@@ -176,6 +177,15 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
   forced_candidate = get_selected_car_platform(selected_car) if selected_car else None
 
   requested_platform = params.get("AutoExperimentalPlatform")
+  # The web and Developer Alpha switch sets the legacy boolean. A manually
+  # selected CAN-FD car on standard wiring still needs live firmware and CAN
+  # identification before that request can grant longitudinal authority.
+  verify_manual_alpha = (alpha_long_allowed and forced_candidate in CANFD_CAR and forced_candidate not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR
+                         and params.get_int("HyundaiCameraSCC") == 0)
+  if verify_manual_alpha:
+    alpha_long_allowed = (not requested_platform or requested_platform == forced_candidate) and not params.get_bool("IsReleaseBranch")
+    if alpha_long_allowed:
+      requested_platform = forced_candidate
   auto_setup = bool(requested_platform) and not params.get_bool("IsReleaseBranch") and (
     not selected_car or requested_platform == forced_candidate
   )
@@ -186,7 +196,8 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
     skip_fw_query=forced_candidate is not None and not auto_setup)
 
   if auto_setup:
-    if not exact_match or source == CarParams.FingerprintSource.fixed or candidate != requested_platform:
+    if (not exact_match or source == CarParams.FingerprintSource.fixed or candidate != requested_platform or
+        (verify_manual_alpha and source != CarParams.FingerprintSource.fw)):
       params.put("AutoExperimentalIssue", "identity")
       candidate = None
     alpha_long_allowed = candidate == requested_platform
@@ -205,6 +216,8 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
   params.put("FingerPrints", str(fingerprints))
   CarInterface = interfaces[candidate]
   CP: CarParams = CarInterface.get_params(candidate, fingerprints, car_fw, alpha_long_allowed, is_release, docs=False)
+  if verify_manual_alpha and auto_setup and CP.brand == "hyundai" and CP.flags & HyundaiFlags.CANFD_HDA2 and not CP.alphaLongitudinalAvailable:
+    params.put("AutoExperimentalIssue", "adas")
   verify_wiring = auto_setup and CP.brand == "hyundai" and (CP.openpilotLongitudinalControl or params.get_int("HyundaiCameraSCC") == 3)
   if verify_wiring and not CarInterface.auto_longitudinal_bus_valid(CP, fingerprints, car_fw):
     carlog.warning("CAN fingerprint does not confirm the selected longitudinal wiring; using observation only")

@@ -117,7 +117,8 @@ class DeveloperLayout(Widget):
       alpha_avail = ui_state.CP.alphaLongitudinalAvailable
       if not alpha_avail or self._is_release:
         self._alpha_long_toggle.set_visible(False)
-        self._params.remove("AlphaLongitudinalEnabled")
+        if self._is_release:
+          self._params.remove("AlphaLongitudinalEnabled")
       else:
         self._alpha_long_toggle.set_visible(True)
 
