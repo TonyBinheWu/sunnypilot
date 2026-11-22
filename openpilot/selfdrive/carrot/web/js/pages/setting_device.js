@@ -9,6 +9,7 @@ let deviceParamValues = {};
 let deviceGroupLoadPromises = new Map();
 let deviceNetworkInfo = null;
 let longitudinalSetup = "unknown";
+let longitudinalRequest = null;
 let deviceNetworkLoadPromise = null;
 let deviceSshStatus = null;
 let deviceSshRefreshTimer = null;
@@ -455,6 +456,11 @@ async function renderDeviceItems(groupId, showItemsScreen = true, options = {}) 
       : getDeviceGroupValues(groupId)
   );
 
+  if (groupId === "Toggles") {
+    longitudinalRequest = await getJson("/api/settings/experimental_setup").catch(() => null);
+    if (longitudinalRequest) longitudinalSetup = longitudinalRequest.owner;
+  }
+
   if (CURRENT_SETTING_TAB !== "device" || CURRENT_DEVICE_GROUP !== groupId) {
     syncDeviceNetworkRefresh();
     syncDeviceSshRefresh();
@@ -537,6 +543,13 @@ function renderDeviceToggleItems(values) {
   };
   const label = Object.hasOwn(labels, longitudinalSetup) ? labels[longitudinalSetup] : labels.unknown;
   let html = renderDeviceInfoRow(getUIText("long_owner_title", "Last identified longitudinal control"), getUIText(...label));
+  if (longitudinalRequest?.platform || longitudinalRequest?.requested) {
+    const saved = Boolean(longitudinalRequest.requested);
+    html += renderDeviceActionRow(getUIText("long_setup_title"),
+      (saved ? getUIText("long_setup_saved") : getUIText("long_setup_desc")) + " · " +
+        (longitudinalRequest.requested || longitudinalRequest.platform),
+      getUIText(saved ? "long_setup_cancel" : "long_setup_apply"), "btnExperimentalSetup");
+  }
   DEVICE_TOGGLES.forEach((toggle) => {
     html += renderDeviceToggleRow(
       toggle.param,

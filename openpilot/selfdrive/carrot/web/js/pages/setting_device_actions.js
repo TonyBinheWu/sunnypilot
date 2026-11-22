@@ -10,6 +10,24 @@ function bindDeviceTabEvents(container) {
   bindDeviceAction(container, "btnDevicePoweroff", "/api/poweroff", getUIText("power_off_confirm", "Power off device?"));
   bindDeviceAction(container, "btnDeviceRecalib", "/api/recalibrate", getUIText("reset_calibration_confirm", "Reset calibration and reboot?"));
 
+  const setupButton = container.querySelector("#btnExperimentalSetup");
+  if (setupButton) {
+    const { requested, platform } = longitudinalRequest;
+    setupButton.addEventListener("click", async () => {
+      setupButton.disabled = true;
+      try {
+        if (!requested && !await appConfirm(getUIText("long_setup_confirm"), { title: getUIText("long_setup_title") })) return;
+        await postJson("/api/settings/experimental_setup", { enabled: !requested, platform: requested || platform });
+        if (CURRENT_DEVICE_GROUP === "Toggles") await renderDeviceItems("Toggles", false, { animateItems: false });
+      } catch (error) {
+        const message = error.payload?.error === "park_required" ? getUIText("long_setup_park") : error.message;
+        showAppToast(message, { tone: "error" });
+      } finally {
+        setupButton.disabled = false;
+      }
+    });
+  }
+
   const trainingButton = container.querySelector("#btnDeviceTraining");
   if (trainingButton) {
     trainingButton.addEventListener("click", async () => {

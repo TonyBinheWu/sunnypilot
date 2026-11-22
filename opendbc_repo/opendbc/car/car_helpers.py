@@ -196,8 +196,9 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
     skip_fw_query=forced_candidate is not None and not auto_setup)
 
   if auto_setup:
+    standard_canfd = requested_platform in CANFD_CAR and params.get_int("HyundaiCameraSCC") == 0
     if (not exact_match or source == CarParams.FingerprintSource.fixed or candidate != requested_platform or
-        (verify_manual_alpha and source != CarParams.FingerprintSource.fw)):
+        (standard_canfd and source != CarParams.FingerprintSource.fw)):
       params.put("AutoExperimentalIssue", "identity")
       candidate = None
     alpha_long_allowed = candidate == requested_platform
@@ -216,7 +217,8 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
   params.put("FingerPrints", str(fingerprints))
   CarInterface = interfaces[candidate]
   CP: CarParams = CarInterface.get_params(candidate, fingerprints, car_fw, alpha_long_allowed, is_release, docs=False)
-  if verify_manual_alpha and auto_setup and CP.brand == "hyundai" and CP.flags & HyundaiFlags.CANFD_HDA2 and not CP.alphaLongitudinalAvailable:
+  if (auto_setup and CP.brand == "hyundai" and CP.flags & HyundaiFlags.CANFD_HDA2 and params.get_int("HyundaiCameraSCC") == 0
+      and candidate not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR and not CP.alphaLongitudinalAvailable):
     params.put("AutoExperimentalIssue", "adas")
   verify_wiring = auto_setup and CP.brand == "hyundai" and (CP.openpilotLongitudinalControl or params.get_int("HyundaiCameraSCC") == 3)
   if verify_wiring and not CarInterface.auto_longitudinal_bus_valid(CP, fingerprints, car_fw):

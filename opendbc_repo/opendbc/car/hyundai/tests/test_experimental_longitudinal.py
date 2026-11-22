@@ -137,6 +137,8 @@ def test_auto_setup_checks_live_ev6_wiring(monkeypatch, camera, adas, tcs_bus, s
   (0, 1, 1, 2, "host", True, "exact"),
   (0, 0, 2, 1, "observer", True, "exact"),
   (0, 1, 1, 2, "observer", True, "fuzzy"),
+  (0, 1, 1, 2, "observer", False, "can"),
+  (0, 1, 1, 2, "stock", False, "missing_adas"),
   (0, 1, 1, 2, "stock", True, "missing_adas"),
   (3, 0, 2, 1, "stock", False, "exact"),
   (3, 1, 1, 2, "observer", False, "exact"),
@@ -157,14 +159,15 @@ def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus
   fw = [] if fw_match == "missing_adas" else [structs.CarParams.CarFw(ecu="adas")]
   def fingerprint(*args, skip_fw_query):
     assert args[-1] is None and not skip_fw_query
-    return CAR.KIA_EV6, fp, "", fw, structs.CarParams.FingerprintSource.fw, fw_match != "fuzzy"
+    source = structs.CarParams.FingerprintSource.can if fw_match == "can" else structs.CarParams.FingerprintSource.fw
+    return CAR.KIA_EV6, fp, "", fw, source, fw_match != "fuzzy"
   monkeypatch.setattr(car_helpers, "fingerprint", fingerprint)
   for platform in (CAR.KIA_EV6, MOCK.MOCK):
     monkeypatch.setattr(car_helpers.interfaces[platform], "__init__", lambda self, cp: setattr(self, "CP", cp))
   cp = car_helpers.get_car(None, None, None, web_alpha, True, cached_params=object()).CP
   assert cp.openpilotLongitudinalControl == (expected == "host")
   assert cp.dashcamOnly == (expected == "observer")
-  issue = {"fuzzy": "identity", "missing_adas": "adas"}.get(fw_match, "wiring" if expected == "observer" else None)
+  issue = {"can": "identity", "fuzzy": "identity", "missing_adas": "adas"}.get(fw_match, "wiring" if expected == "observer" else None)
   assert settings.get("AutoExperimentalIssue") == issue
   if expected != "observer":
     assert cp.pcmCruise == (expected == "stock")

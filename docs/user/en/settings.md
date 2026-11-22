@@ -6,7 +6,7 @@
 
 On a development build, open **Settings → Toggles** while parked. Select **Auto experimental longitudinal** and confirm for the identified vehicle. At the next vehicle start, the system checks the vehicle and available control configuration. A stock-cruise configuration keeps factory cruise. Factory automatic emergency braking (AEB) may be unavailable when experimental longitudinal control is active.
 
-When using Carrot Web with a manually selected Hyundai/Kia CAN-FD vehicle on standard wiring, enable Alpha longitudinal while parked. At the next vehicle start, the device checks the vehicle identity and CAN wiring. Under Device → Toggles, check the last identified longitudinal control owner before enabling Experimental Mode. With DEC off, Experimental Mode uses the blended vision planner continuously.
+For supported Hyundai/Kia CAN-FD cars on standard wiring, open Device → Toggles in Carrot Web with the ignition off and the C4 powered. Use **Request verification** to save a vehicle-specific request. The device verifies the firmware and bus layout at vehicle startup. Check that the last identified control owner is openpilot before enabling Experimental Mode. Turn DEC off to keep the blended vision planner selected.
 
 ## Road scene research
 

@@ -59,3 +59,83 @@ def test_longitudinal_setup_uses_vehicle_capability_instead_of_saved_toggles():
   for issue in ("identity", "wiring", "adas"):
     params["AutoExperimentalIssue"] = issue
     assert device_info.get_longitudinal_setup_status(params) == issue
+
+
+def test_web_longitudinal_request_is_scoped_and_cancellable_after_failed_identification():
+  import pytest
+  from openpilot.cereal import car
+  from openpilot.selfdrive.carrot.server.features.intro.reconfigure import SetupError
+  from openpilot.selfdrive.carrot.server.features.settings import _experimental_setup
+  from openpilot.selfdrive.carrot.server.services.params import INTERNAL_SESSION_PARAMS
+
+  class Settings(dict):
+    put = dict.__setitem__
+    remove = dict.__delitem__
+
+    def get_bool(self, name):
+      return bool(self.get(name))
+
+    def get_int(self, name):
+      return int(self.get(name, 0))
+
+  params = Settings(CarSelected3="Kia EV6 (with HDA II) 2022-24")
+  platform = "KIA_EV6"
+  params["CarParamsPersistent"] = car.CarParams.new_message(brand="hyundai", carFingerprint=platform).to_bytes()
+  assert _experimental_setup(params) == {"platform": platform, "requested": "", "owner": "stock"}
+  for key, value in (("IsReleaseBranch", True), ("HyundaiCameraSCC", 3), ("CarSelected3", "different")):
+    original = params.copy()
+    params[key] = value
+    with pytest.raises(SetupError, match="settings_changed"):
+      _experimental_setup(params, (True, platform))
+    params.clear()
+    params.update(original)
+  with pytest.raises(SetupError, match="settings_changed"):
+    _experimental_setup(params, (True, "KIA_SORENTO"))
+  assert "AutoExperimentalPlatform" in INTERNAL_SESSION_PARAMS
+  assert _experimental_setup(params, (True, platform)) == {"platform": platform, "requested": platform, "owner": "stock"}
+  assert "AlphaLongitudinalEnabled" not in params and "ExperimentalMode" not in params
+  params["CarParamsPersistent"] = car.CarParams.new_message(brand="mock", carFingerprint="MOCK").to_bytes()
+  params["AutoExperimentalIssue"] = "identity"
+  assert _experimental_setup(params) == {"platform": "", "requested": platform, "owner": "identity"}
+  with pytest.raises(SetupError, match="settings_changed"):
+    _experimental_setup(params, (False, "KIA_SORENTO"))
+  assert _experimental_setup(params, (False, platform))["requested"] == ""
+
+
+def test_web_longitudinal_route_requires_offroad_and_rechecks_live_guard(monkeypatch):
+  import asyncio
+  from types import SimpleNamespace
+
+  from aiohttp import web
+  from aiohttp.test_utils import TestClient, TestServer
+  from openpilot.selfdrive.carrot.server.features import settings
+  from openpilot.selfdrive.carrot.server.features.intro import reconfigure, routes
+
+  writes = []
+  flags = {"IsOnroad": True}
+  monkeypatch.setattr(settings, "HAS_PARAMS", True)
+  monkeypatch.setattr(settings, "Params", lambda: SimpleNamespace(get_bool=flags.get))
+  monkeypatch.setattr(settings, "_experimental_setup", lambda params, change: writes.append(change) or {})
+  def blocked(_):
+    raise reconfigure.SetupError("vehicle_unavailable")
+
+  async def run():
+    app = web.Application()
+    settings.register(app)
+    async with TestClient(TestServer(app)) as client:
+      url = "/api/settings/experimental_setup"
+      body = {"platform": "KIA_EV6", "enabled": True}
+      monkeypatch.setattr(routes, "_reconfigure_guard", blocked)
+      assert (await client.post(url, json=body, headers={"Origin": "https://other.example"})).status == 403
+      assert (await client.post(url, json={**body, "enabled": 1})).status == 400
+      response = await client.post(url, json=body)
+      assert (await response.json())["error"] == "vehicle_unavailable"
+      monkeypatch.setattr(routes, "_reconfigure_guard", lambda _: None)
+      response = await client.post(url, json=body)
+      assert (await response.json())["error"] == "park_required"
+      assert writes == []
+      flags.update(IsOnroad=False, IsOffroad=True)
+      assert (await client.post(url, json=body)).status == 200
+      assert writes == [(True, "KIA_EV6")]
+
+  asyncio.run(run())
