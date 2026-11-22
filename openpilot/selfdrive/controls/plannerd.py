@@ -167,8 +167,8 @@ def main():
     if sm.updated['modelV2']:
       lateral_start = time.monotonic()
       timings['model_age_at_lateral_ms'] = (lateral_start - sm.logMonoTime['modelV2'] * 1e-9) * 1000
-      lateral_planner.update(sm, carrot)
-      lateral_planner.publish(sm, pm, carrot)
+      lateral_planner.update(sm)
+      lateral_planner.publish(sm, pm)
 
       msg = messaging.new_message('driverAssistance')
       msg.valid = sm.all_checks(['carState', 'carControl', 'modelV2', 'liveParameters'])

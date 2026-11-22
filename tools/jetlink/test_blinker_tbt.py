@@ -183,14 +183,12 @@ def test_real_lamp_feedback_uses_unchanged_desire_path(monkeypatch):
 
 @pytest.mark.parametrize('front', ['clear', 'close', 'closing', 'stale', 'invalid', 'fault', 'unavailable'])
 @pytest.mark.parametrize('ordinary', ['none', 'turn', 'lane'])
-@pytest.mark.parametrize('atc,addon,torque,blocked,expected', [
-  (1, True, 0, False, True), (2, True, 0, False, True),
-  (1, 350, 0, False, True), (1, 500, 0, False, True), (1, 501, 0, False, False),
-  (1, False, 0, False, False), (2, False, 0, False, False),
-  (0, True, 0, False, False), (3, True, 0, False, False), (4, True, 0, False, False),
-  (1, True, 1, False, False), (2, True, 0, True, False),
+@pytest.mark.parametrize('atc,addon,torque,blocked', [
+  (1, True, 0, False), (2, True, 0, False), (1, 350, 0, False), (1, 500, 0, False), (1, 501, 0, False),
+  (1, False, 0, False), (2, False, 0, False), (0, True, 0, False), (3, True, 0, False), (4, True, 0, False),
+  (1, True, 1, False), (2, True, 0, True),
 ])
-def test_actual_source_loop_only_emits_physical_indicator(monkeypatch, atc, addon, torque, blocked, expected, ordinary, front):
+def test_navigation_never_sends_physical_indicator(monkeypatch, atc, addon, torque, blocked, ordinary, front):
   import json
   import sys
   from contextlib import nullcontext
@@ -211,7 +209,6 @@ def test_actual_source_loop_only_emits_physical_indicator(monkeypatch, atc, addo
   if front in ('close', 'closing'):
     sm['radarState'].leadsRight = [NS(status=True, dRel=4.9 if front == 'close' else 15., vRel=-4.)]
   sm['radarState'].radarErrors.radarFault = front == 'fault'
-  expected = expected and front == 'clear'
   sm['livePose'] = NS(inputsOK=True, sensorsOK=True, posenetOK=True, orientationNED=NS(valid=True, z=0.))
   sm.services = list(sm)
   sm.valid = dict.fromkeys(sm, True)
@@ -245,16 +242,8 @@ def test_actual_source_loop_only_emits_physical_indicator(monkeypatch, atc, addo
   monkeypatch.setattr(bluetooth, 'config', dict)
   monkeypatch.setattr(bluetooth, 'atomic_json', lambda *args: None)
   source.main(0)
-  holds = [row['hold'] for row in sent[:24] if row['hold']]
-  assert bool(holds) == expected
-  assert all(not row['events'] for row in sent)
-  assert all(h['source'] == 'lane' and h['direction'] == 'right' for h in holds)
+  assert all(row['hold'] is None and not row['events'] for row in sent)
   assert s['nav'].carrotCmd == '' and s['nav'].carrotCmdIndex == 0
-
-  if ordinary != 'none':
-    # The add-on may already own a right indicator; existing ATC must replace it.
-    later = [row['hold'] for row in sent[24:]]
-    assert all(h and h['source'] == ordinary and h['direction'] == 'left' for h in later)
 
 
 @pytest.mark.parametrize("turn,atc", [(2, "atc right"), (4, "fork right")])

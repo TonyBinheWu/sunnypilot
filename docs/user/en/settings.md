@@ -558,17 +558,15 @@ camera supplies 20fps. Reduced processing overhead does not establish sustained
 
 `AutoBlinkerControl` — Settings > Driving > Steering > Lane Change (Auto Turn). Default: 0. Currently limited to the Ioniq 5 PE, Jetson and PEAK USB-CAN/B1 profile on carrot-wip. Cruise CANCEL stops automatic indicator requests and releases an automatic hold. Parking maneuvers no longer trigger an indication until SET/RES or +/− clears the cruise cancel state. The stock lever and explicit Bluetooth indicator buttons remain available.
 
-ATC indication starts at audioTurn and persists through stops. A fresh cue can start at a full stop in Drive when lateral permission remains valid and steering is fault-free. After the receiver confirms send completion, both lamps staying off for 1.5 seconds permits one recovery attempt per turn, including an initially unlit request. Driver cancellation, communication failure or an unconfirmed send forbids retry. A fresh opposite-turn cue waits at most three seconds for physical completion of the preceding turn.
-
-When a usable TBT point and raw vehicle GPS are available, passage evidence supplements physical turn completion. Continuing straight sufficiently beyond a closely passed point cancels the indication without replaying the same audioTurn. Accuracy, continuity and direction checks disable this location-based cancellation for poor GPS, missing points or curved approaches. Fresh navigation status reporting guidance ended or off-route also releases automatic indication. Physical lamps and road behavior still need validation.
+The destination, exit distance and turn cues remain available on the dashboard. Starting, changing or cancelling a route leaves the driving model on the same visual inputs as driving without a destination. The driver selects a lane change using the existing controls. Map-based speed control follows its own setting.
 
 ### Behavior
 
 Controls physical lamps on supported Jetson USB-CAN/B1 vehicles. Operating the stock lever ends the owned request.
 
 - **0:** Disables automatic control; Bluetooth one-touch remains available.
-- **1:** Holds signals started by Bluetooth at or below 5 km/h until turn completion, and indicates from the ATC audioTurn cue through intersection stops until the vehicle turns and the steering returns near center.
-- **2:** Also indicates from actual ATC lane-change start through completion. Waiting does not activate the lamps.
+- **1** holds a Bluetooth signal started at or below 5 km/h until turn completion.
+- **2** also supports explicit driver maneuver requests on compatible adapters.
 
 ### Usage
 
@@ -578,13 +576,13 @@ Check illumination and cancellation while parked first. Basic one-touch remains 
 
 ### Reference
 
-Bluetooth turn completion requires steering at least 30 degrees toward the selected turn, then returning within 10 degrees for 0.4 seconds while moving. Departure alone does not cancel; the maximum hold is five minutes. ATC turns also require at least 20 degrees of measured heading change toward the turn while moving. Stopping or losing turn desire alone does not cancel. Waiting requires continued lateral permission; driver cancellation, navigation cancellation before physical entry, and stale inputs still release the request.
+A Bluetooth turn completes after steering at least 30 degrees toward the turn and returning within 10 degrees for 0.4 seconds while moving. The maximum hold is five minutes.
 
 USB-CAN requests the initial blink; the existing vehicle indicator-hold function maintains it. Input, vehicle-state or communication loss expires the hold request. A rapid opposite input waits for the current OEM sequence to end, keeping only the latest request for at most 3.2 seconds. Cancelling a hold may still allow the remaining OEM flashes to finish. Existing lane-change settings may react to the actual lamp input.
 
 A hold-start request without confirmed lamp activation expires after four seconds, allowing the next button press to start a new request.
 
-`AutoTurnControlRightLaneChange` under ATC details adds to modes 1 and 2 and triggers the physical right indicator before a TBT right turn or right fork, at 10km/h or above and within the configured distance, until turning starts. It requires the supported USB2CAN indicator setup, a right lane, fresh OEM BSD and right-front gaps of at least 5 m both now and after three seconds; existing manual/Bluetooth lane-change behavior is unchanged. See [lane changes](lane-change.md).
+On supported indicator adapters, `AutoTurnControlRightLaneChange` checks for a dashboard advisory on approach to a right turn or fork. Set 0 m to switch it off or select a distance up to 500 m in 50 m steps. This uses ATC mode 1 or 2 with indicator mode 2. The next maneuver requires driver input.
 
 `ManualTurnIndicator` requests an indicator when driver steering and vehicle rotation agree. The wheel must reach 42 degrees and move at least 22 degrees from the start of steering. Detection resumes two seconds after the previous indication last renewed its hold, once both lamps have also been off for one continuous second. The setting defaults to off and can detect parking turns. [Manual turn conditions](lane-change.md)
 

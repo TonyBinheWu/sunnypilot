@@ -124,3 +124,14 @@ def test_snapshot_pressure_drops_optional_indicator_before_existing_media():
   value={'indicator_display':record(), 'events':{}, 'cameras':{'image':'x'*(96*1024-100)}}
   result=json.loads(encode_snapshot(value))
   assert 'indicator_display' not in result and result['cameras']['image']
+
+
+
+@pytest.mark.parametrize('hint,phase,origin', [(('turn', 'right'), 'idle', 'turn'), (None, 'waiting', 'tbt')])
+def test_ready_navigation_cue_stays_advisory_with_lamps_off(tmp_path, hint, phase, origin):
+  path = tmp_path / 'display'
+  args = inputs()
+  args['tbt'].phase = phase
+  Publisher(path).update(10., navigation_hint=hint, **args)
+  value = json.loads(path.read_text())
+  assert (value['origin'], value['direction'], value['state'], value['lamp']) == (origin, 'right', 'prepare', 'off')

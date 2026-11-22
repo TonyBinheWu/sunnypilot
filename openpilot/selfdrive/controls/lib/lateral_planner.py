@@ -84,7 +84,7 @@ class LateralPlanner:
     self.x0 = x0
     self.lat_mpc.reset(x0=self.x0)
 
-  def update(self, sm, carrot):
+  def update(self, sm):
     global LATERAL_ACCEL_COST, LATERAL_JERK_COST, STEERING_RATE_COST
     if self.geometry.update(getattr(sm['liveParameters'], 'centerToFrontRatio', 0.0)):
       self.factor1 = self.geometry.wheelbase - self.geometry.center_to_front
@@ -142,7 +142,7 @@ class LateralPlanner:
     # Turn off lanes during lane change
     #if self.DH.desire == log.Desire.laneChangeRight or self.DH.desire == log.Desire.laneChangeLeft:
       
-    if md.meta.desire != log.Desire.none or carrot.atc_active:
+    if md.meta.desire != log.Desire.none:
       self.LP.lane_change_multiplier = 0.0 #md.meta.laneChangeProb
     else:
       self.LP.lane_change_multiplier = 1.0
@@ -209,7 +209,7 @@ class LateralPlanner:
   
     self.x_sol = self.lat_mpc.x_sol
 
-  def publish(self, sm, pm, carrot):
+  def publish(self, sm, pm):
     plan_solution_valid = self.solution_invalid_cnt < 2
     plan_send = messaging.new_message('lateralPlan')
     plan_send.valid = sm.all_checks(service_list=['carState', 'controlsState', 'modelV2'])

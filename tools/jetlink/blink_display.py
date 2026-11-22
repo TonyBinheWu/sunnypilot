@@ -11,7 +11,7 @@ class Publisher:
     self.previous, self.ended, self.ended_at = None, None, 0.
 
   def update(self, now, *, mode, ok, cs, meta, hold, activated, peer, automatic, tbt, tbt_enabled,
-             front_clear, observed_source, auto_valid, atc_type):
+             front_clear, observed_source, auto_valid, atc_type, navigation_hint=None):
     # All failures are confined to optional display metadata. No commands or leases are modified.
     try:
       value = None
@@ -32,6 +32,11 @@ class Publisher:
         elif str(getattr(meta, 'observedIndicator', 'none')) in ('left', 'right') and observed_source in ('manual', 'manual_turn', 'model_path', 'model_turn', 'model_desire'):
           value = {'origin': observed_source, 'direction': str(meta.observedIndicator), 'state': 'prepare',
                    'reason': 'peer' if peer != 'ready' else 'admission'}
+        elif auto_valid and navigation_hint:
+          origin, direction = navigation_hint
+          value = {'origin': origin, 'direction': direction, 'state': 'prepare', 'reason': 'waiting_conditions'}
+        elif auto_valid and tbt_enabled and tbt.phase == 'waiting':
+          value = {'origin': 'tbt', 'direction': 'right', 'state': 'prepare', 'reason': 'waiting'}
         elif auto_valid and str(meta.laneChangeState) == 'preLaneChange' and atc_type in ('atc left', 'atc right', 'fork left', 'fork right'):
           value = {'origin': 'lane', 'direction': atc_type.split()[-1], 'state': 'prepare', 'reason': 'waiting_conditions'}
         elif tbt_enabled and tbt.phase in ('idle', 'cooldown') and tbt.reason in ('confirming', 'waiting_conditions'):

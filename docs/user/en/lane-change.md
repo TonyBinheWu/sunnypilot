@@ -48,13 +48,9 @@ Same-direction origins share a continuing signal. Alignment after crossing, retu
 
 Model-turn indication also requires at least 15 degrees of same-direction steering and 3 degrees/s of measured rotation. While moving, a turn probability below 30% and wheel return within ±10 degrees for 0.4s end the hold.
 
-## TBT turn indication
+## Navigation guidance
 
-The distance recorded at audioTurn and subsequent wheel-speed integration track through 30m past the turn. Once selected-side steering has exceeded 30 degrees and measured heading has rotated at least 20 degrees, returning the wheel within ±15 degrees while moving at least 1km/h ends the hold immediately, regardless of remaining distance. A straight wheel during approach or a pre-turn stop does not complete a turn. Distance remains a fallback, allowing at most another 30m during continued turning and a 300-second overall limit.
-
-A fresh audioTurn cue for a nearby next turn is handed over when the current turn completes. Same-direction continuation keeps the existing request without another tap; an opposite turn switches after completion. Ending the hold request does not guarantee immediate extinction of the OEM lamp.
-
-After steering at least 30 degrees toward the selected turn, opposite driver torque taking the wheel across zero into the opposite direction immediately cancels it. A left turn cancels at a negative angle and a right turn at a positive angle. Navigation cancellation/off-route status, invalid vehicle inputs and interrupted distance tracking cancel the hold request.
+The destination, exit distance and turn cues remain available on the dashboard. Starting, changing or cancelling a route leaves the driving model on the same visual inputs as driving without a destination. The driver selects a lane change using the existing controls. Map-based speed control follows its own setting.
 
 ## The key point
 
@@ -66,11 +62,7 @@ These gates are aids, not a replacement for the driver's safety judgment. openpi
 
 ## Who decides what?
 
-The `AutoTurnControlRightLaneChange` distance under ATC details defaults to 0m (off), with 50m steps up to 500m. The former ON setting migrates to 250m at restart and OFF stays at 0m. It adds to `AutoTurnControl=1` or `2`. It is a TBT right-indicator trigger for the Ioniq 5 PE USB2CAN setup. It checks **10km/h or above AND within the configured distance of the right turn or right fork**, until the turn desire starts. Select 250m for the former distance or 300–400m to check conditions earlier. It requires `AutoBlinkerControl=2`, `LaneChangeNeedTorque=0`, active lateral control, a speed of at least 10km/h, a detected right lane and the existing right-side availability check. The additional rear gate uses fresh OEM BSD warnings only; corner distances and the former 20 m threshold are not used. Every front target in the right destination lane must be at least 5 m away now and satisfy `distance + relative speed × 3 seconds >= 5 m`. The full right-target list includes close objects omitted from the representative lead. Stale or faulty radar/BSD input blocks initiation. No detection or a constant-speed projection guarantees a safe gap; existing side-object admission remains in force.
-
-After one second of qualifying conditions, the existing physical-indicator path lights the right lamp. Signals started below 30km/h remain indication-only until they end. Feedback from starts at or above 30km/h enters the unchanged ordinary lane-change logic; no separate lane-change command is sent. A repeat requires observed completion, lamps off, two seconds of waiting and a fresh condition check. Steering before a request restarts the one-second confirmation. After a request, steering/manual intervention, lost inputs or a failed start cancels repetition in the current TBT window. Manual/remote admission is unchanged. Existing ATC turns/lane changes remain available. The add-on is inactive in mode 0 (off) and 3 (speed only). On restart, the retired mode 4 migrates to mode 1 with the add-on enabled, without newly enabling speed control. Desktop tests are not physical lamp or road acceptance.
-
-The right-turn distance option only supplies a physical right-indicator request. Existing ATC preparation, audio and DesireHelper lane-change decisions retain the implementation from before this add-on. The add-on may request its lamp during matching ATC right-lane or right-fork preparation when its conditions pass; it does not rewrite navigation commands, lane-change desires or existing ATC entry gates.
+On supported indicator adapters, `AutoTurnControlRightLaneChange` checks for a dashboard advisory on approach to a right turn or fork. Set 0 m to switch it off or select a distance up to 500 m in 50 m steps. This uses ATC mode 1 or 2 with indicator mode 2. The next maneuver requires driver input.
 
 | Participant | Responsibility | Not responsible for |
 |---|---|---|
@@ -82,7 +74,7 @@ The right-turn distance option only supplies a physical right-indicator request.
 ## What happens in order
 
 1. The driver checks mirrors and the blind spot and judges both distance and closing speed.
-2. After selecting a safe gap, the driver activates the turn signal. An ATC-requested lane change follows the same remaining process and still requires driver supervision.
+2. After selecting a safe gap, the driver activates the turn signal.
 3. carrotpilot enters `preLaneChange` and evaluates the configured delay and entry gates.
 4. When the gates pass, it sends a left or right lane-change request to the model.
 5. The comma driving model generates the lane-change path and the vehicle controller tracks it.
@@ -195,15 +187,6 @@ With immediate-entry settings, the sequence “signal first, then check behind�
 Related: [Understanding Settings](settings.md) · [Cruise and Following Gap](cruise-gap.md)
 
 With this option enabled on supported vehicles, a separate observer logs `manualBoundaryObservation` at most once per second to compare manual boundary-approach detection. It briefly remembers driver steering and records approach, hypothetical indication, retreat and tracking failures; it never requests lamps or steering. Observer predictions do not replace the actual indication gates. Clearance uses a provisional 0.9 m half-width, not measured tire contact or confirmed lane-change intent.
-
-### ATC turn indication and straight-through cancellation
-
-ATC indication starts at audioTurn and persists through stops. A fresh cue can start at a full stop in Drive when lateral permission remains valid and steering is fault-free. After the receiver confirms send completion, both lamps staying off for 1.5 seconds permits one recovery attempt per turn, including an initially unlit request. Driver cancellation, communication failure or an unconfirmed send forbids retry. A fresh opposite-turn cue waits at most three seconds for physical completion of the preceding turn.
-
-When a usable TBT point and raw vehicle GPS are available, passage evidence supplements physical turn completion. Continuing straight sufficiently beyond a closely passed point cancels the indication without replaying the same audioTurn. Accuracy, continuity and direction checks disable this location-based cancellation for poor GPS, missing points or curved approaches. Fresh navigation status reporting guidance ended or off-route also releases automatic indication. Physical lamps and road behavior still need validation.
-
-
-A TBT hold with confirmed transmission and illumination continues through a receiver `driver_override` status until normal completion or the driver steering cancellation. A missing initial transmission acknowledgement or invalid communication/vehicle input prevents hold output.
 
 ## Observed completion and advance notices
 
