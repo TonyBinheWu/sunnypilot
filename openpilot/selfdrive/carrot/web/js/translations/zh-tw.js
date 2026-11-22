@@ -439,6 +439,7 @@ window.CarrotTranslations.register("zh-tw", {
     server_state: "伺服器狀態",
     working: "處理中",
     quick_link: "連結",
+    car_auto_unverified: "實驗縱向控制的車型驗證未通過",
     car_observe_only: "目前僅行車記錄",
     car_auto: "自動辨識車型",
     car_auto_wait: "下次啟動車輛時辨識",

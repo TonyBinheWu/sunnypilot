@@ -1,3 +1,18 @@
+def detected_ev6_for_verification(cp, params):
+  """Return the detected platform for a parked request, even after a rejected setup."""
+  from opendbc.car.hyundai.values import CAR
+
+  if cp is None or params.get("CarSelected3") != "AUTO" or params.get("AutoCarModelResult") != CAR.KIA_EV6:
+    return None
+  if params.get_int("HyundaiCameraSCC") != 0 or params.get("CarName") != cp.carFingerprint:
+    return None
+  if cp.brand == "mock" and cp.carFingerprint == "MOCK":
+    return CAR.KIA_EV6
+  if cp.brand == "hyundai" and cp.carFingerprint == CAR.KIA_EV6 and not cp.dashcamOnly and not cp.passive:
+    return CAR.KIA_EV6
+  return None
+
+
 def get_selected_car_platform(name: str):
   from opendbc.car.ford.values import CAR as FORD
   from opendbc.car.hyundai.values import CAR as HYUNDAI

@@ -146,7 +146,7 @@ def _experimental_setup(params, change=None):
   """Expose the same vehicle-scoped request used by the native toggles page."""
   from openpilot.cereal import car
   from opendbc.car.hyundai.values import CANFD_CAR, CANFD_UNSUPPORTED_LONGITUDINAL_CAR
-  from opendbc.car.selected_car import get_selected_car_platform
+  from opendbc.car.selected_car import detected_ev6_for_verification, get_selected_car_platform
   from .intro.reconfigure import SetupError
 
   requested = params.get("AutoExperimentalPlatform") or ""
@@ -158,6 +158,8 @@ def _experimental_setup(params, change=None):
         if (cp.brand == "hyundai" and cp.carFingerprint in CANFD_CAR and cp.carFingerprint not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR
             and not cp.passive and not cp.dashcamOnly and params.get_int("HyundaiCameraSCC") == 0):
           platform = cp.carFingerprint
+        else:
+          platform = detected_ev6_for_verification(cp, params) or ""
     except Exception:
       pass
   selected = params.get("CarSelected3")

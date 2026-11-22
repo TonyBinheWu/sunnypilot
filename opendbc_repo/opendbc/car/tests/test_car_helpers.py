@@ -91,7 +91,7 @@ def test_vehicle_scoped_alpha_identification(monkeypatch, detected, source, exac
       pass
 
   cached = object()
-  def fingerprint(*args, skip_fw_query, verify_ev6):
+  def fingerprint(*args, skip_fw_query, verify_ev6, auto_detect):
     assert not verify_ev6
     assert args[-1] is (cached if release else None)
     assert skip_fw_query == release
@@ -128,7 +128,7 @@ def test_explicit_auto_reads_vehicle_and_reports_result(monkeypatch, detected, s
       return False
 
   store = Store(CarSelected3="AUTO", AutoExperimentalPlatform=requested)
-  def scan(*args, skip_fw_query, verify_ev6):
+  def scan(*args, skip_fw_query, verify_ev6, auto_detect):
     assert args[-1] is None and not skip_fw_query
     return detected, {}, VIN_UNKNOWN, [], getattr(CarParams.FingerprintSource, source), True
 

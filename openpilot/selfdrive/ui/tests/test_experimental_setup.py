@@ -29,3 +29,15 @@ def test_auto_setup_only_records_per_vehicle_consent(monkeypatch, release, offro
   ui.CP = None
   setup.set_auto_setup(False, ui)
   assert not values
+
+
+@pytest.mark.parametrize("brand,platform", [("mock", "MOCK"), ("hyundai", "KIA_EV6")])
+def test_retry_detected_ev6_only_records_request(monkeypatch, brand, platform):
+  monkeypatch.setattr(setup, "tr", lambda text: text)
+  values = {"CarSelected3": "AUTO", "CarName": platform, "AutoCarModelResult": "KIA_EV6"}
+  params = SimpleNamespace(get=values.get, put=values.__setitem__, get_int=lambda key: 0)
+  cp = SimpleNamespace(brand=brand, carFingerprint=platform, dashcamOnly=False, passive=False, openpilotLongitudinalControl=False,
+                       alphaLongitudinalAvailable=False, fingerprintSource="fw", flags=HyundaiFlags.CANFD)
+  ui = SimpleNamespace(CP=cp, params=params, is_release=False, is_offroad=lambda: True)
+  setup.set_auto_setup(True, ui)
+  assert values == {"CarSelected3": "AUTO", "CarName": platform, "AutoCarModelResult": "KIA_EV6", "AutoExperimentalPlatform": "KIA_EV6"}

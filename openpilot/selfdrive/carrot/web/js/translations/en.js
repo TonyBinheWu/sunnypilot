@@ -364,6 +364,7 @@ window.CarrotTranslations.register("en", {
     server_state: "Server Status",
     working: "Working",
     quick_link: "Link",
+    car_auto_unverified: "Experimental longitudinal vehicle verification failed",
     car_observe_only: "Dashcam only",
     car_auto: "Detect my vehicle automatically",
     car_auto_wait: "Waiting for the next vehicle start",

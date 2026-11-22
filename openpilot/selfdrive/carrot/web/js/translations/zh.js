@@ -272,6 +272,7 @@ window.CarrotTranslations.register("zh", {
     server_state: "服务器状态",
     working: "处理中",
     quick_link: "Link",
+    car_auto_unverified: "实验纵向控制的车型验证未通过",
     car_observe_only: "当前仅行车记录",
     car_auto: "自动识别车型",
     car_auto_wait: "下次启动车辆时识别",

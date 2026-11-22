@@ -1,4 +1,5 @@
 from opendbc.car.hyundai.values import HyundaiFlags
+from opendbc.car.selected_car import detected_ev6_for_verification
 from openpilot.system.ui.lib.multilang import tr
 
 
@@ -12,6 +13,9 @@ def auto_setup_status(cp, params, is_release):
       return True, False, tr("CAN wiring mismatch")
     if requested and params.get("AutoExperimentalIssue") == "identity":
       return True, False, tr("Vehicle match unconfirmed")
+    detected = detected_ev6_for_verification(cp, params)
+    if detected and not requested:
+      return False, True, tr("Verify at next vehicle start")
     return bool(requested), False, tr("Vehicle identification needed")
   if cp.dashcamOnly or cp.passive:
     return bool(requested), False, tr("Vehicle controls unavailable")
@@ -25,7 +29,7 @@ def auto_setup_status(cp, params, is_release):
   # because manual identification normally skips the firmware query.
   needs_query = (cp.brand == "hyundai" and cp.flags & HyundaiFlags.CANFD and
                  cp.fingerprintSource == "fixed" and not cp.carFw)
-  if cp.alphaLongitudinalAvailable or needs_query:
+  if cp.alphaLongitudinalAvailable or needs_query or detected_ev6_for_verification(cp, params):
     return bool(requested), True, tr("Verify at next vehicle start")
   return bool(requested), False, tr("Experimental longitudinal unavailable")
 
@@ -35,6 +39,6 @@ def set_auto_setup(enabled, ui):
   if not ui.is_offroad() or ui.is_release:
     return
   if enabled and available:
-    ui.params.put("AutoExperimentalPlatform", ui.CP.carFingerprint)
+    ui.params.put("AutoExperimentalPlatform", detected_ev6_for_verification(ui.CP, ui.params) or ui.CP.carFingerprint)
   elif not enabled and requested:
     ui.params.remove("AutoExperimentalPlatform")

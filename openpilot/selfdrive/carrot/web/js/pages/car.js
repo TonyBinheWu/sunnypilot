@@ -98,7 +98,9 @@ function resolveCurrentCarLabel(values) {
     if (result === "unknown") return getUIText("car_auto_failed");
     if (typeof result === "string" && result && result !== "0") {
       const name = result.replaceAll("_", " ");
-      return values.CarName === "MOCK" ? name + " · " + getUIText("car_observe_only") : name;
+      if (values.CarName !== "MOCK") return name;
+      const issueKey = {identity: "car_auto_unverified", wiring: "long_owner_wiring", adas: "long_owner_adas"}[values.AutoExperimentalIssue];
+      return [name, getUIText("car_observe_only"), issueKey && getUIText(issueKey)].filter(Boolean).join(" · ");
     }
     return getUIText("car_auto_wait");
   }
@@ -256,7 +258,7 @@ async function loadCurrentCar(options = {}) {
   const revision = ++currentCarRevision;
   currentCarLoadPromise = (async () => {
     try {
-      const values = await bulkGet(["CarSelected3", "CarName", "AutoCarModelResult"]);
+      const values = await bulkGet(["CarSelected3", "CarName", "AutoCarModelResult", "AutoExperimentalIssue"]);
       if (revision !== currentCarRevision) return currentCarLastKnownLabel;
       watchAutomaticSelection(values);
       const label = resolveCurrentCarLabel(values);

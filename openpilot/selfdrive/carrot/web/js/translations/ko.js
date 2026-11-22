@@ -380,6 +380,7 @@ window.CarrotTranslations.register("ko", {
     server_state: "서버 상태",
     working: "작업 중",
     quick_link: "Link",
+    car_auto_unverified: "실험적 종방향 제어를 위한 차종 검증 실패",
     car_observe_only: "대시캠 전용",
     car_auto: "차량 자동 인식",
     car_auto_wait: "다음 차량 시동 시 인식합니다",

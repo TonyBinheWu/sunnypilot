@@ -4,7 +4,7 @@
 
 ## Automatic vehicle identification
 
-While parked, open **Tools → Car Select** in Carrot Web and choose **Detect my vehicle automatically**. At the next vehicle start, the cockpit shows the identification result. If the vehicle is unidentified, the device stays in dashcam mode and offers manual selection. After identification, check the longitudinal control status to see which system controls acceleration and braking.
+While parked, open **Tools → Car Select** in Carrot Web and choose **Detect my vehicle automatically**. At the next vehicle start, the cockpit shows the identification result. If the vehicle is unidentified, the device stays in dashcam mode and offers manual selection. After identification, check the longitudinal control status to see which system controls acceleration and braking. For an EV6 HDA II on standard wiring, the camera CAN messages identify the steering configuration. A verified experimental longitudinal request also requires matching vehicle firmware, a reply from the ADAS controller and the expected CAN wiring. If automatic detection shows **KIA EV6** in dashcam mode, you can request verification for that vehicle again while parked under **Settings → Toggles**.
 
 ## Auto experimental longitudinal
 

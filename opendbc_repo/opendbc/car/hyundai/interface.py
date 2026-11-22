@@ -71,8 +71,10 @@ class CarInterface(CarInterfaceBase):
 
     cam_can = CanBus(None, fingerprint).CAM if camera_scc == 0 else 1
     adas_present = any(fw.ecu == Ecu.adas for fw in car_fw)
+    # HKG identifies the EV6 LKA harness from camera traffic. A missing ADAS
+    # firmware reply still prevents experimental longitudinal control below.
     hda2 = params.get_int("CanfdHDA2") > 0 or (
-      bool(ret.flags & HyundaiFlags.CANFD) and camera_scc == 0 and adas_present and
+      bool(ret.flags & HyundaiFlags.CANFD) and camera_scc == 0 and (adas_present or candidate == CAR.KIA_EV6) and
       (fingerprint[cam_can].get(0x50) == 16 or fingerprint[cam_can].get(0x110) == 32)
     )
     CAN = CanBus(None, fingerprint, hda2)

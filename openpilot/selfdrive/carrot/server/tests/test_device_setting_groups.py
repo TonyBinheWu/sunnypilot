@@ -104,6 +104,18 @@ def test_web_longitudinal_request_is_scoped_and_cancellable_after_failed_identif
   with pytest.raises(SetupError, match="settings_changed"):
     _experimental_setup(params, (False, "KIA_SORENTO"))
   assert _experimental_setup(params, (False, platform))["requested"] == ""
+  params["CarName"] = "MOCK"
+  assert _experimental_setup(params, (True, platform))["requested"] == platform
+  assert "AlphaLongitudinalEnabled" not in params and "ExperimentalMode" not in params
+  assert _experimental_setup(params, (False, platform))["requested"] == ""
+  for key, value in (("CarName", platform), ("AutoCarModelResult", "unknown"), ("CarSelected3", "different"),
+                     ("IsReleaseBranch", True), ("HyundaiCameraSCC", 3), ("CarParamsPersistent", b"")):
+    original = params.copy()
+    params[key] = value
+    with pytest.raises(SetupError, match="settings_changed"):
+      _experimental_setup(params, (True, platform))
+    params.clear()
+    params.update(original)
 
 
 def test_web_longitudinal_route_requires_offroad_and_rechecks_live_guard(monkeypatch):

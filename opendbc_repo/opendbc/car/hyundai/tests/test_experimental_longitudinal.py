@@ -71,6 +71,7 @@ def configure_params(monkeypatch, settings):
 @pytest.mark.parametrize('addr,dlc,adas,manual,alpha,hda2,host_long', [
   (0x50, 16, True, False, True, True, True), (0x110, 32, True, False, False, True, False),
   (0x50, 8, True, False, False, False, False), (0x50, 16, False, True, True, True, False),
+  (0x50, 16, False, False, True, True, False), (0x110, 32, False, False, True, True, False),
 ])
 def test_ev6_harness_and_longitudinal_owner(monkeypatch, addr, dlc, adas, manual, alpha, hda2, host_long):
   fingerprint = gen_empty_fingerprint()
@@ -157,7 +158,7 @@ def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus
   params = SimpleNamespace(get=settings.get, put=settings.__setitem__, get_bool=lambda key: False, get_int=lambda key: int(settings[key]))
   monkeypatch.setattr(car_helpers, "Params", lambda: params)
   fw = [] if fw_match == "missing_adas" else [structs.CarParams.CarFw(ecu="adas")]
-  def fingerprint(*args, skip_fw_query, verify_ev6):
+  def fingerprint(*args, skip_fw_query, verify_ev6, auto_detect):
     assert verify_ev6 == (mode == 0)
     assert args[-1] is None and not skip_fw_query
     source = structs.CarParams.FingerprintSource.can if fw_match == "can" else structs.CarParams.FingerprintSource.fw
@@ -175,25 +176,40 @@ def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus
     assert bool(cp.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.LONG) == (expected == "host")
 
 
-@pytest.mark.parametrize("first,second,valid_bus,owner,retries", [
-  ("", "ev6", True, "host", 1),
-  ("ev6", "", True, "host", 0),
-  ("logging_only", "ev6", True, "host", 1),
-  ("", "", True, "observer", 1),
-  ("", "pe", True, "observer", 1),
-  ("pe", "ev6", True, "observer", 0),
-  ("mixed", "ev6", True, "observer", 0),
-  ("", "no_adas", True, "stock", 1),
-  ("", "ev6", False, "observer", 1),
+@pytest.mark.parametrize("first,second,valid_bus,owner,retries,scoped", [
+  ("", "ev6", True, "host", 1, True),
+  ("ev6", "", True, "host", 0, True),
+  ("logging_only", "ev6", True, "host", 1, True),
+  ("radar_only", "camera_adas", True, "host", 1, True),
+  ("radar_only", "", True, "observer", 1, True),
+  ("radar_only", "mixed", True, "observer", 1, True),
+  ("radar_only", "pe", True, "observer", 1, True),
+  ("no_adas", "adas_only", True, "host", 1, True),
+  ("no_adas", "different_camera", True, "observer", 1, True),
+  ("two_cameras", "ev6", True, "observer", 0, True),
+  ("no_adas", "pe", True, "observer", 1, True),
+  ("radar_only", "camera_adas", False, "observer", 1, True),
+  ("", "", True, "observer", 1, True),
+  ("", "pe", True, "observer", 1, True),
+  ("pe", "ev6", True, "observer", 0, True),
+  ("mixed", "ev6", True, "observer", 0, True),
+  ("", "no_adas", True, "stock", 1, True),
+  ("", "ev6", False, "observer", 1, True),
+  ("radar_only", "camera_adas", True, "stock", 1, False),
+  ("radar_only", "mixed", True, "observer", 1, False),
+  ("logging_only", "ev6", True, "observer", 0, False),
 ])
 @pytest.mark.parametrize("selection", ["AUTO", "Kia EV6 (with HDA II) 2022-24"])
-def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, valid_bus, owner, retries, selection):
+def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, valid_bus, owner, retries, selection, scoped):
   from opendbc.car import car_helpers, fw_versions
   from opendbc.car.mock.values import CAR as MOCK
 
   fp = gen_empty_fingerprint()
   fp[1][0x175], fp[1][0x1a0], fp[2][0x50] = 24, 32, 16 if valid_bus else 8
-  settings = {"AutoExperimentalPlatform": str(CAR.KIA_EV6), "CarSelected3": selection,
+  if not scoped and selection != "AUTO":
+    # Manual selection without an experimental request uses the existing fast path.
+    owner, retries = "stock", 0
+  settings = {"AutoExperimentalPlatform": str(CAR.KIA_EV6) if scoped else "", "CarSelected3": selection,
               "CanfdHDA2": 1, "HyundaiCameraSCC": 0, "FingerPrints": repr(fp)}
   configure_params(monkeypatch, settings)
   monkeypatch.setattr(car_helpers, "Params", lambda: SimpleNamespace(
@@ -204,11 +220,18 @@ def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, v
     if kind == "logging_only":
       return [structs.CarParams.CarFw(brand="hyundai", ecu="hvac", address=0x7b3, logging=True, fwVersion=b"test")]
     fw = []
+    wanted = {"adas_only": set(), "radar_only": {structs.CarParams.Ecu.fwdRadar}, "camera_adas": {structs.CarParams.Ecu.fwdCamera}}
     for (ecu, addr, _), versions in FW_VERSIONS[CAR.KIA_EV6_PE if kind == "pe" else CAR.KIA_EV6].items():
+      if kind in wanted and ecu not in wanted[kind]:
+        continue
       if kind == "mixed" and ecu == structs.CarParams.Ecu.fwdCamera:
         versions = FW_VERSIONS[CAR.KIA_EV6_PE][(ecu, addr, None)]
+      if ecu == structs.CarParams.Ecu.fwdCamera and kind in ("two_cameras", "different_camera"):
+        fw.append(structs.CarParams.CarFw(brand="hyundai", ecu=ecu, address=addr, fwVersion=versions[1]))
+        if kind == "different_camera":
+          continue
       fw.append(structs.CarParams.CarFw(brand="hyundai", ecu=ecu, address=addr, fwVersion=versions[0]))
-    if kind != "no_adas":
+    if kind not in ("no_adas", "radar_only"):
       fw.append(structs.CarParams.CarFw(brand="hyundai", ecu="adas", address=0x730, logging=True, fwVersion=b"test"))
     return fw
 
