@@ -797,6 +797,11 @@ class PandaSafetyTest(PandaSafetyTestBase):
               # exceptions for common msgs across different hondas
               tx = list(filter(lambda m: m[0] not in [0x1FA, 0x30C, 0x33D, 0x33DB], tx))
 
+            # Classic Hyundai profiles share cluster/steering addresses. Still
+            # exercise every address and bus that belongs only to the other profile.
+            if tc.__module__ == self.__class__.__module__ == "opendbc.safety.tests.test_hyundai":
+              tx = [msg for msg in tx if msg not in self.TX_MSGS]
+
             if attr.startswith('TestHyundaiLongitudinal'):
               # exceptions for common msgs across different Hyundai CAN platforms
               tx = list(filter(lambda m: m[0] not in [0x420, 0x50A, 0x389, 0x4A2], tx))

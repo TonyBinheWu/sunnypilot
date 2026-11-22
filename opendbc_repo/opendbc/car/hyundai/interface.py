@@ -205,7 +205,7 @@ class CarInterface(CarInterfaceBase):
       print(f"$$$ enableBsm = {ret.enableBsm}")
 
       # Send LFA message on cars with HDA
-      if 0x485 in fingerprint[2]:
+      if fingerprint[2].get(0x485) in (4, 8):
         ret.flags |= HyundaiFlags.SEND_LFA.value
         print("$$$SEND_LFA")
 
@@ -221,8 +221,16 @@ class CarInterface(CarInterfaceBase):
       else:
         ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.hyundai, 0)]
 
+      if fingerprint[2].get(0x485) == 4:
+        ret.extFlags |= HyundaiExtFlags.CLASSIC_LFA_SHORT.value
+        ret.safetyConfigs[0].safetyParam |= HyundaiSafetyFlags.CLASSIC_LFA_SHORT.value
+      if ret.flags & HyundaiFlags.LEGACY and fingerprint[0].get(0x421) == 8 and not ret.flags & HyundaiFlags.CAMERA_SCC:
+        ret.safetyConfigs[0].safetyParam |= HyundaiSafetyFlags.CLASSIC_LEGACY_SCC12.value
+
       if ret.flags & HyundaiFlags.CAMERA_SCC:
         ret.safetyConfigs[0].safetyParam |= HyundaiSafetyFlags.CAMERA_SCC.value
+        if candidate == CAR.HYUNDAI_CASPER_EV and fingerprint[2].get(0x38D) == 8:
+          ret.safetyConfigs[0].safetyParam |= HyundaiSafetyFlags.CLASSIC_CASPER_FCA.value
         print("$$$CAMERA_SCC")
 
     # Common lateral control setup

@@ -44,6 +44,19 @@ bool hyundai_alt_limits_2 = false;
 
 static uint8_t hyundai_last_button_interaction;  // button messages since the user pressed an enable button
 
+static bool hyundai_rx_fresh_on_bus(int addr, int bus, uint32_t now) {
+  for (int i = 0; i < current_safety_config.rx_checks_len; i++) {
+    const RxCheck *check = &current_safety_config.rx_checks[i];
+    const CanMsgCheck *msg = &check->msg[check->status.index];
+    if (check->status.msg_seen && (msg->addr == addr) && (msg->bus == bus)) {
+      return check->status.valid_checksum && check->status.valid_quality_flag &&
+             (check->status.wrong_counters < MAX_WRONG_COUNTERS) &&
+             (get_ts_elapsed(now, check->status.last_timestamp) <= 100000U);
+    }
+  }
+  return false;
+}
+
 void hyundai_common_init(uint16_t param) {
   const int HYUNDAI_PARAM_EV_GAS = 1;
   const int HYUNDAI_PARAM_HYBRID_GAS = 2;

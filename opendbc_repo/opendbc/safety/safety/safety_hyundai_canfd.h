@@ -654,7 +654,7 @@ static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send_const) {
     const int scc_bus = hyundai_camera_scc ? 2 : pt_bus;
     const bool decrease = (button == HYUNDAI_BTN_SET) && !hyundai_longitudinal && hyundai_canfd_stock_acc_active &&
                           vehicle_moving && get_longitudinal_allowed() && !brake_pressed && !regen_braking &&
-                          hyundai_canfd_rx_fresh_on_bus(0x1A0, scc_bus, now) && hyundai_canfd_rx_fresh_on_bus(0xA0, pt_bus, now);
+                          hyundai_rx_fresh_on_bus(0x1A0, scc_bus, now) && hyundai_rx_fresh_on_bus(0xA0, pt_bus, now);
     violation |= !(cancel || resume || decrease) || GET_BIT(to_send, alt ? 34U : 19U);
   }
 

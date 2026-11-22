@@ -14,7 +14,7 @@ from opendbc.car.hyundai.phase1 import phase1_enabled
 from opendbc.car.hyundai.steering_observations import SteeringObservations
 from opendbc.car.carlog import carlog
 from opendbc.car.hyundai.hyundaicanfd import CanBus
-from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags
+from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags, HyundaiSafetyFlags
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.vehicle_model import VehicleModel
 from opendbc.car.hyundai.values import disables_stock_scc, get_pedal_interceptor_params
@@ -293,6 +293,8 @@ class CarController(CarControllerBase):
     self.handover_model_time = 0
 
     self.lkas11_active = False
+    self.casper_fca_status = (CP.carFingerprint == CAR.HYUNDAI_CASPER_EV and bool(CP.safetyConfigs) and
+                              bool(CP.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.CLASSIC_CASPER_FCA))
 
     self.canfd_debug = 0
     self.MainMode_ACC_trigger = 0
@@ -744,7 +746,7 @@ class CarController(CarControllerBase):
 
           can_sends.extend(hyundaican.create_acc_commands_scc(self.packer, CC.enabled, accel, self.hyundai_jerk, int(self.frame / 2),
                                                           hud_control, set_speed_in_units, stopping,
-                                                          CC.cruiseControl.override, casper_ev, CS, self.soft_hold_mode))
+                                                          CC.cruiseControl.override, self.casper_fca_status, CS, self.soft_hold_mode))
         else:
           can_sends.extend(hyundaican.create_acc_commands(self.packer, CC.enabled, accel, self.hyundai_jerk, int(self.frame / 2),
                                                 hud_control, set_speed_in_units, stopping,
@@ -753,7 +755,8 @@ class CarController(CarControllerBase):
 
       # 20 Hz LFA MFA message
       if self.frame % 5 == 0 and self.CP.flags & HyundaiFlags.SEND_LFA.value:
-        can_sends.append(hyundaican.create_lfahda_mfc(self.packer, CC, self.blinking_signal))
+        can_sends.append(hyundaican.create_lfahda_mfc(self.packer, CC, self.blinking_signal,
+                                                     short_frame=bool(self.CP.extFlags & HyundaiExtFlags.CLASSIC_LFA_SHORT)))
 
       # 5 Hz ACC options
       if self.frame % 20 == 0 and self.CP.openpilotLongitudinalControl and self.pedal_interceptor is None:
@@ -828,7 +831,10 @@ class CarController(CarControllerBase):
 
       if self.last_button_frame != self.frame:
         send_button = self.make_spam_button(CC, CS)
-        if send_button > 0:
+        if send_button == Buttons.RES_ACCEL and not (CC.enabled and CS.out.cruiseState.enabled):
+          send_button = Buttons.NONE
+        send_button = hyundaicanfd.stock_speed_request(CS, send_button)
+        if send_button > 0 and not CS.clu11["CF_Clu_CruiseSwMain"]:
           can_sends.append(hyundaican.create_clu11_button(self.packer, self.frame, CS.clu11, send_button, self.CP))
 
     else:

@@ -262,6 +262,11 @@ bool safety_tx_hook(CANPacket_t *to_send) {
     allowed = true;
   }
 
+  // Classic Hyundai records accepted replacements for its timed OEM forwarding.
+  if (((current_safety_mode == SAFETY_HYUNDAI) || (current_safety_mode == SAFETY_HYUNDAI_LEGACY)) &&
+      (!allowed || relay_malfunction)) {
+    return false;
+  }
   const bool safety_allowed = current_hooks->tx(to_send);
 
   /*

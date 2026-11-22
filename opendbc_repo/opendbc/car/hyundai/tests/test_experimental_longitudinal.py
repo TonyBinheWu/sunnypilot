@@ -5,7 +5,7 @@ import pytest
 
 from opendbc.can import CANPacker, CANParser
 from opendbc.car import Bus, gen_empty_fingerprint, interfaces, structs
-from opendbc.car.hyundai import carstate, hyundaicanfd, interface
+from opendbc.car.hyundai import carstate, hyundaican, hyundaicanfd, interface
 from opendbc.car.hyundai.carcontroller import CarController
 from opendbc.car.hyundai.fingerprints import FW_VERSIONS
 from opendbc.car.hyundai.values import Buttons, CAR, HyundaiExtFlags, HyundaiFlags, HyundaiSafetyFlags
@@ -215,3 +215,22 @@ def test_stock_camera_button_preserves_driver_input_during_override(driver_butto
   (packet,) = hyundaicanfd.forward_button_message(packer, SimpleNamespace(CAM=2), 0, cs, requested, 0, 0)
   assert packet[2] == 2 and packet[1][2] & 7 == expected
   assert cs.cruise_buttons_msg["CRUISE_BUTTONS"] == driver_button
+
+@pytest.mark.parametrize("dlc", [0, 3, 4, 8])
+def test_classic_cluster_format_follows_camera_fingerprint(monkeypatch, dlc):
+  fingerprint = gen_empty_fingerprint()
+  fingerprint[0][0x485] = 4  # A PT copy alone does not select the camera layout.
+  if dlc:
+    fingerprint[2][0x485] = dlc
+  configure_params(monkeypatch, {"FingerPrints": repr(fingerprint)})
+  cp = interface.CarInterface.get_params(CAR.HYUNDAI_SONATA, fingerprint, [], False, False, False)
+  assert bool(cp.flags & HyundaiFlags.SEND_LFA) == (dlc in (4, 8))
+  short = bool(cp.extFlags & HyundaiExtFlags.CLASSIC_LFA_SHORT)
+  assert short == bool(cp.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.CLASSIC_LFA_SHORT) == (dlc == 4)
+  if dlc in (4, 8):
+    packer = CANPacker("hyundai_kia_generic")
+    cc = structs.CarControl.new_message()
+    cc.hudControl.driverMonitoringAlert = 3
+    msg = hyundaican.create_lfahda_mfc(packer, cc, False, short_frame=short)
+    assert len(msg[1]) == dlc
+    assert msg[1] == hyundaican.create_lfahda_mfc(packer, cc, False)[1][:dlc]

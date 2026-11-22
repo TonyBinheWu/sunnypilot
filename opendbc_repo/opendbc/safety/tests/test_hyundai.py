@@ -49,7 +49,7 @@ class TestHyundaiSafety(HyundaiButtonBase, common.PandaCarSafetyTest, common.Dri
   TX_MSGS = [[0x340, 0], [0x4F1, 0], [0x485, 0]]
   STANDSTILL_THRESHOLD = 12  # 0.375 kph
   RELAY_MALFUNCTION_ADDRS = {0: (0x340,)}  # LKAS11
-  FWD_BLACKLISTED_ADDRS = {2: [0x340, 0x485]}
+  FWD_BLACKLISTED_ADDRS = {}  # Cold boot: stock packets pass until this address is replaced.
 
   MAX_RATE_UP = 3
   MAX_RATE_DOWN = 7
@@ -114,6 +114,67 @@ class TestHyundaiSafety(HyundaiButtonBase, common.PandaCarSafetyTest, common.Dri
     return self.packer.make_can_msg_panda("LKAS11", 0, values)
 
 
+class TestClassicForwarding(unittest.TestCase):
+  TX_MSGS = None
+
+  def test_accepted_replacements_expire_independently(self):
+    safety = libsafety_py.libsafety
+    packer = CANPackerPanda("hyundai_kia_generic")
+    for start in (0, 0xFFFF0000):
+      safety.set_safety_hooks(CarParams.SafetyModel.hyundai, HyundaiSafetyFlags.LONG)
+      safety.init_tests()
+      safety.set_timer(start)
+      fwd = safety.safety_fwd_hook
+      tx = safety.safety_tx_hook
+      self.assertEqual(fwd(2, 0x421), 0)
+      self.assertFalse(tx(common.make_msg(1, 0x420)))
+      self.assertEqual(fwd(2, 0x420), 0)
+      self.assertTrue(tx(packer.make_can_msg_panda("SCC12", 0, {"aReqRaw": 0, "aReqValue": 0})))
+      self.assertEqual(fwd(2, 0x421), -1)
+      self.assertEqual(fwd(2, 0x420), 0)
+      safety.set_timer((start + 399999) & 0xFFFFFFFF)
+      self.assertFalse(tx(common.make_msg(1, 0x421)))
+      self.assertEqual(fwd(2, 0x421), -1)
+      safety.set_timer((start + 400000) & 0xFFFFFFFF)
+      self.assertEqual(fwd(2, 0x421), 0)
+      self.assertTrue(tx(common.make_msg(0, 0x485)))
+      self.assertEqual(fwd(2, 0x485), -1)
+      safety.set_safety_hooks(CarParams.SafetyModel.hyundaiLegacy, 0)
+      self.assertEqual(fwd(2, 0x485), 0)
+
+  def test_stock_set_requires_fresh_wheels_and_active_scc(self):
+    safety = libsafety_py.libsafety
+    packer = CANPackerPanda("hyundai_kia_generic")
+    for mode, param, bus in ((CarParams.SafetyModel.hyundai, 0, 0),
+                             (CarParams.SafetyModel.hyundai, HyundaiSafetyFlags.CAMERA_SCC, 2),
+                             (CarParams.SafetyModel.hyundaiLegacy, HyundaiSafetyFlags.CLASSIC_LEGACY_SCC12, 0)):
+      safety.set_safety_hooks(mode, param)
+      safety.init_tests()
+      safety.set_timer(10000)
+      safety.set_controls_allowed(True)
+      button = packer.make_can_msg_panda("CLU11", bus, {"CF_Clu_CruiseSwState": 2})
+      self.assertFalse(safety.safety_tx_hook(button))
+      wheels = {f"WHL_SPD_{wheel}": 30 for wheel in ("FL", "FR", "RL", "RR")}
+      self.assertTrue(safety.safety_rx_hook(packer.make_can_msg_panda("WHL_SPD11", 0, wheels, fix_checksum=checksum)))
+      self.assertFalse(safety.safety_tx_hook(button))
+      for i, state in enumerate((1, 2, 1)):
+        msg = packer.make_can_msg_panda("SCC12", bus, {"ACCMode": state, "CR_VSM_Alive": i}, fix_checksum=checksum)
+        self.assertTrue(safety.safety_rx_hook(msg))
+        self.assertEqual(bool(safety.safety_tx_hook(button)), state == 1)
+      safety.set_timer(110001)
+      self.assertFalse(safety.safety_tx_hook(button))
+
+  def test_hkg_cluster_dlc_is_profile_specific(self):
+    safety = libsafety_py.libsafety
+    for mode in (CarParams.SafetyModel.hyundai, CarParams.SafetyModel.hyundaiLegacy):
+      for short in (True, False):
+        param = HyundaiSafetyFlags.CLASSIC_LFA_SHORT if short else 0
+        safety.set_safety_hooks(mode, param)
+        for length in (3, 4, 5, 8):
+          self.assertEqual(safety.safety_tx_hook(common.make_msg(0, 0x485, length)), length == (4 if short else 8))
+          self.assertFalse(safety.safety_tx_hook(common.make_msg(2, 0x485, length)))
+
+
 class TestHyundaiSafetyAltLimits(TestHyundaiSafety):
   MAX_RATE_UP = 2
   MAX_RATE_DOWN = 3
@@ -139,6 +200,7 @@ class TestHyundaiSafetyAltLimits2(TestHyundaiSafety):
 
 
 class TestHyundaiSafetyCameraSCC(TestHyundaiSafety):
+  TX_MSGS = [[0x340, 0], [0x4F1, 2], [0x485, 0]]
   BUTTONS_TX_BUS = 2  # tx on 2, rx on 0
   SCC_BUS = 2  # rx on 2
 
@@ -248,7 +310,7 @@ class TestHyundaiLongitudinalSafety(HyundaiLongitudinalBase, TestHyundaiSafety):
 class TestHyundaiLongitudinalSafetyCameraSCC(HyundaiLongitudinalBase, TestHyundaiSafety):
   TX_MSGS = [[0x340, 0], [0x4F1, 2], [0x485, 0], [0x420, 0], [0x421, 0], [0x50A, 0], [0x389, 0], [0x4A2, 0]]
 
-  FWD_BLACKLISTED_ADDRS = {2: [0x340, 0x485, 0x420, 0x421, 0x50A, 0x389]}
+  RELAY_MALFUNCTION_ADDRS = {0: (0x340, 0x421)}
 
   def setUp(self):
     self.packer = CANPackerPanda("hyundai_kia_generic")
@@ -269,6 +331,66 @@ class TestHyundaiLongitudinalSafetyCameraSCC(HyundaiLongitudinalBase, TestHyunda
     self.assertTrue(self._tx(self._accel_msg(0)))
     self.assertFalse(self._tx(self._accel_msg(0, aeb_req=True)))
     self.assertFalse(self._tx(self._accel_msg(0, aeb_decel=1.0)))
+
+  def test_casper_fca_status_cannot_mask_physical_warning_or_braking(self):
+    from opendbc.car.hyundai.hyundaican import hyundai_checksum
+    safety = self.safety
+    safety.set_safety_hooks(CarParams.SafetyModel.hyundai, HyundaiSafetyFlags.LONG | HyundaiSafetyFlags.CAMERA_SCC |
+                            HyundaiSafetyFlags.CLASSIC_CASPER_FCA)
+    safety.init_tests()
+    safety.set_controls_allowed(True)
+    def fca(bus, idx, **kwargs):
+      addr, data, _ = self.packer.make_can_msg("FCA11", bus, {"CR_FCA_Alive": idx, **kwargs})
+      return libsafety_py.make_CANPacket(addr, bus, data[:7] + bytes([hyundai_checksum(data[:7])]))
+
+    self.assertFalse(self._tx(fca(0, 1)))
+    self.assertTrue(self._rx(fca(2, 1)))
+    self.assertTrue(self._tx(fca(0, 1)))
+    self.assertFalse(self._tx(fca(0, 2)))
+    for idx, signal in enumerate(("CF_VSM_Warn", "FCA_CmdAct", "FCA_StopReq", "CF_VSM_DecCmdAct"), start=2):
+      stock = fca(2, idx, **{signal: 1})
+      self.assertEqual(safety.safety_fwd_hook_packet_test(stock), 0)
+      self.assertTrue(self._rx(stock))
+      self.assertFalse(self._tx(fca(0, idx)))
+      self.assertEqual(self._tx(self._accel_msg(0.5)), signal == "CF_VSM_Warn")
+    invalid_clear = fca(2, 6)
+    invalid_clear[0].data[7] ^= 1
+    self._rx(invalid_clear)
+    self.assertFalse(self._tx(self._accel_msg(0.5)))
+    self._rx(fca(2, 5))  # repeated clear
+    self.assertFalse(self._tx(self._accel_msg(0.5)))
+    self._rx(fca(2, 6))
+    self.assertTrue(self._tx(self._accel_msg(0.5)))
+    self.assertTrue(self._tx(fca(0, 6)))
+    safety.set_timer(100001)
+    self.assertFalse(self._tx(fca(0, 6)))
+
+  def test_factory_aeb_preempts_host_until_valid_physical_clear(self):
+    def camera(counter, active):
+      return self.packer.make_can_msg_panda("SCC12", 2, {
+        "AEB_CmdAct": active, "CR_VSM_Alive": counter, "aReqRaw": 0, "aReqValue": 0,
+      }, fix_checksum=checksum)
+
+    self.safety.set_controls_allowed(True)
+    self.assertTrue(self._tx(self._accel_msg(0.5)))
+    self.assertEqual(self.safety.safety_fwd_hook(2, 0x421), -1)
+    emergency = camera(0, 1)
+    self.assertEqual(self.safety.safety_fwd_hook_packet_test(emergency), 0)
+    self.assertTrue(self._rx(emergency))
+    self.assertFalse(self._tx(self._accel_msg(0.5)))
+    clear = camera(1, 0)
+    clear[0].data[7] ^= 0x10
+    self.assertFalse(self._rx(clear))
+    self.assertFalse(self._tx(self._accel_msg(0)))
+    clear = camera(2, 0)
+    self.assertEqual(self.safety.safety_fwd_hook_packet_test(clear), -1)
+    self.assertTrue(self._rx(clear))
+    self.assertFalse(self.safety.get_controls_allowed())
+    self.assertFalse(self._tx(self._accel_msg(0.5)))  # Bad RX revoked control; clear cannot re-engage.
+    for button in (2, 0):
+      self.assertTrue(self._rx(self._button_msg(button)))
+    self.assertTrue(self.safety.get_controls_allowed())
+    self.assertTrue(self._tx(self._accel_msg(0.5)))
 
   def test_tester_present_allowed(self):
     pass

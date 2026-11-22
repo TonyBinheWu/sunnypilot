@@ -72,19 +72,6 @@ static void hyundai_canfd_steer_restore(HyundaiCanfdSteerHistory state) {
   ts_steer_req_mismatch_last = state.cut_ts;
 }
 
-static bool hyundai_canfd_rx_fresh_on_bus(int addr, int bus, uint32_t now) {
-  for (int i = 0; i < current_safety_config.rx_checks_len; i++) {
-    const RxCheck *check = &current_safety_config.rx_checks[i];
-    const CanMsgCheck *msg = &check->msg[check->status.index];
-    if (check->status.msg_seen && (msg->addr == addr) && (msg->bus == bus)) {
-      return check->status.valid_checksum && check->status.valid_quality_flag &&
-             (check->status.wrong_counters < MAX_WRONG_COUNTERS) &&
-             (get_ts_elapsed(now, check->status.last_timestamp) <= 100000U);
-    }
-  }
-  return false;
-}
-
 static void hyundai_canfd_steer_reset(uint16_t param) {
   hyundai_canfd_always_lateral = GET_FLAG(param, 1024);
   hyundai_canfd_angle_control = GET_FLAG(param, 32768);
@@ -120,7 +107,7 @@ static bool hyundai_canfd_steering_tx_check(const CANPacket_t *msg) {
   }
 
   const uint32_t now = microsecond_timer_get();
-  const bool fresh = hyundai_canfd_rx_fresh_on_bus(0xA0, ecan, now) && hyundai_canfd_rx_fresh_on_bus(0xEA, ecan, now);
+  const bool fresh = hyundai_rx_fresh_on_bus(0xA0, ecan, now) && hyundai_rx_fresh_on_bus(0xEA, ecan, now);
   // Explicit Always Lateral authorization; do not inherit unconditional AOL
   // admission from the fork's shared torque helper on every configuration.
   const bool allowed = controls_allowed || (hyundai_canfd_always_lateral && fresh);
