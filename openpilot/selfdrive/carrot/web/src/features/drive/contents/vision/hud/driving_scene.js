@@ -42,7 +42,7 @@ function paintSceneObject(ctx,project,object,{ego=false,flat=false,night=false,t
     const p=points.map(([dx,dy,z])=>project(x+dx,y+dy,z));if(p.some(v=>!v))return;
     ctx.fillStyle=color;ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(...v):ctx.moveTo(...v));ctx.closePath();ctx.fill();
   };
-  if(kind==='unknown'){
+  if(kind==='unknown'&&!object.nativeVehicleMarker){
     const p=project(x,y,.1);if(!p)return;
     ctx.strokeStyle=flat||night?'#b1beca':'#4f606d';ctx.lineWidth=1.8;ctx.beginPath();
     if(flat)ctx.ellipse(p[0],p[1],6,6,0,0,Math.PI*2);

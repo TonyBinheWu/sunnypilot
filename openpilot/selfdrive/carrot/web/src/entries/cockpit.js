@@ -4,8 +4,7 @@ import {cockpitPerceptionReport,modelPerceptionSource} from '../features/cockpit
 import {installCockpitControlLayout} from '../features/cockpit/control_layout.js';
 import {installCockpitDialogHeaders,closeEmbeddedDialog} from '../features/cockpit/interactions.js';
 import {nightAppearance,readAppearance,setCockpitTextScale,tireLabels} from '../features/cockpit/appearance.js';
-import {createObjectTracker} from '../features/drive/contents/vision/hud/object_tracker.js';
-import {surroundingTargets,createModelLeadSource,mergeModelLead} from '../features/drive/contents/vision/hud/scene_objects.js';
+import {cockpitTraffic} from '../features/cockpit/traffic.js';
 import {trackingReport} from '../features/drive/contents/vision/hud/perception_scene.js';
 import {combineParking,vehicleParkingSource} from '../features/drive/contents/vision/hud/vehicle_parking.js';
 import {parkingObservation,PARKING_VIEW} from '../features/drive/contents/vision/hud/parking_environment.js';
@@ -18,7 +17,7 @@ import {installCockpitHelp} from '../features/cockpit/embedded.js';
 import {installDisplayPreferences} from '../shared/web/display_preferences.js';
 installDisplayPreferences(window);
 window.addEventListener('storage',event=>{if(event.key==='carrot_web_text_scale'){window.CarrotDisplayPreferences.apply();syncNavigationTextScale();}});
-const previewTracker=createObjectTracker(), previewModelLead=createModelLeadSource(previewTracker);let previewRadar=null,reportAt=-Infinity;
+let reportAt=-Infinity;
 const $=id=>document.getElementById(id),state=createCockpitState(),ctx=$('scene').getContext('2d');
 installCockpitDialogHeaders(document);
 const vehicleSkin=createVehicleSkinCache(window);
@@ -281,7 +280,7 @@ window.CarrotLocalVoice=new Proxy({}, {get(_target,key){
   const api=coreWindow()?.CarrotLocalVoice,fn=api?.[key];if(typeof fn!=='function')return undefined;
   return (...args)=>{if(['findSettings','setValue','setResultValue'].includes(key))panel('setting');return fn.apply(api,args);};
 }});
-function disconnect(){preview3d?.pause();previewModelLead.clear();previewTracker.reset();previewRadar=null;sceneActivity.release();epoch++;clearTimeout(retry);retry=null;guard?.stop();guard=null;const old=socket;socket=null;if(old){old.onclose=null;old.onerror=null;old.onmessage=null;try{old.close();}catch{}}state.clear();}
+function disconnect(){preview3d?.pause();sceneActivity.release();epoch++;clearTimeout(retry);retry=null;guard?.stop();guard=null;const old=socket;socket=null;if(old){old.onclose=null;old.onerror=null;old.onmessage=null;try{old.close();}catch{}}state.clear();}
 function connect(){
   if(paused||document.hidden||socket||retry)return;const token=epoch;transportPhase='connecting';
   let ws;try{ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws/compact_state?services=${SERVICES.join(',')}`);}catch{scheduleReconnect('connect-failed');return;}
@@ -379,12 +378,9 @@ function render(){
   const c=$('scene'),r=$('scene-surface').getBoundingClientRect();
   if(!r.width||!r.height||visibleCore()==='vision'){vehicleParking.update(false);preview3d?.pause();return;}
   const scale=Math.min(devicePixelRatio||1,1.5),w=Math.max(1,Math.round(r.width*scale)),h=Math.max(1,Math.round(r.height*scale));if(c.width!==w||c.height!==h){c.width=w;c.height=h;}ctx.setTransform(scale,0,0,scale,0,0);
-  const at=performance.now(),car=state.get('carState'),motion={speed:car?.vEgo,yaw:car?.yawRate};
-  previewModelLead.update(model,state.stamp('modelV2'),at,motion);
-  if(!radar||radar._sourceInvalid){previewTracker.drop('radar');previewRadar=null;}
-  else if(previewRadar!==radar){previewRadar=radar;previewTracker.ingest('radar',{stamp:state.stamp('radarState'),objects:surroundingTargets(radar)},at,motion);}
+  const at=performance.now(),car=state.get('carState');
   const parkingAssist=coreWindow()?.CarrotWebSettingsState?.vision_parking_assist===true;
-  const preview={model:t.parked&&!parkingAssist?null:model,radar,tracks:mergeModelLead(previewTracker.sample(at,motion),at)};
+  const preview={model:t.parked&&!parkingAssist?null:model,radar,tracks:cockpitTraffic(model,radar,{modelV2:state.stamp('modelV2'),radarState:state.stamp('radarState')},at)};
   const camera=t.parked&&parkingAssist?{...PARKING_VIEW}:null,night=document.body.classList.contains('night');
   vehicleParking.update(!!camera&&coreWindow()?.__CARROT_BOOTSTRAP__?.vehicleParkingScene===true&&!document.hidden&&!paused);
   const observed=vehicleParking.sample();

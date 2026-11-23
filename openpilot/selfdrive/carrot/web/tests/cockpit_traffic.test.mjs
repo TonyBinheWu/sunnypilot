@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {cockpitTraffic} from '../src/features/cockpit/traffic.js';
+import {sceneTargets} from '../src/features/drive/contents/vision/hud/scene_3d.js';
+
+const lead = (dRel, yRel) => ({status: true, dRel, yRel});
+const radar = {leadOne: lead(16, 0), leadsCenter: [lead(16.8, 0.1)],
+  leadsLeft: Array.from({length: 9}, (_, i) => lead(20 + i * 10, 3.5)), leadsRight: [lead(25, -3.4)]};
+const model = {leadsV3: [{prob: 0.8, x: [16.4], y: [0]}, {prob: 0.6, x: [108], y: [2]}]};
+const stamps = {radarState: 10, modelV2: 20};
+
+test('cockpit shows all three lanes, distant targets and one marker per observation', () => {
+  const tracks = cockpitTraffic(model, radar, stamps, 25);
+  assert.equal(sceneTargets({tracks}).length, 12);
+  assert.equal(tracks[0].x, 108);
+  assert.equal(tracks.filter(t => t.y === -3.5).length, 9);
+  assert.equal(tracks.find(t => t.x === 25).y, 3.4);
+});
+
+test('independent stream expiry, withdrawn targets and invalid radar', () => {
+  assert.equal(cockpitTraffic(model, radar, stamps, 515).length, 2);
+  assert.deepEqual(cockpitTraffic(model, radar, stamps, 521), []);
+  assert.deepEqual(cockpitTraffic(null, {}, stamps, 25), []);
+  for (const invalid of [{_sourceInvalid: true}, {radarErrors: {radarFault: true}}])
+    assert.equal(cockpitTraffic(model, {...radar, ...invalid}, stamps, 25).length, 2);
+});
+
+test('positioned camera classification replaces the native marker, adjacent vehicles remain', () => {
+  const car = {kind: 'car', origin: 'calibrated_camera', state: 'confirmed', x: 16.3, y: 0.1};
+  const tracks = cockpitTraffic(model, radar, stamps, 25, [car]);
+  assert.equal(tracks.length, 12);
+  assert.ok(tracks.includes(car));
+});

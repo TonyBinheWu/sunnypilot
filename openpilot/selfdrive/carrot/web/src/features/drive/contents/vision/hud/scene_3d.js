@@ -14,7 +14,7 @@ const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export function sceneTargets(scene){
   return (scene?.tracks??[...surroundingTargets(scene?.radar),...(scene?.vision?.objects||[]),...(scene?.road?.objects||[])])
-    .filter(o=>o&&(!o.state||o.state==='confirmed'||o.state==='predicted')&&(o.kind==='unknown'||ROAD_CLASSES.includes(o.kind)||roadModelKind(o)!==null)&&finite(o.x)&&finite(o.y)&&o.x>0&&o.x<=75&&Math.abs(o.y)<=20).slice(0,80);
+    .filter(o=>o&&(!o.state||o.state==='confirmed'||o.state==='predicted')&&(o.kind==='unknown'||ROAD_CLASSES.includes(o.kind)||roadModelKind(o)!==null)&&finite(o.x)&&finite(o.y)&&o.x>0&&o.x<=(o.nativeVehicleMarker?110:75)&&Math.abs(o.y)<=20).slice(0,80);
 }
 export {sceneCamera} from '../../../../cockpit/scene_camera.js';
 import {sceneCamera} from '../../../../cockpit/scene_camera.js';
@@ -263,7 +263,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
       for(const [i,o] of objects.entries()){
         const key=o.trackingId!==undefined?o.id:`${o.source||'observation'}:${o.id??i}:${o.kind}`;visible.add(key);let node=objectNodes.get(key);
         const modelKind=roadModelKind(o);
-        const fallback=['sedan','suv','mpv','pickup'].includes(modelKind)?'car':modelKind==='cone'?'traffic cone':(modelKind||o.kind);
+        const fallback=['sedan','suv','mpv','pickup'].includes(modelKind)?'car':modelKind==='cone'?'traffic cone':(modelKind||(o.nativeVehicleMarker?'car':o.kind));
         if(node&&node.userData.poolKind!==fallback)changeKind(node,fallback);
         if(!node){node=acquire(fallback);objectNodes.set(key,node);}
         node.position.set(o.x,o.y,0);node.rotation.z=o.heading??0;appearance(node,o.state==='predicted');

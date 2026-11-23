@@ -9,6 +9,7 @@ import {describeSignal,signalBadge} from './signal_badge.js';
 import {visionPresentation,cockpitTelemetryStale} from '../../../../cockpit/presentation.js';
 import {createSpeedZoom,sceneSpeedKph} from '../../../../cockpit/speed_zoom.js';
 import {createViewOrbit,orbitCamera} from '../../../../cockpit/view_orbit.js';
+import {cockpitTraffic} from '../../../../cockpit/traffic.js';
 import {vehicleLamps} from '../../../../cockpit/vehicle_lamps.js';
 import {bevProjection} from "./bev_annotations.js";
 import {createBevWorkbench,BEV_CSS} from "./bev_workbench.js";
@@ -309,7 +310,10 @@ export function createTeslaView(doc,target) {
     scene.environment=environmentActive&&occ.status==='ready'?occ.positions:null;
     volumeLegend.hidden=!environmentActive||settings.vision_environment_occupancy!==true;
     const trackingActive=tesla&&viewActive&&!doc.hidden&&!bev.frozen;
-    const tracks=perceptionScene.update(liveScene,now(),trackingActive,target.CarrotVisionReplay?.status?.()?.active===true);
+    let tracks=perceptionScene.update(liveScene,now(),trackingActive,target.CarrotVisionReplay?.status?.()?.active===true);
+    if(trackingActive && doc.body.dataset.cockpitPanel==='vision'){
+      tracks=cockpitTraffic(liveScene.model,liveScene.radar,target.CarrotStateReceivedAtMonotonic||{},now(),tracks);
+    }
     if(scene.environment){
       scene.environmentMotion=surfaceMotion(perceptionScene.motion,now()-occ.capturedAt);
       if(!scene.environmentMotion)scene.environment=null;
