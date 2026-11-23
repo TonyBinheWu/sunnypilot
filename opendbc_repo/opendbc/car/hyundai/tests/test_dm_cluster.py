@@ -149,3 +149,29 @@ def test_terminal_dm_does_not_add_chime_over_another_stock_sound(channel, sound)
   assert values['ALERTS_2'] == 2
   assert all(values[f'SOUNDS_{i}'] == stock[f'SOUNDS_{i}'] for i in range(1, 5))
   assert stock == original
+
+@pytest.mark.parametrize("metric,expected_speed", [(True, 95), (False, 59)])
+def test_ev6_adas_hud_units_lead_and_oem_indicators(metric, expected_speed):
+  packer = CANPacker("hyundai_canfd_generated")
+  stock = source(packer, "ADRV_0x161")
+  stock.update(HDA_ICON=1, NAV_ICON=2, LCA_LEFT_ICON=1, LCA_RIGHT_ICON=0, LANELINE_LEFT=1, LANELINE_RIGHT=4)
+  cs = NS(adrv_0x161=stock, out=NS(latEnabled=True), is_metric=metric)
+  cc = structs.CarControl(latActive=True, longActive=True)
+  hud = cc.hudControl
+  hud.speedVisible, hud.setSpeed = True, 95 / 3.6
+  hud.leadVisible, hud.leadDistance = True, 14.5
+  hud.lanesVisible = hud.leftLaneVisible = hud.rightLaneVisible = True
+
+  def display():
+    msg, = hyundaicanfd.create_lfa_icon_non_camera_scc(packer, cs, NS(ECAN=1), cc, ev6_hud=True)
+    assert msg[0] == 0x161 and msg[2] == 1
+    return decode(packer, msg)
+
+  actual = display()
+  for key in ("HDA_ICON", "NAV_ICON", "LCA_LEFT_ICON", "LCA_RIGHT_ICON"):
+    assert actual[key] == stock[key]
+  assert (actual["LANELINE_LEFT"], actual["LANELINE_RIGHT"]) == (2, 4)
+  assert (actual["vSetDis"], actual["TARGET"], actual["TARGET_DISTANCE"]) == (expected_speed, 1, 14.5)
+  hud.speedVisible, hud.leadVisible = False, False
+  actual = display()
+  assert (actual["SETSPEED"], actual["vSetDis"], actual["TARGET"], actual["TARGET_DISTANCE"]) == (0, 0, 0, 0)

@@ -399,7 +399,7 @@ def _apply_driver_monitoring_alert(values, hud_control, stock):
       values["SOUNDS_2"] = 3
 
 
-def create_lfa_icon_non_camera_scc(packer, CS, CAN, CC):
+def create_lfa_icon_non_camera_scc(packer, CS, CAN, CC, *, ev6_hud=False):
   ret = []
   if CS.adrv_0x161 is not None:
     values = copy.copy(CS.adrv_0x161)
@@ -410,6 +410,25 @@ def create_lfa_icon_non_camera_scc(packer, CS, CAN, CC):
 
     values["LFA_ICON"] = 2 if lat_active else 1 if lat_enabled else 0
     values["LKA_ICON"] = 4 if lat_active else 3 if lat_enabled else 0
+
+    if ev6_hud:
+      hud = CC.hudControl
+      if CC.longActive:
+        speed = hud.setSpeed * (CV.MS_TO_KPH if CS.is_metric else CV.MS_TO_MPH)
+        show_speed = hud.speedVisible and math.isfinite(speed) and 0 < speed <= 255
+        values["SETSPEED"] = 3 if show_speed else 0
+        values["vSetDis"] = int(speed + 0.5) if show_speed else 0
+        lead_distance = hud.leadDistance
+        show_lead = hud.leadVisible and math.isfinite(lead_distance) and 0 < lead_distance <= 204.6
+        values["TARGET"] = int(show_lead)
+        values["TARGET_DISTANCE"] = lead_distance if show_lead else 0
+      if hud.lanesVisible:
+        for side, visible, departing in (("LEFT", hud.leftLaneVisible, hud.leftLaneDepart),
+                                         ("RIGHT", hud.rightLaneVisible, hud.rightLaneDepart)):
+          # Keep OEM warnings/active lane colors. Reveal only gray/hidden lines.
+          key = f"LANELINE_{side}"
+          if visible and not departing and values[key] in (0, 1):
+            values[key] = 2
 
     if values["ALERTS_2"] in [1, 2, 5, 6, 10, 21, 22]:
       values["ALERTS_2"] = 0

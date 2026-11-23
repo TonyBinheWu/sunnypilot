@@ -665,7 +665,9 @@ class CarController(CarControllerBase):
                    (camera_scc and not self.CP.openpilotLongitudinalControl)) else 0,
         ))
         if not camera_scc:
-          can_sends.extend(hyundaicanfd.create_lfa_icon_non_camera_scc(self.packer, CS, self.CAN, CC))
+          can_sends.extend(hyundaicanfd.create_lfa_icon_non_camera_scc(
+            self.packer, CS, self.CAN, CC, ev6_hud=hda2_long and self.car_fingerprint == CAR.KIA_EV6,
+          ))
 
       # blinkers
       if hda2 and self.CP.flags & HyundaiFlags.ENABLE_BLINKERS:
