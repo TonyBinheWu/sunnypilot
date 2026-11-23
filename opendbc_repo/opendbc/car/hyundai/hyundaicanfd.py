@@ -766,7 +766,40 @@ def _add_ev6_front_neighbors(values, radar, now_nanos):
       values[f"{side}_DETECT_LATERAL"] = sign * nearest.yRel
 
 
-def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=None, now_nanos=0):
+def _add_ev6_vision_neighbor(values, model, now_nanos):
+  # Display only the present lead observation, within two observed adjacent-lane boundaries.
+  if model is None or not model.timestampEof or not 0 <= now_nanos - model.timestampEof <= 250_000_000:
+    return
+  if not len(model.leadsV3) or len(model.laneLines) != 4 or len(model.laneLineProbs) != 4:
+    return
+  lead = model.leadsV3[0]
+  if not (lead.prob > 0.5 and len(lead.x) and len(lead.y) and len(lead.yStd)):
+    return
+  x, y, uncertainty = lead.x[0], lead.y[0], lead.yStd[0]
+  distance = x - 1.52  # camera to radar longitudinal reference, metres
+  if not (1 <= distance <= 110 and 0.1 <= abs(y) <= 12.7 and 0 <= uncertainty <= 1):
+    return
+  side, indices = ("LF", (0, 1)) if y < 0 else ("RF", (2, 3))
+  if values.get(f"{side}_DETECT"):
+    return
+  bounds = []
+  for i in indices:
+    line = model.laneLines[i]
+    xs, ys = list(line.x), list(line.y)
+    if not model.laneLineProbs[i] >= 0.5 or len(xs) < 2 or len(xs) != len(ys) or not xs[0] <= x <= xs[-1]:
+      return
+    if not all(a < b for a, b in zip(xs, xs[1:])):
+      return
+    bounds.append(float(np.interp(x, xs, ys)))
+  left, right = bounds
+  margin = max(0.3, uncertainty)
+  if 2.4 <= right - left <= 5.0 and left + margin < y < right - margin:
+    values[f"{side}_DETECT"] = 1
+    values[f"{side}_DETECT_DISTANCE"] = distance
+    values[f"{side}_DETECT_LATERAL"] = abs(y)
+
+
+def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=None, model=None, now_nanos=0):
   # messages needed to car happy after disabling
   # the ADAS Driving ECU to do longitudinal control
 
@@ -794,6 +827,7 @@ def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=No
             values[key] = stock[key]
         values.update(ev6_cluster_corners(corner_parser))
         _add_ev6_front_neighbors(values, radar, now_nanos)
+        _add_ev6_vision_neighbor(values, model, now_nanos)
       ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))
 
       values = {

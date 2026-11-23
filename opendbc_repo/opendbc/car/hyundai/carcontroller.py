@@ -692,7 +692,7 @@ class CarController(CarControllerBase):
           if hda2:
             can_sends.extend(hyundaicanfd.create_adrv_messages(self.CP, self.packer, self.CAN, self.frame,
                                                               CS.cp if self.car_fingerprint == CAR.KIA_EV6 else None,
-                                                              radar=getattr(CS, 'radarState', None), now_nanos=now_nanos))
+                                                              radar=getattr(CS, 'radarState', None), model=CS.modelV2, now_nanos=now_nanos))
           else:
             can_sends.extend(hyundaicanfd.create_fca_warning_light(self.CP, self.packer, self.CAN, self.frame))
         if self.frame % 2 == 0:

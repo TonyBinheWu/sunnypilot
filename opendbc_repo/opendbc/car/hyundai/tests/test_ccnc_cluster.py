@@ -203,3 +203,22 @@ def test_ev6_adas_neighbor_fallback(age, fault, expected):
   assert (values["LF_DETECT"], values["LF_DETECT_DISTANCE"]) == (2, 9)
   assert (values["RF_DETECT"], values["RF_DETECT_DISTANCE"], values["RF_DETECT_LATERAL"]) == (expected, 7*expected, 2*expected)
   assert values["LR_DETECT"] == values["RR_DETECT"] == 0
+
+
+@pytest.mark.parametrize("target, offset, age, occupied, expected", [
+  (-3.5, 0, 100, False, "LF"), (3.5, 0, 100, False, "RF"),
+  (-3.5, -3.5, 100, False, None), (-3.5, 0, 250_000_001, False, None),
+  (-3.5, 0, 100, True, None), (-1.8, 0, 100, False, None),
+])
+def test_ev6_vision_only_neighbor(target, offset, age, occupied, expected):
+  stamp = 1_000_000_000
+  model = SimpleNamespace(timestampEof=stamp, leadsV3=[SimpleNamespace(prob=.9, x=[20], y=[target], yStd=[.25])],
+                          laneLineProbs=[.9]*4, laneLines=[SimpleNamespace(x=[0, 20], y=[y, y+offset]) for y in (-5.25, -1.75, 1.75, 5.25)])
+  values = {"LF_DETECT": 2} if occupied else {}
+  previous = values.copy()
+  hyundaicanfd._add_ev6_vision_neighbor(values, model, stamp+age)
+  if expected:
+    assert values == pytest.approx({f"{expected}_DETECT": 1, f"{expected}_DETECT_DISTANCE": 18.48,
+                                    f"{expected}_DETECT_LATERAL": 3.5})
+  else:
+    assert values == previous
