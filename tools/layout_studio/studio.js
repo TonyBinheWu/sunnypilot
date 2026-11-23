@@ -84,7 +84,7 @@ function render(focusSelection=false) {
   for (const b of tabs("[data-device]")) b.setAttribute("aria-pressed",String(b.dataset.device===device));
   for (const b of tabs("[data-view]")) b.setAttribute("aria-pressed",String(b.dataset.view===view));
   $("#resolution").textContent = dimensions[device].join(" × ")+" px";
-  sizePreview(); renderScreen(focusSelection); renderList(); renderInspector();
+  renderStyles(); sizePreview(); renderScreen(focusSelection); renderList(); renderInspector();
 }
 function choose(key) {
   if (view==="settings") selection[device]=key; else instrument=key;
@@ -130,6 +130,32 @@ function renderList() {
     render();saveDraft();
   }));
 }
+const drivingStyles = [
+  {name:"原廠配置"},
+  {name:"大字車速", c4:{speed_font:88,cruise_font:30,hud_y:-6}, c3x:{speed_font:138,cruise_font:42,hud_y:-24}},
+  {name:"精簡低位", c4:{speed_font:56,cruise_font:28,hud_y:4,speed_y:8}, c3x:{speed_font:86,cruise_font:38,speed_y:16}},
+  {name:"巡航優先", c4:{cruise_x:-178,cruise_font:48,speed_x:154,speed_font:56}, c3x:{cruise_x:-168,cruise_font:72,speed_x:166,speed_font:84}},
+  {name:"抬高儀表", c4:{hud_y:-22,hud_x:30,speed_font:68}, c3x:{hud_y:-100,hud_x:144,speed_font:108}},
+];
+const drivingKeys = ["speed_font","speed_x","speed_y","cruise_font","cruise_x","cruise_y","hud_x","hud_y"];
+function renderStyles() {
+  const picker = $("#drive-style");
+  picker.parentElement.hidden = view !== "driving";
+  if (view !== "driving") return;
+  const values = style => Object.fromEntries(drivingKeys.map(key =>
+    [key, style[device]?.[key] ?? defaults.devices[device][key]]));
+  if (!picker.options.length) {
+    picker.add(new Option("自訂配置","custom"));
+    picker.options[0].disabled = true;
+    drivingStyles.forEach((style,i) => picker.add(new Option(style.name,String(i))));
+  }
+  const match = drivingStyles.findIndex(style => Object.entries(values(style)).every(([key,value]) => layout()[key] === value));
+  picker.value = match < 0 ? "custom" : String(match);
+  picker.onchange = () => {
+    Object.assign(layout(),values(drivingStyles[Number(picker.value)]));
+    render(); saveDraft();
+  };
+}
 function renderInspector() {
   const menu=view==="settings";
   $("#inspector-title").textContent = menu ? "選單樣式" : names[instrument];
@@ -147,11 +173,20 @@ function renderInspector() {
     function apply(value) {
       if (!Number.isFinite(value)) return;
       layout()[key]=Math.max(min,Math.min(max,Math.round(value)));
-      number.value=range.value=layout()[key];renderScreen(false);saveDraft();
+      number.value=range.value=layout()[key];renderScreen(false);renderStyles();saveDraft();
     }
     range.oninput=()=>apply(range.valueAsNumber);
     number.onchange=()=>Number.isFinite(number.valueAsNumber)?apply(number.valueAsNumber):(number.value=layout()[key]);
-    row.append(label,number,range);container.append(row);
+        row.append(label,number,range);
+    if (!menu) {
+      const adjust=element("div","fine-adjust");
+      for (const [caption,change] of [["−1",-1],["+1",1],["還原",0]]) {
+        const step=button(caption,"",()=>apply(change ? layout()[key]+change : defaults.devices[device][key]));
+        step.setAttribute("aria-label",title+" "+caption);adjust.append(step);
+      }
+      row.append(adjust);
+    }
+    container.append(row);
   }
 }
 function renderMenu(screen,focusSelection) {
@@ -253,7 +288,7 @@ $("#screen").onpointermove=e=>{
   }
   renderScreen();renderInspector();
 };
-function endDrag(){if(drag){drag=null;saveDraft();}}
+function endDrag(){if(drag){drag=null;renderStyles();saveDraft();}}
 $("#screen").onpointerup=endDrag;$("#screen").onpointercancel=endDrag;
 for(const btn of tabs("[data-device]")) btn.onclick=()=>{if(!draft)return;device=btn.dataset.device;render(true);saveDraft();};
 for(const btn of tabs("[data-view]")) btn.onclick=()=>{if(!draft)return;view=btn.dataset.view;render(true);saveDraft();};
