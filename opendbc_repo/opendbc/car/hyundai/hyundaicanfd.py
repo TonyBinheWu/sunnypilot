@@ -789,9 +789,9 @@ def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=No
       }
       if CP.carFingerprint == CAR.KIA_EV6:
         stock = _fresh_ev6_cluster_rx(corner_parser, "ADRV_0x1ea", 0x1EA)
-        if "HDA_MODE2" in stock:
-          values["HDA_MODE2"] = stock["HDA_MODE2"]
-          values["AUTOLANECHANGE_MSG"] = stock.get("AUTOLANECHANGE_MSG", 0)
+        for key in ("HDA_MODE2", "AUTOLANECHANGE_MSG", "LANE_LEFT", "LANE_RIGHT", "LANE_CHANGING"):
+          if key in stock:
+            values[key] = stock[key]
         values.update(ev6_cluster_corners(corner_parser))
         _add_ev6_front_neighbors(values, radar, now_nanos)
       ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))

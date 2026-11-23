@@ -656,17 +656,20 @@ class CarController(CarControllerBase):
 
       # LFA and HDA icons
       if self.frame % 5 == 0 and (not hda2 or hda2_long or camera_scc):
+        ev6_adas_hud = hda2_long and not camera_scc and self.car_fingerprint == CAR.KIA_EV6
+        # The HDA2 longitudinal whitelist permits the 32-byte 0x161 on local bus 0 only.
+        can_send_161 = not ev6_adas_hud or self.CAN.ECAN == self.CAN.offset
         can_sends.extend(hyundaicanfd.create_lfahda_cluster(
           self.packer, CS, self.CAN, CC.longActive, CC.latActive,
           suppress_camera_auto_disengage=bool(camera_scc and self.car_fingerprint in (
             CAR.GENESIS_GV70_1ST_GEN, CAR.KIA_SORENTO_HEV_4TH_GEN,
           )),
-          dm_alert=hud_control.driverMonitoringAlert if (CS.adrv_0x161 is None or
+          dm_alert=hud_control.driverMonitoringAlert if (not can_send_161 or CS.adrv_0x161 is None or
                    (camera_scc and not self.CP.openpilotLongitudinalControl)) else 0,
         ))
-        if not camera_scc:
+        if not camera_scc and can_send_161:
           can_sends.extend(hyundaicanfd.create_lfa_icon_non_camera_scc(
-            self.packer, CS, self.CAN, CC, ev6_hud=hda2_long and self.car_fingerprint == CAR.KIA_EV6,
+            self.packer, CS, self.CAN, CC, ev6_hud=ev6_adas_hud,
           ))
 
       # blinkers

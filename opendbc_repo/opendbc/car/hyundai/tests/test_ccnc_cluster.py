@@ -185,7 +185,7 @@ def test_ev6_adas_display_uses_physical_ecan_rx():
 def test_ev6_adas_neighbor_fallback(age, fault, expected):
   packer = CANPacker("hyundai_canfd_generated")
   stamp = 1_000_000_000
-  source = {"HDA_MODE2": 5, "AUTOLANECHANGE_MSG": 8}
+  source = {"HDA_MODE2": 5, "AUTOLANECHANGE_MSG": 8, "LANE_LEFT": 1, "LANE_RIGHT": 0, "LANE_CHANGING": 1}
   for side in ("LF", "RF", "LR", "RR"):
     source.update({f"{side}_DETECT": 2 if side == "LF" else 0,
                    f"{side}_DETECT_DISTANCE": 9, f"{side}_DETECT_LATERAL": 2})
@@ -199,6 +199,7 @@ def test_ev6_adas_neighbor_fallback(age, fault, expected):
   msg = hyundaicanfd.create_adrv_messages(cp, packer, SimpleNamespace(ECAN=1), 5, parser, radar=radar, now_nanos=stamp+age)[0]
   values = {k: get_raw_value(msg[1], sig) * sig.factor + sig.offset for k, sig in packer.dbc.name_to_msg["ADRV_0x1ea"].sigs.items()}
   assert (values["HDA_MODE2"], values["AUTOLANECHANGE_MSG"]) == (5, 8)
+  assert (values["LANE_LEFT"], values["LANE_RIGHT"], values["LANE_CHANGING"]) == (1, 0, 1)
   assert (values["LF_DETECT"], values["LF_DETECT_DISTANCE"]) == (2, 9)
   assert (values["RF_DETECT"], values["RF_DETECT_DISTANCE"], values["RF_DETECT_LATERAL"]) == (expected, 7*expected, 2*expected)
   assert values["LR_DETECT"] == values["RR_DETECT"] == 0

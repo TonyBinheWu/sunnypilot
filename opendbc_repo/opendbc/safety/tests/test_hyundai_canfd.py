@@ -231,6 +231,11 @@ class TestHyundaiCanfdLKASteeringLongEV(HyundaiLongitudinalBase, TestHyundaiCanf
                                  HyundaiSafetyFlags.LONG | HyundaiSafetyFlags.EV_GAS)
     self.safety.init_tests()
 
+  def test_adas_cluster_icon_bus(self):
+    for bus, allowed in ((0, True), (1, False)):
+      with self.subTest(bus=bus):
+        self.assertEqual(bool(self._tx(self.packer.make_can_msg_panda("ADRV_0x161", bus, {}))), allowed)
+
   def _accel_msg(self, accel, aeb_req=False, aeb_decel=0):
     values = {
       "aReqRaw": accel,
