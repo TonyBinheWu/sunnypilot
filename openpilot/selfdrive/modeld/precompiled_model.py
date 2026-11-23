@@ -178,6 +178,11 @@ def gpu_restart_failure(detail: str, manifest: dict, phase: str = '') -> bool:
     return False
   if re.search(r'^(?:RuntimeError: )?(?:AMD(?::[0-9]+)? failed with -7|Device hang detected)\Z', detail.rstrip(), re.MULTILINE):
     return True
+  # In the pinned N16 USB runtime the AMD error word can carry libusb's
+  # NO_DEVICE (-4). A disconnected device needs a fresh boot validation.
+  if runtime['sha256'] == RUNTIME_SHA and re.search(
+      r'^(?:RuntimeError: )?AMD(?::[0-9]+)? failed with -4\Z', detail.rstrip(), re.MULTILINE):
+    return True
   # The N16 USB runtime can receive an unsupported completion while setting up
   # the bridge's primary bus. An identical completion during inference is unrelated.
   if runtime['sha256'] != RUNTIME_SHA or phase not in ('load', 'boot_validation'):

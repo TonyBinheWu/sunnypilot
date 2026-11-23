@@ -60,6 +60,25 @@ def test_unrelated_failures_remain_blocked(tmp_path, detail, phase, runtime):
   assert json.loads((tmp_path / 'last_failure.json').read_text())['classification'] == 'artifact_blocked'
 
 
+def test_n16_disconnected_during_output_readback(tmp_path, monkeypatch):
+  error = 'Traceback (most recent call last):\n  result = self.copy_outputs().numpy()\nRuntimeError: AMD failed with -4\n'
+  manifest = {'pickle': {'sha256': 'a' * 64}, 'runtime': {'sha256': RUNTIME_SHA}}
+  (tmp_path / 'installed.json').write_text(json.dumps(manifest))
+  monkeypatch.setattr(egpu_worker_progress, 'boot_identity', lambda: 'first')
+  assert pm.record_failure(tmp_path / 'model.pkl', error, 'inference')
+  report = tmp_path / 'last_failure.json'
+  failure = json.loads(report.read_text())
+  assert failure['classification'] == 'device_restart_required'
+  report.write_text(json.dumps(failure | {'classification': 'artifact_blocked'}))
+  assert rejection.rejection_status(tmp_path)['reason'] == 'device_restart_required'
+  assert not pm.retry_usb_rejection(tmp_path, 'a' * 64)
+  monkeypatch.setattr(egpu_worker_progress, 'boot_identity', lambda: 'second')
+  assert pm.retry_usb_rejection(tmp_path, 'a' * 64)
+  assert not pm.retry_usb_rejection(tmp_path, 'b' * 64)
+  assert not pm.gpu_restart_failure(error + 'ValueError: checksum mismatch', manifest)
+  assert not pm.gpu_restart_failure(error, {'runtime': {'sha256': 'unknown'}})
+
+
 @pytest.mark.parametrize('runtime', sorted(VERIFIED_USB_RUNTIMES))
 @pytest.mark.parametrize('phase', ['load', 'boot_validation', 'inference'])
 @pytest.mark.parametrize('error', ['RuntimeError: AMD failed with -7', 'RuntimeError: AMD:0 failed with -7',
