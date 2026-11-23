@@ -8,6 +8,7 @@ import numpy as np
 
 from openpilot.selfdrive.controls.lib.lane_model_speed import LaneModelSpeedGuard
 from opendbc.car.lateral_geometry import LateralGeometry
+from openpilot.selfdrive.controls.lib.lane_change_guard import HOLD_HORIZON_S, LaneChangeGuard, solution_in_lane
 
 
 class StubMpc:
@@ -17,8 +18,8 @@ class StubMpc:
     self.solution_status = 0
     self.cost = 0.0
 
-  def set_weights(self, *args):
-    pass
+  def set_weights(self, *args, reference_points):
+    self.reference_points = reference_points
 
   def run(self, x0, p, y, heading, yaw_rate):
     self.input_speed = p[:, 0].copy()
@@ -51,7 +52,8 @@ def make_planner(cp=None):
     'Params': lambda: params,
     'LateralMpc': StubMpc,
     'LanePlanner': StubLanePlanner,
-    'LaneModelSpeedGuard': LaneModelSpeedGuard,
+    'LaneModelSpeedGuard': LaneModelSpeedGuard, 'LaneChangeGuard': LaneChangeGuard, 'HOLD_HORIZON_S': HOLD_HORIZON_S,
+    'solution_in_lane': solution_in_lane,
     'LateralGeometry': LateralGeometry,
     'time': SimpleNamespace(monotonic=lambda: 0),
     'log': SimpleNamespace(Desire=SimpleNamespace(none=0)),
@@ -67,6 +69,7 @@ def make_planner(cp=None):
 
 def inputs(speed=30.0, start=30.0, end=30.0, lane_speed=1):
   model = SimpleNamespace(
+    timestampEof=0,
     position=SimpleNamespace(x=np.linspace(0, 300, 33), y=np.zeros(33), z=np.zeros(33), t=np.linspace(0, 10, 33)),
     orientation=SimpleNamespace(x=np.zeros(33), z=np.zeros(33)),
     orientationRate=SimpleNamespace(z=np.zeros(33)),
@@ -74,13 +77,19 @@ def inputs(speed=30.0, start=30.0, end=30.0, lane_speed=1):
     acceleration=SimpleNamespace(x=np.zeros(33)),
     meta=SimpleNamespace(desire=0, laneWidthLeft=3.5, laneWidthRight=3.5),
   )
-  return {
+  class Messages(dict):
+    pass
+  sm = Messages({
+    'carControl': SimpleNamespace(latActive=False),
     'modelV2': model,
-    'carState': SimpleNamespace(vEgo=speed, useLaneLineSpeed=lane_speed),
+    'carState': SimpleNamespace(vEgo=speed, useLaneLineSpeed=lane_speed, canValid=True, canTimeout=False, vehicleSensorsInvalid=False),
     'controlsState': SimpleNamespace(curvature=0.0),
     'liveParameters': SimpleNamespace(centerToFrontRatio=0.0),
     'carrotMan': SimpleNamespace(vTurnSpeed=200),
-  }
+  })
+  sm.valid = sm.alive = dict.fromkeys(sm, True)
+  sm.logMonoTime = dict.fromkeys(sm, 0)
+  return sm
 
 
 def update(planner, sm):

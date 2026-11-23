@@ -9,7 +9,9 @@ from openpilot.selfdrive.controls.lib.desire_lib.assistant_lane import ROOT, IDE
 def set_lane_change_blinkers(cc, meta):
   route = meta.assistantLaneSignalRoute
   native_voice = route == 'native' and meta.assistantLaneSignalId and cc.latActive
-  if meta.laneChangeState != log.LaneChangeState.off and (route in ('', 'ordinary') or native_voice):
+  if (cc.latActive and meta.laneChangeState in (log.LaneChangeState.laneChangeStarting, log.LaneChangeState.laneChangeFinishing)
+      and meta.driverConfirmedLaneChange != log.LaneChangeDirection.none
+      and meta.driverConfirmedLaneChange == meta.laneChangeDirection and (route in ('', 'ordinary') or native_voice)):
     if native_voice:
       cc.assistantLaneSignalId = meta.assistantLaneSignalId
     cc.leftBlinker = meta.laneChangeDirection == log.LaneChangeDirection.left

@@ -14,6 +14,7 @@ from openpilot.common.params import Params
 #from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
 from openpilot.selfdrive.controls.lib.lane_planner_2 import LanePlanner
 from openpilot.selfdrive.controls.lib.lane_model_speed import LaneModelSpeedGuard
+from openpilot.selfdrive.controls.lib.lane_change_guard import HOLD_HORIZON_S, LaneChangeGuard, solution_in_lane
 from collections import deque
 
 TRAJECTORY_SIZE = 33
@@ -51,6 +52,8 @@ class LateralPlanner:
     self.l_lane_change_prob = 0.0
     self.r_lane_change_prob = 0.0
 
+    self.lane_guard = LaneChangeGuard()
+    self.lane_guard_mode = "off"
     self.debug_mode = debug
 
     self.params = Params()
@@ -154,6 +157,18 @@ class LateralPlanner:
     self.LP.curvature = measured_curvature
     self.path_xyz, self.lanelines_active = self.LP.get_d_path(sm['carState'], v_ego_car, self.t_idxs, self.path_xyz, self.curve_speed)
 
+    cs = sm['carState']
+    now = time.monotonic()
+    guard_inputs = ('carState', 'modelV2', 'carControl')
+    fresh = (model_active and 0 <= now - md.timestampEof * 1e-9 < .35 and cs.canValid and not cs.canTimeout and not cs.vehicleSensorsInvalid and
+             all(sm.valid[k] and sm.alive[k] and 0 <= now - sm.logMonoTime[k] * 1e-9 < .25 for k in guard_inputs))
+    self.lane_guard_mode, center = self.lane_guard.update(
+      md, now=now, fresh=fresh, active=sm['carControl'].latActive and not cs.standstill and
+      str(cs.gearShifter) in ('drive', 'sport', 'low', 'manumatic', 'eco'), speed_ok=not self.laneless_only)
+    if center is not None:
+      self.path_xyz[:, 1] = center
+      self.lanelines_active = True
+
     if self.lanelines_active:
       self.plan_yaw, self.plan_yaw_rate = yaw_from_path_no_scipy(
         self.path_xyz, self.v_plan,
@@ -165,11 +180,12 @@ class LateralPlanner:
     self.latDebugText = self.LP.debugText
     #self.lanelines_active = True if self.LP.d_prob > 0.3 and self.LP.lanefull_mode else False
 
-    self.path_xyz[:, 1] += self.pathOffset
+    if center is None:
+      self.path_xyz[:, 1] += self.pathOffset
 
-    self.lat_mpc.set_weights(self.lateralPathCost, self.lateralMotionCost,
-                             LATERAL_ACCEL_COST, LATERAL_JERK_COST,
-                             STEERING_RATE_COST)
+    reference_points = np.searchsorted(self.t_idxs, HOLD_HORIZON_S, side="right") if center is not None else LAT_MPC_N + 1
+    self.lat_mpc.set_weights(self.lateralPathCost, self.lateralMotionCost, LATERAL_ACCEL_COST, LATERAL_JERK_COST,
+                             STEERING_RATE_COST, reference_points=reference_points)
 
     y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
     heading_pts = self.plan_yaw[:LAT_MPC_N+1]
@@ -195,6 +211,10 @@ class LateralPlanner:
     #  Check for infeasible MPC solution
     mpc_nans = np.isnan(self.lat_mpc.x_sol[:, 3]).any()
     t = time.monotonic()
+    if self.lane_guard_mode == 'hold' and (not solution_in_lane(md, self.lat_mpc.x_sol, reference_points) or
+                                           not np.isfinite(self.lat_mpc.cost) or self.lat_mpc.cost > 1e6 or
+                                           self.lat_mpc.solution_status != 0):
+      self.lane_guard_mode = 'takeover'
     if mpc_nans or self.lat_mpc.solution_status != 0:
       self.reset_mpc()
       self.x0[3] = measured_curvature * self.v_ego
@@ -221,6 +241,7 @@ class LateralPlanner:
       pass
 
     lateralPlan = plan_send.lateralPlan
+    lateralPlan.laneGuard = self.lane_guard_mode
     lateralPlan.modelMonoTime = sm.logMonoTime['modelV2']
     lateralPlan.dPathPoints = self.y_pts.tolist()
     lateralPlan.psis = self.lat_mpc.x_sol[0:CONTROL_N, 2].tolist()

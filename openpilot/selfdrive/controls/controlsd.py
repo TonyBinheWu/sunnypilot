@@ -21,6 +21,7 @@ from opendbc.car.hyundai.stop_object import signal_stop_object_requested
 from opendbc.car.volkswagen.values import MEB_CURVATURE_PID_KP, MEB_CURVATURE_PID_KI, MEB_CURVATURE_PID_KF, MEB_CURVATURE_MAX
 
 from openpilot.selfdrive.car.voice_indicator import set_lane_change_blinkers
+from openpilot.selfdrive.controls.lib.lane_change_guard import LaneHoldControl
 from openpilot.selfdrive.controls.lib.drive_helpers import clip_curvature, get_lag_adjusted_curvature, is_volkswagen_meb
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl, MIN_LATERAL_CONTROL_SPEED
 from openpilot.selfdrive.controls.lib.latcontrol_pid import LatControlPID
@@ -79,6 +80,7 @@ class Controls:
     self.desired_curvature = 0.0
     self.lateral_startup = LateralStartupGate()
     self.lateral_started = False
+    self.lane_hold = LaneHoldControl()
 
     # VW MEB(ID.4/ID.5)에서만 사용. infiniteCable2 LatControlCurvature 정확 복제:
     # EnableCurvatureController=1(기본 ON) 상태의 곡률 폐루프 PID + useCarSteerCurvature 보정
@@ -173,6 +175,17 @@ class Controls:
     if self.params.get_bool("ImpactDashcamReboot"):
       CC.enabled = CC.latActive = CC.longActive = False
 
+    lat_plan = self.sm['lateralPlan']
+    now = time.monotonic()
+    fresh_plan = (self.sm.valid['lateralPlan'] and self.sm.alive['lateralPlan'] and
+                  0 <= now - self.sm.logMonoTime['lateralPlan'] * 1e-9 < .25 and
+                  0 <= now - lat_plan.modelMonoTime * 1e-9 < .25)
+    hold_lane, takeover = self.lane_hold.update(lat_plan, fresh=fresh_plan, requested=CC.latActive,
+      parked=CS.canValid and not CS.canTimeout and CS.gearShifter == gear.park and CS.standstill)
+    if takeover:
+      CC.latActive = False
+      self.lateral_started = False
+
     actuators = CC.actuators
 
     set_lane_change_blinkers(CC, model_v2.meta)
@@ -195,9 +208,8 @@ class Controls:
     actuators.jerk = float(jerk)
 
     # Steering PID loop and lateral MPC
-    lat_plan = self.sm['lateralPlan']
     curve_speed_abs = abs(self.sm['carrotMan'].vTurnSpeed)
-    self.lanefull_mode_enabled = (lat_plan.useLaneLines and curve_speed_abs > self.params.get_int("UseLaneLineCurveSpeed"))
+    self.lanefull_mode_enabled = hold_lane or (lat_plan.useLaneLines and curve_speed_abs > self.params.get_int("UseLaneLineCurveSpeed"))
     if CC.latActive and len(lat_plan.curvatures) > 0 and (lat_plan.useLaneLines if self.is_vw_meb else self.lanefull_mode_enabled):
       lat_smooth_seconds = self.params.get_float("LatSmoothSec") * 0.01
       steer_actuator_delay = self.params.get_float("SteerActuatorDelay") * 0.01
@@ -473,6 +485,7 @@ class Controls:
     elif lat_tuning == 'torque':
       cs.lateralControlState.torqueState = lac_log
 
+    cs.laneGuardTakeoverSince = self.lane_hold.takeover_since
     cs.activeLaneLine = self.lanefull_mode_enabled
     self.pm.send('controlsState', dat)
 

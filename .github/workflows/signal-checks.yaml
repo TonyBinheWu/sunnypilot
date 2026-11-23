@@ -19,6 +19,14 @@ on:
       - 'openpilot/selfdrive/carrot/tests/test_xiaoge_data.py'
       - 'tools/signal_validation/**'
       - '.github/workflows/signal-checks.yaml'
+  pull_request:
+    branches: [carrot-wip]
+    paths:
+      - 'openpilot/selfdrive/controls/lib/lane_change_guard.py'
+      - 'openpilot/selfdrive/controls/lib/desire_helper.py'
+      - 'openpilot/selfdrive/controls/lib/lateral_planner.py'
+      - 'openpilot/selfdrive/controls/lib/lateral_mpc_lib/lat_mpc.py'
+      - 'openpilot/selfdrive/controls/controlsd.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -64,6 +72,7 @@ jobs:
             openpilot/selfdrive/controls/tests/test_tesla_turn_journey.py \
             openpilot/selfdrive/controls/tests/test_tesla_traffic_stop.py \
             openpilot/selfdrive/controls/tests/test_desire_helper_stalk.py \
+            openpilot/selfdrive/controls/tests/test_lane_change_guard.py \
             openpilot/selfdrive/controls/tests/test_lane_change_takeover.py \
             openpilot/selfdrive/controls/tests/test_lane_change_completion.py \
             openpilot/selfdrive/modeld/tests/test_lane_change_advisory.py \

@@ -5,12 +5,14 @@ from functools import partial
 from numbers import Number
 from pathlib import Path
 from types import SimpleNamespace as NS
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 
 from openpilot.cereal import car, log
 from openpilot.common.realtime import DT_CTRL
+from openpilot.selfdrive.controls.lib.lane_change_guard import LaneHoldControl
 from openpilot.common.constants import CV
 from openpilot.selfdrive.car.voice_indicator import set_lane_change_blinkers
 from openpilot.selfdrive.selfdrived.vehicle_faults import inhibit_faulted_controls
@@ -60,6 +62,7 @@ def control_fixture(phase1=False, cp_override=None):
           get_pid_accel_limits=lambda *args: (-3.0, 2.0))
   sm = Messages()
   sm.update(longitudinalPlan=NS(), radarState=NS(), carrotMan=NS(vTurnSpeed=100), liveDelay=NS(lateralDelay=0.1))
+  sm.logMonoTime = dict.fromkeys(sm, time.monotonic_ns())
   sm.frame = 1
   sm.recv_time = {'modelV2': time.monotonic()}
   sm.recv_frame = {'longitudinalPlan': 1}
@@ -72,8 +75,9 @@ def control_fixture(phase1=False, cp_override=None):
     from openpilot.selfdrive.controls.lib.latcontrol_angle import LatControlAngle
     lateral = LatControlAngle(cp, ci)
   else:
-    lateral = LatControlTorque(cp, ci)
-  control = NS(hkg_phase1_enabled=phase1, CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=lateral,
+    with patch("openpilot.selfdrive.controls.lib.latcontrol_torque.Params", return_value=params):
+      lateral = LatControlTorque(cp, ci)
+  control = NS(lane_hold=LaneHoldControl(), hkg_phase1_enabled=phase1, CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=lateral,
                LoC=NS(reset=lambda: None, update=lambda *args: (0.0, 0.0, 0.0), long_control_state='off'),
                carrot_controls=NS(lat_suspend_control=lambda cs, active: active), is_vw_meb=False,
                desired_curvature=0.0, lateral_startup=LateralStartupGate(), lateral_started=False,

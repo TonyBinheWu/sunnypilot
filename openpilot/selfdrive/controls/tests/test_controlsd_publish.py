@@ -8,6 +8,7 @@ from openpilot.cereal import car, log
 from openpilot.common.constants import CV
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.carrot.carrot_man_input import get_carrot_man
+from openpilot.selfdrive.controls.lib.lane_change_guard import LaneHoldControl
 from openpilot.selfdrive.monitoring.dm_alerts import driver_monitoring_hud_alert
 from opendbc.car.hyundai.stop_object import signal_stop_object_requested
 from opendbc.car.hyundai.values import HyundaiFlags
@@ -61,7 +62,7 @@ def publish_fixture(brand, flags, enabled):
   cp = car.CarParams.new_message(brand=brand, flags=flags, openpilotLongitudinalControl=True)
   cp.lateralTuning.init('pid')
   sent = {}
-  control = NS(CP=cp, sm=Messages(), curvature=0.0, desired_curvature=0.0, calibrated_pose=None,
+  control = NS(lane_hold=LaneHoldControl(), CP=cp, sm=Messages(), curvature=0.0, desired_curvature=0.0, calibrated_pose=None,
                physical_blinker_hold=NS(read=lambda valid: 0), is_vw_meb=False,
                params=NS(get_int=lambda key: 0), lanefull_mode_enabled=False,
                LoC=NS(long_control_state='off', pid=NS(p=0.0, i=0.0, f=0.0)),
@@ -90,10 +91,12 @@ def publish_fixture(brand, flags, enabled):
 ])
 def test_complete_publish_checks_message_age_and_publishes_both_services(brand, flags, enabled, service, age, valid):
   control, sent, publish = publish_fixture(brand, flags, enabled)
+  control.lane_hold.takeover_since = 987654321 if enabled else 0
   control.sm.recv_frame[service] -= age
   control.sm.valid[service] = valid
   publish()
   assert set(sent) == {'controlsState', 'carControl'}
+  assert sent['controlsState'].controlsState.laneGuardTakeoverSince == control.lane_hold.takeover_since
   assert all(message.valid for message in sent.values())
   expected = brand == 'hyundai' and flags != 0 and enabled and valid and 0 <= age <= 20
   assert sent['carControl'].carControl.hudControl.signalStopObject == expected
