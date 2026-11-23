@@ -1682,6 +1682,7 @@ class CarState(CarStateBase):
     if CP.carFingerprint == CAR.KIA_EV6 and CP.flags & HyundaiFlags.CANFD_HDA2 and not CP.flags & HyundaiFlags.CAMERA_SCC:
       # Optional display data received on ECAN with the ADAS-module harness.
       # Missing packets or a skipped counter must not invalidate vehicle controls.
+      pt_parser._add_message("ADRV_0x161", math.nan, ignore_counter=True)
       pt_parser._add_message("ADRV_0x1ea", math.nan, ignore_counter=True)
     if CP.extFlags & HyundaiExtFlags.EV_MODE_STATUS_230:
       # Display-only while the signal is fleet-validated: checksum and freshness
