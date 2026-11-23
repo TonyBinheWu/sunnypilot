@@ -273,6 +273,28 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
   assert raw(0x162, "FF_DETECT") == (3 if age <= 250_000_000 else 0)
   assert raw(0x1ea,"RF_DETECT") == int(age <= 250_000_000)
 
+  # Check a factory notification, then its cancellation on the following frame.
+  scene = state.ccnc_0x162
+  cam.dat[0x162] = bytes(32)
+  cam.vl["CCNC_0x162"] = scene
+  for active in (1, 0):
+    stamp += 50_000_000
+    cam._last_update_nanos = stamp
+    for name in ("CCNC_0x162", "ADRV_0x161"):
+      cam.ts_nanos[name] = {"COUNTER": stamp}
+    stock.update(ALERTS_3=21*active, ALERTS_5=11*active, SOUNDS_3=3*active, LANE_HIGHLIGHT=active)
+    scene.update(FF_DETECT=7*active, FF_DISTANCE=20*active, FF_DETECT_ALT=3*active, FF_DISTANCE_ALT=35*active,
+                 SIGNS=8*active, FAULT_HDA=active)
+    msgs = hyundaicanfd.create_ccnc_messages(cp, packer, SimpleNamespace(ECAN=0, CAM=2), 10, control, state,
+                                             control.hudControl, 0, False, False, 2, False, 0, 0, now_nanos=stamp)
+    frames = {addr: data for addr, data, _ in msgs}
+    for key in ("ALERTS_3", "ALERTS_5", "SOUNDS_3", "LANE_HIGHLIGHT"):
+      assert raw(0x161, key) == stock[key]
+    for key in ("SIGNS", "FF_DETECT_ALT", "FAULT_HDA"):
+      assert raw(0x162, key) == scene[key]
+    assert raw(0x162, "FF_DETECT") == (7 if active else 3)
+
+
 
 @pytest.mark.parametrize("age,kind,lateral,expected", [
   (0, 3, 3.5, True), (150_000_000, 6, 6.3, True), (150_000_001, 3, 3.5, False),

@@ -434,21 +434,22 @@ def create_lfa_icon_non_camera_scc(packer, CS, CAN, CC, *, ev6_hud=False):
           if visible and not departing and values[key] in (0, 1, 2):
             values[key] = 4 if blindspot else 6 if lat_active else 2
 
-    if values["ALERTS_2"] in [1, 2, 5, 6, 10, 21, 22]:
-      values["ALERTS_2"] = 0
-      values["DAW_ICON"] = 0
+    if not (ev6_hud and stock):
+      if values["ALERTS_2"] in [1, 2, 5, 6, 10, 21, 22]:
+        values["ALERTS_2"] = 0
+        values["DAW_ICON"] = 0
 
-    if values["ALERTS_1"] == 0:
-      values["SOUNDS_1"] = 0
-      values["SOUNDS_2"] = 0
-      values["SOUNDS_4"] = 0
+      if values["ALERTS_1"] == 0:
+        values["SOUNDS_1"] = 0
+        values["SOUNDS_2"] = 0
+        values["SOUNDS_4"] = 0
 
-    if values["ALERTS_3"] in [3, 4, 11, 12, 13, 14, 17, 19, 26, 7, 8, 9, 10]:
-      values["ALERTS_3"] = 0
-      values["SOUNDS_3"] = 0
+      if values["ALERTS_3"] in [3, 4, 11, 12, 13, 14, 17, 19, 26, 7, 8, 9, 10]:
+        values["ALERTS_3"] = 0
+        values["SOUNDS_3"] = 0
 
-    if values["ALERTS_5"] in [1, 2, 3, 4, 5]:
-      values["ALERTS_5"] = 0
+      if values["ALERTS_5"] in [1, 2, 3, 4, 5]:
+        values["ALERTS_5"] = 0
 
     _apply_driver_monitoring_alert(values, getattr(CC, "hudControl", None), CS.adrv_0x161)
     ret.append(packer.make_can_msg("ADRV_0x161", CAN.ECAN, values, rx_counter=rx_counter))
@@ -1211,29 +1212,31 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
         values["HDA_ICON"] = 5 if hdp_active else 2 if cruise_enabled else 1 if main_enabled else 0
         values["LFA_ICON"] = 5 if hdp_active else 2 if lat_active else 1 if lat_enabled else 0
         values["LKA_ICON"] = 4 if lat_active else 3 if lat_enabled else 0
-        values["FCA_ALT_ICON"] = 0
+        stock = _fresh_ev6_cluster_rx(getattr(CS, "cp_cam", None), "ADRV_0x161", 0x161) if ev6_display else {}
+        if not (ev6_display and stock):
+          values["FCA_ALT_ICON"] = 0
 
-        if values["ALERTS_2"] in [1, 2, 5, 6, 10, 21, 22]:
-          values["ALERTS_2"] = 0
-          values["DAW_ICON"] = 0
+          if values["ALERTS_2"] in [1, 2, 5, 6, 10, 21, 22]:
+            values["ALERTS_2"] = 0
+            values["DAW_ICON"] = 0
 
-        if values["ALERTS_1"] == 0: # alerts가 있으면 사운드도 같이 나옴
-          values["SOUNDS_1"] = 0
-          values["SOUNDS_2"] = 0
-          values["SOUNDS_4"] = 0
+          if values["ALERTS_1"] == 0: # alerts가 있으면 사운드도 같이 나옴
+            values["SOUNDS_1"] = 0
+            values["SOUNDS_2"] = 0
+            values["SOUNDS_4"] = 0
 
-        if values["ALERTS_3"] in [3, 4, 11, 12, 13, 14, 17, 19, 20, 26, 27, 28, 7, 8, 9, 10]: # hide gap distance msg.(11,12,13,14), lanechange(19,20,27, 28)
-          values["ALERTS_3"] = 0
-          values["SOUNDS_3"] = 0
+          if values["ALERTS_3"] in [3, 4, 11, 12, 13, 14, 17, 19, 20, 26, 27, 28, 7, 8, 9, 10]: # hide gap distance msg.(11,12,13,14), lanechange(19,20,27, 28)
+            values["ALERTS_3"] = 0
+            values["SOUNDS_3"] = 0
 
-        if values["ALERTS_5"] in [1, 2, 3, 4, 5]:
-          values["ALERTS_5"] = 0
+          if values["ALERTS_5"] in [1, 2, 3, 4, 5]:
+            values["ALERTS_5"] = 0
 
-        if values["ALERTS_5"] in [11] and CS.softHoldActive == 0:
-          values["ALERTS_5"] = 0
+          if values["ALERTS_5"] in [11] and CS.softHoldActive == 0:
+            values["ALERTS_5"] = 0
 
-        # curvature 표시(0x161쪽 기존 로직 유지)
-        _suppress_trailer_mode_warning(values, CS)
+          # curvature 표시(0x161쪽 기존 로직 유지)
+          _suppress_trailer_mode_warning(values, CS)
 
         curvature = round(CS.out.steeringAngleDeg / 3)
         values["LANELINE_CURVATURE"] = (min(abs(curvature), 15) + (-1 if curvature < 0 else 0)) if lat_active else 0
@@ -1289,7 +1292,6 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
 
         if ev6_display:
           # Preserve the OEM icon state, including standby and cancellation.
-          stock = _fresh_ev6_cluster_rx(getattr(CS, "cp_cam", None), "ADRV_0x161", 0x161)
           for key in ("NAV_ICON", "LCA_LEFT_ICON", "LCA_RIGHT_ICON", "LCA_LEFT_ARROW", "LCA_RIGHT_ARROW"):
             values[key] = stock.get(key, 0)
         _apply_driver_monitoring_alert(values, hud_control, CS.adrv_0x161)
@@ -1336,12 +1338,15 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
 
         if not ev6_display:
           _normalize_cluster_corner_objects(values, ccnc=True)
-        _convert_ccnc_front_box_to_car(values)
+          _convert_ccnc_front_box_to_car(values)
         radar = getattr(CS, "radarState", None)
         if ev6_display:
           parser = getattr(CS, "cp_cam", None)
           stock = _fresh_ev6_cluster_rx(parser, "CCNC_0x162", 0x162)
           fresh_stock = bool(stock and 0 <= now_nanos - parser.ts_nanos["CCNC_0x162"]["COUNTER"] <= 150_000_000)
+          if not fresh_stock:
+            for key in ("FF_DETECT_ALT", "FF_DISTANCE_ALT", "FF_LATERAL_ALT", "SIGNS", "SPEEDLIMIT", "SPEEDLIMIT_FLASH", "SPEEDLIMIT_WEATHER"):
+              values[key] = 0
           for side in ("LF", "RF", "LR", "RR"):
             if not fresh_stock or not values[f"{side}_DETECT"] or values[f"{side}_DETECT_DISTANCE"] <= 0:
               values.update({f"{side}_DETECT": 0, f"{side}_DETECT_DISTANCE": 0, f"{side}_DETECT_LATERAL": 0})
@@ -1362,7 +1367,7 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
             if (not radar.mdMonoTime or not 0 <= now_nanos - radar.mdMonoTime <= 250_000_000 or
                 errors.canError or errors.radarFault or errors.wrongConfig or errors.radarUnavailableTemporary):
               radar = None
-          if not (fresh_stock and values["FF_DETECT"] and 0 < values["FF_DISTANCE"] <= 204.5) or _display_lead(radar) is not None:
+          if not (fresh_stock and values["FF_DETECT"] and 0 < values["FF_DISTANCE"] <= 204.5):
             _apply_ccnc_lead(values, radar, CC.enabled, md, hud_lateral)
           _add_ev6_vision_neighbor(values, md, now_nanos, center=True)
         else:
@@ -1371,11 +1376,11 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
         if (left_lane_warning and not CS.out.leftBlinker) or (right_lane_warning and not CS.out.rightBlinker):
           values["VIBRATE"] = 1
 
-        _hide_replaced_adas_service_warning(values)
-
-        if canfd_debug > 0:
-          values["FAULT_LSS"] = 0
-          values["FAULT_DAS"] = 0
+        if not ev6_display:
+          _hide_replaced_adas_service_warning(values)
+          if canfd_debug > 0:
+            values["FAULT_LSS"] = 0
+            values["FAULT_DAS"] = 0
 
         ret.append(packer.make_can_msg("CCNC_0x162", CAN.ECAN, values, rx_counter=rx_counter))
 
