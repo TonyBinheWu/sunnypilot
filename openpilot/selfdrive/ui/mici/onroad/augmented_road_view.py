@@ -165,6 +165,9 @@ class AugmentedRoadView(CameraView):
     self._bookmark_icon = BookmarkIcon(bookmark_callback)
 
     self._model_renderer = ModelRenderer()
+    from openpilot.selfdrive.ui.layout_profile import device_layout
+    from openpilot.selfdrive.ui.onroad.reality_scene import RealityScene
+    self._reality = RealityScene(device_layout("c4"))
     self._hud_renderer = HudRenderer()
     self._overlay_state = OverlayState()
     self._model_renderer._overlay_state = self._overlay_state
@@ -251,9 +254,10 @@ class AugmentedRoadView(CameraView):
       int(self._content_rect.height)
     )
 
+    reality = bool(self._reality.style["scene_style"]) and not self._suppress_camera_for_cluster
     road_view_mode = self._road_view_mode()
     _t = time.monotonic()
-    if self._suppress_camera_for_cluster or road_view_mode in (2, 3):
+    if reality or self._suppress_camera_for_cluster or road_view_mode in (2, 3):
       rl.draw_rectangle_rec(self._content_rect, rl.BLACK)
     else:
       # Render the base camera view
@@ -262,13 +266,17 @@ class AugmentedRoadView(CameraView):
 
     self._overlay_state.update(ui_state, self.client, self.stream_type, (self._suppress_camera_for_cluster, road_view_mode))
 
-    if not self._suppress_camera_for_cluster and road_view_mode in (0, 2):
+    if reality:
+      _t = time.monotonic()
+      timing.call("model", self._reality.draw, self._content_rect, ui_state)
+      model_ms = (time.monotonic() - _t) * 1000.
+    elif not self._suppress_camera_for_cluster and road_view_mode in (0, 2):
       # Draw all UI overlays
       _t = time.monotonic()
       timing.call('model', self._model_renderer.render, self._content_rect)
       model_ms = (time.monotonic() - _t) * 1000.0
 
-    if not self._suppress_camera_for_cluster:
+    if not reality and not self._suppress_camera_for_cluster:
       # Fade out bottom of overlays for looks
       _t = time.monotonic()
       rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)

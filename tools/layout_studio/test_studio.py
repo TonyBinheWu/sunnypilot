@@ -167,3 +167,31 @@ def test_publish_endpoint_requires_explicit_export(tmp_path):
     finally:
       server.shutdown()
       thread.join()
+
+def test_device_apply_and_publish_order(studio, monkeypatch):
+
+  calls = []
+  class Publisher:
+    def publish(self, revision):
+      calls.append(revision)
+      return "checked"
+  from tools.layout_studio import device_apply
+  with Studio(0, publisher=Publisher(), targets={"c4":"design-test"}) as server:
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+      url = f"http://127.0.0.1:{server.server_port}"
+      snapshot = get(url+"/api/layout")
+      revision = snapshot["revision"]
+      req = {"revision":revision, "device":"c4"}
+      assert post(url,req,endpoint="/api/apply")[0]==409
+      assert post(url,{"profile":snapshot["profile"],"revision":revision})[0]==200
+      assert post(url,req,endpoint="/api/publish")[0]==409
+      assert post(url,{**req,"device":"c3x"},endpoint="/api/apply")[0]==409
+      monkeypatch.setattr(device_apply,"install",lambda *args: "installed")
+      assert post(url,req,endpoint="/api/apply")== (200,{"commit":"installed"})
+      assert calls==[]
+      assert post(url,req,endpoint="/api/publish")[0]==200
+    finally:
+      server.shutdown()
+      thread.join()

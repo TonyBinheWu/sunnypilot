@@ -48,7 +48,7 @@ function drawRealityScene(canvas,w,h,v) {
     }
   });
   layer("map",(s,c)=>{
-    ctx.translate(805,128);ctx.scale(s,s);
+    ctx.translate(805,128);ctx.scale(s*(Math.min(w*.31,h*.48)/w*1000/310),s*(Math.min(w*.31,h*.48)/h*450/184));
     ctx.beginPath();ctx.roundRect(-155,-92,310,184,12);ctx.clip();
     ctx.fillStyle=night?"#1a2a36":"#e4e9e6";ctx.fillRect(-155,-92,310,184);
     function line(points,paint,width){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=paint;ctx.lineWidth=width;ctx.lineJoin="round";ctx.stroke();}

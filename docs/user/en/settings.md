@@ -4,7 +4,9 @@
 
 ## Native display layout
 
-On the development computer, run `python tools/layout_studio/server.py` and open the local address it prints. Add `--publish` on the prepared layout branch to enable **推送至 carrot-wip** after export. Confirming that action publishes the branch update. Choose C3X or C4, then Settings or Driving. Move menu items with the arrows, adjust text size and spacing, or drag the speed readouts in the driving preview. Each device has its own browser draft. **輸出版面** writes both profiles to the checkout. The native UI reads the exported profile on its next launch after the branch update. The preview uses sample vehicle data.
+On the development computer, run `python tools/layout_studio/server.py` and open the local address it prints. Add `--publish` on the prepared layout branch to enable **推送至 carrot-wip** after export. Confirming that action publishes the branch update. Choose C3X or C4, then Settings or Driving. Move menu items with the arrows, adjust text size and spacing, or drag the speed readouts in the driving preview. Each device has its own browser draft. **輸出版面** writes both profiles to the checkout. The native UI reads the exported profile on its next launch after the branch update. The preview uses sample vehicle data. Reality 3D on the device uses current model lanes, path and lead estimates. Its map uses the active route and fresh mapsd imagery. Missing layers disappear. The compact HUD shows speed and its unit, plus the set speed when cruise is engaged.
+
+For local installation, start the editor with `--publish --c4 user@host --identity path/to/key` (use `--c3x` for C3X). Authorize the SSH key on the device first. Export the layout and select **套用到 C4** or **套用到 C3X**. The device must be offroad, on a clean carrot-wip checkout at the matching base or a previous studio commit. Installation fast-forwards the checkout. The next UI launch loads the layout. Select **推送至 carrot-wip** after verifying the device.
 
 
 ## Road scene research

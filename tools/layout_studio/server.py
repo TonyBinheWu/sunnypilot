@@ -52,7 +52,7 @@ class BranchPublisher:
       raise PublishConflict("Git 未完成操作，請檢查分支權限、網路與遠端版本後重試")
     return result.stdout.strip()
 
-  def publish(self, expected_revision):
+  def prepare(self, expected_revision):
     if (self.git("branch", "--show-current") != self.branch or self.git("rev-parse", "HEAD") != self.head
         or self.git("remote", "get-url", "--push", "origin") != self.remote):
       raise PublishConflict("工作分支或遠端已變動，請重新檢查分支")
@@ -62,8 +62,6 @@ class BranchPublisher:
     raw = (self.root / self.path).read_bytes()
     if hashlib.sha256(raw).hexdigest() != expected_revision:
       raise PublishConflict("版面已變動，請重新輸出")
-    remote_ref = self.git("ls-remote", "--exit-code", "origin", "refs/heads/carrot-wip")
-    self.git("merge-base", "--is-ancestor", remote_ref.split()[0], self.head)
     if self.git("status", "--porcelain", "--", self.path):
       self.git("commit", "--only", "-m", "Apply exported C3X and C4 native layouts", "--", self.path)
       new_head = self.git("rev-parse", "HEAD")
@@ -72,6 +70,10 @@ class BranchPublisher:
       self.head = new_head
     if json.loads(self.git("show", self.head + ":" + self.path)) != json.loads(raw):
       raise PublishConflict("提交內容與已輸出版面不同，請重新檢查")
+  def publish(self, expected_revision):
+    self.prepare(expected_revision)
+    remote_ref = self.git("ls-remote", "--exit-code", "origin", "refs/heads/carrot-wip")
+    self.git("merge-base", "--is-ancestor", remote_ref.split()[0], self.head)
     # Push this reviewed object even if another process subsequently switches HEAD.
     self.git("push", "origin", self.head + ":refs/heads/carrot-wip")
     remote_ref = self.git("ls-remote", "--exit-code", "origin", "refs/heads/carrot-wip")
@@ -81,11 +83,14 @@ class BranchPublisher:
 
 
 class Studio(ThreadingHTTPServer):
-  def __init__(self, port, profile_path=PROFILE_PATH, publisher=None):
+  def __init__(self, port, profile_path=PROFILE_PATH, publisher=None, targets=None, identity=None):
     super().__init__(("127.0.0.1", port), Handler)
     self.profile_path = profile_path
     self.write_lock = threading.Lock()
+    self.targets = targets or {}
+    self.identity = identity
     self.publisher = publisher
+    self.applied_revision = None
     self.exported_revision = None
     self.published_commit = None
 
@@ -120,7 +125,7 @@ class Handler(BaseHTTPRequestHandler):
   def do_GET(self):
     if self.path == "/api/layout":
       self.send_body(200, {**self.server.snapshot(), "defaults": defaults(), "limits": LIMITS,
-                           "canPublish": self.server.publisher is not None, "exported": self.server.exported_revision,
+                           "targets": self.server.targets, "applied": self.server.applied_revision, "canPublish": self.server.publisher is not None, "exported": self.server.exported_revision,
                            "published": self.server.published_commit})
     elif self.path in STATIC:
       path, mime = STATIC[self.path]
@@ -130,7 +135,7 @@ class Handler(BaseHTTPRequestHandler):
 
   def do_POST(self):
     host = self.headers.get("Host", "")
-    if self.path not in {"/api/export", "/api/publish"}:
+    if self.path not in {"/api/export", "/api/publish", "/api/apply"}:
       return self.send_body(404, {"error": "找不到頁面"})
     if host not in {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"} or self.headers.get("Origin") != f"http://{host}":
       return self.send_body(403, {"error": "請從本機編輯器輸出"})
@@ -150,7 +155,20 @@ class Handler(BaseHTTPRequestHandler):
       current = self.server.snapshot()
       if current["revision"] != revision:
         return self.send_body(409, {"error": "分支檔案已更新。請先載入已輸出版面，再套用調整。"})
+      if self.path == "/api/apply":
+        from tools.layout_studio.device_apply import install
+        device = payload.get("device")
+        if not isinstance(device, str) or device not in self.server.targets or not self.server.publisher or revision != self.server.exported_revision:
+          return self.send_body(409, {"error": "請先輸出版面並選擇已連線的機型"})
+        try:
+          head = install(self.server.publisher, self.server.targets[device], self.server.identity, device, revision)
+        except (ValueError, OSError, PublishConflict, subprocess.TimeoutExpired) as exc:
+          return self.send_body(409, {"error": str(exc)})
+        self.server.applied_revision = revision
+        return self.send_body(200, {"commit": head})
       if self.path == "/api/publish":
+        if self.server.targets and revision != self.server.applied_revision:
+          return self.send_body(409, {"error": "請先套用本次輸出到車機"})
         if not self.server.publisher or revision != self.server.exported_revision:
           return self.send_body(409, {"error": "請先從此編輯器輸出版面"})
         try:
@@ -170,8 +188,11 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument("--port", type=int, default=49837)
   parser.add_argument("--publish", action="store_true", help="enable the explicit push to origin/carrot-wip")
+  parser.add_argument("--c4", metavar="USER@HOST")
+  parser.add_argument("--c3x", metavar="USER@HOST")
+  parser.add_argument("--identity", type=Path)
   args = parser.parse_args()
   publisher = BranchPublisher(ROOT, PROFILE_PATH) if args.publish else None
-  with Studio(args.port, publisher=publisher) as server:
+  with Studio(args.port, publisher=publisher, targets={k:v for k,v in vars(args).items() if k in ("c4","c3x") and v}, identity=args.identity) as server:
     print(f"http://127.0.0.1:{server.server_port}/", flush=True)
     server.serve_forever()

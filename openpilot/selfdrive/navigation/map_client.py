@@ -23,6 +23,20 @@ class MapInput:
     if note_map is not None:
       note_map(None)
     now = time.monotonic()
+    self.receive(now)
+    result = {}
+    if sm.valid['navInstructionCarrot'] and 0 <= now - sm.recv_time['navInstructionCarrot'] < 2:
+      result['navigation'] = navigation_input(sm['navInstructionCarrot'].allManeuvers,
+                                             max(0., speed) * (now - sm.recv_time['navInstructionCarrot']))
+      if (self.image is not None and 0 <= now - self.image_time < .5
+          and self.route_time != 0 and self.route_time == sm['navRoute'].carrotRouteId and sm.valid['navRoute']):
+        result['nav_map'] = self.image
+        if note_map is not None:
+          note_map((int(self.route_time), self.image_time_ns,
+                    min(self.image_time_ns + 500_000_000, int((sm.recv_time['navInstructionCarrot'] + 2.) * 1e9))))
+    return result
+
+  def receive(self, now):
     if self.client is None:
       from msgq.visionipc import VisionIpcClient, VisionStreamType
       self.client = VisionIpcClient('mapsd', VisionStreamType.VISION_STREAM_MAP, True)
@@ -42,14 +56,3 @@ class MapInput:
           self.image_time_ns = int(self.client.timestamp_eof)
           self.image_time = self.image_time_ns * 1e-9
           self.route_time = self.client.timestamp_sof
-    result = {}
-    if sm.valid['navInstructionCarrot'] and 0 <= now - sm.recv_time['navInstructionCarrot'] < 2:
-      result['navigation'] = navigation_input(sm['navInstructionCarrot'].allManeuvers,
-                                             max(0., speed) * (now - sm.recv_time['navInstructionCarrot']))
-      if (self.image is not None and 0 <= now - self.image_time < .5
-          and self.route_time != 0 and self.route_time == sm['navRoute'].carrotRouteId and sm.valid['navRoute']):
-        result['nav_map'] = self.image
-        if note_map is not None:
-          note_map((int(self.route_time), self.image_time_ns,
-                    min(self.image_time_ns + 500_000_000, int((sm.recv_time['navInstructionCarrot'] + 2.) * 1e9))))
-    return result

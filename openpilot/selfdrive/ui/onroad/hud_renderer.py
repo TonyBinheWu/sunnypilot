@@ -290,6 +290,9 @@ class HudRenderer(Widget):
     self._plot_renderer.update(self._show_plot_mode)
     state = self._overlay_state
     key = (state.key if state else None, self._blink_timer <= 8, self._disp_timer < 32, self._show_plot_mode)
+    if HUD_LAYOUT["scene_style"]:
+      from openpilot.selfdrive.ui.onroad.reality_scene import draw_minimal_hud
+      draw_minimal_hud(rect, ui_state, self, HUD_LAYOUT)
     self._overlay.draw(rect, self._paint, key, enabled=state is not None and state.enabled,
                        urgent=state is not None and state.urgent)
 
@@ -297,7 +300,8 @@ class HudRenderer(Widget):
     button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
     button_y = rect.y + UI_CONFIG.border_size
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
-    self._draw_cruise_speed_animation(rect)
+    if not HUD_LAYOUT["scene_style"]:
+      self._draw_cruise_speed_animation(rect)
     from openpilot.common.indicator_display import draw as draw_indicator
     from openpilot.selfdrive.ui.lane_change_notice import draw_lane_change_notice
     badge_width = min(500, rect.width * .62)
@@ -306,6 +310,9 @@ class HudRenderer(Widget):
                      badge_width, self._font_display, 26 if rect.width > 1200 else 19)
 
   def _paint(self, rect: rl.Rectangle) -> None:
+    if HUD_LAYOUT["scene_style"]:
+      self._draw_egpu_badge(rect)
+      return
 
     # Draw the header background
     rl.draw_rectangle_gradient_v(

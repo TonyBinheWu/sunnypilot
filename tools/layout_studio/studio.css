@@ -11,3 +11,5 @@ footer{justify-content:flex-end;margin-top:16px;flex-wrap:wrap}footer button{fon
 @font-face{font-family:NativeDisplay;src:url('/assets/display.ttf') format('truetype');font-display:swap;font-weight:100 900}
 #screen{font-family:NativeDisplay,Inter,'Microsoft JhengHei',sans-serif}.native-card{padding:23px 40px}.native-card span{max-width:100%;text-wrap:balance}.paired-card{align-items:flex-start}.sub-label{position:absolute;left:40px;bottom:18px;color:#b4b4b4;font-size:30px}.big-hud-bg{border:2px solid #fff;border-radius:30px;background:#0006;touch-action:none;cursor:move}
 .style-picker:not([hidden]){display:flex;gap:1rem;align-items:center;margin:1rem 0;font-weight:600}.style-picker select{padding:.55rem .9rem;border-radius:.5rem;font:inherit}.fine-adjust{grid-column:1/-1;display:flex;gap:.4rem}.fine-adjust button{padding:.3rem .75rem;font:inherit}
+
+.minimal-hud{position:absolute;pointer-events:none}.minimal-hud .minimal-reading{position:absolute;display:grid;line-height:1;font-weight:650;font-variant-numeric:tabular-nums;pointer-events:auto;cursor:move}.minimal-reading small{font-size:.36em;font-weight:500}

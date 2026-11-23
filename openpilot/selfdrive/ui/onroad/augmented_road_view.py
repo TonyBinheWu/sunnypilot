@@ -51,6 +51,9 @@ class AugmentedRoadView(CameraView):
 
     self.model_renderer = ModelRenderer()
     self._render_diagnostics = RenderDiagnostics('ui')
+    from openpilot.selfdrive.ui.layout_profile import large_display_layout
+    from openpilot.selfdrive.ui.onroad.reality_scene import RealityScene
+    self._reality = RealityScene(large_display_layout())
     self._hud_renderer = HudRenderer()
     self._overlay_state = OverlayState()
     self.model_renderer._overlay_state = self._overlay_state
@@ -116,8 +119,9 @@ class AugmentedRoadView(CameraView):
       int(self._content_rect.height)
     )
 
+    reality = bool(self._reality.style["scene_style"]) and not self._suppress_camera_for_cluster
     _t = time.monotonic()
-    if self._suppress_camera_for_cluster:
+    if reality or self._suppress_camera_for_cluster:
       rl.draw_rectangle_rec(self._content_rect, rl.BLACK)
     else:
       # Render the base camera view
@@ -126,7 +130,11 @@ class AugmentedRoadView(CameraView):
 
     self._overlay_state.update(ui_state, self.client, self.stream_type, self._suppress_camera_for_cluster)
 
-    if not self._suppress_camera_for_cluster:
+    if reality:
+      _t = time.monotonic()
+      timing.call("model", self._reality.draw, self._content_rect, ui_state)
+      model_ms = (time.monotonic() - _t) * 1000.
+    elif not self._suppress_camera_for_cluster:
       # Draw the model overlay only with the camera view
       _t = time.monotonic()
       timing.call('model', self.model_renderer.render, self._content_rect)

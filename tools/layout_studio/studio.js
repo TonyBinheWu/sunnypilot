@@ -14,6 +14,7 @@ const dimensions = {c4:[536,240], c3x:[2160,1080]};
 const icons = {egpu:"network", language:"toggles", formosalink:"pair"};
 const savedKey = "formosa-native-studio-v1";
 let device = "c4", view = "settings", selection = {c4:"toggles", c3x:"device"}, instrument = "speed";
+let targets = {}, applied;
 let exported, published, canPublish = false;
 let base, draft, revision, limits, defaults, scale = 1, busy = false, railLeft = 0;
 const clone = obj => JSON.parse(JSON.stringify(obj));
@@ -44,13 +45,16 @@ function saveDraft() {
   if (!dirty && published) setStatus("已推送至 carrot-wip · "+published.slice(0,9));
   else if (!dirty && revision===exported) setStatus("已輸出到本機分支，等待推送");
   $("#export").disabled = busy || (!dirty && revision===exported);
+  $("#apply").textContent="套用到 "+device.toUpperCase();
+  $("#apply").disabled=busy || dirty || revision!==exported || !targets[device];
   $("#publish").hidden = !canPublish;
-  $("#publish").disabled = busy || dirty || revision!==exported || Boolean(published);
+  $("#publish").disabled = busy || dirty || revision!==exported || Boolean(published) || (Object.keys(targets).length>0 && revision!==applied);
 }
 async function loadProfile(restore) {
   const response = await fetch("/api/layout",{cache:"no-store"});
   if (!response.ok) throw new Error("讀取版面失敗");
   const data = await response.json();
+  applied=data.applied; targets=data.targets || {};
   canPublish = data.canPublish; exported = data.exported; published = data.published;
   base = data.profile; draft = clone(base); revision = data.revision; limits = data.limits; defaults = data.defaults;
   let warning = "";
@@ -270,6 +274,21 @@ function drawRoad(canvas) {
 function renderDriving(screen) {
   const v=layout(), small=device==="c4", [w,h]=dimensions[device];
   const canvas=element("canvas","road");if(v.scene_style) drawRealityScene(canvas,w,h,v); else drawRoad(canvas);screen.append(canvas);
+  if (v.scene_style) {
+    const group=box(element("div","minimal-hud"),0,0,w,h);
+    for (const [part,value,label,anchor] of [["speed","72","km/h",.035],["cruise","80","MAX",small?.24:.17]]) {
+      const size=v[part+"_font"]*.66;
+      const x=Math.max(3,Math.min(w-size*2,w*anchor+v.hud_x+v[part+"_x"]));
+      const y=Math.max(2,Math.min(h-size*2,h*.045+v.hud_y+v[part+"_y"]));
+      const block=element("div","minimal-reading "+part);
+      block.dataset.part=part;
+      Object.assign(block.style,{left:x+"px",top:y+"px",fontSize:size+"px",color:v.scene_style===1?"#eff5f8":"#142735"});
+      block.append(element("span","",value),element("small","",label));
+      group.append(block);
+    }
+    screen.append(group);
+    return;
+  }
   const pw=small?307:350, ph=small?115:150;
   const panel=box(element("div","instruments"),(small?10:40)+v.hud_x,h-(small?125:290)+v.hud_y,pw,ph);
   panel.dataset.part="hud";
@@ -333,6 +352,16 @@ $("#export").onclick=async()=>{
     if(same(base,draft)) setStatus("已輸出到本機分支，等待推送");
   } catch(err) { busy=false;$("#export").disabled=false;setStatus(err.message); }
 };
+$("#apply").onclick=()=>confirmAction("套用到 "+device.toUpperCase()+"？",targets[device]+" 將於停車熄火狀態安裝已輸出的版面及介面程式，下次啟動車機介面時生效。",async()=>{
+  if(busy || !same(base,draft) || revision!==exported) return;
+  const selected=device;
+  busy=true;saveDraft();setStatus("正在核對車機與套用版本…");
+  try {
+    const res=await fetch("/api/apply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({device:selected,revision})});
+    const data=await res.json();if(!res.ok) throw new Error(data.error);
+    applied=revision;busy=false;saveDraft();setStatus(selected.toUpperCase()+" 已套用 "+data.commit.slice(0,9)+"，下次啟動介面生效");
+  } catch(err){busy=false;saveDraft();setStatus("套用失敗 · "+err.message);}
+});
 $("#publish").onclick=()=>confirmAction("推送到 carrot-wip？","這會把已輸出的 C3X、C4 版面與本機分支的介面更新推送至 origin/carrot-wip。",async()=>{
   if (busy || !same(base,draft) || revision!==exported) return;
   busy=true;saveDraft();setStatus("正在推送並核對遠端版本…");
