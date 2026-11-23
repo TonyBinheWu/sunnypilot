@@ -703,7 +703,27 @@ def forward_button_message(packer, CAN, frame, CS, cruise_button, MainMode_ACC_t
       ret.append(packer.make_can_msg(CS.cruise_btns_msg_canfd, CAN.CAM, values))
   return ret
 
-def create_adrv_messages(CP, packer, CAN, frame):
+def ev6_cluster_corners(parser):
+  """Read only fresh, accepted OEM display positions from the camera bus."""
+  if parser is None:
+    return {}
+  name = "ADRV_0x1ea"
+  timestamp = parser.ts_nanos.get(name, {}).get("COUNTER", 0)
+  if not timestamp or not 0 <= parser._last_update_nanos - timestamp <= 150_000_000 or len(parser.dat.get(0x1EA, b"")) != 32:
+    return {}
+  source = parser.vl[name]
+  corners = {}
+  for side in ("LF", "RF", "LR", "RR"):
+    kind = source[f"{side}_DETECT"]
+    distance = source[f"{side}_DETECT_DISTANCE"]
+    if kind in (1, 2, 3, 4) and distance > 0:
+      corners[f"{side}_DETECT"] = 1 if kind == 4 else kind
+      corners[f"{side}_DETECT_DISTANCE"] = distance
+      corners[f"{side}_DETECT_LATERAL"] = source[f"{side}_DETECT_LATERAL"]
+  return corners
+
+
+def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None):
   # messages needed to car happy after disabling
   # the ADAS Driving ECU to do longitudinal control
 
@@ -724,6 +744,8 @@ def create_adrv_messages(CP, packer, CAN, frame):
         #'DATA26': 1,  #1
         #'DATA32': 5,  #5
       }
+      if corner_parser is not None and CP.carFingerprint == CAR.KIA_EV6:
+        values.update(ev6_cluster_corners(corner_parser))
       ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))
 
       values = {

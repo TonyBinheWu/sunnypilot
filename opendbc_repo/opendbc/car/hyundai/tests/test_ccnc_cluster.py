@@ -136,3 +136,28 @@ def test_cluster_objects_restore_corner_state_without_blinking_or_distance_clamp
     else:
       assert decoded["LANELINE_CURVATURE"] == 2
     assert source == original
+
+
+@pytest.mark.parametrize("age,visible", [(0, True), (150_000_000, True), (150_000_001, False), (-1, False)])
+def test_ev6_non_camera_scc_hidden_corner_packet(age, visible):
+  name = "ADRV_0x1ea"
+  source = {}
+  for side, kind, distance in [("LF", 4, 12.3), ("RF", 2, 5.2), ("LR", 0, 7), ("RR", 4, 0)]:
+    source.update({f"{side}_DETECT": kind, f"{side}_DETECT_DISTANCE": distance, f"{side}_DETECT_LATERAL": 1.2})
+  parser = SimpleNamespace(ts_nanos={name: {"COUNTER": 100}}, _last_update_nanos=100+age,
+                           dat={0x1EA: bytes(32)}, vl={name: source})
+  cp = SimpleNamespace(flags=HyundaiFlags.CANFD_HDA2, carFingerprint=hyundaicanfd.CAR.KIA_EV6)
+  def packet(cam):
+    packer = CANPacker("hyundai_canfd_generated")
+    msgs = hyundaicanfd.create_adrv_messages(cp, packer, SimpleNamespace(ECAN=1), 5, cam)
+    assert len(msgs) == 2
+    addr, data, bus = msgs[0]
+    assert (addr, bus) == (0x1EA, 1)
+    return {k: get_raw_value(data, sig) * sig.factor + sig.offset for k, sig in packer.dbc.name_to_msg[name].sigs.items()}
+  expected = packet(None)
+  if visible:
+    expected.update(LF_DETECT=1, RF_DETECT=2, LF_DETECT_DISTANCE=12.3, RF_DETECT_DISTANCE=5.2,
+                    LF_DETECT_LATERAL=1.2, RF_DETECT_LATERAL=1.2)
+  actual = packet(parser)
+  del actual["CHECKSUM"], expected["CHECKSUM"]
+  assert actual == pytest.approx(expected)
