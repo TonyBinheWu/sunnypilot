@@ -222,3 +222,37 @@ def test_ev6_vision_only_neighbor(target, offset, age, occupied, expected):
                                     f"{expected}_DETECT_LATERAL": 3.5})
   else:
     assert values == previous
+
+
+@pytest.mark.parametrize("age,stock_mode", [(0, 0), (250_000_000, 1), (250_000_001, 1), (0, 3), (0, 5)])
+def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
+  from openpilot.cereal import log
+  monkeypatch.setattr(hyundaicanfd, "Params", lambda: SimpleNamespace(get_int=lambda key: 0, get=lambda key: "2"))
+  packer = CANPacker("hyundai_canfd_generated")
+  def blank(name):
+    return dict.fromkeys(packer.dbc.name_to_msg[name].sigs, 0)
+  stamp = 1_000_000_000
+  model = log.ModelDataV2.new_message(timestampEof=stamp)
+  stock, corner = blank("ADRV_0x161"), blank("ADRV_0x1ea")
+  stock.update(NAV_ICON=4, LCA_RIGHT_ICON=1, LCA_LEFT_ARROW=1)
+  corner["HDA_MODE2"] = stock_mode
+  cam = SimpleNamespace(ts_nanos={"ADRV_0x161":{"COUNTER":stamp}}, _last_update_nanos=stamp,
+                        dat={0x161: bytes(32)}, vl={"ADRV_0x161":stock})
+  state = SimpleNamespace(adrv_0x161=stock, adrv_0x1ea=corner, cp_cam=cam, modelV2=model, out=structs.CarState(leftBlinker=True),
+                          lfahda_cluster=None, cruise_buttons_msg=None, adrv_0x200=None, ccnc_0x162=None, scc_control=None,
+                          is_metric=True, paddle_button_prev=0, softHoldActive=0, trailer_connected=False)
+  control = structs.CarControl(latActive=True, enabled=True)
+  radar = log.RadarState.new_message(mdMonoTime=stamp)
+  radar.init("leadsRight", 1)
+  lead = radar.leadsRight[0]
+  lead.status, lead.radar, lead.dRel, lead.yRel = True, True, 12.0, -3.5
+  state.radarState = radar
+  cp = SimpleNamespace(flags=HyundaiFlags.CAMERA_SCC | HyundaiFlags.CANFD_HDA2, carFingerprint=hyundaicanfd.CAR.KIA_EV6, openpilotLongitudinalControl=True)
+  msgs = hyundaicanfd.create_ccnc_messages(cp, packer, SimpleNamespace(ECAN=0, CAM=2), 5, control, state, control.hudControl,
+                                          0, False, False, 2, False, 0, 0, now_nanos=stamp+age)
+  frames = {addr:data for addr,data,_ in msgs}
+  def raw(addr,key):
+    return get_raw_value(frames[addr], packer.dbc.addr_to_msg[addr].sigs[key])
+  assert [raw(0x161,k) for k in ("NAV_ICON","LCA_RIGHT_ICON","LCA_LEFT_ARROW")] == [4,1,1]
+  assert raw(0x1ea,"HDA_MODE2") == stock_mode
+  assert raw(0x1ea,"RF_DETECT") == int(age <= 250_000_000)

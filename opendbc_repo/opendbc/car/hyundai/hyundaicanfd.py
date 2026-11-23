@@ -1074,7 +1074,7 @@ def create_alt2_adas_button_request(packer, CAN, frame, CC, CS, stopping, *, kee
 
 def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
                          disp_angle, left_lane_warning, right_lane_warning,
-                         enable_corner_radar, stopping, canfd_debug, paddle_mode, hud_lateral=None):
+                         enable_corner_radar, stopping, canfd_debug, paddle_mode, hud_lateral=None, now_nanos=0):
   ret = []
   interlock_active = longitudinal_interlock_active(CS)
   display_lead = _display_lead(getattr(CS, "radarState", None))
@@ -1142,6 +1142,7 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
 
         ret.append(packer.make_can_msg(CS.cruise_btns_msg_canfd, CAN.CAM, values))
 
+    ev6_display = getattr(CP, "carFingerprint", None) == CAR.KIA_EV6 and bool(CP.flags & HyundaiFlags.CANFD_HDA2)
     # --- 0x161/0x200/0x1ea/0x162 (frame%5) ---
     if frame % 5 == 0:
       lat_active = CC.latActive
@@ -1257,6 +1258,11 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
         values["LANE_LEFT"] = 0 if trailer_lane_change_blocked else 1 if desire in (1, 3) else 0
         values["LANE_RIGHT"] = 0 if trailer_lane_change_blocked else 1 if desire in (2, 4) else 0
 
+        if ev6_display:
+          # Preserve the OEM icon state, including standby and cancellation.
+          stock = _fresh_ev6_cluster_rx(getattr(CS, "cp_cam", None), "ADRV_0x161", 0x161)
+          for key in ("NAV_ICON", "LCA_LEFT_ICON", "LCA_RIGHT_ICON", "LCA_LEFT_ARROW", "LCA_RIGHT_ARROW"):
+            values[key] = stock.get(key, 0)
         _apply_driver_monitoring_alert(values, hud_control, CS.adrv_0x161)
         ret.append(packer.make_can_msg("ADRV_0x161", CAN.ECAN, values, rx_counter = rx_counter))
 
@@ -1280,6 +1286,9 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
 
         _apply_cluster_lane_lines(values, CS, lat_active, desire)
         _normalize_cluster_corner_objects(values)
+        if ev6_display and enable_corner_radar > 0:
+          _add_ev6_front_neighbors(values, getattr(CS, "radarState", None), now_nanos)
+          _add_ev6_vision_neighbor(values, md, now_nanos)
 
         ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values, rx_counter = rx_counter))
 
