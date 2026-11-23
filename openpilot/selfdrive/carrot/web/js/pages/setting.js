@@ -2561,6 +2561,11 @@ function bindSettingProfileSectionToggle(rendered, stateKey) {
 }
 
 function parkedIndicatorButtons() {
+  const [historyLabel, copyLabel, copied, manualCopy, empty] = ({
+    "zh-tw": ["錯誤紀錄", "複製紀錄", "已複製", "請長按紀錄並選擇複製", "目前沒有錯誤紀錄"],
+    zh: ["错误记录", "复制记录", "已复制", "请长按记录并选择复制", "暂无错误记录"],
+    ko: ["오류 기록", "기록 복사", "복사됨", "기록을 길게 눌러 복사하세요", "오류 기록 없음"],
+  })[LANG] || ["Error history", "Copy log", "Copied", "Select the log and copy it", "No errors recorded"];
   const labels = ({
     "zh-tw": ["停車測試方向燈", "左燈 7 秒", "右燈 7 秒", "已接受請求，請查看實體方向燈。", "未能確認。需要相容 SPAS、P 檔靜止且輔助已解除。"],
     zh: ["驻车转向灯测试", "左灯 7 秒", "右灯 7 秒", "已接受请求，请查看实际灯光。", "未能确认。需要兼容 SPAS、P 挡静止且辅助已解除。"],
@@ -2574,6 +2579,58 @@ function parkedIndicatorButtons() {
   actions.className = "setting-actions";
   const feedback = document.createElement("output");
   feedback.setAttribute("aria-live", "polite");
+  const details = document.createElement("details");
+  const summary = document.createElement("summary");
+  const log = document.createElement("textarea");
+  log.readOnly = true;
+  log.rows = 4;
+  log.style.width = "100%";
+  log.style.boxSizing = "border-box";
+  log.setAttribute("aria-label", historyLabel);
+  log.placeholder = empty;
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.textContent = copyLabel;
+  const copyStatus = document.createElement("output");
+  copyStatus.setAttribute("aria-live", "polite");
+  details.append(summary, log, copy, copyStatus);
+  const key = "parkedIndicatorErrors";
+  let entries = [];
+  let storageWritable = true;
+  function refreshLog() {
+    if (storageWritable) try {
+      const saved = JSON.parse(localStorage.getItem(key));
+      if (Array.isArray(saved)) entries = saved.filter(line => typeof line === "string").slice(0, 20);
+    } catch { /* Storage may be unavailable in a WebView. */ }
+    renderLog();
+  }
+  function renderLog() {
+    summary.textContent = `${historyLabel} (${entries.length})`;
+    log.value = entries.join("\n");
+    copy.disabled = !entries.length;
+  }
+  refreshLog();
+  details.ontoggle = () => { if (details.open) refreshLog(); };
+  function recordError(side, reason) {
+    refreshLog();
+    entries.unshift(`${new Date().toISOString()} | ${side} | ${reason}`);
+    entries = entries.slice(0, 20);
+    try { localStorage.setItem(key, JSON.stringify(entries)); } catch { storageWritable = false; }
+    renderLog();
+    copyStatus.textContent = "";
+    feedback.textContent = labels[4];
+  }
+  copy.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(log.value);
+      copyStatus.textContent = copied;
+    } catch {
+      log.focus();
+      log.select();
+      copyStatus.textContent = manualCopy;
+      try { if (document.execCommand("copy")) copyStatus.textContent = copied; } catch { /* Keep selection for manual copy. */ }
+    }
+  };
   for (const [index, side] of ["left", "right"].entries()) {
     const button = document.createElement("button");
     button.type = "button";
@@ -2581,17 +2638,25 @@ function parkedIndicatorButtons() {
     button.onclick = async () => {
       for (const action of actions.children) action.disabled = true;
       feedback.textContent = "";
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       try {
         const response = await fetch("/api/hyundai/parked-indicator/" + side, {
-          method: "POST", headers: {"Content-Type": "application/json"}, body: "{}",
+          method: "POST", headers: {"Content-Type": "application/json"}, body: "{}", signal: controller.signal,
         });
-        feedback.textContent = response.ok && (await response.json()).ok ? labels[3] : labels[4];
-      } catch { feedback.textContent = labels[4]; }
-      finally { for (const action of actions.children) action.disabled = false; }
+        const result = await response.json().catch(() => null);
+        if (response.ok && result?.ok === true) feedback.textContent = labels[3];
+        else recordError(labels[index + 1], `HTTP ${response.status} | ${result?.reason || (result?.ok === false ? "controller_rejected" : "unexpected_response")}`);
+      } catch (error) {
+        recordError(labels[index + 1], controller.signal.aborted ? "request_timeout" : `network_error | ${error.message}`);
+      } finally {
+        clearTimeout(timeout);
+        for (const action of actions.children) action.disabled = false;
+      }
     };
     actions.append(button);
   }
-  card.append(title, actions, feedback);
+  card.append(title, actions, feedback, details);
   return card;
 }
 
