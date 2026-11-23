@@ -2,16 +2,6 @@
 
 [한국어](../ko/settings.md)
 
-## Automatic vehicle identification
-
-While parked, open **Tools → Car Select** in Carrot Web and choose **Detect my vehicle automatically**. At the next vehicle start, the cockpit shows the identification result. If the vehicle is unidentified, the device stays in dashcam mode and offers manual selection. After identification, check the longitudinal control status to see which system controls acceleration and braking. For an EV6 HDA II on standard wiring, the camera CAN messages identify the steering configuration. A verified experimental longitudinal request also requires matching vehicle firmware, a reply from the ADAS controller and the expected CAN wiring. If automatic detection shows **KIA EV6** in dashcam mode, you can request verification for that vehicle again while parked under **Settings → Toggles**.
-
-## Auto experimental longitudinal
-
-On a development build, open **Settings → Toggles** while parked. Select **Auto experimental longitudinal** and confirm for the identified vehicle. At the next vehicle start, the system checks the vehicle and available control configuration. A stock-cruise configuration keeps factory cruise. Factory automatic emergency braking (AEB) may be unavailable when experimental longitudinal control is active.
-
-For supported Hyundai/Kia CAN-FD cars on standard wiring, open Device → Toggles in Carrot Web with the ignition off and the C4 powered. Use **Request verification** to save a vehicle-specific request. The device verifies the firmware and bus layout at vehicle startup. Check that the last identified control owner is openpilot before enabling Experimental Mode. Turn DEC off to keep the blended vision planner selected.
-
 ## Road scene research
 
 In FormosaLink, choose your paired Carrot device, open **Road scene research**, and select **Start sharing**. The portal shows recent road geometry and nearby OpenStreetMap roads. Stop sharing, erase the data, or download your observations from the same panel. Camera classifications require a connected viewer with detection enabled. [Data fields and evaluation](../../ROAD_SCENE_RESEARCH.zh-TW.md)
@@ -634,5 +624,3 @@ Selecting Traditional Chinese (`zh-tw`) loads the 212 per-setting reference page
 ## FormosaLink on carrot-wip
 
 Open Device → FormosaLink (C3X) or Settings → FormosaLink (C4) for independent QR pairing. `FormosaLinkEnabled` defaults on for the background agent; pairing remains required. `FormosaLinkRemoteWeb` is a separate, default-off local grant for the full native Carrot web, including its existing tools and terminal. It requires fresh parked/ignition-off state and closes when permission, ownership or state expires. `FormosaLinkRemoteSettings` does not grant full web access. The portal's Carrot adapter reports health; setting edits use Carrot's own web validation. The Live section provides owner-leased wide-road/driver MJPEG video. Update the device and IIS backend together; see [deployment and limits](../../../formosalink/docs/CARROT_REMOTE.md).
-
-[Experimental longitudinal control](speed-deceleration.md) · `ExperimentalMode` / `DynamicExperimentalControl` / `AlphaLongitudinalEnabled`

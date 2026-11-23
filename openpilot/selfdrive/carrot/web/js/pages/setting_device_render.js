@@ -199,7 +199,6 @@ function renderDeviceToggleRow(param, title, checked, options = {}) {
         <label class="device-toggle" data-param="${escapeHtml(param)}" data-confirm-key="${escapeHtml(confirmKey)}" data-confirmed-param="${escapeHtml(confirmedParam)}" data-confirmed="${confirmed}">
           <span class="device-toggle__text">
             <span class="title">${escapeHtml(title)}</span>
-            ${options.description ? `<span class="descr">${escapeHtml(options.description)}</span>` : ""}
           </span>
           <span class="ctrl">
             <span class="c-switch">

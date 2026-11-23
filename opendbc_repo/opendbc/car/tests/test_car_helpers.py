@@ -17,10 +17,9 @@ def test_skip_fw_query_keeps_can_fingerprint(monkeypatch):
   monkeypatch.setattr(car_helpers, "get_vin", unexpected_query)
   monkeypatch.setattr(car_helpers, "get_present_ecus", unexpected_query)
   monkeypatch.setattr(car_helpers, "get_fw_versions_ordered", unexpected_query)
-  monkeypatch.setattr(car_helpers, "get_fw_versions", unexpected_query)
   monkeypatch.setattr(car_helpers, "can_fingerprint", lambda can_recv: (None, fingerprint))
 
-  result = car_helpers.fingerprint(lambda **kwargs: [], lambda msg: None, obd_multiplexing.append, 1, None, skip_fw_query=True, verify_ev6=True)
+  result = car_helpers.fingerprint(lambda **kwargs: [], lambda msg: None, obd_multiplexing.append, 1, None, skip_fw_query=True)
 
   assert result[1] == fingerprint
   assert result[2] == VIN_UNKNOWN
@@ -67,83 +66,3 @@ def test_only_valid_manual_selection_skips_fw_query(monkeypatch, forced_candidat
   assert CI.CP.fingerprintSource == expected_source
   assert CI.CP.carFw == []
   assert CI.CP.carVin == VIN_UNKNOWN
-
-
-@pytest.mark.parametrize("detected,source,exact,release,wanted,expect_alpha", [
-  ("CAR", "fw", True, False, "CAR", True),
-  ("CAR", "can", True, False, "CAR", True),
-  ("OTHER", "fw", True, False, "MOCK", False),
-  ("CAR", "fw", False, False, "MOCK", False),
-  ("CAR", "fixed", True, False, "MOCK", False),
-  (None, "can", True, False, "MOCK", False),
-  ("CAR", "fw", True, True, "CAR", False),
-])
-def test_vehicle_scoped_alpha_identification(monkeypatch, detected, source, exact, release, wanted, expect_alpha):
-  class Params:
-    def get(self, key):
-      return {"CarSelected3": "Selected car", "AutoExperimentalPlatform": "CAR"}.get(key)
-
-    def get_bool(self, key):
-      assert key == "IsReleaseBranch"
-      return release
-
-    def put(self, key, value):
-      pass
-
-  cached = object()
-  def fingerprint(*args, skip_fw_query, verify_ev6, auto_detect):
-    assert not verify_ev6
-    assert args[-1] is (cached if release else None)
-    assert skip_fw_query == release
-    return detected, {}, VIN_UNKNOWN, [], getattr(CarParams.FingerprintSource, source), exact
-
-  class Interface:
-    @staticmethod
-    def get_params(platform, fp, fw, alpha, is_release, docs):
-      assert alpha == expect_alpha
-      return SimpleNamespace(carFingerprint=platform, brand="test")
-
-    def __init__(self, cp):
-      self.CP = cp
-
-  monkeypatch.setattr(car_helpers, "Params", Params)
-  monkeypatch.setattr(car_helpers, "fingerprint", fingerprint)
-  monkeypatch.setattr(car_helpers, "get_selected_car_platform", lambda name: "CAR")
-  monkeypatch.setattr(car_helpers, "interfaces", {"CAR": Interface, "MOCK": Interface})
-  assert car_helpers.get_car(None, None, None, False, True, cached_params=cached).CP.carFingerprint == wanted
-
-
-@pytest.mark.parametrize("detected,source,requested,expected,alpha,result", [
-  ("CAR", "fw", "", "CAR", False, "CAR"),
-  (None, "can", "", "MOCK", False, "unknown"),
-  ("CAR", "fixed", "", "MOCK", False, "unknown"),
-  ("CAR", "fw", "CAR", "CAR", True, "CAR"),
-  ("OTHER", "fw", "CAR", "MOCK", False, "OTHER"),
-])
-def test_explicit_auto_reads_vehicle_and_reports_result(monkeypatch, detected, source, requested, expected, alpha, result):
-  class Store(dict):
-    put = dict.__setitem__
-
-    def get_bool(self, name):
-      return False
-
-  store = Store(CarSelected3="AUTO", AutoExperimentalPlatform=requested)
-  def scan(*args, skip_fw_query, verify_ev6, auto_detect):
-    assert args[-1] is None and not skip_fw_query
-    return detected, {}, VIN_UNKNOWN, [], getattr(CarParams.FingerprintSource, source), True
-
-  class Interface:
-    def __init__(self, cp):
-      self.CP = cp
-
-    @staticmethod
-    def get_params(candidate, fingerprints, fw, allow_alpha, release, docs):
-      assert allow_alpha == alpha
-      return SimpleNamespace(carFingerprint=candidate, brand="test")
-
-  monkeypatch.setattr(car_helpers, "Params", lambda: store)
-  monkeypatch.setattr(car_helpers, "fingerprint", scan)
-  monkeypatch.setattr(car_helpers, "interfaces", {"CAR": Interface, "MOCK": Interface})
-  ci = car_helpers.get_car(None, None, None, True, False, cached_params=object())
-  assert ci.CP.carFingerprint == expected
-  assert store["AutoCarModelResult"] == result

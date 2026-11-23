@@ -42,7 +42,6 @@ const DEVICE_LANGUAGES = window.CarrotDeviceLanguageOptions || [
 const DEVICE_TOGGLES = [
   { param: "OpenpilotEnabledToggle", labelKey: "enable_openpilot", defaultLabel: "Enable openpilot" },
   { param: "ExperimentalMode", labelKey: "experimental_mode", defaultLabel: "Experimental Mode", confirmKey: "experimental_mode_confirm", confirmedParam: "ExperimentalModeConfirmed" },
-  { param: "DynamicExperimentalControl", labelKey: "dynamic_experimental_control", defaultLabel: "Dynamic Experimental Control" },
   { param: "DisengageOnAccelerator", labelKey: "disengage_on_accelerator", defaultLabel: "Disengage on Accelerator" },
   { param: "IsLdwEnabled", labelKey: "enable_ldw", defaultLabel: "Enable Lane Departure Warnings" },
   { param: "AlwaysOnDM", labelKey: "always_on_dm", defaultLabel: "Always-on DM" },

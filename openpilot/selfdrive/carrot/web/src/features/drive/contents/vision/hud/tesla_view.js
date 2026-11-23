@@ -392,15 +392,6 @@ export function createTeslaView(doc,target) {
       if(details.length)parkingStatus.textContent=text('parking_forward','Front view')+' · '+details.join(' · ');
       if(vehicleFrame)parkingStatus.textContent+=' · '+text('parking_usb_model','車機 USB eGPU 模型')+(vehicleFrame.slots.length?' · '+text('parking_paint_verified','車機影像覆核車格')+' '+vehicleFrame.slots.length:'');
     }
-    if (parking.departing && parking.overhead) {
-      const car = target.CarrotHudState?.carState;
-      const age = now() - (target.CarrotStateReceivedAtMonotonic?.carState ?? -Infinity);
-      if (car?.canValid === true && age >= 0 && age < 500) {
-        if (car.leftBlindspot) parkingStatus.textContent += ' · ' + text('replay_event_left_blindspot', 'Left blind spot');
-        if (car.rightBlindspot) parkingStatus.textContent += ' · ' + text('replay_event_right_blindspot', 'Right blind spot');
-      }
-      parkingStatus.textContent += ' · ' + text('parking_depart', 'Drive out manually and check traffic beside and behind you');
-    }
     if(parking.spin){predictionLegend.hidden=true;scene.tracks=[];scene.model=null;scene.radar=null;scene.vision=null;scene.road=null;scene.parking=[];scene.environment=null;}
     canvas.dataset.parkingView=String(parking.overhead);canvas.dataset.parkingSpin=String(parking.spin);canvas.dataset.parkingCandidates=String(scene.parking.length);canvas.dataset.parkingYaw=String(parking.yaw);canvas.dataset.parkingGear=String(displayData.vehicleGear);canvas.dataset.parkingSpeed=String(speedKph);
     orbitEnabled=zoomEnabled&&viewActive&&!editing&&!bev.frozen;

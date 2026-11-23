@@ -43,8 +43,9 @@ globalThis.CarrotIntroApi = (() => {
   async function setCar(fullName, label) {
     if (isPreview()) return previewResult("set_car");
     if (isDraft()) return {ok:true,draft:true};
-    await setParam("CarSelected3", fullName);
+    const write = setParam("CarSelected3", fullName);
     applyCurrentCarLabel(label);
+    await write;
     return { ok: true };
   }
 

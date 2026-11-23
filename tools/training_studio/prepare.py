@@ -1,8 +1,6 @@
 """Decode real rlogs/HEVC, calibrated N16 features and measured Edge histories."""
 from collections import defaultdict, deque
 from pathlib import Path
-from types import SimpleNamespace
-import math
 import time
 
 from tools.training_studio.head import ACTION, CONTEXT, FEATURES, instrument
@@ -64,21 +62,7 @@ def log_events(path, schema_checkout=None):
   cereal=root/"openpilot/cereal"
   dbc=root/"opendbc_repo/opendbc/car"
   parser=capnp.SchemaParser()
-  # pycapnp can abort the interpreter resolving absolute imports in non-ASCII roots.
-  if str(root).isascii():
-    schema=parser.load(str(cereal/"log.capnp"),imports=[str(cereal),str(dbc)])
-  else:
-    import shutil
-    import tempfile
-    with tempfile.TemporaryDirectory() as temp:
-      roots=[]
-      for index, source in enumerate((cereal,dbc)):
-        dest=Path(temp)/str(index)
-        (dest/"include").mkdir(parents=True)
-        for item in (*source.glob("*.capnp"), *source.glob("include/*.capnp")):
-          shutil.copyfile(item,dest/item.relative_to(source))
-        roots.append(str(dest))
-      schema=parser.load(str(Path(roots[0])/"log.capnp"),imports=roots)
+  schema=parser.load(str(cereal/"log.capnp"),imports=[str(cereal),str(cereal/"include"),str(dbc),str(dbc/"include")])
   if path.stat().st_size>64*1024**2:
     raise ValueError("rlog exceeds offline decoder input budget")
   data=path.read_bytes()
@@ -94,33 +78,6 @@ def log_events(path, schema_checkout=None):
   if len(data)>limit:
     raise ValueError("decompressed rlog exceeds offline decoder budget")
   yield from schema.Event.read_multiple_bytes(data)
-
-
-def front_route(instruction, age, speed):
-  """Match the car's navigation-vector mode with an unavailable map raster."""
-  import numpy as np
-  from openpilot.selfdrive.navigation.commands import navigation_input
-  direction = "follow"
-  vector = np.zeros(47, np.float32)
-  moves = instruction.get("allManeuvers", [])
-  if moves or instruction.get("maneuverType") not in (None, "", "invalid") or instruction.get("maneuverModifier"):
-    if not moves or not 0 <= age < 2 or not math.isfinite(speed):
-      raise ValueError("missing or stale recorded maneuver")
-    move = moves[0]
-    kind, direction = move.get("type"), move.get("modifier")
-    if (kind not in ("turn","continue","end of road","new name") or direction not in ("left","right","straight")
-        or instruction.get("maneuverType") != kind or instruction.get("maneuverModifier") != direction):
-      raise ValueError("unsupported or inconsistent next maneuver")
-    distance = move.get("distance")
-    if not isinstance(distance,(float,int)) or not math.isfinite(distance):
-      raise ValueError("invalid maneuver distance")
-    vector = navigation_input([SimpleNamespace(type=kind,modifier=direction,distance=distance)], max(0.,speed)*age)
-    if not vector[:-1].any():
-      raise ValueError("recorded maneuver has expired")
-  intent = "Follow the current lane." if direction == "follow" else f"At the indicated junction in {vector[-1]*100:.0f} meters, go {direction}."
-  prompt = (intent + " Obey the applicable traffic light. Yield to oncoming traffic and pedestrians before turning. "
-            "Stay centered within the intended lane. Side and rear views are unavailable; do not assume an occluded path is clear.")
-  return vector, direction, prompt
 
 
 def measured_pose_rows(services):
@@ -203,9 +160,7 @@ def prepare(folder):
     for event in log_events(rlog,plan["config"].get("schema_checkout")):
       try:
         kind = event.which()
-        if kind == "navInstructionCarrot":
-          services[kind].append((event.logMonoTime*1e-9, getattr(event,kind).to_dict() if event.valid else None))
-        elif kind in wanted and event.valid:
+        if kind in wanted and event.valid:
           services[kind].append((event.logMonoTime*1e-9, getattr(event,kind).to_dict()))
       except (ValueError,AttributeError):
         continue
@@ -264,29 +219,9 @@ def prepare(folder):
           teacher_images.append(np.asarray(Image.fromarray(image).resize(target,Image.Resampling.BICUBIC)).transpose(2,0,1))
         history.append({"time":timestamp,"wide_time":wide_time,"images":np.stack(teacher_images),"position":position,"rotation":rotation})
         inputs["new_img"][:] = preprocess(images,(geometry.narrow_road.intrinsics,geometry.wide_road.intrinsics),calibration["rpyCalib"])
-        # Replay the car's navigation-vector input. Uploaded recordings have no IPC map raster.
+        # This first release trains the no-route mode. Missing maps are never invented.
         inputs["navigation"][:] = 0
         inputs["nav_map"][:] = 0
-        routed = plan["config"].get("navigation_training") == "recorded_front_route"
-        direction = "follow"
-        prompt = "Follow the current lane. Obey traffic signals and yield to visible hazards. Side and rear views are unavailable."
-        if routed:
-          from bisect import bisect_right
-          nav_rows = services["navInstructionCarrot"]
-          nav_i = bisect_right(nav_rows,timestamp,key=lambda row:row[0])-1
-          instruction = {}
-          age = 0.
-          if nav_i >= 0:
-            nav_time,note = nav_rows[nav_i]
-            age = timestamp-nav_time
-            instruction = note or {}
-          if not instruction:
-            legacy_rows = services["navInstruction"]
-            legacy_i = bisect_right(legacy_rows,timestamp,key=lambda row:row[0])-1
-            legacy = legacy_rows[legacy_i][1] if legacy_i >= 0 and timestamp-legacy_rows[legacy_i][0] < 2 else {}
-            if legacy.get("allManeuvers") or legacy.get("maneuverType") not in (None,"","invalid"):
-              raise ValueError("route missing model-facing Carrot instruction")
-          inputs["navigation"][:],direction,prompt = front_route(instruction,age,state["vEgo"])
         result = dict(zip(output_names, session.run(None,inputs),strict=True))
         for name,next_name in state_pairs.items():
           inputs[name] = result[next_name]
@@ -296,15 +231,13 @@ def prepare(folder):
           continue
         if state.get("leftBlinker") or state.get("rightBlinker") or state.get("leftBlindspot") or state.get("rightBlindspot"):
           raise ValueError("side-gap-dependent maneuver excluded")
-        if services["modelV2"] or direction != "follow":
+        if services["modelV2"]:
           prediction = previous(services["modelV2"],timestamp,.3)
-          meta = prediction.get("meta",{})
-          if (meta.get("laneChangeState") not in ("off",0) or meta.get("desire") in ("laneChangeLeft","laneChangeRight",3,4)
-              or meta.get("autoTurnSignalLaneChange")):
+          if prediction.get("meta",{}).get("laneChangeState","off") not in ("off",0):
             raise ValueError("lane change excluded")
-        if not routed and (services["navInstruction"] or services["navInstructionCarrot"]):
+        if services["navInstruction"] or services["navInstructionCarrot"]:
           navigation = previous(services["navInstructionCarrot"] or services["navInstruction"],timestamp,2)
-          if navigation and (navigation.get("maneuverType") or navigation.get("maneuverModifier")):
+          if navigation.get("maneuverType") or navigation.get("maneuverModifier"):
             raise ValueError("routed samples require recorded N16 map inputs; withheld")
         frame_rows = [min(history,key=lambda row:abs(row["time"]-(timestamp+offset))) for offset in (-2,-1,-.5,-.1,0)]
         if any(abs(row["time"]-(timestamp+offset))>.035 for row,offset in zip(frame_rows,(-2,-1,-.5,-.1,0),strict=True)):
@@ -321,10 +254,10 @@ def prepare(folder):
           "ego_history_timestamps":np.array([round(row["time"]*1e6) for row in poses],np.int64),
           "ego_history_xyz":((np.stack([row["position"] for row in poses])-reference["position"])@reference["rotation"]@axis)[None,None].astype(np.float32),
           "ego_history_rot":(axis@reference["rotation"].T@np.stack([row["rotation"] for row in poses])@axis)[None,None].astype(np.float32),
-          "nav_text":np.array(prompt)}
+          "nav_text":np.array("Follow the current lane. Obey traffic signals and yield to visible hazards. Side and rear views are unavailable.")}
         np.savez_compressed(packets/(identifier+".npz"),**packet)
         rows.append({"id":identifier,"split":dataset["split"],"group":dataset["route_group"],"speed":state["vEgo"],
-          "maneuver":direction,"features":result[FEATURES][0].tolist(),"context":result[CONTEXT][0].tolist(),"source_action":result[ACTION][0].tolist(),
+          "features":result[FEATURES][0].tolist(),"context":result[CONTEXT][0].tolist(),"source_action":result[ACTION][0].tolist(),
           "plan_features":result[plan_head.FEATURES][0].tolist()})
         last_sample = timestamp
         write_json(folder/"progress.json",{"stage":"prepare","samples":len(rows),"rejected":dict(rejected),"updated":time.time()})
@@ -336,6 +269,6 @@ def prepare(folder):
           last_frame_time=None
           for name in state_pairs:
             inputs[name][:]=0
-    write_json(folder/"prepared.json",{"samples":rows,"rejected":dict(rejected),"navigation_mode":plan["config"].get("navigation_training","no_route_only"),"feature_provider":providers[0]})
+    write_json(folder/"prepared.json",{"samples":rows,"rejected":dict(rejected),"navigation_mode":"no_route_only","feature_provider":providers[0]})
   if not rows:
     raise ValueError("no qualified observed samples; inspect prepared.json rejection counts")

@@ -217,7 +217,10 @@ class UIState:
     CP_bytes = self.params.get("CarParamsPersistent")
     if CP_bytes is not None:
       self.CP = messaging.log_from_bytes(CP_bytes, car.CarParams)
-      self.has_longitudinal_control = self.CP.openpilotLongitudinalControl
+      if self.CP.alphaLongitudinalAvailable:
+        self.has_longitudinal_control = self.params.get_bool("AlphaLongitudinalEnabled")
+      else:
+        self.has_longitudinal_control = self.CP.openpilotLongitudinalControl
 
     self.show_debug_ui = self.params.get_int("ShowDebugUI")
     self.show_date_time = self.params.get_int("ShowDateTime")

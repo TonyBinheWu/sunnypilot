@@ -2,11 +2,9 @@ from openpilot.system.ui.lib.multilang import tr
 from openpilot.cereal import log
 
 from openpilot.system.ui.widgets.scroller import NavScroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigToggle
-from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog
+from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
-from openpilot.selfdrive.ui.layouts.settings.experimental_setup import auto_setup_status, set_auto_setup
 from openpilot.selfdrive.ui.ui_state import ui_state
 
 PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
@@ -19,8 +17,6 @@ class TogglesLayoutMici(NavScroller):
     self._personality_toggle = BigMultiParamToggle(tr("driving personality"), "LongitudinalPersonality",
                                                  [tr("aggressive"), tr("standard"), tr("relaxed"), tr("moreRelaxed")])
     self._experimental_btn = BigParamControl(tr("experimental mode"), "ExperimentalMode")
-    self._auto_setup = BigToggle(tr("Auto experimental longitudinal"), toggle_callback=self._set_auto_setup)
-    self._dec_btn = BigParamControl(tr("Dynamic Experimental Control"), "DynamicExperimentalControl")
     is_metric_toggle = BigParamControl(tr("use metric units"), "IsMetric")
     rainbow_toggle = BigParamControl(tr("Rainbow Road (SP style)"), "RainbowMode")
     ldw_toggle = BigParamControl(tr("lane departure warnings"), "IsLdwEnabled")
@@ -31,9 +27,7 @@ class TogglesLayoutMici(NavScroller):
 
     self._scroller.add_widgets([
       self._personality_toggle,
-      self._auto_setup,
       self._experimental_btn,
-      self._dec_btn,
       is_metric_toggle,
       rainbow_toggle,
       ldw_toggle,
@@ -46,7 +40,6 @@ class TogglesLayoutMici(NavScroller):
     # Toggle lists
     self._refresh_toggles = (
       ("ExperimentalMode", self._experimental_btn),
-      ("DynamicExperimentalControl", self._dec_btn),
       ("IsMetric", is_metric_toggle),
       ("RainbowMode", rainbow_toggle),
       ("IsLdwEnabled", ldw_toggle),
@@ -65,20 +58,6 @@ class TogglesLayoutMici(NavScroller):
       gui_app.set_show_fps(True)
 
     ui_state.add_engaged_transition_callback(self._update_toggles)
-    ui_state.add_offroad_transition_callback(self._update_toggles)
-
-  def _set_auto_setup(self, enabled):
-    if enabled and ui_state.CP is not None:
-      platform = ui_state.CP.carFingerprint
-      def confirm():
-        if ui_state.CP is not None and ui_state.CP.carFingerprint == platform:
-          set_auto_setup(True, ui_state)
-        self._update_toggles()
-      icon = gui_app.texture("icons_mici/offroad_alerts/orange_warning.png", 64, 64)
-      gui_app.push_widget(BigConfirmationDialog(tr("Factory AEB may turn off. Slide to enable."), icon, confirm))
-    else:
-      set_auto_setup(False, ui_state)
-    self._update_toggles()
 
   def _update_state(self):
     super()._update_state()
@@ -97,18 +76,17 @@ class TogglesLayoutMici(NavScroller):
     ui_state.update_params()
 
     # CP gating for experimental mode
-    requested, available, reason = auto_setup_status(ui_state.CP, ui_state.params, ui_state.is_release)
-    self._auto_setup.set_visible(not ui_state.is_release)
-    self._auto_setup.set_checked(requested)
-    self._auto_setup.set_value(reason)
-    self._auto_setup.set_enabled(lambda: ui_state.is_offroad() and (requested or available))
-    can_use = ui_state.CP is not None and not ui_state.CP.passive and not ui_state.CP.dashcamOnly and ui_state.has_longitudinal_control
-    self._experimental_btn.set_enabled(can_use)
-    self._experimental_btn.set_value("" if can_use else reason)
-    self._dec_btn.set_visible(can_use)
+    if ui_state.CP is not None:
+      if ui_state.has_longitudinal_control:
+        self._experimental_btn.set_visible(True)
+        self._personality_toggle.set_visible(True)
+      else:
+        # no long for now
+        self._experimental_btn.set_visible(False)
+        self._experimental_btn.set_checked(False)
+        #self._personality_toggle.set_visible(False)
+        ui_state.params.remove("ExperimentalMode")
 
     # Refresh toggles from params to mirror external changes
     for key, item in self._refresh_toggles:
       item.set_checked(ui_state.params.get_bool(key))
-    if not can_use:
-      self._experimental_btn.set_checked(False)

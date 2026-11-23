@@ -174,7 +174,7 @@ notice for physical validation limits of each installation path.
 
 ### Quick actions
 
-- In **Tools → Car Select**, choose **Detect my vehicle automatically**. At the next vehicle start the device reads the vehicle identity. If identification fails, return here to choose a make and model. Choosing automatic detection during initial setup skips the harness and longitudinal presets. If the picker shows a model followed by “dashcam only”, read the verification reason next to the model before changing the selection.
+- `Car Select`: choose the vehicle maker and model.
 - For the 2026 electric Staria, select `Hyundai Staria EV 2026`. Its accelerator and gear decoding differs from `Hyundai Staria 2023`; an existing selection is not migrated automatically. Reboot after selecting it, then check gear/pedal indications and CAN errors while parked.
 - `Language`: choose English, Korean, Simplified Chinese or Traditional Chinese (`繁體中文`) for Carrot Web. Device UI language is separate.
 - `Web Settings`: configure the Drive layout, video, HUD, AR, and other web-only display options.

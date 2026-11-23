@@ -8,7 +8,6 @@ from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.system.ui.widgets import DialogResult
 from openpilot.selfdrive.ui.ui_state import ui_state
-from openpilot.selfdrive.ui.layouts.settings.experimental_setup import auto_setup_status, set_auto_setup
 
 PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 
@@ -53,12 +52,6 @@ class TogglesLayout(Widget):
       "ExperimentalMode": (
         lambda: tr("Experimental Mode"),
         "",
-        "experimental_white.png",
-        False,
-      ),
-      "DynamicExperimentalControl": (
-        lambda: tr("Dynamic Experimental Control"),
-        tr_noop("In Experimental Mode, switch between adaptive cruise and vision-based longitudinal planning."),
         "experimental_white.png",
         False,
       ),
@@ -116,9 +109,6 @@ class TogglesLayout(Widget):
       icon="speed_limit.png"
     )
 
-    self._auto_setup = toggle_item(lambda: tr("Auto experimental longitudinal"), "", False,
-                                   callback=self._set_auto_setup, icon="experimental_white.png")
-    self._auto_setup.set_visible(not self._is_release)
     self._toggles = {}
     self._locked_toggles = set()
     for param, (title, desc, icon, needs_restart) in self._toggle_defs.items():
@@ -146,8 +136,6 @@ class TogglesLayout(Widget):
       if locked:
         self._locked_toggles.add(param)
 
-      if param == "ExperimentalMode":
-        self._toggles["AutoExperimentalPlatform"] = self._auto_setup
       self._toggles[param] = toggle
 
       # insert longitudinal personality after NDOG toggle
@@ -158,20 +146,6 @@ class TogglesLayout(Widget):
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
 
     ui_state.add_engaged_transition_callback(self._update_toggles)
-    ui_state.add_offroad_transition_callback(self._update_toggles)
-
-  def _set_auto_setup(self, enabled):
-    if enabled and ui_state.CP is not None:
-      platform = ui_state.CP.carFingerprint
-      def confirm(result):
-        if result == DialogResult.CONFIRM and ui_state.CP is not None and ui_state.CP.carFingerprint == platform:
-          set_auto_setup(True, ui_state)
-        self._update_toggles()
-      gui_app.push_widget(ConfirmDialog(tr("Factory AEB may become unavailable with experimental longitudinal control."),
-                                       tr("Enable"), callback=confirm))
-    else:
-      set_auto_setup(False, ui_state)
-    self._update_toggles()
 
   def _update_state(self):
     if ui_state.sm.updated["selfdriveState"]:
@@ -187,11 +161,6 @@ class TogglesLayout(Widget):
 
   def _update_toggles(self):
     ui_state.update_params()
-    requested, available, reason = auto_setup_status(ui_state.CP, self._params, self._is_release)
-    self._auto_setup.action_item.set_state(requested)
-    self._auto_setup.action_item.set_enabled(ui_state.is_offroad() and (requested or available))
-    self._auto_setup.set_description(reason)
-    can_use = ui_state.CP is not None and not ui_state.CP.passive and not ui_state.CP.dashcamOnly and ui_state.has_longitudinal_control
 
     e2e_description = tr(
       "openpilot defaults to driving in chill mode. Experimental mode enables alpha-level features that aren't ready for chill mode. " +
@@ -206,8 +175,8 @@ class TogglesLayout(Widget):
     )
 
     if ui_state.CP is not None:
-      if can_use:
-        self._toggles["ExperimentalMode"].action_item.set_enabled("ExperimentalMode" not in self._locked_toggles)
+      if ui_state.has_longitudinal_control:
+        self._toggles["ExperimentalMode"].action_item.set_enabled(True)
         self._toggles["ExperimentalMode"].set_description(e2e_description)
         self._long_personality_setting.action_item.set_enabled(True)
       else:
@@ -215,6 +184,7 @@ class TogglesLayout(Widget):
         self._toggles["ExperimentalMode"].action_item.set_enabled(False)
         self._toggles["ExperimentalMode"].action_item.set_state(False)
         #self._long_personality_setting.action_item.set_enabled(False)
+        self._params.remove("ExperimentalMode")
 
         unavailable = tr("Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control.")
 
@@ -230,16 +200,12 @@ class TogglesLayout(Widget):
     else:
       self._toggles["ExperimentalMode"].set_description(e2e_description)
 
-    self._toggles["DynamicExperimentalControl"].action_item.set_enabled(can_use and "DynamicExperimentalControl" not in self._locked_toggles)
+    self._update_experimental_mode_icon()
 
     # TODO: make a param control list item so we don't need to manage internal state as much here
     # refresh toggles from params to mirror external changes
     for param in self._toggle_defs:
       self._toggles[param].action_item.set_state(self._params.get_bool(param))
-    if not can_use:
-      self._toggles["ExperimentalMode"].action_item.set_enabled(False)
-      self._toggles["ExperimentalMode"].action_item.set_state(False)
-    self._update_experimental_mode_icon()
 
     # these toggles need restart, block while engaged
     for toggle_def in self._toggle_defs:

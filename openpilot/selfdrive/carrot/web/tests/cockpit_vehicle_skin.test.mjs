@@ -7,8 +7,6 @@ test('actual fingerprint takes precedence; selection is a read-only fallback wit
   assert.equal(resolveVehicleSkin({CarName:'unknown',CarSelected3:'Kia Sorento (without HDA II) 2024-25'}).id,'sorento');
   for(const [name,id] of [['KIA_EV6','ev6'],['TESLA_MODEL_3','model3'],['TESLA_MODEL_Y','modely'],['TOYOTA_RAV4','suv']])assert.equal(resolveVehicleSkin({CarName:name}).id,id);
   assert.equal(resolveVehicleSkin({CarName:'UNRECOGNIZED_REAL_CAR',CarSelected3:'Kia EV6'}).id,'generic');
-  assert.equal(resolveVehicleSkin({CarSelected3:'AUTO',CarName:'KIA_EV6'}).id,'generic');
-  assert.equal(resolveVehicleSkin({CarSelected3:'AUTO',AutoCarModelResult:'KIA_SORENTO_2024'}).id,'sorento');
   for(const values of [{},{CarName:0},{CarName:{toString(){throw Error();}}},{CarName:'https://example.com/skin.glb'}]){
     const skin=resolveVehicleSkin(values);assert.equal(skin.id,'generic');assert.equal(skin.illustrative,true);
   }
@@ -24,7 +22,7 @@ test('each supported silhouette is distinct finite original geometry; invalid pr
 });
 test('identity loading is GET-only, bounded, background-aware and aborts on destruction',async()=>{
   let now=0,calls=0,resolveRequest;const timers=new Map();
-  const target={document:{hidden:true},AbortController,performance:{now:()=>now},setTimeout:(fn)=>{timers.set(1,fn);return 1;},clearTimeout:id=>timers.delete(id),fetch:async(url,options)=>{assert.equal(url,'/api/params_bulk?names=CarName,CarSelected3,AutoCarModelResult');assert.equal(options.method,undefined);calls++;return new Promise(r=>{resolveRequest=r;});}};
+  const target={document:{hidden:true},AbortController,performance:{now:()=>now},setTimeout:(fn)=>{timers.set(1,fn);return 1;},clearTimeout:id=>timers.delete(id),fetch:async(url,options)=>{assert.equal(url,'/api/params_bulk?names=CarName,CarSelected3');assert.equal(options.method,undefined);calls++;return new Promise(r=>{resolveRequest=r;});}};
   const cache=createVehicleSkinCache(target);cache.refresh();assert.equal(calls,0);target.document.hidden=false;cache.refresh();await Promise.resolve();assert.equal(calls,1);
   cache.refresh();assert.equal(calls,1);resolveRequest({ok:true,json:async()=>({values:{CarName:'KIA_EV6'}})});await new Promise(setImmediate);
   assert.equal(cache.current().id,'ev6');assert.equal(timers.size,0);cache.refresh();assert.equal(calls,1);

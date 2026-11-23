@@ -23,7 +23,7 @@ def initialize(root, inboxes=()):
       "epochs":20,"batch_size":128,"learning_rate":.00001,"seed":7,"sample_interval_s":1.,"max_speed_mps":15.,
       "action_speed_floor_mps":2.5,
       "compiler_command":[],"release_repository":"TonyBinheWu/sunnypilot","release_branch":"carrot-wip",
-      "base":BASE,"navigation_training":"recorded_front_route"})
+      "base":BASE,"navigation_training":"no_route_only"})
   (store.root/"inbox").mkdir(exist_ok=True)
   return store
 

@@ -177,17 +177,3 @@ def test_model_loss_resets_exit_confirmation():
     state.update(CurveSpeed(100.), t)
   assert state.update(None, .2) == 30.
   assert state.update(CurveSpeed(100.), .25) == 30.
-
-
-@pytest.mark.parametrize('interval', [.14, .16, .2])
-def test_three_fresh_exit_frames_at_lower_fps_release_the_bend_limit(interval):
-  state = VisionCurveSpeed()
-  state.update(CurveSpeed(30.), 0., model_time=0)
-  for i in range(1, 5):
-    # The service runs even when the camera has not produced another frame.
-    previous = state.speed
-    assert state.update(CurveSpeed(), interval * (i - .5), model_time=i-1) == previous
-    speed = state.update(CurveSpeed(), interval * i, model_time=i)
-    if i < 3:
-      assert speed == 30.
-  assert speed == NO_LIMIT_KPH

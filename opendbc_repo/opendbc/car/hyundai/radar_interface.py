@@ -15,7 +15,7 @@ from opendbc.can import CANParser
 from opendbc.car import Bus, structs
 from opendbc.car.interfaces import RadarInterfaceBase
 from opendbc.car.radar_lead_filter import RadarLeadFilter
-from opendbc.car.hyundai.values import DBC, HyundaiFlags, HyundaiExtFlags, disables_stock_scc
+from opendbc.car.hyundai.values import DBC, HyundaiFlags, HyundaiExtFlags
 from openpilot.common.params import Params
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.radar_group3 import Group3Object, Group3TrackIds
@@ -613,12 +613,15 @@ class RadarInterface(RadarInterfaceBase):
     self.rcp_corner_objects_430 = get_corner_object_430_can_parser(CP, self.corner_object_430_tracks)
     # Enabling raw radar tracks on legacy CAN disables the stock SCC11 stream on
     # some Hyundai/Kia platforms. Camera-SCC cars may still use SCC11.
-    # A disabled SCC cannot be the source of a measured lead, even if the
-    # host transmits the same address. Raw tracks use a separate parser.
-    if self.canfd:
-      use_scc_parser = not disables_stock_scc(CP, self.radar_track_mode)
-    else:
-      use_scc_parser = self.bosch is not None or not (self.radar_tracks and not (CP.flags & HyundaiFlags.CAMERA_SCC))
+    # Standard HDA2 longitudinal disables the ADAS ECU (0x730). Its native
+    # SCC_CONTROL then stops, while raw radar remains on ACAN. Do not require
+    # the deliberately disabled stream, or read our own transmitted SCC as a
+    # measured lead. Camera-SCC and passive Bosch still receive native SCC.
+    hda2_scc_disabled = (self.canfd and bool(CP.flags & HyundaiFlags.CANFD_HDA2)
+                         and CP.openpilotLongitudinalControl
+                         and not (CP.flags & HyundaiFlags.CANFD_CAMERA_SCC))
+    use_scc_parser = self.bosch is not None or not (
+      self.radar_tracks and (hda2_scc_disabled or (not self.canfd and not (CP.flags & HyundaiFlags.CAMERA_SCC))))
     self.rcp_scc = get_radar_can_parser_scc(CP) if use_scc_parser else None
     self.trigger_msg_scc = 416 if self.canfd else 0x420
 
@@ -842,10 +845,8 @@ class RadarInterface(RadarInterfaceBase):
     # RadarData, since liveTracks uses a fixed radarTimeStep for aLead/jLead.
     bosch_front_only = self.bosch is not None and self.radar_track_mode == 1
     publish_ready = scc_ready if self.bosch is not None else track_ready or scc_ready
-    corner_only = self.corner_objects_available and self.bosch is None and self.rcp_tracks is None and self.rcp_scc is None
-    if bosch_front_only or corner_only:
-      # With no native SCC clock, keep the fixed cadence for both fresh
-      # corner observations and their expiration when the source goes silent.
+    if bosch_front_only:
+      # Mode 1 consumes frontRadar; optional SCC reception cannot gate its clock.
       publish_ready = self.frame % 5 == 0
     if not publish_ready:
       return None
@@ -891,8 +892,7 @@ class RadarInterface(RadarInterfaceBase):
         (self.rcp_corner_objects_180 is not None and not self.rcp_corner_objects_180.can_valid) or
         (self.rcp_corner_objects_430 is not None and not self.rcp_corner_objects_430.can_valid)):
       ret.errors.canError = True
-    if not (corner_only and ret.errors.canError):
-      ret.points = [point for point in self.pts.values() if point.measured]
+    ret.points = [point for point in self.pts.values() if point.measured]
     return ret
 
   def _update(self, updated_messages):

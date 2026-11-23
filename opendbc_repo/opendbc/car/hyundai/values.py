@@ -38,9 +38,6 @@ class CarControllerParams:
   ANGLE_TORQUE_DOWN_RATE = 12  #4 Indicates how fast the torque ramps down during user intervention (handing off).
 
   def __init__(self, CP):
-    if not (CP.flags & HyundaiFlags.CANFD):
-      self.ACCEL_MIN = -3.5
-      self.ACCEL_MAX = 2.0
     self.STEER_DELTA_UP = 3
     self.STEER_DELTA_DOWN = 7
     self.STEER_DRIVER_ALLOWANCE = 50
@@ -64,16 +61,17 @@ class CarControllerParams:
                                CAR.KIA_OPTIMA_H, CAR.KIA_OPTIMA_H_G4_FL, CAR.KIA_SORENTO):
       self.STEER_MAX = 255
 
-    elif CP.flags & HyundaiFlags.ALT_LIMITS_2:
-      self.STEER_MAX = 170
-      self.STEER_DELTA_UP = 2
-      self.STEER_DELTA_DOWN = 3
+    elif CP.carFingerprint in (CAR.HYUNDAI_SANTA_FE_PHEV_2022):
+      self.STEER_MAX = 409
+    # these cars have significantly more torque than most HKG; limit to 70% of max
     elif CP.flags & HyundaiFlags.ALT_LIMITS:
-      self.STEER_MAX = 270
+      self.STEER_MAX = 384
       self.STEER_DELTA_UP = 2
       self.STEER_DELTA_DOWN = 3
+
+    # Default for most HKG
     else:
-      self.STEER_MAX = 384
+      self.STEER_MAX = 409
 
 
 class HyundaiSafetyFlags(IntFlag):
@@ -83,7 +81,6 @@ class HyundaiSafetyFlags(IntFlag):
   CAMERA_SCC = 8
   CANFD_LKA_STEERING = 16
   CANFD_ALT_BUTTONS = 32
-  CLASSIC_MDPS12 = 32  # Separate safety model, legacy camera needs MDPS12 feedback.
   ALT_LIMITS = 64
   CANFD_LKA_STEERING_ALT = 128
   FCEV_GAS = 256
@@ -94,9 +91,6 @@ class HyundaiSafetyFlags(IntFlag):
   PEDAL_INTERCEPTOR = 8192
   PEDAL_INTERCEPTOR_RAY = 16384
   CANFD_ANGLE_CONTROL = 32768
-  CLASSIC_CASPER_FCA = 2048  # Non-actuating FCA status on the classic Casper EV camera harness.
-  CLASSIC_LFA_SHORT = 16  # HKG four-byte cluster status on classic CAN only.
-  CLASSIC_LEGACY_SCC12 = 128  # Physical stock SCC12 observed on a legacy harness.
 
 
 class HyundaiFlags(IntFlag):
@@ -173,8 +167,6 @@ class HyundaiExtFlags(IntFlag):
   EV_MODE_STATUS_230 = 2 ** 16  # ECAN 0x230/DLC32 exposes the hybrid power-flow mode used for the EV indicator
   BOSCH_RADAR = 2 ** 17  # passive Bosch MRRevo14F 0x601-0x612 receive provider (see BOSCH_MRREVO14F_CAR)
   BOSCH_RADAR_BUS1 = 2 ** 18  # Observed receive src=1; otherwise use LKAS camera CAN (src=2)
-  CLASSIC_LFA_SHORT = 2 ** 19
-
 
 class Footnote(Enum):
   CANFD = CarFootnote(
@@ -1116,12 +1108,6 @@ PEDAL_INTERCEPTOR_PARAMS: dict[str, PedalInterceptorParams] = {
 def get_pedal_interceptor_params(CP) -> PedalInterceptorParams | None:
   required_flags = HyundaiFlags.CC_ONLY_CAR | HyundaiFlags.PEDAL_INTERCEPTOR
   return PEDAL_INTERCEPTOR_PARAMS.get(CP.carFingerprint) if CP.flags & required_flags == required_flags else None
-
-
-def disables_stock_scc(CP, radar_track_mode: int) -> bool:
-  passive_bosch = bool(CP.extFlags & HyundaiExtFlags.BOSCH_RADAR) and radar_track_mode > 0
-  return bool(CP.openpilotLongitudinalControl and not (CP.flags & HyundaiFlags.CAMERA_SCC)
-              and not passive_bosch and get_pedal_interceptor_params(CP) is None)
 
 
 def is_ray_pedal_control(CP) -> bool:

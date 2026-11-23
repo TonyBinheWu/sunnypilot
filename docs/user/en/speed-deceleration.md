@@ -389,9 +389,3 @@ Automatic CAN diagnostic logs are generated only when currently received vehicle
 - Setting ranges/defaults: `openpilot/selfdrive/carrot_settings.json`, `openpilot/common/params_keys.h`
 
 [Back to Understanding Settings](settings.md)
-
-## Experimental longitudinal control
-
-With openpilot longitudinal control active, Experimental Mode uses model acceleration and braking within cruise and obstacle constraints. Dynamic Experimental Control (DEC) switches between adaptive cruise and the vision planner using lead and trajectory data. DEC defaults off. Alpha longitudinal availability depends on the vehicle and wiring.
-
-On supported Hyundai/Kia CAN-FD vehicles with standard wiring, Carrot Web can save the request for a specific vehicle. Check the control owner under Device → Toggles after startup. A saved request can coexist with factory cruise while firmware or wiring verification is incomplete.

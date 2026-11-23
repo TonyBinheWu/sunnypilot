@@ -30,8 +30,7 @@ export const VEHICLE_SKINS=Object.freeze({
 });
 const identity=value=>typeof value==='string'&&!/^(?:none|unknown|auto(?:matic)?|\[automatic\])$/i.test(value.trim())?value.trim().slice(0,160):'';
 export function resolveVehicleSkin(values={}){
-  const actual = identity(values.CarSelected3 === 'AUTO' ? values.AutoCarModelResult : values.CarName);
-  const selected = identity(values.CarSelected3), name = actual || selected;
+  const actual=identity(values.CarName),selected=identity(values.CarSelected3),name=actual||selected;
   const normalized=name.toUpperCase().replace(/[^A-Z0-9]+/g,' '),compact=normalized.replaceAll(' ','');
   let id='generic';
   if(compact.includes('KIAEV6'))id='ev6';
@@ -58,7 +57,7 @@ export function resolveVehicleSkin(values={}){
   else if(compact.includes('INSTER'))id='inster';
   else if(compact.includes('MUFASA'))id='mufasa';
   else if(/RAV4|HONDA CR V/.test(normalized))id='suv';
-  return Object.freeze({...VEHICLE_SKINS[id],identity:name||null,identitySource:actual?(values.CarSelected3==='AUTO'?'AutoCarModelResult':'CarName'):selected?'CarSelected3':null,illustrative:true});
+  return Object.freeze({...VEHICLE_SKINS[id],identity:name||null,identitySource:actual?'CarName':selected?'CarSelected3':null,illustrative:true});
 }
 export function drawCockpitVehicle(ctx,project,{skin,...options}={}){
   // Accept preset IDs only: never turn parameter text into an asset URL/code.
@@ -72,7 +71,7 @@ export function createVehicleSkinCache(target,onChange=()=>{}){
     if(closed||busy||target.document?.hidden||typeof target.fetch!=='function'||typeof target.AbortController!=='function'||now()-attempt<30000)return;
     busy=true;attempt=now();request=new target.AbortController();
     const current=request,timer=target.setTimeout(()=>current.abort(),5000);
-    Promise.resolve().then(()=>target.fetch('/api/params_bulk?names=CarName,CarSelected3,AutoCarModelResult',{cache:'no-store',credentials:'same-origin',signal:current.signal}))
+    Promise.resolve().then(()=>target.fetch('/api/params_bulk?names=CarName,CarSelected3',{cache:'no-store',credentials:'same-origin',signal:current.signal}))
       .then(r=>{if(!r.ok)throw Error('identity');return r.json();})
       .then(data=>{if(closed)return;const next=resolveVehicleSkin(data?.values);if(JSON.stringify(next)!==JSON.stringify(skin)){skin=next;onChange();}})
       .catch(()=>{}).finally(()=>{target.clearTimeout(timer);busy=false;request=null;});

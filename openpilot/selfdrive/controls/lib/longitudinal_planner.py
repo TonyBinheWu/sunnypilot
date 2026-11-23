@@ -13,7 +13,6 @@ from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, N
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan, is_volkswagen_meb
-from openpilot.selfdrive.controls.lib.dec.dec import ExperimentalModeSelector
 from openpilot.selfdrive.controls.lib.cutin_predecel import (
   apply_cutin_predecel_accel_limit,
   get_cutin_predecel_accel_limit,
@@ -93,8 +92,6 @@ class LongitudinalPlanner:
     self.v_cruise_kph = 0.0
 
     self.params = Params()
-    self.experimental_mode = ExperimentalModeSelector(CP, self.mpc)
-    self.dec_enabled = False
     self.hkg_curve = CurveSpeedEnvelope()
     self.hkg_curve_ceiling = None
     self.hkg_phase1_enabled = False
@@ -195,8 +192,7 @@ class LongitudinalPlanner:
       self.coasting_param_time = 0.0
       self.coasting_percent = coasting_percent(self.params.get_int('CruiseCoastingPercent'))
       self.hkg_phase1_enabled = phase1_enabled(self.CP, self.params)
-      self.dec_enabled = self.params.get_bool('DynamicExperimentalControl')
-    self.mpc.mode = self.experimental_mode.select(sm, self.dec_enabled)
+    self.mpc.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
 
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])

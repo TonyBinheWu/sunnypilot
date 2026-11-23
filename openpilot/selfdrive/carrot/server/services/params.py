@@ -373,7 +373,7 @@ def put_typed(params: "Params", key: str, value: Any, p: Optional[Dict[str, Any]
     params.put(key, str(value))
 
 
-INTERNAL_SESSION_PARAMS = frozenset({"AutoCarModelResult", "AutoExperimentalPlatform", "DriverMonitoringSessionDisabled", "JetsonLegacyUpdatePending",
+INTERNAL_SESSION_PARAMS = frozenset({"DriverMonitoringSessionDisabled", "JetsonLegacyUpdatePending",
                                      "ForceOffroad", "ForceOffroadActive", "ForceOffroadObserver"})
 BACKUP_EXCLUDED_PARAMS = frozenset({"DriverMonitoringEnabled"})
 
@@ -402,11 +402,7 @@ def set_param_value(name: str, value: Any, p: Optional[Dict[str, Any]] = None) -
     return
   params = Params()
   try:
-    if name == "CarSelected3" and value == "AUTO":
-      params.remove("AutoCarModelResult")
     put_typed(params, name, value, p)
-    if name == "CarSelected3" and value == "AUTO" and params.get(name) != value:
-      raise RuntimeError("Vehicle selection was not saved")
   except Exception as exc:
     if p is None or UnknownKeyName is None or not isinstance(exc, UnknownKeyName):
       raise

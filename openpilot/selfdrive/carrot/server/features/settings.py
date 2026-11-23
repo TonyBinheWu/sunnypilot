@@ -8,7 +8,6 @@ from ..services.device_info import (
   get_device_network_snapshot,
   get_device_setting_group_names,
   get_device_setting_values,
-  get_longitudinal_setup_status,
 )
 from ..services.param_changes import observe_param_values
 from ..services.params import HAS_PARAMS, ParamKeyType, Params, get_param_values
@@ -66,7 +65,6 @@ def _settings_snapshot_payload() -> dict:
     "settings": catalog,
     "values": values,
     "device_values": get_device_setting_values(ssh_status),
-    "longitudinal_setup": get_longitudinal_setup_status(),
     # The web reads its Device tab parameter names from here rather than
     # restating them, so the two lists cannot drift apart.
     "device_groups": get_device_setting_group_names(),
@@ -142,88 +140,7 @@ async def api_setting_unit_index_update(request: web.Request) -> web.Response:
     return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
-def _experimental_setup(params, change=None):
-  """Expose the same vehicle-scoped request used by the native toggles page."""
-  from openpilot.cereal import car
-  from opendbc.car.hyundai.values import CANFD_CAR, CANFD_UNSUPPORTED_LONGITUDINAL_CAR
-  from opendbc.car.selected_car import detected_ev6_for_verification, get_selected_car_platform
-  from .intro.reconfigure import SetupError
-
-  requested = params.get("AutoExperimentalPlatform") or ""
-  platform = ""
-  raw = params.get("CarParamsPersistent")
-  if raw:
-    try:
-      with car.CarParams.from_bytes(raw) as cp:
-        if (cp.brand == "hyundai" and cp.carFingerprint in CANFD_CAR and cp.carFingerprint not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR
-            and not cp.passive and not cp.dashcamOnly and params.get_int("HyundaiCameraSCC") == 0):
-          platform = cp.carFingerprint
-        else:
-          platform = detected_ev6_for_verification(cp, params) or ""
-    except Exception:
-      pass
-  selected = params.get("CarSelected3")
-  if selected == "AUTO":
-    selected_platform = params.get("AutoCarModelResult")
-  else:
-    selected_platform = get_selected_car_platform(selected) if selected else platform
-  if params.get_bool("IsReleaseBranch") or selected_platform != platform:
-    platform = ""
-  if change is not None:
-    enabled, expected = change
-    if expected != (platform if enabled else requested) or not expected or (enabled and requested and requested != expected):
-      raise SetupError("settings_changed")
-    if enabled:
-      params.put("AutoExperimentalPlatform", expected)
-    else:
-      params.remove("AutoExperimentalPlatform")
-    requested = params.get("AutoExperimentalPlatform") or ""
-    if requested != (expected if enabled else ""):
-      raise SetupError("write_failed")
-  return {"platform": platform, "requested": requested, "owner": get_longitudinal_setup_status(params)}
-
-
-async def api_experimental_setup(request):
-  from urllib.parse import urlsplit
-  from .intro import reconfigure
-  from .intro.routes import _reconfigure_guard, _setup_error
-
-  if not HAS_PARAMS:
-    return web.json_response({"ok": False, "error": "params_unavailable"}, status=503)
-  change = None
-  if request.method == "POST":
-    origin = request.headers.get("Origin")
-    if (origin and urlsplit(origin).netloc != request.host) or request.headers.get("Sec-Fetch-Site") == "cross-site":
-      return web.json_response({"ok": False, "error": "same_origin_required"}, status=403)
-    if request.content_type != "application/json":
-      return web.json_response({"ok": False, "error": "invalid_selection"}, status=415)
-    try:
-      body = await request.json()
-      if type(body["enabled"]) is not bool or not isinstance(body["platform"], str):
-        raise ValueError
-      change = body["enabled"], body["platform"]
-    except (ValueError, KeyError, TypeError):
-      return web.json_response({"ok": False, "error": "invalid_selection"}, status=400)
-
-  def read_or_update():
-    with reconfigure.LOCK:
-      params = Params()
-      if change is not None:
-        _reconfigure_guard(request.app)
-        if not params.get_bool("IsOffroad") or params.get_bool("IsOnroad"):
-          raise reconfigure.SetupError("park_required")
-      return _experimental_setup(params, change)
-
-  try:
-    state = await asyncio.to_thread(read_or_update)
-    return web.json_response({"ok": True, **state}, headers={"Cache-Control": "no-store"})
-  except reconfigure.SetupError as exc:
-    return _setup_error(exc)
-
-
 def register(app: web.Application) -> None:
-  app.router.add_get("/api/settings/experimental_setup", api_experimental_setup)
-  app.router.add_post("/api/settings/experimental_setup", api_experimental_setup)
   app.router.add_get("/api/settings", api_settings)
   app.router.add_get("/api/settings/snapshot", api_settings_snapshot)
   app.router.add_get("/api/setting_unit_index", api_setting_unit_index)

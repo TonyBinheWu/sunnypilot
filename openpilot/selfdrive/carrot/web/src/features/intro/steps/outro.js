@@ -25,7 +25,7 @@ CarrotIntro.register({
       const changes=setupChanges(ctx);
       for(const row of changes){const item=document.createElement('p');
         const title=row.key==='CarSelected3'?t('againVehicle'):row.key==='web_language'?t('againLanguage'):row.key==='CanfdHDA2'?t('hdaTitle'):row.title;
-        const value=v=>row.key==='CarSelected3'&&v==='AUTO'?t('carAuto'):row.key==='CanfdHDA2'&&[0,1].includes(v)?t(v===1?'hda2':'hda1'):v??'—';
+        const value=v=>row.key==='CanfdHDA2'&&[0,1].includes(v)?t(v===1?'hda2':'hda1'):v??'—';
         item.textContent=`${title}: ${value(row.before)} → ${value(row.after)}`;list.appendChild(item);}
       if(!changes.length)list.textContent=t('againNoChanges');
       const help=document.createElement('p');help.className='intro-lead';help.textContent=t('againReviewHelp');
@@ -41,7 +41,7 @@ CarrotIntro.register({
           if(globalThis.CarrotWebSettingsState)globalThis.CarrotWebSettingsState.web_language=result.webLanguage;
           if(globalThis.__CARROT_BOOTSTRAP__?.webSettings)globalThis.__CARROT_BOOTSTRAP__.webSettings.web_language=result.webLanguage;
           try{globalThis.setWebLanguage?.(result.webLanguage,{persist:false});}catch{}
-          try{globalThis.applyCurrentCarLabel?.(ctx.car==='AUTO'?t('carAutoWait'):stripMaker(ctx.car,ctx.maker));}catch{}
+          try{globalThis.applyCurrentCarLabel?.(stripMaker(ctx.car,ctx.maker));}catch{}
           heading.textContent=t('againSaved');help.textContent=t(result.requiresRestart?'againRestart':'againSavedHelp');
           button.textContent=t('againReturn');
         }catch(error){CarrotIntroShell.error(t(`againError_${error.message}`)===`againError_${error.message}`?t('againError_apply_unconfirmed'):t(`againError_${error.message}`));}

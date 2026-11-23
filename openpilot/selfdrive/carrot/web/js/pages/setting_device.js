@@ -8,8 +8,6 @@ let CURRENT_DEVICE_GROUP = "Device";
 let deviceParamValues = {};
 let deviceGroupLoadPromises = new Map();
 let deviceNetworkInfo = null;
-let longitudinalSetup = "unknown";
-let longitudinalRequest = null;
 let deviceNetworkLoadPromise = null;
 let deviceSshStatus = null;
 let deviceSshRefreshTimer = null;
@@ -89,7 +87,6 @@ function normalizeDeviceSshStatus(status) {
 function hydrateDeviceSettingsSnapshot(snapshot) {
   if (!snapshot || typeof snapshot !== "object") return false;
   hydrateDeviceGroupParamNames(snapshot.device_groups);
-  longitudinalSetup = snapshot.longitudinal_setup || "unknown";
   mergeDeviceParamValues(snapshot.device_values || {});
   if (snapshot.device_network && typeof snapshot.device_network === "object") {
     deviceNetworkInfo = { ...snapshot.device_network };
@@ -456,11 +453,6 @@ async function renderDeviceItems(groupId, showItemsScreen = true, options = {}) 
       : getDeviceGroupValues(groupId)
   );
 
-  if (groupId === "Toggles") {
-    longitudinalRequest = await getJson("/api/settings/experimental_setup").catch(() => null);
-    if (longitudinalRequest) longitudinalSetup = longitudinalRequest.owner;
-  }
-
   if (CURRENT_SETTING_TAB !== "device" || CURRENT_DEVICE_GROUP !== groupId) {
     syncDeviceNetworkRefresh();
     syncDeviceSshRefresh();
@@ -532,34 +524,16 @@ function renderDeviceGroupItems(groupId, values) {
 }
 
 function renderDeviceToggleItems(values) {
-  const labels = {
-    openpilot: ["long_owner_openpilot", "openpilot"],
-    stock: ["long_owner_stock", "Factory cruise"],
-    observer: ["long_owner_observer", "Observation only"],
-    identity: ["long_owner_identity", "Vehicle identity unconfirmed"],
-    wiring: ["long_owner_wiring", "CAN wiring mismatch"],
-    adas: ["long_owner_adas", "ADAS ECU unconfirmed"],
-    unknown: ["long_owner_unknown", "Awaiting vehicle identification"],
-  };
-  const label = Object.hasOwn(labels, longitudinalSetup) ? labels[longitudinalSetup] : labels.unknown;
-  let html = renderDeviceInfoRow(getUIText("long_owner_title", "Last identified longitudinal control"), getUIText(...label));
-  if (longitudinalRequest?.platform || longitudinalRequest?.requested) {
-    const saved = Boolean(longitudinalRequest.requested);
-    html += renderDeviceActionRow(getUIText("long_setup_title"),
-      (saved ? getUIText("long_setup_saved") : getUIText("long_setup_desc")) + " · " +
-        (longitudinalRequest.requested || longitudinalRequest.platform),
-      getUIText(saved ? "long_setup_cancel" : "long_setup_apply"), "btnExperimentalSetup");
-  }
+  let html = "";
   DEVICE_TOGGLES.forEach((toggle) => {
     html += renderDeviceToggleRow(
       toggle.param,
       getUIText(toggle.labelKey, toggle.defaultLabel),
-      isTruthyDeviceFlag(values[toggle.param]),
+      Boolean(values[toggle.param]),
       {
         confirmKey: toggle.confirmKey || "",
-        description: toggle.param === "DynamicExperimentalControl" ? getUIText("dec_vision_hint", "Turn off to keep the vision-based experimental planner selected.") : "",
         confirmedParam: toggle.confirmedParam || "",
-        confirmed: isTruthyDeviceFlag(values[toggle.confirmedParam]),
+        confirmed: Boolean(values[toggle.confirmedParam]),
       },
     );
   });
@@ -582,7 +556,7 @@ function renderDeviceDeveloperItems(values) {
     html += renderDeviceToggleRow(
       toggle.param,
       getUIText(toggle.labelKey, toggle.defaultLabel),
-      isTruthyDeviceFlag(values[toggle.param]),
+      Boolean(values[toggle.param]),
       { disabled: toggle.disabled === true, confirmKey: toggle.confirmKey || "" },
     );
   });

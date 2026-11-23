@@ -5,7 +5,7 @@ from opendbc.car.hyundai.scalar import clip_float
 from opendbc.car import CanBusBase, DT_CTRL
 from opendbc.car.carlog import carlog
 from opendbc.car.crc import CRC16_XMODEM
-from opendbc.car.hyundai.values import Buttons, CAR, HyundaiFlags, HyundaiExtFlags
+from opendbc.car.hyundai.values import CAR, HyundaiFlags, HyundaiExtFlags
 from opendbc.car.hyundai.stopping import MOVING_SPEED, STOP_LOWER_BAND
 from opendbc.car.hyundai.stop_object import apply_signal_stop_object
 from openpilot.common.params import Params
@@ -315,7 +315,8 @@ def create_buttons(packer, CP, CAN, cnt, btn):
     "CRUISE_BUTTONS": btn,
   }
 
-  bus = CAN.ECAN if CP.flags & HyundaiFlags.CANFD_HDA2 else CAN.CAM
+  #bus = CAN.ECAN if CP.flags & HyundaiFlags.CANFD_HDA2 else CAN.CAM
+  bus = CAN.ECAN
   return packer.make_can_msg("CRUISE_BUTTONS", bus, values)
 
 def create_acc_cancel(packer, CP, CAN, cruise_info_copy):
@@ -681,13 +682,6 @@ def create_tcs_messages(packer, CAN, CS):
     ret.append(packer.make_can_msg("TCS", CAN.CAM, values, rx_counter=rx_counter))
   return ret
 
-def stock_speed_request(CS, button):
-  if button == Buttons.SET_DECEL and (not CS.out.canValid or CS.ACCMode != 1 or CS.out.standstill or
-                                      CS.out.gasPressed or CS.out.brakePressed or CS.out.regenBraking):
-    return Buttons.NONE
-  return button
-
-
 def forward_button_message(packer, CAN, frame, CS, cruise_button, MainMode_ACC_trigger, LFA_trigger):
   ret = []
   if frame % 2 == 0:
@@ -698,7 +692,7 @@ def forward_button_message(packer, CAN, frame, CS, cruise_button, MainMode_ACC_t
       #rx_counter = values.pop("COUNTER", None)
       cruise_button_driver = values["CRUISE_BUTTONS"]
       if cruise_button_driver == 0:
-        values["CRUISE_BUTTONS"] = stock_speed_request(CS, cruise_button)
+        values["CRUISE_BUTTONS"] = cruise_button
       if MainMode_ACC_trigger > 0:
         #values["ADAPTIVE_CRUISE_MAIN_BTN"] = 1
         pass

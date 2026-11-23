@@ -76,7 +76,6 @@ DEVICE_SETTING_GROUPS: tuple[tuple[str, tuple[tuple[str, Any], ...]], ...] = (
   ("Toggles", (
     ("OpenpilotEnabledToggle", False),
     ("ExperimentalMode", False),
-    ("DynamicExperimentalControl", False),
     ("ExperimentalModeConfirmed", False),
     ("DisengageOnAccelerator", False),
     ("IsLdwEnabled", False),
@@ -224,29 +223,6 @@ _network_cache: Dict[str, Any] = {
   "monotonic": 0.0,
   "data": None,
 }
-
-
-def get_longitudinal_setup_status(params=None) -> str:
-  """Report the last identified control owner separately from saved switches."""
-  if params is None:
-    if not HAS_PARAMS:
-      return "unknown"
-    params = Params()
-  try:
-    from openpilot.cereal import car
-    issue = params.get("AutoExperimentalIssue")
-    if issue in ("identity", "wiring", "adas"):
-      return issue
-    raw = params.get("CarParamsPersistent")
-    if raw:
-      with car.CarParams.from_bytes(raw) as cp:
-        if cp.brand == "mock" or cp.dashcamOnly or cp.passive:
-          return "observer"
-        return "openpilot" if cp.openpilotLongitudinalControl else "stock"
-  except Exception:
-    # A missing schema or an unreadable previous drive must not break settings.
-    pass
-  return "unknown"
 
 
 def get_device_setting_values(ssh_status: Dict[str, Any] | None = None) -> Dict[str, Any]:

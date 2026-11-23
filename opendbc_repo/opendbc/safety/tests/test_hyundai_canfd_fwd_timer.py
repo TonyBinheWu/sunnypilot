@@ -17,10 +17,6 @@ MESSAGES = [(0x160, 0, 16, 40000), (0x1AA, 2, 16, 40000),
             (0x345, 0, 8, 220000), (0x4A3, 2, 8, 220000),
             (0x1DA, 0, 32, 1020000)]
 DIRECT_MESSAGES = [m for m in MESSAGES if m[0] != 0x1AA]  # 0x1AA uses the control FIFO in CAMERA_SCC
-HDA2_DIRECT = 1 | 4 | 16
-HDA2_DIRECT_MESSAGES = [(0x51, 0, 32, 30000), (0x2A4, 0, 24, 70000)]
-TIMER_CASES = [(param, *msg) for param in (29, 29 | 2048) for msg in DIRECT_MESSAGES]
-TIMER_CASES += [(HDA2_DIRECT, *msg) for msg in HDA2_DIRECT_MESSAGES]
 MASK = 2**32 - 1
 
 
@@ -52,10 +48,9 @@ def test_never_transmitted_stock_survives_startup_and_rollovers(hooks, address, 
       assert hooks.rx(address, stock, now, bus=2 - bus) == (bus, stock)
 
 
-@pytest.mark.parametrize("param,address,bus,size,timeout", TIMER_CASES)
+@pytest.mark.parametrize("address,bus,size,timeout", DIRECT_MESSAGES)
 @pytest.mark.parametrize("start", [0, 123456, MASK - 1000])
-def test_real_tx_blocks_only_until_deadline_across_wrap(native, param, address, bus, size, timeout, start):
-  hooks = Hooks(native, param)
+def test_real_tx_blocks_only_until_deadline_across_wrap(hooks, address, bus, size, timeout, start):
   stock = bytes(size)
   hooks.lib.fwd_timer_set_tick(100)
   assert hooks.tx(address, stock, start, bus=bus) == 1
@@ -68,10 +63,9 @@ def test_real_tx_blocks_only_until_deadline_across_wrap(native, param, address, 
   assert hooks.rx(address, stock, start, bus=2 - bus) == (bus, stock)
 
 
-@pytest.mark.parametrize("param,address,bus,size,timeout", TIMER_CASES)
+@pytest.mark.parametrize("address,bus,size,timeout", DIRECT_MESSAGES)
 @pytest.mark.parametrize("tick", [100, MASK - 2])
-def test_silent_id_cannot_revive_after_full_timer_wrap(native, param, address, bus, size, timeout, tick):
-  hooks = Hooks(native, param)
+def test_silent_id_cannot_revive_after_full_timer_wrap(hooks, address, bus, size, timeout, tick):
   stock = bytes(size)
   hooks.lib.fwd_timer_set_tick(tick)
   assert hooks.tx(address, stock, 123456, bus=bus) == 1
@@ -83,18 +77,16 @@ def test_silent_id_cannot_revive_after_full_timer_wrap(native, param, address, b
   assert hooks.rx(address, stock, 123459, bus=2 - bus)[0] == -1
 
 
-@pytest.mark.parametrize("param,address,bus,size,timeout", TIMER_CASES)
-def test_rejected_tx_does_not_arm_block(native, param, address, bus, size, timeout):
-  hooks = Hooks(native, param)
+@pytest.mark.parametrize("address,bus,size,timeout", DIRECT_MESSAGES)
+def test_rejected_tx_does_not_arm_block(hooks, address, bus, size, timeout):
   assert hooks.tx(address, bytes(12), 0, bus=bus) == 0  # wrong DLC
   assert hooks.rx(address, bytes(size), 1, bus=2 - bus) == (bus, bytes(size))
   assert hooks.tx(address, bytes(size), 2, bus=bus, relay=True) == 0
   assert hooks.rx(address, bytes(size), 3, bus=2 - bus) == (bus, bytes(size))
 
 
-@pytest.mark.parametrize("param,address,bus,size,timeout", TIMER_CASES)
-def test_mode_reset_clears_block_and_relay_protection_stays(native, param, address, bus, size, timeout):
-  hooks = Hooks(native, param)
+@pytest.mark.parametrize("address,bus,size,timeout", DIRECT_MESSAGES)
+def test_mode_reset_clears_block_and_relay_protection_stays(hooks, address, bus, size, timeout):
   stock = bytes(size)
   assert hooks.tx(address, stock, 100, bus=bus) == 1
   hooks.lib.alt2_test_init(29)
@@ -102,9 +94,8 @@ def test_mode_reset_clears_block_and_relay_protection_stays(native, param, addre
   assert hooks.rx(address, stock, 102, bus=2 - bus, relay=True)[0] == -1
 
 
-@pytest.mark.parametrize("param,address,bus,size,timeout", TIMER_CASES)
-def test_fresh_tx_renews_only_its_own_deadline(native, param, address, bus, size, timeout):
-  hooks = Hooks(native, param)
+@pytest.mark.parametrize("address,bus,size,timeout", DIRECT_MESSAGES)
+def test_fresh_tx_renews_only_its_own_deadline(hooks, address, bus, size, timeout):
   stock = bytes(size)
   assert hooks.tx(address, stock, 100, bus=bus) == 1
   assert hooks.tx(address, stock, timeout, bus=bus) == 1
@@ -112,10 +103,3 @@ def test_fresh_tx_renews_only_its_own_deadline(native, param, address, bus, size
   # The same address on the other source bus remains independent.
   assert hooks.rx(address, stock, timeout + 100, bus=bus) == (2 - bus, stock)
   assert hooks.rx(address, stock, 2 * timeout, bus=2 - bus) == (bus, stock)
-
-
-@pytest.mark.parametrize("address,bus,size,timeout", DIRECT_MESSAGES)
-def test_direct_harness_rejects_camera_harness_replacements(native, address, bus, size, timeout):
-  hooks = Hooks(native, HDA2_DIRECT)
-  assert hooks.tx(address, bytes(size), 100, bus=bus) == 0
-  assert hooks.rx(address, bytes(size), 101, bus=2 - bus) == (bus, bytes(size))

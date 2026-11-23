@@ -17,7 +17,6 @@ let currentCarRetryIndex = 0;
 let currentCarLastKnownLabel = "";
 let currentCarLoadPromise = null;
 let currentCarLoadedAt = 0;
-let currentCarRevision = 0;
 let currentCarHasSnapshot = false;
 let recordStateLoadPromise = null;
 let recordStateLoadedAt = 0;
@@ -32,7 +31,6 @@ function applyCurrentCarLabel(label, { persist = true, blank = false } = {}) {
   if (text) {
     currentCarLastKnownLabel = text;
     if (curCarLabelCar) curCarLabelCar.textContent = text;
-    if (carPickerMode === "makers" && appCarPicker && !appCarPicker.hidden) syncCarPickerChrome();
     if (persist) {
       try {
         localStorage.setItem(CURRENT_CAR_CACHE_KEY, text);
@@ -66,22 +64,6 @@ function cancelCurrentCarRetry() {
   currentCarRetryTimer = null;
 }
 
-let detectionPoll = null;
-function watchAutomaticSelection(values) {
-  clearTimeout(detectionPoll);
-  const waiting = values.CarSelected3 === "AUTO" && !values.AutoCarModelResult;
-  const failed = values.CarSelected3 === "AUTO" && values.AutoCarModelResult === "unknown";
-  const shortcut = document.getElementById("btnToolsCarSelect");
-  if (shortcut) shortcut.textContent = getUIText(failed ? "car_auto_failed" : "car_select");
-  const event = new CustomEvent("carrot:vehicleidentification", { detail: {failed, waiting} });
-  window.dispatchEvent(event);
-  if (waiting && !document.hidden) {
-    detectionPoll = setTimeout(() => {
-      if (!document.hidden) loadCurrentCar({force: true}).catch(() => {});
-    }, 5000);
-  }
-}
-
 function scheduleCurrentCarRetry() {
   if (currentCarRetryTimer || currentCarRetryIndex >= CURRENT_CAR_RETRY_DELAYS_MS.length) return;
   const delay = CURRENT_CAR_RETRY_DELAYS_MS[currentCarRetryIndex++];
@@ -93,17 +75,6 @@ function scheduleCurrentCarRetry() {
 
 function resolveCurrentCarLabel(values) {
   const selected = String(values?.CarSelected3 || "").trim();
-  if (selected === "AUTO") {
-    const result = values.AutoCarModelResult;
-    if (result === "unknown") return getUIText("car_auto_failed");
-    if (typeof result === "string" && result && result !== "0") {
-      const name = result.replaceAll("_", " ");
-      if (values.CarName !== "MOCK") return name;
-      const issueKey = {identity: "car_auto_unverified", wiring: "long_owner_wiring", adas: "long_owner_adas"}[values.AutoExperimentalIssue];
-      return [name, getUIText("car_observe_only"), issueKey && getUIText(issueKey)].filter(Boolean).join(" · ");
-    }
-    return getUIText("car_auto_wait");
-  }
   if (selected) return selected;
   const effective = String(values?.CarName || "").trim();
   if (effective) return effective;
@@ -255,12 +226,9 @@ async function loadCurrentCar(options = {}) {
     return currentCarLastKnownLabel;
   }
 
-  const revision = ++currentCarRevision;
   currentCarLoadPromise = (async () => {
     try {
-      const values = await bulkGet(["CarSelected3", "CarName", "AutoCarModelResult", "AutoExperimentalIssue"]);
-      if (revision !== currentCarRevision) return currentCarLastKnownLabel;
-      watchAutomaticSelection(values);
+      const values = await bulkGet(["CarSelected3", "CarName"]);
       const label = resolveCurrentCarLabel(values);
       if (label) {
         cancelCurrentCarRetry();
@@ -274,12 +242,11 @@ async function loadCurrentCar(options = {}) {
       currentCarLoadedAt = Date.now();
       return label;
     } catch (e) {
-      if (revision !== currentCarRevision) return currentCarLastKnownLabel;
       applyCurrentCarLabel("", { blank: !currentCarLastKnownLabel });
       scheduleCurrentCarRetry();
       throw e;
     } finally {
-      if (revision === currentCarRevision) currentCarLoadPromise = null;
+      currentCarLoadPromise = null;
     }
   })();
 
@@ -433,37 +400,12 @@ function syncCarPickerChrome() {
   appCarPickerClose.textContent = getUIText("cancel", "Cancel");
 }
 
-function appendAutomaticSelection(list, className) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = className;
-  button.textContent = getUIText("car_auto");
-  button.onclick = async () => {
-    button.disabled = true;
-    try {
-      await setParam("CarSelected3", "AUTO");
-      currentCarRevision++;
-      currentCarLoadPromise = null;
-      watchAutomaticSelection({CarSelected3: "AUTO"});
-      applyCurrentCarLabel(getUIText("car_auto_wait"));
-      closeCarPicker(true);
-      showAppToast(getUIText("car_auto_wait"));
-    } catch (error) {
-      await appAlert(error.message, { title: getUIText("car_select") });
-    } finally {
-      button.disabled = false;
-    }
-  };
-  list.appendChild(button);
-}
-
 function renderCarPickerMakers() {
   if (!appCarPickerList) return;
   carPickerMode = "makers";
   carPickerMaker = null;
   syncCarPickerChrome();
   appCarPickerList.innerHTML = "";
-  appendAutomaticSelection(appCarPickerList, "btn groupBtn app-branch-picker__item app-car-picker__item");
 
   const makers = CARS && CARS.makers ? Object.keys(CARS.makers) : [];
   makers.sort((a, b) => a.localeCompare(b));
@@ -520,9 +462,8 @@ async function runOpenCarPickerFlow() {
   syncCarPickerChrome();
   appCarPickerMeta.textContent = getUIText("loading", "Loading...");
   appCarPickerList.innerHTML = "";
+  await ensureCarsLoaded();
   renderCarPickerMakers();
-  await Promise.allSettled([ensureCarsLoaded(), loadCurrentCar({ force: true })]);
-  if (!appCarPicker.hidden && carPickerMode === "makers") renderCarPickerMakers();
   return true;
 }
 
@@ -575,7 +516,7 @@ async function loadCars(options = {}) {
   }
 
   carMeta.textContent = getUIText("loading", "Loading...");
-  renderMakers();
+  makerList.innerHTML = "";
   modelList.innerHTML = "";
   CURRENT_MAKER = null;
   showCarScreen("makers", false);
@@ -593,7 +534,6 @@ async function loadCars(options = {}) {
 
 function renderMakers() {
   makerList.innerHTML = "";
-  appendAutomaticSelection(makerList, "btn groupBtn");
   const makers = CARS && CARS.makers ? Object.keys(CARS.makers) : [];
   makers.sort((a, b) => a.localeCompare(b));
 
@@ -649,9 +589,6 @@ async function onSelectCar(maker, modelOnly, fullLine) {
     return;
   }
 
-  currentCarRevision++;
-  currentCarLoadPromise = null;
-  watchAutomaticSelection({CarSelected3: fullLine});
   if (typeof applyCurrentCarLabel === "function") applyCurrentCarLabel(modelOnly);
   else {
     if (curCarLabelCar) curCarLabelCar.textContent = modelOnly;

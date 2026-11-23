@@ -83,12 +83,6 @@ async def api_param_set(request: web.Request) -> web.Response:
 
   if not name:
     return web.json_response({"ok": False, "error": "missing name"}, status=400)
-  if name == "CarSelected3" and value == "AUTO" and not HAS_PARAMS:
-    return web.json_response({"ok": False, "error": "params_unavailable"}, status=503)
-  if name == "AutoCarModelResult":
-    return web.json_response({"ok": False, "error": "vehicle identification result is read-only"}, status=403)
-  if name == "AutoExperimentalPlatform":
-    return web.json_response({"ok": False, "error": "use vehicle-specific longitudinal setup"}, status=403)
   if name in INTERNAL_SESSION_PARAMS:
     if str(name).startswith("ForceOffroad"):
       return web.json_response({"ok": False, "error": "use the Park-only offroad switch"}, status=403)

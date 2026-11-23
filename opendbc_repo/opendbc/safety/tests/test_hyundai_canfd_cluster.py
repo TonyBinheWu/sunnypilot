@@ -304,5 +304,4 @@ def test_direct_cluster_setting_preserves_control_fifo_and_reuse(native, address
       stock = message(address, counter=index, marker=64, length=size)
       results.append(hooks.rx(address, stock, 110000 + index * 10000, bus=2 - bus))
     return results
-  param = 157 | (32768 if address == 0xCB else 0)  # LFA_ALT is angle-control only.
-  assert run(param) == run(param | DIRECT_TX)
+  assert run(157) == run(157 | DIRECT_TX)

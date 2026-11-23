@@ -27,7 +27,6 @@ FW_VERSIONS = {
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00IG  MFC  AT MES LHD 1.00 1.04 99211-G8100 200511',
-      b'\xf1\x00IG  MFC  AT MES LHD 1.00 1.05 99211-G8100 210409',
     ],
   },
   CAR.HYUNDAI_AZERA_HEV_6TH_GEN: {
@@ -64,17 +63,11 @@ FW_VERSIONS = {
       b'\xf1\x00AE  MDPS C 1.00 1.05 56310/G2501 4AEHC105',
       b'\xf1\x00AE  MDPS C 1.00 1.07 56310/G2301 4AEHC107',
       b'\xf1\x00AE  MDPS C 1.00 1.07 56310/G2501 4AEHC107',
-      b'\xf1\x00AE  MDPS C 1.00 1.03 56310G2300\x00 4AEHC103',
-      b'\xf1\x00AE  MDPS C 1.00 1.04 56310G2550\x00 4AEHC104',
-      b'\xf1\x00AE  MDPS C 1.00 1.05 56310/G2500 4AEHC105',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00AEH MFC  AT EUR LHD 1.00 1.00 95740-G2400 180222',
       b'\xf1\x00AEH MFC  AT EUR LHD 1.00 1.00 95740-G7200 160418',
       b'\xf1\x00AEH MFC  AT USA LHD 1.00 1.00 95740-G2400 180222',
-      b'\xf1\x00AEH MFC  AT EUR RHD 1.00 1.00 95740-G2200 161014',
-      b'\xf1\x00AEH MFC  AT EUR RHD 1.00 1.00 95740-G2400 180222',
-      b'\xf1\x00AEH MFC  AT USA LHD 1.00 1.00 95740-G2300 170703',
     ],
   },
   CAR.HYUNDAI_IONIQ_PHEV_2019: {
@@ -139,7 +132,6 @@ FW_VERSIONS = {
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00AEev SCC F-CUP      1.00 1.00 96400-G7000         ',
       b'\xf1\x00AEev SCC F-CUP      1.00 1.00 96400-G7100         ',
-      b'\xf1\x00AEev SCC F-CUP      1.00 1.01 96400-G7000         ',
     ],
     (Ecu.eps, 0x7d4, None): [
       b'\xf1\x00AE  MDPS C 1.00 1.02 56310G7300\x00 4AEEC102',
@@ -147,14 +139,12 @@ FW_VERSIONS = {
       b'\xf1\x00AE  MDPS C 1.00 1.03 56310G7300\x00 4AEEC103',
       b'\xf1\x00AE  MDPS C 1.00 1.04 56310/G7301 4AEEC104',
       b'\xf1\x00AE  MDPS C 1.00 1.04 56310/G7501 4AEEC104',
-      b'\xf1\x00AE  MDPS C 1.00 1.04 56310/G7551 4AEEC104',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00AEE MFC  AT EUR LHD 1.00 1.00 95740-G2300 170703',
       b'\xf1\x00AEE MFC  AT EUR LHD 1.00 1.00 95740-G2400 180222',
       b'\xf1\x00AEE MFC  AT EUR LHD 1.00 1.00 95740-G7200 160418',
       b'\xf1\x00AEE MFC  AT USA LHD 1.00 1.00 95740-G2400 180222',
-      b'\xf1\x00AEE MFC  AT EUR RHD 1.00 1.00 95740-G2400 180222',
     ],
   },
   CAR.HYUNDAI_IONIQ_HEV_2022: {
@@ -166,7 +156,6 @@ FW_VERSIONS = {
     (Ecu.eps, 0x7d4, None): [
       b'\xf1\x00AE  MDPS C 1.00 1.01 56310/G2510 4APHC101',
       b'\xf1\x00AE  MDPS C 1.00 1.01 56310G2510\x00 4APHC101',
-      b'\xf1\x00AE  MDPS C 1.00 1.01 56310-XX000 4APHC101',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00AEH MFC  AT USA LHD 1.00 1.00 95740-G2700 201027',
@@ -181,7 +170,6 @@ FW_VERSIONS = {
       b'\xf1\x00DN8_ SCC FHCUP      1.00 1.00 99110-L0000         ',
       b'\xf1\x00DN8_ SCC FHCUP      1.00 1.01 99110-L1000         ',
       b'\xf1\x00DN8_ SCC FHCUP      1.00 1.02 99110-L1000         ',
-      b'\xf1\x00DN8_ SCC FHCU-      1.00 1.00 99110-L0000         ',
     ],
     (Ecu.abs, 0x7d1, None): [
       b'\xf1\x00DN ESC \x01 102\x19\x04\x13 58910-L1300',
@@ -244,7 +232,6 @@ FW_VERSIONS = {
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00DN8 MFC  AT KOR LHD 1.00 1.01 99211-L1800 230512',
       b'\xf1\x00DN8 MFC  AT USA LHD 1.00 1.01 99211-L1800 230512',
-      b'\xf1\x00DN8 MFC  AT USA LHD 1.00 1.02 99211-L1800 250613',
     ],
   },
   CAR.HYUNDAI_TUCSON: {
@@ -310,13 +297,11 @@ FW_VERSIONS = {
       b'\xf1\x00TM ESC \x04 103"\x07\x08 58910-S2GA0',
       b'\xf1\x00TM ESC \x1e 102 \x08\x08 58910-S1DA0',
       b'\xf1\x00TM ESC   103!\x030 58910-S1MA0',
-      b'\xf1\x00TM ESC \x1b 102 \x08\x08 58910-S1DA0',
     ],
     (Ecu.eps, 0x7d4, None): [
       b'\xf1\x00TM  MDPS C 1.00 1.01 56310-S1AB0 4TSDC101',
       b'\xf1\x00TM  MDPS C 1.00 1.01 56310-S1EB0 4TSDC101',
       b'\xf1\x00TM  MDPS C 1.00 1.02 56370-S2AA0 0B19',
-      b'\xf1\x00TM  MDPS R 1.00 1.05 57700-S1500 4TSDP105',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00TM  MFC  AT EUR LHD 1.00 1.03 99211-S1500 210224',
@@ -359,13 +344,11 @@ FW_VERSIONS = {
       b'\xf1\x00TM  MDPS C 1.00 1.02 56310-CLAC0 4TSHC102',
       b'\xf1\x00TM  MDPS C 1.00 1.02 56310-CLEC0 4TSHC102',
       b'\xf1\x00TM  MDPS C 1.00 1.02 56310CLEC0\x00 4TSHC102',
-      b'\xf1\x00TM  MDPS R 1.00 1.06 57700-CL090 4TSHP106',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00TMP MFC  AT USA LHD 1.00 1.03 99211-S1500 210224',
       b'\xf1\x00TMP MFC  AT USA LHD 1.00 1.05 99211-S1500 220126',
       b'\xf1\x00TMP MFC  AT USA LHD 1.00 1.06 99211-S1500 220727',
-      b'\xf1\x00TMP MFC  AT EUR RHD 1.00 1.06 99211-S1500 220727',
     ],
   },
   CAR.HYUNDAI_CUSTIN_1ST_GEN: {
@@ -388,7 +371,6 @@ FW_VERSIONS = {
       b'\xf1\x00CK__ SCC F_CUP      1.00 1.01 96400-J5100         ',
       b'\xf1\x00CK__ SCC F_CUP      1.00 1.02 96400-J5100         ',
       b'\xf1\x00CK__ SCC F_CUP      1.00 1.03 96400-J5100         ',
-      b'\xf1\x00CK__ SCC FHCUP      1.00 1.02 96400-J5000         ',
     ],
     (Ecu.eps, 0x7d4, None): [
       b'\xf1\x00CK  MDPS R 1.00 1.04 57700-J5200 4C2CL104',
@@ -402,7 +384,6 @@ FW_VERSIONS = {
       b'\xf1\x00CK  MFC  AT EUR LHD 1.00 1.03 95740-J5000 170822',
       b'\xf1\x00CK  MFC  AT USA LHD 1.00 1.03 95740-J5000 170822',
       b'\xf1\x00CK  MFC  AT USA LHD 1.00 1.04 95740-J5000 180504',
-      b'\xf1\x00CK  MFC  AT KOR LHD 1.00 1.04 95740-J5000 180504',
     ],
   },
   CAR.KIA_STINGER_2022: {
@@ -418,7 +399,6 @@ FW_VERSIONS = {
       b'\xf1\x00CK  MDPS R 1.00 5.03 57700-J5380 4C2VR503',
       b'\xf1\x00CK  MDPS R 1.00 5.03 57700-J5520 4C4VL503',
       b'\xf1\x00CK  MDPS R 1.00 5.04 57700-J5520 4C4VL504',
-      b'\xf1\x00CK  MDPS R 1.00 5.04 57700-J5320 4C2VL504',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00CK  MFC  AT AUS RHD 1.00 1.00 99211-J5500 210622',
@@ -463,7 +443,6 @@ FW_VERSIONS = {
       b'\xf1\x00ON ESC \x0b 101\x19\t\x05 58910-S9320',
       b'\xf1\x00ON ESC \x0b 101\x19\t\x08 58910-S9360',
       b'\xf1\x00ON ESC \x0b 103$\x04\x08 58910-S9360',
-      b'\xf1\x00ON ESC \x01 103$\x04\x08 58910-S9360',
     ],
     (Ecu.eps, 0x7d4, None): [
       b'\xf1\x00LX2 MDPS C 1,00 1,03 56310-S8020 4LXDC103',
@@ -673,26 +652,6 @@ FW_VERSIONS = {
       b'\xf1\x00DL3_ RDR -----      1.00 1.01 99110-L2500         ',
     ],
   },
-  CAR.HYUNDAI_KONA_2022: {
-    (Ecu.fwdCamera, 0x7c4, None): [
-      b'\xf1\x00OSP LKA  AT CND LHD 1.00 1.04 99211-J9200 904',
-      b'\xf1\x00OSP LKA  AT USA LHD 1.00 1.04 99211-J9200 904',
-    ],
-    (Ecu.eps, 0x7d4, None): [
-      b'\xf1\x00OSP MDPS C 1.00 1.04 56310/J9290 4OPCC104',
-      b'\xf1\x00OSP MDPS C 1.00 1.04 56310/J9291 4OPCC104',
-      b'\xf1\x00OSP MDPS C 1.00 1.04 56310J9291\x00 4OPCC104',
-    ],
-    (Ecu.fwdRadar, 0x7d0, None): [
-      b'\xf1\x00YB__ FCA -----      1.00 1.01 99110-J9000      \x00\x00\x00',
-    ],
-    (Ecu.transmission, 0x7e1, None): [
-      b'\xf1\x00HT6WA280BLHT6VA650A1COS4N20NS1\x00\x00\x00\x00\x00\x00\x15\xf5\x87~',
-      b'\xf1\x00T01960BL  T01E60A1  DOS2T16X4XE60NS4N\x90\xe6\xcb',
-      b'\xf1\x00T01G00BL  T01I00A1  DOS2T16X2XI00NS0\x8c`\xff\xe7',
-      b'\xf1\x00T01G00BL  T01I00A1  DOS2T16X4XI00NS0\x99L\xeeq',
-    ],
-  },
   CAR.HYUNDAI_KONA_EV: {
     (Ecu.abs, 0x7d1, None): [
       b'\xf1\x00OS IEB \x01 212 \x11\x13 58520-K4000',
@@ -735,7 +694,6 @@ FW_VERSIONS = {
       b'\xf1\x00OS IEB \x03 101 \x11\x13 58520-K4010',
       b'\xf1\x00OS IEB \x03 102"\x05\x16 58520-K4010',
       b'\xf1\x00OS IEB \r 102"\x05\x16 58520-K4010',
-      b'\xf1\x00OS IEB \x02 101 \x11\x13 58520-K4010',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00OSP LKA  AT AUS RHD 1.00 1.04 99211-J9200 904',
@@ -752,8 +710,6 @@ FW_VERSIONS = {
       b'\xf1\x00OSP MDPS C 1.00 1.02 56310K4260\x00 4OEPC102',
       b'\xf1\x00OSP MDPS C 1.00 1.02 56310K4261\x00 4OEPC102',
       b'\xf1\x00OSP MDPS C 1.00 1.02 56310K4971\x00 4OEPC102',
-      b'\xf1\x00OSP MDPS C 1.00 1.02 56310/K4261 4OEPC102',
-      b'\xf1\x00OSP MDPS C 1.00 1.02 56310/K4971 4OEPC102',
     ],
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00YB__ FCA -----      1.00 1.01 99110-K4500      \x00\x00\x00',
@@ -765,15 +721,11 @@ FW_VERSIONS = {
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00SX2EMFC  AT KOR LHD 1.00 1.00 99211-BF000 230410',
-      b'\xf1\x00SX2EMFC  AT USA LHD 1.00 1.02 99211-BF000 230823',
     ],
   },
   CAR.HYUNDAI_KONA_HEV_2ND_GEN: {
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00SX2HMFC  AT EUR RHD 1.00 1.04 99211-BE000 231010',
-      b'\xf1\x00SX2HMFC  AT AUS RHD 1.00 1.00 99211-BE001 241015',
-      b'\xf1\x00SX2HMFC  AT AUS RHD 1.00 1.01 99211-BE001 250117',
-      b'\xf1\x00SX2HMFC  AT EUR LHD 1.00 1.01 99211-BE001 250117',
     ],
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00SX2_ RDR -----      1.00 1.02 99110-BE500         ',
@@ -796,8 +748,6 @@ FW_VERSIONS = {
       b'\xf1\x00DE  MDPS C 1.00 1.04 56310Q4100\x00 4DEEC104',
       b'\xf1\x00DE  MDPS C 1.00 1.05 56310Q4000\x00 4DEEC105',
       b'\xf1\x00DE  MDPS C 1.00 1.05 56310Q4100\x00 4DEEC105',
-      b'\xf1\x00DE  MDPS C 1.00 1.05 56310Q4150\x00 4DEEC105',
-      b'\xf1\x00DE  MDPS C 1.00 1.05 56310Q4200\x00 4DEEC105',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00DEE MFC  AT EUR LHD 1.00 1.00 99211-Q4000 191211',
@@ -809,21 +759,15 @@ FW_VERSIONS = {
       b'\xf1\x00DEE MFC  AT USA LHD 1.00 1.01 99211-Q4500 210428',
       b'\xf1\x00DEE MFC  AT USA LHD 1.00 1.02 99211-Q4100 201218',
       b'\xf1\x00DEE MFC  AT USA LHD 1.00 1.03 95740-Q4000 180821',
-      b'\xf1\x00DEE MFC  AT EUR RHD 1.00 1.00 99211-Q4000 191211',
     ],
   },
   CAR.KIA_NIRO_EV_2ND_GEN: {
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00SG2_ RDR -----      1.00 1.01 99110-AT000         ',
-      b'\xf1\x00SG__ RDR -----      1.00 1.00 99110-AT200         ',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00SG2EMFC  AT EUR LHD 1.01 1.09 99211-AT000 220801',
       b'\xf1\x00SG2EMFC  AT USA LHD 1.01 1.09 99211-AT000 220801',
-      b'\xf1\x00SG2EMFC  AT EUR LHD 1.00 1.00 99211-AT200 240315',
-      b'\xf1\x00SG2EMFC  AT EUR LHD 1.01 1.10 99211-AT000 230417',
-      b'\xf1\x00SG2EMFC  AT USA LHD 1.00 1.00 99211-AT100 230216',
-      b'\xf1\x00SG2EMFC  AT USA LHD 1.00 1.00 99211-AT200 240401',
     ],
   },
   CAR.KIA_NIRO_PHEV: {
@@ -926,11 +870,9 @@ FW_VERSIONS = {
   CAR.KIA_OPTIMA_H_G4_FL: {
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00JFhe SCC FHCUP      1.00 1.01 99110-A8500         ',
-      b'\xf1\x00JFhe SCC FHCUP      1.00 1.03 99110-A8500         ',
     ],
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00JFH MFC  AT KOR LHD 1.00 1.01 95895-A8200 180323',
-      b'\xf1\x00JFH MFC  AT KOR LHD 1.00 1.04 95895-A8200 181217',
     ],
   },
   CAR.HYUNDAI_ELANTRA: {
@@ -990,7 +932,6 @@ FW_VERSIONS = {
       b'\xf1\x00CN7 MFC  AT USA LHD 1.00 1.06 99210-AA000 220111',
       b'\xf1\x00CN7 MFC  AT USA LHD 1.00 1.07 99210-AA000 220426',
       b'\xf1\x00CN7 MFC  AT USA LHD 1.00 1.08 99210-AA000 220728',
-      b'\xf1\x00CN7 MFC  AT USA LHD 1.00 1.09 99210-AA000 221108',
     ],
     (Ecu.abs, 0x7d1, None): [
       b'\xf1\x00CN ESC \t 101 \x10\x03 58910-AB800',
@@ -1061,7 +1002,6 @@ FW_VERSIONS = {
       b'\xf1\x00UMP LKAS AT KOR LHD 1.00 1.00 95740-C5550 S30',
       b'\xf1\x00UMP LKAS AT USA LHD 1.00 1.00 95740-C6550 d00',
       b'\xf1\x00UMP LKAS AT USA LHD 1.01 1.01 95740-C6550 d01',
-      b'\xf1\x00UMP LKAS AT AUS RHD 1.00 1.00 96400-C6550 S30',
     ],
     (Ecu.abs, 0x7d1, None): [
       b'\xf1\x00UM ESC \x02 12 \x18\x05\x05 58910-C6300',
@@ -1090,7 +1030,6 @@ FW_VERSIONS = {
       b'\xf1\x00CV1 MFC  AT USA LHD 1.00 1.00 99210-CV200 230510',
       b'\xf1\x00CV1 MFC  AT USA LHD 1.00 1.05 99210-CV000 211027',
       b'\xf1\x00CV1 MFC  AT USA LHD 1.00 1.06 99210-CV000 220328',
-      b'\xf1\x00CV1 MFC  AT EUR LHD 1.00 1.02 99210-CV000 210630',
     ],
   },
   CAR.KIA_EV6_PE: {  # (CV1)
@@ -1134,8 +1073,6 @@ FW_VERSIONS = {
       b'\xf1\x00NE1 MFC  AT USA LHD 1.00 1.03 99211-GI010 220401',
       b'\xf1\x00NE1 MFC  AT USA LHD 1.00 1.05 99211-GI010 220614',
       b'\xf1\x00NE1 MFC  AT USA LHD 1.00 1.06 99211-GI010 230110',
-      b'\xf1\x00NE1 MFC  AT EUR LHD 1.00 1.02 99211-GI010 211206',
-      b'\xf1\x00NE1 MFC  AT USA LHD 1.00 1.01 99211-GI100 240110',
     ],
   },
   CAR.HYUNDAI_IONIQ_5_PE: {  # (NE1)
@@ -1153,8 +1090,6 @@ FW_VERSIONS = {
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00NE1NMFC  AT KOR LHD 1.00 1.04 99211-NI000 231219',
       b'\xf1\x00NE1NMFC  AT USA LHD 1.00 1.04 99211-NI000 231219',
-      b'\xf1\x00NE1NMFC  AT KOR LHD 1.00 1.00 99211-NI010 240712',
-      b'\xf1\x00NE1NMFC  AT USA LHD 1.00 1.00 99211-NI110 250404',
     ],
   },
   CAR.HYUNDAI_IONIQ_6: {
@@ -1168,7 +1103,6 @@ FW_VERSIONS = {
       b'\xf1\x00CE  MFC  AT EUR LHD 1.00 1.04 99211-KL000 221213',
       b'\xf1\x00CE  MFC  AT USA LHD 1.00 1.04 99211-KL000 221213',
       b'\xf1\x00CE  MFC  AT USA LHD 1.00 1.06 99211-KL000 230915',
-      b'\xf1\x00CE  MFC  AT CAN LHD 1.00 1.06 99211-KL000 230915',
     ],
   },
   CAR.HYUNDAI_IONIQ_9: {
@@ -1192,15 +1126,12 @@ FW_VERSIONS = {
       b'\xf1\x00NX4 FR_CMR AT USA LHD 1.00 1.00 99211-N9260 14Y',
       b'\xf1\x00NX4 FR_CMR AT USA LHD 1.00 1.01 99211-N9100 14A',
       b'\xf1\x00NX4 FR_CMR AT USA LHD 1.00 1.01 99211-N9240 14T',
-      b'\xf1\x00NX4 FR_CMR AT CAN LHD 1.00 1.00 99211-N9220 14K',
-      b'\xf1\x00NX4 FR_CMR AT EUR LHD 1.00 1.00 99211-N9240 14Q',
     ],
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00NX4__               1.00 1.00 99110-N9100         ',
       b'\xf1\x00NX4__               1.00 1.01 99110-N9000         ',
       b'\xf1\x00NX4__               1.00 1.02 99110-N9000         ',
       b'\xf1\x00NX4__               1.01 1.00 99110-N9100         ',
-      b'\xf1\x00NX4__               1.01 1.02 99110-N9000         ',
     ],
   },
   CAR.HYUNDAI_SANTA_CRUZ_1ST_GEN: {
@@ -1223,8 +1154,6 @@ FW_VERSIONS = {
       b'\xf1\x00NQ5 FR_CMR AT USA LHD 1.00 1.00 99211-P1040 663',
       b'\xf1\x00NQ5 FR_CMR AT USA LHD 1.00 1.00 99211-P1060 665',
       b'\xf1\x00NQ5 FR_CMR AT USA LHD 1.00 1.00 99211-P1070 690',
-      b'\xf1\x00NQ5 FR_CMR AT GEN LHD 1.00 1.00 99211-P1040 663',
-      b'\xf1\x00NQ5 FR_CMR AT USA LHD 1.00 1.01 99211-P1060 680',
     ],
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00NQ5__               1.00 1.02 99110-P1000         ',
@@ -1240,15 +1169,12 @@ FW_VERSIONS = {
       b'\xf1\x00JK1 MFC  AT USA LHD 1.00 1.01 99211-AR200 220125',
       b'\xf1\x00JK1 MFC  AT USA LHD 1.00 1.01 99211-AR300 220125',
       b'\xf1\x00JK1 MFC  AT USA LHD 1.00 1.04 99211-AR000 210204',
-      b'\xf1\x00JK1 MFC  AT CAN LHD 1.00 1.04 99211-AR100 210204',
-      b'\xf1\x00JK1 MFC  AT USA LHD 1.00 1.02 99211-IY000 230627',
     ],
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00JK1_ SCC FHCUP      1.00 1.00 99110-AR200         ',
       b'\xf1\x00JK1_ SCC FHCUP      1.00 1.00 99110-AR300         ',
       b'\xf1\x00JK1_ SCC FHCUP      1.00 1.00 99110-IY000         ',
       b'\xf1\x00JK1_ SCC FHCUP      1.00 1.02 99110-AR000         ',
-      b'\xf1\x00JK1_ SCC -----      1.00 1.02 99110-AR100         ',
     ],
   },
   CAR.GENESIS_GV70_ELECTRIFIED_1ST_GEN: {
@@ -1320,7 +1246,6 @@ FW_VERSIONS = {
       b'\xf1\x00MQ4HMFC  AT KOR LHD 1.00 1.12 99210-P2000 230331',
       b'\xf1\x00MQ4HMFC  AT USA LHD 1.00 1.10 99210-P2000 210406',
       b'\xf1\x00MQ4HMFC  AT USA LHD 1.00 1.11 99210-P2000 211217',
-      b'\xf1\x00MQ4HMFC  AT USA LHD 1.00 1.12 99210-P2000 230331',
     ],
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00MQhe SCC FHCUP      1.00 1.04 99110-P4000         ',
@@ -1332,7 +1257,6 @@ FW_VERSIONS = {
     (Ecu.fwdCamera, 0x7c4, None): [
       b'\xf1\x00SG2HMFC  AT USA LHD 1.01 1.08 99211-AT000 220531',
       b'\xf1\x00SG2HMFC  AT USA LHD 1.01 1.09 99211-AT000 220801',
-      b'\xf1\x00SG2HMFC  AT USA LHD 1.00 1.00 99211-AT100 230216',
     ],
     (Ecu.fwdRadar, 0x7d0, None): [
       b'\xf1\x00SG2_ RDR -----      1.00 1.01 99110-AT000         ',

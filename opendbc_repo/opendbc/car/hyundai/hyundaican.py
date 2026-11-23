@@ -154,7 +154,7 @@ def create_clu11(packer, frame, clu11, button, CP):
   return packer.make_can_msg("CLU11", bus, values)
 
 
-def create_lfahda_mfc(packer, CC, blinking_signal, *, short_frame=False):
+def create_lfahda_mfc(packer, CC, blinking_signal):
   activeCarrot = CC.hudControl.activeCarrot
   dm_alert = getattr(CC.hudControl, "driverMonitoringAlert", 0)
   values = {
@@ -168,9 +168,7 @@ def create_lfahda_mfc(packer, CC, blinking_signal, *, short_frame=False):
     "HDA_Icon_Wheel" : 1 if CC.latActive else 0,
     #"HDA_Chime" : 1 if CC.latActive else 0, # comment for K9 chime,
   }
-  addr, data, bus = packer.make_can_msg("LFAHDA_MFC", 0, values)
-  # Both cluster formats put every defined signal in the first four bytes.
-  return addr, data[:4] if short_frame else data, bus
+  return packer.make_can_msg("LFAHDA_MFC", 0, values)
 
 def create_acc_commands_scc(packer, enabled, accel, jerk, idx, hud_control, set_speed, stopping, long_override, suppress_casper_ev_fca, CS, soft_hold_mode):
   from opendbc.car.hyundai.carcontroller import HyundaiJerk
@@ -224,10 +222,7 @@ def create_acc_commands_scc(packer, enabled, accel, jerk, idx, hud_control, set_
     values["DriverAlertDisplay"] = 0
     commands.append(packer.make_can_msg("SCC11", 0, values))
 
-  fca_braking = CS.fca11 is not None and any(CS.fca11[field] for field in (
-    "FCA_CmdAct", "CF_VSM_DecCmdAct", "CR_VSM_DecCmd", "FCA_StopReq",
-  ))
-  if CS.scc12 is not None and not (fca_braking or CS.scc12["AEB_CmdAct"] or CS.scc12["CR_VSM_DecCmd"]):
+  if CS.scc12 is not None:
     values = copy.copy(CS.scc12)
     values["ACCMode"] = scc12_acc_mode #2 if enabled and long_override else 1 if long_enabled else 0
     values["StopReq"] = stop_req
@@ -255,8 +250,7 @@ def create_acc_commands_scc(packer, enabled, accel, jerk, idx, hud_control, set_
     values["ObjDistStat"] = objGap2
     commands.append(packer.make_can_msg("SCC14", 0, values))
 
-  if (suppress_casper_ev_fca and CS.fca11 is not None and not fca_braking and
-      not any(CS.fca11[field] for field in ("CF_VSM_Prefill", "CF_VSM_HBACmd", "CF_VSM_Warn", "CF_VSM_BeltCmd"))):
+  if CS.fca11 is not None and suppress_casper_ev_fca: # CASPER_EV의 경우 FCA11에서 fail이 간헐적 발생함.. 그냥막자.. 원인불명..
     values = suppress_casper_ev_fca11_fault(copy.copy(CS.fca11))
     fca11_dat = packer.make_can_msg("FCA11", 0, values)[1]
     values["CR_FCA_ChkSum"] = hyundai_checksum(fca11_dat[:7])

@@ -250,7 +250,6 @@
 }
 
 /* 목록형(차량 제조사/모델) — 행이 많아 크기를 한 단 낮춘다 */
-.intro-list[hidden] { display: none; }
 .intro-list {
   display: flex;
   flex-direction: column;

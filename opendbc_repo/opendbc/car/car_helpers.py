@@ -7,10 +7,7 @@ from opendbc.car.can_definitions import CanRecvCallable, CanSendCallable
 from opendbc.car.carlog import carlog
 from opendbc.car.structs import CarParams, CarParamsT
 from opendbc.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
-from opendbc.car.fw_versions import ObdCallback, get_fw_versions, get_fw_versions_ordered, get_present_ecus, match_fw_to_car
-from opendbc.car.hyundai.fingerprints import FW_VERSIONS as HYUNDAI_FW_VERSIONS
-from opendbc.car.hyundai.values import CAR as HYUNDAI
-from opendbc.car.hyundai.values import CANFD_CAR, CANFD_UNSUPPORTED_LONGITUDINAL_CAR, HyundaiFlags
+from opendbc.car.fw_versions import ObdCallback, get_fw_versions_ordered, get_present_ecus, match_fw_to_car
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.selected_car import get_selected_car_platform
 from opendbc.car.values import BRANDS
@@ -102,24 +99,10 @@ def can_fingerprint(can_recv: CanRecvCallable) -> tuple[str | None, dict[int, di
   return car_fingerprint, finger
 
 
-def _ev6_fw_consistent(car_fw: list[CarParams.CarFw]) -> bool | None:
-  # Only the identifying queries count here. HVAC, ADAS and date-only
-  # responses are also collected, but do not identify the EV6 platform.
-  expected = HYUNDAI_FW_VERSIONS[HYUNDAI.KIA_EV6]
-  observed = {}
-  for fw in car_fw:
-    key = (fw.ecu.raw, fw.address, fw.subAddress or None)
-    if fw.brand == "hyundai" and not fw.logging and key in expected:
-      observed.setdefault(key, set()).add(fw.fwVersion)
-  if not observed:
-    return None
-  return all(len(versions) == 1 and versions.issubset(expected[key]) for key, versions in observed.items())
-
-
 # **** for use live only ****
 def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multiplexing: ObdCallback, num_pandas: int,
-                cached_params: CarParamsT | None, skip_fw_query: bool = False,
-                verify_ev6: bool = False, auto_detect: bool = False) -> tuple[str | None, dict, str, list[CarParams.CarFw], CarParams.FingerprintSource, bool]:
+                cached_params: CarParamsT | None, skip_fw_query: bool = False) -> tuple[str | None, dict, str, list[CarParams.CarFw],
+                                                                                      CarParams.FingerprintSource, bool]:
   fixed_fingerprint = os.environ.get('FINGERPRINT', "")
   skip_fw_query = skip_fw_query or bool(fixed_fingerprint) or bool(os.environ.get('SKIP_FW_QUERY', False))
   disable_fw_cache = os.environ.get('DISABLE_FW_CACHE', False)
@@ -145,22 +128,6 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
       cached = False
 
     exact_fw_match, fw_candidates = match_fw_to_car(car_fw, vin)
-    if not cached and (verify_ev6 or (auto_detect and not fw_candidates)) and fw_candidates <= {HYUNDAI.KIA_EV6}:
-      compatible = _ev6_fw_consistent(car_fw)
-      adas_present = any(fw.brand == "hyundai" and fw.ecu == CarParams.Ecu.adas for fw in car_fw)
-      # With no vehicle selected, only a known EV6 reply warrants another query.
-      retry = compatible is True or (verify_ev6 and compatible is None)
-      if retry and (not fw_candidates or not exact_fw_match or not adas_present):
-        carlog.warning("EV6 firmware discovery incomplete; repeating the Hyundai query once")
-        car_fw.extend(get_fw_versions(can_recv, can_send, set_obd_multiplexing, query_brand="hyundai", num_pandas=num_pandas))
-        compatible = _ev6_fw_consistent(car_fw)
-        exact_fw_match, fw_candidates = match_fw_to_car(car_fw, vin)
-        if not verify_ev6 and (fw_candidates != {HYUNDAI.KIA_EV6} or not exact_fw_match or not compatible):
-          fw_candidates = set()
-      # The normal exact matcher accepts any listed version at an address.
-      # Conflicting or unlisted replies cannot authorize verified EV6 control.
-      if fw_candidates == {HYUNDAI.KIA_EV6} and not compatible:
-        exact_fw_match = False
   else:
     carlog.warning("Skipping VIN & FW query")
     vin_rx_addr, vin_rx_bus, vin = -1, -1, VIN_UNKNOWN
@@ -204,46 +171,15 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
 
 def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multiplexing: ObdCallback, alpha_long_allowed: bool,
             is_release: bool, num_pandas: int = 1, cached_params: CarParamsT | None = None):
-  params = Params()
-  selected_car = params.get("CarSelected3")
-  automatic = selected_car == "AUTO"
-  forced_candidate = get_selected_car_platform(selected_car) if selected_car and not automatic else None
+  selected_car = Params().get("CarSelected3")
+  forced_candidate = get_selected_car_platform(selected_car) if selected_car else None
 
-  requested_platform = params.get("AutoExperimentalPlatform")
-  # The web and Developer Alpha switch sets the legacy boolean. A manually
-  # selected CAN-FD car on standard wiring still needs live firmware and CAN
-  # identification before that request can grant longitudinal authority.
-  verify_manual_alpha = (alpha_long_allowed and forced_candidate in CANFD_CAR and forced_candidate not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR
-                         and params.get_int("HyundaiCameraSCC") == 0)
-  if verify_manual_alpha:
-    alpha_long_allowed = (not requested_platform or requested_platform == forced_candidate) and not params.get_bool("IsReleaseBranch")
-    if alpha_long_allowed:
-      requested_platform = forced_candidate
-  auto_setup = bool(requested_platform) and not params.get_bool("IsReleaseBranch") and (
-    automatic or not selected_car or requested_platform == forced_candidate
-  )
-  # A saved name or cached firmware cannot establish the current configuration
-  # for a new longitudinal controller. Keep the existing manual fast path otherwise.
-  candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(
-    can_recv, can_send, set_obd_multiplexing, num_pandas, None if auto_setup or automatic else cached_params,
-    skip_fw_query=forced_candidate is not None and not auto_setup,
-    auto_detect=automatic and not auto_setup,
-    verify_ev6=auto_setup and requested_platform == HYUNDAI.KIA_EV6 and params.get_int("HyundaiCameraSCC") == 0)
+  # A valid manual selection doesn't need active VIN, ECU presence, or firmware queries.
+  # Keep passive CAN fingerprinting since interfaces use it to detect buses and optional equipment.
+  candidate, fingerprints, vin, car_fw, source, exact_match = fingerprint(can_recv, can_send, set_obd_multiplexing, num_pandas,
+                                                                          cached_params, skip_fw_query=forced_candidate is not None)
 
-  # Automatic selection never borrows a previous vehicle's Alpha request.
-  # Keep the detected identity for the UI even if longitudinal verification fails.
-  detected = candidate if source != CarParams.FingerprintSource.fixed else None
-  if automatic:
-    alpha_long_allowed = False
-    candidate = detected
-  if auto_setup:
-    standard_canfd = requested_platform in CANFD_CAR and params.get_int("HyundaiCameraSCC") == 0
-    if (not exact_match or source == CarParams.FingerprintSource.fixed or candidate != requested_platform or
-        (standard_canfd and source != CarParams.FingerprintSource.fw)):
-      params.put("AutoExperimentalIssue", "identity")
-      candidate = None
-    alpha_long_allowed = candidate == requested_platform
-  elif forced_candidate is not None:
+  if forced_candidate is not None:
     candidate = forced_candidate
     source = CarParams.FingerprintSource.fixed
     exact_match = True
@@ -253,28 +189,17 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
     candidate = "MOCK"
 
   print(f"SelectedCar = {candidate}")
-  params.put("CarName", str(candidate))
+  Params().put("CarName", str(candidate))
 
-  params.put("FingerPrints", str(fingerprints))
+  Params().put("FingerPrints", str(fingerprints))
   CarInterface = interfaces[candidate]
   CP: CarParams = CarInterface.get_params(candidate, fingerprints, car_fw, alpha_long_allowed, is_release, docs=False)
-  if (auto_setup and CP.brand == "hyundai" and CP.flags & HyundaiFlags.CANFD_HDA2 and params.get_int("HyundaiCameraSCC") == 0
-      and candidate not in CANFD_UNSUPPORTED_LONGITUDINAL_CAR and not CP.alphaLongitudinalAvailable):
-    params.put("AutoExperimentalIssue", "adas")
-  verify_wiring = (auto_setup or automatic) and CP.brand == "hyundai" and (CP.openpilotLongitudinalControl or params.get_int("HyundaiCameraSCC") == 3)
-  if verify_wiring and not CarInterface.auto_longitudinal_bus_valid(CP, fingerprints, car_fw):
-    carlog.warning("CAN fingerprint does not confirm the selected longitudinal wiring; using observation only")
-    params.put("AutoExperimentalIssue", "wiring")
-    candidate = MOCK.MOCK
-    CP = interfaces[candidate].get_params(candidate, fingerprints, car_fw, False, is_release, docs=False)
-    params.put("CarName", str(candidate))
-  if automatic:
-    params.put("AutoCarModelResult", str(detected) if detected else "unknown")
   CP.carVin = vin
   CP.carFw = car_fw
   CP.fingerprintSource = source
   CP.fuzzyFingerprint = not exact_match
 
+  params = Params()
   print("Carrot GitBranch = {}, {}".format(format_git_source(params.get("GitRemote"), params.get("GitBranch")),
                                          params.get("GitCommitDate")))
 

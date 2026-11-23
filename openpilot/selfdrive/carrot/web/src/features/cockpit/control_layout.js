@@ -95,24 +95,9 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
     if(current)lastGroups.set(current.id,group.id);target.selectGroup?.(group.id,false);
     tabs.querySelectorAll('button').forEach(b=>{const active=b.dataset.group===group.id;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});
   }
-  const fallback = create('button', 'cockpit-quick-settings', '未辨識出車型，請手動指定　›');
-  fallback.type = 'button';
-  fallback.onclick = () => target.openCarPickerFlow?.();
-  const identify = create('button', '', '車型辨識');
-  identify.type = 'button';
-  identify.onclick = () => target.openCarPickerFlow?.();
-  target.addEventListener('carrot:vehicleidentification', ({detail}) => {
-    if (detail.failed && !fallback.parentElement) overview.prepend(fallback);
-    if (!detail.failed && fallback.parentElement) fallback.remove();
-    identify.textContent = detail.failed ? '未辨識出車型，請手動指定' : detail.waiting ? '等待辨識車型' : '車型辨識';
-  });
   function choose(section){
     current=section;setNav(false);heading.textContent=section.title;tabs.replaceChildren();
     navList.querySelectorAll('button').forEach(b=>{const active=b.dataset.section===section.id;b.classList.toggle('selected',active);b.setAttribute('aria-current',active?'page':'false');});
-    if (section.id === 'vehicle') {
-      tabs.append(identify);
-      target.CarrotCurrentCar?.refresh({force:true}).catch(() => {});
-    }
     for(const group of section.groups){const button=create('button','',group.label);button.type='button';button.dataset.group=group.id;button.onclick=()=>{void selectGroup(group);};tabs.append(button);}
     const group=section.groups.find(g=>g.id===lastGroups.get(section.id))||section.groups[0];if(group)void selectGroup(group);
     if(section.id==='controls'&&onAction){shell.dataset.overview='true';overview.hidden=false;}
@@ -165,12 +150,7 @@ export function installCockpitControlLayout(doc,target=doc.defaultView,{onAction
   };
   const decorate=node=>{if(node.nodeType!==1)return;if(node.matches('.setting'))composeCockpitControl(node,target);for(const row of node.querySelectorAll('.setting'))composeCockpitControl(row,target);};
   const observer=new target.MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)decorate(node);syncSearch();});observer.observe(host,{childList:true,subtree:true});const nativeSearch=doc.getElementById('carrotTabContent');if(nativeSearch)observer.observe(nativeSearch,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});const itemsScreen=doc.getElementById('settingScreenItems');if(itemsScreen)observer.observe(itemsScreen,{attributes:true,attributeFilter:['class']});decorate(host);syncSearch();
-  const active=()=>{
-    if (doc.body.dataset.cockpitPanel === 'setting') {
-      void load();
-      target.CarrotCurrentCar?.refresh().catch(() => {});
-    }
-  };target.addEventListener('carrot:cockpitpanelchange',active);active();
+  const active=()=>{if(doc.body.dataset.cockpitPanel==='setting')void load();};target.addEventListener('carrot:cockpitpanelchange',active);active();
   const api={shell,refresh:active,openCatalog,back(){
     if(menuGroup?.classList.contains('is-open')){menu.click();menu.focus();return true;}
     if(shell.dataset.navOpen==='true'){setNav(false);return true;}
