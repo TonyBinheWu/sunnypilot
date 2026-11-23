@@ -1684,6 +1684,7 @@ class CarState(CarStateBase):
       # Missing packets or a skipped counter must not invalidate vehicle controls.
       pt_parser._add_message("ADRV_0x161", math.nan, ignore_counter=True)
       pt_parser._add_message("ADRV_0x1ea", math.nan, ignore_counter=True)
+      pt_parser._add_message("CCNC_0x162", math.nan, ignore_counter=True)
     if CP.extFlags & HyundaiExtFlags.EV_MODE_STATUS_230:
       # Display-only while the signal is fleet-validated: checksum and freshness
       # gate the value without making a counter/alive fault disable controls.

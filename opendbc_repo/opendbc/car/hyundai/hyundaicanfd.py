@@ -427,12 +427,12 @@ def create_lfa_icon_non_camera_scc(packer, CS, CAN, CC, *, ev6_hud=False):
         values["TARGET"] = int(show_lead)
         values["TARGET_DISTANCE"] = lead_distance if show_lead else 0
       if hud.lanesVisible:
-        for side, visible, departing in (("LEFT", hud.leftLaneVisible, hud.leftLaneDepart),
-                                         ("RIGHT", hud.rightLaneVisible, hud.rightLaneDepart)):
-          # Keep OEM warnings/active lane colors. Reveal only gray/hidden lines.
+        for side, visible, departing, blindspot in (("LEFT", hud.leftLaneVisible, hud.leftLaneDepart, CS.out.leftBlindspot),
+                                                    ("RIGHT", hud.rightLaneVisible, hud.rightLaneDepart, CS.out.rightBlindspot)):
+          # Preserve OEM warnings and prioritize the blind spot for each side.
           key = f"LANELINE_{side}"
-          if visible and not departing and values[key] in (0, 1):
-            values[key] = 2
+          if visible and not departing and values[key] in (0, 1, 2):
+            values[key] = 4 if blindspot else 6 if lat_active else 2
 
     if values["ALERTS_2"] in [1, 2, 5, 6, 10, 21, 22]:
       values["ALERTS_2"] = 0
@@ -846,6 +846,7 @@ def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=No
           if key in stock:
             values[key] = stock[key]
         values.update(ev6_cluster_corners(corner_parser))
+        _add_ev6_corner_neighbors(values, corner_parser, now_nanos)
         _add_ev6_front_neighbors(values, radar, now_nanos)
         _add_ev6_vision_neighbor(values, model, now_nanos)
       ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))

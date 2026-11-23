@@ -155,7 +155,7 @@ def test_ev6_adas_hud_units_lead_and_oem_indicators(metric, expected_speed):
   packer = CANPacker("hyundai_canfd_generated")
   stock = source(packer, "ADRV_0x161")
   stock.update(HDA_ICON=1, NAV_ICON=2, LCA_LEFT_ICON=1, LCA_RIGHT_ICON=0, LANELINE_LEFT=1, LANELINE_RIGHT=4)
-  cs = NS(adrv_0x161=stock, out=NS(latEnabled=True), is_metric=metric)
+  cs = NS(adrv_0x161=stock, out=structs.CarState(latEnabled=True), is_metric=metric)
   cc = structs.CarControl(latActive=True, longActive=True)
   hud = cc.hudControl
   hud.speedVisible, hud.setSpeed = True, 95 / 3.6
@@ -170,7 +170,12 @@ def test_ev6_adas_hud_units_lead_and_oem_indicators(metric, expected_speed):
   actual = display()
   for key in ("HDA_ICON", "NAV_ICON", "LCA_LEFT_ICON", "LCA_RIGHT_ICON"):
     assert actual[key] == stock[key]
-  assert (actual["LANELINE_LEFT"], actual["LANELINE_RIGHT"]) == (2, 4)
+  assert (actual["LANELINE_LEFT"], actual["LANELINE_RIGHT"]) == (6, 4)
+  cc.latActive = False
+  assert display()["LANELINE_LEFT"] == 2
+  cc.latActive = True
+  cs.out.leftBlindspot = True
+  assert display()["LANELINE_LEFT"] == 4
   assert (actual["vSetDis"], actual["TARGET"], actual["TARGET_DISTANCE"]) == (expected_speed, 1, 14.5)
   hud.speedVisible, hud.leadVisible = False, False
   actual = display()
