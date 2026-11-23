@@ -37,6 +37,16 @@ def tint(rgb, shade=1.0, alpha=255):
   return rl.Color(*(min(255, int(((rgb >> shift) & 255) * shade)) for shift in (16, 8, 0)), alpha)
 
 
+def ego_lamps(car, now):
+  if car is None or not car.canValid:
+    return False, False, False
+  phase = getattr(car, "turnLampState", "unknown")
+  if phase == "unknown":
+    blink = now % 1.0 < 0.5
+    return car.brakeLights, car.leftBlinker and blink, car.rightBlinker and blink
+  return car.brakeLights, phase in ("left", "both"), phase in ("right", "both")
+
+
 class RealityScene:
   def __init__(self, style):
     self.style = style
@@ -51,8 +61,9 @@ class RealityScene:
     radar_ok = fresh(state, "radarState", 0.5, now)
     sm = state.sm
     car_ok = fresh(state, "carState", 0.5, now)
+    lamps = ego_lamps(sm["carState"] if car_ok else None, now)
     key = (
-      car_ok,
+      car_ok, lamps,
       sm.recv_frame["modelV2"] if model_ok else -1,
       sm.recv_frame["radarState"] if radar_ok else -1,
       rect.x,
@@ -61,7 +72,7 @@ class RealityScene:
       rect.height,
     )
     if key != self.key:
-      self.faces = self.geometry(rect, sm["modelV2"] if model_ok else None, sm["radarState"] if radar_ok else None, car_ok)
+      self.faces = self.geometry(rect, sm["modelV2"] if model_ok else None, sm["radarState"] if radar_ok else None, car_ok, lamps)
       self.key = key
     night = self.style["scene_style"] == 1
     rl.draw_rectangle_gradient_v(
@@ -83,7 +94,7 @@ class RealityScene:
             rl.Rectangle(rect.x + rect.width * side, rect.y + rect.height * 0.42, rect.width * 0.012, rect.height * 0.13), tint(0xFFB54E)
           )
 
-  def geometry(self, rect, model, radar, car_ok=False):
+  def geometry(self, rect, model, radar, car_ok=False, lamps=(False, False, False)):
     v = self.style
     faces = []
 
@@ -123,7 +134,7 @@ class RealityScene:
     vehicles = vehicle_points(model, radar)
     if car_ok:
       vehicles.append((1.3, 0))  # viewport anchor for the reporting vehicle
-    for z, x in vehicles:
+    for index, (z, x) in enumerate(vehicles):
       size = v["vehicle_size"] / 100
 
       def panel(vertices, color):
@@ -136,6 +147,13 @@ class RealityScene:
       panel([(side * 0.93, 0, 0.16), (side * 0.9, 4, 0.16), (side * 0.88, 4, 0.76), (side * 0.94, 0, 0.82)], tint(body, 0.62))
       panel([(-0.84, 0.4, 0.83), (0.84, 0.4, 0.83), (0.69, 1.3, 1.45), (-0.69, 1.3, 1.45)], tint(0x304451))
       panel([(-0.69, 1.3, 1.45), (0.69, 1.3, 1.45), (0.67, 2.7, 1.45), (-0.67, 2.7, 1.45)], tint(body, 0.94))
+      if car_ok and index == len(vehicles) - 1:
+        brake, left, right = lamps
+        for sign, indicator in ((-1, left), (1, right)):
+          if brake:
+            panel([(sign * a, 0, h) for a, h in ((0.34, 0.52), (0.71, 0.52), (0.71, 0.69), (0.34, 0.69))], tint(0xFF3434))
+          if indicator:
+            panel([(sign * a, 0, h) for a, h in ((0.73, 0.52), (0.92, 0.52), (0.92, 0.69), (0.73, 0.69))], tint(0xFFB020))
     return faces
 
   def draw_map(self, rect, state, now):

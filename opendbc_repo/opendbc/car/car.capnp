@@ -299,6 +299,14 @@ struct CarState {
   lightingStateValid @116 :Bool; # fresh, decoded actual lamp state; false means unknown
   lowBeamOn @117 :Bool;
   highBeamOn @118 :Bool;
+  turnLampState @119 :TurnLampState; # instantaneous rear indicator lamps for display
+  enum TurnLampState {
+    unknown @0;
+    dark @1;
+    left @2;
+    right @3;
+    both @4;
+  }
 
   struct TeslaTrafficControl {
     available @0 :Bool;

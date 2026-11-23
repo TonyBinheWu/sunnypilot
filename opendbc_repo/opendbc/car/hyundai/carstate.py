@@ -560,8 +560,10 @@ class CarState(CarStateBase):
     ret.steeringRateDeg = cp.vl["SAS11"]["SAS_Speed"]
     ret.yawRate = cp.vl["ESP12"]["YAW_RATE"]
     ret.lightingStateValid, ret.lowBeamOn, ret.highBeamOn = classic_lighting_state(cp)
-    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(
-      50, cp.vl["CGW1"]["CF_Gway_TurnSigLh"], cp.vl["CGW1"]["CF_Gway_TurnSigRh"])
+    left_lamp = cp.vl["CGW1"]["CF_Gway_TurnSigLh"]
+    right_lamp = cp.vl["CGW1"]["CF_Gway_TurnSigRh"]
+    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, left_lamp, right_lamp)
+    ret.turnLampState = ("dark", "left", "right", "both")[bool(left_lamp) + 2 * bool(right_lamp)]
     ret.steeringTorque = cp.vl["MDPS12"]["CR_Mdps_StrColTq"]
     ret.steeringTorqueEps = cp.vl["MDPS12"]["CR_Mdps_OutTq"]
     ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > self.params.STEER_THRESHOLD, 5)
@@ -1444,6 +1446,7 @@ class CarState(CarStateBase):
       left_blinker_lamp = blinkers_info["LEFT_LAMP"] or blinkers_info["LEFT_LAMP_ALT"]
       right_blinker_lamp = blinkers_info["RIGHT_LAMP"] or blinkers_info["RIGHT_LAMP_ALT"]
       ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, left_blinker_lamp, right_blinker_lamp)
+      ret.turnLampState = ("dark", "left", "right", "both")[bool(left_blinker_lamp) + 2 * bool(right_blinker_lamp)]
       ret.blinkerLamp = 1 if left_blinker_lamp else 2 if right_blinker_lamp else 0
 
     if self.CP.enableBsm:
