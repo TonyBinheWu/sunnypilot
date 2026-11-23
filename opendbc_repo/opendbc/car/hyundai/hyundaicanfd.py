@@ -779,7 +779,7 @@ def _add_ev6_front_neighbors(values, radar, now_nanos):
       values[f"{side}_DETECT_LATERAL"] = sign * nearest.yRel
 
 
-def _add_ev6_vision_neighbor(values, model, now_nanos):
+def _add_ev6_vision_neighbor(values, model, now_nanos, *, center=False):
   # Display only the present lead observation, within two observed adjacent-lane boundaries.
   if model is None or not model.timestampEof or not 0 <= now_nanos - model.timestampEof <= 250_000_000:
     return
@@ -790,9 +790,11 @@ def _add_ev6_vision_neighbor(values, model, now_nanos):
     return
   x, y, uncertainty = lead.x[0], lead.y[0], lead.yStd[0]
   distance = x - 1.52  # camera to radar longitudinal reference, metres
-  if not (1 <= distance <= 110 and 0.1 <= abs(y) <= 12.7 and 0 <= uncertainty <= 1):
+  if not (1 <= distance <= 110 and abs(y) <= 12.7 and 0 <= uncertainty <= 1):
     return
   side, indices = ("LF", (0, 1)) if y < 0 else ("RF", (2, 3))
+  if center:
+    side, indices = "FF", (1, 2)
   if values.get(f"{side}_DETECT"):
     return
   bounds = []
@@ -807,9 +809,14 @@ def _add_ev6_vision_neighbor(values, model, now_nanos):
   left, right = bounds
   margin = max(0.3, uncertainty)
   if 2.4 <= right - left <= 5.0 and left + margin < y < right - margin:
-    values[f"{side}_DETECT"] = 1
-    values[f"{side}_DETECT_DISTANCE"] = distance
-    values[f"{side}_DETECT_LATERAL"] = abs(y)
+    if center:
+      lateral = y - (left + right) / 2
+      if -6.4 <= lateral <= 6.3:
+        values.update(FF_DETECT=3, FF_DISTANCE=distance, FF_LATERAL=lateral)
+    else:
+      values[f"{side}_DETECT"] = 1
+      values[f"{side}_DETECT_DISTANCE"] = distance
+      values[f"{side}_DETECT_LATERAL"] = abs(y)
 
 
 def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=None, model=None, now_nanos=0):
@@ -1298,6 +1305,12 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
         values['RIGHT_BLINK_HOLD'] = 1 if hold == 4 else 0
 
         _apply_cluster_lane_lines(values, CS, lat_active, desire)
+        if ev6_display:
+          parser = getattr(CS, "cp_cam", None)
+          if not (_fresh_ev6_cluster_rx(parser, "ADRV_0x1ea", 0x1ea) and
+                  0 <= now_nanos - parser.ts_nanos["ADRV_0x1ea"]["COUNTER"] <= 150_000_000):
+            for side in ("LF", "RF", "LR", "RR"):
+              values.update({f"{side}_DETECT": 0, f"{side}_DETECT_DISTANCE": 0, f"{side}_DETECT_LATERAL": 0})
         _normalize_cluster_corner_objects(values)
         if ev6_display and enable_corner_radar > 0:
           _add_ev6_corner_neighbors(values, getattr(CS, "cp_cam", None), now_nanos)
@@ -1312,9 +1325,39 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
         # RX-paced Panda forwarding replaces it with the original RX counter.
         rx_counter = values.pop("COUNTER", None)
 
-        _normalize_cluster_corner_objects(values, ccnc=True)
+        if not ev6_display:
+          _normalize_cluster_corner_objects(values, ccnc=True)
         _convert_ccnc_front_box_to_car(values)
-        _apply_ccnc_lead(values, getattr(CS, "radarState", None), CC.enabled, getattr(CS, "modelV2", None), hud_lateral)
+        radar = getattr(CS, "radarState", None)
+        if ev6_display:
+          parser = getattr(CS, "cp_cam", None)
+          stock = _fresh_ev6_cluster_rx(parser, "CCNC_0x162", 0x162)
+          fresh_stock = bool(stock and 0 <= now_nanos - parser.ts_nanos["CCNC_0x162"]["COUNTER"] <= 150_000_000)
+          for side in ("LF", "RF", "LR", "RR"):
+            if not fresh_stock or not values[f"{side}_DETECT"] or values[f"{side}_DETECT_DISTANCE"] <= 0:
+              values.update({f"{side}_DETECT": 0, f"{side}_DETECT_DISTANCE": 0, f"{side}_DETECT_LATERAL": 0})
+          if enable_corner_radar > 0:
+            neighbors = {}
+            if parser and 0 <= now_nanos - parser.ts_nanos.get("ADRV_0x1ea", {}).get("COUNTER", 0) <= 150_000_000:
+              neighbors.update(ev6_cluster_corners(parser))
+            _add_ev6_front_neighbors(neighbors, radar, now_nanos)
+            _add_ev6_vision_neighbor(neighbors, md, now_nanos)
+            for side in ("LF", "RF", "LR", "RR"):
+              if not values[f"{side}_DETECT"] and neighbors.get(f"{side}_DETECT"):
+                values[f"{side}_DETECT"] = 3  # gray car in the CCNC display format
+                for field in ("DISTANCE", "LATERAL"):
+                  key = f"{side}_DETECT_{field}"
+                  values[key] = neighbors[key]
+          if radar is not None:
+            errors = radar.radarErrors
+            if (not radar.mdMonoTime or not 0 <= now_nanos - radar.mdMonoTime <= 250_000_000 or
+                errors.canError or errors.radarFault or errors.wrongConfig or errors.radarUnavailableTemporary):
+              radar = None
+          if not (fresh_stock and values["FF_DETECT"] and 0 < values["FF_DISTANCE"] <= 204.5) or _display_lead(radar) is not None:
+            _apply_ccnc_lead(values, radar, CC.enabled, md, hud_lateral)
+          _add_ev6_vision_neighbor(values, md, now_nanos, center=True)
+        else:
+          _apply_ccnc_lead(values, radar, CC.enabled, md, hud_lateral)
 
         if (left_lane_warning and not CS.out.leftBlinker) or (right_lane_warning and not CS.out.rightBlinker):
           values["VIBRATE"] = 1

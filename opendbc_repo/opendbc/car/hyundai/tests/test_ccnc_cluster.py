@@ -239,13 +239,23 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
   cam = SimpleNamespace(ts_nanos={"ADRV_0x161":{"COUNTER":stamp}}, _last_update_nanos=stamp,
                         dat={0x161: bytes(32)}, vl={"ADRV_0x161":stock})
   state = SimpleNamespace(adrv_0x161=stock, adrv_0x1ea=corner, cp_cam=cam, modelV2=model, out=structs.CarState(leftBlinker=True),
-                          lfahda_cluster=None, cruise_buttons_msg=None, adrv_0x200=None, ccnc_0x162=None, scc_control=None,
+                          lfahda_cluster=None, cruise_buttons_msg=None, adrv_0x200=None, ccnc_0x162=blank("CCNC_0x162"), scc_control=None,
                           is_metric=True, paddle_button_prev=0, softHoldActive=0, trailer_connected=False)
   control = structs.CarControl(latActive=True, enabled=True)
   radar = log.RadarState.new_message(mdMonoTime=stamp)
   radar.init("leadsRight", 1)
   lead = radar.leadsRight[0]
   lead.status, lead.radar, lead.dRel, lead.yRel = True, True, 12.0, -3.5
+  corner.update(LR_DETECT=2, LR_DETECT_DISTANCE=8, LR_DETECT_LATERAL=3)
+  cam.ts_nanos["ADRV_0x1ea"] = {"COUNTER": stamp}
+  cam.dat[0x1ea] = bytes(32)
+  cam.vl["ADRV_0x1ea"] = corner
+  model.init("leadsV3", 1)
+  target = model.leadsV3[0]
+  target.prob, target.x, target.y, target.yStd = .95, [20], [0], [.2]
+  model.laneLineProbs = [.9] * 4
+  for line, offset in zip(model.init("laneLines", 4), (-5.25, -1.75, 1.75, 5.25)):
+    line.x, line.y = [0, 30], [offset, offset]
   state.radarState = radar
   cp = SimpleNamespace(flags=HyundaiFlags.CAMERA_SCC | HyundaiFlags.CANFD_HDA2, carFingerprint=hyundaicanfd.CAR.KIA_EV6, openpilotLongitudinalControl=True)
   msgs = hyundaicanfd.create_ccnc_messages(cp, packer, SimpleNamespace(ECAN=0, CAM=2), 5, control, state, control.hudControl,
@@ -255,6 +265,10 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
     return get_raw_value(frames[addr], packer.dbc.addr_to_msg[addr].sigs[key])
   assert [raw(0x161,k) for k in ("NAV_ICON","LCA_RIGHT_ICON","LCA_LEFT_ARROW")] == [4,1,1]
   assert raw(0x1ea,"HDA_MODE2") == stock_mode
+  assert raw(0x162, "LR_DETECT") == (3 if age <= 150_000_000 else 0)
+  assert raw(0x162, "RR_DETECT") == 0
+  assert raw(0x162, "RF_DETECT") == (3 if age <= 250_000_000 else 0)
+  assert raw(0x162, "FF_DETECT") == (3 if age <= 250_000_000 else 0)
   assert raw(0x1ea,"RF_DETECT") == int(age <= 250_000_000)
 
 
