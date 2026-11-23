@@ -20,7 +20,24 @@
       "speed_y": 0,
       "cruise_font": 60,
       "cruise_x": 0,
-      "cruise_y": 0
+      "cruise_y": 0,
+      "scene_style": 0,
+      "vehicle_size": 100,
+      "vehicle_color": 14542316,
+      "vehicle_x": 0,
+      "vehicle_y": 0,
+      "lane_size": 100,
+      "lane_color": 16118488,
+      "lane_x": 0,
+      "lane_y": 0,
+      "path_size": 100,
+      "path_color": 3723206,
+      "path_x": 0,
+      "path_y": 0,
+      "map_size": 100,
+      "map_color": 2260466,
+      "map_x": 0,
+      "map_y": 0
     },
     "c4": {
       "order": [
@@ -43,7 +60,24 @@
       "speed_y": 0,
       "cruise_font": 40,
       "cruise_x": 0,
-      "cruise_y": 0
+      "cruise_y": 0,
+      "scene_style": 1,
+      "vehicle_size": 100,
+      "vehicle_color": 14542316,
+      "vehicle_x": 0,
+      "vehicle_y": 0,
+      "lane_size": 100,
+      "lane_color": 16118488,
+      "lane_x": 0,
+      "lane_y": 0,
+      "path_size": 100,
+      "path_color": 3723206,
+      "path_x": 0,
+      "path_y": 0,
+      "map_size": 100,
+      "map_color": 2260466,
+      "map_x": 0,
+      "map_y": 0
     }
   }
 }
