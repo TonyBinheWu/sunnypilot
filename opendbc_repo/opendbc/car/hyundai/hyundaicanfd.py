@@ -704,7 +704,7 @@ def forward_button_message(packer, CAN, frame, CS, cruise_button, MainMode_ACC_t
   return ret
 
 def ev6_cluster_corners(parser):
-  """Read only fresh, accepted OEM display positions from the camera bus."""
+  """Read only fresh, accepted OEM display positions from the ADAS harness ECAN receive parser."""
   if parser is None:
     return {}
   name = "ADRV_0x1ea"

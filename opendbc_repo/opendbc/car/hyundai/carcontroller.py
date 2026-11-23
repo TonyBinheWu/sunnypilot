@@ -686,7 +686,7 @@ class CarController(CarControllerBase):
           ))
           if hda2:
             can_sends.extend(hyundaicanfd.create_adrv_messages(self.CP, self.packer, self.CAN, self.frame,
-                                                              CS.cp_cam if self.enable_corner_radar else None))
+                                                              CS.cp if self.enable_corner_radar else None))
           else:
             can_sends.extend(hyundaicanfd.create_fca_warning_light(self.CP, self.packer, self.CAN, self.frame))
         if self.frame % 2 == 0:

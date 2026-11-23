@@ -161,3 +161,22 @@ def test_ev6_non_camera_scc_hidden_corner_packet(age, visible):
   actual = packet(parser)
   del actual["CHECKSUM"], expected["CHECKSUM"]
   assert actual == pytest.approx(expected)
+
+
+
+def test_ev6_adas_display_uses_physical_ecan_rx():
+  from opendbc.can.parser import CANParser
+  name = "ADRV_0x1ea"
+  dbc = "hyundai_canfd_generated"
+  parser = CANParser(dbc, [], 1)
+  parser._add_message(name, float("nan"), ignore_counter=True)
+  packer = CANPacker(dbc)
+  addr, data, _ = packer.make_can_msg(name, 1, {"RF_DETECT": 4, "RF_DETECT_DISTANCE": 9.5, "RF_DETECT_LATERAL": 1.2})
+  for bus in (129, 193, 2):
+    parser.update([100, [(addr, data, bus)]])
+    assert not hyundaicanfd.ev6_cluster_corners(parser)
+  parser.update([101, [(addr, data, 1)]])
+  assert hyundaicanfd.ev6_cluster_corners(parser) == pytest.approx({
+    "RF_DETECT": 1, "RF_DETECT_DISTANCE": 9.5, "RF_DETECT_LATERAL": 1.2})
+  parser.update([150_000_102, [(addr, data, 129)]])
+  assert not hyundaicanfd.ev6_cluster_corners(parser)
