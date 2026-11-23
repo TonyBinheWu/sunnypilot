@@ -21,11 +21,15 @@ export function sceneCamera(width,height,view={}){
  let range=clamp(finite(view?.distance)?view.distance:9,5,26)*(overview?1.38:framed?1:.80),position;
  // Correct the off-axis depth of the pivot as the screen rotates.
  if(framed)range*=Math.max(1,scale[0],.85*scale[2])/Math.cos(centreAngle);
+ if(view?.rearPoints)for(const o of view.rearPoints){
+   if(o.rearRadar&&o.x<0&&o.x>=-26)range=Math.max(range,10-o.x);
+ }
  const depth=(p)=>p.reduce((n,v,i)=>n+v*forward[i],0);
  const extents=[2.42*scale[0],1.16*scale[1],1.66*scale[2]];
  const envelope=[];
  for(const x of [-extents[0],extents[0]])for(const y of [-extents[1],extents[1]])for(const z of [0,extents[2]])envelope.push([x,y,z]);
  if(view?.parking===true)for(const p of (view.parkingPoints||[]).slice(0,48))if(Array.isArray(p)&&p.length===2&&p.every(finite)&&p[0]>=1&&p[0]<=18&&Math.abs(p[1])<=8)envelope.push([p[0],-p[1],.065]);
+ for(const o of view?.rearPoints||[])if(o.rearRadar)envelope.push([o.x-2,-o.y,0],[o.x+2,-o.y,1.6]);
  for(let attempt=0;attempt<40;attempt++){
   position=[-range*Math.cos(pitch)*cy,range*Math.cos(pitch)*sy,pivot[2]+range*Math.sin(pitch)];
   let fits=true;

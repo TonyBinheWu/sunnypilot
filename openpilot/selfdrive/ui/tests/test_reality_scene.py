@@ -54,3 +54,19 @@ def test_ego_lamps_follow_reported_phase_and_only_color_the_ego():
     lit = scene.geometry(rect, None, None, True, (True, True, True))
     assert len(lit) == len(base) + 4
     assert not scene.geometry(rect, None, None, False, (True, True, True))
+
+
+def test_chase_uses_signed_rear_positions_and_suppresses_duplicates():
+  from opendbc.car import structs
+  from openpilot.selfdrive.ui.onroad.reality_scene import rear_points
+
+  car = structs.CarState(canValid=True, displayRearLeftDistance=9, displayRearLeftLateral=3)
+  lead = Obj(status=True, radar=True, dRel=-9.5, yRel=3)
+  center = Obj(status=True, radar=True, dRel=-12, yRel=0)
+  errors = Obj(canError=False, radarFault=False, wrongConfig=False, radarUnavailableTemporary=False)
+  radar = Obj(leadOne=lead, leadTwo=center, leadsLeft=[lead], leadsRight=[], leadsCenter=[], radarErrors=errors)
+  assert rear_points(car, radar) == ((-9, -3), (-12, 0))
+  errors.canError = True
+  assert rear_points(car, radar) == ((-9, -3),)
+  car.canValid = False
+  assert not rear_points(car, radar)

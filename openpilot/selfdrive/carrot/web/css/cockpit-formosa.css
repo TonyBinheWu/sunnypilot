@@ -217,3 +217,5 @@ body[data-panel="navigation"] #searchNav {
 @media(orientation:portrait) {
   body[data-panel="navigation"] #searchNav { width:100% }
 }
+
+.cockpit-turn-cue:not([hidden]){position:absolute;z-index:3;left:50%;top:4%;transform:translateX(-50%);max-width:44%;padding:.3em .65em;border-radius:.55em;background:#16232de8;color:white;font:600 1rem system-ui;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}

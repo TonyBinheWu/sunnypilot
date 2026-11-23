@@ -22,6 +22,10 @@ const arContract = {
     "evModeValid", "evModeActive",
     "lightingStateValid", "lowBeamOn", "highBeamOn", "doorOpen",
     "canValid", "canTimeout", "steeringPressed", "laneLineInfoMonoTime",
+    "displayRearLeftDistance",
+    "displayRearLeftLateral",
+    "displayRearRightDistance",
+    "displayRearRightLateral",
   ]],
   selfdriveState: [6, [
     "enabled", "personality", "alertStatus", "alertSize", "alertType", "alertText1", "alertText2",

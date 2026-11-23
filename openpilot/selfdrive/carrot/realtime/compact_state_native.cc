@@ -615,6 +615,10 @@ void encode_car_state(std::string &out, const DynamicReader &value) {
   append_bool(out, value, "canTimeout");
   append_bool(out, value, "steeringPressed");
   append_u64(out, value, "laneLineInfoMonoTime");
+  append_f32(out, value, "displayRearLeftDistance");
+  append_f32(out, value, "displayRearLeftLateral");
+  append_f32(out, value, "displayRearRightDistance");
+  append_f32(out, value, "displayRearRightLateral");
 }
 
 void encode_controls_state(std::string &out, const DynamicReader &value) {

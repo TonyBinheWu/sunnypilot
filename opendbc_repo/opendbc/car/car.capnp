@@ -300,6 +300,10 @@ struct CarState {
   lowBeamOn @117 :Bool;
   highBeamOn @118 :Bool;
   turnLampState @119 :TurnLampState; # instantaneous rear indicator lamps for display
+  displayRearLeftDistance @120 :Float32;
+  displayRearLeftLateral @121 :Float32;
+  displayRearRightDistance @122 :Float32;
+  displayRearRightLateral @123 :Float32;
   enum TurnLampState {
     unknown @0;
     dark @1;

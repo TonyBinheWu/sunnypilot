@@ -2,7 +2,11 @@
 
 from itertools import chain, islice
 from math import isfinite
+import json
+from pathlib import Path
 import time
+
+from openpilot.selfdrive.carrot.server.config import CARROT_WEB_SETTINGS_PATH, WEB_DIR
 
 import pyray as rl
 
@@ -37,6 +41,22 @@ def tint(rgb, shade=1.0, alpha=255):
   return rl.Color(*(min(255, int(((rgb >> shift) & 255) * shade)) for shift in (16, 8, 0)), alpha)
 
 
+def rear_points(car, radar):
+  points = []
+  if car is None or not car.canValid:
+    return ()
+  for prefix, sign in (("displayRearLeft", -1), ("displayRearRight", 1)):
+    d, y = getattr(car, prefix + "Distance", 0), getattr(car, prefix + "Lateral", 0)
+    if 0 < d <= 26 and 0 < y <= 13:
+      points.append((-d, sign * y))
+  if radar is not None and not any(getattr(radar.radarErrors, k) for k in ("canError", "radarFault", "wrongConfig", "radarUnavailableTemporary")):
+    for lead in chain((radar.leadOne, radar.leadTwo), radar.leadsCenter, radar.leadsLeft, radar.leadsRight):
+      d, y = lead.dRel, -lead.yRel
+      if lead.status and d < 0 and lead.radar and -26 <= d < 0 and abs(y) <= 13 and not any(abs(d-a)<2 and abs(y-b)<1.2 for a,b in points):
+        points.append((d, y))
+  return tuple(points)
+
+
 def ego_lamps(car, now):
   if car is None or not car.canValid:
     return False, False, False
@@ -54,6 +74,28 @@ class RealityScene:
     self.next_demand = self.image_time = 0
     self.key = None
     self.faces = []
+    self.next_style_check = 0
+    self.settings_stamp = None
+    self.ego_scale = (1, 1, 1)
+    try:
+      self.vehicle_scales = json.loads((Path(WEB_DIR) / "src/features/cockpit/vehicle_scales.json").read_bytes())
+    except (OSError, ValueError):
+      self.vehicle_scales = {}
+
+  def update_appearance(self, now):
+    if now < self.next_style_check:
+      return
+    self.next_style_check = now + 2
+    path = Path(CARROT_WEB_SETTINGS_PATH)
+    try:
+      stamp = path.stat().st_mtime_ns
+      if stamp != self.settings_stamp:
+        settings = json.loads(path.read_bytes())
+        self.ego_scale = self.vehicle_scales.get(settings.get("vision_vehicle_model"), (1, 1, 1))
+        self.settings_stamp = stamp
+    except (OSError, ValueError, AttributeError, TypeError):
+      self.ego_scale = (1, 1, 1)
+      self.settings_stamp = None
 
   def draw(self, rect, state):
     now = time.monotonic()
@@ -62,8 +104,10 @@ class RealityScene:
     sm = state.sm
     car_ok = fresh(state, "carState", 0.5, now)
     lamps = ego_lamps(sm["carState"] if car_ok else None, now)
+    rear = rear_points(sm["carState"] if car_ok else None, sm["radarState"] if radar_ok else None)
+    self.update_appearance(now)
     key = (
-      car_ok, lamps,
+      car_ok, lamps, rear, self.ego_scale,
       sm.recv_frame["modelV2"] if model_ok else -1,
       sm.recv_frame["radarState"] if radar_ok else -1,
       rect.x,
@@ -72,7 +116,7 @@ class RealityScene:
       rect.height,
     )
     if key != self.key:
-      self.faces = self.geometry(rect, sm["modelV2"] if model_ok else None, sm["radarState"] if radar_ok else None, car_ok, lamps)
+      self.faces = self.geometry(rect, sm["modelV2"] if model_ok else None, sm["radarState"] if radar_ok else None, car_ok, lamps, rear)
       self.key = key
     night = self.style["scene_style"] == 1
     rl.draw_rectangle_gradient_v(
@@ -86,6 +130,14 @@ class RealityScene:
     for vertices, color in self.faces:
       rl.draw_triangle_fan(vertices, len(vertices), color)
     self.draw_map(rect, state, now)
+    if fresh(state, "navInstructionCarrot", 2, now):
+      instruction = sm["navInstructionCarrot"]
+      distance = instruction.maneuverDistance
+      direction = {"left": "LEFT", "right": "RIGHT", "slight left": "KEEP LEFT", "slight right": "KEEP RIGHT",
+                   "sharp left": "SHARP LEFT", "sharp right": "SHARP RIGHT", "uturn": "U-TURN"}.get(instruction.maneuverModifier)
+      if direction and 0 <= distance < 100000:
+        label = f"{direction}  {distance:.0f} m" if distance < 1000 else f"{direction}  {distance/1000:.1f} km"
+        rl.draw_text(label, int(rect.x + rect.width * .58), int(rect.y + rect.height * .04), max(12, int(rect.height * .042)), rl.SKYBLUE)
     if car_ok:
       car = sm["carState"]
       for active, side in ((car.leftBlindspot, 0.012), (car.rightBlindspot, 0.975)):
@@ -94,14 +146,16 @@ class RealityScene:
             rl.Rectangle(rect.x + rect.width * side, rect.y + rect.height * 0.42, rect.width * 0.012, rect.height * 0.13), tint(0xFFB54E)
           )
 
-  def geometry(self, rect, model, radar, car_ok=False, lamps=(False, False, False)):
+  def geometry(self, rect, model, radar, car_ok=False, lamps=(False, False, False), rear=()):
     v = self.style
     faces = []
 
+    # Pull behind the furthest measured rear target, including room for its body.
+    setback = max((max(10, abs(x) * 2) - z for z, x in rear), default=0)
     def face(layer, points, color):
       vertices = []
       for x, z, y in points:
-        scale = 740 / (z + 8)
+        scale = 740 / (z + 8 + setback)
         vertices.append(
           rl.Vector2(
             rect.x + rect.width * ((435 + x * scale) / 1000 + v[layer + "_x"] / 100),
@@ -127,6 +181,9 @@ class RealityScene:
         previous = pair
 
     if model is not None:
+      for edge, std in zip(getattr(model, "roadEdges", ()), getattr(model, "roadEdgeStds", ())):
+        if 0 <= std < 0.5:
+          ribbon("lane", edge, 0.09, 85)
       ribbon("path", model.position, 1.65, 132)
       for line, prob in zip(model.laneLines, model.laneLineProbs):
         if prob > 0.5:
@@ -134,11 +191,15 @@ class RealityScene:
     vehicles = vehicle_points(model, radar)
     if car_ok:
       vehicles.append((1.3, 0))  # viewport anchor for the reporting vehicle
+    vehicles.extend(sorted(rear, reverse=True))
+    ego_index = len(vehicles) - len(rear) - 1
     for index, (z, x) in enumerate(vehicles):
       size = v["vehicle_size"] / 100
 
+      length, width, height = self.ego_scale if car_ok and index == ego_index else (1, 1, 1)
+
       def panel(vertices, color):
-        face("vehicle", [(x + a * size, z + b * size, y * size) for a, b, y in vertices], color)
+        face("vehicle", [(x + a * size * width, z + b * size * length, y * size * height) for a, b, y in vertices], color)
 
       body = v["vehicle_color"]
       panel([(-0.93, 0, 0.16), (0.93, 0, 0.16), (0.94, 0, 0.82), (-0.94, 0, 0.82)], tint(body, 0.75))
@@ -147,7 +208,7 @@ class RealityScene:
       panel([(side * 0.93, 0, 0.16), (side * 0.9, 4, 0.16), (side * 0.88, 4, 0.76), (side * 0.94, 0, 0.82)], tint(body, 0.62))
       panel([(-0.84, 0.4, 0.83), (0.84, 0.4, 0.83), (0.69, 1.3, 1.45), (-0.69, 1.3, 1.45)], tint(0x304451))
       panel([(-0.69, 1.3, 1.45), (0.69, 1.3, 1.45), (0.67, 2.7, 1.45), (-0.67, 2.7, 1.45)], tint(body, 0.94))
-      if car_ok and index == len(vehicles) - 1:
+      if car_ok and index == ego_index:
         brake, left, right = lamps
         for sign, indicator in ((-1, left), (1, right)):
           if brake:

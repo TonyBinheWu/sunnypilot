@@ -14,7 +14,7 @@ const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export function sceneTargets(scene){
   return (scene?.tracks??[...surroundingTargets(scene?.radar),...(scene?.vision?.objects||[]),...(scene?.road?.objects||[])])
-    .filter(o=>o&&(!o.state||o.state==='confirmed'||o.state==='predicted')&&(o.kind==='unknown'||ROAD_CLASSES.includes(o.kind)||roadModelKind(o)!==null)&&finite(o.x)&&finite(o.y)&&o.x>0&&o.x<=(o.nativeVehicleMarker?110:75)&&Math.abs(o.y)<=20).slice(0,80);
+    .filter(o=>o&&(!o.state||o.state==='confirmed'||o.state==='predicted')&&(o.kind==='unknown'||ROAD_CLASSES.includes(o.kind)||roadModelKind(o)!==null)&&finite(o.x)&&finite(o.y)&&(o.x>0||(o.rearRadar===true&&o.x>=-26&&o.x<0))&&o.x<=(o.nativeVehicleMarker?110:75)&&Math.abs(o.y)<=20).slice(0,80);
 }
 export {sceneCamera} from '../../../../cockpit/scene_camera.js';
 import {sceneCamera} from '../../../../cockpit/scene_camera.js';
@@ -41,6 +41,7 @@ export function createDrivingScene3D(doc,target,{onChange=()=>{},scenery=null,re
     const receiver=createGpuSceneReceiver(target,canvas);
     const pause=()=>{receiver.update(false);canvas.hidden=true;};
     return {canvas,pause,render(width,height,data,options={}){
+      if(options.view?.rearPoints?.length||options.skin?.manual){pause();return false;}
       const active=options.enabled!==false&&!doc.hidden;
       canvas.hidden=!active;if(active)receiver.setView(width,height,options);receiver.update(active);return active;
     },snapshot(){const s=receiver.snapshot();return {...s,environmentCells:s.cells,raisedCells:s.raised};},

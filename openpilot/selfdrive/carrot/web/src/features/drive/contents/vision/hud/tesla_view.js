@@ -1,9 +1,10 @@
+import {navigationCue} from '../../../../cockpit/navigation_cue.js';
 import {PARKING_VIEW, parkingAttitude, parkingDistanceText, parkingObservation} from './parking_environment.js';
 import {createParkingView,createParkingMap,insidePolygon} from '../../../../cockpit/parking.js';
 import {combineParking,vehicleParkingSource} from './vehicle_parking.js';
 import {createParkingPerception} from './parking_perception.js';
 import {paintedVehicle} from '../../../../cockpit/vehicle_paint.js';
-import {drawCockpitVehicle,createVehicleSkinCache,VEHICLE_SKINS} from '../../../../cockpit/vehicle.js';
+import {drawCockpitVehicle,createVehicleSkinCache,selectedSkin,VEHICLE_SKINS} from '../../../../cockpit/vehicle.js';
 import {OBJECT_NAMES} from './object_classes.js';
 import {describeSignal,signalBadge} from './signal_badge.js';
 import {visionPresentation,cockpitTelemetryStale} from '../../../../cockpit/presentation.js';
@@ -277,14 +278,15 @@ export function createTeslaView(doc,target) {
   target.CarrotVisionPerception=diagnostics;
   parkingPanel.append(parkingStatus,parkingButton);
   root.appendChild(volumeLegend);
-  root.append(scene3d.canvas,parkingPanel,notice,perceptionStatus,predictionLegend,imageObservations,metrics,toggle,editor,bev.root);
+  const turnCue=el(doc,'output',{class:'cockpit-turn-cue'});
+  root.append(turnCue,scene3d.canvas,parkingPanel,notice,perceptionStatus,predictionLegend,imageObservations,metrics,toggle,editor,bev.root);
   function render(next={},isStale=true,units='km/h',visible=metricVisible,active=viewActive){
     data=next||{};stale=isStale;unit=units;metricVisible=visible;viewActive=active;
     const settings=target.CarrotWebSettingsState||{},isBev=visionPresentation(target)==='bev',tesla=['tesla','bev'].includes(visionPresentation(target));
     const custom=settings.vision_custom_metrics===true||tesla;
     if(tesla&&viewActive)vehicleSkin.refresh();
     const rawSkin=(target.CarrotVisionReplay?.isActive?.()||target.CarrotVisionReplay?.status?.()?.active===true)?VEHICLE_SKINS.generic:vehicleSkin.current();
-    const skin=paintedVehicle(rawSkin,settings.vision_vehicle_color);
+    const skin=paintedVehicle(selectedSkin(rawSkin,settings.vision_vehicle_model),settings.vision_vehicle_color);
     const night=doc.documentElement?.classList.contains('cockpit-night')===true;
     canvas.setAttribute('aria-label',text(isBev?'bev_name':'vision_tesla_name',isBev?'BEV annotation view':'Bird’s-eye view'));
     root.hidden=!custom&&!tesla;canvas.hidden=!tesla;notice.hidden=!tesla;metrics.hidden=!custom||!visible;toggle.hidden=!custom||!visible;
@@ -304,6 +306,10 @@ export function createTeslaView(doc,target) {
     const occ=environment.scene();
     const vision=perception.scene(),road=roadPerception.scene(),liveScene=tesla?{...birdScene(target,now()),vision,road}:{};
     const map=research.read(tesla&&!remoteGpu&&viewActive&&!doc.hidden&&!bev.frozen&&target.CarrotVisionReplay?.status?.()?.active!==true,now());
+    const nav=target.CarrotHudState?.carrotMan, navAge=now()-target.CarrotStateReceivedAtMonotonic?.carrotMan;
+    const cue=tesla && viewActive && !bev.frozen ? navigationCue(nav,navAge) : '';
+    turnCue.hidden=!cue;
+    if(cue)setText(turnCue,cue);
     if(!tesla)mapCredit.hidden=true;
     if(tesla){liveScene.paint=lanePaint(target,now());liveScene.mapLines=map.lines;}
     const scene={...bev.prepare(liveScene),text};
@@ -312,7 +318,7 @@ export function createTeslaView(doc,target) {
     const trackingActive=tesla&&viewActive&&!doc.hidden&&!bev.frozen;
     let tracks=perceptionScene.update(liveScene,now(),trackingActive,target.CarrotVisionReplay?.status?.()?.active===true);
     if(trackingActive && doc.body.dataset.cockpitPanel==='vision'){
-      tracks=cockpitTraffic(liveScene.model,liveScene.radar,target.CarrotStateReceivedAtMonotonic||{},now(),tracks);
+      tracks=cockpitTraffic(liveScene.model,liveScene.radar,target.CarrotStateReceivedAtMonotonic||{},now(),tracks,target.CarrotHudState?.carState);
     }
     if(scene.environment){
       scene.environmentMotion=surfaceMotion(perceptionScene.motion,now()-occ.capturedAt);
@@ -441,15 +447,17 @@ export function createTeslaView(doc,target) {
       const bottomFraction=Math.min(.40,Math.max(inset,obstruction)/Math.max(1,vh));
       const signature=`${occ.revision}:${occ.status}:${tracks.length?Math.floor(now()/40):0}:${w}:${h}:${skin.id}:${skin.paint}:${night}:${stamp}:${rs}:${!!scene.model}:${!!scene.radar}:${map.revision}:${scene.vision?.revision}:${scene.road?.revision}:${vision.status}:${road.status}:${settings.vision_rainbow_lane}:${isBev}:${bev.range}:${settings.vision_bev_grid}:${settings.vision_bev_details}:${bev.revision}:${zoomEnabled?zoom.progress.toFixed(3):'manual'}:${orbit.pose.yaw}:${orbit.pose.pitch}:${orbit.zoom}:${lamps.brake}:${lamps.left}:${lamps.right}:${lamps.lowBeam}:${lamps.highBeam}:${lamps.tail}:${displayData.measuredRoadWheelDeg}:${parking.overhead}:${parking.vertical}:${bottomFraction}:${parking.yaw}:${paint.revision}:${vehicleFrame?.frame}:${lot.status}:${attitude?.roll}:${attitude?.pitch}`;
       mapCredit.hidden=isBev||!scene.model||!scene.mapLines?.length||parking.overhead||parking.spin;
+      const rearPoints=tracks.filter(o=>o.rearRadar);
       const drivingCamera=orbitCamera({...zoom.camera,skinScale:skin.scale},orbit.pose,orbit.zoom);
+      if(rearPoints.length)Object.assign(drivingCamera,{rearPoints,roadOverview:true});
       const cameraView=parking.spin?{...drivingCamera,yaw:parking.yaw,pitch:28,distance:9,bottomFraction}:parking.overhead?{...drivingCamera,...PARKING_VIEW,pitch:parking.vertical?82:PARKING_VIEW.pitch,parkingPoints:scene.parking.flatMap(s=>s.corners),bottomFraction}:drivingCamera;
       if(signature!==lastSignature||tesla!==lastMode||lastModel!==scene.model||lastRadar!==scene.radar){const drawStart=now();if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;
         const bounds=root.getBoundingClientRect?.(),imageSlots=bounds?[...imageObservations.querySelectorAll('.tesla-image-object')].filter(badge=>badge.dataset.kind!=='signal').map(badge=>{const r=badge.getBoundingClientRect();return {kind:badge.dataset.classification,x:(r.left+r.width/2-bounds.left)*factor,y:(r.top+36-bounds.top)*factor,size:20*factor};}):[];
-        const rendered3d=!isBev&&scene3d.render(w,h,scene,{rainbow:settings.vision_rainbow_lane===true,night,skin,lamps,egoMotion:{attitude,speed:speedKph===null?null:speedKph/3.6,reverse:displayData.vehicleGear==='R',steer:displayStale?null:displayData.measuredRoadWheelDeg},view:zoomEnabled||parking.overhead||parking.spin?cameraView:null,enabled:viewActive,imageSlots,quality});
+        const rendered3d=!isBev&&scene3d.render(w,h,scene,{rainbow:settings.vision_rainbow_lane===true,night,skin,lamps,egoMotion:{attitude,speed:speedKph===null?null:speedKph/3.6,reverse:displayData.vehicleGear==='R',steer:displayStale?null:displayData.measuredRoadWheelDeg},view:zoomEnabled||rearPoints.length||parking.overhead||parking.spin?cameraView:null,enabled:viewActive,imageSlots,quality});
         root.classList.toggle('has-webgl-scene',!!rendered3d);
         canvas.hidden=!!rendered3d;
-        const ctx=rendered3d?null:canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range,drawEgo});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text,night,drawEgo,attitude,steer:displayStale?null:displayData.measuredRoadWheelDeg,camera:zoomEnabled||parking.overhead||parking.spin?cameraView:null,lift:!zoomEnabled&&doc.body.dataset.cockpitPanel==='vision'&&vw>740?h*.06:0});}if(rendered3d||ctx){meter.frame(now(),now()-drawStart);vehicleParking.drawn(vehicleFrame,scene);}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
-      else if((remoteGpu||scene3d.snapshot().backend==='webgl2')&&!isBev)canvas.hidden=true;
+        const ctx=rendered3d?null:canvas.getContext('2d');if(ctx){if(isBev){const projection=bevProjection(w,h,bev.range);drawBirdScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,projection,maxDistance:bev.range,drawEgo});bev.draw(ctx,projection,scene);}else drawDrivingScene(ctx,w,h,scene,{rainbow:settings.vision_rainbow_lane===true,text,night,drawEgo,attitude,steer:displayStale?null:displayData.measuredRoadWheelDeg,camera:zoomEnabled||rearPoints.length||parking.overhead||parking.spin?cameraView:null,lift:!zoomEnabled&&doc.body.dataset.cockpitPanel==='vision'&&vw>740?h*.06:0});}if(rendered3d||ctx){meter.frame(now(),now()-drawStart);vehicleParking.drawn(vehicleFrame,scene);}lastSignature=signature;lastModel=scene.model;lastRadar=scene.radar;}
+      else canvas.hidden=root.classList.contains('has-webgl-scene')&&!isBev;
     }
     lastMode=tesla;
   }
@@ -461,6 +469,7 @@ export const TESLA_VIEW_CSS=`
 .tesla-volume-legend{position:absolute;z-index:2;left:50%;top:3px;transform:translateX(-50%);max-width:62%;background:#14232de8;color:#a8e5e5;border-radius:5px;padding:3px 8px;text-align:center;font:12px system-ui;pointer-events:none}
 .tesla-view{position:absolute;inset:0;pointer-events:none;z-index:4;color:#fff;font-family:system-ui,sans-serif}.tesla-view[hidden],.tesla-view [hidden]{display:none!important}
 .tesla-map-credit{position:absolute;z-index:1;bottom:3px;left:8px;font:11px/1.25 system-ui;color:#b1c5da;background:#24272bd9;border-radius:3px;padding:2px 4px}.tesla-map-credit[hidden]{display:none}
+.cockpit-turn-cue:not([hidden]){position:absolute;z-index:3;left:50%;top:4%;transform:translateX(-50%);max-width:44%;padding:.3em .65em;border-radius:.55em;background:#16232de8;color:white;font:600 1rem system-ui;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
 .tesla-scene{position:absolute;z-index:0;pointer-events:none;inset:0;width:100%;height:100%;object-fit:fill}.tesla-notice{position:absolute;top:8px;left:150px;right:110px;text-align:center;font-size:12px;background:#171c23b0;border-radius:8px;padding:6px}
 .has-webgl-scene .tesla-image-object{display:flex;flex-direction:column;background:#182432e8;color:#e2edf8;min-width:74px;padding:5px 8px;gap:3px;text-align:center}
 .has-webgl-scene .tesla-image-object b{visibility:hidden;display:block;width:48px;height:48px;padding:0}

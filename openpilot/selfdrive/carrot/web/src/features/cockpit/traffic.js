@@ -9,16 +9,22 @@ function near(a, b) {
 }
 
 // Match the bounds, axes and observation priority of C4 reality_scene.vehicle_points.
-export function cockpitTraffic(model, radar, stamps, now, tracks = []) {
+export function cockpitTraffic(model, radar, stamps, now, tracks = [], car = null) {
   const vehicles = [];
-  function add(id, x, y) {
-    if (!Number.isFinite(x) || !Number.isFinite(y) || x < 1 || x > 110 || Math.abs(y) > 18) return;
-    const point = {id, x, y, kind: 'unknown', nativeVehicleMarker: true};
+  function add(id, x, y, rearRadar=false) {
+    if (!Number.isFinite(x) || !Number.isFinite(y) || (rearRadar ? x < -26 || x >= 0 : x < 1 || x > 110) || Math.abs(y) > 18) return;
+    const point = {id, x, y, kind: 'unknown', nativeVehicleMarker: true, ...(rearRadar ? {rearRadar:true} : {})};
     if (!vehicles.some(other => near(point, other))) vehicles.push(point);
+  }
+  if (fresh(car, stamps.carState, now) && car.canValid && !car.canTimeout) {
+    for (const [prefix, sign] of [['displayRearLeft', -1], ['displayRearRight', 1]]) {
+      const d=car[prefix+'Distance'], y=car[prefix+'Lateral'];
+      if (d>0 && d<=26 && y>0 && y<=13) add(prefix,-d,sign*y,true);
+    }
   }
   if (fresh(radar, stamps.radarState, now) && !faultFlags.some(flag => radar.radarErrors?.[flag])) {
     function addLead(id, lead) {
-      if (lead?.status === true && Number.isFinite(lead.yRel)) add(id, lead.dRel, -lead.yRel);
+      if (lead?.status === true && Number.isFinite(lead.yRel)) add(id, lead.dRel, -lead.yRel, lead.radar===true && lead.dRel<0);
     }
     for (const slot of ['leadOne', 'leadTwo']) addLead(slot, radar[slot]);
     for (const slot of ['leadsCenter', 'leadsLeft', 'leadsRight']) {

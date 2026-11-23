@@ -120,6 +120,10 @@ window.CarrotVisionCompact = (() => {
       ["canTimeout", "bool"],
       ["steeringPressed", "bool"],
       ["laneLineInfoMonoTime", "u64"],
+      ["displayRearLeftDistance", "f32"],
+      ["displayRearLeftLateral", "f32"],
+      ["displayRearRightDistance", "f32"],
+      ["displayRearRightLateral", "f32"],
     ]]],
     [2, ["controlsState", [
       ["enabled", "bool"], ["vCruiseCluster", "f32"], ["activeLaneLine", "bool"],

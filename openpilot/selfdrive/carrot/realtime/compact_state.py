@@ -230,6 +230,10 @@ SERVICE_SCHEMAS: dict[str, tuple[int, tuple[tuple[Any, ...], ...]]] = {
     ("canTimeout", "bool"),
     ("steeringPressed", "bool"),
     ("laneLineInfoMonoTime", "u64"),
+    ("displayRearLeftDistance", "f32"),
+    ("displayRearLeftLateral", "f32"),
+    ("displayRearRightDistance", "f32"),
+    ("displayRearRightLateral", "f32"),
   )),
   "controlsState": (2, (
     ("enabled", "bool", ("deprecated", "enabled")),
