@@ -198,6 +198,9 @@ def test_live_setup_routes_through_normal_interface(monkeypatch, mode, brake_bus
   ("radar_only", "camera_adas", True, "stock", 1, False),
   ("radar_only", "mixed", True, "observer", 1, False),
   ("logging_only", "ev6", True, "observer", 0, False),
+  ("ev6", "", True, "stock", 0, False),
+  ("ev6", "", False, "stock", 0, False),
+  ("pe", "", True, "observer", 0, False),
 ])
 @pytest.mark.parametrize("selection", ["AUTO", "Kia EV6 (with HDA II) 2022-24"])
 def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, valid_bus, owner, retries, selection, scoped):
@@ -207,10 +210,10 @@ def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, v
   fp = gen_empty_fingerprint()
   fp[1][0x175], fp[1][0x1a0], fp[2][0x50] = 24, 32, 16 if valid_bus else 8
   if not scoped and selection != "AUTO":
-    # Manual selection without an experimental request uses the existing fast path.
-    owner, retries = "stock", 0
+    owner = "observer" if not valid_bus or second == "mixed" or first == "pe" else "stock"
+    retries = int(first in ("radar_only", "logging_only"))
   settings = {"AutoExperimentalPlatform": str(CAR.KIA_EV6) if scoped else "", "CarSelected3": selection,
-              "CanfdHDA2": 1, "HyundaiCameraSCC": 0, "FingerPrints": repr(fp)}
+              "CanfdHDA2": 1, "HyundaiCameraSCC": 0, "EnableRadarTracks": 0, "FingerPrints": repr(fp)}
   configure_params(monkeypatch, settings)
   monkeypatch.setattr(car_helpers, "Params", lambda: SimpleNamespace(
     get=settings.get, put=settings.__setitem__, get_bool=lambda k: bool(settings.get(k)), get_int=lambda k: int(settings[k])))
@@ -253,8 +256,13 @@ def test_ev6_identification_after_missed_discovery(monkeypatch, first, second, v
   cp = car_helpers.get_car(lambda: [], None, obd.append, False, True).CP
   assert calls == [("hyundai", 1)] * retries
   assert obd[-1] is False
+  if selection == "AUTO" and not scoped and first == "pe":
+    assert cp.carFingerprint == CAR.KIA_EV6_PE and not cp.openpilotLongitudinalControl
+    return
   assert cp.carFingerprint == (MOCK.MOCK if owner == "observer" else CAR.KIA_EV6)
   assert cp.openpilotLongitudinalControl == (owner == "host")
+  if not scoped and selection != "AUTO" and owner == "stock" and (first == "ev6" or second in ("ev6", "camera_adas")):
+    assert cp.carFw and cp.fingerprintSource == structs.CarParams.FingerprintSource.fw
   if owner != "observer":
     assert bool(cp.safetyConfigs[-1].safetyParam & HyundaiSafetyFlags.LONG) == (owner == "host")
 
