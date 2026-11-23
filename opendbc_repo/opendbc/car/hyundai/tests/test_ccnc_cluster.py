@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from opendbc.can import CANDefine, CANPacker
-from opendbc.can.parser import get_raw_value
+from opendbc.can.parser import CANParser, get_raw_value
 from opendbc.car import structs
 from opendbc.car.hyundai import hyundaicanfd
 from opendbc.car.hyundai.hyundaicanfd import _select_cluster_background
@@ -165,7 +165,6 @@ def test_ev6_non_camera_scc_hidden_corner_packet(age, visible):
 
 
 def test_ev6_adas_display_uses_physical_ecan_rx():
-  from opendbc.can.parser import CANParser
   name = "ADRV_0x1ea"
   dbc = "hyundai_canfd_generated"
   parser = CANParser(dbc, [], 1)
@@ -242,6 +241,8 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
                           lfahda_cluster=None, cruise_buttons_msg=None, adrv_0x200=None, ccnc_0x162=blank("CCNC_0x162"), scc_control=None,
                           is_metric=True, paddle_button_prev=0, softHoldActive=0, trailer_connected=False)
   control = structs.CarControl(latActive=True, enabled=True)
+  control.hudControl.leftLaneVisible = control.hudControl.rightLaneVisible = True
+  state.out.rightBlindspot = True
   radar = log.RadarState.new_message(mdMonoTime=stamp)
   radar.init("leadsRight", 1)
   lead = radar.leadsRight[0]
@@ -264,6 +265,7 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
   def raw(addr,key):
     return get_raw_value(frames[addr], packer.dbc.addr_to_msg[addr].sigs[key])
   assert [raw(0x161,k) for k in ("NAV_ICON","LCA_RIGHT_ICON","LCA_LEFT_ARROW")] == [4,1,1]
+  assert (raw(0x161, "LANELINE_LEFT"), raw(0x161, "LANELINE_RIGHT")) == (6, 4)
   assert raw(0x1ea,"HDA_MODE2") == stock_mode
   assert raw(0x162, "LR_DETECT") == (3 if age <= 150_000_000 else 0)
   assert raw(0x162, "RR_DETECT") == 0
@@ -293,3 +295,20 @@ def test_ev6_ccnc_corner_neighbors(age, kind, lateral, expected):
   if expected:
     original.update(RR_DETECT=1, RR_DETECT_DISTANCE=5, RR_DETECT_LATERAL=lateral)
   assert values == original
+
+@pytest.mark.parametrize("side", ["L", "R"])
+def test_ev6_passing_neighbor_positions(side):
+  packer = CANPacker("hyundai_canfd_generated")
+  name = "CCNC_0x162"
+  parser = CANParser("hyundai_canfd_generated", [], 2)
+  parser._add_message(name, float("nan"), ignore_counter=True)
+  for i, (end, distance) in enumerate([("R", 12), ("R", 4), ("R", 0.5), ("F", 0.5), ("F", 4), ("F", 12)]):
+    stamp = 1_000_000_000 + i * 50_000_000
+    slot = side + end
+    frame = packer.make_can_msg(name, 2, {f"{slot}_DETECT": 3, f"{slot}_DETECT_DISTANCE": distance,
+                                          f"{slot}_DETECT_LATERAL": 3.5})
+    parser.update([stamp, [frame]])
+    values = {}
+    hyundaicanfd._add_ev6_corner_neighbors(values, parser, stamp)
+    assert values == pytest.approx({f"{slot}_DETECT": 1, f"{slot}_DETECT_DISTANCE": distance,
+                                    f"{slot}_DETECT_LATERAL": 3.5})
