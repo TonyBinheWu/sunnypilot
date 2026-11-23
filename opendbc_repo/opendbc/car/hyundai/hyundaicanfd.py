@@ -412,6 +412,10 @@ def create_lfa_icon_non_camera_scc(packer, CS, CAN, CC, *, ev6_hud=False):
     values["LKA_ICON"] = 4 if lat_active else 3 if lat_enabled else 0
 
     if ev6_hud:
+      stock = _fresh_ev6_cluster_rx(getattr(CS, "cp", None), "ADRV_0x161", 0x161)
+      for key in ("NAV_ICON", "LCA_LEFT_ICON", "LCA_RIGHT_ICON", "LCA_LEFT_ARROW", "LCA_RIGHT_ARROW"):
+        if key in stock:
+          values[key] = stock[key]
       hud = CC.hudControl
       if CC.longActive:
         speed = hud.setSpeed * (CV.MS_TO_KPH if CS.is_metric else CV.MS_TO_MPH)
@@ -722,15 +726,18 @@ def forward_button_message(packer, CAN, frame, CS, cruise_button, MainMode_ACC_t
       ret.append(packer.make_can_msg(CS.cruise_btns_msg_canfd, CAN.CAM, values))
   return ret
 
+def _fresh_ev6_cluster_rx(parser, name, address):
+  if parser is not None:
+    stamp = parser.ts_nanos.get(name, {}).get("COUNTER", 0)
+    if stamp and 0 <= parser._last_update_nanos - stamp <= 150_000_000 and len(parser.dat.get(address, b"")) == 32:
+      return parser.vl[name]
+  return {}
+
+
 def ev6_cluster_corners(parser):
-  """Read only fresh, accepted OEM display positions from the ADAS harness ECAN receive parser."""
-  if parser is None:
+  source = _fresh_ev6_cluster_rx(parser, "ADRV_0x1ea", 0x1EA)
+  if not source:
     return {}
-  name = "ADRV_0x1ea"
-  timestamp = parser.ts_nanos.get(name, {}).get("COUNTER", 0)
-  if not timestamp or not 0 <= parser._last_update_nanos - timestamp <= 150_000_000 or len(parser.dat.get(0x1EA, b"")) != 32:
-    return {}
-  source = parser.vl[name]
   corners = {}
   for side in ("LF", "RF", "LR", "RR"):
     kind = source[f"{side}_DETECT"]
@@ -742,7 +749,24 @@ def ev6_cluster_corners(parser):
   return corners
 
 
-def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None):
+def _add_ev6_front_neighbors(values, radar, now_nanos):
+  if radar is None or not radar.mdMonoTime or not 0 <= now_nanos - radar.mdMonoTime <= 250_000_000:
+    return
+  errors = radar.radarErrors
+  if errors.canError or errors.radarFault or errors.wrongConfig or errors.radarUnavailableTemporary:
+    return
+  for side, sign, leads in (("LF", 1, radar.leadsLeft), ("RF", -1, radar.leadsRight)):
+    if values.get(f"{side}_DETECT"):
+      continue
+    candidates = (lead for lead in leads if lead.status and lead.radar and 1 <= lead.dRel <= 110 and 0.1 <= sign * lead.yRel <= 12.7)
+    nearest = min(candidates, key=lambda lead: lead.dRel, default=None)
+    if nearest is not None:
+      values[f"{side}_DETECT"] = 1
+      values[f"{side}_DETECT_DISTANCE"] = nearest.dRel
+      values[f"{side}_DETECT_LATERAL"] = sign * nearest.yRel
+
+
+def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=None, now_nanos=0):
   # messages needed to car happy after disabling
   # the ADAS Driving ECU to do longitudinal control
 
@@ -763,8 +787,13 @@ def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None):
         #'DATA26': 1,  #1
         #'DATA32': 5,  #5
       }
-      if corner_parser is not None and CP.carFingerprint == CAR.KIA_EV6:
+      if CP.carFingerprint == CAR.KIA_EV6:
+        stock = _fresh_ev6_cluster_rx(corner_parser, "ADRV_0x1ea", 0x1EA)
+        if "HDA_MODE2" in stock:
+          values["HDA_MODE2"] = stock["HDA_MODE2"]
+          values["AUTOLANECHANGE_MSG"] = stock.get("AUTOLANECHANGE_MSG", 0)
         values.update(ev6_cluster_corners(corner_parser))
+        _add_ev6_front_neighbors(values, radar, now_nanos)
       ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))
 
       values = {

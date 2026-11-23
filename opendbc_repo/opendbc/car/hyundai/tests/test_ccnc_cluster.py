@@ -180,3 +180,25 @@ def test_ev6_adas_display_uses_physical_ecan_rx():
     "RF_DETECT": 1, "RF_DETECT_DISTANCE": 9.5, "RF_DETECT_LATERAL": 1.2})
   parser.update([150_000_102, [(addr, data, 129)]])
   assert not hyundaicanfd.ev6_cluster_corners(parser)
+
+@pytest.mark.parametrize("age,fault,expected", [(100_000_000, False, 1), (250_000_001, False, 0), (0, True, 0)])
+def test_ev6_adas_neighbor_fallback(age, fault, expected):
+  packer = CANPacker("hyundai_canfd_generated")
+  stamp = 1_000_000_000
+  source = {"HDA_MODE2": 5, "AUTOLANECHANGE_MSG": 8}
+  for side in ("LF", "RF", "LR", "RR"):
+    source.update({f"{side}_DETECT": 2 if side == "LF" else 0,
+                   f"{side}_DETECT_DISTANCE": 9, f"{side}_DETECT_LATERAL": 2})
+  parser = SimpleNamespace(ts_nanos={"ADRV_0x1ea": {"COUNTER": stamp}}, _last_update_nanos=stamp,
+                           dat={0x1EA: bytes(32)}, vl={"ADRV_0x1ea": source})
+  def lead(d, y):
+    return SimpleNamespace(status=True, radar=True, dRel=d, yRel=y)
+  radar = SimpleNamespace(mdMonoTime=stamp, leadsLeft=[lead(3, 3)], leadsRight=[lead(1, 3), lead(24, -3), lead(7, -2)],
+                          radarErrors=SimpleNamespace(canError=fault, radarFault=False, wrongConfig=False, radarUnavailableTemporary=False))
+  cp = SimpleNamespace(flags=HyundaiFlags.CANFD_HDA2, carFingerprint=hyundaicanfd.CAR.KIA_EV6)
+  msg = hyundaicanfd.create_adrv_messages(cp, packer, SimpleNamespace(ECAN=1), 5, parser, radar=radar, now_nanos=stamp+age)[0]
+  values = {k: get_raw_value(msg[1], sig) * sig.factor + sig.offset for k, sig in packer.dbc.name_to_msg["ADRV_0x1ea"].sigs.items()}
+  assert (values["HDA_MODE2"], values["AUTOLANECHANGE_MSG"]) == (5, 8)
+  assert (values["LF_DETECT"], values["LF_DETECT_DISTANCE"]) == (2, 9)
+  assert (values["RF_DETECT"], values["RF_DETECT_DISTANCE"], values["RF_DETECT_LATERAL"]) == (expected, 7*expected, 2*expected)
+  assert values["LR_DETECT"] == values["RR_DETECT"] == 0

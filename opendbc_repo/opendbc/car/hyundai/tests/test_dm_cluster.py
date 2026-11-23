@@ -175,3 +175,20 @@ def test_ev6_adas_hud_units_lead_and_oem_indicators(metric, expected_speed):
   hud.speedVisible, hud.leadVisible = False, False
   actual = display()
   assert (actual["SETSPEED"], actual["vSetDis"], actual["TARGET"], actual["TARGET_DISTANCE"]) == (0, 0, 0, 0)
+
+def test_ev6_adas_navigation_and_lane_change_icons_follow_fresh_ecan():
+  packer = CANPacker("hyundai_canfd_generated")
+  name = "ADRV_0x161"
+  stock = source(packer, name)
+  ecan = {"NAV_ICON": 2, "LCA_LEFT_ICON": 0, "LCA_RIGHT_ICON": 1, "LCA_LEFT_ARROW": 0, "LCA_RIGHT_ARROW": 1}
+  for key in ecan:
+    stock[key] = 0
+  parser = NS(ts_nanos={name: {"COUNTER": 100}}, _last_update_nanos=100, dat={0x161: bytes(32)}, vl={name: ecan})
+  cs = NS(adrv_0x161=stock, out=NS(latEnabled=False), cp=parser)
+  def display():
+    msg, = hyundaicanfd.create_lfa_icon_non_camera_scc(packer, cs, NS(ECAN=1), structs.CarControl(), ev6_hud=True)
+    values = decode(packer, msg)
+    return {key: values[key] for key in ecan}
+  assert display() == ecan
+  parser._last_update_nanos += 150_000_001
+  assert display() == dict.fromkeys(ecan, 0)
