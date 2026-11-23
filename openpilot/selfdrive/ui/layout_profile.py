@@ -19,6 +19,15 @@ LIMITS = {
 }
 
 
+# Scene design coordinates are percentages of the preview viewport.
+SCENE_LIMITS = {"scene_style": (0, 2, 0)}
+for layer, color in {"vehicle": 0xdde5ec, "lane": 0xf5f2d8, "path": 0x38cfc6, "map": 0x227df2}.items():
+  SCENE_LIMITS.update({f"{layer}_size": (50, 150, 100), f"{layer}_color": (0, 0xffffff, color),
+                       f"{layer}_x": (-30, 30, 0), f"{layer}_y": (-30, 30, 0)})
+for fields in LIMITS.values():
+  fields.update(SCENE_LIMITS)
+
+
 def defaults():
   return {"version": 1, "devices": {key: {"order": list(order), **{field: spec[2] for field, spec in LIMITS[key].items()}}
                                      for key, order in MENU.items()}}
@@ -32,6 +41,8 @@ def validate(profile):
     raise ValueError("Both device layouts are required")
   for key, expected in MENU.items():
     values = devices[key]
+    if isinstance(values, dict) and not SCENE_LIMITS.keys() & values.keys():
+      values.update({k: spec[2] for k, spec in SCENE_LIMITS.items()})
     if not isinstance(values, dict) or values.keys() != {"order", *LIMITS[key]}:
       raise ValueError(f"Invalid {key} layout fields")
     order = values["order"]

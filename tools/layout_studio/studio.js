@@ -1,7 +1,8 @@
 "use strict";
 const $ = s => document.querySelector(s);
 const tabs = s => Array.from(document.querySelectorAll(s));
-const names = {device:"裝置", network:"網路", toggles:"功能開關", software:"軟體", firehose:"Firehose", developer:"開發者", egpu:"eGPU", language:"語言", pair:"配對", formosalink:"FormosaLink", hud:"儀表群組", speed:"目前車速", cruise:"巡航設定速度"};
+const sceneLayers = ["vehicle","lane","path","map"];
+const names = {vehicle:"車輛模型",lane:"車道標線",path:"行駛軌跡",map:"導航地圖",device:"裝置", network:"網路", toggles:"功能開關", software:"軟體", firehose:"Firehose", developer:"開發者", egpu:"eGPU", language:"語言", pair:"配對", formosalink:"FormosaLink", hud:"儀表群組", speed:"目前車速", cruise:"巡航設定速度"};
 function nativeLabel(key) {
   const translations = device==="c4" ? {firehose:"Firehose 資料分享",egpu:"外接 GPU"}
     : {toggles:"切換",firehose:"資料洪流",egpu:"外接 GPU",developer:"開發人員"};
@@ -56,6 +57,10 @@ async function loadProfile(restore) {
   if (restore) {
     try {
       const stored = JSON.parse(localStorage.getItem(savedKey));
+      if (stored?.revision===revision) for (const d of Object.keys(dimensions)) {
+        const v=stored.profile?.devices?.[d];
+        if(v && v.scene_style===undefined) Object.assign(v,Object.fromEntries(Object.entries(base.devices[d]).filter(([k])=>/^(scene|vehicle|lane|path|map)_/.test(k))));
+      }
       if (stored && stored.revision === revision && valid(stored.profile)) {
         draft = stored.profile;
         if (stored.device in dimensions) device = stored.device;
@@ -91,7 +96,7 @@ function choose(key) {
   render(true);
 }
 function renderList() {
-  const menu = view==="settings", list = menu ? layout().order : ["hud","speed","cruise"];
+  const menu = view==="settings", list = menu ? layout().order : [...(layout().scene_style ? sceneLayers : []),"hud","speed","cruise"];
   $("#structure-title").textContent = menu ? "選單排序" : "駕駛儀表";
   $("#count").textContent = list.length+" 項";
   const container=$("#structure"); container.replaceChildren();
@@ -139,6 +144,15 @@ const drivingStyles = [
 ];
 const drivingKeys = ["speed_font","speed_x","speed_y","cruise_font","cruise_x","cruise_y","hud_x","hud_y"];
 function renderStyles() {
+  const scene = $("#scene-style");
+  scene.parentElement.hidden = view !== "driving";
+  scene.selectedIndex = layout().scene_style;
+  scene.onchange = () => {
+    layout().scene_style = scene.selectedIndex;
+    instrument = layout().scene_style ? "vehicle" : "speed";
+    render(); saveDraft();
+  };
+  if (!layout().scene_style && sceneLayers.includes(instrument)) instrument="speed";
   const picker = $("#drive-style");
   picker.parentElement.hidden = view !== "driving";
   if (view !== "driving") return;
@@ -159,11 +173,20 @@ function renderStyles() {
 function renderInspector() {
   const menu=view==="settings";
   $("#inspector-title").textContent = menu ? "選單樣式" : names[instrument];
-  const keys=menu ? ["menu_font","menu_spacing"] : (instrument==="hud" ? ["hud_x","hud_y"] : [instrument+"_font",instrument+"_x",instrument+"_y"]);
+  const layer = !menu && sceneLayers.includes(instrument);
+  $("#inspector-title").nextElementSibling.textContent=layer ? "%" : "px";
+  const keys=layer ? ["size","x","y","color"].map(field=>instrument+"_"+field) : menu ? ["menu_font","menu_spacing"] : (instrument==="hud" ? ["hud_x","hud_y"] : [instrument+"_font",instrument+"_x",instrument+"_y"]);
   const container=$("#inspector"); container.replaceChildren();
   for (const key of keys) {
     const row=element("div","pair");
-    const title=key==="menu_spacing" ? (device==="c4"?"卡片間距":"選單列高") : labels[key] || (key.endsWith("_x")?"水平位移":"垂直位移");
+    if (key.endsWith("_color")) {
+      const label=element("label","",instrument==="map"?"導航路線顏色":"圖層顏色");
+      const input=element("input");input.type="color";input.id=key;label.htmlFor=key;
+      input.value="#"+layout()[key].toString(16).padStart(6,"0");
+      input.oninput=()=>{layout()[key]=parseInt(input.value.slice(1),16);renderScreen();saveDraft();};
+      row.append(label,input);container.append(row);continue;
+    }
+    const title=key.endsWith("_size") ? ({lane:"標線寬度",path:"軌跡寬度",vehicle:"模型大小",map:"地圖大小"})[instrument] : key==="menu_spacing" ? (device==="c4"?"卡片間距":"選單列高") : labels[key] || (key.endsWith("_x")?"水平位移":"垂直位移");
     const label=element("label","",title);
     const number=element("input"), range=element("input");
     number.type="number";range.type="range";label.htmlFor=number.id="num-"+key;
@@ -246,7 +269,7 @@ function drawRoad(canvas) {
 }
 function renderDriving(screen) {
   const v=layout(), small=device==="c4", [w,h]=dimensions[device];
-  const canvas=element("canvas","road");drawRoad(canvas);screen.append(canvas);
+  const canvas=element("canvas","road");if(v.scene_style) drawRealityScene(canvas,w,h,v); else drawRoad(canvas);screen.append(canvas);
   const pw=small?307:350, ph=small?115:150;
   const panel=box(element("div","instruments"),(small?10:40)+v.hud_x,h-(small?125:290)+v.hud_y,pw,ph);
   panel.dataset.part="hud";

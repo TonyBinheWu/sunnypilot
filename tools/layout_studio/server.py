@@ -18,6 +18,7 @@ from openpilot.selfdrive.ui.layout_profile import LIMITS, PROFILE_PATH, defaults
 ASSETS = ROOT / "openpilot/selfdrive/assets"
 STATIC = {"/": (HERE / "index.html", "text/html; charset=utf-8"),
           "/studio.css": (HERE / "studio.css", "text/css; charset=utf-8"),
+          "/scene.js": (HERE / "scene.js", "text/javascript; charset=utf-8"),
           "/studio.js": (HERE / "studio.js", "text/javascript; charset=utf-8"),
           "/assets/display.ttf": (ASSETS / "fonts/KaiGenGothicKR-Bold.ttf", "font/ttf")}
 for name, path in {
