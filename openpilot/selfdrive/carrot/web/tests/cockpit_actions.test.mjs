@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const connection=readFileSync(new URL('../js/realtime/compact_connection.js',import.meta.url),'utf8');
 const bundle=readFileSync(new URL('../js/generated/cockpit.js',import.meta.url),'utf8');
 const html=readFileSync(new URL('../cockpit.html',import.meta.url),'utf8');
-function harness(){
+function harness({ready=true}={}){
   const nodes=new Map(),writes=[],pages=[],hud=[],intervals=[],timers=new Map(),events={},docEvents={};let timerId=0;let mode=3,clock=0,seq=0,rejectPost=false;
   function element(id=''){
     const classes=new Set(),listeners={};
@@ -40,7 +40,7 @@ function harness(){
     },
     confirm(){throw Error('Native confirm dialogs must not be used');}};
   context.window=context;vm.runInNewContext(connection,context);vm.runInNewContext(bundle,context);
-  nodes.get('features').emit('load');
+  if(ready)nodes.get('features').emit('load');
   function send(service,decoded){const data=new Uint8Array(1);data.frames=[{service,decoded,sequence:seq++}];sockets.at(-1).onmessage({data});}
   function park(){send('carState',{gearShifter:'park',vEgo:0,vEgoCluster:0});send('selfdriveState',{enabled:false});send('carControl',{latActive:false,longActive:false});}
   return {docEvents,frame:nodes.get('features').contentWindow,register:(id,node)=>nodes.set(id,node),sockets,events,timers,run(ms){for(let end=clock+ms;clock<end;){clock=Math.min(end,clock+1000);for(const [id,t] of [...timers])if(t.at<=clock){timers.delete(id);t.fn();}}},el:id=>nodes.get(id),mode:n=>buttons[n-1],panel:p=>panels.find(b=>b.dataset.panel===p),writes,pages,send,park,context,
@@ -183,7 +183,7 @@ test('tools navigation returns to the cockpit while modified link clicks keep na
 
 
 test('Back consumes an embedded drawer/detail before leaving controls',()=>{
- const h=harness();let pending=2;h.frame.CarrotCockpitControls={back:()=>pending-->0};h.panel('setting').onclick();
+ const h=harness();h.frame.history={state:{page:'setting',screen:'detail'},back(){this.state.screen=this.state.screen==='detail'?'items':'groups';}};h.panel('setting').onclick();
  assert.equal(h.context.CarrotCockpit.back(),true);assert.equal(h.context.document.body.dataset.panel,'setting');
  assert.equal(h.context.CarrotCockpit.back(),true);assert.equal(h.context.document.body.dataset.panel,'setting');
  assert.equal(h.context.CarrotCockpit.back(),true);assert.equal(h.context.document.body.dataset.panel,'vision');assert.equal(h.writes.length,0);
@@ -214,10 +214,10 @@ test('feature bootstrap timeout exposes a read-only retry and first-run setup ow
 });
 
 
-test('phone app shortcuts retain sound controls and camera-view reset without driving writes',()=>{
+test('phone app shortcuts retain sound controls and camera-view reset without driving writes',async()=>{
  const h=harness(),sections=[];let resets=0;
- h.frame.CarrotCockpitControls={selectSection:id=>sections.push(id)};h.frame.CarrotVisionView={reset:()=>resets++};
- h.el('appsButton').onclick();h.el('soundShortcut').onclick();assert.equal(h.el('apps').open,false);assert.equal(h.context.document.body.dataset.panel,'setting');assert.deepEqual(sections,['sound']);
+ h.frame.loadSettings=async()=>{};h.frame.switchSettingTab=async()=>{};h.frame.selectGroup=id=>sections.push(id);h.el('features').emit('load');h.frame.CarrotVisionView={reset:()=>resets++};
+ h.el('appsButton').onclick();h.el('soundShortcut').onclick();assert.equal(h.el('apps').open,false);assert.equal(h.context.document.body.dataset.panel,'setting');await h.flush();assert.deepEqual(sections,['SYS_SOUND']);
  h.el('resetViewSetting').onclick();assert.equal(resets,1);assert.match(h.el('visionSettingFeedback').textContent,/回到前方/);assert.equal(h.writes.length,0);
 });
 
@@ -256,13 +256,29 @@ test('the driving split follows confirmed guidance and ignores an old thumbnail'
   snapshot.known=false;assert.equal(value(),'false');
 });
 
-test('an early sound shortcut opens its section after the embedded page is ready',()=>{
-  const h=harness(),sections=[];
-  h.frame.CarrotCockpitControls=undefined;h.el('soundShortcut').onclick();
-  h.frame.CarrotCockpitControls={selectSection:key=>sections.push(key)};
-  h.el('features').emit('load');assert.deepEqual(sections,['sound']);
-  h.el('features').emit('load');assert.deepEqual(sections,['sound']);
-  h.frame.CarrotCockpitControls=undefined;h.el('soundShortcut').onclick();h.panel('vision').onclick();
-  h.frame.CarrotCockpitControls={selectSection:key=>sections.push(key)};
-  h.el('features').emit('load');assert.deepEqual(sections,['sound']);
+test('an early sound shortcut opens its section after the embedded page is ready',async()=>{
+  const h=harness({ready:false}),sections=[];
+  h.el('soundShortcut').onclick();
+  h.frame.loadSettings=async()=>{};h.frame.switchSettingTab=async()=>{};h.frame.selectGroup=key=>sections.push(key);
+  h.el('features').emit('load');await h.flush();assert.deepEqual(sections,['SYS_SOUND']);
+  h.el('features').emit('load');await h.flush();assert.deepEqual(sections,['SYS_SOUND']);
+  h.el('soundShortcut').onclick();h.panel('vision').onclick();
+  h.frame.loadSettings=async()=>{};h.frame.switchSettingTab=async()=>{};h.frame.selectGroup=key=>sections.push(key);
+  h.el('features').emit('load');await h.flush();assert.deepEqual(sections,['SYS_SOUND']);
+});
+
+test('All settings opens the original Carrot groups and clears a previous search', async()=>{
+  const h=harness(),calls=[];
+  h.frame.loadSettings=async()=>{};
+  h.frame.switchSettingTab=async tab=>calls.push(tab);
+  h.frame.exitSettingInlineSearchSurface=()=>calls.push('clear');
+  h.frame.showSettingScreen=screen=>calls.push(screen);
+  h.frame.history={replaceState(entry){this.state=entry;}};
+  const button=h.panel('setting');
+  button.closest=()=>h.el('apps');
+  button.onclick();
+  await h.flush();
+  assert.deepEqual(calls,['carrot','clear','groups']);
+  assert.equal(h.frame.history.state.screen,'groups');
+  assert.equal(h.writes.length,0);
 });

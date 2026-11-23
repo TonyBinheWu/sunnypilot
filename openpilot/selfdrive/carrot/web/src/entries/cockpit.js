@@ -2,7 +2,6 @@ import {navigationCue} from '../features/cockpit/navigation_cue.js';
 import {paintedVehicle,vehiclePaint} from '../features/cockpit/vehicle_paint.js';
 import {createCockpitSceneActivity} from '../features/cockpit/scene_activity.js';
 import {cockpitPerceptionReport,modelPerceptionSource} from '../features/cockpit/perception_status.js';
-import {installCockpitControlLayout} from '../features/cockpit/control_layout.js';
 import {installCockpitDialogHeaders,closeEmbeddedDialog} from '../features/cockpit/interactions.js';
 import {nightAppearance,readAppearance,setCockpitTextScale,tireLabels} from '../features/cockpit/appearance.js';
 import {cockpitTraffic} from '../features/cockpit/traffic.js';
@@ -14,7 +13,6 @@ import {createCockpitState,telemetry,cockpitHudPayload,SERVICES,MODES} from '../
 import {drawCockpitVehicle,createVehicleSkinCache,selectedSkin,VEHICLE_SKINS} from '../features/cockpit/vehicle.js';
 import {cockpitClock,assistStates} from '../features/cockpit/status_display.js';
 import {vehicleLamps} from '../features/cockpit/vehicle_lamps.js';
-import {installCockpitHelp} from '../features/cockpit/embedded.js';
 import {installDisplayPreferences} from '../shared/web/display_preferences.js';
 installDisplayPreferences(window);
 window.addEventListener('storage',event=>{if(event.key==='carrot_web_text_scale'){window.CarrotDisplayPreferences.apply();syncNavigationTextScale();}});
@@ -55,10 +53,12 @@ function status(text,retry=false){$('panelStatusText').textContent=text;$('panel
 $('retryPanel').onclick=()=>{const frame=view==='navigation'?nav:core;if(frame===core){coreLoadEpoch++;coreReady=false;coreFaulted=false;}status('正在重新載入功能頁…');frame.src=frame.src;};
 function coreFailure(text){coreReady=false;coreFaulted=true;if(view!=='navigation')status(text,true);}
 function coreWindow(){try{return coreReady&&core.contentWindow.location.origin===location.origin?core.contentWindow:null;}catch{return null;}}
-function selectCore(next){const w=coreWindow();if(!w||typeof w.showPage!=='function')return false;w.document.body.dataset.cockpitPanel=next;w.showPage(next==='vision'?'carrot':next,false);w.CarrotVisionRaw?.syncDataActivity?.();w.CarrotVisionRaw?.markHudDirty?.();w.dispatchEvent?.(new w.Event('carrot:cockpitpanelchange'));return true;}
+function selectCore(next){const w=coreWindow();if(!w||typeof w.showPage!=='function')return false;const theme=w.document.getElementById('cockpitEmbeddedTheme');
+  if(theme)theme.disabled=next==='setting';
+  w.document.body.dataset.cockpitPanel=next;w.showPage(next==='vision'?'carrot':next,false);w.CarrotVisionRaw?.syncDataActivity?.();w.CarrotVisionRaw?.markHudDirty?.();w.dispatchEvent?.(new w.Event('carrot:cockpitpanelchange'));return true;}
 let appReturn = null;
-let soundRequested = false;
-let catalogRequested = false;
+let requestedSettings = null;
+let settingsVisit = 0;
 
 function bindAppDialog(shortcut, dialog, open) {
   $(shortcut).onclick = () => {
@@ -99,7 +99,8 @@ function syncSplit(){
 vehicleLayout?.addEventListener?.('change',syncSplit);
 function panel(next){
   appReturn = null;
-  soundRequested = catalogRequested = false;
+  requestedSettings = null;
+  settingsVisit++;
   $('resetView').hidden=next!=='vision';
   if(!titles[next])return;if(['navigation','vision'].includes(next))primary=next;view=next;document.body.dataset.panel=next;document.body.classList.remove('scene-full');nav.hidden=next!=='navigation';core.hidden=next==='navigation'&&!splitNavigation();$('searchNav').hidden=next!=='navigation';$('visionTools').hidden=next!=='vision';$('vehicleButton').hidden=next!=='vision';$('panelTitle').textContent=titles[next];$('closePanel').hidden=['navigation','vision'].includes(next);$('miniNav').hidden=next!=='vision';
   if(next!=='navigation')closeNavigationSearch();
@@ -118,21 +119,18 @@ core.addEventListener('load',()=>{
       if(w.__CARROT_BOOTSTRAP__?.intro?.shouldShow){if(view!=='setting')panel('setting');$('panelTitle').textContent='首次引導設定';status('');setTimeout(ready,500);return;}
       if(++attempts<40)setTimeout(ready,250);else coreFailure('功能頁尚未就緒。請確認車機連線後重新載入。');return;
     }
-    coreReady=true;coreFaulted=false;installCockpitHelp(w.document);installCockpitControlLayout(w.document,w,{onAction:cockpitAction});selectCore(visibleCore());status('');
-    if (catalogRequested && view === 'setting') {
-      w.CarrotCockpitControls?.openCatalog();
-      catalogRequested=false;
-    }
-    if (soundRequested && view === 'setting') {
-      w.CarrotCockpitControls?.selectSection('sound');
-      soundRequested = false;
-    }
+    coreReady=true;coreFaulted=false;selectCore(visibleCore());status('');
+    if(requestedSettings && view==='setting')void openSettingsDestination(w,requestedSettings);
     const navLink=w.document.querySelector('#toolsPrimaryActions a[href="/navigation"]');
     if(navLink)navLink.onclick=event=>{if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();panel('navigation');};
     if(!w.document.getElementById('cockpitEmbeddedTheme')){
-      const link=w.document.createElement('link');link.id='cockpitEmbeddedTheme';link.rel='stylesheet';link.href=$('embeddedStyle').href;w.document.head.append(link);
+      const link=w.document.createElement('link');link.id='cockpitEmbeddedTheme';link.disabled=visibleCore()==='setting';link.rel='stylesheet';link.href=$('embeddedStyle').href;w.document.head.append(link);
     }
-    if(!w.document.getElementById('cockpitControlsTheme')){const link=w.document.createElement('link');link.id='cockpitControlsTheme';link.rel='stylesheet';link.href=$('controlsStyle').href;w.document.head.append(link);}
+    if(!w.document.getElementById('cockpitSettingsFrame')){
+      const style=w.document.createElement('style');style.id='cockpitSettingsFrame';
+      style.textContent='html:has(body[data-cockpit-panel="setting"]){--app-nav-left-gap:0px;--app-nav-bottom-gap:0px;--nav-bar-height:0px;--nav-bar-height-desktop:0px;--nav-rail-width:0px}body[data-cockpit-panel="setting"] .topbar{display:none}';
+      w.document.head.append(style);
+    }
     w.document.documentElement.classList.toggle('cockpit-night',document.body.classList.contains('night'));
   }catch{coreFailure('無法載入功能面板，請確認車機連線後重試。');}};ready();
 });
@@ -155,12 +153,40 @@ nav.addEventListener('load',()=>{try{
 }catch{status('導航頁面無法載入。',true);}});
 function showVehicle(){$('vehicleDetails').showModal();void navigationView()?.refresh();}
 if($('vehicleDock'))$('vehicleDock').onclick=showVehicle;
-function cockpitAction(action){const handlers={profile:()=>{$('profile').click();},vision:()=>{$('visionTools').click();},vehicle:showVehicle,display:()=>{$('theme').click();},connection:()=>{$('connectionDetails').showModal();},diagnostics:()=>window.CarrotSelfDiagnostics.open()};handlers[action]?.();}
-function openSound(){
-  panel('setting');
-  const controls=coreWindow()?.CarrotCockpitControls;
-  if(controls)controls.selectSection('sound');
-  else soundRequested=true;
+async function openSettingsDestination(w,destination){
+  requestedSettings=null;
+  const visit=settingsVisit;
+  try{
+    await w.loadSettings();
+    if(view!=='setting'||visit!==settingsVisit||w!==coreWindow())return;
+    await w.switchSettingTab('carrot');
+    if(view!=='setting'||visit!==settingsVisit||w!==coreWindow())return;
+    if(destination==='sound')w.selectGroup('SYS_SOUND',true);
+    else{
+      w.exitSettingInlineSearchSurface();
+      w.showSettingScreen('groups',false);
+      w.history.replaceState({page:'setting',screen:'groups'},'');
+    }
+  }catch{if(view==='setting'&&visit===settingsVisit)status('無法載入設定，請確認連線後重試。',true);}
+}
+function requestSettings(destination){
+  if(coreReady)void openSettingsDestination(coreWindow(),destination);
+  else requestedSettings=destination;
+}
+function openSound(){panel('setting');requestSettings('sound');}
+function backInSettings(w){
+  if(!w)return false;
+  const doc=w.document, entry=w.history?.state;
+  if(doc.getElementById('settingFabMenu')?.classList.contains('is-open')){
+    w.closeSettingFabMenu();return true;
+  }
+  if(entry?.page==='setting'&&(entry.search||entry.screen==='detail'||(entry.screen==='items'&&!doc.getElementById('pageSetting')?.classList.contains('setting-layout-split')))){
+    w.history.back();return true;
+  }
+  if(doc.getElementById('carrotTabContent')?.classList.contains('is-inline-search')){
+    w.exitSettingInlineSearchSurface();return true;
+  }
+  return false;
 }
 $('soundDock').onclick=openSound;$('soundShortcut').onclick=()=>{$('apps').close();openSound();};
 $('visionTools').onclick=()=>{$('visionSettingFeedback').textContent='';$('visionSettings').showModal();};
@@ -218,10 +244,7 @@ document.querySelectorAll('button[data-panel]').forEach(button => button.onclick
   if (fromApps) $('apps').close();
   const trip = next === 'navigation' ? navigationView()?.snapshot() : null;
   panel(!fromApps && next === 'setting' && view === 'setting' ? primary : next);
-  if(fromApps && next==='setting'){
-    const controls=core.contentWindow?.CarrotCockpitControls;
-    if(controls)controls.openCatalog();else catalogRequested=true;
-  }
+  if(fromApps && next==='setting')requestSettings('catalog');
   if (trip?.known && !trip.busy && !trip.active && !trip.mapReady) openNavigationSearch();
 });
 // Every road-view entry uses the same camera/classification renderer. The old
@@ -440,7 +463,7 @@ $('modeApply').onclick=async()=>{
   try{const r=await fetch('/api/param_set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'MyDrivingMode',value:mode,source:'cockpit'})});if(!r.ok)throw Error();await modeRead();$('profileStatus').textContent=currentMode===mode?`已確認儲存：${MODES[mode]}`:'設定結果不一致，請到控制與設定確認。';}
   catch{$('profileStatus').textContent='結果未確認；不會自動重送，請到控制與設定查看。';}finally{busy=false;document.querySelectorAll('[data-mode]').forEach(x=>x.disabled=false);}
 };
-window.CarrotCockpit={layoutVersion:12,back(){const dialog=document.activeElement?.closest?.('dialog[open]') || document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}if(view==='navigation'&&nav.contentDocument?.body.classList.contains('search-open')){closeNavigationSearch(true);return true;}if(view!=='navigation'&&closeEmbeddedDialog(coreWindow()))return true;if(view==='setting'&&coreWindow()?.CarrotCockpitControls?.back?.())return true;if(view==='vision'&&document.body.classList.contains('advanced-vision')){advancedVision(false);return true;}if(!['vision','navigation'].includes(view)){panel(primary);return true;}return false;},pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(visibleCore());connect();}};
+window.CarrotCockpit={layoutVersion:12,back(){const dialog=document.activeElement?.closest?.('dialog[open]') || document.querySelector('dialog[open]');if(dialog){dialog.close();return true;}if(view==='navigation'&&nav.contentDocument?.body.classList.contains('search-open')){closeNavigationSearch(true);return true;}if(view!=='navigation'&&closeEmbeddedDialog(coreWindow()))return true;if(view==='setting'&&backInSettings(coreWindow()))return true;if(view==='vision'&&document.body.classList.contains('advanced-vision')){advancedVision(false);return true;}if(!['vision','navigation'].includes(view)){panel(primary);return true;}return false;},pause(){paused=true;disconnect();selectCore('setting');},resume(){paused=false;selectCore(visibleCore());connect();}};
 const vehicleParking=vehicleParkingSource(window);
 const updateClock=()=>{$('clock').textContent=cockpitClock();};updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',updateClock);
 panel(view);connect();setInterval(()=>{if(!paused)render();},100);render();
