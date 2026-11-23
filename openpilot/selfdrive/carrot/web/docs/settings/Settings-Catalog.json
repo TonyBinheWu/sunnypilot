@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "dc620133ceccc51ae82094b72659b02310d4b749",
-  "contentHash": "ff025f7ce15b51f57fabe38b56f43a3dfe02b74cf558159e8d3b883218ee088b",
-  "generatedAt": "2026-11-20T13:03:35Z",
+  "catalogCommit": "9bb7e88a993539aa96eaefdffd4330ea882dd716",
+  "contentHash": "81e4e4a39cc1089aff3aa928e4a7a330e5e5e851b9ef67ad4d9eb01c4d233e77",
+  "generatedAt": "2026-11-23T13:26:23Z",
   "locales": [
     "ko",
     "en",
@@ -628,6 +628,10 @@
     "EN-Show-Lane-Info.md": {
       "bytes": 1609,
       "hash": "bc258598f74e2189f55e866ec78f68381003ae4ebc06c1d28f1c775ab3225ba4"
+    },
+    "EN-Show-OEM-traffic-signs-and-speed-limits.md": {
+      "bytes": 1314,
+      "hash": "1323a822e5281df9d7fe269107fcf45312310693c01afbe9be2655629d4167d7"
     },
     "EN-Show-Path-Color-CruiseOFF(1).md": {
       "bytes": 1779,
@@ -1385,6 +1389,10 @@
       "bytes": 3777,
       "hash": "e49157bb94076095007853cb2a63105ee764fb62ee5950857325c67577a9b1a0"
     },
+    "KO-순정-교통-표지-및-제한-속도-표시.md": {
+      "bytes": 1289,
+      "hash": "8aa9b4488e779206e4f88124c4e3b7b0af0c634f337793cc56d564156b3bf95b"
+    },
     "KO-시간정보표시.md": {
       "bytes": 1668,
       "hash": "c272aa56dc0f1de37b33d14b9c9f0f62bf32dc52f1f056b2637d7a9b1f4f0778"
@@ -1746,8 +1754,8 @@
       "hash": "c36b52d2f81711770bb6532877ab8c359e6f5d670cc0ff058db0b0c834b7e810"
     },
     "Settings-Catalog.md": {
-      "bytes": 146440,
-      "hash": "1e380708759185c082aad80a73670daa04a0bc276d3dcf4db28b364f319b8ccb"
+      "bytes": 147297,
+      "hash": "a6eebcba0b3350fbb91c0959ddf06e344fe0eb78ba5b77957838c14735b069af"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -2641,6 +2649,10 @@
       "bytes": 2249,
       "hash": "a24af0fce90b24a3c89475aef241f940582f053ddaedb5a9d459e0a62903b445"
     },
+    "ZH-TW-顯示原車交通標誌與速限(ISLA).md": {
+      "bytes": 1304,
+      "hash": "7a854e8eafe12b95c4a33f4d90c5102dca72da75af1eff003b897567177f22f9"
+    },
     "ZH-TW-顯示時間資訊.md": {
       "bytes": 1490,
       "hash": "5a06ce43bbece74c8ddd9c33949712524b6762e636731dc1828f5adc3ed6edaa"
@@ -3085,6 +3097,10 @@
       "bytes": 1183,
       "hash": "1994c8e8d49460e7e63da6b17be2d81477500d80313f8952b3463b02b8d669ca"
     },
+    "ZH-显示原车交通标志与限速.md": {
+      "bytes": 1263,
+      "hash": "311864d42bf1344b285e4db76676da771b3f2d9c1c2e9c5b842960961245baef"
+    },
     "ZH-显示时间信息.md": {
       "bytes": 1116,
       "hash": "709fe34db86738bf2a2407d5f144eae5a4545bd94b574b7e5eee1e3b49de1046"
@@ -3488,7 +3504,7 @@
   },
   "review": {
     "current": 49,
-    "needs_review": 168
+    "needs_review": 169
   },
   "schemaVersion": 1,
   "settings": {
@@ -6591,6 +6607,37 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "73de8556350bb983167823ea8dc96c661c0f36cb4141529c766cb4262b74517b"
+    },
+    "HyundaiShowStockSigns": {
+      "group": "VEH_HYUNDAI",
+      "locales": {
+        "en": {
+          "anchor": "HyundaiShowStockSigns",
+          "factsHash": "bc7b194a533dad00c70e053ef5d8e901f30ba69d44bb2fe5dcf38632c424aa8b",
+          "page": "EN-Show-OEM-traffic-signs-and-speed-limits.md",
+          "reviewStatus": "needs_review"
+        },
+        "ko": {
+          "anchor": "HyundaiShowStockSigns",
+          "factsHash": "1a41b3574cd7d9cae84007cae40c2e17ee4422e8021ef381b4434f8c714ffc50",
+          "page": "KO-순정-교통-표지-및-제한-속도-표시.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh": {
+          "anchor": "HyundaiShowStockSigns",
+          "factsHash": "8274afd07817f4124541bfa1cbaeee53b81af71ad8d1cd02d403f38d83e52b26",
+          "page": "ZH-显示原车交通标志与限速.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh-tw": {
+          "anchor": "HyundaiShowStockSigns",
+          "factsHash": "020f7eda128a8b146a688a42e43a1d30beb61113ca3c840b6056061efea861bf",
+          "page": "ZH-TW-顯示原車交通標誌與速限(ISLA).md",
+          "reviewStatus": "needs_review"
+        }
+      },
+      "reviewStatus": "needs_review",
+      "semanticHash": "3d891ac0dd4a6084f8ccf0524b759d943cecf9ed91b1eb643c17bd0495218d1a"
     },
     "IsLdwsCar": {
       "group": "VEH_HYUNDAI",

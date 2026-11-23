@@ -293,6 +293,14 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
     for key in ("SIGNS", "FF_DETECT_ALT", "FAULT_HDA"):
       assert raw(0x162, key) == scene[key]
     assert raw(0x162, "FF_DETECT") == (7 if active else 3)
+    for enabled, elapsed, visible in ((True, 0, True), (False, 0, False), (True, 150_000_001, False)):
+      scene.update(SIGNS=9, SPEEDLIMIT=60, SPEEDLIMIT_FLASH=2, SPEEDLIMIT_WEATHER=1)
+      msgs = hyundaicanfd.create_ccnc_messages(cp, packer, SimpleNamespace(ECAN=0, CAM=2), 10, control, state,
+        control.hudControl, 0, False, False, 2, False, 0, 0, now_nanos=stamp+elapsed, show_stock_signs=enabled)
+      frames = {addr: data for addr, data, _ in msgs}
+      for key in ("SIGNS", "SPEEDLIMIT", "SPEEDLIMIT_FLASH", "SPEEDLIMIT_WEATHER"):
+        assert raw(0x162, key) == (scene[key] if visible else 0)
+
 
 
 

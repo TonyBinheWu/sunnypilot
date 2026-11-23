@@ -1096,7 +1096,7 @@ def create_alt2_adas_button_request(packer, CAN, frame, CC, CS, stopping, *, kee
 
 def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
                          disp_angle, left_lane_warning, right_lane_warning,
-                         enable_corner_radar, stopping, canfd_debug, paddle_mode, hud_lateral=None, now_nanos=0):
+                         enable_corner_radar, stopping, canfd_debug, paddle_mode, hud_lateral=None, now_nanos=0, show_stock_signs=True):
   ret = []
   interlock_active = longitudinal_interlock_active(CS)
   display_lead = _display_lead(getattr(CS, "radarState", None))
@@ -1382,6 +1382,11 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
             values["FAULT_LSS"] = 0
             values["FAULT_DAS"] = 0
 
+        parser = getattr(CS, "cp_cam", None)
+        stock = _fresh_ev6_cluster_rx(parser, "CCNC_0x162", 0x162) if show_stock_signs else {}
+        fresh_signs = stock and 0 <= now_nanos - parser.ts_nanos["CCNC_0x162"]["COUNTER"] <= 150_000_000
+        for key in ("SIGNS", "SPEEDLIMIT", "SPEEDLIMIT_FLASH", "SPEEDLIMIT_WEATHER"):
+          values[key] = stock.get(key, 0) if fresh_signs else 0
         ret.append(packer.make_can_msg("CCNC_0x162", CAN.ECAN, values, rx_counter=rx_counter))
 
     # --- NEW_MSG_4B9 (corner radar keep-alive?) ---

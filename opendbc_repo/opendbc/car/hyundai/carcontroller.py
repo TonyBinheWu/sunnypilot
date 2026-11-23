@@ -25,7 +25,7 @@ VisualAlert = structs.CarControl.HUDControl.VisualAlert
 LongCtrlState = structs.CarControl.Actuators.LongControlState
 
 
-from openpilot.common.params import Params
+from openpilot.common.params import Params, UnknownKeyName
 
 # EPS faults if you apply torque while the steering angle is above 90 degrees for more than 1 second
 # All slightly below EPS thresholds to avoid fault
@@ -301,6 +301,7 @@ class CarController(CarControllerBase):
     self.activeCarrot = 0
     self.camera_scc_params = Params().get_int("HyundaiCameraSCC")
     self.is_ldws_car = Params().get_bool("IsLdwsCar")
+    self.show_stock_signs = True
     self.enable_corner_radar = 0
     self.paddle_mode = Params().get_int("PaddleMode")
 
@@ -376,6 +377,11 @@ class CarController(CarControllerBase):
 
       self.canfd_debug = params.get_int("CanfdDebug")
       self.camera_scc_params = params.get_int("HyundaiCameraSCC")
+      if self.CP.flags & HyundaiFlags.CAMERA_SCC:
+        try:
+          self.show_stock_signs = params.get("HyundaiShowStockSigns", return_default=True)
+        except UnknownKeyName:
+          self.show_stock_signs = True
       self.enable_corner_radar = params.get_int("EnableCornerRadar")
       self.paddle_mode = params.get_int("PaddleMode")
 
@@ -687,7 +693,7 @@ class CarController(CarControllerBase):
           can_sends.extend(hyundaicanfd.create_ccnc_messages(
             self.CP, self.packer, self.CAN, self.frame, CC, CS, hud_control, apply_angle,
             left_lane_warning, right_lane_warning, self.enable_corner_radar, stopping,
-            self.canfd_debug, self.paddle_mode, hud_lateral=hud_lateral, now_nanos=now_nanos,
+            self.canfd_debug, self.paddle_mode, hud_lateral=hud_lateral, now_nanos=now_nanos, show_stock_signs=self.show_stock_signs,
           ))
           if hda2:
             can_sends.extend(hyundaicanfd.create_adrv_messages(self.CP, self.packer, self.CAN, self.frame,

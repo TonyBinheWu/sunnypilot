@@ -5,6 +5,7 @@ import os
 from aiohttp import web
 
 from ..config import PARAMS_BACKUP_PATH
+from ..parked_indicator import parked_indicator
 from ..services.param_changes import (
   append_param_change,
   count_changes_since,
@@ -310,6 +311,7 @@ async def api_params_restore_json(request: web.Request) -> web.Response:
 
 
 def register(app: web.Application) -> None:
+  app.router.add_post("/api/hyundai/parked-indicator/{side:left|right}", parked_indicator)
   app.router.add_get("/api/params_bulk", api_params_bulk)
   app.router.add_post("/api/param_set", api_param_set)
   app.router.add_get("/api/param_changes", api_param_changes)

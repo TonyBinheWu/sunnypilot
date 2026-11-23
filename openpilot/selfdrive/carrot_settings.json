@@ -471,6 +471,7 @@
           "zh": "现代·起亚",
           "params": [
             "HyundaiCameraSCC",
+            "HyundaiShowStockSigns",
             "IsLdwsCar",
             "HapticFeedbackWhenSpeedCamera"
           ],
@@ -3532,6 +3533,26 @@
       "tgroup": "啟動設定",
       "ttitle": "最大角度幀數 (89)",
       "tdescr": "建議保留 89。2024 Sorento 使用鏡頭 SCC 與扭力轉向時，控制器會依鏡頭更新頻率的特性，自動將有效設定限制在 92 至 94 幀。"
+    },
+    {
+      "group": "시작",
+      "name": "HyundaiShowStockSigns",
+      "title": "순정 교통 표지 및 제한 속도 표시",
+      "descr": "지원되는 CCNC 계기판에 순정 ISLA 인식 결과를 표시합니다.",
+      "egroup": "START",
+      "etitle": "Show OEM traffic signs and speed limits",
+      "edescr": "Show fresh OEM sign and speed limit results on supported CCNC cluster output. Enable recognition in the original vehicle settings.",
+      "cgroup": "启动设置",
+      "ctitle": "显示原车交通标志与限速",
+      "cdescr": "在支持的 CCNC 仪表显示原车识别结果。请在原车设置开启识别。",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "unit": 1,
+      "control": "toggle",
+      "tgroup": "啟動設定",
+      "ttitle": "顯示原車交通標誌與速限（ISLA）",
+      "tdescr": "在支援的 CCNC 儀表輸出上顯示原車辨識結果。辨識功能須先在原車設定開啟。"
     },
     {
       "group": "시작",

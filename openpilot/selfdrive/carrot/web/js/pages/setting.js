@@ -2560,6 +2560,41 @@ function bindSettingProfileSectionToggle(rendered, stateKey) {
   };
 }
 
+function parkedIndicatorButtons() {
+  const labels = ({
+    "zh-tw": ["停車測試方向燈", "左燈 7 秒", "右燈 7 秒", "已接受請求，請查看實體方向燈。", "未能確認。需要相容 SPAS、P 檔靜止且輔助已解除。"],
+    zh: ["驻车转向灯测试", "左灯 7 秒", "右灯 7 秒", "已接受请求，请查看实际灯光。", "未能确认。需要兼容 SPAS、P 挡静止且辅助已解除。"],
+    ko: ["주차 중 방향지시등 테스트", "왼쪽 7초", "오른쪽 7초", "요청이 접수되었습니다. 실제 램프를 확인하세요.", "요청을 확인할 수 없습니다. 호환 SPAS, P단 정차 및 보조 해제가 필요합니다."],
+  })[LANG] || ["Parked indicator test", "Left · 7 s", "Right · 7 s", "Request accepted. Check the vehicle lamps.", "Unconfirmed. Requires compatible SPAS, Park, standstill and disengaged assistance."];
+  const card = document.createElement("section");
+  card.className = "setting";
+  const title = document.createElement("strong");
+  title.textContent = labels[0];
+  const actions = document.createElement("div");
+  actions.className = "setting-actions";
+  const feedback = document.createElement("output");
+  feedback.setAttribute("aria-live", "polite");
+  for (const [index, side] of ["left", "right"].entries()) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = labels[index + 1];
+    button.onclick = async () => {
+      for (const action of actions.children) action.disabled = true;
+      feedback.textContent = "";
+      try {
+        const response = await fetch("/api/hyundai/parked-indicator/" + side, {
+          method: "POST", headers: {"Content-Type": "application/json"}, body: "{}",
+        });
+        feedback.textContent = response.ok && (await response.json()).ok ? labels[3] : labels[4];
+      } catch { feedback.textContent = labels[4]; }
+      finally { for (const action of actions.children) action.disabled = false; }
+    };
+    actions.append(button);
+  }
+  card.append(title, actions, feedback);
+  return card;
+}
+
 async function renderItems(group, options = {}) {
   if (!isCarrotSettingTabActive()) return;
   const meta = document.getElementById("groupMeta");
@@ -2882,6 +2917,7 @@ async function renderItems(group, options = {}) {
     el.appendChild(actions);
 
     currentItemContainer.appendChild(el);
+    if (name === "HyundaiShowStockSigns" && !options.container) currentItemContainer.appendChild(parkedIndicatorButtons());
     if (contextPanel) {
       // The setting control and its supplementary information are independent
       // surfaces. Keep the context panel outside the setting card so the DOM

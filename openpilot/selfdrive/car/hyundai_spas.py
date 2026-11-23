@@ -1,6 +1,8 @@
 """Comma SPAS transport for the existing physical-indicator intent policy."""
 import math
 
+from openpilot.selfdrive.car.parked_indicator import ParkedIndicator, DURATION
+
 from opendbc.car.hyundai.spas import Session, PatchSequence, frame, SPAS
 from opendbc.car.hyundai.values import HyundaiFlags
 from opendbc.car.hyundai.stalk_trial import replay
@@ -18,6 +20,8 @@ class SpasSignals:
     self.worker = None
     self.feedback_at = self.settings_at = 0.
     self.worker_retry = 0.
+    self.web_indicator = ParkedIndicator()
+    self.web_active = False
     self.test_setting = 0
     self.test_request = None
     self.test_until = 0.
@@ -126,7 +130,10 @@ class SpasSignals:
       self.driver_override = False
     if now >= self.settings_at:
       setting = self.params.get_int('CanfdBlinkerTest')
-      if setting != self.test_setting and setting in range(1, 19):
+      tap = self.web_indicator.take(now)
+      web_request = tap is not None and setting == self.test_setting == 0 and self.test_request is None
+      accepted = False
+      if web_request or (setting != self.test_setting and setting in range(1, 19)):
         # Consume the edge even when the parked guard fails; never run later.
         cc, ss = sm['carControl'], sm['selfdriveState']
         parked = (healthy and str(cs.gearShifter) == 'park' and cs.standstill and abs(cs.vEgo) < .01 and
@@ -136,13 +143,20 @@ class SpasSignals:
         direct = setting >= 5
         direct_ready = (not direct or (now >= self.direct_cooldown and self.can_health(sm['pandaStates']) is not None and self.session.stock_ready(now) and
                         self.session.stock_direction == 0 and not (cs.leftBlinker or cs.rightBlinker)))
-        if parked and (setting <= 2 or self.hold_supported) and self.session.state == 'idle' and direct_ready:
+        accepted = parked and (setting <= 2 or self.hold_supported) and self.session.state == 'idle' and direct_ready
+        if web_request:
+          accepted = (accepted and continuous and not self.driver_override and self.session.stock_ready(now)
+                      and not self.session.stock_direction and not (cs.leftBlinker or cs.rightBlinker) and now >= self.direct_cooldown)
+        if accepted:
+          self.web_active = web_request
           self.test_serial += 1
           self.test_request = f'park:{self.test_serial}'
           # Pulse/hold and SPAS-only comparisons have independent bounded modes.
           self.test_until = now+(10. if setting in (7, 8, 11, 12, 13, 14, 15, 16, 17, 18) else 3.)
           self.trial_stalk = self.driver_data if setting in (17, 18) else None
           self.test_direction = 'left' if setting % 2 else 'right'
+          if web_request:
+            self.test_until, self.test_direction = tap[0] + DURATION, tap[1]
           self.test_pulse = setting in (3, 4, 7, 8, 9, 10, 11, 12)
           self.test_direct = direct
           self.test_hold = setting in (3, 4, 7, 8, 11, 12)
@@ -162,6 +176,8 @@ class SpasSignals:
             self.direct_counter = {a: (s.counter+1) % 256 for a, s in self.session.stock.items()}
           self.pulse_started = None
           self.lamp_confirmed = False
+      if tap is not None:
+        self.web_indicator.reply(tap[0], bool(web_request and accepted))
       self.test_setting = setting
       self.settings_at = now+.1
     record = self.worker.latest() if self.worker is not None else None
@@ -184,7 +200,10 @@ class SpasSignals:
                  not (cc.latActive or cc.longActive or ss.active or ss.enabled) and
                  sm.valid['pandaStates'] and sm.alive['pandaStates'] and 0 <= now-sm.recv_time['pandaStates'] < .75 and
                  len(sm['pandaStates']) > 0 and not any(p.controlsAllowed for p in sm['pandaStates']))
-      if now < self.test_until and self.test_setting != 0:
+      if self.web_active and (not healthy or not continuous or self.driver_override or self.test_setting or
+                              self.test_blocked != tuple(getattr(p, 'safetyTxBlocked', 0) for p in sm['pandaStates'])):
+        self.test_until = now
+      if now < self.test_until and (self.web_active or self.test_setting != 0):
         request, direction = self.test_request, self.test_direction
       else:
         request = direction = None
@@ -221,7 +240,7 @@ class SpasSignals:
     parked_selected = direct or self.test_setting >= 5 or now < self.direct_cooldown
     sends = self.session.update(now, healthy=healthy, request=None if parked_selected else request,
                                 direction=None if parked_selected else direction,
-                                duration=3. if self.test_request is not None else 300., driver_override=self.driver_override)
+                                duration=DURATION if self.web_active else 3. if self.test_request is not None else 300., driver_override=self.driver_override)
     self.hold_value = 1  # suppress the old USB2CAN/automatic-lane hold while selected
     direct_active = (direct and request == self.test_request and healthy and not self.driver_override and
                      self.test_can_health is not None and self.can_health(sm['pandaStates']) == self.test_can_health and
@@ -270,4 +289,5 @@ class SpasSignals:
       self.feedback_at = now+.05
     if self.test_request is not None and self.session.state in ('idle', 'failed') and now >= self.test_until:
       self.test_request = None
+      self.web_active = False
     return sends

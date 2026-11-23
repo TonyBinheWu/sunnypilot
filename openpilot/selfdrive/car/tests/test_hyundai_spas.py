@@ -485,3 +485,29 @@ def test_stalk_trial_isolated_and_revoked(monkeypatch, fault):
   if fault != 'none':
     assert s.test_request is None
     assert s.update(cs, sm, 10.13, True) == []
+
+
+@pytest.mark.parametrize('side', ['left', 'right'])
+@pytest.mark.parametrize('gear', ['park', 'drive'])
+def test_web_lamp_tap_deadline_and_driver_override(monkeypatch, tmp_path, side, gear):
+  from openpilot.selfdrive.carrot.bluetooth.model import atomic_json, read_json
+  s, _, cs, sm = setup(monkeypatch)
+  s.web_indicator.root = tmp_path
+  s.web_indicator.started = 9
+  warm(s)
+  s.update(cs, sm, 10, True)
+  cs.gearShifter = gear
+  atomic_json(tmp_path / 'request.json', {'stamp': 10.005, 'side': side})
+  s.settings_at = 0
+  sent = s.update(cs, sm, 10.01, True)
+  assert read_json(tmp_path / 'reply.json')['accepted'] is (gear == 'park')
+  assert s.web_indicator.take(10.02) is None
+  if gear == 'park':
+    assert sent and s.test_direction == side
+    assert s.test_until == pytest.approx(17.005)
+    assert s.session.duration == 7
+    cs.blinkerLever = 1
+    s.update(cs, sm, 10.02, True)
+    assert s.test_until == 10.02
+  else:
+    assert not sent and s.test_request is None
