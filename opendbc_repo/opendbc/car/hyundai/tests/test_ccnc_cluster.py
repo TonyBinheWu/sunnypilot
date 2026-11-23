@@ -262,15 +262,20 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
   (0, 3, 3.5, True), (150_000_000, 6, 6.3, True), (150_000_001, 3, 3.5, False),
   (0, 0, 3.5, False), (0, 7, 3.5, False), (0, 3, 6.4, False),
 ])
-def test_ev6_ccnc_rear_neighbors(age, kind, lateral, expected):
+def test_ev6_ccnc_corner_neighbors(age, kind, lateral, expected):
   stamp = 1_000_000_000
-  source = dict(LR_DETECT=4, LR_DETECT_DISTANCE=8, LR_DETECT_LATERAL=4,
+  source = dict(LF_DETECT=3, LF_DETECT_DISTANCE=40, LF_DETECT_LATERAL=3.5,
+                RF_DETECT=6, RF_DETECT_DISTANCE=75, RF_DETECT_LATERAL=8,
+                LR_DETECT=4, LR_DETECT_DISTANCE=8, LR_DETECT_LATERAL=4,
                 RR_DETECT=kind, RR_DETECT_DISTANCE=5, RR_DETECT_LATERAL=lateral)
   cam = SimpleNamespace(ts_nanos={"CCNC_0x162": {"COUNTER": stamp}}, _last_update_nanos=stamp,
                         dat={0x162: bytes(32)}, vl={"CCNC_0x162": source})
   values = dict(LR_DETECT=2, LR_DETECT_DISTANCE=10, LR_DETECT_LATERAL=3)
   original = values.copy()
-  hyundaicanfd._add_ev6_rear_neighbors(values, cam, stamp + age)
+  hyundaicanfd._add_ev6_corner_neighbors(values, cam, stamp + age)
+  if age <= 150_000_000:
+    original.update(LF_DETECT=1, LF_DETECT_DISTANCE=40, LF_DETECT_LATERAL=3.5,
+                    RF_DETECT=1, RF_DETECT_DISTANCE=75, RF_DETECT_LATERAL=8)
   if expected:
     original.update(RR_DETECT=1, RR_DETECT_DISTANCE=5, RR_DETECT_LATERAL=lateral)
   assert values == original

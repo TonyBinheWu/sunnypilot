@@ -749,17 +749,16 @@ def ev6_cluster_corners(parser):
   return corners
 
 
-def _add_ev6_rear_neighbors(values, parser, now_nanos):
+def _add_ev6_corner_neighbors(values, parser, now_nanos):
   source = _fresh_ev6_cluster_rx(parser, "CCNC_0x162", 0x162)
   if not source or not 0 <= now_nanos - parser.ts_nanos["CCNC_0x162"]["COUNTER"] <= 150_000_000:
     return
-  for side in ("LR", "RR"):
+  for side, max_distance, max_lateral in (("LF", 204.7, 12.7), ("RF", 204.7, 12.7), ("LR", 25.5, 6.3), ("RR", 25.5, 6.3)):
     detect = f"{side}_DETECT"
     distance = f"{side}_DETECT_DISTANCE"
     lateral = f"{side}_DETECT_LATERAL"
-    # CCNC types 3..6 identify cars and trucks. Both slots in 0x1ea use
-    # unsigned 8-bit longitudinal and 6-bit lateral distances in decimetres.
-    if not values.get(detect) and source[detect] in (3, 4, 5, 6) and 0 < source[distance] <= 25.5 and 0 <= source[lateral] <= 6.3:
+    # CCNC types 3..6 identify cars and trucks. Rear slots have a smaller encoding range.
+    if not values.get(detect) and source[detect] in (3, 4, 5, 6) and 0 < source[distance] <= max_distance and 0 <= source[lateral] <= max_lateral:
       values.update({detect: 1, distance: source[distance], lateral: source[lateral]})
 
 
@@ -1301,7 +1300,7 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
         _apply_cluster_lane_lines(values, CS, lat_active, desire)
         _normalize_cluster_corner_objects(values)
         if ev6_display and enable_corner_radar > 0:
-          _add_ev6_rear_neighbors(values, getattr(CS, "cp_cam", None), now_nanos)
+          _add_ev6_corner_neighbors(values, getattr(CS, "cp_cam", None), now_nanos)
           _add_ev6_front_neighbors(values, getattr(CS, "radarState", None), now_nanos)
           _add_ev6_vision_neighbor(values, md, now_nanos)
 
