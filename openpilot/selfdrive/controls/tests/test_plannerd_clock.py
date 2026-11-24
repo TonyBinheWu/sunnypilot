@@ -165,8 +165,9 @@ def test_driver_gas_override_bypasses_stopping_input_filter(mocker):
   assert all(call.args[0]['radarState'].leadOne.vLead == pytest.approx(0.217) for call in planner.update.call_args_list)
 
 
-def test_upstream_planner_uses_raw_radar_at_model_rate(mocker):
-  calls, poll, fast_radar, planner = run_planner_events(mocker, 'hyundai', 1, 50, stopping=True, upstream=True)
+@pytest.mark.parametrize("mode", [1, 2])
+def test_upstream_planner_uses_raw_radar_at_model_rate(mocker, mode):
+  calls, poll, fast_radar, planner = run_planner_events(mocker, 'hyundai', 1, 50, stopping=True, upstream=mode)
   assert poll == 'modelV2'
   assert len(calls) == 20
   fast_radar.build.assert_not_called()

@@ -169,6 +169,7 @@ class VCruiseCarrot:
     self.frame = 0
     self.params_memory = Params("/dev/shm/params")
     self.params = Params()
+    self.vision_only = self.params.get_int("DrivingPlannerMode") == 2
     self.periodic_settings = None
     self.cruise_stage_ms = {}
     if cached_settings:
@@ -362,8 +363,15 @@ class VCruiseCarrot:
       self.xState = lp.xState
       self.trafficState = lp.trafficState
       self.aTarget = lp.aTarget
-    if sm.alive['radarState']:
-      lead = sm['radarState'].leadOne
+    if self.vision_only:
+      # Never carry a stale lead into resume or automatic cruise-speed logic.
+      self.d_rel = self.v_rel = self.v_lead_kph = 0.
+      use_lead = (sm.alive['longitudinalPlan'] and sm.valid['longitudinalPlan']
+                  and lp.plannerProfile == 'visionE2e')
+    else:
+      use_lead = sm.alive['radarState']
+    if use_lead:
+      lead = lp.cameraLeadState.leadOne if self.vision_only else sm['radarState'].leadOne
       self.d_rel = lead.dRel if lead.status else 0
       self.v_rel = lead.vRel if lead.status else 0
       self.v_lead_kph = lead.vLeadK * CV.MS_TO_KPH if lead.status else 0
@@ -827,8 +835,8 @@ class VCruiseCarrot:
     return v_cruise_kph
 
   def _auto_speed_up(self, v_cruise_kph):
-    #if self._pause_auto_speed_up:
-    #  return v_cruise_kph
+    if self.vision_only:
+      return v_cruise_kph
     if not self._pause_auto_speed_up and self.applyModelSpeed != 0.0:
       model_kph = self.model_v_kph * abs(self.applyModelSpeed)
       apply_speed = min(model_kph, self.nRoadLimitSpeed * 1.1)

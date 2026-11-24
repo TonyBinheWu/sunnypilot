@@ -24,6 +24,15 @@ def test_status_uses_fresh_active_planner_and_control_messages():
   assert read() == {"profile": "upstream", "speed": "e2e", "steering": "model+limit"}
   sm["carControl"].longActive = False
   assert read()["speed"] == "inactive"
+  sm["longitudinalPlan"].speedConstraint = "stockLong"
+  assert read()["speed"] == "stockLong"
+  sm["longitudinalPlan"].speedConstraint = "e2e"
+  sm["carState"] = SimpleNamespace(vCruise=110.)
+  sm.valid["carState"] = True
+  sm.logMonoTime["carState"] = time.monotonic_ns()
+  assert read()["cruiseCeilingKph"] == 110.
+  sm["carState"].vCruise = 255.
+  assert "cruiseCeilingKph" not in read()
   sm.logMonoTime["carControl"] = 0
   assert "speed" not in read()
   sm.logMonoTime = dict.fromkeys(sm, 0)

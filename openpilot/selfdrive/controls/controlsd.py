@@ -60,6 +60,7 @@ def lateral_control_allowed(selfdrive_active: bool, always_lateral: bool, lat_en
 class Controls:
   def __init__(self) -> None:
     self.params = Params()
+    self.vision_profile_requested = self.params.get_int("DrivingPlannerMode") == 2
     self.hkg_phase1_enabled = False
     cloudlog.info("controlsd is waiting for CarParams")
     self.CP = messaging.log_from_bytes(self.params.get("CarParams", block=True), car.CarParams)
@@ -167,6 +168,11 @@ class Controls:
     # Wait only for the first readiness confirmation, including AlwaysLateral.
     CC.latActive = CC.latActive and lateral_ready
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
+    if self.vision_profile_requested or long_plan.plannerProfile == 'visionE2e':
+      fresh_plan = (long_plan.plannerProfile == 'visionE2e' and self.sm.all_checks(['longitudinalPlan', 'modelV2'])
+                    and 0 <= time.monotonic() - self.sm.recv_time['longitudinalPlan'] <= .25)
+      CC.latActive &= fresh_plan and math.isfinite(model_v2.action.desiredCurvature)
+      CC.longActive &= fresh_plan and math.isfinite(long_plan.aTarget)
     inhibit_faulted_controls(CC, self.sm['onroadEvents'])
 
     # AlwaysLateral must also stop while manager drains workers for this reboot.
@@ -188,7 +194,9 @@ class Controls:
     # accel PID loop
     pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, CS.vCruise * CV.KPH_TO_MS)
     t_since_plan = (self.sm.frame - self.sm.recv_frame['longitudinalPlan']) * DT_CTRL
-    accel, aTarget, jerk = self.LoC.update(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan, self.sm['radarState'])
+    vision_only = long_plan.plannerProfile == 'visionE2e'
+    control_leads = long_plan.cameraLeadState if vision_only else self.sm['radarState']
+    accel, aTarget, jerk = self.LoC.update(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan, control_leads)
     actuators.longControlState = self.LoC.long_control_state
     actuators.accel = float(accel)
     actuators.aTarget = float(aTarget)
@@ -197,7 +205,7 @@ class Controls:
     # Steering PID loop and lateral MPC
     lat_plan = self.sm['lateralPlan']
     curve_speed_abs = abs(self.sm['carrotMan'].vTurnSpeed)
-    upstream = long_plan.plannerProfile == 'upstream'
+    upstream = vision_only or long_plan.plannerProfile == 'upstream'
     self.lanefull_mode_enabled = (not upstream and lat_plan.useLaneLines and curve_speed_abs > self.params.get_int("UseLaneLineCurveSpeed"))
     if CC.latActive and len(lat_plan.curvatures) > 0 and (lat_plan.useLaneLines if self.is_vw_meb else self.lanefull_mode_enabled):
       lat_smooth_seconds = self.params.get_float("LatSmoothSec") * 0.01
@@ -381,7 +389,11 @@ class Controls:
       hudControl.naviEventSpeed = navi_event_speed
 
     lp = self.sm['longitudinalPlan']
-    if self.CP.pcmCruise:
+    if lp.plannerProfile == 'visionE2e':
+      hudControl.setSpeed = float(CS.vCruiseCluster * CV.KPH_TO_MS)
+      if self.CP.openpilotLongitudinalControl:
+        CC.cruiseControl.resume = bool(CC.longActive and CS.cruiseState.standstill and not lp.shouldStop and lp.aTarget > 0)
+    elif self.CP.pcmCruise:
       speed_from_pcm = self.params.get_int("SpeedFromPCM")
       if speed_from_pcm == 1: #toyota
         hudControl.setSpeed = float(CS.vCruiseCluster * CV.KPH_TO_MS)
@@ -401,7 +413,7 @@ class Controls:
     hudControl.driverMonitoringAlert = driver_monitoring_hud_alert(self.sm)
 
     radarState = self.sm['radarState']
-    leadOne = radarState.leadOne
+    leadOne = lp.cameraLeadState.leadOne if lp.plannerProfile == 'visionE2e' else radarState.leadOne
     hudControl.leadDistance = leadOne.dRel if leadOne.status else 0
     hudControl.leadRelSpeed = leadOne.vRel if leadOne.status else 0
     hudControl.leadRadar = 1 if leadOne.radar else 0

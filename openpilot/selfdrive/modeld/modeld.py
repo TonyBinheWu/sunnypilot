@@ -418,6 +418,9 @@ def main(demo=False):
 
   from opendbc.car.tesla.values import TeslaFlags
   from openpilot.selfdrive.car.voice_indicator import native_indicator
+  # The camera-only profile leaves lane changes to the driver. A neutral
+  # desire prevents radar-assisted maneuvers from feeding the next model frame.
+  vision_only = params.get_int("DrivingPlannerMode") == 2
   DH = DesireHelper(fingerprint=CP.carFingerprint, native_voice_signal=native_indicator(CP) is not None,
                     tesla_auto_signals=CP.brand == "tesla" and bool(CP.flags & TeslaFlags.AUTO_TURN_SIGNALS),
                     boundary_indicator_supported=CP.carFingerprint == 'HYUNDAI_IONIQ_5_PE')
@@ -601,12 +604,13 @@ def main(demo=False):
           time.clock_gettime_ns(getattr(time, "CLOCK_BOOTTIME", time.CLOCK_MONOTONIC)),
           not sm['carControl'].latActive and params.get_bool("AlwaysLateral"))
         turn_hold_allowed &= indicator_valid
-      DH.update(sm['carState'], modelv2_send.modelV2, sm['carControl'].latActive, lane_change_prob, sm['carrotMan'], sm['radarState'],
-                indicator_valid=indicator_valid, indicator_curvature=sm['carControl'].actuators.curvature,
-                indicator_yaw_rate=indicator_yaw_rate,
-                assistant_valid=indicator_valid and sm.valid['radarState'] and sm.alive['radarState'] and
-                0 <= indicator_now-sm.recv_time['radarState'] < .35,
-                turn_hold_allowed=turn_hold_allowed, turn_pose=turn_pose)
+      if not vision_only:
+        DH.update(sm['carState'], modelv2_send.modelV2, sm['carControl'].latActive, lane_change_prob, sm['carrotMan'], sm['radarState'],
+                  indicator_valid=indicator_valid, indicator_curvature=sm['carControl'].actuators.curvature,
+                  indicator_yaw_rate=indicator_yaw_rate,
+                  assistant_valid=indicator_valid and sm.valid['radarState'] and sm.alive['radarState'] and
+                  0 <= indicator_now-sm.recv_time['radarState'] < .35,
+                  turn_hold_allowed=turn_hold_allowed, turn_pose=turn_pose)
       modelv2_send.modelV2.meta.laneChangeState = DH.lane_change_state
       modelv2_send.modelV2.meta.laneChangeDirection = DH.lane_change_direction
       modelv2_send.modelV2.meta.desireLog = DH.desireLog #carrot

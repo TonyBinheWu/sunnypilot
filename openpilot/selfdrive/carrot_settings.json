@@ -3899,28 +3899,32 @@
       "cdescr": "下次行程生效。",
       "tgroup": "跟車距離",
       "ttitle": "駕駛規劃器",
-      "tdescr": "下次行程生效。上游模式使用視覺、跟車與巡航上限決定加速度，並跟隨模型轉向。",
+      "tdescr": "下次行程生效。上游模式使用視覺、跟車與巡航上限決定加速度，並跟隨模型轉向。純視覺模式以鏡頭模型和視覺前車規劃，保留巡航上限；使用原廠巡航時僅提供視覺橫向。",
       "min": 0,
-      "max": 1,
+      "max": 2,
       "default": 0,
       "unit": 1,
       "control": "select",
       "options": {
         "ko": [
           "CarrotPlanner",
-          "openpilot Autospeed"
+          "openpilot Autospeed",
+          "순수 비전 E2E (실험)"
         ],
         "en": [
           "CarrotPlanner",
-          "openpilot Autospeed"
+          "openpilot Autospeed",
+          "Vision-only E2E (experimental)"
         ],
         "zh": [
           "CarrotPlanner",
-          "openpilot Autospeed"
+          "openpilot Autospeed",
+          "纯视觉端到端（实验）"
         ],
         "zh-tw": [
           "CarrotPlanner",
-          "openpilot Autospeed"
+          "openpilot Autospeed",
+          "純視覺端到端（實驗）"
         ]
       }
     },

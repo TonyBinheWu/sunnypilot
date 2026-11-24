@@ -103,7 +103,7 @@ async def planner_status(request: web.Request) -> web.Response:
 
   state = request.app["planner_status_reader"]
   if not state:
-    state["sm"] = messaging.SubMaster(["longitudinalPlan", "controlsState", "carControl"])
+    state["sm"] = messaging.SubMaster(["longitudinalPlan", "controlsState", "carControl", "carState"])
   sm = state["sm"]
   sm.update(0)
   now = time.monotonic()
@@ -111,8 +111,15 @@ async def planner_status(request: web.Request) -> web.Response:
   if fresh(sm, "longitudinalPlan", .5, now):
     plan = sm["longitudinalPlan"]
     result["profile"] = plan.plannerProfile
-    if fresh(sm, "carControl", .5, now):
+    if plan.speedConstraint == "stockLong":
+      result["speed"] = "stockLong"
+    elif fresh(sm, "carControl", .5, now):
       result["speed"] = plan.speedConstraint if sm["carControl"].longActive else "inactive"
+  if fresh(sm, "carState", .5, now):
+    from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
+    ceiling = sm["carState"].vCruise
+    if 0 < ceiling < V_CRUISE_UNSET:
+      result["cruiseCeilingKph"] = round(min(ceiling, V_CRUISE_MAX), 1) if result.get("profile") in ("visionE2e", "upstream") else round(ceiling, 1)
   if fresh(sm, "controlsState", .5, now):
     result["steering"] = sm["controlsState"].steeringInfluence
   return web.json_response(result, headers={"Cache-Control": "no-store"})

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import math
 import numpy as np
 
 import openpilot.cereal.messaging as messaging
@@ -46,8 +47,35 @@ def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt):
   return target_accel
 
 
+def camera_leads(model, v_ego):
+  """Build the MPC's two lead observations from the current camera frame."""
+  state = log.RadarState.new_message()
+  if not model.velocity.x or not math.isfinite(model.velocity.x[0]):
+    return state
+  for i, observation in enumerate(model.leadsV3):
+    if i >= 2:
+      break
+    if not all((observation.x, observation.y, observation.v, observation.a)):
+      continue
+    x, y, v, a = (values[0] for values in (observation.x, observation.y, observation.v, observation.a))
+    if not all(map(math.isfinite, (x, y, v, a, observation.prob, v_ego))) or observation.prob <= .5 or x <= 1.52:
+      continue
+    lead = state.leadOne if i == 0 else state.leadTwo
+    lead.status = True
+    lead.modelProb = observation.prob
+    lead.dRel = x - 1.52  # camera-to-bumper offset used by upstream RadarD
+    lead.yRel = -y
+    lead.vRel = v - model.velocity.x[0]
+    lead.vLead = lead.vLeadK = v_ego + lead.vRel
+    lead.aLeadK = a
+    lead.aLeadTau = .3
+    lead.radarTrackId = -1
+  return state
+
+
 class LongitudinalPlanner:
-  def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
+  def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL, *, vision_only=False):
+    self.vision_only = vision_only
     self.CP = CP
     self.mpc = LongitudinalMpc(dt=dt)
     self.fcw = False
@@ -65,6 +93,13 @@ class LongitudinalPlanner:
 
   def update(self, sm):
     v_ego = sm['carState'].vEgo
+    if self.vision_only:
+      model = sm['modelV2']
+      self.camera_input_valid = sm.all_checks(['modelV2', 'carState', 'liveParameters']) and all(map(math.isfinite, (
+        v_ego, sm['carState'].aEgo, sm['liveParameters'].roll, model.action.desiredAcceleration,
+        model.action.desiredCurvature)))
+      if not self.camera_input_valid:
+        return
     personality = sm['selfdriveState'].personality.raw
     if personality == log.LongitudinalPersonality.moreRelaxed:
       personality = log.LongitudinalPersonality.relaxed
@@ -99,7 +134,8 @@ class LongitudinalPlanner:
       self.mpc.set_cur_state(self.v_desired_filter.x, self.output_a_target)
     else:
       self.mpc.set_cur_state(v_ego, sm['carState'].aEgo)
-    self.mpc.update(sm['radarState'], personality=personality)
+    self.leads = camera_leads(sm['modelV2'], v_ego) if self.vision_only else sm['radarState']
+    self.mpc.update(self.leads, personality=personality)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
@@ -139,9 +175,11 @@ class LongitudinalPlanner:
     elif self.mpc.source == LongitudinalPlanSource.e2e and curve_offset < 0:
       self.speed_reason = 'e2eCurve'
     elif self.speed_reason in ('lead0', 'lead1'):
-      lead = sm['radarState'].leadOne if self.speed_reason == 'lead0' else sm['radarState'].leadTwo
+      lead = self.leads.leadOne if self.speed_reason == 'lead0' else self.leads.leadTwo
       if not lead.status:
         self.speed_reason = 'mpc'
+      elif self.vision_only:
+        self.speed_reason = 'visionLead'
     self.output_should_stop = any(should_stop for _, _, should_stop in candidates)
     self.output_a_target = np.clip(output_a_target, ACCEL_MIN, ACCEL_MAX)
 
@@ -150,7 +188,15 @@ class LongitudinalPlanner:
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
 
-    plan_send.valid = sm.all_checks(['carState', 'controlsState', 'selfdriveState', 'modelV2', 'radarState', 'liveParameters'])
+    if self.vision_only and not self.camera_input_valid:
+      plan_send.valid = False
+      plan_send.longitudinalPlan.plannerProfile = 'visionE2e'
+      pm.send('longitudinalPlan', plan_send)
+      return
+    required = ['carState', 'controlsState', 'selfdriveState', 'modelV2', 'liveParameters']
+    if not self.vision_only:
+      required.append('radarState')
+    plan_send.valid = sm.all_checks(required)
 
     longitudinalPlan = plan_send.longitudinalPlan
     longitudinalPlan.modelMonoTime = sm.logMonoTime['modelV2']
@@ -161,7 +207,9 @@ class LongitudinalPlanner:
     longitudinalPlan.accels = self.a_desired_trajectory.tolist()
     longitudinalPlan.jerks = self.j_desired_trajectory.tolist()
 
-    longitudinalPlan.hasLead = sm['radarState'].leadOne.status
+    longitudinalPlan.hasLead = self.leads.leadOne.status
+    if self.vision_only:
+      longitudinalPlan.cameraLeadState = self.leads
     longitudinalPlan.longitudinalPlanSource = self.mpc.source
     longitudinalPlan.fcw = self.fcw
 
@@ -169,8 +217,8 @@ class LongitudinalPlanner:
     longitudinalPlan.shouldStop = bool(self.output_should_stop)
     longitudinalPlan.allowBrake = True
 
-    longitudinalPlan.plannerProfile = 'upstream'
-    longitudinalPlan.speedConstraint = self.speed_reason
+    longitudinalPlan.plannerProfile = 'visionE2e' if self.vision_only else 'upstream'
+    longitudinalPlan.speedConstraint = self.speed_reason if self.CP.openpilotLongitudinalControl else 'stockLong'
     longitudinalPlan.allowThrottle = True
     longitudinalPlan.vTargetNow = float(max(0., sm['carState'].vEgo + self.output_a_target * self.dt))
     longitudinalPlan.jTargetNow = float(self.j_desired_trajectory[0])

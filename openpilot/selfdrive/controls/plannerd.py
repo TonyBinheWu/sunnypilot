@@ -23,9 +23,10 @@ LIVE_TRACKS_FALLBACK_TIMEOUT_S = 0.10
 MIN_LONGITUDINAL_PLAN_INTERVAL_NS = 25_000_000
 
 
-def make_longitudinal_planner(CP, upstream):
-  if upstream:
+def make_longitudinal_planner(CP, mode):
+  if mode in (1, 2):
     from openpilot.selfdrive.controls.lib.upstream_planner import LongitudinalPlanner
+    return LongitudinalPlanner(CP, vision_only=mode == 2)
   else:
     from openpilot.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlanner
   return LongitudinalPlanner(CP)
@@ -50,11 +51,12 @@ def main():
     CP.radarUnavailable,
     params.get_int("EnableRadarTracks"),
   )
-  upstream = params.get_int("DrivingPlannerMode") == 1
+  mode = params.get_int("DrivingPlannerMode")
+  upstream = mode in (1, 2)
   live_tracks_longitudinal = not upstream and CP.brand == "hyundai" and radar_track_mode >= 1
 
   ldw = LaneDepartureWarning()
-  longitudinal_planner = make_longitudinal_planner(CP, upstream)
+  longitudinal_planner = make_longitudinal_planner(CP, mode)
   lateral_planner = LateralPlanner(CP, debug=False)
   fast_radar = FastRadarOverlay(
     front_radar_delay_s=front_radar_distance_delay_s(CP),
@@ -81,7 +83,7 @@ def main():
     loop_start, cpu_start = time.monotonic(), time.thread_time()
     timings = {'poll_ms': (loop_start - wait_start) * 1000}
 
-    if sm.updated['radarState']:
+    if not upstream and sm.updated['radarState']:
       fast_radar.observe_radar_state(
         sm['radarState'],
         sm.logMonoTime['radarState'],

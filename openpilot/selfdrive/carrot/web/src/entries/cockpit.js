@@ -394,7 +394,7 @@ function render(){
   const controlLabels=assistStates(t);
   const controlSignature=controlLabels.map(item=>item.state).join(':');
   for(const id of ['assist','visionAssist']){const node=$(id);if(node.dataset.controlSignature===controlSignature)continue;node.dataset.controlSignature=controlSignature;node.replaceChildren(...controlLabels.map(item=>{const span=document.createElement('span');span.className='assist-axis';span.dataset.state=item.state;span.textContent=`${item.axis}：${item.text}`;return span;}));node.setAttribute('aria-label',controlLabels.map(item=>`${item.axis}：${item.text}`).join('；'));}
-  $('visionGear').textContent=$('gear').textContent;$('visionSpeed').textContent=$('speed').textContent;$('visionLimit').textContent=$('limit').textContent;$('visionSetSpeed').textContent=$('setSpeed').textContent;$('compactSpeed').textContent=`${t.speed??'—'} km/h · ${$('gear').textContent}`;
+  $('visionGear').textContent=$('gear').textContent;$('visionSpeed').textContent=$('speed').textContent;$('visionLimit').textContent=$('limit').textContent;$('compactSpeed').textContent=`${t.speed??'—'} km/h · ${$('gear').textContent}`;
   const connection = $('connection');
   const phase = t.gear ? 'connected' : transportPhase === 'connected' ? 'waiting' : transportPhase;
   const message = {connected:'車機已連線', waiting:'已連線 · 車況待更新', retrying:'正在重新連線', connecting:'正在連線'}[phase] || '正在連線';

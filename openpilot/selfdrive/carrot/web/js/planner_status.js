@@ -2,6 +2,7 @@
 {
   const dialog = document.getElementById('vehicleDetails');
   const labels = {
+    visionE2e: '純視覺端到端（實驗）', visionLead: '鏡頭辨識前車', stockLong: '原廠巡航控制加減速',
     carrot: 'CarrotPlanner', upstream: 'openpilot Autospeed', inactive: '控制未介入',
     mpc: '縱向 MPC', lead0: '第一跟車目標', lead1: '第二跟車目標', lead2: '第三跟車目標', cruise: '巡航設定',
     e2e: '視覺模型', model: '模型曲率', e2eCurve: '視覺模型與彎道減速',
@@ -23,6 +24,9 @@
   }
   let timer, generation = 0;
   function render(state) {
+    const ceiling = state.cruiseCeilingKph;
+    document.getElementById('plannerCeiling').textContent = Number.isFinite(ceiling) ? ceiling + ' km/h' : '—';
+    document.getElementById('visionSetSpeed').textContent = Number.isFinite(ceiling) ? ceiling : '—';
     for (const [id, key] of [['plannerProfile', 'profile'], ['speedConstraint', 'speed'], ['steeringInfluence', 'steering']]) {
       document.getElementById(id).textContent = describe(state[key]);
     }
@@ -41,8 +45,10 @@
     clearTimeout(timer);
     generation++;
     render({});
-    if (dialog.open && !document.hidden) poll(generation);
+    if ((dialog.open || document.body.dataset.panel === 'vision') && !document.hidden) poll(generation);
   }
   new MutationObserver(refresh).observe(dialog, {attributes: true, attributeFilter: ['open']});
+  new MutationObserver(refresh).observe(document.body, {attributes: true, attributeFilter: ['data-panel']});
   document.addEventListener('visibilitychange', refresh);
+  refresh();
 }
