@@ -91,16 +91,24 @@ class UsbGpuLayoutMici(NavScroller):
     compile_button.set_enabled(lambda: not ui_state.started)
     compile_button.set_click_callback(self._force_compile)
     self.choices = ModelChoices(ui_state.is_offroad)
+    self.group_button = BigButton(tr("Model list"), self.choices.group_text(), scroll=True)
+    self.group_button.set_click_callback(self.choices.next_group)
+    self.role = BigButton(tr("eGPU role after reboot"), self.choices.aux_text(), scroll=True)
+    self.role.set_enabled(ui_state.is_offroad)
+    self.role.set_click_callback(self.choices.toggle_aux)
     self.model_buttons = []
     for big, key, name in self.choices.items:
       button = BigButton(name, "", scroll=True)
+      button.set_visible(lambda b=big, k=key: self.choices.includes(b,k))
       button.set_enabled(lambda: ui_state.is_offroad() and not self.choices.busy)
       button.set_click_callback(lambda b=big, k=key: self.choices.choose(b, k))
       self.model_buttons.append((button, big, key))
-    self._scroller.add_widgets([*(b for b, _, _ in self.model_buttons), UsbGpuInfoLayout(), CheckUsbGpuButton(), compile_button])
+    self._scroller.add_widgets([self.group_button, self.role, *(b for b, _, _ in self.model_buttons), UsbGpuInfoLayout(), CheckUsbGpuButton(), compile_button])
 
   def _update_state(self):
     super()._update_state()
+    self.group_button.set_value(self.choices.group_text())
+    self.role.set_value(self.choices.aux_text())
     for button, big, key in self.model_buttons:
       button.set_value((tr("External") if big else tr("Internal")) + " · " + self.choices.status(big, key))
 

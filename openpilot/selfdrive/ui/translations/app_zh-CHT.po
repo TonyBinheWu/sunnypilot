@@ -2659,3 +2659,42 @@ msgstr "公車"
 
 msgid "truck"
 msgstr "卡車"
+
+msgid "eGPU role after reboot"
+msgstr "重新開機後的 eGPU 用途"
+
+msgid "Primary model"
+msgstr "主駕駛模型"
+
+msgid "Auxiliary braking"
+msgstr "輔助減速推理"
+
+msgid "Auxiliary mode runs a second driving model on the eGPU."
+msgstr "由 eGPU 同時執行第二個駕駛模型，輔助主模型判斷減速。"
+
+msgid "Load failed"
+msgstr "載入失敗"
+
+msgid "Junction map"
+msgstr "路口圖資"
+
+msgid "Image only"
+msgstr "僅影像辨識"
+
+msgid "All models"
+msgstr "全部模型"
+
+msgid "Model list"
+msgstr "模型清單"
+
+msgid "sunnypilot small models"
+msgstr "sunnypilot 小模型"
+
+msgid "sunnypilot large models"
+msgstr "sunnypilot 大模型"
+
+msgid "Warming up"
+msgstr "累積連續影格"
+
+msgid "Late"
+msgstr "推理逾時"

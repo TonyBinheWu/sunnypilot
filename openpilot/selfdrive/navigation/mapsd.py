@@ -5,6 +5,7 @@ import time
 
 import numpy as np
 
+from openpilot.common.sunny_models import auxiliary_map_demand
 from openpilot.selfdrive.navigation.helpers import ParkedPosition
 from openpilot.selfdrive.navigation.jetlink_demand import jetlink_map_demand
 from openpilot.selfdrive.navigation.pmtiles import PMTiles
@@ -76,7 +77,7 @@ def main():
         next_view = now + 1.
       # Navigation without usable position/instruction immediately publishes black.
       if now >= demand_checked:
-        demand = (params.get_bool('UsbGpuActive') or jetlink_map_demand(now=now) or
+        demand = (params.get_bool('UsbGpuActive') or jetlink_map_demand(now=now) or auxiliary_map_demand(now) or
                   params.get_int('ClusterHudScreenMode') == 7 or preview_fresh(WEB_DEMAND_PATH))
         token = os.environ.get('MAPBOX_TOKEN') or params.get('MapboxPublicKey') or ''
         if isinstance(token, bytes):

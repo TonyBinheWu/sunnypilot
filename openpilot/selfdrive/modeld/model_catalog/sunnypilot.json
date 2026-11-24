@@ -1,0 +1,1354 @@
+{
+  "sunny-25-0-4327cf3a26": {
+    "name": "LAv2 (January 24, 2024)",
+    "big": false,
+    "generation": 4,
+    "twenty": false,
+    "overrides": {
+      "folder": "Legacy Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "4327cf3a26920bba2f33a5745e98f3895ffa7a33e7b9f02dbb25cc28dd2ce6a7",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-LAv2%20%28January%2024%2C%202024%29-142/driving_lav2_january_24_2024_tinygrad.pkl"
+  },
+  "sunny-25-1-6f24f1fc8b": {
+    "name": "Certified Herbalist v2 (February 19, 2024)",
+    "big": false,
+    "generation": 3,
+    "twenty": false,
+    "overrides": {
+      "folder": "Legacy Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "6f24f1fc8bca3c50cb8f4d8b7d8dee9f4504399cb83224e79b504d2b9763bf0d",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Certified%20Herbalist%20v2%20%28February%2019%2C%202024%29-142/driving_certified_herbalist_v2_february_19_2024_tinygrad.pkl"
+  },
+  "sunny-25-2-895b5d25d3": {
+    "name": "Recertified Herbalist (March 01, 2024)",
+    "big": false,
+    "generation": 3,
+    "twenty": false,
+    "overrides": {
+      "folder": "Legacy Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "895b5d25d32e53d4ba6484b9b62aafb937d6d34a5cb3dc94b3ee6de02149da1a",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Recertified%20Herbalist%20%28March%2001%2C%202024%29-142/driving_recertified_herbalist_march_01_2024_tinygrad.pkl"
+  },
+  "sunny-25-3-aeee45427a": {
+    "name": "Duck Amigo (March 18, 2024)",
+    "big": false,
+    "generation": 3,
+    "twenty": false,
+    "overrides": {
+      "folder": "Legacy Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "aeee45427a51aefda5718e3dda30751b742e3c679867446a6d57d983846f62cd",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Duck%20Amigo%20%28March%2018%2C%202024%29-142/driving_duck_amigo_march_18_2024_tinygrad.pkl"
+  },
+  "sunny-25-4-7a308ae36c": {
+    "name": "WD40 (April 09, 2024)",
+    "big": false,
+    "generation": 4,
+    "twenty": false,
+    "overrides": {
+      "folder": "Legacy Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "7a308ae36cb446cfd52a7cabb55acbf8ba0fe81a4579a9b67b8e208a6fd31c1d",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-WD40%20%28April%2009%2C%202024%29-142/driving_wd40_april_09_2024_tinygrad.pkl"
+  },
+  "sunny-25-5-30a7a3a506": {
+    "name": "North Dakota v2 (April 29, 2024)",
+    "big": false,
+    "generation": 4,
+    "twenty": false,
+    "overrides": {
+      "folder": "Legacy Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "30a7a3a50647e182fa020ea3ec48b507c89a2b7fa81ba8c460fdb88ff71fef1b",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-North%20Dakota%20v2%20%28April%2029%2C%202024%29-142/driving_north_dakota_v2_april_29_2024_tinygrad.pkl"
+  },
+  "sunny-25-6-6071de64d5": {
+    "name": "Notre Dame (July 01, 2024)",
+    "big": false,
+    "generation": 5,
+    "twenty": false,
+    "overrides": {
+      "folder": "Legacy Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "6071de64d5847da99fac4bf05fc3da6cd31d9884e5b233b82b9a3f3dfcb52676",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Notre%20Dame%20%28July%2001%2C%202024%29-142/driving_notre_dame_july_01_2024_tinygrad.pkl"
+  },
+  "sunny-25-7-6261301614": {
+    "name": "Filet o Fish (March 07, 2025)",
+    "big": false,
+    "generation": 10,
+    "twenty": true,
+    "overrides": {
+      "folder": "Release Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "626130161476a71de59a435546710e1ee8527a9c99f299a4b947a3e24bbd7001",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Filet%20o%20Fish%20%28March%2007%2C%202025%29-142/driving_filet_o_fish_march_07_2025_tinygrad.pkl"
+  },
+  "sunny-25-8-94e0ec51f7": {
+    "name": "SP Vikander Model (May 03, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "Custom Merge Models",
+      "lat": ".2",
+      "long": ".3"
+    },
+    "sha256": "94e0ec51f7026d649e821cb5b7182fa7e17273208305d91b4717cf2b9c8939b3",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-SP%20Vikander%20Model%20%28May%2003%2C%202025%29-142/driving_sp_vikander_model_may_03_2025_tinygrad.pkl"
+  },
+  "sunny-25-9-5717d1bdd9": {
+    "name": "Tomb Raider 7 (May 07, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "5717d1bdd9e9a2a4a4f57a456aaeda3240bfb618344f8100521c09fd075401fb",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Tomb%20Raider%207%20%28May%2007%2C%202025%29-142/driving_tomb_raider_7_may_07_2025_tinygrad.pkl"
+  },
+  "sunny-25-10-a23a76bf8f": {
+    "name": "Secret Good Openpilot (May 16, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "a23a76bf8f87cc694484b91b899cd0d0696fdab3a892ecd5b4006b084e49e1eb",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Secret%20Good%20Openpilot%20%28May%2016%2C%202025%29-142/driving_secret_good_openpilot_may_16_2025_tinygrad.pkl"
+  },
+  "sunny-25-11-cafce7e573": {
+    "name": "Kerrygold Driving (June 08, 2025)",
+    "big": false,
+    "generation": 10,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "cafce7e573b1c3aeca49db4fc667f06892f6473cb660ba806a4b55028d7c5d95",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Kerrygold%20Driving%20%28June%2008%2C%202025%29-142/driving_kerrygold_driving_june_08_2025_tinygrad.pkl"
+  },
+  "sunny-25-12-ec5dc1ce32": {
+    "name": "Liquid Crystal Driving (June 21, 2025)",
+    "big": false,
+    "generation": 10,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "ec5dc1ce32987c73f9464748a337224d154c4015194a1cec38ea2d964a899974",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Liquid%20Crystal%20Driving%20%28June%2021%2C%202025%29-142/driving_liquid_crystal_driving_june_21_2025_tinygrad.pkl"
+  },
+  "sunny-25-13-6c78a819eb": {
+    "name": "Vegetarian Filet o Fish (June 21, 2025)",
+    "big": false,
+    "generation": 10,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".0",
+      "long": ".0"
+    },
+    "sha256": "6c78a819eb412c22164aa3c5626eae167bbc9b8ed6d7eb5765be76d701a6e01a",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Vegetarian%20Filet%20o%20Fish%20%28June%2021%2C%202025%29-142/driving_vegetarian_filet_o_fish_june_21_2025_tinygrad.pkl"
+  },
+  "sunny-25-14-f3cb22a10f": {
+    "name": "Tomb Raider 13 (June 27, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "f3cb22a10f28496a942f743cdbcc97ffa283842e4fc03947023617e59d62c996",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Tomb%20Raider%2013%20%28June%2027%2C%202025%29-142/driving_tomb_raider_13_june_27_2025_tinygrad.pkl"
+  },
+  "sunny-25-15-e43495770c": {
+    "name": "Aggressive TR (June 28, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "e43495770c7c7917645aa194bc3da5b44a40c47902d6f85b4c5e71ac957f6649",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Aggressive%20TR%20%28June%2028%2C%202025%29-142/driving_aggressive_tr_june_28_2025_tinygrad.pkl"
+  },
+  "sunny-25-16-5dac4484da": {
+    "name": "Tomb Raider 14 (June 30, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "5dac4484da791f6d018ec1ed52fb10ef10885a83e9dd9a518dd4ae001b0a6424",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Tomb%20Raider%2014%20%28June%2030%2C%202025%29-142/driving_tomb_raider_14_june_30_2025_tinygrad.pkl"
+  },
+  "sunny-25-17-ab235c4a66": {
+    "name": "Simple Plan Driving (July 07, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "ab235c4a66c4993a846904d31c7d3f28a0dfb69192eb6451721fac5fc44783d1",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Simple%20Plan%20Driving%20%28July%2007%2C%202025%29-142/driving_simple_plan_driving_july_07_2025_tinygrad.pkl"
+  },
+  "sunny-25-18-f7c0167729": {
+    "name": "Down to Ride v5 (July 08, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "f7c0167729c3f8f1b77a64fc302a24eb011075f61489afc7bea3c9f196e3eb1e",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Down%20to%20Ride%20v5%20%28July%2008%2C%202025%29-142/driving_down_to_ride_v5_july_08_2025_tinygrad.pkl"
+  },
+  "sunny-25-19-123d9787ab": {
+    "name": "Tomb Raider 15 (July 11, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "123d9787ab2a852b9d259a5c5069adaadcb4cd8849ef0f460f81b70571667721",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Tomb%20Raider%2015%20%28July%2011%2C%202025%29-142/driving_tomb_raider_15_july_11_2025_tinygrad.pkl"
+  },
+  "sunny-25-20-111106df40": {
+    "name": "Le Tomb Raider 14 (July 14, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "111106df4037cddb1339e12baf185e8fbab8b2e5dbce760bd858d448953fb5b4",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Le%20Tomb%20Raider%2014%20%28July%2014%2C%202025%29-142/driving_le_tomb_raider_14_july_14_2025_tinygrad.pkl"
+  },
+  "sunny-25-21-9483920fef": {
+    "name": "Tomb Raider 16 (July 21, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 Pre World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "9483920fefdf8994b40e392ad13883fd257bc0b7fe1feaffa7d515c834d41e35",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Tomb%20Raider%2016%20%28July%2021%2C%202025%29-142/driving_tomb_raider_16_july_21_2025_tinygrad.pkl"
+  },
+  "sunny-25-22-385faef1e4": {
+    "name": "Space Lab 2 (July 26, 2025)",
+    "big": false,
+    "generation": 11,
+    "twenty": true,
+    "overrides": {
+      "folder": "Release Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "385faef1e43537bb39fc7d880ebd469747841968b280e3cbb1a728edf64e624e",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Space%20Lab%202%20%28July%2026%2C%202025%29-142/driving_space_lab_2_july_26_2025_tinygrad.pkl"
+  },
+  "sunny-25-23-19fb4cb723": {
+    "name": "Space Lab 3 (August 08, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "19fb4cb7238bb98c5262c71f62b968cac34b4bc7632c4502d027ecf6511b3711",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Space%20Lab%203%20%28August%2008%2C%202025%29-142/driving_space_lab_3_august_08_2025_tinygrad.pkl"
+  },
+  "sunny-25-24-99a0247ad4": {
+    "name": "Down to Ride v6 (August 12, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "99a0247ad486582abf667919d52ca3a52c2bcc48d7f843ca6897eba95e196874",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Down%20to%20Ride%20v6%20%28August%2012%2C%202025%29-142/driving_down_to_ride_v6_august_12_2025_tinygrad.pkl"
+  },
+  "sunny-25-25-f4a7921f8e": {
+    "name": "UV + DTR Model (August 13, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "f4a7921f8e4e06f087561db7ebf6422dfe3e6cc04dba44b925e9c6bcf4434289",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-UV%20%2B%20DTR%20Model%20%28August%2013%2C%202025%29-142/driving_uv_dtr_model_august_13_2025_tinygrad.pkl"
+  },
+  "sunny-25-26-e1af76052f": {
+    "name": "Steam Powered Model (August 16, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "e1af76052facf482e85c49d5dfee9fff49030e72600d80d4d32d0b33a8a2558a",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Steam%20Powered%20Model%20%28August%2016%2C%202025%29-142/driving_steam_powered_model_august_16_2025_tinygrad.pkl"
+  },
+  "sunny-25-27-e22932390b": {
+    "name": "gWM Model v3 (August 22, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "e22932390b035a75d50d81ab6d7b928ed74960e52aabde95255e57d042c2ae79",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-gWM%20Model%20v3%20%28August%2022%2C%202025%29-142/driving_gwm_model_v3_august_22_2025_tinygrad.pkl"
+  },
+  "sunny-25-28-4d24477e2a": {
+    "name": "Firehose Model (August 31, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "4d24477e2afd5ca3fdd2f83dc02183be2902b817766e4ff13d5ea8b9e5b60af3",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Firehose%20Model%20%28August%2031%2C%202025%29-142/driving_firehose_model_august_31_2025_tinygrad.pkl"
+  },
+  "sunny-25-29-e40d2c8059": {
+    "name": "Fly By Wire (September 04, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "e40d2c805945ca9a937f67a186a87a1c47a7ddcd3d322f2ae6ad659283506ec5",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Fly%20By%20Wire%20%28September%2004%2C%202025%29-142/driving_fly_by_wire_september_04_2025_tinygrad.pkl"
+  },
+  "sunny-25-30-4fbb879621": {
+    "name": "Nevada Model (September 07, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "4fbb87962198a832d3990942139c0f3920b1e7992ea11640a858251a1874344e",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Nevada%20Model%20%28September%2007%2C%202025%29-142/driving_nevada_model_september_07_2025_tinygrad.pkl"
+  },
+  "sunny-25-31-7da23912b3": {
+    "name": "gWM v5 (September 09, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "7da23912b3ff1aa86067eb818b10be50f895243d39a25ffc64f41fc0f3b93a88",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-gWM%20v5%20%28September%2009%2C%202025%29-142/driving_gwm_v5_september_09_2025_tinygrad.pkl"
+  },
+  "sunny-25-32-0c92a29041": {
+    "name": "gWM v6 (September 20, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "0c92a290413416ee99a7feb61284d0b0c4414d63738eef9191c3c55c35ed045b",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-gWM%20v6%20%28September%2020%2C%202025%29-142/driving_gwm_v6_september_20_2025_tinygrad.pkl"
+  },
+  "sunny-25-33-fb0d69b35a": {
+    "name": "gWM v8 (September 28, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "fb0d69b35a3e9edf44b55701f2c23001a7498e8acfc4dcee90dad1af7fc14905",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-gWM%20v8%20%28September%2028%2C%202025%29-142/driving_gwm_v8_september_28_2025_tinygrad.pkl"
+  },
+  "sunny-25-34-7d83051c0b": {
+    "name": "The Cool Peoples Model (October 03, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "7d83051c0b014339dd4305a3ba17f067e1d1af20d0b2ba2808de6abe6f0c4807",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-The%20Cool%20Peoples%20Model%20%28October%2003%2C%202025%29-142/driving_the_cool_peoples_model_october_03_2025_tinygrad.pkl"
+  },
+  "sunny-25-35-dcc01b9538": {
+    "name": "North Nevada Model (October 07, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "dcc01b9538cafc36a421f8dbfd5f2e397ac8ae52c498e8d52527c12b8ffff1d4",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-North%20Nevada%20Model%20%28October%2007%2C%202025%29-142/driving_north_nevada_model_october_07_2025_tinygrad.pkl"
+  },
+  "sunny-25-36-e7c0ad073e": {
+    "name": "North Nevada Model V2 (October 08, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Release Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "e7c0ad073e10f0eb73745e3f2de81851c217f0789e73176ac7d9e04f0a2a4b1a",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-North%20Nevada%20Model%20V2%20%28October%2008%2C%202025%29-142/driving_north_nevada_model_v2_october_08_2025_tinygrad.pkl"
+  },
+  "sunny-25-37-8fc3ef761f": {
+    "name": "Nuggets in Digon (October 09, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "8fc3ef761f1fae32c069524ec00eebb0d910119b9b6df762e36cfb4541d98e5d",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Nuggets%20in%20Digon%20%28October%2009%2C%202025%29-142/driving_nuggets_in_digon_october_09_2025_tinygrad.pkl"
+  },
+  "sunny-25-38-1e755b5938": {
+    "name": "The Cool Peoples Model v2 (October 09, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "1e755b593809f4bd0cd35d333ff7ee387eb475f433330883ccff3fcc54ae4414",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-The%20Cool%20Peoples%20Model%20v2%20%28October%2009%2C%202025%29-142/driving_the_cool_peoples_model_v2_october_09_2025_tinygrad.pkl"
+  },
+  "sunny-25-39-9e9b24425b": {
+    "name": "The Cool Peoples Model v3 (October 10, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Release Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "9e9b24425b55a781813269de19a8e94e5323e727adede184ec4a016460aa3057",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-The%20Cool%20Peoples%20Model%20v3%20%28October%2010%2C%202025%29-142/driving_the_cool_peoples_model_v3_october_10_2025_tinygrad.pkl"
+  },
+  "sunny-25-40-9530cb561f": {
+    "name": "GWM V9 (October 21, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "9530cb561f47a200b235f24f261c789a6a5f4a2afa6abf3cc991a87b0bb24bc4",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-GWM%20V9%20%28October%2021%2C%202025%29-142/driving_gwm_v9_october_21_2025_tinygrad.pkl"
+  },
+  "sunny-25-41-45fa385cce": {
+    "name": "Cool GWM  (October 24, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "45fa385cce40c38da128e072c87528d76c059b4c03cf79b52f9c1b8150fd25ae",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Cool%20GWM%20%20%28October%2024%2C%202025%29-142/driving_cool_gwm_october_24_2025_tinygrad.pkl"
+  },
+  "sunny-25-42-9e9b24425b": {
+    "name": "Neurips Driving Model (November 12, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "9e9b24425b55a781813269de19a8e94e5323e727adede184ec4a016460aa3057",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Neurips%20Driving%20Model%20%28November%2012%2C%202025%29-142/driving_neurips_driving_model_november_12_2025_tinygrad.pkl"
+  },
+  "sunny-25-43-9e9b24425b": {
+    "name": "Neurips Driving Model v2 (November 12, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "9e9b24425b55a781813269de19a8e94e5323e727adede184ec4a016460aa3057",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Neurips%20Driving%20Model%20v2%20%28November%2012%2C%202025%29-142/driving_neurips_driving_model_v2_november_12_2025_tinygrad.pkl"
+  },
+  "sunny-25-44-cc375d0fa9": {
+    "name": "Planplus Model (November 28, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "cc375d0fa988683757e02cc5968083fa1ea20e7bf27d74247ae904f2432cd02c",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Planplus%20Model%20%28November%2028%2C%202025%29-142/driving_planplus_model_november_28_2025_tinygrad.pkl"
+  },
+  "sunny-25-45-9e3fff315c": {
+    "name": "Dark Souls Model (December 03, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "9e3fff315c39074ad80031e88a39addacf07112d785c190e7a13b62927acddd5",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Dark%20Souls%20Model%20%28December%2003%2C%202025%29-142/driving_dark_souls_model_december_03_2025_tinygrad.pkl"
+  },
+  "sunny-25-46-cc375d0fa9": {
+    "name": "Planplus v2 (December 11, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2025 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "cc375d0fa988683757e02cc5968083fa1ea20e7bf27d74247ae904f2432cd02c",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Planplus%20v2%20%28December%2011%2C%202025%29-142/driving_planplus_v2_december_11_2025_tinygrad.pkl"
+  },
+  "sunny-25-47-062d0e63ff": {
+    "name": "Dark Souls Model v2 (December 11, 2025)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "062d0e63ff5ffbcceddd8056c93a25261a9680b48dabb9425a804bddf9c55d68",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Dark%20Souls%20Model%20v2%20%28December%2011%2C%202025%29-142/driving_dark_souls_model_v2_december_11_2025_tinygrad.pkl"
+  },
+  "sunny-25-48-5574055701": {
+    "name": "Macrostiff (January 01, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "557405570114f81af6e32d9027697a4d39f81c2de6495cc5178fb2c0a80338bb",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Macrostiff%20%28January%2001%2C%202026%29-142/driving_macrostiff_january_01_2026_tinygrad.pkl"
+  },
+  "sunny-25-49-cc005fd601": {
+    "name": "WMI V9 (January 07, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "cc005fd6017e348987ecfae4616dcdafbf0d7a76b5e76f9070abd55dfd895da2",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-WMI%20V9%20%28January%2007%2C%202026%29-142/driving_wmi_v9_january_07_2026_tinygrad.pkl"
+  },
+  "sunny-25-50-135b725aa3": {
+    "name": "SC Model (January 08, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "135b725aa33100864f9bf8c9b3542b60bb0eef15ae6f4d3eb9a2e5681ffec9fa",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-SC%20Model%20%28January%2008%2C%202026%29-142/driving_sc_model_january_08_2026_tinygrad.pkl"
+  },
+  "sunny-25-51-ff485d5984": {
+    "name": "WMI V12 (January 13, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "ff485d598433ba5d68f5990229c1759329572277da2aaa7756d53a6abe639d40",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-WMI%20V12%20%28January%2013%2C%202026%29-142/driving_wmi_v12_january_13_2026_tinygrad.pkl"
+  },
+  "sunny-25-52-e520dffd2c": {
+    "name": "CD210 Model (February 03, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Release Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "e520dffd2c166e1835b912b90911e6ee1894e8bf6f3e6ad9f060357fb15a5f3c",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-CD210%20Model%20%28February%2003%2C%202026%29-142/driving_cd210_model_february_03_2026_tinygrad.pkl"
+  },
+  "sunny-25-53-8fcf92f039": {
+    "name": "off policy model (February 04, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "8fcf92f03963a7ee02b217e66185800a8f8db9f6b5aba358b577f1bf3df94438",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-off%20policy%20model%20%28February%2004%2C%202026%29-142/driving_off_policy_model_february_04_2026_tinygrad.pkl"
+  },
+  "sunny-25-54-7bb690157a": {
+    "name": "Off-policy Model v2 (February 20, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "7bb690157a391babb00ccede67dd346887fe897c9e5dcfe6964bb09144751108",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Off-policy%20Model%20v2%20%28February%2020%2C%202026%29-142/driving_off_policy_model_v2_february_20_2026_tinygrad.pkl"
+  },
+  "sunny-25-55-29b823dcc0": {
+    "name": "Off Policy Model v3 (February 26, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "29b823dcc0ca4caa5270b87aec9709be6e583eb4fb2eadd341fda19d7020184a",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Off%20Policy%20Model%20v3%20%28February%2026%2C%202026%29-142/driving_off_policy_model_v3_february_26_2026_tinygrad.pkl"
+  },
+  "sunny-25-56-a04507c414": {
+    "name": "Off-Policy Model V4 (February 27, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "a04507c414e0f26563cfe4aed71ecf91661d3fd9d5e3e22a8e8347b978391ba6",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Off-Policy%20Model%20V4%20%28February%2027%2C%202026%29-142/driving_off_policy_model_v4_february_27_2026_tinygrad.pkl"
+  },
+  "sunny-25-57-ebe7d259ae": {
+    "name": "Off-Policy Model v5 (March 14, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "ebe7d259ae6d745c44b61d2fe35a89ebc2a0331f15f0b422eaea23c4b14fe983",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Off-Policy%20Model%20v5%20%28March%2014%2C%202026%29-142/driving_off_policy_model_v5_march_14_2026_tinygrad.pkl"
+  },
+  "sunny-25-58-120dd9611f": {
+    "name": "Pop Model (March 20, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "120dd9611fd62ac82ff1800cf1d6ea147230a7f18aff37708112298e9fa550b1",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Pop%20Model%20%28March%2020%2C%202026%29-142/driving_pop_model_march_20_2026_tinygrad.pkl"
+  },
+  "sunny-25-59-f315f08942": {
+    "name": "Pop Model v2 (March 24, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "f315f08942a6deaf82209a81147110045ab6644dd87026e822b21fc5790dfecf",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Pop%20Model%20v2%20%28March%2024%2C%202026%29-142/driving_pop_model_v2_march_24_2026_tinygrad.pkl"
+  },
+  "sunny-25-60-51bc8c109d": {
+    "name": "OP Model (April 01, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "51bc8c109dd4c8381065930dc503de950db053c3f7726efdb951c66b09c6f7f3",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-OP%20Model%20%28April%2001%2C%202026%29-142/driving_op_model_april_01_2026_tinygrad.pkl"
+  },
+  "sunny-25-61-450d2adf56": {
+    "name": "OP Model 7 (April 03, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "450d2adf56f857514db86384b80c4495cf9a287e16f3bc5e90c2c5ee55861c99",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-OP%20Model%207%20%28April%2003%2C%202026%29-142/driving_op_model_7_april_03_2026_tinygrad.pkl"
+  },
+  "sunny-25-62-afec1ea393": {
+    "name": "OP Model 8 (April 07, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "afec1ea39343a6551b4429f35419746f44c1c67b76f7294373cbe210b9ebf6a5",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-OP%20Model%208%20%28April%2007%2C%202026%29-142/driving_op_model_8_april_07_2026_tinygrad.pkl"
+  },
+  "sunny-25-63-e34393fbca": {
+    "name": "OP Model v10 (April 17, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "e34393fbca28a3aec6b2c49fbd7764414c45288815e0e6125530087ffad95f70",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-OP%20Model%20v10%20%28April%2017%2C%202026%29-142/driving_op_model_v10_april_17_2026_tinygrad.pkl"
+  },
+  "sunny-25-64-522d6c4bfb": {
+    "name": "OP Model 10 v2 (April 18, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "522d6c4bfb86ca3cf257cd2ec6bf48b590dbc2dd36e7750e3c4e5054f34a50ec",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-OP%20Model%2010%20v2%20%28April%2018%2C%202026%29-142/driving_op_model_10_v2_april_18_2026_tinygrad.pkl"
+  },
+  "sunny-25-65-1b199d1890": {
+    "name": "OP Model 10 V3 (April 19, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 World Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "1b199d1890d2ab41a5ec28ae83e2a7687630d138a2c1abaf660e26f3da21aeab",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-OP%20Model%2010%20V3%20%28April%2019%2C%202026%29-142/driving_op_model_10_v3_april_19_2026_tinygrad.pkl"
+  },
+  "sunny-25-66-a8b1a33e6e": {
+    "name": "OP Model 16 Deep (June 03, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "a8b1a33e6ed0015a26ff86fd1e36f9a70343a825acf6a183564215e5543c6a4a",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-OP%20Model%2016%20Deep%20%28June%2003%2C%202026%29-142/driving_op_model_16_deep_june_03_2026_tinygrad.pkl"
+  },
+  "sunny-25-67-bc438c1d4d": {
+    "name": "Michael RL V2 (July 18, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "bc438c1d4de349aa1a9b743f5e665385e4298843ee04639ca5d3039983606456",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Michael%20RL%20V2%20%28July%2018%2C%202026%29-142/driving_michael_rl_v2_july_18_2026_tinygrad.pkl"
+  },
+  "sunny-25-68-de1f2769e7": {
+    "name": "Rebel Legion Model (July 22, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "de1f2769e7a3944328ba039b3f39e699a0690960d2b242a73e897a88dc035823",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Rebel%20Legion%20Model%20%28July%2022%2C%202026%29-142/driving_rebel_legion_model_july_22_2026_tinygrad.pkl"
+  },
+  "sunny-25-69-0fac06def3": {
+    "name": "Get Your Hopes Up Model (July 25, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "0fac06def3829efc85755ad8141bb1c2b9bc018135f16630763c844ed28b498e",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Get%20Your%20Hopes%20Up%20Model%20%28July%2025%2C%202026%29-142/driving_get_your_hopes_up_model_july_25_2026_tinygrad.pkl"
+  },
+  "sunny-25-70-0b4a0082d6": {
+    "name": "Rebellious Hope Model (July 27, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "0b4a0082d6b0b79513f3760371be3dc18b294780a7abf4e4751d25b233a2754b",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Rebellious%20Hope%20Model%20%28July%2027%2C%202026%29-142/driving_rebellious_hope_model_july_27_2026_tinygrad.pkl"
+  },
+  "sunny-25-71-44a308e699": {
+    "name": "RDF Model (August 05, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "44a308e69929dcfeb32288342126b6b6652cad739c2cb3d9688779991f1c3ac7",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-RDF%20Model%20%28August%2005%2C%202026%29-142/driving_rdf_model_august_05_2026_tinygrad.pkl"
+  },
+  "sunny-25-72-cb833ff557": {
+    "name": "RDF Model V2 (August 11, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "cb833ff557cc3f429c1088d2e7556ad7cfebddb7f82869e112354cd1cca17313",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-RDF%20Model%20V2%20%28August%2011%2C%202026%29-142/driving_rdf_model_v2_august_11_2026_tinygrad.pkl"
+  },
+  "sunny-25-73-9efa2c8dbe": {
+    "name": "Terrible Super Fantastic Model (August 12, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "9efa2c8dbe92c341642c3416a3d354926c88470eed57f960d8999cf8a0755d1d",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Terrible%20Super%20Fantastic%20Model%20%28August%2012%2C%202026%29-142/driving_terrible_super_fantastic_model_august_12_2026_tinygrad.pkl"
+  },
+  "sunny-25-74-e592aed5e4": {
+    "name": "Kumars Vibe (August 14, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Custom Merge Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "e592aed5e4d02e36be20888b85c34dd9d5fc076a42c612caf831cb7d5595e71e",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Kumars%20Vibe%20%28August%2014%2C%202026%29-142/driving_kumars_vibe_august_14_2026_tinygrad.pkl"
+  },
+  "sunny-25-75-df12ac4a55": {
+    "name": "Falling Phoenix (August 14, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Custom Merge Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "df12ac4a55dc94cd924292540a80d3efdba0a2706901521f2e96e3fcfb2eb621",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Falling%20Phoenix%20%28August%2014%2C%202026%29-142/driving_falling_phoenix_august_14_2026_tinygrad.pkl"
+  },
+  "sunny-25-76-dad05dca91": {
+    "name": "Terrible Super Fantastic Do Over Model (August 15, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".1",
+      "long": ".3"
+    },
+    "sha256": "dad05dca91ccb2302ff421b6d0dfd4c2fe93738f0de7e230c5d93dbd55a115ae",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-Terrible%20Super%20Fantastic%20Do%20Over%20Model%20%28August%2015%2C%202026%29-142/driving_terrible_super_fantastic_do_over_model_august_15_2026_tinygrad.pkl"
+  },
+  "sunny-25-77-24fa1b3e67": {
+    "name": "Cheddar Model (November 05, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "24fa1b3e67b64a1531d564aeca672969e4fcb8c120866325ff6eb71a31bb7f20",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled44/model-CH%20Driving%20%28November%2005%2C%202026%29-867/driving_ch_driving_november_05_2026_tinygrad.pkl"
+  },
+  "sunny-25-78-7dba3c9a5f": {
+    "name": "Sharp Cheddar (November 17, 2026)",
+    "big": false,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "7dba3c9a5fe9c4e4d86149ed40857fd02748b6fcf8a213c96be1761d359cf9de",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled1/model-Sharp%20Cheddar%20%28November%2017%2C%202026%29-895/driving_sharp_cheddar_november_17_2026_tinygrad.pkl"
+  },
+  "sunny-28-0-be059cc3d4": {
+    "name": "Lebowski Model (July 01, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "be059cc3d4e2a94c796127b21f13dd19c20ed74369f6f48c916a3c265d5b00e4",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Lebowski%20Model%20%28July%2001%2C%202026%29-146/driving_lebowski_model_july_01_2026_tinygrad.pkl"
+  },
+  "sunny-28-1-b09d327251": {
+    "name": "Tee Time (August 18, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "b09d3272515fa1440a1ebfbadb336d120c053da0bcff262126a5940ec7539bbb",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Tee%20Time%20%28August%2018%2C%202026%29-146/driving_tee_time_august_18_2026_tinygrad.pkl"
+  },
+  "sunny-28-2-f8e44ea1b0": {
+    "name": "TTTTFBRLM (August 18, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "f8e44ea1b0e9411432c6aadf072d24fa9732292ae37c7ea1c257aa25234d497c",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-TTTTFBRLM%20%28August%2018%2C%202026%29-146/driving_ttttfbrlm_august_18_2026_tinygrad.pkl"
+  },
+  "sunny-28-3-c164107e5a": {
+    "name": "BMRLNAP Model (August 20, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "c164107e5a6a7bb3eeca2f35e1ff391711208aa5679d34605c7a99579e1846cf",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-BMRLNAP%20Model%20%28August%2020%2C%202026%29-146/driving_bmrlnap_model_august_20_2026_tinygrad.pkl"
+  },
+  "sunny-28-4-f9268f949f": {
+    "name": "I Desire Model (August 21, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "f9268f949fa3032daaadcb90019573cbf984d78dd5d1026f35dd7d1a8d7e7194",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-I%20Desire%20Model%20%28August%2021%2C%202026%29-retry-146/driving_i_desire_model_august_21_2026_tinygrad.pkl"
+  },
+  "sunny-28-5-b8c0e66ad0": {
+    "name": "Happy Birthday Model (August 24, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "b8c0e66ad0f37e1f56fb7c81498ca9ce8309652fdb3621c335ed405afbf4d51b",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Happy%20Birthday%20Model%20%28August%2024%2C%202026%29-146/driving_happy_birthday_model_august_24_2026_tinygrad.pkl"
+  },
+  "sunny-28-6-3ead21969b": {
+    "name": "BMRLNAP Model v2 (August 24, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "3ead21969b068d75392ca1f6a24a53fb1e434df1f91ef9bc88d1db068ae1fa07",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-BMRLNAP%20Model%20v2%20%28August%2024%2C%202026%29-146/driving_bmrlnap_model_v2_august_24_2026_tinygrad.pkl"
+  },
+  "sunny-28-7-87dd260892": {
+    "name": "BMRLNAP Model v3 (August 26, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "87dd260892458af10461ffe36f7b844d376139cdd5330debd0e7b51bf62791a3",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-BMRLNAP%20Model%20v3%20%28August%2026%2C%202026%29-146/driving_bmrlnap_model_v3_august_26_2026_tinygrad.pkl"
+  },
+  "sunny-28-8-d6faaca021": {
+    "name": "Sad Model (August 28, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "d6faaca021d0f9f18be347a09803827116ef549ea4bda72228ad5de52a8b256d",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Sad%20Model%20%28August%2028%2C%202026%29-146/driving_sad_model_august_28_2026_tinygrad.pkl"
+  },
+  "sunny-28-9-0e4a32e6cf": {
+    "name": "BMRLNAP Model v4 (August 30, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "0e4a32e6cf60c69d9aec93f9bba88ef264e5d77f6c0618e7fff2208ddda8fb16",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-BMRLNAP%20Model%20v4%20%28August%2030%2C%202026%29-146/driving_bmrlnap_model_v4_august_30_2026_tinygrad.pkl"
+  },
+  "sunny-28-10-8bb0a3156c": {
+    "name": "BMRLNAP Model v6 (September 01, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "8bb0a3156c82374ddbd6a87fd9d4c055f7d15256d9e815f58a38350c7ebba2e0",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-BMRLNAP%20Model%20v6%20%28September%2001%2C%202026%29-146/driving_bmrlnap_model_v6_september_01_2026_tinygrad.pkl"
+  },
+  "sunny-28-11-78690b6c3b": {
+    "name": "Cinque Terre Model (September 04, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "78690b6c3bee419b622c9ae65cc0dd2ef0a1ce2f8c56eed7bb0656bea75753ae",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Cinque%20Terre%20Model%20%28September%2004%2C%202026%29-146/driving_cinque_terre_model_september_04_2026_tinygrad.pkl"
+  },
+  "sunny-28-12-a3d33fe8ba": {
+    "name": "Cinque Terre Model V2 (September 08, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "a3d33fe8bab848e744acd3f753e6083af5f1c60688ef8c5481518f6df2faa224",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Cinque%20Terre%20Model%20V2%20%28September%2008%2C%202026%29-146/driving_cinque_terre_model_v2_september_08_2026_tinygrad.pkl"
+  },
+  "sunny-28-13-7559a5d378": {
+    "name": "Cinque Terre V3 Model (September 17, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "7559a5d378ba1ad16a09b647ef88fb51d767dfc75a5e4d528992bd691f75451e",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Cinque%20Terre%20V3%20Model%20%28September%2017%2C%202026%29-146/driving_cinque_terre_v3_model_september_17_2026_tinygrad.pkl"
+  },
+  "sunny-28-14-6faf08f723": {
+    "name": "Mountain Dew Model (October 10, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "6faf08f7232823de1e88de5e15298daee12825ff8088fd669642e181dde2d374",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Mountain%20Dew%20Model%20%28October%2010%2C%202026%29-855/driving_mountain_dew_model_october_10_2026_tinygrad.pkl"
+  },
+  "sunny-28-15-9cb7521287": {
+    "name": "Mountain Dew Model v3 (October 14, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "Master Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "9cb7521287053af33ffe6b59ce792bea9f72384f89a3e6e93f756afdf6ff971c",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Mountain%20Dew%20Model%20v3%20%28October%2014%2C%202026%29-856/driving_mountain_dew_model_v3_october_14_2026_tinygrad.pkl"
+  },
+  "sunny-28-16-08a42e2401": {
+    "name": "Train Track Model (October 16, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "08a42e24012037cac52c4fd7fb7eefbf26c87ff4e2de48d7466a31dfafda4385",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Train%20Track%20Model%20%28October%2016%2C%202026%29-858/driving_train_track_model_october_16_2026_tinygrad.pkl"
+  },
+  "sunny-28-17-9dc368ef20": {
+    "name": "Flip Flop Model (October 23, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "9dc368ef20a3624dc94d8e604b0221789aaed6939f6f4075a651ffe060709192",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Flip%20Flop%20Model%20%28October%2023%2C%202026%29-861/driving_flip_flop_model_october_23_2026_tinygrad.pkl"
+  },
+  "sunny-28-18-6c84bb8c95": {
+    "name": "Light Speed Model (October 29, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "6c84bb8c9536c21e0761addac3d58eb651c25eaea405427e57ceb6f76f59c0f3",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Light%20Speed%20Model%20%28October%2029%2C%202026%29-862/driving_light_speed_model_october_29_2026_tinygrad.pkl"
+  },
+  "sunny-28-19-9f70c95b84": {
+    "name": "Light Speed Model v1.1 (October 29, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "9f70c95b846428d36f2f31b570b9e4c78cd24196864464801eb58dc30b0b79f8",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Light%20Speed%20Model%20v2%20%28October%2029%2C%202026%29-863/driving_light_speed_model_v2_october_29_2026_tinygrad.pkl"
+  },
+  "sunny-28-20-680a8d6297": {
+    "name": "Light Speed 2 (November 04, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "680a8d629785f2b1d1a2b0e40d0dfbcd0f7291c21e20c51259f1d768a22ec217",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled46/model-Light%20Speed%202%20%28November%2004%2C%202026%29-866/driving_light_speed_2_november_04_2026_tinygrad.pkl"
+  },
+  "sunny-28-21-9be99d2ffb": {
+    "name": "Fidx Driving Model (November 08, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "9be99d2ffbdc5ec2183f48d1342bceca629b4717339d81b509a426c35b7c73e0",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled1/model-Fidx%20Driving%20Model%20%28November%2008%2C%202026%29-876/driving_fidx_driving_model_november_08_2026_tinygrad.pkl"
+  },
+  "sunny-28-22-1d4d221563": {
+    "name": "Fairy tale model (November 18, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "1d4d221563002c73f3ba7f2e48be350c887898f254f558c406aeeaadb8a868f2",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled1/model-Fairy%20tale%20model%20%28November%2018%2C%202026%29-899/driving_fairy_tale_model_november_18_2026_tinygrad.pkl"
+  },
+  "sunny-28-23-de0f219f53": {
+    "name": "Fairy Tale Model v1.1 (November 20, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "de0f219f53a8e0f57ac5052a802f39f26c9469c290107006fc8c3f34ca1dd776",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled1/model-Fairy%20Tale%20Model%20v1.1%20%28November%2020%2C%202026%29-909/driving_fairy_tale_model_v1_1_november_20_2026_tinygrad.pkl"
+  },
+  "sunny-28-24-b42fec8f40": {
+    "name": "ETCW Driving (November 21, 2026)",
+    "big": true,
+    "generation": 12,
+    "twenty": true,
+    "overrides": {
+      "folder": "2026 Deep RL Models",
+      "lat": ".0",
+      "long": ".3"
+    },
+    "sha256": "b42fec8f405c8f1d98c8a5ad8ca14c99d94b3de460461113f894f4366dd72520",
+    "url": "https://huggingface.co/datasets/sunnypilot/sunnypilot_models_v1/resolve/main/models/recompiled1/model-ETCW%20Driving%20%28November%2021%2C%202026%29-905/driving_etcw_driving_november_21_2026_tinygrad.pkl"
+  }
+}

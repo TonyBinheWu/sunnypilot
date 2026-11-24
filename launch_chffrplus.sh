@@ -678,7 +678,15 @@ function launch {
   if ! run_startup_command flock /tmp/big_model_selection.lock python3 -m openpilot.common.big_model_catalog; then
     show_startup_failure "Model selection initialization failed"
   fi
-  prepare_big_model_if_needed
+  run_startup_command python3 -m openpilot.common.sunny_models || echo "sunnypilot selector unavailable"
+  SUNNY_EXTERNAL=0
+  if python3 -c 'from openpilot.common.sunny_models import key_for; raise SystemExit(0 if key_for(True, True) else 1)'; then
+    SUNNY_EXTERNAL=1
+    BIG_MODEL_SHA=""
+    unset CARROT_BIG_MODEL_STARTUP_FAILED
+  else
+    prepare_big_model_if_needed
+  fi
   invalidate_modeld_build_if_needed
   invalidate_native_build_if_needed
 
@@ -712,7 +720,9 @@ function launch {
   if ! run_startup_command python3 -m openpilot.common.internal_models; then
     echo "Internal model selection unavailable, using bundled model"
   fi
-  start_big_model_update
+  if [ "$SUNNY_EXTERNAL" != "1" ]; then
+    start_big_model_update
+  fi
   if ! run_startup_command start_manager; then
     show_startup_failure "Manager failed to start"
   fi

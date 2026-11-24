@@ -115,6 +115,8 @@ def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.
     desired_accel = model_output['action'][0,1]
     desired_curvature = model_output['action'][0,0] / (max(2.5, v_ego))**2
     #should_stop = (v_ego < 0.3 and desired_accel < 0.1)
+  if '_sunny_curvature' in model_output and 'action' not in model_output:
+    desired_curvature = float(model_output['_sunny_curvature'])
   desired_accel = smooth_value(desired_accel, prev_action.desiredAcceleration, LONG_SMOOTH_SECONDS)
   desired_velocity_now = smooth_value(desired_velocity_now, prev_action.desiredVelocity, LONG_SMOOTH_SECONDS)
 
@@ -235,11 +237,15 @@ def main(demo=False):
   cloudlog.warning("modeld init")
 
   params = Params()
+  from openpilot.common import sunny_models
+  from openpilot.selfdrive.modeld.sunny_runner import SunnyModelState
+  sunny_small, sunny_big = sunny_models.key_for(False, True), sunny_models.key_for(True, True)
+  aux_role = sunny_models.prefs(True).get('assistant') is True
   usbgpu_pkl_path = usbgpu_compiled_path()
-  _compiled = usbgpu_pkl_path is not None
+  _compiled = bool(sunny_big or usbgpu_pkl_path is not None)
   _hardware_seen = params.get_bool("UsbGpuHardwareSeen")
   _present = usbgpu_present()
-  if not _present and _compiled and _hardware_seen:
+  if not aux_role and not _present and _compiled and _hardware_seen:
     cloudlog.warning(
       f"eGPU USB not present at modeld start; waiting up to {USBGPU_DISCOVERY_GRACE_SECONDS:.1f}s for SuperSpeed enumeration"
     )
@@ -249,7 +255,7 @@ def main(demo=False):
     else:
       cloudlog.warning("eGPU USB still absent after startup grace period; using internal model")
   _startup_failed = params.get_bool("UsbGpuStartupFailed")
-  USBGPU = _present and _compiled and not _startup_failed
+  USBGPU = _present and _compiled and not _startup_failed and not aux_role
   cloudlog.warning(f"usbgpu present: {_present}, compiled: {_compiled}, startup_failed: {_startup_failed}, requested: {USBGPU}")
   params.put_bool("UsbGpuPresent", _present)
   if _present or _compiled:
@@ -296,7 +302,7 @@ def main(demo=False):
   usbgpu_model_loaded = False
   if USBGPU:
     usbgpu_model = None
-    precompiled = usbgpu_pkl_path.name == 'model.pkl' and (usbgpu_pkl_path.parent / 'installed.json').is_file()
+    precompiled = not sunny_big and usbgpu_pkl_path.name == 'model.pkl' and (usbgpu_pkl_path.parent / 'installed.json').is_file()
     # Repeatedly reloading the same large PKL cannot repair a persistently down
     # PCIe link. One retry allows delayed readiness, then start the internal model.
     init_attempts = USBGPU_PRECOMPILED_INIT_ATTEMPTS if precompiled else USBGPU_INIT_ATTEMPTS
@@ -305,7 +311,10 @@ def main(demo=False):
       nonlocal usbgpu_model
       for attempt in range(1, init_attempts + 1):
         try:
-          if precompiled:
+          if sunny_big:
+            usbgpu_model = SunnyModelState(vipc_client_main.width, vipc_client_main.height, sunny_big)
+            sunny_models.mark_load(True, None)
+          elif precompiled:
             from openpilot.selfdrive.modeld.precompiled_runner import PrecompiledModelState
             usbgpu_model = PrecompiledModelState(vipc_client_main.width, vipc_client_main.height, usbgpu_pkl_path)
           else:
@@ -335,6 +344,8 @@ def main(demo=False):
       raise RuntimeError("eGPU model loader did not terminate")
     model = usbgpu_model
     if model is None:
+      if sunny_big:
+        sunny_models.mark_load(True, sunny_big)
       params.put_bool("UsbGpuStartupFailed", True)
     usbgpu_model_loaded = model is not None
     params.put_bool("UsbGpuActive", usbgpu_model_loaded)
@@ -346,10 +357,23 @@ def main(demo=False):
   # receives no live samples. Keep standby inference/warmup and fallback intact;
   # optional comparison remains available when internal inference starts active.
   from openpilot.common import internal_models
-  small_model = None
+  small_model = stock_standby = None
   if model is None or USBGPU:
     choice = internal_models.active()
-    if choice != 'cd210':
+    if sunny_small:
+      stock_standby = ModelState(vipc_client_main.width, vipc_client_main.height, False, enable_shadow=False)
+      try:
+        small_model = SunnyModelState(vipc_client_main.width, vipc_client_main.height, sunny_small)
+        from openpilot.selfdrive.modeld.internal_model_warmup import warm_internal_model_from_camera
+        warm_internal_model_from_camera(stock_standby, vipc_client_main)
+        sunny_models.mark_load(False, None)
+      except Exception:
+        cloudlog.exception('Selected sunnypilot model unavailable, using CD210')
+        sunny_models.mark_load(False, sunny_small)
+        if small_model is not None:
+          small_model.close()
+        small_model = stock_standby
+    elif choice != 'cd210':
       try:
         small_model = ModelState(vipc_client_main.width, vipc_client_main.height, False, internal_models.artifact(choice, '.pkl'),
                                  enable_shadow=False)
@@ -369,7 +393,7 @@ def main(demo=False):
     model = small_model
   # Keep the existing eGPU selection unchanged. A separate USB owner handles
   # external computers and late server startup through the selected Jetlink model.
-  if not USBGPU and os.path.isfile('/AGNOS'):
+  if not USBGPU and not aux_role and os.path.isfile('/AGNOS'):
     phase_start = time.monotonic()
     adapter_ready = False
     try:
@@ -440,6 +464,24 @@ def main(demo=False):
                     boundary_indicator_supported=CP.carFingerprint == 'HYUNDAI_IONIQ_5_PE')
   boundary_observer = BoundaryObserver(cloudlog.event) if DH.boundary_indicator_supported else None
   nav_input = MapInput()
+  auxiliary = None
+  aux_nav = MapInput()
+  if aux_role and _present and _compiled and not _startup_failed:
+    from openpilot.selfdrive.modeld.auxiliary_inference import AuxiliaryInference
+    def load_aux():
+      if sunny_big:
+        try:
+          runner = SunnyModelState(vipc_client_main.width, vipc_client_main.height, sunny_big)
+        except Exception:
+          sunny_models.mark_load(True, sunny_big)
+          raise
+        sunny_models.mark_load(True, None)
+        return runner
+      from openpilot.selfdrive.modeld.precompiled_runner import PrecompiledModelState
+      if usbgpu_pkl_path.name != 'model.pkl' or not (usbgpu_pkl_path.parent / 'installed.json').is_file():
+        raise ValueError('Auxiliary inference needs an isolated eGPU model')
+      return PrecompiledModelState(vipc_client_main.width, vipc_client_main.height, usbgpu_pkl_path)
+    auxiliary = AuxiliaryInference(load_aux)
   lane_advisory = LaneChangeAdvisory()
 
 
@@ -464,7 +506,7 @@ def main(demo=False):
       params.put_bool_nonblocking("UsbGpuPresent", usbgpu_present_now)
       if usbgpu_present_now:
         params.put_bool_nonblocking("UsbGpuHardwareSeen", True)
-      params.put_bool_nonblocking("UsbGpuCompiled", usbgpu_compiled_path() is not None)
+      params.put_bool_nonblocking("UsbGpuCompiled", bool(sunny_big or usbgpu_compiled_path() is not None))
 
     frames = camera_gap.receive(vipc_client_main, vipc_client_extra if use_extra_client else None)
     if frames is None:
@@ -522,12 +564,17 @@ def main(demo=False):
     action_delay = DT_MDL / 2 # middle of the interval between model output (current state) and next frame (expected state)
     lat_action_t = lat_delay_dynamic + frame_delay + action_delay
     long_action_t = long_delay + frame_delay + action_delay
+    policy_lat_delay = lat_delay_dynamic if custom_lat_delay > 0 or (sm.valid['liveDelay'] and sm.alive['liveDelay']) else lat_delay
     inputs: dict[str, np.ndarray] = {
       'desire_pulse': vec_desire,
       'traffic_convention': traffic_convention,
       'action_t': np.array([lat_action_t, long_action_t], dtype=np.float32),
+      'lateral_control_params': np.array([v_ego, policy_lat_delay], dtype=np.float32),
     }
 
+    if auxiliary is not None and auxiliary.runner is not None and not prepare_only and live_calib_seen:
+      aux_inputs = {**inputs, **aux_nav.update(auxiliary.runner, sm, v_ego)}
+      auxiliary.submit(bufs, transforms, aux_inputs, meta_main.frame_id, meta_main.timestamp_eof * 1e-9)
     inputs.update(nav_input.update(model, sm, v_ego))
 
     inference_started = time.monotonic()
@@ -537,6 +584,17 @@ def main(demo=False):
     try:
       model_output = model.run(bufs, transforms, inputs, prepare_only)
     except Exception as exc:
+      if isinstance(small_model, SunnyModelState) and (model is small_model or getattr(model, 'small', None) is small_model):
+        sunny_models.mark_load(False, sunny_small)
+        if model is small_model:
+          model = stock_standby
+        else:
+          model.small = stock_standby
+        small_model = stock_standby
+        run_count, last_vipc_frame_id = 0, meta_main.frame_id
+        continue
+      if isinstance(model, SunnyModelState) and sunny_big:
+        sunny_models.mark_load(True, sunny_big)
       if not params.get_bool("UsbGpuActive") or small_model is None:
         raise
       cloudlog.exception("eGPU model failed, falling back to internal GPU")
@@ -589,6 +647,17 @@ def main(demo=False):
 
       action = get_action_from_model(model_output, prev_action, lat_action_t, long_action_t, v_ego, lat_smooth_seconds_dynamic, vEgoStopping)
       prev_action = action
+      if auxiliary is not None:
+        cs = sm['carState']
+        now = time.monotonic()
+        healthy = (all(sm.valid[k] and sm.alive[k] and 0 <= now-sm.recv_time[k] < .2 for k in ('carState', 'carControl'))
+                   and sm.valid['liveCalibration'] and sm.alive['liveCalibration'] and sm['liveCalibration'].calStatus == 'calibrated'
+                   and cs.canValid and cs.gearShifter == 'drive' and v_ego > 4 and sm['carControl'].longActive
+                   and not (cs.brakePressed or cs.gasPressed or cs.steeringPressed) and not prepare_only)
+        accel = auxiliary.acceleration(model_output, action, meta_main.frame_id, meta_main.timestamp_eof * 1e-9, now, healthy, long_action_t)
+        if accel != action.desiredAcceleration:
+          action = action.as_reader().as_builder()
+          action.desiredAcceleration = accel
       fill_model_msg(modelv2_send, model_output, action,
                      publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id,
                      frame_drop_ratio, meta_main.timestamp_eof, model_execution_time, live_calib_seen)

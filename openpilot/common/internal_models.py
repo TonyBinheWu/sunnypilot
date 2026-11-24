@@ -94,7 +94,8 @@ def record(key, failed=False):
 def prepare_boot():
   if state():
     return
-  key = pending()
+  from openpilot.common.sunny_models import key_for
+  key = 'cd210' if key_for(False, True) else pending()
   if key != 'cd210':
     try:
       if not verify(artifact(key, '.onnx'), MODELS[key][1]):

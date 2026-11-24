@@ -1,7 +1,7 @@
 """Read-only perspective display of current model, lead and navigation messages."""
 
 from itertools import chain, islice
-from math import isfinite
+from math import cos, hypot, isfinite, sin
 import json
 from pathlib import Path
 import time
@@ -110,7 +110,7 @@ class RealityScene:
     self.next_demand = self.image_time = 0
     self.key = None
     self.faces = []
-    self.objects = ()
+    self.objects = self.junction = self.unplaced = ()
     self.next_objects = 0.
     self.opening = None
     self.next_style_check = 0
@@ -145,15 +145,15 @@ class RealityScene:
     lamps = ego_lamps(sm["carState"] if car_ok else None, now)
     rear = rear_points(sm["carState"] if car_ok else None, sm["radarState"] if radar_ok else None)
     if model_only and model_ok and now >= self.next_objects:
-      from openpilot.selfdrive.ui.onroad.scene_objects import read_objects
-      self.objects = read_objects(now)
+      from openpilot.selfdrive.ui.onroad.scene_objects import read_scene
+      self.objects, self.junction, self.unplaced = read_scene(now)
       self.next_objects = now + .1
     elif not model_only or not model_ok:
-      self.objects = ()
+      self.objects = self.junction = self.unplaced = ()
       self.next_objects = 0.
     self.update_appearance(now)
     key = (
-      model_only, self.objects, car_ok, lamps, rear, self.ego_scale,
+      model_only, self.objects, self.junction, car_ok, lamps, rear, self.ego_scale,
       sm.recv_frame["modelV2"] if model_ok else -1,
       sm.recv_frame["radarState"] if radar_ok else -1,
       rect.x,
@@ -184,7 +184,7 @@ class RealityScene:
       if self.objects:
         font = max(10, int(rect.height * .025))
         occupied = []
-        for kind, z, x in sorted(self.objects, key=lambda obj: obj[1]):
+        for kind, z, x, *_ in sorted(self.objects, key=lambda obj: obj[1]):
           scale = 740 / (z + 8)
           px = rect.x + rect.width * ((435 + x * scale) / 1000 + self.style["vehicle_x"] / 100)
           py = rect.y + rect.height * ((118 + 2.2 * scale) / 450 + self.style["vehicle_y"] / 100) - font * 1.4
@@ -197,6 +197,13 @@ class RealityScene:
             occupied.append((px, py, width))
         label(self.translate("Road camera detector"), int(rect.x + rect.width * .03), int(rect.y + rect.height * .79),
                      max(10, int(rect.height * .03)), rl.SKYBLUE)
+      if self.unplaced:
+        classes = ", ".join(f"{self.translate(kind)} ×{count}" for kind, count in self.unplaced)
+        label(self.translate("Image only") + " · " + classes, int(rect.x + rect.width * .03), int(rect.y + rect.height * .84),
+              max(10, int(rect.height * .027)), rl.SKYBLUE)
+      if self.junction:
+        label(self.translate("Junction map") + " · © OpenStreetMap", int(rect.x + rect.width * .03),
+              int(rect.y + rect.height * .18), max(11, int(rect.height * .03)), rl.SKYBLUE)
       if self.opening:
         label(self.translate("Possible junction") + f"  {self.opening[0]:.0f} m", int(rect.x + rect.width * .03),
                      int(rect.y + rect.height * .12), max(11, int(rect.height * .033)), rl.SKYBLUE)
@@ -256,6 +263,21 @@ class RealityScene:
           face(layer, previous + pair[::-1], color)
         previous = pair
 
+    if model_only:
+      for arm in self.junction:
+        for (x1,z1), (x2,z2) in zip(arm, arm[1:]):
+          if max(z1,z2) < 0:
+            continue
+          if z1 < 0:
+            x1, z1 = x1+(x2-x1)*(-z1)/(z2-z1), 0.
+          if z2 < 0:
+            x2, z2 = x2+(x1-x2)*(-z2)/(z1-z2), 0.
+          span = hypot(x2-x1, z2-z1)
+          if span < .01:
+            continue
+          # Map centerline ribbons have illustrative width independent of observed road edges.
+          dx, dz = 2.2*(z2-z1)/span, -2.2*(x2-x1)/span
+          face('lane', [(x1-dx,z1-dz,0),(x1+dx,z1+dz,0),(x2+dx,z2+dz,0),(x2-dx,z2-dz,0)], tint(0x576B82))
     if model is not None:
       if model_only and len(model.roadEdges) == len(model.roadEdgeStds) == 2 and all(0 <= s < .5 for s in model.roadEdgeStds):
         left, right = model.roadEdges
@@ -278,10 +300,10 @@ class RealityScene:
           ribbon("lane", line, 0.12, int(255 * min(prob, 1)))
     vehicles = vehicle_points(model, radar)
     if objects:
-      vehicles = [(d, y) for d, y in vehicles if not any(abs(d - od) < 2 and abs(y - oy) < 1.2 for _, od, oy in objects)]
+      vehicles = [(d, y) for d, y in vehicles if not any(abs(d - od) < 2 and abs(y - oy) < 1.2 for _, od, oy, *_ in objects)]
     # Ground positions come from calibrated image detections. Icon dimensions
     # identify the class and are independent of the estimated object distance.
-    for kind, z, x in sorted(objects, key=lambda obj: -obj[1]):
+    for kind, z, x, *motion in sorted(objects, key=lambda obj: -obj[1]):
       if kind == 'person':
         face('vehicle', [(x-.24,z,0),(x+.24,z,0),(x+.22,z,1.3),(x-.22,z,1.3)], tint(0xFCB971))
         face('vehicle', [(x-.18,z,1.35),(x+.18,z,1.35),(x+.16,z,1.72),(x-.16,z,1.72)], tint(0xFCB971))
@@ -289,8 +311,28 @@ class RealityScene:
         narrow = kind in ('bicycle', 'motorcycle')
         width, height, length = (.36, 1.3, 1.8) if narrow else (1.2, 2.6, 5.5) if kind in ('bus','truck') else (.88, 1.35, 3.8)
         color = 0xCF9DF6 if narrow else 0x59C5DB
-        face('vehicle', [(x-width,z,0),(x+width,z,0),(x+width,z,height),(x-width,z,height)], tint(color,.78))
-        face('vehicle', [(x-width,z,height),(x+width,z,height),(x+width,z+length,height),(x-width,z+length,height)], tint(color))
+        heading = motion[0] if motion else None
+        if heading is None:
+          # A symmetric footprint gives no implied direction for a single observation.
+          face('vehicle', [(x-width,z-width,0),(x+width,z-width,0),(x+width,z-width,height),(x-width,z-width,height)], tint(color,.78))
+          face('vehicle', [(x-width,z-width,height),(x+width,z-width,height),(x+width,z+width,height),(x-width,z+width,height)], tint(color))
+        else:
+          c, s = cos(heading), sin(heading)
+          def oriented(points, shade):
+            face('vehicle', [(x+a*c+b*s, z-a*s+b*c, h) for a,b,h in points], tint(color,shade))
+          half = length/2
+          corners = [(-width,-half),(width,-half),(width,half),(-width,half)]
+          for a,b in sorted(zip(corners, corners[1:]+corners[:1]), key=lambda edge: -sum(-u*s+v*c for u,v in edge)):
+            oriented([(*a,0),(*b,0),(*b,height),(*a,height)], .72)
+          oriented([(u,v,height) for u,v in corners], 1.)
+          # Arrow is measured ground motion. It also works for reversing vehicles.
+          oriented([(-width*.8,-half*.3,height+.02),(width*.8,-half*.3,height+.02),(0,half*.85,height+.02)], 1.7)
+    if model_only:
+      # Unclassified model leads carry position, but no independently observed heading.
+      for z,x in vehicles:
+        face('vehicle', [(x-.65,z,0),(x,z-.65,0),(x+.65,z,0),(x,z+.65,0)], tint(0x8495A5))
+        face('vehicle', [(x-.65,z,0),(x,z,1.1),(x+.65,z,0)], tint(0xADBDCA))
+      vehicles = []
     if car_ok:
       vehicles.append((1.3, 0))  # viewport anchor for the reporting vehicle
     vehicles.extend(sorted(rear, reverse=True))

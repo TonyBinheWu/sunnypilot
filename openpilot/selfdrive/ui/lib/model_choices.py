@@ -3,6 +3,7 @@ import time
 
 from openpilot.common import big_model_catalog as external
 from openpilot.common import internal_models as internal
+from openpilot.common import sunny_models as sunny
 from openpilot.system.ui.lib.multilang import tr
 
 
@@ -11,8 +12,12 @@ class ModelChoices:
     self.offroad = offroad
     self.items = [(False, key, model[0]) for key, model in internal.MODELS.items()]
     self.items += [(True, key, model['name']) for key, model in external.available().items()]
+    self.items += [(row["big"], key, row["name"]) for key, row in reversed(sunny.catalog().items())]
+    self.group = 0
     self.busy = False
     self.error = None
+    self.next_role = 0.
+    self.role_value = ""
     self.next_refresh = 0.
     self.active = self.pending = (None, None)
     self.failed = False
@@ -20,8 +25,9 @@ class ModelChoices:
   def status(self, big, key):
     if time.monotonic() >= self.next_refresh:
       self.next_refresh = time.monotonic() + 2
-      self.active = (internal.active(), external.effective_id())
-      self.pending = (internal.pending(), external.preferences()['selected'])
+      self.load_errors = (sunny.failed_key(False), sunny.failed_key(True))
+      self.active = tuple(sunny.key_for(bool(b), True) or default for b, default in enumerate((internal.active(), external.effective_id())))
+      self.pending = tuple(sunny.key_for(bool(b)) or default for b, default in enumerate((internal.pending(), external.preferences()['selected'])))
       self.failed = bool(internal.state().get('failed'))
     if self.error == (big, key):
       return tr("Selection failed")
@@ -29,11 +35,22 @@ class ModelChoices:
       return tr("Preparing…")
     if not big and self.failed and self.pending[0] == key and self.active[0] != key:
       return tr("Build failed")
+    if self.active[big] == key and self.load_errors[big] == key:
+      return tr("Load failed")
     if self.active[big] == key:
       return tr("This boot")
     if self.pending[big] == key:
       return tr("Next boot")
     return tr("Select")
+
+  def next_group(self):
+    self.group = (self.group + 1) % 4
+
+  def group_text(self):
+    return (tr("All models"), "carrot-wip", tr("sunnypilot small models"), tr("sunnypilot large models"))[self.group]
+
+  def includes(self, big, key):
+    return self.group == 0 or self.group == (2 + int(big) if key in sunny.catalog() else 1)
 
   def choose(self, big, key):
     if self.busy or not self.offroad():
@@ -41,14 +58,40 @@ class ModelChoices:
     self.busy, self.error = (big, key), None
     def run():
       try:
-        if big:
+        if key in sunny.catalog():
+          sunny.select(big, key, self.offroad)
+        elif big:
           if self.offroad():
             external.select(key)
+            sunny.save("big", None)
         else:
           internal.select(key, self.offroad)
-      except (OSError, ValueError, KeyError, TimeoutError):
+          sunny.save("small", None)
+      except Exception:
         self.error = (big, key)
       finally:
         self.next_refresh = 0.
         self.busy = False
     threading.Thread(target=run, name='model-selection', daemon=True).start()
+
+  def toggle_aux(self):
+    if self.offroad() and not self.busy:
+      sunny.save('assistant', not bool(sunny.prefs().get('assistant')))
+      self.next_role = 0.
+
+  def aux_text(self):
+    now = time.monotonic()
+    if now >= self.next_role:
+      self.next_role = now + 1.
+      self.role_value = tr("Primary model")
+      if sunny.prefs().get('assistant'):
+        self.role_value = tr("Auxiliary braking")
+        if sunny.prefs(True).get('assistant'):
+          report = external.read_json(sunny.AUX_STATUS)
+          latency = report.get('latency')
+          if report.get('state') == 'unavailable':
+            self.role_value += " · " + tr("Load failed")
+          elif 0 <= now - report.get('eof', -10) < 2 and isinstance(latency, (float, int)):
+            states = {'ready': tr("Ready"), 'warming': tr("Warming up"), 'late': tr("Late")}
+            self.role_value += f" · {states.get(report.get('state'), '')} {latency*1000:.0f} ms"
+    return self.role_value

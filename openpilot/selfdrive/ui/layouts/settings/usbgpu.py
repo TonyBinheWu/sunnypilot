@@ -21,7 +21,12 @@ class UsbGpuLayout(Widget):
                                callback=lambda b=big, k=key: self.choices.choose(b, k),
                                enabled=lambda: ui_state.is_offroad() and not self.choices.busy)
                    for big, key, name in self.choices.items]
-    self._scroller = Scroller([*model_items,
+    for item, (big, key, _) in zip(model_items, self.choices.items, strict=True):
+      item.set_visible(lambda b=big, k=key: self.choices.includes(b,k))
+    group = button_item(lambda: tr("Model list"), self.choices.group_text, callback=self.choices.next_group)
+    self._scroller = Scroller([group, button_item(lambda: tr("eGPU role after reboot"), self.choices.aux_text,
+                  lambda: tr("Auxiliary mode runs a second driving model on the eGPU."),
+                  callback=self.choices.toggle_aux, enabled=ui_state.is_offroad), *model_items,
       text_item(lambda: tr("eGPU Status"), self._status),
       text_item(lambda: tr("USB Link"), self._link),
       text_item(lambda: tr("Connection Check"), lambda: localize_hardware_status(self._check_result)),

@@ -64,16 +64,29 @@ def project(box, size, inverse, height):
   return None
 
 
-def read_objects(now):
+def read_scene(now):
   try:
     with PACKET.open('rb') as f:
-      packet = json.loads(f.read(4096))
+      packet = json.loads(f.read(32768))
     if not 0 <= now - packet['eof'] * 1e-9 < .65:
-      return ()
-    return tuple((kind, d, y) for kind, d, y in packet['objects'][:24]
-                 if kind in CLASSES.values() and 1 <= d <= 65 and abs(y) <= 18)
-  except (OSError, ValueError, TypeError, KeyError):
-    return ()
+      return (), (), ()
+    objects = []
+    for item in packet['objects'][:24]:
+      kind, d, y, *extra = item
+      heading = extra[0] if extra else None
+      if kind in CLASSES.values() and 1 <= d <= 65 and abs(y) <= 18 and (heading is None or math.isfinite(heading)):
+        objects.append((kind, d, y, heading))
+    arms = tuple(tuple((x,z) for x,z in line) for line in packet.get('junction', [])[:8]
+                 if 2 <= len(line) <= 16 and all(math.isfinite(x) and math.isfinite(z) and abs(x)<75 and abs(z)<110 for x,z in line))
+    unplaced = tuple((kind, count) for kind, count in packet.get('unplaced', {}).items()
+                     if kind in CLASSES.values() and type(count) is int and 0 < count <= 24)
+    return tuple(objects), arms, unplaced
+  except (OSError, ValueError, TypeError, KeyError, IndexError, AttributeError):
+    return (), (), ()
+
+
+def read_objects(now):
+  return read_scene(now)[0]
 
 
 def main():
@@ -89,38 +102,61 @@ def main():
     os.sched_setaffinity(0, cores)
   cv2.setNumThreads(1)
   detector = RoadDetector()
-  sm = messaging.SubMaster(['liveCalibration', 'deviceState', 'roadCameraState'])
+  from openpilot.selfdrive.ui.onroad.scene_motion import SceneMotion
+  from openpilot.selfdrive.ui.onroad.scene_junction import JunctionView
+  tracker, junction = SceneMotion(), JunctionView()
+  sm = messaging.SubMaster(['liveCalibration', 'deviceState', 'roadCameraState', 'carState', 'livePose', 'gpsLocation', 'gpsLocationExternal'])
   camera = VisionIpcClient('camerad', VisionStreamType.VISION_STREAM_ROAD, True)
   while not camera.connect(False):
     time.sleep(.5)
   temporary = PACKET.with_suffix('.tmp')
+  previous_frame = previous_calibration = None
   while True:
     time.sleep(.25)
     buf = camera.recv(timeout_ms=50)
     sm.update(0)
-    if buf is None or not all(sm.valid[s] and sm.alive[s] for s in ('liveCalibration', 'deviceState', 'roadCameraState')):
+    if buf is None:
       continue
     eof = camera.timestamp_eof
     if not 0 <= time.monotonic() - eof * 1e-9 < .25:
       continue
     calib = sm['liveCalibration']
     config = DEVICE_CAMERAS.get((str(sm['deviceState'].deviceType), str(sm['roadCameraState'].sensor)))
-    if (config is None or (buf.width, buf.height) != (config.fcam.width, config.fcam.height) or calib.calStatus != 'calibrated'
-        or len(calib.height) != 1 or not .5 <= calib.height[0] <= 3 or len(calib.rpyCalib) != 3
-        or not np.isfinite(calib.rpyCalib).all()):
-      continue
-    inverse = np.linalg.inv(config.fcam.intrinsics @ view_frame_from_device_frame @ rot_from_euler(calib.rpyCalib))
+    inverse = None
+    if (all(sm.valid[s] and sm.alive[s] for s in ('liveCalibration','deviceState','roadCameraState')) and config is not None
+        and (buf.width, buf.height) == (config.fcam.width, config.fcam.height) and calib.calStatus == 'calibrated'
+        and len(calib.height) == 1 and .5 <= calib.height[0] <= 3 and len(calib.rpyCalib) == 3
+        and np.isfinite(calib.rpyCalib).all()):
+      inverse = np.linalg.inv(config.fcam.intrinsics @ view_frame_from_device_frame @ rot_from_euler(calib.rpyCalib))
     raw = np.frombuffer(buf.data, dtype=np.uint8)
     rows, stride, uv = buf.height, buf.stride, buf.uv_offset
     y = raw[:rows*stride].reshape(rows, stride)[:, :buf.width]
     chroma = raw[uv:uv+rows//2*stride].reshape(rows//2, stride//2, 2)[:, :buf.width//2]
     image = cv2.cvtColorTwoPlane(cv2.resize(y, (320, 320)), cv2.resize(chroma, (160, 160)), cv2.COLOR_YUV2BGR_NV12)
-    objects = []
+    objects, unplaced = [], {}
     for kind, box in detector.detect(image):
-      position = project(box, (buf.width, rows), inverse, calib.height[0])
+      position = project(box, (buf.width, rows), inverse, calib.height[0]) if inverse is not None else None
       if position:
         objects.append((kind, *position))
-    temporary.write_text(json.dumps({'frame': camera.frame_id, 'eof': eof, 'objects': objects}))
+      else:
+        unplaced[kind] = unplaced.get(kind, 0) + 1
+    frame = camera.frame_id
+    calibration = np.array([*calib.rpyCalib, calib.height[0]]) if inverse is not None else None
+    if (previous_frame is not None and frame <= previous_frame or calibration is None or previous_calibration is None
+        or np.max(np.abs(calibration[:3] - previous_calibration[:3])) > .004 or abs(calibration[3] - previous_calibration[3]) > .025):
+      tracker = SceneMotion()
+    previous_frame, previous_calibration = frame, calibration
+    ego = None
+    cs, pose = sm['carState'], sm['livePose']
+    if (all(sm.valid[k] and sm.alive[k] and abs(eof-sm.logMonoTime[k]) < 150_000_000 for k in ('carState', 'livePose'))
+        and cs.canValid and cs.gearShifter == 'drive' and pose.inputsOK and pose.sensorsOK and pose.posenetOK and pose.angularVelocityDevice.valid):
+      ego = cs.vEgo, pose.angularVelocityDevice.z
+    tracked = tracker.update(objects, eof*1e-9, ego)
+    try:
+      arms = junction.update(sm, eof*1e-9)
+    except (OSError, RuntimeError, ValueError, OverflowError):
+      arms = []
+    temporary.write_text(json.dumps({'frame': camera.frame_id, 'eof': eof, 'objects': tracked, 'junction': arms, 'unplaced': unplaced}))
     temporary.replace(PACKET)
 
 

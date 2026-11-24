@@ -100,3 +100,16 @@ def test_possible_junction_requires_two_measured_openings_and_narrowing():
   model.roadEdgeStds[0] = .2
   model.roadEdges[1] = Obj(x=x, y=[y + 4 for y in center])
   assert road_opening(model) is None
+
+
+def test_directional_meshes_and_crossroad_project_on_both_displays():
+  import math
+  for profile in defaults()['devices'].values():
+    scene = RealityScene(profile)
+    rect = rl.Rectangle(0,0,540,360)
+    scene.junction = [[(0,0),(0,24)], [(0,24),(18,24)], [(0,24),(-18,24)], [(0,24),(0,48)]]
+    def vertices(heading):
+      faces = scene.geometry(rect,None,None,objects=[('car',21,2,heading)],model_only=True)
+      return tuple((v.x,v.y) for v in faces[-1][0])
+    assert len({vertices(h) for h in (0,math.pi,math.pi/2,-math.pi/2)}) == 4
+    assert len(scene.geometry(rect,None,None,model_only=True)) == 4
