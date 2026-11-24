@@ -111,6 +111,8 @@ async def planner_status(request: web.Request) -> web.Response:
   if fresh(sm, "longitudinalPlan", .5, now):
     plan = sm["longitudinalPlan"]
     result["profile"] = plan.plannerProfile
+    if plan.visionPlannerSetup:
+      result["setup"] = plan.visionPlannerSetup
     if plan.speedConstraint == "stockLong":
       result["speed"] = "stockLong"
     elif fresh(sm, "carControl", .5, now):

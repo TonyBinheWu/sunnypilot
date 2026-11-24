@@ -8,6 +8,7 @@ import openpilot.cereal.messaging as messaging
 
 from openpilot.cereal import car, log
 
+from openpilot.common.driving_planner import CAMERA_ONLY_AUTO
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
 from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
@@ -124,8 +125,11 @@ class Car:
         with car.CarParams.from_bytes(cached_params_raw) as _cached_params:
           cached_params = _cached_params
 
-      self.CI = get_car(*self.can_callbacks, obd_callback(self.params), alpha_long_allowed, is_release, num_pandas, cached_params)
+      planner_mode = self.params.get_int("DrivingPlannerMode")
+      self.CI = get_car(*self.can_callbacks, obd_callback(self.params), alpha_long_allowed, is_release, num_pandas, cached_params,
+                        auto_long=planner_mode == CAMERA_ONLY_AUTO)
       self.CP = self.CI.CP
+      self.CP.drivingPlannerMode = planner_mode if planner_mode in (0, 1, 2, 3) else 0
 
       # continue onto next fingerprinting step in pandad
       self.params.put_bool("FirmwareQueryDone", True)
@@ -137,6 +141,8 @@ class Car:
     controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
     self.CP.passive = not controller_available or self.CP.dashcamOnly
     if self.CP.passive:
+      if self.CP.visionPlannerSetup:
+        self.CP.visionPlannerSetup = "passive"
       safety_config = structs.CarParams.SafetyConfig()
       safety_config.safetyModel = structs.CarParams.SafetyModel.noOutput
       self.CP.safetyConfigs = [safety_config]

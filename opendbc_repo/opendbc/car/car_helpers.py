@@ -8,11 +8,13 @@ from opendbc.car.carlog import carlog
 from opendbc.car.structs import CarParams, CarParamsT
 from opendbc.car.fingerprints import eliminate_incompatible_cars, all_legacy_fingerprint_cars
 from opendbc.car.fw_versions import ObdCallback, get_fw_versions_ordered, get_present_ecus, match_fw_to_car
+from opendbc.car.hyundai.values import CAMERA_SCC_CAR, CANFD_RADAR_SCC_CAR, CANFD_UNSUPPORTED_LONGITUDINAL_CAR, UNSUPPORTED_LONGITUDINAL_CAR
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.selected_car import get_selected_car_platform
 from opendbc.car.values import BRANDS
 from opendbc.car.vin import get_vin, is_valid_vin, VIN_UNKNOWN
 
+from openpilot.common.driving_planner import auto_alpha_candidate
 from openpilot.common.params import Params
 
 
@@ -170,7 +172,7 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
 
 
 def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multiplexing: ObdCallback, alpha_long_allowed: bool,
-            is_release: bool, num_pandas: int = 1, cached_params: CarParamsT | None = None):
+            is_release: bool, num_pandas: int = 1, cached_params: CarParamsT | None = None, *, auto_long: bool = False):
   selected_car = Params().get("CarSelected3")
   forced_candidate = get_selected_car_platform(selected_car) if selected_car else None
 
@@ -193,13 +195,25 @@ def get_car(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_multip
 
   Params().put("FingerPrints", str(fingerprints))
   CarInterface = interfaces[candidate]
-  CP: CarParams = CarInterface.get_params(candidate, fingerprints, car_fw, alpha_long_allowed, is_release, docs=False)
+  params = Params()
+  # Resolve the current fingerprint and harness before asking for optional longitudinal.
+  CP: CarParams = CarInterface.get_params(candidate, fingerprints, car_fw, alpha_long_allowed and not auto_long, is_release, docs=False)
+  if auto_long:
+    CP.visionPlannerSetup = "native" if CP.openpilotLongitudinalControl else "stock"
+  if auto_long and auto_alpha_candidate(CP, recognized=exact_match and source != CarParams.FingerprintSource.fixed,
+                                        release=params.get_bool("IsReleaseBranch"),
+                                        stock_requested=CP.brand == "hyundai" and params.get_int("HyundaiCameraSCC") == 3):
+    unsupported = candidate in (UNSUPPORTED_LONGITUDINAL_CAR | CANFD_UNSUPPORTED_LONGITUDINAL_CAR | CANFD_RADAR_SCC_CAR | CAMERA_SCC_CAR)
+    if params.get_bool("OpenpilotEnabledToggle") and not unsupported:
+      alpha_cp = CarInterface.get_params(candidate, fingerprints, car_fw, True, is_release, docs=False)
+      if alpha_cp.openpilotLongitudinalControl and not alpha_cp.dashcamOnly:
+        CP = alpha_cp
+        CP.visionPlannerSetup = "alpha"
   CP.carVin = vin
   CP.carFw = car_fw
   CP.fingerprintSource = source
   CP.fuzzyFingerprint = not exact_match
 
-  params = Params()
   print("Carrot GitBranch = {}, {}".format(format_git_source(params.get("GitRemote"), params.get("GitBranch")),
                                          params.get("GitCommitDate")))
 

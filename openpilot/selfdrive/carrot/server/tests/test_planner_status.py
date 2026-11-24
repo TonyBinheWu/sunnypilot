@@ -11,7 +11,7 @@ def test_status_uses_fresh_active_planner_and_control_messages():
     def update(self, timeout):
       assert timeout == 0
 
-  sm = Replay(longitudinalPlan=SimpleNamespace(plannerProfile="upstream", speedConstraint="e2e"),
+  sm = Replay(longitudinalPlan=SimpleNamespace(plannerProfile="upstream", speedConstraint="e2e", visionPlannerSetup=""),
               controlsState=SimpleNamespace(steeringInfluence="model+limit"),
               carControl=SimpleNamespace(longActive=True))
   sm.valid = sm.seen = dict.fromkeys(sm, True)
@@ -22,6 +22,8 @@ def test_status_uses_fresh_active_planner_and_control_messages():
     return json.loads(asyncio.run(planner_status(request)).text)
 
   assert read() == {"profile": "upstream", "speed": "e2e", "steering": "model+limit"}
+  sm["longitudinalPlan"].visionPlannerSetup = "stock"
+  assert read()["setup"] == "stock"
   sm["carControl"].longActive = False
   assert read()["speed"] == "inactive"
   sm["longitudinalPlan"].speedConstraint = "stockLong"

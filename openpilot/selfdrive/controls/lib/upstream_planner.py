@@ -218,6 +218,8 @@ class LongitudinalPlanner:
     longitudinalPlan.allowBrake = True
 
     longitudinalPlan.plannerProfile = 'visionE2e' if self.vision_only else 'upstream'
+    if self.vision_only:
+      longitudinalPlan.visionPlannerSetup = getattr(self.CP, "visionPlannerSetup", "")
     longitudinalPlan.speedConstraint = self.speed_reason if self.CP.openpilotLongitudinalControl else 'stockLong'
     longitudinalPlan.allowThrottle = True
     longitudinalPlan.vTargetNow = float(max(0., sm['carState'].vEgo + self.output_a_target * self.dt))

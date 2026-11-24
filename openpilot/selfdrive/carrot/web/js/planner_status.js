@@ -24,11 +24,13 @@
   }
   let timer, generation = 0;
   function render(state) {
+    const setup = {native: '視覺縱橫向', alpha: '視覺縱橫向（Alpha）', stock: '視覺轉向／原廠巡航', passive: '僅行車記錄'};
     const ceiling = state.cruiseCeilingKph;
     document.getElementById('plannerCeiling').textContent = Number.isFinite(ceiling) ? ceiling + ' km/h' : '—';
     document.getElementById('visionSetSpeed').textContent = Number.isFinite(ceiling) ? ceiling : '—';
     for (const [id, key] of [['plannerProfile', 'profile'], ['speedConstraint', 'speed'], ['steeringInfluence', 'steering']]) {
-      document.getElementById(id).textContent = describe(state[key]);
+      document.getElementById(id).textContent = key === 'profile' && setup[state.setup]
+        ? '純視覺自動適配 · ' + setup[state.setup] : describe(state[key]);
     }
   }
   async function poll(current) {

@@ -118,9 +118,10 @@ class SelfdriveD:
     car_recognized = self.CP.brand != 'mock'
 
     # cleanup old params
-    if not self.CP.alphaLongitudinalAvailable:
+    self.auto_vision = bool(self.CP.visionPlannerSetup)
+    if not self.auto_vision and not self.CP.alphaLongitudinalAvailable:
       self.params.remove("AlphaLongitudinalEnabled")
-    if not self.CP.openpilotLongitudinalControl:
+    if not self.auto_vision and not self.CP.openpilotLongitudinalControl:
       self.params.remove("ExperimentalMode")
 
     self.CS_prev = car.CarState.new_message()
@@ -817,7 +818,8 @@ class SelfdriveD:
   def params_thread(self, evt):
     while not evt.is_set():
       self.is_metric = self.params.get_bool("IsMetric")
-      self.experimental_mode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
+      requested = not self.CP.passive if self.auto_vision else self.params.get_bool("ExperimentalMode")
+      self.experimental_mode = requested and self.CP.openpilotLongitudinalControl
       self.personality = self.read_personality_param()
       time.sleep(0.1)
 

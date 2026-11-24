@@ -2,6 +2,7 @@
 import time
 
 from openpilot.cereal import car
+from openpilot.common.driving_planner import active_planner_mode, camera_only
 from openpilot.common.params import Params
 from openpilot.common.realtime import Priority, config_realtime_process
 from openpilot.common.swaglog import cloudlog
@@ -24,9 +25,9 @@ MIN_LONGITUDINAL_PLAN_INTERVAL_NS = 25_000_000
 
 
 def make_longitudinal_planner(CP, mode):
-  if mode in (1, 2):
+  if mode == 1 or camera_only(mode):
     from openpilot.selfdrive.controls.lib.upstream_planner import LongitudinalPlanner
-    return LongitudinalPlanner(CP, vision_only=mode == 2)
+    return LongitudinalPlanner(CP, vision_only=camera_only(mode))
   else:
     from openpilot.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlanner
   return LongitudinalPlanner(CP)
@@ -51,8 +52,8 @@ def main():
     CP.radarUnavailable,
     params.get_int("EnableRadarTracks"),
   )
-  mode = params.get_int("DrivingPlannerMode")
-  upstream = mode in (1, 2)
+  mode = active_planner_mode(CP, params)
+  upstream = mode == 1 or camera_only(mode)
   live_tracks_longitudinal = not upstream and CP.brand == "hyundai" and radar_track_mode >= 1
 
   ldw = LaneDepartureWarning()

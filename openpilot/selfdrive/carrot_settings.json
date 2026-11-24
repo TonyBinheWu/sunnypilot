@@ -3890,18 +3890,18 @@
       "group": "차량간격",
       "name": "DrivingPlannerMode",
       "title": "주행 플래너",
-      "descr": "다음 주행부터 적용",
+      "descr": "다음 주행부터 적용. 자동 설정은 지원 차량에서 Alpha 종방향 제어를 켤 수 있으며 일부 차량은 순정 AEB 또는 레이더가 비활성화됩니다.",
       "egroup": "FDIST",
       "etitle": "Driving planner",
-      "edescr": "Applies on the next drive.",
+      "edescr": "Applies on the next drive. Automatic setup may enable Alpha longitudinal, which disables stock AEB or radar on some vehicles. Other vehicles retain stock cruise.",
       "cgroup": "跟车距离",
       "ctitle": "驾驶规划器",
-      "cdescr": "下次行程生效。",
+      "cdescr": "下次行程生效。自动适配可能启用 Alpha，部分车型会停用原厂 AEB 或雷达。",
       "tgroup": "跟車距離",
       "ttitle": "駕駛規劃器",
-      "tdescr": "下次行程生效。上游模式使用視覺、跟車與巡航上限決定加速度，並跟隨模型轉向。純視覺模式以鏡頭模型和視覺前車規劃，保留巡航上限；使用原廠巡航時僅提供視覺橫向。",
+      "tdescr": "下次行程生效。車型自動適配會優先使用車型原本支援的縱向，符合條件時會啟用 Alpha（部分車款會停用原廠 AEB 或雷達），其餘沿用原廠巡航。上游模式使用視覺、跟車與巡航上限決定加速度，並跟隨模型轉向。純視覺模式以鏡頭模型和視覺前車規劃，保留巡航上限；使用原廠巡航時僅提供視覺橫向。",
       "min": 0,
-      "max": 2,
+      "max": 3,
       "default": 0,
       "unit": 1,
       "control": "select",
@@ -3909,22 +3909,26 @@
         "ko": [
           "CarrotPlanner",
           "openpilot Autospeed",
-          "순수 비전 E2E (실험)"
+          "순수 비전 E2E (실험)",
+          "순수 비전 (차량 자동 설정)"
         ],
         "en": [
           "CarrotPlanner",
           "openpilot Autospeed",
-          "Vision-only E2E (experimental)"
+          "Vision-only E2E (experimental)",
+          "Vision E2E (automatic vehicle setup)"
         ],
         "zh": [
           "CarrotPlanner",
           "openpilot Autospeed",
-          "纯视觉端到端（实验）"
+          "纯视觉端到端（实验）",
+          "纯视觉端到端（车型自动适配）"
         ],
         "zh-tw": [
           "CarrotPlanner",
           "openpilot Autospeed",
-          "純視覺端到端（實驗）"
+          "純視覺端到端（實驗）",
+          "純視覺端到端（車型自動適配）"
         ]
       }
     },

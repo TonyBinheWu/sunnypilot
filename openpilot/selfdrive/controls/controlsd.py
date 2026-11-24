@@ -6,6 +6,7 @@ from numbers import Number
 from openpilot.cereal import car, log
 import openpilot.cereal.messaging as messaging
 from openpilot.common.constants import CV
+from openpilot.common.driving_planner import active_planner_mode, camera_only
 from openpilot.common.params import Params
 from openpilot.common.pid import MultiplicativeUnwindPID
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
@@ -60,12 +61,12 @@ def lateral_control_allowed(selfdrive_active: bool, always_lateral: bool, lat_en
 class Controls:
   def __init__(self) -> None:
     self.params = Params()
-    self.vision_profile_requested = self.params.get_int("DrivingPlannerMode") == 2
     self.hkg_phase1_enabled = False
     cloudlog.info("controlsd is waiting for CarParams")
     self.CP = messaging.log_from_bytes(self.params.get("CarParams", block=True), car.CarParams)
     cloudlog.info("controlsd got CarParams")
 
+    self.vision_profile_requested = camera_only(active_planner_mode(self.CP, self.params))
     self.CI = interfaces[self.CP.carFingerprint](self.CP)
     self.physical_blinker_hold = HoldReader(self.CP.carFingerprint, self.params)
 

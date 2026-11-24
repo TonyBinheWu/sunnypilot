@@ -47,11 +47,12 @@ function getLocalDeviceGroupParamNames(groupId) {
     DEVICE_TOGGLES.forEach((entry) => {
       if (entry.confirmedParam) names.push(entry.confirmedParam);
     });
-    names.push("LongitudinalPersonality");
+    names.push("LongitudinalPersonality", "DrivingPlannerMode");
     return names;
   }
   if (groupId === "Developer") {
     return [
+      "DrivingPlannerMode",
       ...DEVICE_DEVELOPER_TOGGLES.map((entry) => entry.param),
       "GithubUsername",
       "GithubSshKeys",
@@ -526,6 +527,10 @@ function renderDeviceGroupItems(groupId, values) {
 function renderDeviceToggleItems(values) {
   let html = "";
   DEVICE_TOGGLES.forEach((toggle) => {
+    if (Number(values.DrivingPlannerMode) === 3 && toggle.param === "ExperimentalMode") {
+      html += renderDeviceInfoRow(getUIText(toggle.labelKey, toggle.defaultLabel), plannerManagedLabel());
+      return;
+    }
     html += renderDeviceToggleRow(
       toggle.param,
       getUIText(toggle.labelKey, toggle.defaultLabel),
@@ -550,9 +555,18 @@ function renderDeviceToggleItems(values) {
   return html;
 }
 
+function plannerManagedLabel() {
+  return String(LANG).startsWith("zh") ? "由純視覺規劃器依車型管理" :
+    LANG === "ko" ? "비전 플래너 자동 설정" : "Managed by vision planner";
+}
+
 function renderDeviceDeveloperItems(values) {
   let html = renderSshKeysRow(values.SshKeyStatus || values.GithubUsername || "", Boolean(values.GithubSshKeys));
   DEVICE_DEVELOPER_TOGGLES.forEach((toggle) => {
+    if (Number(values.DrivingPlannerMode) === 3 && toggle.param === "AlphaLongitudinalEnabled") {
+      html += renderDeviceInfoRow(getUIText(toggle.labelKey, toggle.defaultLabel), plannerManagedLabel());
+      return;
+    }
     html += renderDeviceToggleRow(
       toggle.param,
       getUIText(toggle.labelKey, toggle.defaultLabel),

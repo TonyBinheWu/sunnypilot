@@ -657,6 +657,8 @@ struct CarOutput {
 # ****** car param ******
 
 struct CarParams {
+  drivingPlannerMode @80 :Int8 = -1; # profile sampled at fingerprinting, absent in older logs
+  visionPlannerSetup @79 :Text; # per-ignition longitudinal provider for automatic camera-only mode
   brand @0 :Text;  # Designates which group a platform falls under. Each folder in opendbc/car is assigned one brand string
   carFingerprint @1 :Text;
   fuzzyFingerprint @55 :Bool;

@@ -156,6 +156,7 @@ class VCruiseHelper:
 
 
 
+from openpilot.common.driving_planner import active_planner_mode, camera_only
 from openpilot.common.params import Params
 #from openpilot.selfdrive.selfdrived.events import Events
 #EventName = log.OnroadEvent.EventName
@@ -169,7 +170,7 @@ class VCruiseCarrot:
     self.frame = 0
     self.params_memory = Params("/dev/shm/params")
     self.params = Params()
-    self.vision_only = self.params.get_int("DrivingPlannerMode") == 2
+    self.vision_only = camera_only(active_planner_mode(CP, self.params))
     self.periodic_settings = None
     self.cruise_stage_ms = {}
     if cached_settings:

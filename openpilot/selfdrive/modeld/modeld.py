@@ -13,6 +13,7 @@ from opendbc.car.car_helpers import get_demo_car_params
 from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.modeld.egpu_events import log_event
 from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
+from openpilot.common.driving_planner import active_planner_mode, camera_only
 from openpilot.common.params import Params
 from openpilot.common.stopping_params import get_stopping_speed
 from openpilot.common.filter_simple import FirstOrderFilter
@@ -420,7 +421,7 @@ def main(demo=False):
   from openpilot.selfdrive.car.voice_indicator import native_indicator
   # The camera-only profile leaves lane changes to the driver. A neutral
   # desire prevents radar-assisted maneuvers from feeding the next model frame.
-  vision_only = params.get_int("DrivingPlannerMode") == 2
+  vision_only = camera_only(active_planner_mode(CP, params))
   DH = DesireHelper(fingerprint=CP.carFingerprint, native_voice_signal=native_indicator(CP) is not None,
                     tesla_auto_signals=CP.brand == "tesla" and bool(CP.flags & TeslaFlags.AUTO_TURN_SIGNALS),
                     boundary_indicator_supported=CP.carFingerprint == 'HYUNDAI_IONIQ_5_PE')
