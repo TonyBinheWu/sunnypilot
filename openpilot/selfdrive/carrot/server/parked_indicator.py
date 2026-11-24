@@ -50,5 +50,6 @@ async def parked_indicator(request):
     if isinstance(receipt, dict) and receipt.get("stamp") == stamp:
       if receipt.get("accepted") is True:
         return web.json_response({"ok": True})
-      return web.json_response({"ok": False, "reason": receipt.get("reason") or "controller_rejected"}, status=409)
+      details = {key: receipt[key] for key in ("testSetting", "gear") if key in receipt}
+      return web.json_response({"ok": False, "reason": receipt.get("reason") or "controller_rejected", **details}, status=409)
   return web.json_response({"ok": False, "reason": "unconfirmed"}, status=503)

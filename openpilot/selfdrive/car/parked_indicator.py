@@ -28,8 +28,14 @@ class ParkedIndicator:
     self.seen = stamp
     return stamp, side
 
-  def reply(self, stamp, accepted, reason=None):
+  def reply(self, stamp, accepted, reason=None, *, setting=None, gear=None):
     try:
-      atomic_json(self.root / "reply.json", {"stamp": stamp, "accepted": accepted, "reason": reason})
+      receipt = {"stamp": stamp, "accepted": accepted, "reason": reason}
+      if not accepted:
+        if setting is not None:
+          receipt["testSetting"] = setting
+        if gear is not None:
+          receipt["gear"] = gear
+      atomic_json(self.root / "reply.json", receipt)
     except OSError:
       pass

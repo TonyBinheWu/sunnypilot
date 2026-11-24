@@ -133,7 +133,14 @@ class SpasSignals:
       tap = self.web_indicator.take(now)
       web_request = tap is not None and setting == self.test_setting == 0 and self.test_request is None
       accepted = False
-      reason = 'another_test_selected'
+      reason = None
+      if tap is not None and not web_request:
+        if setting:
+          reason = 'another_test_selected'
+        elif self.test_request is not None:
+          reason = 'parked_test_in_progress'
+        else:
+          reason = 'test_selection_reset'
       if web_request or (setting != self.test_setting and setting in range(1, 19)):
         # Consume the edge even when the parked guard fails; never run later.
         cc, ss = sm['carControl'], sm['selfdriveState']
@@ -193,7 +200,7 @@ class SpasSignals:
           self.pulse_started = None
           self.lamp_confirmed = False
       if tap is not None:
-        self.web_indicator.reply(tap[0], bool(web_request and accepted), reason)
+        self.web_indicator.reply(tap[0], bool(web_request and accepted), reason, setting=setting, gear=str(cs.gearShifter))
       self.test_setting = setting
       self.settings_at = now+.1
     record = self.worker.latest() if self.worker is not None else None

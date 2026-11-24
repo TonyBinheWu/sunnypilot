@@ -2620,7 +2620,9 @@ function parkedIndicatorButtons() {
     copyStatus.textContent = "";
     const messages = {
       busy: "兩次請求相隔不到一秒，這次未送出。",
-      another_test_selected: "其他方向燈測試已選取或仍在執行。",
+      another_test_selected: "請將啟動設定的「Parked SPAS indicator test」設為 0（取消），待測試結束後再按。",
+      parked_test_in_progress: "上一個方向燈測試尚未結束，請稍候。",
+      test_selection_reset: "控制器剛收到取消設定，請稍候再按。",
       not_in_park: "車機讀到的檔位不是 P 檔。",
       standstill_unconfirmed: "尚未確認車輛已完全靜止。",
       assistance_active: "駕駛輔助仍啟用中。",
@@ -2671,7 +2673,13 @@ function parkedIndicatorButtons() {
         });
         const result = await response.json().catch(() => null);
         if (response.ok && result?.ok === true) feedback.textContent = labels[3];
-        else recordError(labels[index + 1], `HTTP ${response.status} | ${result?.reason || (result?.ok === false ? "controller_rejected" : "unexpected_response")}`);
+        else {
+          const details = [];
+          if (Number.isInteger(result?.testSetting)) details.push("CanfdBlinkerTest=" + result.testSetting);
+          if (typeof result?.gear === "string") details.push("gear=" + result.gear);
+          recordError(labels[index + 1], [`HTTP ${response.status}`, result?.reason ||
+            (result?.ok === false ? "controller_rejected" : "unexpected_response"), ...details].join(" | "));
+        }
       } catch (error) {
         recordError(labels[index + 1], controller.signal.aborted ? "request_timeout" : `network_error | ${error.message}`);
       } finally {

@@ -513,3 +513,23 @@ def test_web_lamp_tap_deadline_and_driver_override(monkeypatch, tmp_path, side, 
     assert s.test_until == 10.02
   else:
     assert not sent and s.test_request is None
+
+@pytest.mark.parametrize("setting,previous,in_progress,reason", [
+  (2, 2, False, "another_test_selected"),
+  (0, 0, True, "parked_test_in_progress"),
+  (0, 2, False, "test_selection_reset"),
+])
+def test_ev6_web_tap_conflict_reports_controller_snapshot(monkeypatch, tmp_path, setting, previous, in_progress, reason):
+  from openpilot.selfdrive.carrot.bluetooth.model import atomic_json, read_json
+  sig, params, cs, sm = setup(monkeypatch, "KIA_EV6")
+  sig.web_indicator.root = tmp_path
+  sig.web_indicator.started = 9.
+  sig.test_setting = previous
+  params.value = setting
+  if in_progress:
+    sig.test_request = "park:1"
+  atomic_json(tmp_path / "request.json", {"stamp": 10., "side": "left"})
+  sig.update(cs, sm, 10., True)
+  assert read_json(tmp_path / "reply.json") == {
+    "stamp": 10., "accepted": False, "reason": reason, "testSetting": setting, "gear": "park",
+  }
