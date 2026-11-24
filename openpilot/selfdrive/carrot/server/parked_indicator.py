@@ -5,7 +5,7 @@ from urllib.parse import urlsplit
 
 from aiohttp import web
 
-from openpilot.selfdrive.car.parked_indicator import ACCEPT_WINDOW, ROOT
+from openpilot.selfdrive.car.parked_indicator import ACCEPT_WINDOW, DURATION, ROOT
 from openpilot.selfdrive.carrot.bluetooth.model import atomic_json, read_json
 
 
@@ -49,7 +49,14 @@ async def parked_indicator(request):
     receipt = read_json(ROOT / "reply.json", {})
     if isinstance(receipt, dict) and receipt.get("stamp") == stamp:
       if receipt.get("accepted") is True:
-        return web.json_response({"ok": True})
+        while time.monotonic() < stamp + DURATION + .5:
+          lamp = read_json(ROOT / "lamp.json", {})
+          if isinstance(lamp, dict) and lamp.get("stamp") == stamp:
+            if lamp.get("observed") is True:
+              return web.json_response({"ok": True, "lampObserved": True})
+            return web.json_response({"ok": False, "reason": lamp.get("reason") or "lamp_feedback_missing"}, status=409)
+          await asyncio.sleep(.1)
+        return web.json_response({"ok": False, "reason": "lamp_feedback_missing"}, status=504)
       details = {key: receipt[key] for key in ("testSetting", "gear") if key in receipt}
       return web.json_response({"ok": False, "reason": receipt.get("reason") or "controller_rejected", **details}, status=409)
   return web.json_response({"ok": False, "reason": "unconfirmed"}, status=503)

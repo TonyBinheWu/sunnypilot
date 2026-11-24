@@ -2567,10 +2567,10 @@ function parkedIndicatorButtons() {
     ko: ["오류 기록", "기록 복사", "복사됨", "기록을 길게 눌러 복사하세요", "오류 기록 없음"],
   })[LANG] || ["Error history", "Copy log", "Copied", "Select the log and copy it", "No errors recorded"];
   const labels = ({
-    "zh-tw": ["停車測試方向燈", "左燈 7 秒", "右燈 7 秒", "已接受請求，請查看實體方向燈。", "未能確認。需要相容 SPAS、P 檔靜止且輔助已解除。"],
-    zh: ["驻车转向灯测试", "左灯 7 秒", "右灯 7 秒", "已接受请求，请查看实际灯光。", "未能确认。需要兼容 SPAS、P 挡静止且辅助已解除。"],
-    ko: ["주차 중 방향지시등 테스트", "왼쪽 7초", "오른쪽 7초", "요청이 접수되었습니다. 실제 램프를 확인하세요.", "요청을 확인할 수 없습니다. 호환 SPAS, P단 정차 및 보조 해제가 필요합니다."],
-  })[LANG] || ["Parked indicator test", "Left · 7 s", "Right · 7 s", "Request accepted. Check the vehicle lamps.", "Unconfirmed. Requires compatible SPAS, Park, standstill and disengaged assistance."];
+    "zh-tw": ["停車測試方向燈", "左燈 7 秒", "右燈 7 秒", "車輛已回報該側方向燈亮起。", "未能確認。需要相容 SPAS、P 檔靜止且輔助已解除。"],
+    zh: ["驻车转向灯测试", "左灯 7 秒", "右灯 7 秒", "车辆已回报该侧转向灯亮起。", "未能确认。需要兼容 SPAS、P 挡静止且辅助已解除。"],
+    ko: ["주차 중 방향지시등 테스트", "왼쪽 7초", "오른쪽 7초", "차량에서 해당 방향 지시등 점등을 보고했습니다.", "요청을 확인할 수 없습니다. 호환 SPAS, P단 정차 및 보조 해제가 필요합니다."],
+  })[LANG] || ["Parked indicator test", "Left · 7 s", "Right · 7 s", "Vehicle reported the selected indicator on.", "Unconfirmed. Requires compatible SPAS, Park, standstill and disengaged assistance."];
   const card = document.createElement("section");
   card.className = "setting";
   const title = document.createElement("strong");
@@ -2619,6 +2619,11 @@ function parkedIndicatorButtons() {
     renderLog();
     copyStatus.textContent = "";
     const messages = {
+      lamp_feedback_missing: "控制器已受理，但未確認該側燈號亮起。",
+      session_timeout: "停車輔助 ECU 未在期限內回覆。",
+      ecu_rejected: "停車輔助 ECU 拒絕了請求。",
+      disable_timeout: "未收到停車輔助 ECU 的第二階段回覆。",
+      ecu_not_quiet: "原車 SPAS 仍在傳送，測試已中止。",
       busy: "兩次請求相隔不到一秒，這次未送出。",
       another_test_selected: "請將啟動設定的「Parked SPAS indicator test」設為 0（取消），待測試結束後再按。",
       parked_test_in_progress: "上一個方向燈測試尚未結束，請稍候。",
@@ -2663,16 +2668,18 @@ function parkedIndicatorButtons() {
     button.textContent = labels[index + 1];
     button.onclick = async () => {
       for (const action of actions.children) action.disabled = true;
-      feedback.textContent = "";
+      feedback.textContent = ({"zh-tw": "等待車輛回報方向燈狀態…", zh: "等待车辆回报转向灯状态…",
+        ko: "차량의 방향지시등 상태를 기다리는 중…"})[LANG] || "Waiting for vehicle indicator feedback…";
       const started = performance.now();
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
       try {
         const response = await fetch("/api/hyundai/parked-indicator/" + side, {
           method: "POST", headers: {"Content-Type": "application/json"}, body: "{}", signal: controller.signal,
         });
         const result = await response.json().catch(() => null);
-        if (response.ok && result?.ok === true) feedback.textContent = labels[3];
+        if (response.ok && result?.lampObserved === true) feedback.textContent = labels[3];
+        else if (response.ok && result?.ok === true) recordError(labels[index + 1], "HTTP 200 | lamp_feedback_missing");
         else {
           const details = [];
           if (Number.isInteger(result?.testSetting)) details.push("CanfdBlinkerTest=" + result.testSetting);

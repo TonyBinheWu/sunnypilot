@@ -21,6 +21,7 @@ class SpasSignals:
     self.feedback_at = self.settings_at = 0.
     self.worker_retry = 0.
     self.web_indicator = ParkedIndicator()
+    self.web_feedback_stamp = None
     self.web_active = False
     self.test_setting = 0
     self.test_request = None
@@ -180,6 +181,7 @@ class SpasSignals:
           self.test_direction = 'left' if setting % 2 else 'right'
           if web_request:
             self.test_until, self.test_direction = tap[0] + DURATION, tap[1]
+            self.web_feedback_stamp = tap[0]
           self.test_pulse = setting in (3, 4, 7, 8, 9, 10, 11, 12)
           self.test_direct = direct
           self.test_hold = setting in (3, 4, 7, 8, 11, 12)
@@ -264,6 +266,15 @@ class SpasSignals:
     sends = self.session.update(now, healthy=healthy, request=None if parked_selected else request,
                                 direction=None if parked_selected else direction,
                                 duration=DURATION if self.web_active else 3. if self.test_request is not None else 300., driver_override=self.driver_override)
+    if self.web_feedback_stamp is not None:
+      observed = (self.session.state == 'active' and request == self.test_request and healthy and continuous
+                  and not self.driver_override and str(getattr(cs, 'turnLampState', 'unknown')) == self.test_direction)
+      reason = self.session.reason or ('lamp_feedback_missing' if now >= self.test_until else None)
+      if reason == 'request_ended' and now >= self.test_until:
+        reason = 'lamp_feedback_missing'
+      if observed or reason:
+        self.web_indicator.finish(self.web_feedback_stamp, observed, None if observed else reason)
+        self.web_feedback_stamp = None
     self.hold_value = 1  # suppress the old USB2CAN/automatic-lane hold while selected
     direct_active = (direct and request == self.test_request and healthy and not self.driver_override and
                      self.test_can_health is not None and self.can_health(sm['pandaStates']) == self.test_can_health and

@@ -23,6 +23,11 @@ def test_browser_waits_for_car_controller_receipt(tmp_path, monkeypatch, accepte
     when, side = reader.take(api.time.monotonic())
     assert side == "left"
     reader.reply(when, accepted, None if accepted else "stalk_data_not_ready", setting=0, gear="park")
+    if accepted:
+      reader.finish(when - 1, True, None)
+      await asyncio.sleep(.12)
+      assert not task.done()
+      reader.finish(when, True, None)
     response = await task
     assert json.loads(response.text)["ok"] is accepted
     if not accepted:
