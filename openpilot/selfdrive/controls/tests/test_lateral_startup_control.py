@@ -59,7 +59,7 @@ def control_fixture(phase1=False, cp_override=None):
           torque_from_lateral_accel=lambda: partial(CarInterfaceBase.torque_from_lateral_accel_linear, None),
           get_pid_accel_limits=lambda *args: (-3.0, 2.0))
   sm = Messages()
-  sm.update(longitudinalPlan=NS(), radarState=NS(), carrotMan=NS(vTurnSpeed=100), liveDelay=NS(lateralDelay=0.1))
+  sm.update(longitudinalPlan=log.LongitudinalPlan.new_message(), radarState=NS(), carrotMan=NS(vTurnSpeed=100), liveDelay=NS(lateralDelay=0.1))
   sm.frame = 1
   sm.recv_time = {'modelV2': time.monotonic()}
   sm.recv_frame = {'longitudinalPlan': 1}
@@ -73,7 +73,8 @@ def control_fixture(phase1=False, cp_override=None):
     lateral = LatControlAngle(cp, ci)
   else:
     lateral = LatControlTorque(cp, ci)
-  control = NS(hkg_phase1_enabled=phase1, CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=lateral,
+  control = NS(vision_profile_requested=False, sunny_profile=False, steering_selected=True, blinker_pause_speed=0.,
+               hkg_phase1_enabled=phase1, CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=lateral,
                LoC=NS(reset=lambda: None, update=lambda *args: (0.0, 0.0, 0.0), long_control_state='off'),
                carrot_controls=NS(lat_suspend_control=lambda cs, active: active), is_vw_meb=False,
                desired_curvature=0.0, lateral_startup=LateralStartupGate(), lateral_started=False,
@@ -203,3 +204,25 @@ def test_phase1_complete_loop_driver_and_stale_model_use_original_response(veto)
       control.sm.recv_time['modelV2'] = time.monotonic() - 1.
     outputs.append(step()[0].actuators.curvature)
   assert outputs[0] == outputs[1]
+
+@pytest.mark.parametrize("selected,speed,left,right,expected", [
+  (True, 4., True, False, False), (True, 4., False, True, False),
+  (True, 4., True, True, True), (True, 4., False, False, True),
+  (True, 12., True, False, True), (False, 12., False, False, False),
+])
+def test_sunny_lateral_selection_does_not_toggle_longitudinal(selected, speed, left, right, expected):
+  control, step = control_fixture()
+  cp = control.CP.as_builder()
+  cp.openpilotLongitudinalControl = True
+  control.CP = cp
+  control.sunny_profile = True
+  control.steering_selected = selected
+  control.blinker_pause_speed = 20 * CV.KPH_TO_MS
+  sm = control.sm
+  sm.valid["longitudinalPlan"] = sm.alive["longitudinalPlan"] = sm.freq_ok["longitudinalPlan"] = True
+  sm["longitudinalPlan"].plannerProfile = "sunny"
+  sm["carState"].vEgo, sm["carState"].leftBlinker, sm["carState"].rightBlinker = speed, left, right
+  sm["selfdriveState"].enabled = sm["selfdriveState"].active = True
+  cc, _ = step()
+  assert cc.latActive == expected
+  assert cc.longActive

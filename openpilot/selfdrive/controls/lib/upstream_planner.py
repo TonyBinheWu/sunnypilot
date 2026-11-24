@@ -2,6 +2,8 @@
 import math
 import numpy as np
 
+from openpilot.common.params import Params
+
 import openpilot.cereal.messaging as messaging
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
 from openpilot.cereal import log
@@ -47,6 +49,22 @@ def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt):
   return target_accel
 
 
+def assisted_ceiling(sm, cruise, map_curve, speed_limit):
+  reason = 'cruise'
+  stamp = sm.logMonoTime['modelV2']
+  if map_curve and sm.all_checks(['carrotMan']):
+    road = sm['carrotMan']
+    cap = road.routeCurveKph * CV.KPH_TO_MS
+    if (0 < road.positionFixMonoTime and 0 <= stamp - road.positionFixMonoTime < 2e9 and
+        0 <= stamp - sm.logMonoTime['carrotMan'] < 2e9 and 0 < cap < cruise):
+      cruise, reason = cap, 'mapCurve'
+  if speed_limit and sm.all_checks(['navInstruction']):
+    cap = sm['navInstruction'].speedLimit
+    if 0 <= stamp - sm.logMonoTime['navInstruction'] < 2e9 and 0 < cap < cruise:
+      cruise, reason = cap, 'speedLimit'
+  return cruise, reason
+
+
 def camera_leads(model, v_ego):
   """Build the MPC's two lead observations from the current camera frame."""
   state = log.RadarState.new_message()
@@ -74,8 +92,14 @@ def camera_leads(model, v_ego):
 
 
 class LongitudinalPlanner:
-  def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL, *, vision_only=False):
+  def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL, *, vision_only=False, sunny=False):
     self.vision_only = vision_only
+    self.sunny = sunny
+    if sunny:
+      settings = Params()
+      self.vision_curve = settings.get_bool("SunnyVisionCurve")
+      self.map_curve = settings.get_bool("SunnyMapCurve")
+      self.speed_limit = settings.get_bool("SunnySpeedLimit")
     self.CP = CP
     self.mpc = LongitudinalMpc(dt=dt)
     self.fcw = False
@@ -93,7 +117,7 @@ class LongitudinalPlanner:
 
   def update(self, sm):
     v_ego = sm['carState'].vEgo
-    if self.vision_only:
+    if self.vision_only or self.sunny:
       model = sm['modelV2']
       self.camera_input_valid = sm.all_checks(['modelV2', 'carState', 'liveParameters']) and all(map(math.isfinite, (
         v_ego, sm['carState'].aEgo, sm['liveParameters'].roll, model.action.desiredAcceleration,
@@ -106,6 +130,9 @@ class LongitudinalPlanner:
     self.t_follow = get_T_FOLLOW(personality)
     v_cruise_kph = min(sm['carState'].vCruise, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS
+    ceiling_reason = 'cruise'
+    if self.sunny:
+      v_cruise, ceiling_reason = assisted_ceiling(sm, v_cruise, self.map_curve, self.speed_limit)
     if sm['controlsState'].forceDecel:
       v_cruise = 0.0
 
@@ -153,11 +180,12 @@ class LongitudinalPlanner:
     output_a_target_mpc = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
                                               action_t=action_t)
     output_should_stop_mpc = should_stop(v_ego, output_a_target_mpc)
-    curve_offset = self.curve_speed.update(sm['modelV2'], sm['liveParameters'].roll)
+    curve_offset = self.curve_speed.update(sm['modelV2'], sm['liveParameters'].roll) if not self.sunny or self.vision_curve else 0.
     output_a_target_e2e = sm['modelV2'].action.desiredAcceleration + curve_offset
     speed_scale = np.interp(v_ego, [5.0, 10.0], [0.0, 1.0])
     accel_scale = np.interp(output_a_target_e2e, [-1.0, -0.5], [0.0, 1.0])
-    output_a_target_e2e += ACCEL_BOOST[personality] * speed_scale * accel_scale
+    if not self.sunny:
+      output_a_target_e2e += ACCEL_BOOST[personality] * speed_scale * accel_scale
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
     self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt)
@@ -172,6 +200,8 @@ class LongitudinalPlanner:
                          LongitudinalPlanSource.cruise: 'cruise', LongitudinalPlanSource.e2e: 'e2e'}[self.mpc.source]
     if self.mpc.source == LongitudinalPlanSource.cruise and sm['controlsState'].forceDecel:
       self.speed_reason = 'forceDecel'
+    elif self.speed_reason == 'cruise' and self.a_cruise < output_a_target_mpc:
+      self.speed_reason = ceiling_reason
     elif self.mpc.source == LongitudinalPlanSource.e2e and curve_offset < 0:
       self.speed_reason = 'e2eCurve'
     elif self.speed_reason in ('lead0', 'lead1'):
@@ -188,9 +218,9 @@ class LongitudinalPlanner:
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
 
-    if self.vision_only and not self.camera_input_valid:
+    if (self.vision_only or self.sunny) and not self.camera_input_valid:
       plan_send.valid = False
-      plan_send.longitudinalPlan.plannerProfile = 'visionE2e'
+      plan_send.longitudinalPlan.plannerProfile = 'sunny' if self.sunny else 'visionE2e'
       pm.send('longitudinalPlan', plan_send)
       return
     required = ['carState', 'controlsState', 'selfdriveState', 'modelV2', 'liveParameters']
@@ -217,8 +247,8 @@ class LongitudinalPlanner:
     longitudinalPlan.shouldStop = bool(self.output_should_stop)
     longitudinalPlan.allowBrake = True
 
-    longitudinalPlan.plannerProfile = 'visionE2e' if self.vision_only else 'upstream'
-    if self.vision_only:
+    longitudinalPlan.plannerProfile = 'visionE2e' if self.vision_only else 'sunny' if self.sunny else 'upstream'
+    if self.vision_only or self.sunny:
       longitudinalPlan.visionPlannerSetup = getattr(self.CP, "visionPlannerSetup", "")
     longitudinalPlan.speedConstraint = self.speed_reason if self.CP.openpilotLongitudinalControl else 'stockLong'
     longitudinalPlan.allowThrottle = True

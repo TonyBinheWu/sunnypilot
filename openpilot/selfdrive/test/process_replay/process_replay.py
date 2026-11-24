@@ -20,7 +20,7 @@ from openpilot.cereal.services import SERVICE_LIST
 from msgq.visionipc import VisionIpcServer, get_endpoint_name as vipc_get_endpoint_name
 from opendbc.car.can_definitions import CanData
 from opendbc.car.car_helpers import get_car, interfaces
-from openpilot.common.driving_planner import CAMERA_ONLY_AUTO
+from openpilot.common.driving_planner import automatic_longitudinal
 from openpilot.common.params import Params
 from openpilot.common.prefix import OpenpilotPrefix
 from openpilot.common.timeout import Timeout
@@ -372,7 +372,7 @@ def get_car_params_callback(rc, pm, msgs, fingerprint):
         cached_params = _cached_params
 
     CP = get_car(can_recv, lambda _msgs: None, lambda obd: None, params.get_bool("AlphaLongitudinalEnabled"), False, cached_params=cached_params,
-                 auto_long=params.get_int("DrivingPlannerMode") == CAMERA_ONLY_AUTO).CP
+                 auto_long=automatic_longitudinal(params.get_int("DrivingPlannerMode"))).CP
 
   params.put("CarParams", CP.to_bytes())
 

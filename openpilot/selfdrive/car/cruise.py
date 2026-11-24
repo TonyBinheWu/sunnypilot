@@ -156,7 +156,7 @@ class VCruiseHelper:
 
 
 
-from openpilot.common.driving_planner import active_planner_mode, camera_only
+from openpilot.common.driving_planner import SUNNY_BLENDED, active_planner_mode, camera_only
 from openpilot.common.params import Params
 #from openpilot.selfdrive.selfdrived.events import Events
 #EventName = log.OnroadEvent.EventName
@@ -170,7 +170,9 @@ class VCruiseCarrot:
     self.frame = 0
     self.params_memory = Params("/dev/shm/params")
     self.params = Params()
-    self.vision_only = camera_only(active_planner_mode(CP, self.params))
+    mode = active_planner_mode(CP, self.params)
+    self.vision_only = camera_only(mode)
+    self.sunny = mode == SUNNY_BLENDED
     self.periodic_settings = None
     self.cruise_stage_ms = {}
     if cached_settings:
@@ -836,7 +838,7 @@ class VCruiseCarrot:
     return v_cruise_kph
 
   def _auto_speed_up(self, v_cruise_kph):
-    if self.vision_only:
+    if self.vision_only or self.sunny:
       return v_cruise_kph
     if not self._pause_auto_speed_up and self.applyModelSpeed != 0.0:
       model_kph = self.model_v_kph * abs(self.applyModelSpeed)

@@ -527,7 +527,7 @@ function renderDeviceGroupItems(groupId, values) {
 function renderDeviceToggleItems(values) {
   let html = "";
   DEVICE_TOGGLES.forEach((toggle) => {
-    if (Number(values.DrivingPlannerMode) === 3 && toggle.param === "ExperimentalMode") {
+    if ([3, 4].includes(Number(values.DrivingPlannerMode)) && toggle.param === "ExperimentalMode") {
       html += renderDeviceInfoRow(getUIText(toggle.labelKey, toggle.defaultLabel), plannerManagedLabel());
       return;
     }
@@ -556,14 +556,14 @@ function renderDeviceToggleItems(values) {
 }
 
 function plannerManagedLabel() {
-  return String(LANG).startsWith("zh") ? "由純視覺規劃器依車型管理" :
-    LANG === "ko" ? "비전 플래너 자동 설정" : "Managed by vision planner";
+  return String(LANG).startsWith("zh") ? "由駕駛規劃器依車型管理" :
+    LANG === "ko" ? "주행 플래너 자동 설정" : "Managed by driving planner";
 }
 
 function renderDeviceDeveloperItems(values) {
   let html = renderSshKeysRow(values.SshKeyStatus || values.GithubUsername || "", Boolean(values.GithubSshKeys));
   DEVICE_DEVELOPER_TOGGLES.forEach((toggle) => {
-    if (Number(values.DrivingPlannerMode) === 3 && toggle.param === "AlphaLongitudinalEnabled") {
+    if ([3, 4].includes(Number(values.DrivingPlannerMode)) && toggle.param === "AlphaLongitudinalEnabled") {
       html += renderDeviceInfoRow(getUIText(toggle.labelKey, toggle.defaultLabel), plannerManagedLabel());
       return;
     }

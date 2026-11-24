@@ -14,6 +14,23 @@
           "zh": "启动·自动",
           "groups": [
             {
+              "id": "DAILY_DRIVING",
+              "ko": "일상 주행",
+              "en": "Daily driving",
+              "zh": "日常驾驶",
+              "params": [
+                "DrivingPlannerMode",
+                "AlwaysLateral",
+                "SunnyCruiseOnly",
+                "LaneChangeNeedTorque",
+                "SunnyBlinkerPauseKph",
+                "SunnyVisionCurve",
+                "SunnyMapCurve",
+                "SunnySpeedLimit"
+              ],
+              "zh-tw": "日常駕駛"
+            },
+            {
               "id": "BASIC_START",
               "ko": "시작 동작",
               "en": "Engage",
@@ -424,6 +441,10 @@
               "zh": "车距",
               "params": [
                 "DrivingPlannerMode",
+                "SunnyVisionCurve",
+                "SunnyMapCurve",
+                "SunnySpeedLimit",
+                "SunnyBlinkerPauseKph",
                 "CruiseGapLevels",
                 "TFollowGap1",
                 "TFollowGap2",
@@ -3899,9 +3920,9 @@
       "cdescr": "下次行程生效。自动适配可能启用 Alpha，部分车型会停用原厂 AEB 或雷达。",
       "tgroup": "跟車距離",
       "ttitle": "駕駛規劃器",
-      "tdescr": "下次行程生效。車型自動適配會優先使用車型原本支援的縱向，符合條件時會啟用 Alpha（部分車款會停用原廠 AEB 或雷達），其餘沿用原廠巡航。上游模式使用視覺、跟車與巡航上限決定加速度，並跟隨模型轉向。純視覺模式以鏡頭模型和視覺前車規劃，保留巡航上限；使用原廠巡航時僅提供視覺橫向。",
+      "tdescr": "下次行程生效。車型自動適配會優先使用車型原本支援的縱向，符合條件時會啟用 Alpha（部分車款會停用原廠 AEB 或雷達），其餘沿用原廠巡航。上游模式使用視覺、跟車與巡航上限決定加速度，並跟隨模型轉向。純視覺模式以鏡頭模型和視覺前車規劃，保留巡航上限；使用原廠巡航時僅提供視覺橫向。 模型與跟車協同會持續比較模型、跟車及巡航上限，採用車型自動適配。額外彎速與速限輔助可分別開啟，於下次行程生效。",
       "min": 0,
-      "max": 3,
+      "max": 4,
       "default": 0,
       "unit": 1,
       "control": "select",
@@ -3910,27 +3931,126 @@
           "CarrotPlanner",
           "openpilot Autospeed",
           "순수 비전 E2E (실험)",
-          "순수 비전 (차량 자동 설정)"
+          "순수 비전 (차량 자동 설정)",
+          "모델 + 차간거리 제어"
         ],
         "en": [
           "CarrotPlanner",
           "openpilot Autospeed",
           "Vision-only E2E (experimental)",
-          "Vision E2E (automatic vehicle setup)"
+          "Vision E2E (automatic vehicle setup)",
+          "Model + following (sunnypilot style)"
         ],
         "zh": [
           "CarrotPlanner",
           "openpilot Autospeed",
           "纯视觉端到端（实验）",
-          "纯视觉端到端（车型自动适配）"
+          "纯视觉端到端（车型自动适配）",
+          "模型与跟车协同"
         ],
         "zh-tw": [
           "CarrotPlanner",
           "openpilot Autospeed",
           "純視覺端到端（實驗）",
-          "純視覺端到端（車型自動適配）"
+          "純視覺端到端（車型自動適配）",
+          "模型與跟車協同（sunnypilot 方式）"
         ]
       }
+    },
+    {
+      "group": "차량간격",
+      "name": "SunnyVisionCurve",
+      "title": "비전 커브 감속",
+      "descr": "모델 + 차간거리 제어에서 다음 주행부터 적용. 모델의 예상 횡가속도에 따라 추가 감속합니다. 꺼도 모델 자체 감속은 유지됩니다.",
+      "egroup": "FDIST",
+      "etitle": "Vision curve assist",
+      "edescr": "Model + following planner, next drive. Apply an extra slowdown for predicted lateral acceleration. Model braking remains available when off.",
+      "cgroup": "跟车距离",
+      "ctitle": "视觉弯速辅助",
+      "cdescr": "模型与跟车协同模式，下次行程生效。根据模型预计的横向加速度额外减速。关闭后仍保留模型自身的减速请求。",
+      "tgroup": "跟車距離",
+      "ttitle": "視覺彎速輔助",
+      "tdescr": "模型與跟車協同模式，下次行程生效。依模型預估的側向加速度額外減速。關閉時仍保留模型本身的速度建議。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1
+    },
+    {
+      "group": "차량간격",
+      "name": "SunnyMapCurve",
+      "title": "지도 커브 감속",
+      "descr": "모델 + 차간거리 제어에서 다음 주행부터 적용. 유효한 위치와 경로 곡률에 따라 목표 속도를 낮춥니다.",
+      "egroup": "FDIST",
+      "etitle": "Map curve assist",
+      "edescr": "Model + following planner, next drive. Lower the target using matched route curvature and a recent position fix.",
+      "cgroup": "跟车距离",
+      "ctitle": "地图弯速辅助",
+      "cdescr": "模型与跟车协同模式，下次行程生效。根据有效定位及导航路线曲率降低目标速度。",
+      "tgroup": "跟車距離",
+      "ttitle": "地圖彎速輔助",
+      "tdescr": "模型與跟車協同模式，下次行程生效。依有效定位及導航路線前方曲率降低目標速度。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1
+    },
+    {
+      "group": "차량간격",
+      "name": "SunnySpeedLimit",
+      "title": "내비게이션 제한속도 보조",
+      "descr": "모델 + 차간거리 제어에서 다음 주행부터 적용. 현재 도로 제한속도로 목표 속도를 낮춥니다.",
+      "egroup": "FDIST",
+      "etitle": "Navigation speed limit assist",
+      "edescr": "Model + following planner, next drive. Limit the planned speed using the current navigation speed limit.",
+      "cgroup": "跟车距离",
+      "ctitle": "导航道路限速辅助",
+      "cdescr": "模型与跟车协同模式，下次行程生效。使用导航道路限速降低规划速度，保留驾驶设定的巡航上限。",
+      "tgroup": "跟車距離",
+      "ttitle": "導航道路速限輔助",
+      "tdescr": "模型與跟車協同模式，下次行程生效。以導航回報的道路速限限制規劃速度，保留駕駛設定的巡航上限。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1
+    },
+    {
+      "group": "차량간격",
+      "name": "SunnyBlinkerPauseKph",
+      "title": "방향지시등 조향 일시 정지 (km/h)",
+      "descr": "모델 + 차간거리 제어에서 다음 주행부터 적용. 0은 꺼짐입니다. 설정 속도 미만에서 한쪽 방향지시등을 켜면 조향을 일시 정지합니다.",
+      "egroup": "FDIST",
+      "etitle": "Pause steering below speed with one indicator (km/h)",
+      "edescr": "Model + following planner, next drive. Zero disables this feature. Under the selected speed a single indicator pauses steering.",
+      "cgroup": "跟车距离",
+      "ctitle": "低速打灯暂停转向（km/h）",
+      "cdescr": "模型与跟车协同模式，下次行程生效。0 为关闭。低于设定时速并开启单侧转向灯时暂停转向。",
+      "tgroup": "跟車距離",
+      "ttitle": "低速打燈暫停轉向（km/h）",
+      "tdescr": "模型與跟車協同模式，下次行程生效。0 為關閉。低於設定時速且單側打燈時暫停轉向；燈號結束後依原有接合條件恢復。",
+      "min": 0,
+      "max": 30,
+      "default": 0,
+      "unit": 1
+    },
+    {
+      "group": "차량간격",
+      "name": "SunnyCruiseOnly",
+      "title": "크루즈만 사용",
+      "descr": "모델 + 차간거리 제어에서 다음 주행부터 적용. 조향은 운전자가 담당하고 종방향은 기존 차량 조건에 따라 작동합니다.",
+      "egroup": "FDIST",
+      "etitle": "Cruise only",
+      "edescr": "Model + following planner, next drive. Leave steering to the driver while cruise follows its usual engagement rules.",
+      "cgroup": "跟车距离",
+      "ctitle": "仅巡航，手动转向",
+      "cdescr": "模型与跟车协同模式，下次行程生效。开启后由驾驶员转向，巡航仍依车型条件接合。",
+      "tgroup": "跟車距離",
+      "ttitle": "僅巡航，手動轉向",
+      "tdescr": "模型與跟車協同模式：開啟後，轉向由駕駛操作。巡航仍依原車型條件接合。下次行程生效。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1
     },
     {
       "group": "차량간격",

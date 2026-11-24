@@ -1525,6 +1525,7 @@ class CarrotServ:
     msg.carrotMan.xDistToTurn = int(self.xDistToTurn)
     msg.carrotMan.xTurnCountDown = int(left_tbt_sec)
     msg.carrotMan.atcType = self.atcType
+    msg.carrotMan.routeCurveKph = getattr(self, 'route_curve_kph', 0.)
     msg.carrotMan.vTurnSpeed = int(vturn_speed)
     msg.carrotMan.szPosRoadName = f"{self.szPosRoadName} {self.debugText}".strip()
     msg.carrotMan.szTBTMainText = self.szTBTMainText

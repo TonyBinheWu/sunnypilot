@@ -506,6 +506,7 @@ class CarrotMan:
 
   def carrot_navi_route(self):
 
+    self.carrot_serv.route_curve_kph = 0.
     is_onroad = self.params.get_bool("IsOnroad")
     if not is_onroad or not self.navi_points_active or (self.carrot_serv.active_carrot <= 1 and not self.navd_active):
       # RouteSource owns geometry lifetime. Pausing computation offroad must not
@@ -601,6 +602,10 @@ class CarrotMan:
         distances = []
         #self.params.remove("NavDestination")
 
+    fix_stamp = getattr(self.carrot_serv, 'last_calculate_gps_time', 0.)
+    if (0 < out_speed < 250 and start_point and fix_stamp > 0 and 0 <= time.monotonic() - fix_stamp < 2 and
+        haversine(*current_position, *start_point[:2]) <= 25):
+      self.carrot_serv.route_curve_kph = out_speed
     return resampled_points, resampled_distances, out_speed #speeds, distances
 
 

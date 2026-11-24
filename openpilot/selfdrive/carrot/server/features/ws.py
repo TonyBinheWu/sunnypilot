@@ -121,7 +121,7 @@ async def planner_status(request: web.Request) -> web.Response:
     from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
     ceiling = sm["carState"].vCruise
     if 0 < ceiling < V_CRUISE_UNSET:
-      result["cruiseCeilingKph"] = round(min(ceiling, V_CRUISE_MAX), 1) if result.get("profile") in ("visionE2e", "upstream") else round(ceiling, 1)
+      result["cruiseCeilingKph"] = round(min(ceiling, V_CRUISE_MAX), 1) if result.get("profile") in ("visionE2e", "upstream", "sunny") else round(ceiling, 1)
   if fresh(sm, "controlsState", .5, now):
     result["steering"] = sm["controlsState"].steeringInfluence
   return web.json_response(result, headers={"Cache-Control": "no-store"})

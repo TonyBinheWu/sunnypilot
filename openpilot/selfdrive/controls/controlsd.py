@@ -6,7 +6,7 @@ from numbers import Number
 from openpilot.cereal import car, log
 import openpilot.cereal.messaging as messaging
 from openpilot.common.constants import CV
-from openpilot.common.driving_planner import active_planner_mode, camera_only
+from openpilot.common.driving_planner import SUNNY_BLENDED, active_planner_mode, camera_only
 from openpilot.common.params import Params
 from openpilot.common.pid import MultiplicativeUnwindPID
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
@@ -66,7 +66,11 @@ class Controls:
     self.CP = messaging.log_from_bytes(self.params.get("CarParams", block=True), car.CarParams)
     cloudlog.info("controlsd got CarParams")
 
-    self.vision_profile_requested = camera_only(active_planner_mode(self.CP, self.params))
+    mode = active_planner_mode(self.CP, self.params)
+    self.vision_profile_requested = camera_only(mode)
+    self.sunny_profile = mode == SUNNY_BLENDED
+    self.steering_selected = not (self.sunny_profile and self.params.get_bool("SunnyCruiseOnly"))
+    self.blinker_pause_speed = self.params.get_int("SunnyBlinkerPauseKph") * CV.KPH_TO_MS if self.sunny_profile else 0.
     self.CI = interfaces[self.CP.carFingerprint](self.CP)
     self.physical_blinker_hold = HoldReader(self.CP.carFingerprint, self.params)
 
@@ -168,7 +172,15 @@ class Controls:
     CC.latActive = self.carrot_controls.lat_suspend_control(CS, CC.latActive)
     # Wait only for the first readiness confirmation, including AlwaysLateral.
     CC.latActive = CC.latActive and lateral_ready
+    CC.latActive &= self.steering_selected
+    blinker_paused = CC.latActive and CS.leftBlinker != CS.rightBlinker and abs(CS.vEgo) < self.blinker_pause_speed
+    if blinker_paused:
+      CC.latActive = False
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
+    if self.sunny_profile:
+      CC.latActive &= self.sm.all_checks(['modelV2']) and math.isfinite(model_v2.action.desiredCurvature)
+      CC.longActive &= (long_plan.plannerProfile == 'sunny' and self.sm.all_checks(['longitudinalPlan'])
+                        and math.isfinite(long_plan.aTarget))
     if self.vision_profile_requested or long_plan.plannerProfile == 'visionE2e':
       fresh_plan = (long_plan.plannerProfile == 'visionE2e' and self.sm.all_checks(['longitudinalPlan', 'modelV2'])
                     and 0 <= time.monotonic() - self.sm.recv_time['longitudinalPlan'] <= .25)
@@ -206,7 +218,7 @@ class Controls:
     # Steering PID loop and lateral MPC
     lat_plan = self.sm['lateralPlan']
     curve_speed_abs = abs(self.sm['carrotMan'].vTurnSpeed)
-    upstream = vision_only or long_plan.plannerProfile == 'upstream'
+    upstream = self.sunny_profile or vision_only or long_plan.plannerProfile == 'upstream'
     self.lanefull_mode_enabled = (not upstream and lat_plan.useLaneLines and curve_speed_abs > self.params.get_int("UseLaneLineCurveSpeed"))
     if CC.latActive and len(lat_plan.curvatures) > 0 and (lat_plan.useLaneLines if self.is_vw_meb else self.lanefull_mode_enabled):
       lat_smooth_seconds = self.params.get_float("LatSmoothSec") * 0.01
@@ -228,7 +240,7 @@ class Controls:
 
     self.steering_influence = 'model'
     if not CC.latActive:
-      self.steering_influence = 'inactive'
+      self.steering_influence = 'cruiseOnly' if not self.steering_selected else 'blinkerPause' if blinker_paused else 'inactive'
       new_desired_curvature = self.curvature
     elif upstream:
       new_desired_curvature = float(model_v2.action.desiredCurvature)

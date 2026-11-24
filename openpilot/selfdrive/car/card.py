@@ -8,7 +8,7 @@ import openpilot.cereal.messaging as messaging
 
 from openpilot.cereal import car, log
 
-from openpilot.common.driving_planner import CAMERA_ONLY_AUTO
+from openpilot.common.driving_planner import automatic_longitudinal
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
 from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
@@ -127,9 +127,9 @@ class Car:
 
       planner_mode = self.params.get_int("DrivingPlannerMode")
       self.CI = get_car(*self.can_callbacks, obd_callback(self.params), alpha_long_allowed, is_release, num_pandas, cached_params,
-                        auto_long=planner_mode == CAMERA_ONLY_AUTO)
+                        auto_long=automatic_longitudinal(planner_mode))
       self.CP = self.CI.CP
-      self.CP.drivingPlannerMode = planner_mode if planner_mode in (0, 1, 2, 3) else 0
+      self.CP.drivingPlannerMode = planner_mode if planner_mode in (0, 1, 2, 3, 4) else 0
 
       # continue onto next fingerprinting step in pandad
       self.params.put_bool("FirmwareQueryDone", True)

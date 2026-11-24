@@ -1,6 +1,11 @@
 """Persistent DrivingPlannerMode values, sampled at onroad startup."""
 CAMERA_ONLY = 2
 CAMERA_ONLY_AUTO = 3
+SUNNY_BLENDED = 4
+
+
+def automatic_longitudinal(mode):
+  return mode in (CAMERA_ONLY_AUTO, SUNNY_BLENDED)
 
 
 def camera_only(mode):

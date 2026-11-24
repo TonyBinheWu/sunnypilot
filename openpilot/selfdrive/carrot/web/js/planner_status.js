@@ -3,6 +3,7 @@
   const dialog = document.getElementById('vehicleDetails');
   const labels = {
     visionE2e: '純視覺端到端（實驗）', visionLead: '鏡頭辨識前車', stockLong: '原廠巡航控制加減速',
+    cruiseOnly: '僅巡航，轉向由駕駛操作', sunny: '模型與跟車協同', mapCurve: '地圖彎速', speedLimit: '導航道路速限', blinkerPause: '低速方向燈暫停轉向',
     carrot: 'CarrotPlanner', upstream: 'openpilot Autospeed', inactive: '控制未介入',
     mpc: '縱向 MPC', lead0: '第一跟車目標', lead1: '第二跟車目標', lead2: '第三跟車目標', cruise: '巡航設定',
     e2e: '視覺模型', model: '模型曲率', e2eCurve: '視覺模型與彎道減速',
@@ -25,12 +26,15 @@
   let timer, generation = 0;
   function render(state) {
     const setup = {native: '視覺縱橫向', alpha: '視覺縱橫向（Alpha）', stock: '視覺轉向／原廠巡航', passive: '僅行車記錄'};
+    const providers = {native: 'openpilot 縱向', alpha: 'Alpha 縱向', stock: '原廠巡航', passive: '僅行車記錄'};
+    let profile = describe(state.profile);
+    if (state.profile === 'sunny' && providers[state.setup]) profile += ' · ' + providers[state.setup];
+    if (state.profile === 'visionE2e' && setup[state.setup]) profile = '純視覺自動適配 · ' + setup[state.setup];
     const ceiling = state.cruiseCeilingKph;
     document.getElementById('plannerCeiling').textContent = Number.isFinite(ceiling) ? ceiling + ' km/h' : '—';
     document.getElementById('visionSetSpeed').textContent = Number.isFinite(ceiling) ? ceiling : '—';
     for (const [id, key] of [['plannerProfile', 'profile'], ['speedConstraint', 'speed'], ['steeringInfluence', 'steering']]) {
-      document.getElementById(id).textContent = key === 'profile' && setup[state.setup]
-        ? '純視覺自動適配 · ' + setup[state.setup] : describe(state[key]);
+      document.getElementById(id).textContent = key === 'profile' ? profile : describe(state[key]);
     }
   }
   async function poll(current) {

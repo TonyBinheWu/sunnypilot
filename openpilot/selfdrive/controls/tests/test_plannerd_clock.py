@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from openpilot.cereal import car, log
-from openpilot.common.driving_planner import active_planner_mode, camera_only
+from openpilot.common.driving_planner import SUNNY_BLENDED, active_planner_mode, camera_only
 from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
 from openpilot.selfdrive.carrot.radar import effective_radar_track_mode
 from openpilot.selfdrive.carrot.radar_motion.timing import front_radar_distance_delay_s
@@ -83,6 +83,7 @@ def run_planner_events(mocker, brand, configured_mode, radar_period_ms, *, stopp
     'time': SimpleNamespace(monotonic=lambda: sm.now, thread_time=lambda: sm.now),
     'car': car,
     'active_planner_mode': active_planner_mode,
+    'SUNNY_BLENDED': SUNNY_BLENDED,
     'camera_only': camera_only,
     'Params': lambda: params,
     'Priority': SimpleNamespace(CTRL_LOW=0),
@@ -168,7 +169,7 @@ def test_driver_gas_override_bypasses_stopping_input_filter(mocker):
   assert all(call.args[0]['radarState'].leadOne.vLead == pytest.approx(0.217) for call in planner.update.call_args_list)
 
 
-@pytest.mark.parametrize("mode", [1, 2, 3])
+@pytest.mark.parametrize("mode", [1, 2, 3, 4])
 def test_upstream_planner_uses_raw_radar_at_model_rate(mocker, mode):
   calls, poll, fast_radar, planner = run_planner_events(mocker, 'hyundai', 1, 50, stopping=True, upstream=mode)
   assert poll == 'modelV2'

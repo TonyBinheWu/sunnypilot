@@ -49,6 +49,7 @@ struct CarrotMan @0x81c2f05a394cf4af {
 	positionMonoTime @34 : UInt64; # time of the fused/predicted position
 	positionSource @35 :Text;
 	positionHeadingValid @36 :Bool;
+  routeCurveKph @37 :Float32; # zero when no matched route curve
 }
 
 struct CarrotNaviState @0xaedffd8f31e7b55d {
