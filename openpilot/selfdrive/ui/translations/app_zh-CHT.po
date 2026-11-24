@@ -2632,3 +2632,30 @@ msgstr "可切換前方攝影機、原有動態 3D 或模型感知畫面。"
 
 msgid "Check Hyundai harness selection"
 msgstr "請確認現代／起亞線束設定"
+
+msgid "Possible junction"
+msgstr "可能的路口"
+
+msgid "Road camera detector"
+msgstr "前向攝影機偵測"
+
+msgid "Driving model unavailable"
+msgstr "暫無駕駛模型資料"
+
+msgid "person"
+msgstr "行人"
+
+msgid "bicycle"
+msgstr "自行車"
+
+msgid "motorcycle"
+msgstr "機車"
+
+msgid "car"
+msgstr "汽車"
+
+msgid "bus"
+msgstr "公車"
+
+msgid "truck"
+msgstr "卡車"

@@ -14,6 +14,7 @@ from openpilot.selfdrive.ui.render_diagnostics import RenderDiagnostics
 from openpilot.selfdrive.ui.overlay_state import OverlayState
 from openpilot.selfdrive.ui.onroad.cameraview import CameraView
 from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.lib.text_draw import draw_text_ui_style
 from openpilot.common.transformations.camera import DEVICE_CAMERAS, DeviceCameraConfig, view_frame_from_device_frame
 from openpilot.common.transformations.orientation import rot_from_euler
@@ -53,7 +54,7 @@ class AugmentedRoadView(CameraView):
     self._render_diagnostics = RenderDiagnostics('ui')
     from openpilot.selfdrive.ui.layout_profile import large_display_layout
     from openpilot.selfdrive.ui.onroad.reality_scene import RealityScene
-    self._reality = RealityScene(large_display_layout())
+    self._reality = RealityScene(large_display_layout(), font=gui_app.font(), translate=tr)
     self._hud_renderer = HudRenderer()
     self._overlay_state = OverlayState()
     self.model_renderer._overlay_state = self._overlay_state

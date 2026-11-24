@@ -102,8 +102,10 @@ def ego_lamps(car, now):
 
 
 class RealityScene:
-  def __init__(self, style):
+  def __init__(self, style, *, font=None, translate=str):
     self.style = style
+    self.font = font
+    self.translate = translate
     self.map_input = self.texture = None
     self.next_demand = self.image_time = 0
     self.key = None
@@ -174,6 +176,11 @@ class RealityScene:
     for vertices, color in self.faces:
       rl.draw_triangle_fan(vertices, len(vertices), color)
     if model_only:
+      face_font = self.font or rl.get_font_default()
+
+      def label(text, x, y, size, color):
+        rl.draw_text_ex(face_font, text, rl.Vector2(x, y), size, 0, color)
+
       if self.objects:
         font = max(10, int(rect.height * .025))
         occupied = []
@@ -181,19 +188,20 @@ class RealityScene:
           scale = 740 / (z + 8)
           px = rect.x + rect.width * ((435 + x * scale) / 1000 + self.style["vehicle_x"] / 100)
           py = rect.y + rect.height * ((118 + 2.2 * scale) / 450 + self.style["vehicle_y"] / 100) - font * 1.4
-          width = rl.measure_text(kind, font)
+          name = self.translate(kind)
+          width = int(rl.measure_text_ex(face_font, name, font, 0).x)
           if (rect.x <= px - width/2 and px + width/2 <= rect.x + rect.width and rect.y <= py < rect.y + rect.height - font
               and all(abs(px - ox) > (width + ow)/2 + 2 or abs(py - oy) > font + 2 for ox, oy, ow in occupied)):
             rl.draw_rectangle(int(px - width/2 - 2), int(py - 1), width + 4, font + 2, tint(0x18232F, alpha=210))
-            rl.draw_text(kind, int(px - width/2), int(py), font, rl.WHITE)
+            label(name, px - width/2, py, font, rl.WHITE)
             occupied.append((px, py, width))
-        rl.draw_text("ROAD detector", int(rect.x + rect.width * .03), int(rect.y + rect.height * .79),
+        label(self.translate("Road camera detector"), int(rect.x + rect.width * .03), int(rect.y + rect.height * .79),
                      max(10, int(rect.height * .03)), rl.SKYBLUE)
       if self.opening:
-        rl.draw_text(f"Possible junction  {self.opening[0]:.0f} m", int(rect.x + rect.width * .03),
+        label(self.translate("Possible junction") + f"  {self.opening[0]:.0f} m", int(rect.x + rect.width * .03),
                      int(rect.y + rect.height * .12), max(11, int(rect.height * .033)), rl.SKYBLUE)
       if not model_ok:
-        rl.draw_text("modelV2 unavailable", int(rect.x + rect.width * .32), int(rect.y + rect.height * .46),
+        label(self.translate("Driving model unavailable"), int(rect.x + rect.width * .32), int(rect.y + rect.height * .46),
                      max(13, int(rect.height * .045)), rl.LIGHTGRAY)
       return
     self.draw_map(rect, state, now)

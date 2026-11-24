@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "9bb7e88a993539aa96eaefdffd4330ea882dd716",
-  "contentHash": "81e4e4a39cc1089aff3aa928e4a7a330e5e5e851b9ef67ad4d9eb01c4d233e77",
-  "generatedAt": "2026-11-23T13:26:23Z",
+  "catalogCommit": "00735b853fe2f07aca8b39ea6e2ca04d26bbafc8",
+  "contentHash": "12912dc6fafe2d940ee9c177f15c15f67b6605466b80393210336026b14df578",
+  "generatedAt": "2026-11-24T00:00:00Z",
   "locales": [
     "ko",
     "en",
@@ -9,10 +9,6 @@
     "zh-tw"
   ],
   "pages": {
-    "EN-AChangeCostStarting.md": {
-      "bytes": 2203,
-      "hash": "d8b28077707c7563324faacaf876532769d03ab2495a32e1b593507d65f920e1"
-    },
     "EN-ATC-AutoTurnControl.md": {
       "bytes": 2192,
       "hash": "95d84a9f0f447ba980ac132d9e333838b3312be474a8cbae19f9690a1972a0b8"
@@ -28,34 +24,6 @@
     "EN-ATC-Turn-Speed(20).md": {
       "bytes": 2041,
       "hash": "20362728ab13e0a3f7020ae62907867363e229db1930038689e542fd4d0f0864"
-    },
-    "EN-AccelSet0-0km-h(160).md": {
-      "bytes": 1946,
-      "hash": "16624e12266d85e670d76ba7ed6e2b93f0329f0d80b4bc747bfa32c3b0993292"
-    },
-    "EN-AccelSet1-10km-h(160).md": {
-      "bytes": 1950,
-      "hash": "f8057acb010f3d8814577259f5776470a740b81a16ac458a292c0fd3fbc666c3"
-    },
-    "EN-AccelSet2-40km-h(120).md": {
-      "bytes": 1950,
-      "hash": "015538145bc655c4e5058b8a3ba797cf34b747c1f0a60f27439da69355e1f346"
-    },
-    "EN-AccelSet3-60km-h(100).md": {
-      "bytes": 1950,
-      "hash": "ec41dabd320f612290442d70f735ce183a2196ce9f7cd204bd18e00c87385441"
-    },
-    "EN-AccelSet4-80km-h(80).md": {
-      "bytes": 1949,
-      "hash": "758ecda5249a370938cbf9493d1da9ddf04a24288e8f64b3619c20801acbb814"
-    },
-    "EN-AccelSet5-110km-h(70).md": {
-      "bytes": 1953,
-      "hash": "459b1eeaaad912dbea252a73bd0f14e6bd02c1a48f2f00ae6786f276bd89fc8d"
-    },
-    "EN-AccelSet6-140km-h(60).md": {
-      "bytes": 1929,
-      "hash": "d4efe54f95872f65c8b8b69dd8ad14ecb22a6b3b2479f5519df8b1f11a73b8ed"
     },
     "EN-Allow-Soft-Hold-After-Cancel(0).md": {
       "bytes": 1245,
@@ -85,21 +53,13 @@
       "bytes": 1799,
       "hash": "81bf6ccf325bfdd2a122b05ba9ba07d5e2ea2b6e485331b887e2d09159e029eb"
     },
-    "EN-AutoCurveSpeed-LowerLimit(30).md": {
-      "bytes": 2168,
-      "hash": "e4c0c140008e9362366331626bc82a4953dff782f479c8e0b710ab520f1168d9"
-    },
-    "EN-AutoRoadLimitSpeedAdjust-(50).md": {
-      "bytes": 2184,
-      "hash": "035c3c27db5c1894855791db11a925f97a45f5c237f73414218f6e7939b948f0"
-    },
-    "EN-AutoSpeedUpx-(100).md": {
-      "bytes": 2125,
-      "hash": "f8a3f78dee34f3ad05ec1711be43f53b9de67d90e0d2b4d2e22657f3b7bd8af4"
-    },
     "EN-AutoSteering-Suspend-Angle(300).md": {
       "bytes": 2203,
       "hash": "132252ab24d7f8cc44bb0e64f4a1f11f87d7d848dfee8662c16caa4dd28dff6f"
+    },
+    "EN-Automatic-Alpha-longitudinal-setup.md": {
+      "bytes": 1349,
+      "hash": "c4575667ef343e9c9293aecb39f0a9fac7938522b7f85a85bcdd2dcd9276b0d5"
     },
     "EN-Automatic-turn-signals.md": {
       "bytes": 3829,
@@ -129,10 +89,6 @@
       "bytes": 1966,
       "hash": "72a086d5cceba8d6cedabaa3398d71063ad5be4f08fa68b2cdde647a1bde3477"
     },
-    "EN-CANFD-HDA2(0).md": {
-      "bytes": 1815,
-      "hash": "83e391027c59e592b5a7250f2a83198fdf7ce6a6b984694818e47ef3f00045b6"
-    },
     "EN-Camera-YAW-Correction(0).md": {
       "bytes": 1701,
       "hash": "c832639c43e8d2e29e7b0302e0ca7dea42f290e26dcbb3c483a2f6bba2184e9b"
@@ -140,14 +96,6 @@
     "EN-Cancel-Button-Mode(0).md": {
       "bytes": 1825,
       "hash": "55acac32dd86581f764b3521df1207bf6b33849164c54d8770e192d31cbd504a"
-    },
-    "EN-CarrotCruiseDecel(-1).md": {
-      "bytes": 2245,
-      "hash": "f7279e6041fd81769e0ee2a0489f45356593a67ea7f6873f36c7fd1fa3da0e7c"
-    },
-    "EN-CarrotCruiseDecelATCx0.01(-1).md": {
-      "bytes": 2298,
-      "hash": "c2e361d9205639156bb1fa40bc6f43fa1920831761e47f2f6ce53f8a85f9cad7"
     },
     "EN-Center-of-gravity-ratio.md": {
       "bytes": 1559,
@@ -193,10 +141,6 @@
       "bytes": 2245,
       "hash": "f10f4412838a5154257031c2e87adc91106737296e480bf28f7ac5625b313061"
     },
-    "EN-Cruise-Coasting-Margin.md": {
-      "bytes": 3253,
-      "hash": "dec1747532118d9e655a94ba2f2e510603c2072e3206c28636dff769f15af237"
-    },
     "EN-Cruise-Speed-Unit-Baic(10).md": {
       "bytes": 2139,
       "hash": "9387fad0133dad9beaeeb56f848657da0adcb248fc7369834581217acd19ae0f"
@@ -225,17 +169,13 @@
       "bytes": 1870,
       "hash": "2f16743de1974f0d2935d51ac0f3426456367a91b38ad776ac1eb106a99d528e"
     },
-    "EN-CruiseEcoControl(2km-h).md": {
-      "bytes": 2029,
-      "hash": "d02d0be6e7038833aa8c076b5bbb576bfb6858cb1725630c25fbb591eb3ea7c2"
+    "EN-Cruise-only.md": {
+      "bytes": 1204,
+      "hash": "bcb0a00ac280d7e56064261ec17012ed8606a64847b3acf7aa0145fd28b96c87"
     },
     "EN-CruiseOnDist(0cm).md": {
       "bytes": 1767,
       "hash": "aec2e2862458d7a6315faa2c34d8ccfb64793592115901cda19ee430fb521dc0"
-    },
-    "EN-CurveSpeedFactor(100-).md": {
-      "bytes": 2613,
-      "hash": "327b60b8bee16ef8c1e7e14513848f2203b19f7e5f6a8d14979993cb11058f6e"
     },
     "EN-CustomSteerRatioRatex0.01(100).md": {
       "bytes": 2400,
@@ -244,30 +184,6 @@
     "EN-CustomSteerRatiox0.1(0).md": {
       "bytes": 2424,
       "hash": "05ffcd61a9aa22c679daecc181eb02ee8667bb4b2a7f0690c161f418cf708a04"
-    },
-    "EN-Deceleration-Cancel-Box-Camera.md": {
-      "bytes": 1927,
-      "hash": "42a9a599d035a7c62af57ab87aafa4d91491d68912792458d2be8d6469c81987"
-    },
-    "EN-Deceleration-Cancel-Early-Warning-Correction-Experimental.md": {
-      "bytes": 2770,
-      "hash": "27abfff4c1cfc2123fbed1126da4d735f684aa2599ee2615d12d6f9b53180efe"
-    },
-    "EN-Deceleration-Cancel-Mobile-Zone.md": {
-      "bytes": 2059,
-      "hash": "5c7afc24d4871fa41185e0817c9704a17fcb73d2c9c429775c58b0237f63fbec"
-    },
-    "EN-Deceleration-Cancel-Speed-Bump.md": {
-      "bytes": 2133,
-      "hash": "57f3e4e827b9216f09e5e6ff26e266ce3fabf7b9f6152ff12dd39e1268fb2aab"
-    },
-    "EN-Deceleration-Cancel-Undetected-Camera-Kind-Experimental.md": {
-      "bytes": 2515,
-      "hash": "e72483e2079c8dec091097cd6f609e5472264f401a3aad04239fd6bb3dc3af6f"
-    },
-    "EN-Deceleration-Gap-Margin-(0-).md": {
-      "bytes": 2326,
-      "hash": "33900cca0a9623a81ee1ec025fd58de31d333aefa72d9b1ffb7abd34e3008663"
     },
     "EN-DisableMinSteerSpeed.md": {
       "bytes": 2029,
@@ -280,14 +196,6 @@
     "EN-Driving-Screen-Layout(C4).md": {
       "bytes": 2711,
       "hash": "726d37796f98ef0198a6cc5353a3eca7c83be8b2403e72c81d24d1a125f2f8d3"
-    },
-    "EN-DrivingMode-Auto.md": {
-      "bytes": 2768,
-      "hash": "11fa160cbd1d5b29b21971206c47ebb239844914ef4c72fa2e5ce9e56de86f45"
-    },
-    "EN-DrivingMode-Init(3).md": {
-      "bytes": 2962,
-      "hash": "99dcd49ac03b1be8f589dbbfc5961709dc9ba48179a04c79ed070841d73518f3"
     },
     "EN-Enable-Carrot-Vision.md": {
       "bytes": 2512,
@@ -365,18 +273,6 @@
       "bytes": 1606,
       "hash": "26cb2384ab285e3da463602c4c5bb47a710cdb27f5e4666d5ff7c4e068ec1f42"
     },
-    "EN-Following-responsiveness-·-common.md": {
-      "bytes": 4056,
-      "hash": "a3726d3aa626f43f7de3a2b6196593f353a0282a6edaf0d3e2f7c8da12e0266b"
-    },
-    "EN-Gap-cycle-levels.md": {
-      "bytes": 1510,
-      "hash": "2cad5b7ea02496ba1f9ea4d8ab33bc2c15b9b5179f789113baf75dc37eb6dca1"
-    },
-    "EN-HYUNDAI-CAMERA-SCC(0).md": {
-      "bytes": 4201,
-      "hash": "02f59ec2d9937d5927f53d5b96ea1872ac18dbdacc0b309a95a80a305523dce8"
-    },
     "EN-HYUNDAI-LDWS-ONLY-CAR(0).md": {
       "bytes": 1928,
       "hash": "d7f70381ebf28222a98b28dc470ceb54eb10ac3fdcfcfc448fe9c97e562e4829"
@@ -384,6 +280,10 @@
     "EN-HapticFeedbackSpeedCamera(0).md": {
       "bytes": 2174,
       "hash": "c259263b066ff8622f805521d3fa729514c5f8e1b948a8d4dfabbe76ef622750"
+    },
+    "EN-Hyundai-CAN-FD-harness.md": {
+      "bytes": 2132,
+      "hash": "aa4fab38b7961db3f3ccfa67c8c723e0a184b2204e49557b129a84c4a0e1c41e"
     },
     "EN-Hyundai-Kia-four-family-steering-and-curve-assist.md": {
       "bytes": 4824,
@@ -417,10 +317,6 @@
       "bytes": 1868,
       "hash": "275a7bf3823c4f4ddeae647d4c4fbbee1ef1d32f10edc984ff52bcce2d7a479b"
     },
-    "EN-Lane-Change-Response-(100-).md": {
-      "bytes": 2636,
-      "hash": "b8c70ec5f8d9a29777208fd877f0f9287a9f55aba05d23ce1ba785a0543839f0"
-    },
     "EN-Lane-Confidence-Threshold.md": {
       "bytes": 1555,
       "hash": "241d2cf193a75d673d5b7205acd42030de162aaea93ce9a819345ee852d5c28a"
@@ -432,6 +328,10 @@
     "EN-Lane-Inference-Interval.md": {
       "bytes": 1253,
       "hash": "8687bc2f557cc402729fe791c4dc399d8e7021615b9108b422eab03e4e306138"
+    },
+    "EN-Lane-centering.md": {
+      "bytes": 1204,
+      "hash": "dc940b6776499c5647dca2015e32d2fdbba62b58dc25b750e79dc59b2e4f124a"
     },
     "EN-LaneChange-BSD.md": {
       "bytes": 2022,
@@ -465,29 +365,13 @@
       "bytes": 2029,
       "hash": "0494fbd26c7d8eeffabdd35528ee11d4872e75d407263330176aacf11ed5c778"
     },
-    "EN-Lead-Brake-Lamp-Observation-(Trial).md": {
-      "bytes": 1492,
-      "hash": "2a1e1a83178dfe9d0d1559fb196235283a7e7923ca87db72561cea60d938f1ac"
-    },
-    "EN-Long-Kf(100)x0.01.md": {
-      "bytes": 3227,
-      "hash": "d54b50a5cf248448f044dcd577162657ccb48c77878eb7f018f81f966c992737"
-    },
-    "EN-Long-KiV(0)x0.001.md": {
-      "bytes": 3364,
-      "hash": "c1d6835920373627266373323cff64e743c0f425d17c43b2d482f694fdc24a6e"
-    },
-    "EN-Long-KpV(100)x0.01.md": {
-      "bytes": 3212,
-      "hash": "bc8d6755465e5802662d4ad47dff53e767b1c8cc4995e20107c9e8ca4276cd16"
-    },
-    "EN-LongActuatorDelay(20)x0.01.md": {
-      "bytes": 2331,
-      "hash": "b5523344a4795db00ab320c59287f5cb0dd5b1a1f047526b49e79ed41b848e52"
-    },
     "EN-Low-speed-demand-follow-and-response-records.md": {
       "bytes": 4749,
       "hash": "6b7c982fe37ee677a3e565c5bcec853f63fcbf8ca7b871d25ed649c50edcaa7f"
+    },
+    "EN-Low-speed-signaled-turns.md": {
+      "bytes": 1231,
+      "hash": "f31a590c8a80055966990c36df50d2cb2f7d0ccf4474c4dd449b22fbebc9f60f"
     },
     "EN-Manual-lane-change-indicator-(trial).md": {
       "bytes": 5060,
@@ -497,9 +381,9 @@
       "bytes": 3495,
       "hash": "6efb1f9fb932a2297ff641304efa21b0a87da4d072b9d4c38410db504bb0ddfa"
     },
-    "EN-MapTurnSpeedFactor.md": {
-      "bytes": 2177,
-      "hash": "ff0cd0585e944d9efb358cdb80654598d253244888d56f0613a0cb3f6c2ef5a1"
+    "EN-Map-curve-assist.md": {
+      "bytes": 1192,
+      "hash": "97f16fe01946b5a89d3722e10485896267faffd55197f10f7d77f4f9a8e593c6"
     },
     "EN-MapboxStyle.md": {
       "bytes": 1600,
@@ -508,10 +392,6 @@
     "EN-MaxAngleFrames(89).md": {
       "bytes": 2145,
       "hash": "149f57fcca0420dc7eb194ab02057f8cb542116640cbe8443a3d0333be2233d1"
-    },
-    "EN-Model-Speed-Apply-Ratio.md": {
-      "bytes": 2355,
-      "hash": "b8346c7e558646ba168a822f585161db71a1e6bc53e46251cdfeedc392b783e2"
     },
     "EN-Model-desire-indicator-(trial).md": {
       "bytes": 4429,
@@ -533,29 +413,13 @@
       "bytes": 1521,
       "hash": "d205d73a53723ec6a9ee22a15ea39f928d41712c9d71d1c70abf9153cba3a841"
     },
-    "EN-NaviCountDownMode.md": {
-      "bytes": 2268,
-      "hash": "670620ec6d846d97a70b60ef15cbb70973596b4161648161ba8379a1df853c52"
-    },
-    "EN-NaviSpeedControlMode(2).md": {
-      "bytes": 2699,
-      "hash": "0159ebd653396ff29aff46a8329342f5bc3a9bed9bea0c39c564c692d5c43867"
-    },
-    "EN-NaviSpeedDecelRate-0.01m-s^2x(120).md": {
-      "bytes": 2299,
-      "hash": "6d30c03ff2fe0646a3cc57101d549c3c7d1abb2fc2f14ccb2748657b0822125a"
-    },
-    "EN-NaviSpeedEndingPoint(6s).md": {
-      "bytes": 2114,
-      "hash": "eac2c64b7d944b91c6ea16c8d9602ed6f263b6d716ddee629f5bb2d63d20109e"
-    },
-    "EN-NaviSpeedLimitRatio(105).md": {
-      "bytes": 2121,
-      "hash": "a1ced93ba9e8b21c757c42bf9f573d2aff0eb24bcd06eee6e6177d5197c99254"
-    },
     "EN-Navigation-Voice-Volume.md": {
       "bytes": 2178,
       "hash": "a55e65c22fd6f15cac04a92ba5fd0d9e3c8458c9f2e6918c76222ac5432c65a7"
+    },
+    "EN-Navigation-speed-limit-assist.md": {
+      "bytes": 1228,
+      "hash": "cd0c1d2a619aa3c390a67525c31c60357ecaa94fe02875952e7bd3e6e650bbd3"
     },
     "EN-ONNX-Lane-and-BSD-Detection.md": {
       "bytes": 3392,
@@ -585,6 +449,10 @@
       "bytes": 2248,
       "hash": "fe36df3af0e85e6dbfebc67fb342af810b9761bedae1bfa6b539767bac56c970"
     },
+    "EN-Pause-steering-below-speed-with-one-indicator-(km-h).md": {
+      "bytes": 1359,
+      "hash": "cf4e58b41ee329c73eb0a4b45393bedb30da05ea493b1afcdc7e9be97b15b53f"
+    },
     "EN-PowerOffTime(min).md": {
       "bytes": 1842,
       "hash": "21afff923fbe90ff557bcd8bfc177952584d83d9653e92a632c16db84743c000"
@@ -597,10 +465,6 @@
       "bytes": 2190,
       "hash": "1f42ed49973daafa6ff24cc594aea04b8e86700cce16c825c7a3e3ef1f892c3f"
     },
-    "EN-Rear-Camera-Post-pass-Hold-Distance-(m).md": {
-      "bytes": 3281,
-      "hash": "ddac50fd7363bbeb3a5478dad43e0020d491232f531b0cbc9f15f3587cb2446f"
-    },
     "EN-Record-RoadCam.md": {
       "bytes": 1905,
       "hash": "17dfdfbd24de8c71f975450f198ba7db6bbcd9a5b152a8ca70c673d877eab8dd"
@@ -608,10 +472,6 @@
     "EN-Right-lane-change-distance-before-a-turn-(m).md": {
       "bytes": 2964,
       "hash": "56d2f41d4360fda11c9d480efe7b1231814b7f5bdeff1c872d3ada33a480c902"
-    },
-    "EN-RoadSpeedLimitOffset(-1).md": {
-      "bytes": 2138,
-      "hash": "a63c9b0eac0801c1dc8ad7a4968733fb362efc6386cf70c74b055ef3ae8551ea"
     },
     "EN-Show-Debug-Info.md": {
       "bytes": 1570,
@@ -673,10 +533,6 @@
       "bytes": 1578,
       "hash": "0cfc7d9c5095ba1b84e6f0f4a568259554f8d552056264cbd57884bb8c1a3f2d"
     },
-    "EN-Signal-Assistance-Mode-(Trial).md": {
-      "bytes": 2317,
-      "hash": "3c42b23ce55b526cce7ac7664a69541162364b7d73e593c77792e39ab6b3a606"
-    },
     "EN-Sound-Language.md": {
       "bytes": 1595,
       "hash": "442bdd2a49294e44c6d008b3b108bb83d0ed7b5453506e3235993fc6d7967e4e"
@@ -689,81 +545,17 @@
       "bytes": 1769,
       "hash": "09544d60c7e79b016234bd653b21ead4aace192b8c266012749fd73593ddefa3"
     },
-    "EN-Speed-Bump-Early-Release-Distance-(200-cm).md": {
-      "bytes": 2737,
-      "hash": "ab22912c73754328d6d80c5124fe4fea65230c1e43ec5428cafd5d8c05358699"
-    },
-    "EN-Speed-TF-multiplier.md": {
-      "bytes": 2197,
-      "hash": "3c3c423b2bf301de5ace833a262881b5c9023a7bae94f90de5cb56bb7c402d04"
+    "EN-Special-SCC-harness.md": {
+      "bytes": 4430,
+      "hash": "9ece58117f1ae5b4e2c9ca5d633bbe3bc8bcf1d3dacb3ec9220cfc410106788d"
     },
     "EN-Speed-from-PCM(StockSCC).md": {
       "bytes": 2918,
       "hash": "739f8dba60e46fa4cab73f8b512359bd0c7a27fe61b6906c012c83c9fe247ddf"
     },
-    "EN-SpeedBumpEndingPoint(1s).md": {
-      "bytes": 2024,
-      "hash": "08df78dcd28c643a403ec1d325390e3fc4a3c4608d988270456b32de84e31a6a"
-    },
-    "EN-SpeedBumpSpeed(35km-h).md": {
-      "bytes": 1971,
-      "hash": "a9b519a33b46426c162173d9282ead7b1e1766b870513d34bc9258fd27cb2d7f"
-    },
     "EN-SteerActuatorDelay(30).md": {
       "bytes": 2188,
       "hash": "d2ec1f6d7598e1f9b676b35fe1b3cc622ffee2f450bc0d089f3b3e548be7e419"
-    },
-    "EN-Stock-Navigation-30-km-h-Zone-Limit.md": {
-      "bytes": 2434,
-      "hash": "fec4698f35b77cd183692b2557308b3cd4320a3d8fe41c907ceaea6884d1167e"
-    },
-    "EN-Stock-Navigation-Deceleration-Cancel-Request.md": {
-      "bytes": 2456,
-      "hash": "c1a50283f141de06c60275466f7076068314548c7454c6fb895e75c5dd9218c9"
-    },
-    "EN-Stock-Navigation-Section-Average-speed-Control.md": {
-      "bytes": 2840,
-      "hash": "d4ce78cf9b15b8f314c3bb621ff09d66092c2fc02efbdea6bc731ab2c6b2d72f"
-    },
-    "EN-StopDistance(600)cm.md": {
-      "bytes": 2237,
-      "hash": "2dd0ebde055a448586b8d7dc11d06db90efa93517c0c220486d567e97f79c6e7"
-    },
-    "EN-StoppingStartAccelx0.01(-50).md": {
-      "bytes": 3114,
-      "hash": "66a3544ae9c66791c027545e6115383a606c96eef9ccdb7d394d429de5e63cb4"
-    },
-    "EN-TF(1)-TimeFollow1x0.01s(110).md": {
-      "bytes": 1822,
-      "hash": "dc420f6f25783b2fcfc76031b3899cc354940169048524c2ffeac4c0caa90c3e"
-    },
-    "EN-TF(2)-TimeFollow2x0.01s(120).md": {
-      "bytes": 1822,
-      "hash": "b449701a546b6e5dc0c7e5c71a6426781b647d8d6c130a429954088e131616de"
-    },
-    "EN-TF(3)-TimeFollow3x0.01s(140).md": {
-      "bytes": 1822,
-      "hash": "7d84c14431bc36fa204b65e12f8b6d6c757201783dac275241017c76002374a9"
-    },
-    "EN-TF(4)-TimeFollow4x0.01s(160).md": {
-      "bytes": 1822,
-      "hash": "eebab0f93b413e54f308ad7976ee41ea7e13da655571c84cbc9f30ef86d6844c"
-    },
-    "EN-TF1-following-responsiveness.md": {
-      "bytes": 3475,
-      "hash": "ce05bf1b85ae25d2cdf320a57f54b5e42bf83df7b8ed63505facb61c3bcbae2b"
-    },
-    "EN-TF2-following-responsiveness.md": {
-      "bytes": 3475,
-      "hash": "2a0d328f5f848cb3cb746a03a6621e7702ab329dadfe67a4fb41e9319744fb27"
-    },
-    "EN-TF3-following-responsiveness.md": {
-      "bytes": 3475,
-      "hash": "6e63dc06beb5009900c7c557e719e0f04ff1f695067cec5e2ae2538181e4c5af"
-    },
-    "EN-TF4-following-responsiveness.md": {
-      "bytes": 3475,
-      "hash": "8a1616cdb42c98fd98262b646d442f74f8826aa0bc9630d1988dd9ca63bfe116"
     },
     "EN-Tesla-Automatic-Speed-Wheel.md": {
       "bytes": 2961,
@@ -793,21 +585,9 @@
       "bytes": 1697,
       "hash": "4e58345c17b639cd99ea1cfaac91262e9e29ea22d26ad020f487c4be8c770c4f"
     },
-    "EN-TrafficLightDetectMode.md": {
-      "bytes": 2121,
-      "hash": "06b17eb12417ec7de41581d382067b51af57f896d8bb8809337f018a14ac3994"
-    },
-    "EN-TrafficStopDistanceAdjust.md": {
-      "bytes": 2296,
-      "hash": "adea2dc0f79c9d088a0c626c023b8363eaf3830a208135616b851225e552119f"
-    },
     "EN-Turn-signal-lever-selects-turn-lane-change-(km-h,-0=off).md": {
       "bytes": 2381,
       "hash": "d3edfc519edb3e7944a9a1ff01e3e3b8d78e354ec6d57bd647b2e07f859b82e0"
-    },
-    "EN-TurnSpeedControlMode.md": {
-      "bytes": 1975,
-      "hash": "885b0216b2e92b87588ed90cecc1f155f52a17d4286aa53fbc7c070ab201f98c"
     },
     "EN-Use-HDP(CCNC).md": {
       "bytes": 1838,
@@ -817,21 +597,9 @@
       "bytes": 1330,
       "hash": "c46bd05a181d3716e0cf9f2b9a2c6f8228d3ec62822c87bf88499153bd732735"
     },
-    "EN-VEgoStopping(50)x0.01.md": {
-      "bytes": 2681,
-      "hash": "d96c4d3b74f4f5ef1ff39102ad5595c83a45b216113e422618ca565c3aab99f8"
-    },
-    "EN-Vehicle-Navigation-CAN-Deceleration-Mode.md": {
-      "bytes": 3481,
-      "hash": "5dc9116dfecf005e758384bdf34357f55a89ac39d66cbed964debdf63263cae7"
-    },
-    "EN-Vehicle-Speed-Camera-Virtual-Distance-Time-(6.0-s).md": {
-      "bytes": 3310,
-      "hash": "b57c24dae368c76f573e368bbcba82ad34412f9105e178ee36dd4d5cdef2cc8a"
-    },
-    "EN-Vehicle-received-Speed-Camera-Deceleration(Always-apply).md": {
-      "bytes": 3770,
-      "hash": "b293e13860c101fed9d6fd4260541d1e4cc2d1649be749e41fed1405f1838a54"
+    "EN-Vision-curve-assist.md": {
+      "bytes": 1253,
+      "hash": "a1dc8d9dc322508b6037309aa5d0eb62a43d592bca90a02a4d698be757abc984"
     },
     "EN-_CustomSteerDeltaDown(0).md": {
       "bytes": 2219,
@@ -881,10 +649,6 @@
       "bytes": 2200,
       "hash": "d4f5161a6a1975e6720c7fac70306af8d752f060ed172812ac41579b7d6aee27"
     },
-    "KO-AChangeCostStarting.md": {
-      "bytes": 2354,
-      "hash": "f619a1733a5f74342b466c02edba87be3dacd59211100c5b9caa1ab113c4f951"
-    },
     "KO-ATC-AutoTurnControl(0).md": {
       "bytes": 2343,
       "hash": "32541b721b60f5f4f4cb10d9c3424fd18b6395890dbb77760cffb90895866cb7"
@@ -900,6 +664,10 @@
     "KO-ATC-턴속도(20).md": {
       "bytes": 2163,
       "hash": "934e339fb5a4866b52a764b0fc06300f43ccb2625dc2edb211fcfa5f8c55e6c5"
+    },
+    "KO-Alpha-종방향-자동-설정.md": {
+      "bytes": 1382,
+      "hash": "e57ea63ecaca0f30a69a06fdffd024eaa4c66945f6865ecd6467052ff4efac16"
     },
     "KO-BSD-계산-간격.md": {
       "bytes": 1296,
@@ -925,10 +693,6 @@
       "bytes": 2030,
       "hash": "725543807c850b1f2a52ba2517f0c95191f08935e29ec66c2cd83857747aa7c1"
     },
-    "KO-CANFD-HDA2지원(0).md": {
-      "bytes": 1882,
-      "hash": "a1d22640f773f137dac231b3f634e7a087ac429b89af4026017b0ab434a19e95"
-    },
     "KO-Carrot-Vision-사용.md": {
       "bytes": 2715,
       "hash": "95c4357f8594851d691d1ddd0121ef4c3136c5212cdb544b3057a292efb3e240"
@@ -948,10 +712,6 @@
     "KO-HDP-사용(CCNC).md": {
       "bytes": 1931,
       "hash": "7684d7e561765a8e0e23f7302b5773b3bb317779ce1aab5343fd64efd85be489"
-    },
-    "KO-HYUNDAI-CAMERA-SCC.md": {
-      "bytes": 4456,
-      "hash": "efafba8fa613a0ec11a872230ea15bee75221f7b77d99619f3d5331bfc803f63"
     },
     "KO-HYUNDAI-LDWS-ONLY-CAR(0).md": {
       "bytes": 2007,
@@ -989,22 +749,6 @@
       "bytes": 2174,
       "hash": "31121611ce9f6649e9cfd16bc24448f24945b052496782a5d03d6883b36b0577"
     },
-    "KO-Long-Kf(100)x0.01.md": {
-      "bytes": 3512,
-      "hash": "94d68cd3d2d23dec2a6910ea1b1d219559120e06c70b1682fdb0843288186a78"
-    },
-    "KO-Long-KiV(0)x0.001.md": {
-      "bytes": 3619,
-      "hash": "249d9c0d316d36c824258e25137fa869af6d48408b8c6302ab6b70c15969d94b"
-    },
-    "KO-Long-KpV(100)x0.01.md": {
-      "bytes": 3468,
-      "hash": "e634e67d985fb2b7ea9397644df9b98ce2826199089972b15b848ad42d389ef2"
-    },
-    "KO-LongActuatorDelay(20)x0.01.md": {
-      "bytes": 2420,
-      "hash": "01985fe469e53f639d3934ac040f5310c54da4d4fb61c4182ccdffe7aa74a822"
-    },
     "KO-MaxAngleFrames(89).md": {
       "bytes": 2260,
       "hash": "6db5357d57330b27a63a6971e6a2f1f5b0ee89e6f0bb4eabbacc8c4a6734203e"
@@ -1033,42 +777,6 @@
       "bytes": 2291,
       "hash": "24890868e5d3b5be9aafd749e36f2ce6c21cdc738dbdd32d3e1ea5a873ef29f9"
     },
-    "KO-StopDistance(600)cm.md": {
-      "bytes": 2370,
-      "hash": "73954ab870bd01ca87c49e02c5628257eefd3c5d0472b114793d8c03955427f0"
-    },
-    "KO-TF(1)-차량간격시간1x0.01s(110).md": {
-      "bytes": 2000,
-      "hash": "76da1ac1a08c7b8f67a242ae7efcb89dcf8ab56ccdc4c6f46183d98187f53678"
-    },
-    "KO-TF(2)-차량간격시간2x0.01s(120).md": {
-      "bytes": 2000,
-      "hash": "9e191475264f6959a80b75946e8a9bcb3209ba680712325d12f167b803decf86"
-    },
-    "KO-TF(3)-차량간격시간3x0.01s(140).md": {
-      "bytes": 2000,
-      "hash": "e43bafa8afa12c51d0d543b7877842afcb01ed19048a113aa9b75f32778b29ec"
-    },
-    "KO-TF(4)-차량간격시간4x0.01s(160).md": {
-      "bytes": 2000,
-      "hash": "d603c0fd9ac513b3ceffc38a7733cd060123edde9b352344473a132c8d2486d5"
-    },
-    "KO-TF1-추종응답성.md": {
-      "bytes": 3698,
-      "hash": "1cb8ba0ec4a35d320f1c8788b1d87e996be05ca17849107715401244a69023c5"
-    },
-    "KO-TF2-추종응답성.md": {
-      "bytes": 3698,
-      "hash": "eeb3acfad6b649b22b31074bd5bc0680f0cd7b5654ef7cd49c9422bcdce147e9"
-    },
-    "KO-TF3-추종응답성.md": {
-      "bytes": 3698,
-      "hash": "7cbc0b83bb5d527e254d6e0dfef90ccc3a9a781857db23fd6e92e3d604f9a29a"
-    },
-    "KO-TF4-추종응답성.md": {
-      "bytes": 3698,
-      "hash": "499e3d67e0d7fe51e82c7290fd189806a49b7acb3c8323c2f4da984551e3cd60"
-    },
     "KO-TPMS정보-표시.md": {
       "bytes": 1648,
       "hash": "2818bd4eeabd596a4bc99d3757235e9a8123685fb3c9091a1bcd7d056fdf3757"
@@ -1096,10 +804,6 @@
     "KO-Tesla-자동-속도-휠.md": {
       "bytes": 3100,
       "hash": "e14383f000d22be678888fdcfe89c6610c8e624e4fc474c0f9779e2211ce71fb"
-    },
-    "KO-TrafficStopDistanceAdjust(-150).md": {
-      "bytes": 2355,
-      "hash": "883e56d19a52ed9076c41fa8d418d00f6510cf815960b1725eb7086549c24fb7"
     },
     "KO-_CustomSteerDeltaDown(0).md": {
       "bytes": 2316,
@@ -1149,93 +853,17 @@
       "bytes": 2287,
       "hash": "92f59aaf1d7b7cfeaa2868b66a885fa4446e723d30afacd10fa06d2393b36d30"
     },
-    "KO-가속도설정-0-0km-h(160).md": {
-      "bytes": 2042,
-      "hash": "19a13b402a6acf59c51e3101c8ddb20afd4a2cbdd63a9a3b058d1df5c2ee9e75"
-    },
-    "KO-가속도설정-1-10km-h(160).md": {
-      "bytes": 2046,
-      "hash": "d4de2d01501a2161baaf28f94510de76b6f8e871313d6e622965babd5dbd985e"
-    },
-    "KO-가속도설정-2-40km-h(120).md": {
-      "bytes": 2046,
-      "hash": "5c524a0c0274ea95a62dd264f0f8359cc598dae9f057a7611d306c7bf29a1e95"
-    },
-    "KO-가속도설정-3-60km-h(100).md": {
-      "bytes": 2046,
-      "hash": "e0a8771c974a78d8e0bf1c222cc5f2a1f7fcd9e4bf48c51176b36adda91f08ff"
-    },
-    "KO-가속도설정-4-80km-h(80).md": {
-      "bytes": 2045,
-      "hash": "04d032bfbcc02e041e6f2871fc7d935540561eebdc330f4ee6d361b83c5d9720"
-    },
-    "KO-가속도설정-5-110km-h(70).md": {
-      "bytes": 2049,
-      "hash": "dda96dee837dea48fa8a52b5cd5b6b67ce21467dfe3e6edca698ce52e6de0d07"
-    },
-    "KO-가속도설정-6-140km-h(60).md": {
-      "bytes": 2033,
-      "hash": "19a13f46170437d1d1f84d4053fbc7a3e1e238f7a89898b9855a8f0c118a51cd"
-    },
     "KO-가속페달-해제-시-크루즈-해제-속도(30).md": {
       "bytes": 2081,
       "hash": "8d09c360825eeff404bfa780b4720062c87ddd57bb1b5d1a97d8c71f5a3df09a"
-    },
-    "KO-감속-시-차간-여유(0-).md": {
-      "bytes": 2519,
-      "hash": "ab6b7d3b70e4f707c5a904af586c8adefd4705a1303f30d74e120323b5932833"
-    },
-    "KO-감속-중지-경고-조기-시작-보정-실험.md": {
-      "bytes": 2968,
-      "hash": "0e6ed1eb2b65abe95c8e674d411ce1e5778daac7a72bb202072d5f58f4398f32"
-    },
-    "KO-감속-중지-과속방지턱.md": {
-      "bytes": 2264,
-      "hash": "54abbd9eea680063468fd83e262eb30b18493472d068b4d250a825f459fa8493"
-    },
-    "KO-감속-중지-과속카메라-종류-미탐지-건-실험.md": {
-      "bytes": 2687,
-      "hash": "9543615694bd14052382c0822a343c458c129813ab3fcc1f2a537461b10dfa9a"
-    },
-    "KO-감속-중지-박스형-카메라.md": {
-      "bytes": 2047,
-      "hash": "73cd9daa84365f57d2867ca840e74c95edc993cd1aa1b478aef126cbce216210"
-    },
-    "KO-감속-중지-이동식-단속-구간.md": {
-      "bytes": 2219,
-      "hash": "8fe19108fa3fc13908ff151de8214f7179f92247c28368f986bdba5ab3ff859f"
-    },
-    "KO-갭-단계-수.md": {
-      "bytes": 1646,
-      "hash": "ab4244ee06cd6bc0cacc9e4816cdbbc1239173eb941f5d6e0f06092d8a87a525"
     },
     "KO-경로AR표시(0).md": {
       "bytes": 1660,
       "hash": "9d12e8bd4bca668865ac0f9aaba6472314ab06a141c99b1f77d61d58b4f9b00a"
     },
-    "KO-경로턴속도반영비율(100-).md": {
-      "bytes": 2315,
-      "hash": "475d92a8bdf156c1d3bc9f42430c67b517375a23582d1108f46eb690187b81a1"
-    },
     "KO-계기판-CAN-직접-송신.md": {
       "bytes": 1516,
       "hash": "11301155745ec639ebed2705553c0b8c0514b42858f39cd692a5d21d22296422"
-    },
-    "KO-과속방지턱-속도(35Km-h).md": {
-      "bytes": 2099,
-      "hash": "9855a7e571071846b2f003b10c14532606e3b5848dcf937bed6a2cc06479b547"
-    },
-    "KO-과속카메라-감속율-x0.01m-s^2(120).md": {
-      "bytes": 2415,
-      "hash": "493a3e866c5d479f8d48c8727022ee00e71c6601c7148f51998d209e688c2805"
-    },
-    "KO-과속카메라-제한속도적용율(105).md": {
-      "bytes": 2266,
-      "hash": "622e78ecbd7450e79e3dd244646f99dee6bdc7318af7859a05f8a7a1822e8233"
-    },
-    "KO-과속카메라감속-완료-시간(6초).md": {
-      "bytes": 2234,
-      "hash": "ae2302e2f360a4198849dce214fab740ea6e31e5647fbb47fd84ef7a904e3db2"
     },
     "KO-광각-전방-카메라-사용.md": {
       "bytes": 1430,
@@ -1253,37 +881,13 @@
       "bytes": 2262,
       "hash": "157e9a5d5862d63c35be4d14535a65c3c113581008a765ea703692a9da256461"
     },
-    "KO-네비게이션감속모드(2).md": {
-      "bytes": 2952,
-      "hash": "664c3f22c965e9a89489cde495c223dc8f05020b6b6e72b24b907f2ba5011c72"
-    },
-    "KO-네비알림-카운트다운-방법.md": {
-      "bytes": 2485,
-      "hash": "ac7b0d00bdec9cdd88999d8c06cd22ac1bb942b4d2b3c1c00428eb0a1106b392"
-    },
-    "KO-당근크루즈감속도ATCx0.01(-1).md": {
-      "bytes": 2365,
-      "hash": "e081ce7adbbe63e170461ebaf010ce512e00ed185cdf8d60f9e83926f87e094f"
-    },
-    "KO-당근크루즈감속도x0.01(-1).md": {
-      "bytes": 2335,
-      "hash": "eab310561d27d9e73cc57374545b7f2652e3dfce7b0c9195105652f0926b71f7"
-    },
-    "KO-도로제한속도맞춤(-1).md": {
-      "bytes": 2269,
-      "hash": "81fedc0010683861ad69392f54320fa661a088bde54c0841ab4a06c3bbd09436"
+    "KO-내비게이션-제한속도-보조.md": {
+      "bytes": 1284,
+      "hash": "2b44e52f770acdf5359a184be6b5c5d8d989c5135bc8a8fc17dcac48f77f540e"
     },
     "KO-도어감지안함.md": {
       "bytes": 1945,
       "hash": "cb6685d31d62a36d02ce2b69430e67b81750b7abf8859619b3be224775d70685"
-    },
-    "KO-드라이브모드-(3).md": {
-      "bytes": 3165,
-      "hash": "caf66e8e275612e3efedb0d6461628ff32d112f6c59e6b36fbe544015cf14ba2"
-    },
-    "KO-드라이브모드-자동.md": {
-      "bytes": 2947,
-      "hash": "c5f6d52409b15560ab30b4c4d2664e746891dc1578c4d599f67e6c349ec53a4b"
     },
     "KO-디바이스정보-표시.md": {
       "bytes": 1701,
@@ -1333,10 +937,6 @@
       "bytes": 2894,
       "hash": "9853f10b7bcd96d0853e29e539d76a3f9745f85461eb5d77b5b84620febbd1ab"
     },
-    "KO-모델-주행속도-적용-비율.md": {
-      "bytes": 2556,
-      "hash": "d6d3e32250804d8ce7348b58e352909f5a1c29e9b8683e307a05e19bcc01ae83"
-    },
     "KO-무게중심-비율.md": {
       "bytes": 1686,
       "hash": "71aa57058375adcaeac7034c3d415c403b86081a4b1b46237c3a54271f8de4fa"
@@ -1345,17 +945,17 @@
       "bytes": 2299,
       "hash": "0f1f418f7bedaf97ed317da9db7fce32e572b852bf7c1edcbf63b0cb0b5b109a"
     },
-    "KO-방지턱-감속-조기-종료-거리(200cm).md": {
-      "bytes": 2946,
-      "hash": "02c54347ae5abcc7e9937d4e1b0d29d39219c4210df8c662cfdc96bc93c6aaeb"
+    "KO-방향지시등-조향-일시-정지-(km-h).md": {
+      "bytes": 1426,
+      "hash": "650ca158989f99809ca8ed1e5d4b691c193697bdc48bdb41e91f76d6952cdd3f"
     },
     "KO-부팅시-핫스팟켜기.md": {
       "bytes": 2559,
       "hash": "19d89a45ebfe076e63dfee15f6c0ab3b8d05e8f83baf4ff4bed6748e750d691a"
     },
-    "KO-사고방지턱-감속완료시간시점(1s).md": {
-      "bytes": 2193,
-      "hash": "4e292e382686cd9699d3bde63647d54b225a95c3fadda17b62f8708b45701c01"
+    "KO-비전-커브-감속.md": {
+      "bytes": 1314,
+      "hash": "2b940013a345b4bece26bd2f42baa78963c0bb51baef3740672416ec4cd9625a"
     },
     "KO-사운드-언어.md": {
       "bytes": 1670,
@@ -1377,10 +977,6 @@
       "bytes": 2078,
       "hash": "a54e7748ea2db8dbc8e06868675008cedb1362a832b90b77d5b8a470106e0a76"
     },
-    "KO-속도별-TF-배율.md": {
-      "bytes": 2356,
-      "hash": "f7f120e629c0a3b793893bde72469ec4aa91db42e6061cb03252d92d4ec51d9f"
-    },
     "KO-수동-차선변경-깜박이(시험).md": {
       "bytes": 5635,
       "hash": "1c5954e18f6cd7034c0bd27e01bdb4dc5e7a0894fa1dad44840bd1e84ff0e20c"
@@ -1397,21 +993,9 @@
       "bytes": 1668,
       "hash": "c272aa56dc0f1de37b33d14b9c9f0f62bf32dc52f1f056b2637d7a9b1f4f0778"
     },
-    "KO-신호감지-기능.md": {
-      "bytes": 2247,
-      "hash": "76567c20e5bfdf4ed2ba899acdb4e566f449895799e400044ba3d722715659a2"
-    },
-    "KO-신호보조-모드-(시험).md": {
-      "bytes": 2651,
-      "hash": "7a5b4ccb34610208a0e3874b199a784c0bc05e3ab0770b4502d3b638bd4d4438"
-    },
     "KO-안전벨트감지안함.md": {
       "bytes": 2033,
       "hash": "7b81ea8da72ad45367df99a533cfe0f83604877300485e614d4e10fbaf87408b"
-    },
-    "KO-앞차-브레이크등-관찰-(실험).md": {
-      "bytes": 1661,
-      "hash": "eb8ac99c1b2f22ef6d1eba4a76676967d927751bd7fdce917427b2998da5b563"
     },
     "KO-오토인게이지.md": {
       "bytes": 2667,
@@ -1497,14 +1081,6 @@
       "bytes": 2410,
       "hash": "8a58c57d7d11ce78439c6709a513badb22f1a241ec0ed478f27f0b8ae90174fd"
     },
-    "KO-자동도로제한속도감속-(50).md": {
-      "bytes": 2315,
-      "hash": "57d6dca7b2b20a32f057243290cf090f5a631f5470b8a78c3c6127dca47eb90e"
-    },
-    "KO-자동속도증가-(100).md": {
-      "bytes": 2268,
-      "hash": "240e2274aa636b0f632745e93b4f6334d27004b7ac01f81a5a1e3380030fe2c7"
-    },
     "KO-자동전원OFF(분).md": {
       "bytes": 1924,
       "hash": "8e838c785b64ddf2b8e09bad3e48467fd4e079e5149ebe80788df5188678cc82"
@@ -1517,6 +1093,10 @@
       "bytes": 1903,
       "hash": "98010b69e61dd9d2fbc9f2f47b201082a5939619975f340c58247746f20f193a"
     },
+    "KO-저속-방향지시등-회전.md": {
+      "bytes": 1246,
+      "hash": "49ade38502d4501fab686986808c79ed95fed0a93696ddfcd0971589bae5e681"
+    },
     "KO-저속-요구-추종·응답-기록.md": {
       "bytes": 5226,
       "hash": "867dc5041e12cd2c31ef9570e9cf798a9e49c4933583d9da6f7abc27261dc0b8"
@@ -1524,14 +1104,6 @@
     "KO-저속조향제한해제.md": {
       "bytes": 2188,
       "hash": "4ae63e97001ed2a1fce09b4b6c5fbe434238c97e1140554e03f89315aef5d19a"
-    },
-    "KO-정지시작가속도x0.01(-50).md": {
-      "bytes": 3364,
-      "hash": "803f06f37ce48034732bdb9e9bdbb7503c572ad50b0c25f6d978581a2694de37"
-    },
-    "KO-정지출발민감도(50)x0.01.md": {
-      "bytes": 2987,
-      "hash": "ed1f393e93ae0cbc46bc858cc18b40422056587714a5ad42580525309745fa7d"
     },
     "KO-정차-SPAS-깜박이-시험.md": {
       "bytes": 2256,
@@ -1545,29 +1117,13 @@
       "bytes": 2946,
       "hash": "9923a3f653f9e8829fb43d0ef5d2c714468a9c89146ca6edf2f9d8241bb2fa54"
     },
-    "KO-차량-과속카메라-가상거리-시간(6.0초).md": {
-      "bytes": 3529,
-      "hash": "1f3c6fa1f641a8f7b44c6794fd7aa887e1191b7cd8a9c3a53a914d305049e6fb"
+    "KO-지도-커브-감속.md": {
+      "bytes": 1250,
+      "hash": "aa4baa34e0bc17ccee1c75ad815f64ce61a4a632986fc75d1241f18edc7c7b32"
     },
-    "KO-차량-내비-CAN-감속-적용-모드.md": {
-      "bytes": 3796,
-      "hash": "e6833ccc2dec9330467ca3edb1a290466f104bc3e37a0570b5a734f6ee866af7"
-    },
-    "KO-차량-내비-감속-중지-요청.md": {
-      "bytes": 2711,
-      "hash": "40c0efeb4e5933fdca8e5dee953439f6cb1b1d1ed161467cc3090edf62620cbb"
-    },
-    "KO-차량-내비-구간단속-평균속도-제어.md": {
-      "bytes": 3124,
-      "hash": "37800e109ee37817aa9642205a809fed769bae3f61f1f0655401a3720aab7e74"
-    },
-    "KO-차량-내비-어린이보호구역-30km-h-제한.md": {
-      "bytes": 2666,
-      "hash": "e023a02eb28786cc34f745a5b0c70afcd6c348584d4b1e297a476101e76deb18"
-    },
-    "KO-차량-수신-과속카메라-감속(항상-적용).md": {
-      "bytes": 4012,
-      "hash": "906412bda44069ff496d6a45b4fcbbfbea1bade07fc2b17cb04128667476d94a"
+    "KO-차로-중앙-유지.md": {
+      "bytes": 1214,
+      "hash": "9129b5b7124c1b3c7e4d9610a9b98cb22ce9aaa28c73360c448c4dd9ec778ab5"
     },
     "KO-차선-계산-간격.md": {
       "bytes": 1311,
@@ -1580,10 +1136,6 @@
     "KO-차선변경-BSD.md": {
       "bytes": 2071,
       "hash": "b43fe0c4f355d8f176bc318d4601c9fa8195cafff0eac0207a934eee058fcacf"
-    },
-    "KO-차선변경-반응(100-).md": {
-      "bytes": 2867,
-      "hash": "5e5949777074b2d9b8690b2d7d1e26c3f137985ad376ee6c509b203908cf5db3"
     },
     "KO-차선변경-조향토크-사용.md": {
       "bytes": 2130,
@@ -1605,10 +1157,6 @@
       "bytes": 1788,
       "hash": "6748b4037ecdffeacc0315d10f7ea55a95fbd40dab7639951848b92121873adb"
     },
-    "KO-추종응답성-·-공통.md": {
-      "bytes": 4416,
-      "hash": "b04f1aed6af24fd2b3d010f9409f68df8f8ff6a1758dbe81a42a33c6b76e2a4d"
-    },
     "KO-카메라YAW보정-0.01deg(0).md": {
       "bytes": 1833,
       "hash": "19436390d69337dc8712005b269081d66d11640a92a1513ae452026ca759d2d1"
@@ -1621,25 +1169,17 @@
       "bytes": 1892,
       "hash": "f8fe1fedd68ff4edc742903555d6c56e260b2d3cde46867ac6b50b2674258ac5"
     },
-    "KO-커브속도-조절비율(100-).md": {
-      "bytes": 2796,
-      "hash": "e3abff2a9889a85c5ca2ac8e107f5a19eb89c1e36cc32418b72b82d8a052b45f"
-    },
-    "KO-커브속도-최저속도(30).md": {
-      "bytes": 2292,
-      "hash": "ed3a4b55343cbca05e6e878a9cafa90d08aa80ce70e7b9fcea6925bf646a0aeb"
-    },
     "KO-코너레이더-사용(0).md": {
       "bytes": 2283,
       "hash": "e57894e8fbd08f45af962729d0f67b60ffacbffadc3e1bbc761d96bea653bd01"
     },
-    "KO-크루즈-코스팅-여유.md": {
-      "bytes": 3560,
-      "hash": "f183f8c27d74c651fb3b4def45e17d85a120bde33113eb78778962359fdd49bd"
-    },
     "KO-크루즈ON거리(0cm).md": {
       "bytes": 1846,
       "hash": "64b6ff96caf847f17d309f7881a26a1e0829155358fbe0bd4aaf4f1731368f7f"
+    },
+    "KO-크루즈만-사용.md": {
+      "bytes": 1288,
+      "hash": "8a6332c88acb13f66e9373940e762615d7d55efbd8fc4db07a51f1562e946488"
     },
     "KO-크루즈버튼롱딜레이(40).md": {
       "bytes": 2346,
@@ -1689,10 +1229,6 @@
       "bytes": 2039,
       "hash": "de8d3786fa0052e40e92d477c72d8a90e95aedc4217e762100f77775cf78961e"
     },
-    "KO-크루즈연비제어(2km-h).md": {
-      "bytes": 2204,
-      "hash": "1e07acc4e2efe77f4030244ad67e57a9ec4c8a38152cd85cf22d31ca6d3d5b9a"
-    },
     "KO-클러스터-내비-지도-FPS(1).md": {
       "bytes": 2477,
       "hash": "212fc5dd939c85c2c229b6888f1ebeb387d6fe842583070535cd9758e74d7f20"
@@ -1709,9 +1245,9 @@
       "bytes": 1796,
       "hash": "d472cc59502ffec55ccf4e742dae0cd47d99595258f3c84e8b88c15212bbcffb"
     },
-    "KO-턴속도제어방법.md": {
-      "bytes": 2051,
-      "hash": "95a293da1dc20b2ba397fe12fcca03be6db51384f1a4add1b2ac0ad5c36613bc"
+    "KO-특수-SCC-배선.md": {
+      "bytes": 4682,
+      "hash": "1af957e8f968fe5a686af505daab6c2e938579c1ea82182453286063ce8f5d6b"
     },
     "KO-패들시프트모드(0).md": {
       "bytes": 1941,
@@ -1745,17 +1281,17 @@
       "bytes": 2194,
       "hash": "218029d27f32811bdf611ebd37608ab9c8908c960eb55ceea70092e1cccdefff"
     },
+    "KO-현대-CAN-FD-배선.md": {
+      "bytes": 2215,
+      "hash": "7ea35daeb7a2e507a941175599935397802d1fbdeb626665e9c025bc68866d98"
+    },
     "KO-현대·기아-4차종-조향·커브-보조.md": {
       "bytes": 4967,
       "hash": "730c78802a49fd26e34f5bd6419747fe90f1cbe60a1256ad7300c0ee36ad71b5"
     },
-    "KO-후면단속-통과-후-유지-거리(m).md": {
-      "bytes": 3477,
-      "hash": "c36b52d2f81711770bb6532877ab8c359e6f5d670cc0ff058db0b0c834b7e810"
-    },
     "Settings-Catalog.md": {
-      "bytes": 147297,
-      "hash": "a6eebcba0b3350fbb91c0959ddf06e344fe0eb78ba5b77957838c14735b069af"
+      "bytes": 105620,
+      "hash": "9c3a99b638b485d57337d4a47e001b546e212eeb2a5983acc07f76aff0658c88"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -1784,10 +1320,6 @@
     "ZH-CAN-FD-SPAS-indicators-(trial).md": {
       "bytes": 1499,
       "hash": "f50fb519abe958d34e9f7425a246d32062c00b3d4a905c98775615a82d103416"
-    },
-    "ZH-CANFD-HDA2-(0).md": {
-      "bytes": 1039,
-      "hash": "2cc3cfac10a4996639f9a078deb812eb0d46186004f1ffb75cc003f5fce5de06"
     },
     "ZH-CANFD-调试-(0).md": {
       "bytes": 1073,
@@ -1833,22 +1365,6 @@
       "bytes": 2253,
       "hash": "a87319f51509ed49617475a189d1644c0f7c23cc07d52e576453ac4b651e01c8"
     },
-    "ZH-TF1-跟车响应性.md": {
-      "bytes": 3220,
-      "hash": "e03488f7cd386f821ca4b490a94eaa2e8ad3472166124a31c9aba18202d59fc4"
-    },
-    "ZH-TF2-跟车响应性.md": {
-      "bytes": 3220,
-      "hash": "80690a4626dff778d9dfdfc12848500cdd6884bc5ae7540538b16b0cbe1e5b07"
-    },
-    "ZH-TF3-跟车响应性.md": {
-      "bytes": 3220,
-      "hash": "fc94e931d71f8bc82e6ad4026d39ff297194cce6325743b5e0f4d71e5069604d"
-    },
-    "ZH-TF4-跟车响应性.md": {
-      "bytes": 3220,
-      "hash": "72503122febbdcf63178cd0cb274a16b53fb26c1b588ae271dfd5f213d47c932"
-    },
     "ZH-TW-ATC-自動轉向控制.md": {
       "bytes": 2109,
       "hash": "cb1af72a137d86f9de4cd47976114f5fe876fb1f6e0ecd0b23115efd13db2180"
@@ -1876,10 +1392,6 @@
     "ZH-TW-CAN-FD-SPAS-indicators-(trial).md": {
       "bytes": 1502,
       "hash": "5e26fb2892a1c52e171f408e6a307cd7000efa6a32eeda4977c4f1a1b3e1eeee"
-    },
-    "ZH-TW-CANFD-HDA2-(0).md": {
-      "bytes": 1698,
-      "hash": "1ce7f81634396a8c4c3ef3a8042e276dd3687677b01bb7b89405a77dd64e74ac"
     },
     "ZH-TW-CANFD-除錯-(0).md": {
       "bytes": 1851,
@@ -1925,22 +1437,6 @@
       "bytes": 2256,
       "hash": "bfbc7218408bafa968afa9f80bd8caefb67eb9ea3dc11f157dd810dd0672d27f"
     },
-    "ZH-TW-TF1-跟車響應性.md": {
-      "bytes": 3223,
-      "hash": "827553aa7d80ab1127cd4216855b671a604ec0e19c9853445688ba73257590e5"
-    },
-    "ZH-TW-TF2-跟車響應性.md": {
-      "bytes": 3223,
-      "hash": "f3eb8dbc533957970373ca3b943b0f3458a0f7c8776a6e62430ee1ab51f16824"
-    },
-    "ZH-TW-TF3-跟車響應性.md": {
-      "bytes": 3223,
-      "hash": "a944730ee2c9eea25d058765520d560f83f22b6ec6a737062f591ee248b2c02b"
-    },
-    "ZH-TW-TF4-跟車響應性.md": {
-      "bytes": 3223,
-      "hash": "3b4e4fe40a3612d3d8b0c645ae7296c9ffa8b05399b0a1a54da1fcb0a30ebac5"
-    },
     "ZH-TW-Tesla-自動滾輪調速.md": {
       "bytes": 2818,
       "hash": "cd71ac07b974928ab4f1f007d2b469bf9ef891fe640ff479c36417aab38891fa"
@@ -1949,9 +1445,13 @@
       "bytes": 2320,
       "hash": "e3f8321bf2704d3ab4da19a7d8042a8188216a6b739ceb5a813c1d67a7c2f09f"
     },
-    "ZH-TW-交通訊號停止距離調整.md": {
-      "bytes": 2051,
-      "hash": "2278d4866eecf73ec1b9d6067ef62195945a4b3e78e743cd66e19e70de9b67cd"
+    "ZH-TW-低速打燈暫停轉向(km-h).md": {
+      "bytes": 1383,
+      "hash": "f2cd7178abb4e18404b0014284b0d6c5ad908c48a9b1e530ad0843881b47a9db"
+    },
+    "ZH-TW-低速方向燈轉彎.md": {
+      "bytes": 1223,
+      "hash": "d84c247fac7bef146e75aa2bc7903bf56b0d61bdfc09b4eafcca81a3ccc1667e"
     },
     "ZH-TW-低速需求跟隨與反應記錄.md": {
       "bytes": 4608,
@@ -1969,17 +1469,13 @@
       "bytes": 1839,
       "hash": "1385c3c7d99161a4fceac0383f76c9a6aca78812321a9d4c6445b6fd2f15e367"
     },
-    "ZH-TW-停止-啟動靈敏度(50)x0.01.md": {
-      "bytes": 2574,
-      "hash": "f4432711c7582ace327615ca4690ab01fc4069f372fe3c37406d0095715df931"
+    "ZH-TW-依車型自動適配-Alpha-縱向控制.md": {
+      "bytes": 1326,
+      "hash": "63a72c5893c700083fc3b71e98888f8fce0bfd882371981f8cabc19ad81ea057"
     },
-    "ZH-TW-停止起步加速度-x0.01(-50).md": {
-      "bytes": 2768,
-      "hash": "5a348b2ff468a09d7f07d5898f62f68bd2c2c07f8fa7965fabd36cfde5025e0e"
-    },
-    "ZH-TW-停止距離(600)cm.md": {
-      "bytes": 2158,
-      "hash": "c44a26bd45f18672b4933f1ea587cfaf4e750373c4d9bc664942182301ba361b"
+    "ZH-TW-僅巡航,手動轉向.md": {
+      "bytes": 1261,
+      "hash": "37e688ea065df9b2da82e848f615c92e3ee6e3c07fd0cc80d71fe9800a848bc0"
     },
     "ZH-TW-儀表-CAN-直接傳送.md": {
       "bytes": 1419,
@@ -1988,50 +1484,6 @@
     "ZH-TW-全時橫向控制.md": {
       "bytes": 3231,
       "hash": "ddbdc5060df1b2524089a37ce1241dcd9209ac7f539ccb74844bc4eca3408b58"
-    },
-    "ZH-TW-前車制動燈觀察(試驗).md": {
-      "bytes": 1354,
-      "hash": "394ef2998d93c8c7bf3998722f3967a7ec0c35d99f54fd52d84c1403a5182576"
-    },
-    "ZH-TW-加速度設定-0-0km-h(160).md": {
-      "bytes": 1893,
-      "hash": "88de22b60400870747301b10276b9cd6ac704e8b9deff9be155d488b4567faef"
-    },
-    "ZH-TW-加速度設定-1-10km-h(160).md": {
-      "bytes": 1897,
-      "hash": "ff71f544872588b4bbea4cfefcfbc32a40e53d94a1ecacbdac7df3e7d0fc92e2"
-    },
-    "ZH-TW-加速度設定-2-40km-h(120).md": {
-      "bytes": 1897,
-      "hash": "0484ba5b6e0ccc22f0b8bd9c8895ef1d8b08666624b2c0f434dfd961cb39b5a8"
-    },
-    "ZH-TW-加速度設定-3-60km-h(100).md": {
-      "bytes": 1897,
-      "hash": "61a4014cedb27ace6fc6d2b2ae4a89b9adb210e10e5328c9587325e0534b25f5"
-    },
-    "ZH-TW-加速度設定-4-80km-h(80).md": {
-      "bytes": 1896,
-      "hash": "1aed7ed68237c5ffed1e4daecfffaef68b140b5bffd14689b413acfa8cda3c7e"
-    },
-    "ZH-TW-加速度設定-5-110km-h(70).md": {
-      "bytes": 1900,
-      "hash": "2a599dd2caaf494aab690e58b7e3eae7cb73aa4df0b8a5138fefe753e7047591"
-    },
-    "ZH-TW-加速度設定-6-140km-h(60).md": {
-      "bytes": 1882,
-      "hash": "606b5e00b3b9360447b15b53f367e2cdee8944e600c3d0b8cd47206da2c8b20a"
-    },
-    "ZH-TW-原車導航-30-km-h-區域限速.md": {
-      "bytes": 2353,
-      "hash": "22d408d81d9e90b995d0caa5f60bf55b3c2974995b69bbbd5acf48d240b15cb6"
-    },
-    "ZH-TW-原車導航區間測速平均速度控制.md": {
-      "bytes": 2607,
-      "hash": "b8890b7c76ef247a04d22e5a1279fba1536bcebcf02278c92d098ed41a61f225"
-    },
-    "ZH-TW-原車導航減速中止請求.md": {
-      "bytes": 2308,
-      "hash": "b82c41130641dea76468de8d80b0351058ed8c39eaea22c79effd9b95584f633"
     },
     "ZH-TW-取消後允許軟駐車(0).md": {
       "bytes": 1242,
@@ -2057,10 +1509,6 @@
       "bytes": 2675,
       "hash": "01ab62f390e38f7079aa61ad60a0431a0e1ae2abb5c203e5bd93c9bae266ee3f"
     },
-    "ZH-TW-啟動加速度限制.md": {
-      "bytes": 2127,
-      "hash": "fd116d2f386a94b280d86ee7691bc8a76c7ac80169ba642be696dea1d426b091"
-    },
     "ZH-TW-啟用-Carrot-Vision.md": {
       "bytes": 2379,
       "hash": "e393bcfd29dd9c8fd46511938a2d763166c7d1f2cca07be3bd975702715fac6b"
@@ -2073,9 +1521,9 @@
       "bytes": 2027,
       "hash": "ef77fad1504b165ba5676bfee5f52a6c896b7cc08ffb776deba4a3790402a62d"
     },
-    "ZH-TW-地圖轉向速度因子.md": {
-      "bytes": 2060,
-      "hash": "b9c72bd2c5f64af734983a4514d0c1abe63f0ca0ad911c31a44d108c9fd1d50e"
+    "ZH-TW-地圖彎速輔助.md": {
+      "bytes": 1222,
+      "hash": "5363fd617470d03d5312ebd24fae38f0b6e79629c36faf0e2a58a38e983ebfc4"
     },
     "ZH-TW-外部-HUD-主題(0).md": {
       "bytes": 1492,
@@ -2121,25 +1569,9 @@
       "bytes": 2106,
       "hash": "0e35f2bc0696b7312e0c5ed00822947b221a892aead9c17d2356420cc1c31f7b"
     },
-    "ZH-TW-導航倒計時模式.md": {
-      "bytes": 2182,
-      "hash": "d9b310564a65b9e14312213741994f50b7ae48f2c15bde9f3fb79305a3a82f5c"
-    },
-    "ZH-TW-導航減速效率-0.01m-s^2x(120).md": {
-      "bytes": 2173,
-      "hash": "8835a61bf2719430a41904b62c9b723bfdb5c090ae9426d8b74b7dabb4bda694"
-    },
-    "ZH-TW-導航減速模式-(2).md": {
-      "bytes": 2655,
-      "hash": "d20ce9f0fac6ba73c96196115ec64f09e3d3cb7b5f15206a53b5544583e26d75"
-    },
-    "ZH-TW-導航減速結束點-(6秒).md": {
-      "bytes": 2031,
-      "hash": "ed6421f5a054060b050b1483a8471bee4314b493b264467b6f54df1da67a8824"
-    },
-    "ZH-TW-導航限速比例-(105).md": {
-      "bytes": 2053,
-      "hash": "a4e2a31e663c4655796930bbadfd7cbb203870dfab9fd8048c5460ef8999da5b"
+    "ZH-TW-導航道路速限輔助.md": {
+      "bytes": 1276,
+      "hash": "1225c1b8b65c75ce9fd660f2b1ab28cd835734b11d76f224994a7f15e4ae15ad"
     },
     "ZH-TW-巡航按鈕模式(0).md": {
       "bytes": 2106,
@@ -2160,14 +1592,6 @@
     "ZH-TW-巡航按鍵長按延遲(40).md": {
       "bytes": 2016,
       "hash": "e25073c548bf178458f1d282215919fc65144ec7ce4df7ec70aa70330b2d3311"
-    },
-    "ZH-TW-巡航滑行餘量.md": {
-      "bytes": 3043,
-      "hash": "b4d1afc0e8f363f44e96e608f3cea7e36b498d6a2437751f524c86fc290ebf36"
-    },
-    "ZH-TW-巡航節能控制(2km-h).md": {
-      "bytes": 1923,
-      "hash": "55d7e6896c4b8bc567fc8b7fe0d124b5c1a41fef7fec1169ce6bb593ad1f6021"
     },
     "ZH-TW-巡航速度1(30).md": {
       "bytes": 1857,
@@ -2201,21 +1625,9 @@
       "bytes": 1649,
       "hash": "df974f131ef031a8a74add92c21fc062d5a1d66bc2b0d06872524b06f88cc6f2"
     },
-    "ZH-TW-彎道自動減速下限-(30).md": {
-      "bytes": 2118,
-      "hash": "e9ac223ecdb78a6948c36de3eddd9d1d811009bfc8328d36a666e4bb5eaf0713"
-    },
-    "ZH-TW-彎道速度調節比例(100-).md": {
-      "bytes": 2465,
-      "hash": "340b1c15ffc033fd1997fcc23f496e32041b5902403ea1b6ac5b0bf40bd954d4"
-    },
     "ZH-TW-彩虹道路(SP-風格).md": {
       "bytes": 2125,
       "hash": "fe8d4910fb6f2433f14e7231a50b31916d6b03d142eac0e4419f7f3307e397fc"
-    },
-    "ZH-TW-後向攝影機透過後保持距離(m).md": {
-      "bytes": 2969,
-      "hash": "8967bc57bb7601c313ef4e3900e6a302878973b1bb1d7be49c75d52aa9ee366b"
     },
     "ZH-TW-手動變道轉向燈(試驗).md": {
       "bytes": 4433,
@@ -2245,10 +1657,6 @@
       "bytes": 2435,
       "hash": "717463b0b6daccd1550c25289475d6049298228a2a5b86e0f5dd57a22993e0c9"
     },
-    "ZH-TW-模型車速應用比例.md": {
-      "bytes": 2231,
-      "hash": "dc45b155ff90b132b1fef090fb1981734d4cf039b3f5f9b144420b48dc415f27"
-    },
     "ZH-TW-橫向MPC加速代價(120).md": {
       "bytes": 2053,
       "hash": "6aff036cb1954238e737c94f9b2de4e8445833211af7f65fae67da3e96782504"
@@ -2273,42 +1681,6 @@
       "bytes": 1939,
       "hash": "f6a7c1232f3f06d0b8f6dd9245e432ea3e52849bbcef8ea9cf9ed4434118147e"
     },
-    "ZH-TW-減速中止-提前警告修正-實驗.md": {
-      "bytes": 2617,
-      "hash": "58cde9a1509c937007f1b34487a59107ab8ccef74eb9122e59fd28a3fd571de8"
-    },
-    "ZH-TW-減速中止-未識別型別的測速攝影機-實驗.md": {
-      "bytes": 2335,
-      "hash": "f27a492f652246a5179025574920a1a323952f0710ff7a2a7fb2b9e9b20e5f5b"
-    },
-    "ZH-TW-減速中止-減速帶.md": {
-      "bytes": 2006,
-      "hash": "c8771c0e930ecf578fcd517f0f78cc783f610089b80ce1061a098d78a150ee63"
-    },
-    "ZH-TW-減速中止-移動測速區間.md": {
-      "bytes": 1951,
-      "hash": "c8a07b73a283ef98a355cb1db22f0be188c4e1f577dc4e0ecf51b162f7816687"
-    },
-    "ZH-TW-減速中止-箱式攝影機.md": {
-      "bytes": 1809,
-      "hash": "0426e46bed40253a595bd2ed207a078d69a01a297eaf368b5832d727e67af476"
-    },
-    "ZH-TW-減速帶減速提前解除距離(200釐米).md": {
-      "bytes": 2586,
-      "hash": "df30677042c0835e5ae0afeb87892422c3acad2453aeebda7ee9107f56c93090"
-    },
-    "ZH-TW-減速帶結束點-(1秒).md": {
-      "bytes": 1923,
-      "hash": "674989e2944e38c778653a05b6f62294bc370557020fd9fea3a0c8e635ede712"
-    },
-    "ZH-TW-減速帶速度-(35km-h).md": {
-      "bytes": 1890,
-      "hash": "d98e352b4e925d86f9cb7756844360a5f31ec68de5e85e75ef5a84da6042c86a"
-    },
-    "ZH-TW-減速時車距餘量-(0-).md": {
-      "bytes": 2157,
-      "hash": "e07c2d2c0c2be1e69d85d43e90b443319a59edfb1a023246a48625970cdee1e9"
-    },
     "ZH-TW-特斯拉-CAN-紅燈停車.md": {
       "bytes": 3040,
       "hash": "c97355a074722eaca6ca9467bf764e8760bcdf12011c2e1afb447b8af338ebae"
@@ -2329,13 +1701,17 @@
       "bytes": 3506,
       "hash": "745c4ffb2873d0f97420fa44cd9972fb3f9f874ef6d8252b4b54cdc2a490888e"
     },
+    "ZH-TW-特殊-SCC-線束.md": {
+      "bytes": 4165,
+      "hash": "edd7572c30f62b8742870f3478ae844e0f0d8cec21d9643504553c453e5a96af"
+    },
     "ZH-TW-現代-僅配備-LDWS-的車輛-(0).md": {
       "bytes": 1840,
       "hash": "a86052230da99541edab4f7ab0e1e266c82b108819bcdacdb02513fb2187642a"
     },
-    "ZH-TW-現代-攝影機-SCC-(0).md": {
-      "bytes": 3917,
-      "hash": "7bc8d8c62d3b937a99e38ef30a25b03951b3159870ca13b2394b6ca9facec34a"
+    "ZH-TW-現代-起亞-CAN-FD-線束.md": {
+      "bytes": 2037,
+      "hash": "1d033933d91a02773b7824efd51e89a440dd2c693325a0514381f50120041de6"
     },
     "ZH-TW-現代起亞四車系轉向與彎道輔助.md": {
       "bytes": 4153,
@@ -2353,41 +1729,9 @@
       "bytes": 1261,
       "hash": "37eed323e5b57a6b75093dc0544c8ff4c5b6ee55d9642509eef461f26119a34a"
     },
-    "ZH-TW-紅綠燈檢測模式.md": {
-      "bytes": 2017,
-      "hash": "f59b95a564948e77230ea57c64a22aaaf3b6d0a0bf924b681a288eed5c701b46"
-    },
-    "ZH-TW-縱向-Kf(100)x0.01.md": {
-      "bytes": 2086,
-      "hash": "5bb51f6ceec3be76b5851b1ac13ae13dc5893e4b932af55acdbb0b78836fdff9"
-    },
-    "ZH-TW-縱向-KiV(0)x0.001.md": {
-      "bytes": 2191,
-      "hash": "d8f7aa5c86bf71357fbdf4dbaa4bc51f8dc90386acb32320bf9342a0c602c324"
-    },
-    "ZH-TW-縱向-KpV(100)x0.01.md": {
-      "bytes": 2070,
-      "hash": "8198809bff9dc4db28123e68bc7476c7cddfc7ef909830fc711541721887dd85"
-    },
-    "ZH-TW-縱向執行器延遲(20)x0.01.md": {
-      "bytes": 2177,
-      "hash": "4745d830179d70c3157d50683148cdf81f3e6a7ec87a8afd495163e499e2460b"
-    },
     "ZH-TW-聲音語言.md": {
       "bytes": 1484,
       "hash": "3f3171fc949b8ff868372e71d23c57bfa5b821a6952574ff237dbb5f2eb0752b"
-    },
-    "ZH-TW-胡蘿蔔巡航-ATC-減速度(-1).md": {
-      "bytes": 2151,
-      "hash": "80f3247d617568d500688c9f0087f2990454666b3eed10e693af81a573e2d35b"
-    },
-    "ZH-TW-胡蘿蔔巡航減速度(-1).md": {
-      "bytes": 2116,
-      "hash": "22342bec86a406b7d49805de2214518943b505b1dae1f535427dd2670aeb289b"
-    },
-    "ZH-TW-自動加速至-(100).md": {
-      "bytes": 2031,
-      "hash": "6eeb768f1971cfab8817a90d780f8098e78e3078dcd9297cf3b6c91c3f410597"
     },
     "ZH-TW-自動巡航-踩油門起步速度.md": {
       "bytes": 1747,
@@ -2408,10 +1752,6 @@
     "ZH-TW-自動轉向燈.md": {
       "bytes": 3436,
       "hash": "76585be012230bb8d8719fbf7e01b6fbdd36ddfdd4b1cdafc5b7ba3de37f99aa"
-    },
-    "ZH-TW-自動道路限速調整-(50).md": {
-      "bytes": 2072,
-      "hash": "afe9e740f4ace14faaf84fce9e6b17e5868c4fc30e3225e221a379f194e080ed"
     },
     "ZH-TW-自定義最大轉向力矩(0).md": {
       "bytes": 2081,
@@ -2445,13 +1785,13 @@
       "bytes": 2654,
       "hash": "1aed6fded8ffc64fc17bdbc367e9662388f3e9aad8526b3025e555de77b0f608"
     },
+    "ZH-TW-視覺彎速輔助.md": {
+      "bytes": 1282,
+      "hash": "8cf1ec9d40a7789121382a8448844aa4d450c5da7042137669805e32bce0613c"
+    },
     "ZH-TW-解除最小轉向速度限制.md": {
       "bytes": 1949,
       "hash": "0951edb6ee3f17b77ab44ed408234cabc3fe10c199c160982c097aaf2b7e90ba"
-    },
-    "ZH-TW-訊號輔助模式(試驗).md": {
-      "bytes": 2211,
-      "hash": "0bf09a8b593b344ae8ac3ba89e511eb9087665d838a7e2bfb89636b6ede02968"
     },
     "ZH-TW-記錄路面攝影機.md": {
       "bytes": 1839,
@@ -2485,49 +1825,9 @@
       "bytes": 2020,
       "hash": "04e1c1390a73b84c8c3b8e015568639c70876e898297c3c5f65b8a98d55675ab"
     },
-    "ZH-TW-變道響應-(100-).md": {
-      "bytes": 2421,
-      "hash": "605a9f843602be3b5dcb047aa9252876df696976de572244bbfff0aed6ccda42"
-    },
     "ZH-TW-超速照相觸感反饋-(0).md": {
       "bytes": 2005,
       "hash": "5a8c2357528cc356bd321500b5e89f590b57743be19cbfe1121c763e3e4defd0"
-    },
-    "ZH-TW-跟車時間(1)-TimeFollow1x0.01s(110).md": {
-      "bytes": 1829,
-      "hash": "bf8d7c51fd30eb5a82bee0a7bd7c45250e09f5d3715a2f580701052beeb7d75d"
-    },
-    "ZH-TW-跟車時間(2)-TimeFollow2x0.01s(120).md": {
-      "bytes": 1829,
-      "hash": "62686b127348d3f28024e4373d4864cee6d6d1d5b9f188e3d5051c975169ccb1"
-    },
-    "ZH-TW-跟車時間(3)-TimeFollow3x0.01s(140).md": {
-      "bytes": 1829,
-      "hash": "6ef3f709c498eeaaaeab663358d41b5973fea9e76481d4772063c9290637bb84"
-    },
-    "ZH-TW-跟車時間(4)-TimeFollow4x0.01s(160).md": {
-      "bytes": 1829,
-      "hash": "6b062c4b3b4e55cc7ae51424fe63411a37f207a41dd2ca8e24cf98ca635b6112"
-    },
-    "ZH-TW-跟車響應性-·-通用.md": {
-      "bytes": 3270,
-      "hash": "ff64fc991c34bae04f738982101ac3913d25481e615e510b2726595986c3818b"
-    },
-    "ZH-TW-車距迴圈級數.md": {
-      "bytes": 1491,
-      "hash": "11000d4e143397ab7e65ee88fdd0a51b770bab5ed5131ed3c7473dfa22fc414f"
-    },
-    "ZH-TW-車輛導航-CAN-減速應用模式.md": {
-      "bytes": 3349,
-      "hash": "5eb08707ce015fc0d88a15584fedef5b7248969871431714914605b5b870f0ac"
-    },
-    "ZH-TW-車輛接收測速攝影機減速(始終應用).md": {
-      "bytes": 2817,
-      "hash": "fd3537bf956cc11a090f20507c2cfb12caef1fcb7070467e75dbc8be52c2a7e2"
-    },
-    "ZH-TW-車輛測速攝影機虛擬距離時間(6.0秒).md": {
-      "bytes": 3083,
-      "hash": "32abc4bc74fd8547808afb9c9d37eec337d6097f3a197f573a1b91732eb8ab54"
     },
     "ZH-TW-車道偏移左右修正(0).md": {
       "bytes": 1604,
@@ -2544,6 +1844,10 @@
     "ZH-TW-車道線-速度-(0).md": {
       "bytes": 2102,
       "hash": "f91da12f0bf63525100ae898db445fcc7eed5660f17faae3cdac85d0e10cb22f"
+    },
+    "ZH-TW-車道置中.md": {
+      "bytes": 1201,
+      "hash": "245abb4952f0e3bf97101956dec59d0f7e534bc09800eb7bdc989d14acabe791"
     },
     "ZH-TW-車道置信度閾值.md": {
       "bytes": 1549,
@@ -2592,18 +1896,6 @@
     "ZH-TW-轉向燈撥杆區分轉彎-變道-(km-h,-0=關).md": {
       "bytes": 2199,
       "hash": "7608d3c8e9cb7eb389390743871337850a43a5cf8723325a4a9d5d833d6ae1b0"
-    },
-    "ZH-TW-轉向速度控制模式.md": {
-      "bytes": 1933,
-      "hash": "ae5e0e1aa97724ff542b7a173976b40a4c78c828a19e5a2a8889b1915f802737"
-    },
-    "ZH-TW-速度-TF-倍率.md": {
-      "bytes": 2139,
-      "hash": "8440db9c455cd5dce947e4276c9af07630757e385a85967f2af9aeada8501de3"
-    },
-    "ZH-TW-道路限速偏移-(-1).md": {
-      "bytes": 2040,
-      "hash": "e82745a1cb22b18dc046289e56b26efafe91e11cb39601e31bdc90158ebde992"
     },
     "ZH-TW-遮蔽安全帶感應.md": {
       "bytes": 1822,
@@ -2713,25 +2005,25 @@
       "bytes": 5052,
       "hash": "64e7ae5a6346b8f603413f47a329f3b436faf6b8c83c047cd4a62bca3e31688a"
     },
-    "ZH-TW-駕駛模式-初始-(3).md": {
-      "bytes": 2213,
-      "hash": "e6dbf7bb6f18a8adbf5519b35ab30269bdb924453b8f84dbf07faf4b688b8c48"
-    },
-    "ZH-TW-駕駛模式-自動.md": {
-      "bytes": 2322,
-      "hash": "38addade9803c96a68e90cc6fd5d2986aa65d2bc140d7fa3ebec76ba1246d316"
-    },
     "ZH-上路自动激活.md": {
       "bytes": 1144,
       "hash": "7b189ca157ced5f00c5fa07d4c2cf50673fac786d74009d6bf04755cf7690e7f"
     },
-    "ZH-交通信号停止距离调整.md": {
-      "bytes": 1322,
-      "hash": "21d8a2ca72b2eb0c00d98ca561e113e5c6ad043fe2921da232fb750dbd219332"
+    "ZH-仅巡航,手动转向.md": {
+      "bytes": 1249,
+      "hash": "38c81f280e22e41ef02421ef8e3b786c4b92cd4ca8b483ed4e33566a1c085836"
     },
     "ZH-仪表-CAN-直接发送.md": {
       "bytes": 1410,
       "hash": "aaecc6b34b45bf9bf598a228f0b40733fd2a9abf1c530256afb7abd95501f287"
+    },
+    "ZH-低速打灯暂停转向(km-h).md": {
+      "bytes": 1344,
+      "hash": "011d1fb178a51ed138ec6b207c84d4721d2d67ea5c13c9b95b5e8f7d444c3139"
+    },
+    "ZH-低速转向灯转弯.md": {
+      "bytes": 1211,
+      "hash": "7ae9dfbb5db587e0e74b97b1e7cafa0034d32614ee6bad7fab2db4633eac59c3"
     },
     "ZH-低速需求跟随与反应记录.md": {
       "bytes": 4597,
@@ -2745,22 +2037,6 @@
       "bytes": 1342,
       "hash": "da9cc8ccf7c727def791b29996204426d72e140ffccb38377f68ffa0c47d816e"
     },
-    "ZH-信号辅助模式(试验).md": {
-      "bytes": 1893,
-      "hash": "a3445f2c1201743f94e2ece92ce3d4893afe02a30fd4eb1b03d0637b8f1858f9"
-    },
-    "ZH-停止-启动灵敏度(50)x0.01.md": {
-      "bytes": 2571,
-      "hash": "4403cc11dd7ad7a8ff9dae6268bba58e67e7a9c0cffe70f886fcbb100c99ffdf"
-    },
-    "ZH-停止起步加速度-x0.01(-50).md": {
-      "bytes": 2762,
-      "hash": "cafcfbc86ab8278d64c1c854079e5c8536e57aed0aa070256c06a2c0a2a45e2d"
-    },
-    "ZH-停止距离(600)cm.md": {
-      "bytes": 1242,
-      "hash": "bf05c09a1e0bc63672b3362989f4761cde7269ea1aea959635262300c334c2bc"
-    },
     "ZH-全时横向控制.md": {
       "bytes": 3222,
       "hash": "bfc6f92e9f041f913a54ffdb1ea7522733e3f9025b3558627679b240d40811df"
@@ -2769,89 +2045,9 @@
       "bytes": 1270,
       "hash": "281c5ab3c2285a01489fe261ccc3806ecb5c18ea5b2a1af99ed6f1b0ac750f41"
     },
-    "ZH-减速中止-减速带.md": {
-      "bytes": 1563,
-      "hash": "07c519705fc3dbe50375d53a5195e3e5d4154d3327bd965dba80b55961ee3271"
-    },
-    "ZH-减速中止-提前警告修正-实验.md": {
-      "bytes": 2129,
-      "hash": "acf45985888b9426955ac2cfa43439195deb182a2b63862854ec5311db8abdef"
-    },
-    "ZH-减速中止-未识别类型的测速摄像头-实验.md": {
-      "bytes": 1859,
-      "hash": "854880fea7d3867ab1bc7dd57a12e385ba38dad692900ad0b2493c8782565531"
-    },
-    "ZH-减速中止-移动测速区间.md": {
-      "bytes": 1550,
-      "hash": "fcacf52e09dfd12aff48b342bdcb8b2558ac8e0740cb27f0665a0ea7dba35a03"
-    },
-    "ZH-减速中止-箱式摄像头.md": {
-      "bytes": 1384,
-      "hash": "ff5d70be03b17aece7182068a02b0efaacab22b27a656e9b67a3c5a9894a3e5e"
-    },
-    "ZH-减速带减速提前解除距离(200厘米).md": {
-      "bytes": 2583,
-      "hash": "0ed76adafd8990789ee12662928bd6575053ffebe028ff3ab67bf0ae3072ecff"
-    },
-    "ZH-减速带结束点-(1秒).md": {
-      "bytes": 1255,
-      "hash": "49930e98e56faf2bddd089ef474f7e7b30088a6e56e1984219814b11084c176a"
-    },
-    "ZH-减速带速度-(35km-h).md": {
-      "bytes": 1276,
-      "hash": "09b2efec65b8206f7861548c34ae22df190eb9e4cc2eaf10207af2cf4e71ec11"
-    },
-    "ZH-减速时车距余量-(0-).md": {
-      "bytes": 2154,
-      "hash": "74697d8c8c3b34134f282f4b03f4ea3ee59dc71438114c8f5db5b5e4443f2328"
-    },
-    "ZH-前车制动灯观察(试验).md": {
-      "bytes": 1351,
-      "hash": "aeadae16db76016ae08e246654f06eb11e41a9c30ce59d54e375e5197d9bc6e5"
-    },
-    "ZH-加速度设置-0-0km-h(160).md": {
-      "bytes": 1234,
-      "hash": "d335d417a6cbf5866caf870f611fe7efb7ba4755f53b474be2cbfc8a2dadf07f"
-    },
-    "ZH-加速度设置-1-10km-h(160).md": {
-      "bytes": 1237,
-      "hash": "6c5010d4c2ffff5b84837a4f45ea5ffff7cadde5d0b5c6649d5026e4a25b00e6"
-    },
-    "ZH-加速度设置-2-40km-h(120).md": {
-      "bytes": 1237,
-      "hash": "f0f5946d54a7bdbdcef91174e3c8d994cb57df19aa26248617f4cde81b3ad889"
-    },
-    "ZH-加速度设置-3-60km-h(100).md": {
-      "bytes": 1237,
-      "hash": "74b58d7445dcf32a4c31038e7cfd6cc11a19dc588924852c52a3a17b96aca769"
-    },
-    "ZH-加速度设置-4-80km-h(80).md": {
-      "bytes": 1235,
-      "hash": "c3d29f4306c5903a5069f55a351f8eb463e21a669dec565219e81184440c8cf1"
-    },
-    "ZH-加速度设置-5-110km-h(70).md": {
-      "bytes": 1238,
-      "hash": "d135798ff221b0d085c7f69f7170f39c929134c476f183278e5cb86e403ad5e8"
-    },
-    "ZH-加速度设置-6-140km-h(60).md": {
-      "bytes": 1231,
-      "hash": "c732dc376cefc0ae1c37d32d081083b2c1281c90e3cd61b8361a06c6afb10d33"
-    },
     "ZH-单触变道请求等待-5-次闪烁.md": {
       "bytes": 1516,
       "hash": "851c68a7576d4d21a00fd748e494a722b9b92d11f92adb9f56a4a76534a5e75d"
-    },
-    "ZH-原车导航-30-km-h-区域限速.md": {
-      "bytes": 2350,
-      "hash": "32fc009bf8874429eb839f41a6be76c39ff7ce6f9c4bd606d23782c68985916c"
-    },
-    "ZH-原车导航减速中止请求.md": {
-      "bytes": 1841,
-      "hash": "faf53676a4b38f39b4444120e606a0c56cce5009750f508da3f9c9ee6f85c1aa"
-    },
-    "ZH-原车导航区间测速平均速度控制.md": {
-      "bytes": 2005,
-      "hash": "ff4af1b90d6f1c1798f408769b15693bf79fe96eccf206efb1a0cb3f09337777"
     },
     "ZH-取消后允许软驻车(0).md": {
       "bytes": 1239,
@@ -2864,10 +2060,6 @@
     "ZH-变道使用转向力矩.md": {
       "bytes": 1275,
       "hash": "f0e2a56b7a0b6dc6870360e9fede41dd6666b8ce09d15c60ee3e5de1f907c818"
-    },
-    "ZH-变道响应-(100-).md": {
-      "bytes": 2418,
-      "hash": "2499fd5ee856783d8c9bc96d4662b7bc171cf817c0c9a6d8a366a2e4e20a17df"
     },
     "ZH-变道延迟-x0.1s(0).md": {
       "bytes": 1197,
@@ -2893,14 +2085,6 @@
       "bytes": 2672,
       "hash": "afbabe8a0428179175369966c53f86026f68ce525b3d560df7d2ea923b6f3023"
     },
-    "ZH-后向摄像头通过后保持距离(m).md": {
-      "bytes": 2966,
-      "hash": "0e2647dfdccde5ea64151d7916dcc3938efcd69955168b07517f8993b0c918c1"
-    },
-    "ZH-启动加速度限制.md": {
-      "bytes": 1237,
-      "hash": "8d510238bae7fda0737096a5a645205fb709db2a36594fffbc6ced5ea322f26b"
-    },
     "ZH-启用-Carrot-Vision.md": {
       "bytes": 2388,
       "hash": "703439a406143db342c5c2333d2c775aaa1dc65c792212e6d7639f8c1cc416be"
@@ -2909,9 +2093,9 @@
       "bytes": 1623,
       "hash": "00f0684c4b68e78a9c657552894fcbced80f158eddcfe50cf84adeb6841d1ea4"
     },
-    "ZH-地图转向速度因子.md": {
-      "bytes": 1255,
-      "hash": "a63fddf0c5f7e929df015acb021271292e5a83ee551397c5358616c00fd9646b"
+    "ZH-地图弯速辅助.md": {
+      "bytes": 1216,
+      "hash": "ebbbf3046dc6aec20a947c31376d7ded7f05afe683b4cc59ae881b97a59a0734"
     },
     "ZH-声音语言.md": {
       "bytes": 1140,
@@ -2961,29 +2145,13 @@
       "bytes": 1286,
       "hash": "9f2b722b2b15dfdca92297922c6b4ab90f91396a03db299819c743d12e70cb10"
     },
-    "ZH-导航倒计时模式.md": {
-      "bytes": 2179,
-      "hash": "415027656a1cd9ee7da00f20bda943924754fdb9b3dff7d3122a01398887898f"
-    },
-    "ZH-导航减速效率-0.01m-s^2x(120).md": {
-      "bytes": 1496,
-      "hash": "74fb2a23e3a56413f082d194238e5ae6444d8322098dea5749033863f8738bd5"
-    },
-    "ZH-导航减速模式-(2).md": {
-      "bytes": 1568,
-      "hash": "8bad278611d7c604b22841ee59f50df7b3a3d258588514a4cb79dd0a3f028d31"
-    },
-    "ZH-导航减速结束点-(6秒).md": {
-      "bytes": 1285,
-      "hash": "f0bdc2d1d31f1b0bc22b6465acc1104289bad1f74e6e591ce625995476637e4b"
-    },
     "ZH-导航语音音量.md": {
       "bytes": 2007,
       "hash": "75b6ecca17b7779da77fc019fcd51d3faca3b711eb871643ed42530c9ab79012"
     },
-    "ZH-导航限速比例-(105).md": {
-      "bytes": 1346,
-      "hash": "5373708bd5ba1030616fa776562a4dc6dc77ae39fb15990df43a9bab44441519"
+    "ZH-导航道路限速辅助.md": {
+      "bytes": 1267,
+      "hash": "1b41f54350e8b223d62b27784b84ba9155f2c56431894e3dfb7a0dc5d709a372"
     },
     "ZH-屏蔽安全带感应.md": {
       "bytes": 1092,
@@ -3016,14 +2184,6 @@
     "ZH-巡航按键长按延迟(40).md": {
       "bytes": 1269,
       "hash": "cd399236bbe93cac15daac1ad39175de115de4846562ccdc950f759f71272507"
-    },
-    "ZH-巡航滑行余量.md": {
-      "bytes": 3040,
-      "hash": "9a0951ea4510d0b4845b97c03ecdcf79bbe5ad4ab2c640742b2b9542b0f005b7"
-    },
-    "ZH-巡航节能控制(2km-h).md": {
-      "bytes": 1251,
-      "hash": "9c6dfd7a5e53ddc9e3882d34c573d4620e8a1ffbbddfa3fbc8eeeecd5ca984ad"
     },
     "ZH-巡航速度1(30).md": {
       "bytes": 1230,
@@ -3068,14 +2228,6 @@
     "ZH-开启雷达轨迹-(0).md": {
       "bytes": 1601,
       "hash": "75656b48d5d9c68dbb14510387b96deeb9eb0e8d130da6eb57ce9d4ddc482be6"
-    },
-    "ZH-弯道自动减速下限-(30).md": {
-      "bytes": 2115,
-      "hash": "040021422beaf3269fe9c75c39bf03af87cc9bfc00e79b7d6d9e60a1219f090c"
-    },
-    "ZH-弯道速度调节比例(100-).md": {
-      "bytes": 2462,
-      "hash": "acc05e52e8ecc658ac0d002a6bfa86b5db4ec2f3aace9cad06fe55ef40d3e288"
     },
     "ZH-彩虹道路(SP-风格).md": {
       "bytes": 2110,
@@ -3173,10 +2325,6 @@
       "bytes": 2432,
       "hash": "1d827acd9d944c8409da86d6ed4916f165059e978ab9ec565d57b80556f971dd"
     },
-    "ZH-模型车速应用比例.md": {
-      "bytes": 1242,
-      "hash": "3649ae78480ba1afd03c4796b5edfebdcce9dfaa5f301d53366dfbe6040ca1b3"
-    },
     "ZH-横向MPC冲击代价(4).md": {
       "bytes": 1199,
       "hash": "2e648279838bd7de38198f7a0346089d730b29682e6bf5811530f896af32d55e"
@@ -3225,13 +2373,17 @@
       "bytes": 3494,
       "hash": "7dac188c861171fd6b594c25ff872e594755165badeb76e2f72c2ebbae7fb7a3"
     },
+    "ZH-特殊-SCC-线束.md": {
+      "bytes": 2234,
+      "hash": "c20b8693b52176f05c2f3e066fc3848dcbdbccb26ab533bdf03595689ea436f1"
+    },
+    "ZH-现代-CAN-FD-线束.md": {
+      "bytes": 1242,
+      "hash": "7d2328b8961705c1061f69ef3a4252659fb67119aabb0654296a6539173259ce"
+    },
     "ZH-现代-仅配备-LDWS-的车辆-(0).md": {
       "bytes": 1101,
       "hash": "2f0a7f2e632f59532d5fcaaa197176365fcbfcfdd0129a963d6172e61c8c8647"
-    },
-    "ZH-现代-摄像头-SCC-(0).md": {
-      "bytes": 2046,
-      "hash": "11ac43f86930cca3e85332819e415927c7133b3d3c73161bfefcc75d5d03d88d"
     },
     "ZH-现代起亚四车系转向与弯道辅助.md": {
       "bytes": 4152,
@@ -3248,38 +2400,6 @@
     "ZH-盲区计算间隔.md": {
       "bytes": 1258,
       "hash": "8f2956ba6f1958da6e094f5d8eb053fd72905118d247aaa379b3ca3c127830d7"
-    },
-    "ZH-红绿灯检测模式.md": {
-      "bytes": 1252,
-      "hash": "cb26356004d1d426163cd9f6060bc836f8e0886b710973f14068f6c28a552210"
-    },
-    "ZH-纵向-Kf(100)x0.01.md": {
-      "bytes": 2083,
-      "hash": "7826d8a2fa12d0985b40bff04baca6dbec7a87ee27295529e40738595a8d790b"
-    },
-    "ZH-纵向-KiV(0)x0.001.md": {
-      "bytes": 2188,
-      "hash": "d9fcfb95ecbb708e2191aabc4c9694304d9627fdda66b5fe523efc77af9a2498"
-    },
-    "ZH-纵向-KpV(100)x0.01.md": {
-      "bytes": 2067,
-      "hash": "22fd350ff4d67ac447a7ff4f3028357da7b7f6af243a14d62f611386532b6937"
-    },
-    "ZH-纵向执行器延迟(20)x0.01.md": {
-      "bytes": 1263,
-      "hash": "9ae9c01d896f028bbc6b4209619362ed28e1c0fd09b610889d6c6d942b634332"
-    },
-    "ZH-胡萝卜巡航-ATC-减速度(-1).md": {
-      "bytes": 1274,
-      "hash": "9e4aa37fb73ecf66fffe1c5cb613b75134a9cea30055f059ae7aeb09963f388e"
-    },
-    "ZH-胡萝卜巡航减速度(-1).md": {
-      "bytes": 1235,
-      "hash": "d70e1242f2c389885c59ba89b6a66f7e1d9322ea7fd50cb778b59dce09f9b787"
-    },
-    "ZH-自动加速至-(100).md": {
-      "bytes": 1343,
-      "hash": "d210fcbad6246d66d0091d925323a40e83422a4d31c05cf17d8b497911bea326"
     },
     "ZH-自动巡航-松开油门取消速度.md": {
       "bytes": 1322,
@@ -3301,9 +2421,9 @@
       "bytes": 3433,
       "hash": "6f4adc6cebec5fb6b5d0ad15db1a1e8f968586195baaaff01072f09eb95dc494"
     },
-    "ZH-自动道路限速调整-(50).md": {
-      "bytes": 1290,
-      "hash": "f6dca8dda5a422af7300d326ff90d64f324714c4c0a201e0c3300768b8b66232"
+    "ZH-自动适配-Alpha-纵向控制.md": {
+      "bytes": 1301,
+      "hash": "8303591acce8833ae50d76c719bf4c2f5d8e7eb906e193cc2a6aa2401349c9ab"
     },
     "ZH-自定义最大转向力矩(0).md": {
       "bytes": 1250,
@@ -3337,6 +2457,10 @@
       "bytes": 2651,
       "hash": "c1fe4e8387bcd03cff50e716779ea941c151c673b17d9da0fd3e03646a40e84d"
     },
+    "ZH-视觉弯速辅助.md": {
+      "bytes": 1282,
+      "hash": "570391d60ff2ac492e0d165d1ce4a656b1f24cd864bffe3387cbeacb8579a9f7"
+    },
     "ZH-解除最小转向速度限制.md": {
       "bytes": 1205,
       "hash": "5e9937d37844cf536f96a339e1f255faf637e87fedff95d77aa86380c80d20f3"
@@ -3349,45 +2473,13 @@
       "bytes": 1314,
       "hash": "0659a348c92e5dae6effbd02903356d5695e44c216f0f9d8052b5e414dd7d462"
     },
-    "ZH-跟车响应性-·-通用.md": {
-      "bytes": 3267,
-      "hash": "881bbe2b3dba6f9210015ffe82fd314d7b3fbefc4d05bbffe60706517c2b6597"
-    },
-    "ZH-跟车时间(1)-TimeFollow1x0.01s(110).md": {
-      "bytes": 1826,
-      "hash": "b0afd48362d329ec155a6f193e8269560d3fa8654732abc9489fdccafb5502f2"
-    },
-    "ZH-跟车时间(2)-TimeFollow2x0.01s(120).md": {
-      "bytes": 1826,
-      "hash": "cf44d0dc3a04a91e38eb56b20ca8df7cf8215e46e9bc838915e0dc2c6e81cdc3"
-    },
-    "ZH-跟车时间(3)-TimeFollow3x0.01s(140).md": {
-      "bytes": 1826,
-      "hash": "e832a67710631ff2dfde530068ac9416037e7a7cdbced5bbddeac59b28538ced"
-    },
-    "ZH-跟车时间(4)-TimeFollow4x0.01s(160).md": {
-      "bytes": 1826,
-      "hash": "382bc8a91975a721cac9e787468c1c00e2d829247d762fa65e3dc0ef369f8e98"
-    },
-    "ZH-车距循环级数.md": {
-      "bytes": 1488,
-      "hash": "4883a1d487f466d2fe2093894cbac137c80cf8b28ab082487bbcaca6ac839d25"
-    },
-    "ZH-车辆导航-CAN-减速应用模式.md": {
-      "bytes": 3346,
-      "hash": "a5e260b171b11570eb6575dfb873c1dfa66e34f7803e40177858240734d829ec"
-    },
-    "ZH-车辆接收测速摄像头减速(始终应用).md": {
-      "bytes": 2814,
-      "hash": "fb1309e20776e119ac32fb92a8c2307b13fb5b012aa7b76c71cfb9e4ed4cacbc"
-    },
-    "ZH-车辆测速摄像头虚拟距离时间(6.0秒).md": {
-      "bytes": 3080,
-      "hash": "4ef297ece1456fdd5bae95765ece7ab767ac2ad877b00b7a3860dba35ce3a7cf"
-    },
     "ZH-车道偏移左右修正(0).md": {
       "bytes": 1177,
       "hash": "8f9e226ffffd1aec6d88d1cd0b7cf2f5a715978cdbbfa8bfa163bf261a008858"
+    },
+    "ZH-车道居中.md": {
+      "bytes": 1192,
+      "hash": "85e336dcb9d3a587111404551e17ae15408f1fdbdfb45dcce34e3a6488e65c9e"
     },
     "ZH-车道线-弯道速度-(0).md": {
       "bytes": 1282,
@@ -3445,21 +2537,9 @@
       "bytes": 1638,
       "hash": "7d1716cc570227b6278b6762348a481c49228108c9eaaed52d4dbf6a3497abd6"
     },
-    "ZH-转向速度控制模式.md": {
-      "bytes": 1273,
-      "hash": "c554012614238124f961f3b090d47dcd3f6e578219d1b961c0afc470ec8ca369"
-    },
     "ZH-轮胎轨迹.md": {
       "bytes": 1224,
       "hash": "184a9a9886f83ebaa4530b6b22bf4defaf78ab826c8d1a342e1d2e1450234d5a"
-    },
-    "ZH-速度-TF-倍率.md": {
-      "bytes": 2136,
-      "hash": "2a88a3d69c960aaed921c305cb3e1507fbc975d12a47d8fc401d14be99ab2d6c"
-    },
-    "ZH-道路限速偏移-(-1).md": {
-      "bytes": 1302,
-      "hash": "d501a1a6c970ac2470c6645fd89a7b4be5d388468448cae6694a2e00a0f056f0"
     },
     "ZH-重心位置比例.md": {
       "bytes": 1566,
@@ -3492,53 +2572,14 @@
     "ZH-驾驶员监控模式.md": {
       "bytes": 5043,
       "hash": "e51e7bd40621b159eacfbd2e8100382e2d44b366014c73193433a7f90c55f92d"
-    },
-    "ZH-驾驶模式-初始-(3).md": {
-      "bytes": 2210,
-      "hash": "8d2e9eddfc9bab38062e588341ea61415a7471d597a37f164775df348a6db3b6"
-    },
-    "ZH-驾驶模式-自动.md": {
-      "bytes": 2319,
-      "hash": "7ce71ff11424f8ae17f1596159da398c8672f98892b8cee1421d24b954802314"
     }
   },
   "review": {
-    "current": 49,
-    "needs_review": 169
+    "current": 28,
+    "needs_review": 132
   },
   "schemaVersion": 1,
   "settings": {
-    "AChangeCostStarting": {
-      "group": "CRUISE_STOPGO",
-      "locales": {
-        "en": {
-          "anchor": "AChangeCostStarting",
-          "factsHash": "a4361bb150d95ad771f44ddb234bfc2f7fd840ca96a49e6ac63e544ed7aae93b",
-          "page": "EN-AChangeCostStarting.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AChangeCostStarting",
-          "factsHash": "3ab6304ff512960839cc74428b72fee8b008468a11108b475dc1ab39db483661",
-          "page": "KO-AChangeCostStarting.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AChangeCostStarting",
-          "factsHash": "e77d6246db0902fdbec1d50e8da8d196c364280e584e57fbc7bf63690d105393",
-          "page": "ZH-启动加速度限制.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AChangeCostStarting",
-          "factsHash": "adc59dc322e43b4d912b51ba1fee09e4c723a7f11fc16ec2c428e80bb43506bf",
-          "page": "ZH-TW-啟動加速度限制.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "66fd2bf8a16210234cb0ec52d03ef432cc413d2ec880fd815f8fb436da528c88"
-    },
     "AdjustLaneOffset": {
       "group": "STEER_LANEMODE",
       "locales": {
@@ -3601,37 +2642,6 @@
       "reviewStatus": "current",
       "semanticHash": "0dd1642d4ae06bd0308b3ae7e3b892138a13022b1d17d05aff0df4a2a40d5c08"
     },
-    "ApplyModelSpeed": {
-      "group": "SPEED_CURVE",
-      "locales": {
-        "en": {
-          "anchor": "ApplyModelSpeed",
-          "factsHash": "6891e5d6f7d7baf2195a0e8e9a59c7f3c6e8a8fdbd13e4daca55bfe29a8a96db",
-          "page": "EN-Model-Speed-Apply-Ratio.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "ApplyModelSpeed",
-          "factsHash": "c600b8715290851c0d1420039659e3583d28cb320fa08e511c2be294ac242bcb",
-          "page": "KO-모델-주행속도-적용-비율.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "ApplyModelSpeed",
-          "factsHash": "61afbdce8881e72faceda50c172177aa74a359fb7f6b51ac5213eb9b373600a8",
-          "page": "ZH-模型车速应用比例.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "ApplyModelSpeed",
-          "factsHash": "dc20b9f84614d57f771b3156317ee100589e8e042337b6a3c07ef03fb2502f9c",
-          "page": "ZH-TW-模型車速應用比例.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "8039edb57e0c4c2bb0d6e9911d247c64a6f0c42f2e912402bc572f0a4701f388"
-    },
     "AutoBlinkerControl": {
       "group": "STEER_LANECHANGE",
       "locales": {
@@ -3693,68 +2703,6 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "686814b2afc5769591dcd6e77c8b4ea3b65cc4c23c4b4437b0e289a38f9273d5"
-    },
-    "AutoCurveSpeedFactor": {
-      "group": "SPEED_CURVE",
-      "locales": {
-        "en": {
-          "anchor": "AutoCurveSpeedFactor",
-          "factsHash": "6a40e20d0d3b6186bff96606a8e0d429467a99c243be5724a78643dcd3b65016",
-          "page": "EN-CurveSpeedFactor(100-).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoCurveSpeedFactor",
-          "factsHash": "4f25ef70b3a8300aa21c9a4bfefbf1fa702ad93904ca4a7e8fec6c71e49d6987",
-          "page": "KO-커브속도-조절비율(100-).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoCurveSpeedFactor",
-          "factsHash": "11d931d197a7f851e84c46aa7b19e743ccf46b2ab763cdda0b6ab32770264055",
-          "page": "ZH-弯道速度调节比例(100-).md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "AutoCurveSpeedFactor",
-          "factsHash": "77e0a270aa5de805c81eb0b4bc79bd1b2566b41d4e5204f809dd1b3ff682c30d",
-          "page": "ZH-TW-彎道速度調節比例(100-).md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "93b019e883847557a9ef42b96bfac26369726ea7c3b0b3c5155e8e10658ac930"
-    },
-    "AutoCurveSpeedLowerLimit": {
-      "group": "SPEED_CURVE",
-      "locales": {
-        "en": {
-          "anchor": "AutoCurveSpeedLowerLimit",
-          "factsHash": "1d4bb4c3ea824f8685b585b9b01fcde230769f55421ece977bd626da7cf10d64",
-          "page": "EN-AutoCurveSpeed-LowerLimit(30).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoCurveSpeedLowerLimit",
-          "factsHash": "ec6ec8b89019f26a10e3e1262a6e7acce2654a2dbb6ded1e417e28f3866751c3",
-          "page": "KO-커브속도-최저속도(30).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoCurveSpeedLowerLimit",
-          "factsHash": "af8ac86f80abdb5e5a54e14729d6c0b9b2b63172ee67f685051bec31adc6c4db",
-          "page": "ZH-弯道自动减速下限-(30).md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "AutoCurveSpeedLowerLimit",
-          "factsHash": "6b82911b76ab02265a26dcdb66a8e2f04732efbe80f07c9a3ecda979b433c209",
-          "page": "ZH-TW-彎道自動減速下限-(30).md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "185888d940778f15492f4238006adf9ccc06f2ab8e488209936b2cf8bd099102"
     },
     "AutoEngage": {
       "group": "BASIC_START",
@@ -3879,378 +2827,6 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "566c9988c19eba63fd6ef647f6a0e4a6d6ba01d071de04c633eb540cc2cf4441"
-    },
-    "AutoNaviCountDownMode": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviCountDownMode",
-          "factsHash": "0226a6962074019817aa7aabdca880556f39740be5ccd79cf8fbc29dd70ac54d",
-          "page": "EN-NaviCountDownMode.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoNaviCountDownMode",
-          "factsHash": "d9e73548d8bb5459854a22192745dca370540f833eb7a8d8fc8e274865b257d7",
-          "page": "KO-네비알림-카운트다운-방법.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoNaviCountDownMode",
-          "factsHash": "f247027461b6ac07dc493f1eb4076a6b10da9611f5b9193ea7430e0ed3e2e099",
-          "page": "ZH-导航倒计时模式.md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviCountDownMode",
-          "factsHash": "dccc70e6eb050f4f71e2bf45b7dc341eef3dc8154f50e6532f634acece2de815",
-          "page": "ZH-TW-導航倒計時模式.md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "164adc98b3573e2f4d0ea6aa380a9920ed4d56a1dc37b6bdf056a7ae5f0de063"
-    },
-    "AutoNaviRearCameraHoldDistance": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviRearCameraHoldDistance",
-          "factsHash": "76318c5367973ebc5f1d96176a24349c92622aa5443bcc8662969f7332c7ddd4",
-          "page": "EN-Rear-Camera-Post-pass-Hold-Distance-(m).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoNaviRearCameraHoldDistance",
-          "factsHash": "b5c83e2282eb74e5fd4dcba9a8accb5aecfb7982e2191e82217a241c382819e1",
-          "page": "KO-후면단속-통과-후-유지-거리(m).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoNaviRearCameraHoldDistance",
-          "factsHash": "d3e82bb4fcb9e00276325e16a3004084c841a80e45b3172572f2e2278b23000a",
-          "page": "ZH-后向摄像头通过后保持距离(m).md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviRearCameraHoldDistance",
-          "factsHash": "c45ffd6886e02f3f876e507d9b9343e907648c86024976d48a28c2d58b54fc62",
-          "page": "ZH-TW-後向攝影機透過後保持距離(m).md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "8b904f46c8e8a1e5c6c381366357034716287800c77b9036e8dc99eac2ec8689"
-    },
-    "AutoNaviSpeedBumpEndDistance": {
-      "group": "SPEED_BUMP",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviSpeedBumpEndDistance",
-          "factsHash": "f99635c40ccfffe7b0bbeeccfc73214a4b17c4e42c22225668dce7bf039ee76f",
-          "page": "EN-Speed-Bump-Early-Release-Distance-(200-cm).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoNaviSpeedBumpEndDistance",
-          "factsHash": "2c45b9ce1af7914380e7bba802dce08bb208de460867f2da7bb0e69b93f7e7b8",
-          "page": "KO-방지턱-감속-조기-종료-거리(200cm).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoNaviSpeedBumpEndDistance",
-          "factsHash": "de8cbc3d45819a1d19f8f924654a76516959395b16d4ff0576736058a6153182",
-          "page": "ZH-减速带减速提前解除距离(200厘米).md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviSpeedBumpEndDistance",
-          "factsHash": "1143276ede20c8efea97a1c6797dad818689b664c216a3959f73130c4b179332",
-          "page": "ZH-TW-減速帶減速提前解除距離(200釐米).md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "1d2c29dce19e2a3851161d46ce76db89eb7be23e3f9b3b3c1be663a3e2b402c9"
-    },
-    "AutoNaviSpeedBumpSpeed": {
-      "group": "SPEED_BUMP",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviSpeedBumpSpeed",
-          "factsHash": "9db567627367e563db89f441d66595da840f1ce5c07e0651b2aa63c6e3f845b8",
-          "page": "EN-SpeedBumpSpeed(35km-h).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoNaviSpeedBumpSpeed",
-          "factsHash": "39e4bbf2a21e4a93eae69d3d3b7ae5e25c1957e402abf260912afa5bb38113c7",
-          "page": "KO-과속방지턱-속도(35Km-h).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoNaviSpeedBumpSpeed",
-          "factsHash": "adc3691b07a0b515d42be4e749414ae263ddb5d2f9d3b252fb29ec5c6d7ec4c6",
-          "page": "ZH-减速带速度-(35km-h).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviSpeedBumpSpeed",
-          "factsHash": "9e1c95c8c4bc0ca706f257a2631ce827dd0b18c02015a278f9a08d72786eb23a",
-          "page": "ZH-TW-減速帶速度-(35km-h).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "f2f0361ff03c1cf9dab3e3e9dbbd9e6353118fe6de59f64759f708d81ec23587"
-    },
-    "AutoNaviSpeedBumpTime": {
-      "group": "SPEED_BUMP",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviSpeedBumpTime",
-          "factsHash": "44f608750f69bb09da4846b30d0334745b2959df13e974fd3e08e4f38ae8b9cf",
-          "page": "EN-SpeedBumpEndingPoint(1s).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoNaviSpeedBumpTime",
-          "factsHash": "3b7076e6ddca7de213a882a62f2284cb26e35364bd9d64d07b9dce67258ef663",
-          "page": "KO-사고방지턱-감속완료시간시점(1s).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoNaviSpeedBumpTime",
-          "factsHash": "58fb48edf0fcaef963c095294cd30fa4342e53dad4ae492229e28ed5f7ab2032",
-          "page": "ZH-减速带结束点-(1秒).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviSpeedBumpTime",
-          "factsHash": "7b0ef3d0035f37a3d5c522d9b8ebbf562ecc94090c2403d637d896025c092199",
-          "page": "ZH-TW-減速帶結束點-(1秒).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "7de62e4b1a3ae2d0795b55f526653d5513f930033333ce979280f28bc6580ffc"
-    },
-    "AutoNaviSpeedCtrlEnd": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviSpeedCtrlEnd",
-          "factsHash": "dde42662f579dbd3a44aa6c8d3cff598e14b8d5b4821ebff840408c289f67ba4",
-          "page": "EN-NaviSpeedEndingPoint(6s).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoNaviSpeedCtrlEnd",
-          "factsHash": "fa51616be3368923c7b9a9974c2de89afcba0f9e7e8f835dd9c82c1b1dc885bc",
-          "page": "KO-과속카메라감속-완료-시간(6초).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoNaviSpeedCtrlEnd",
-          "factsHash": "bf2ad379d7561f7b9d2dfc41d34bfc2088738837cd2123a61910513268b73984",
-          "page": "ZH-导航减速结束点-(6秒).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviSpeedCtrlEnd",
-          "factsHash": "25aa1b685b7f0fb667c16bff1a7b12e6d38331ffb59a2d2110048018d506a316",
-          "page": "ZH-TW-導航減速結束點-(6秒).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "310d348eaca8548ab5ee44af0a5126ab993dcc4265cbb669485438b669022d38"
-    },
-    "AutoNaviSpeedCtrlMode": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviSpeedCtrlMode",
-          "factsHash": "60b1737e96f9bdf17d9a78de685ce678952337df44325f554d15a94aff336c29",
-          "page": "EN-NaviSpeedControlMode(2).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoNaviSpeedCtrlMode",
-          "factsHash": "2a733038713a757b84b0f56dbf7431ab71f7a1a2669b4292e2f27c1e2eeef817",
-          "page": "KO-네비게이션감속모드(2).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoNaviSpeedCtrlMode",
-          "factsHash": "df3710fee95a08a12c7f2eda86687d5e9cbb6de4cfa232fb8c56b6aacc3c06fb",
-          "page": "ZH-导航减速模式-(2).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviSpeedCtrlMode",
-          "factsHash": "476e0acf1580be4af7c3424bd5d8efd1901b56e72db2d6fff0be27015515ab25",
-          "page": "ZH-TW-導航減速模式-(2).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "5b13349929a99c31fde786817313f0a97c7480cf55cdbce1da21739b3610e6d5"
-    },
-    "AutoNaviSpeedDecelRate": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviSpeedDecelRate",
-          "factsHash": "43420bb5ce296dc2a10a14a43092f5322fec680780d62dfd6ac0d53108d2690c",
-          "page": "EN-NaviSpeedDecelRate-0.01m-s^2x(120).md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "AutoNaviSpeedDecelRate",
-          "factsHash": "0afba83fccd66983f6a5c5457f63b206d84ec6e318b8cc7f84faef3bc8962762",
-          "page": "KO-과속카메라-감속율-x0.01m-s^2(120).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "AutoNaviSpeedDecelRate",
-          "factsHash": "a36c1b1c8832f3bd31f1946f958595c0c61acf3ec1baa869a5d4021e7588a23d",
-          "page": "ZH-导航减速效率-0.01m-s^2x(120).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviSpeedDecelRate",
-          "factsHash": "a51b46dbadd7df55ef08f8b4671978ed8447f9e95a37f12c03b0ffb48e02b810",
-          "page": "ZH-TW-導航減速效率-0.01m-s^2x(120).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "dd424d47dfc026837af962b9c56209e7643717b0eba2e3136437850b8bdd30c3"
-    },
-    "AutoNaviSpeedSafetyFactor": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "AutoNaviSpeedSafetyFactor",
-          "factsHash": "e51a7d0d140551cf553193598ea927587656cd60115ebb775feec587fbf815ad",
-          "page": "EN-NaviSpeedLimitRatio(105).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoNaviSpeedSafetyFactor",
-          "factsHash": "8091608d838089300f80f5cfd3c9ebc486357d8ed2082a102126316150f29203",
-          "page": "KO-과속카메라-제한속도적용율(105).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoNaviSpeedSafetyFactor",
-          "factsHash": "8c766cdd2173439979526f63a95e57e2c6f857de32087b4ab60086d7c96a66da",
-          "page": "ZH-导航限速比例-(105).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoNaviSpeedSafetyFactor",
-          "factsHash": "9e35e062b7c360d080b505808243421e1e08fe0e4e9d6e6442b10bc384766e08",
-          "page": "ZH-TW-導航限速比例-(105).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "eea3adb6e5ca418ecba31e8c96f61079f384473b7d7680324d8217bbc831c7c7"
-    },
-    "AutoRoadSpeedAdjust": {
-      "group": "SPEED_LIMIT",
-      "locales": {
-        "en": {
-          "anchor": "AutoRoadSpeedAdjust",
-          "factsHash": "f18aae93bc45f89f0d9b8c492adc8ef7aa5f41c4898eed9d4094727b02349bd8",
-          "page": "EN-AutoRoadLimitSpeedAdjust-(50).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoRoadSpeedAdjust",
-          "factsHash": "b76af8ecc959423edb6c6fc01556ba0b31e0261e81c18cefa3e1faaa731a3577",
-          "page": "KO-자동도로제한속도감속-(50).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoRoadSpeedAdjust",
-          "factsHash": "99614cfd6370caec063c8bd131816c01f36de0645381da9ca2dc218d550584d6",
-          "page": "ZH-自动道路限速调整-(50).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoRoadSpeedAdjust",
-          "factsHash": "da21a0355e035d209b2640ea7864db0693a0cdb0751fea60b00fde6c86bd542e",
-          "page": "ZH-TW-自動道路限速調整-(50).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "c5639d7240a075f5e1e1594a87177824bc3d8bf0192fbf8b3dc2b51a26ea762a"
-    },
-    "AutoRoadSpeedLimitOffset": {
-      "group": "SPEED_LIMIT",
-      "locales": {
-        "en": {
-          "anchor": "AutoRoadSpeedLimitOffset",
-          "factsHash": "5e188808669952844a5f9f1025e2cf2f1d2d58ca7807b9f7650dc4ad44745428",
-          "page": "EN-RoadSpeedLimitOffset(-1).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoRoadSpeedLimitOffset",
-          "factsHash": "b2d36fe54f51f42828ffbff50e0034bf5881da4ea9f8775f3ac5c14e7884f040",
-          "page": "KO-도로제한속도맞춤(-1).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoRoadSpeedLimitOffset",
-          "factsHash": "e549c6a5202fbf2d640170cf0a84443e9a53da6bf9b609706ffc6ed004a83c02",
-          "page": "ZH-道路限速偏移-(-1).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoRoadSpeedLimitOffset",
-          "factsHash": "af66f1f2beefa38a2fd0d1371a65dfa7a8017703bccadce5f8ef3350d475a176",
-          "page": "ZH-TW-道路限速偏移-(-1).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "4e35d5a4d2ce2702b10b336d7e982781e60ea48724b8f97f29540fa36a14137d"
-    },
-    "AutoSpeedUptoRoadSpeedLimit": {
-      "group": "SPEED_LIMIT",
-      "locales": {
-        "en": {
-          "anchor": "AutoSpeedUptoRoadSpeedLimit",
-          "factsHash": "1e333cd54360f0280c641d0e346fd07d02ab19c9271b97fd60db50168998ce7a",
-          "page": "EN-AutoSpeedUpx-(100).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "AutoSpeedUptoRoadSpeedLimit",
-          "factsHash": "1b65741c7fb98c13fd1220b0bc36a6657d42122eb407eaf42bd79c1c00d1018e",
-          "page": "KO-자동속도증가-(100).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "AutoSpeedUptoRoadSpeedLimit",
-          "factsHash": "1aeaa94546c7a4636ad386bc630f632649f0d2204e67097bd7b171ff6c1be364",
-          "page": "ZH-自动加速至-(100).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "AutoSpeedUptoRoadSpeedLimit",
-          "factsHash": "fb4fdfc08c591e81f9c784cc7dc5ac82f362d84c7ae325350ef0b1db1a3c9d71",
-          "page": "ZH-TW-自動加速至-(100).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "c05370fd34043aeafdf056f429b15308e3f72dadec462c9d4d3b6c332b0d48d1"
     },
     "AutoTurnControl": {
       "group": "STEER_LANECHANGE",
@@ -4598,93 +3174,31 @@
       "locales": {
         "en": {
           "anchor": "CanfdHDA2",
-          "factsHash": "08166219b234cafad7198d267cd8e0b21a8f3ab693a042a74a3c098e95244eed",
-          "page": "EN-CANFD-HDA2(0).md",
-          "reviewStatus": "current"
+          "factsHash": "22a2320b9fd773663ac7a5c59fb0daab7bd17d257a2cc7fb34f353ecea3fe96d",
+          "page": "EN-Hyundai-CAN-FD-harness.md",
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "CanfdHDA2",
-          "factsHash": "6e988b9fca3ef97df35f9a3ed25521e0f877cf391c10b6d6c932a016a6c8413c",
-          "page": "KO-CANFD-HDA2지원(0).md",
-          "reviewStatus": "current"
+          "factsHash": "deb14d09ba6573570618206dd21782fba6503fb9687d84d26b9c901b8bfc5d92",
+          "page": "KO-현대-CAN-FD-배선.md",
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "CanfdHDA2",
-          "factsHash": "d9a33aa2b46f29b95b6c3915c4c59967a4045534ca2b50e366af6bae18a37d34",
-          "page": "ZH-CANFD-HDA2-(0).md",
+          "factsHash": "3b7c615d1cb302e45c1e60749d96cec68d48356e74259fcf95a27c8a809a23e0",
+          "page": "ZH-现代-CAN-FD-线束.md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "CanfdHDA2",
-          "factsHash": "45c5ef680ca4a0e7ea68ead8bd754f787efb1968ae30494b3b28169a8e4e0aa8",
-          "page": "ZH-TW-CANFD-HDA2-(0).md",
+          "factsHash": "7449d8c151a34093f9d66e796a6f080ddfa2131c5329e1e558d2c378a95c75ff",
+          "page": "ZH-TW-現代-起亞-CAN-FD-線束.md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "2cd10469d96bc08a71fdfa257929f6cf6790a84cd48e7d2bcc55c07355d65caa"
-    },
-    "CarrotCruiseAtcDecel": {
-      "group": "CRUISE_CARROT",
-      "locales": {
-        "en": {
-          "anchor": "CarrotCruiseAtcDecel",
-          "factsHash": "37748823016b1c2ce9df31383dc9c009c47d76a6ab10e44a812f9d7dca86f05d",
-          "page": "EN-CarrotCruiseDecelATCx0.01(-1).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CarrotCruiseAtcDecel",
-          "factsHash": "041eb64678c5636ffcdeb90c4e4eb42a674321eb664d6d4e61efca808cddf98b",
-          "page": "KO-당근크루즈감속도ATCx0.01(-1).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CarrotCruiseAtcDecel",
-          "factsHash": "c4e21078f761252ba2d2e64b78c45a9eb47ccd5caf477d34c549c3762986f227",
-          "page": "ZH-胡萝卜巡航-ATC-减速度(-1).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CarrotCruiseAtcDecel",
-          "factsHash": "1a10721a0e61261fd85411c2bca855475fb384522e85421feb7859d7b9f78d12",
-          "page": "ZH-TW-胡蘿蔔巡航-ATC-減速度(-1).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "a6733fcd86fb76d04b17b6518d26eb29a1989d9fad23e0faca06bbe22b4919a0"
-    },
-    "CarrotCruiseDecel": {
-      "group": "CRUISE_CARROT",
-      "locales": {
-        "en": {
-          "anchor": "CarrotCruiseDecel",
-          "factsHash": "c0cbf76671180837a217d092d12d29833b29b2f94b5f050aca51db2efa769bb3",
-          "page": "EN-CarrotCruiseDecel(-1).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CarrotCruiseDecel",
-          "factsHash": "0e98ade5308b8dfdd47c215c58fb7099f902218cd77ccbd235138122f2f0fd69",
-          "page": "KO-당근크루즈감속도x0.01(-1).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CarrotCruiseDecel",
-          "factsHash": "3adcbf94a1106d0fd76c9ef4f58f69a81e03e7b7c1b75c3f34b04b0a3d52ca5e",
-          "page": "ZH-胡萝卜巡航减速度(-1).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CarrotCruiseDecel",
-          "factsHash": "77784dcb6b60d848cd72ce34e293adfa25c0709c2851587a284be8c6a3ddcb52",
-          "page": "ZH-TW-胡蘿蔔巡航減速度(-1).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "ba7e233d65895feac8118c77053f75720240197ed3ffa0ecf87ea2f953e899d2"
+      "semanticHash": "a4d30a9a469e9c7a3be9b5bb5943a92f33fce83e193ba0e774e932a8a536e295"
     },
     "CarrotTireTrajectory": {
       "group": "DISP_PATH",
@@ -5461,316 +3975,6 @@
       "reviewStatus": "needs_review",
       "semanticHash": "af261696361d69a11ca78c75dec91ea37bd659d2db7fd9b1cb1ba1a8c17aa391"
     },
-    "CruiseCoastingPercent": {
-      "group": "CRUISE_CARROT",
-      "locales": {
-        "en": {
-          "anchor": "CruiseCoastingPercent",
-          "factsHash": "fff1bc9589632162b69ea7e5f987cfce217be4db14eb9026e021b97e18923fca",
-          "page": "EN-Cruise-Coasting-Margin.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseCoastingPercent",
-          "factsHash": "94ad6fda8bf2b23bb8b124e52df359b017b3f03c16215bbee4a47d319f43f6dd",
-          "page": "KO-크루즈-코스팅-여유.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseCoastingPercent",
-          "factsHash": "aacd2e5d376a1f801269d875a1fec89f64c0c5abb8fef7f6ccb78bd179d0238f",
-          "page": "ZH-巡航滑行余量.md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "CruiseCoastingPercent",
-          "factsHash": "078464794d318ad3e1d646e731eec4bd1034a7c64bb628beb1178f6c271eef5f",
-          "page": "ZH-TW-巡航滑行餘量.md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "9e7ec0cc19d4be87699aad493790df42abd5125510f4ee68a4722b620c403b7a"
-    },
-    "CruiseEcoControl": {
-      "group": "CRUISE_CARROT",
-      "locales": {
-        "en": {
-          "anchor": "CruiseEcoControl",
-          "factsHash": "003641918254bf3f3a7340567fc69363e59a77712f44cf5d1d56cbd03dc7e364",
-          "page": "EN-CruiseEcoControl(2km-h).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseEcoControl",
-          "factsHash": "b168d938e8d92eff46cac6909d320408820384d7dfec8f45cdbe3423ed99cb5f",
-          "page": "KO-크루즈연비제어(2km-h).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseEcoControl",
-          "factsHash": "268db4b36f6620ed2947f1c7853a47c871176021a836ddf5e4f03de50dbdcddd",
-          "page": "ZH-巡航节能控制(2km-h).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseEcoControl",
-          "factsHash": "82a0a435baa39d2f4a489a78d8fca66035928009d1f2cb13dae5942d6bf9676f",
-          "page": "ZH-TW-巡航節能控制(2km-h).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "246d47bc61ed89bbb5fb72086ee161e3d96147de49d94b9b9459f285b9fc06e3"
-    },
-    "CruiseGapLevels": {
-      "group": "CRUISE_GAP",
-      "locales": {
-        "en": {
-          "anchor": "CruiseGapLevels",
-          "factsHash": "9e24b1e1808eee8023c207e39c845716059c2580cf74754ce5f66043908fc13d",
-          "page": "EN-Gap-cycle-levels.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "CruiseGapLevels",
-          "factsHash": "41532882d98ca07be179060d01184f79e5a1f393e0e242aca478a07205d15cc6",
-          "page": "KO-갭-단계-수.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "CruiseGapLevels",
-          "factsHash": "736f6efb1531c6aad1e6c71200636d1122d202e76b5fc90b302061c65024dccc",
-          "page": "ZH-车距循环级数.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseGapLevels",
-          "factsHash": "85d4dad7514e3c3657383c8910e12c67a9fb4286738edc547c893e0ed48811e1",
-          "page": "ZH-TW-車距迴圈級數.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "0b2beba3c4ae3136707b59ae19b20a500b34caf419dd7fc699481622c446c9e1"
-    },
-    "CruiseMaxVals0": {
-      "group": "CRUISE_ACCEL_TABLE",
-      "locales": {
-        "en": {
-          "anchor": "CruiseMaxVals0",
-          "factsHash": "31ff58a30059c6d0e2bd975f126fd1dae9c4e3b73374dc21457548ef479e9443",
-          "page": "EN-AccelSet0-0km-h(160).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseMaxVals0",
-          "factsHash": "383741c2eb6ad66cbb22d0916ab5fa344f13cfe30ac78719c2c1d0cab0173d6f",
-          "page": "KO-가속도설정-0-0km-h(160).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseMaxVals0",
-          "factsHash": "63a6d5277b1bf3181b26bc784d2868bc642ce315454cf12a61ee67a81e15fd36",
-          "page": "ZH-加速度设置-0-0km-h(160).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseMaxVals0",
-          "factsHash": "e7d762660c82443fa0d0978cd9a4065893f142f47a962bda9013c56461d4b739",
-          "page": "ZH-TW-加速度設定-0-0km-h(160).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "10e4085bba3a9694e8a989ade4077d532afaa5245b9d72df8bcdfd397cb650f0"
-    },
-    "CruiseMaxVals1": {
-      "group": "CRUISE_ACCEL_TABLE",
-      "locales": {
-        "en": {
-          "anchor": "CruiseMaxVals1",
-          "factsHash": "5c75b64124b7083c07077b0315387c513c028082209f330593337c58c7d728bb",
-          "page": "EN-AccelSet1-10km-h(160).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseMaxVals1",
-          "factsHash": "642792c12d2384e77f3296282126f2bbda63be7784e1903803f660e755640ce8",
-          "page": "KO-가속도설정-1-10km-h(160).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseMaxVals1",
-          "factsHash": "40b44e5a8c344968e323bb6fd8b3fa078e10999ee19519811cfcb047040ffd67",
-          "page": "ZH-加速度设置-1-10km-h(160).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseMaxVals1",
-          "factsHash": "1dc3b15d666d69bfcc9b5baa29149ca26d48c31c70c84e78689fca0a92b9b3cf",
-          "page": "ZH-TW-加速度設定-1-10km-h(160).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "049a2f4d59b41e828fa48bb99c19bfa5060440ba1382f09e912dd397a5c1816d"
-    },
-    "CruiseMaxVals2": {
-      "group": "CRUISE_ACCEL_TABLE",
-      "locales": {
-        "en": {
-          "anchor": "CruiseMaxVals2",
-          "factsHash": "caa4c9ef386a4abd2a0c5b51ee83769120c11e25f21d00751e98084b4f94322f",
-          "page": "EN-AccelSet2-40km-h(120).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseMaxVals2",
-          "factsHash": "a5f66111546128e1628f87cc7e5cd2a3edb9f16759736926354773cb6d3f3321",
-          "page": "KO-가속도설정-2-40km-h(120).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseMaxVals2",
-          "factsHash": "4aad9957bc6124ff0aeb0ac6a3dde2fe7649b3fb64e5b367fd74602b48c20f0f",
-          "page": "ZH-加速度设置-2-40km-h(120).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseMaxVals2",
-          "factsHash": "2944b5818da8619711e3f15be9f5902ba638fd0657f77b05ee63baed958d1c9b",
-          "page": "ZH-TW-加速度設定-2-40km-h(120).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "c060531fe2257a6fffdd9b0584198873e3bd3e85c69c0949ae84ab45a88bbabb"
-    },
-    "CruiseMaxVals3": {
-      "group": "CRUISE_ACCEL_TABLE",
-      "locales": {
-        "en": {
-          "anchor": "CruiseMaxVals3",
-          "factsHash": "7c5392dedb3f4d56d0cb57342abeb7eaf0c56b69935457c2893d4aae225e1783",
-          "page": "EN-AccelSet3-60km-h(100).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseMaxVals3",
-          "factsHash": "7a19022ff41d6cd46550560b4d0d660ed60011eccf4c52ab162f29f5e34b4f47",
-          "page": "KO-가속도설정-3-60km-h(100).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseMaxVals3",
-          "factsHash": "e4555578e96f778ede704d4d036a3ae27e00f280fb9c4cb219816b054fde4571",
-          "page": "ZH-加速度设置-3-60km-h(100).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseMaxVals3",
-          "factsHash": "9f408819f495252daf6249b4fc466ed09d8e636d0616a7c583d447ed508060ce",
-          "page": "ZH-TW-加速度設定-3-60km-h(100).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "4f57b387beb33a3e51f30a8d098f704fd6277f5c4e5b82981b748a8f5f432cc0"
-    },
-    "CruiseMaxVals4": {
-      "group": "CRUISE_ACCEL_TABLE",
-      "locales": {
-        "en": {
-          "anchor": "CruiseMaxVals4",
-          "factsHash": "6f5379e553e9fe2cb63c3b95f9667e19a33c9a82c56ce455b864d9c993c564c8",
-          "page": "EN-AccelSet4-80km-h(80).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseMaxVals4",
-          "factsHash": "66472153621243f483491ba7d2c46c6c71242b5818206e0415278ee7c8ccf2f5",
-          "page": "KO-가속도설정-4-80km-h(80).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseMaxVals4",
-          "factsHash": "b4e09bd7e307bd556993d9a7551af3fc18890e72b3c3c9831c79ec5e00aacf50",
-          "page": "ZH-加速度设置-4-80km-h(80).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseMaxVals4",
-          "factsHash": "f3adacf4c7cd2b71e967d76494c7eaed440b69a9e1df1830e9301bea94392c99",
-          "page": "ZH-TW-加速度設定-4-80km-h(80).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "16e9dff4d42f6574aceb681dbdd9e8a5c2375b0f618309fb416550a7722a5e13"
-    },
-    "CruiseMaxVals5": {
-      "group": "CRUISE_ACCEL_TABLE",
-      "locales": {
-        "en": {
-          "anchor": "CruiseMaxVals5",
-          "factsHash": "f6ef6ee6751afe778bdadfc536d35fd6c9966802956f936cc8465f618bb2d65b",
-          "page": "EN-AccelSet5-110km-h(70).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseMaxVals5",
-          "factsHash": "1f1cf578eb79346eb4f747065175d628ce617d5ea0d71cce7dbf11eb798f324d",
-          "page": "KO-가속도설정-5-110km-h(70).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseMaxVals5",
-          "factsHash": "1258f7aa733397e3d26b553688f33232a00c5cb6c813d34e076185c292cbf36d",
-          "page": "ZH-加速度设置-5-110km-h(70).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseMaxVals5",
-          "factsHash": "510dee353beffa5a093a26a1855942109de424133851475c175ba37aa725621e",
-          "page": "ZH-TW-加速度設定-5-110km-h(70).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "a0f4ffd54b85589db8416339bd40445bb361ec457c039fe5e700bad5f7e4c5ae"
-    },
-    "CruiseMaxVals6": {
-      "group": "CRUISE_ACCEL_TABLE",
-      "locales": {
-        "en": {
-          "anchor": "CruiseMaxVals6",
-          "factsHash": "5ab6dbe844a938f277d6643b81525c9f72b2b26204dab75bb726efcc0e83ead3",
-          "page": "EN-AccelSet6-140km-h(60).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "CruiseMaxVals6",
-          "factsHash": "420fad6708775b0a46e2aeedeb865d7b63472ec26518ed7e166f0ae493fb0b2f",
-          "page": "KO-가속도설정-6-140km-h(60).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "CruiseMaxVals6",
-          "factsHash": "19abdcc4bc5d84de570ea1640fb9b1c27df2ebb62df91dce0e2b1e818958ba8c",
-          "page": "ZH-加速度设置-6-140km-h(60).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "CruiseMaxVals6",
-          "factsHash": "8f68d7d8ceb498188a3acf844d41b57ca328b8983af22b7a52f7a43644c65752",
-          "page": "ZH-TW-加速度設定-6-140km-h(60).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "2ef3b0ff9376edca155222806f33b84fd52d4ac09bcf4b0887d38f856e800145"
-    },
     "CruiseOnDist": {
       "group": "BASIC_AUTOCRUISE",
       "locales": {
@@ -6298,37 +4502,6 @@
       "reviewStatus": "needs_review",
       "semanticHash": "41de43ecd7b558bf3408066b776219f5a1367f4ed91a5aae8a31995a4f0b821a"
     },
-    "DynamicTFollowLC": {
-      "group": "CRUISE_GAP",
-      "locales": {
-        "en": {
-          "anchor": "DynamicTFollowLC",
-          "factsHash": "af67289372b58e262ede3c58c5681dc25db111c865765f6268da503dc4356b44",
-          "page": "EN-Lane-Change-Response-(100-).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "DynamicTFollowLC",
-          "factsHash": "b82da292e51e50d7e7683318effd4f363073d41a4ea99e76fd8a3de267e97204",
-          "page": "KO-차선변경-반응(100-).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "DynamicTFollowLC",
-          "factsHash": "24e38b8a53233b94dc2d3f34790f4172aeeeae21d944fed8db93f46355cc5c08",
-          "page": "ZH-变道响应-(100-).md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "DynamicTFollowLC",
-          "factsHash": "b5c95f4e18dfdd3907d294e438c93cf28aa19c38fe23a02d9e1269fbfd23db07",
-          "page": "ZH-TW-變道響應-(100-).md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "50c56f4f2de5df94d98f4e119aa5b15e7798602f30b9dfa55b943d4e48280693"
-    },
     "EnableCornerRadar": {
       "group": "VEH_RADAR",
       "locales": {
@@ -6551,31 +4724,31 @@
       "locales": {
         "en": {
           "anchor": "HyundaiCameraSCC",
-          "factsHash": "1bbaad4e48bca0769c887d0d711dcf01987d933422247df654eecd90265465a6",
-          "page": "EN-HYUNDAI-CAMERA-SCC(0).md",
-          "reviewStatus": "current"
+          "factsHash": "e3708ec4a2916c9eef2160778ba6d04e2e67cefe0689aaf0352a708797a2d1aa",
+          "page": "EN-Special-SCC-harness.md",
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "HyundaiCameraSCC",
-          "factsHash": "706444b266fa0117d503db5bc3f6650d48b1dc128f39b1e700a631a998ef83d0",
-          "page": "KO-HYUNDAI-CAMERA-SCC.md",
-          "reviewStatus": "current"
+          "factsHash": "7fec93db80c580a0eb781ed1d75a6cfe27ba37dd91129a8e89664181e85304c2",
+          "page": "KO-특수-SCC-배선.md",
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "HyundaiCameraSCC",
-          "factsHash": "cca3f0c59d4c217787d0ddf59f36d13f62fa9092b36de216387c44e5f0e9ae41",
-          "page": "ZH-现代-摄像头-SCC-(0).md",
-          "reviewStatus": "current"
+          "factsHash": "7117b5882a8627982ef747132dd73a820b01a53f577ce46b069ad6f9e5fd8e4c",
+          "page": "ZH-特殊-SCC-线束.md",
+          "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "HyundaiCameraSCC",
-          "factsHash": "20e353fdcd7b15bc345d4353d408e653b73350dadee1fe5f239d6fbc10c59262",
-          "page": "ZH-TW-現代-攝影機-SCC-(0).md",
-          "reviewStatus": "current"
+          "factsHash": "f80044cf0e449bc75af73b782a1d1a218602f257c64257d9d2dd5fc992470eed",
+          "page": "ZH-TW-特殊-SCC-線束.md",
+          "reviewStatus": "needs_review"
         }
       },
-      "reviewStatus": "current",
-      "semanticHash": "287a1e4a7254a0c59acf4e381efa7c629c34796276cbd8584241a52c4a779f28"
+      "reviewStatus": "needs_review",
+      "semanticHash": "99524d08fffdef0918be8aff6ed855af38ce431ccfb14d86318363e4a5d1cbb4"
     },
     "HyundaiCanfdClusterDirectTx": {
       "group": "VEH_CANFD",
@@ -7290,192 +5463,6 @@
       "reviewStatus": "needs_review",
       "semanticHash": "03a3a5b716a1a1c2a0bb05b45da9e8adcadcf2e1c1a3232e2fbc606fc1ab928a"
     },
-    "LeadAccelResponse": {
-      "group": "CRUISE_GAP",
-      "locales": {
-        "en": {
-          "anchor": "LeadAccelResponse",
-          "factsHash": "595fcaa546a801b8c55a22e34bbf685c952dae5744b65748b5e8f7b7b00fb922",
-          "page": "EN-Following-responsiveness-·-common.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "LeadAccelResponse",
-          "factsHash": "20c1fa5ef8eaea9dcc5ea6457bc672cbd12a83dff336fb5045e397fa79e3180d",
-          "page": "KO-추종응답성-·-공통.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "LeadAccelResponse",
-          "factsHash": "6f7c446e676e347cb38234975783affc921168dd2fa026f87bc316c292918b00",
-          "page": "ZH-跟车响应性-·-通用.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "LeadAccelResponse",
-          "factsHash": "308009f2ce8b2e886495e5de13bcf18e9c1c356e18e265305381559935e0565a",
-          "page": "ZH-TW-跟車響應性-·-通用.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "46d9ff7041e6f7680369b13cd90e72cfa05423b6ad5dbae8d537cadcb8858d89"
-    },
-    "LeadAccelResponseTF1": {
-      "group": "CRUISE_GAP",
-      "locales": {
-        "en": {
-          "anchor": "LeadAccelResponseTF1",
-          "factsHash": "4c151b7d1a39e84894d25b2dec96d8907c6ba31acc034cc2acfb72f67879b3e0",
-          "page": "EN-TF1-following-responsiveness.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "LeadAccelResponseTF1",
-          "factsHash": "7540d588f1ba72b8a72a5ab7cae14186ac42bc2bc4ab28db7493ba2cae72fda2",
-          "page": "KO-TF1-추종응답성.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "LeadAccelResponseTF1",
-          "factsHash": "7071be8323acb3eea85386968c51b7e0263439b14f2181c2d3eb1d0980b9b7c0",
-          "page": "ZH-TF1-跟车响应性.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "LeadAccelResponseTF1",
-          "factsHash": "5eaa3eefcac91655098f0d0b0a86cf6395524928b50407dccb71df8337816fbf",
-          "page": "ZH-TW-TF1-跟車響應性.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "095edb40730e0a41998e0ade9729636a60de3f36b5e93f22b4eaf6a85acb84f3"
-    },
-    "LeadAccelResponseTF2": {
-      "group": "CRUISE_GAP",
-      "locales": {
-        "en": {
-          "anchor": "LeadAccelResponseTF2",
-          "factsHash": "82206510a1ab81fe7d2183642e3e693bc7cbd7fff15095ffc0dbca8967034f5b",
-          "page": "EN-TF2-following-responsiveness.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "LeadAccelResponseTF2",
-          "factsHash": "528d4de35fc0de7a8318cca927fc8c0b27363d0b5fc3febf0185ce1238df5404",
-          "page": "KO-TF2-추종응답성.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "LeadAccelResponseTF2",
-          "factsHash": "fa0ee20401cf7f6dbe66af5336aad03c88259dc35b5327f53a22e5177ea380b1",
-          "page": "ZH-TF2-跟车响应性.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "LeadAccelResponseTF2",
-          "factsHash": "2e17bf75385239559d3e176f6a5065f956a127fc65f186a04a53900f24694fb1",
-          "page": "ZH-TW-TF2-跟車響應性.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "7909e1aa68b961f1a1c1c3b5d91b6c9745030cb5052d7352231a2232a9a73791"
-    },
-    "LeadAccelResponseTF3": {
-      "group": "CRUISE_GAP",
-      "locales": {
-        "en": {
-          "anchor": "LeadAccelResponseTF3",
-          "factsHash": "8dd49c2f916964a08d1489ce0d5f3ec1dcc244dcdaa53da13983e8c1327d7339",
-          "page": "EN-TF3-following-responsiveness.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "LeadAccelResponseTF3",
-          "factsHash": "ab61018e7004810014f17600f38231f9042d83a88a288228e268f87d00752a32",
-          "page": "KO-TF3-추종응답성.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "LeadAccelResponseTF3",
-          "factsHash": "6142467ce954a5aa3390a4093323b635919e4d33e07f3c8dfd66dd7bf56c754f",
-          "page": "ZH-TF3-跟车响应性.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "LeadAccelResponseTF3",
-          "factsHash": "28938c5cc04ff0abef19d472258cbbf02f4aa42069350ba09a8dc68ba8b4f52b",
-          "page": "ZH-TW-TF3-跟車響應性.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "9af4c11b9f64844d55da9a63b084ab005796d68f1cd8c7c7b0e9d6a5d2e9e497"
-    },
-    "LeadAccelResponseTF4": {
-      "group": "CRUISE_GAP",
-      "locales": {
-        "en": {
-          "anchor": "LeadAccelResponseTF4",
-          "factsHash": "d17f019e39b7bfa66e6422f818788b3c2c7528be124f213b5c67fe0a7620bf92",
-          "page": "EN-TF4-following-responsiveness.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "LeadAccelResponseTF4",
-          "factsHash": "4b442557369b4f77b54bf414f836d95f452f428f3f71a0af10d69afdf1bcccc0",
-          "page": "KO-TF4-추종응답성.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "LeadAccelResponseTF4",
-          "factsHash": "60c949aafe2e7eb37384bb0749f8e8029e7be91a61f3b0d345eb6f49d2460240",
-          "page": "ZH-TF4-跟车响应性.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "LeadAccelResponseTF4",
-          "factsHash": "34d81746afd3cda856dbbbc55170272885a1d6a7b9df56e351b9a73d4c2b98d4",
-          "page": "ZH-TW-TF4-跟車響應性.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "98a6de3affc56a6d1146a72fe4af4fe954aaf9bca912ea89256434a150b6a595"
-    },
-    "LeadBrakeLights": {
-      "group": "SPEED_TRAFFIC",
-      "locales": {
-        "en": {
-          "anchor": "LeadBrakeLights",
-          "factsHash": "0fa2b265e92306b1fcbe6ef73a06058cd27e6207f22f8e64005b4fb111198e6d",
-          "page": "EN-Lead-Brake-Lamp-Observation-(Trial).md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "LeadBrakeLights",
-          "factsHash": "f40f44a3fb0671b4e0908e06bcc21674985b923337afa1943d235505213f740c",
-          "page": "KO-앞차-브레이크등-관찰-(실험).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "LeadBrakeLights",
-          "factsHash": "af87df5b1b719ee89bf9b0032481ec19f7c68e8b17a72ba46323544e93a6c2e9",
-          "page": "ZH-前车制动灯观察(试验).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "LeadBrakeLights",
-          "factsHash": "50771c1a1c4888f2078f42da50be1467094f9c13da7cfe97b101f4b82395d4ff",
-          "page": "ZH-TW-前車制動燈觀察(試驗).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "1c52b548b46d979bac0118c3daafe7304a87141b48ac8f9662b240448cd8289a"
-    },
     "LfaButtonMode": {
       "group": "BUTTON_MODE",
       "locales": {
@@ -7506,130 +5493,6 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "9c4b44838ae0dcff4397e38c706817d14778d81d616a5617a32fbc5b2d88e8ff"
-    },
-    "LongActuatorDelay": {
-      "group": "CRUISE_LONGTUNE",
-      "locales": {
-        "en": {
-          "anchor": "LongActuatorDelay",
-          "factsHash": "105a480bf7b399fbd639f2a5ab7bdb728b19c0f83993b50c83571547ae347b53",
-          "page": "EN-LongActuatorDelay(20)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "LongActuatorDelay",
-          "factsHash": "86c8598d8be0e6e22624bff6bc552c7649bce34398fcd896eaccf4ca4fe5c6cc",
-          "page": "KO-LongActuatorDelay(20)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "LongActuatorDelay",
-          "factsHash": "a6c69ff6b59d2cb9b0c642bfb8118ada7b5d9a717dbb1a62f77382b13ea15609",
-          "page": "ZH-纵向执行器延迟(20)x0.01.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "LongActuatorDelay",
-          "factsHash": "51afae4d30b6b3d4305549299e32133a03da8ec73bf26679c16be961af7aa9e2",
-          "page": "ZH-TW-縱向執行器延遲(20)x0.01.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "83f945e2bbe7928bc6258df845c0f2c9ea2701fa8ecf7a6225873c62d3a181cc"
-    },
-    "LongTuningKf": {
-      "group": "CRUISE_LONGTUNE",
-      "locales": {
-        "en": {
-          "anchor": "LongTuningKf",
-          "factsHash": "554c2c2be58d81a5c77b5a2dca03da39d608387c82bc4e5dbdc0cba1837645ae",
-          "page": "EN-Long-Kf(100)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "LongTuningKf",
-          "factsHash": "1c75de1b22ca04b40520f972a5abf39644934451c108b7daba3ee5fc8409298b",
-          "page": "KO-Long-Kf(100)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "LongTuningKf",
-          "factsHash": "535d30707981a06baa12dd365790808d7d74152b80a4793aa23e05d775536257",
-          "page": "ZH-纵向-Kf(100)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "LongTuningKf",
-          "factsHash": "444d8e512a436dde7eb70be6e99ec92ab2653d27867994ed82cc44b7134714d7",
-          "page": "ZH-TW-縱向-Kf(100)x0.01.md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "b3ec7b2deffaf3c3c23388c2c4847d52984e1061625b5bb1cf8f304f7afcd1e5"
-    },
-    "LongTuningKiV": {
-      "group": "CRUISE_LONGTUNE",
-      "locales": {
-        "en": {
-          "anchor": "LongTuningKiV",
-          "factsHash": "afa4f04878a1aa65031d580537a083fd34bfdd1294fc64cefadf7e5611af1cb7",
-          "page": "EN-Long-KiV(0)x0.001.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "LongTuningKiV",
-          "factsHash": "5f257422a42d5be0954982f8708a196bffcf856c29b8b516a1d5cb112fc0bf8b",
-          "page": "KO-Long-KiV(0)x0.001.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "LongTuningKiV",
-          "factsHash": "b038d0f6a4e9537c25b607c4a8f53b7ab6a092ae2fb4fc24404426f913409b9e",
-          "page": "ZH-纵向-KiV(0)x0.001.md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "LongTuningKiV",
-          "factsHash": "118ab848846e44858d9e5bd448c35473a202dcd867b23bcd80733911afc4d30e",
-          "page": "ZH-TW-縱向-KiV(0)x0.001.md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "408a16f2cac3b273bfca7a6a8fe50a70b9f2aed1b3ad6042d70f49451eb04700"
-    },
-    "LongTuningKpV": {
-      "group": "CRUISE_LONGTUNE",
-      "locales": {
-        "en": {
-          "anchor": "LongTuningKpV",
-          "factsHash": "c15cb741f3b432869213cc6589137983ce63573b17de7068872b1f4a3592f5d9",
-          "page": "EN-Long-KpV(100)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "LongTuningKpV",
-          "factsHash": "c6d5cab7f862f03eadcb2616f832d17d3218e07294107468f8bb2857c116bf8a",
-          "page": "KO-Long-KpV(100)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "LongTuningKpV",
-          "factsHash": "f069b8b5780d90d17026d832211c4423c95a51b5cd09698e65690ea9fe57403c",
-          "page": "ZH-纵向-KpV(100)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "LongTuningKpV",
-          "factsHash": "a1782a67c2bb1cb545dd9f075e237dfff3de0fe13dc73724cb9e91ac186dbdaa",
-          "page": "ZH-TW-縱向-KpV(100)x0.01.md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "da83b19cd7c1eaed65e221d1571b66a8f33f00b0c83097c2f56007bccd5323c1"
     },
     "LowSpeedSteerReserve": {
       "group": "STEER_TORQUE_LIMIT",
@@ -7723,37 +5586,6 @@
       },
       "reviewStatus": "current",
       "semanticHash": "e08aa7e7e006ddb909a0060571a3f7983d6c70f1249f7f29cc42c19e87f3451a"
-    },
-    "MapTurnSpeedFactor": {
-      "group": "SPEED_CURVE",
-      "locales": {
-        "en": {
-          "anchor": "MapTurnSpeedFactor",
-          "factsHash": "7a203c4c5111a0cf21a1abc9de9aa55345db366756b6ba7013fd934b28c17994",
-          "page": "EN-MapTurnSpeedFactor.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "MapTurnSpeedFactor",
-          "factsHash": "7d6b1cd90098f127fa55764e0b4791c4124b83658288c620883fc190680d8c67",
-          "page": "KO-경로턴속도반영비율(100-).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "MapTurnSpeedFactor",
-          "factsHash": "d95261015e89ce8328f518f240b25a5c6e075e86f0ef66b682f1a61fe5723e04",
-          "page": "ZH-地图转向速度因子.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "MapTurnSpeedFactor",
-          "factsHash": "99561831bf75f1645ebd66957cb8c652151252bcd054566e51ca92dfd3c489b2",
-          "page": "ZH-TW-地圖轉向速度因子.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "70911cfe4337b36f9b1812b46852781a33788b52e9f58c2bf5e64debf1f9fa80"
     },
     "MapboxStyle": {
       "group": "SYS_NET",
@@ -7971,68 +5803,6 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "1ebf5b7d58dbd61bfd90f74ebd2f43ac41e416f817f1109e30249922d3cd775e"
-    },
-    "MyDrivingMode": {
-      "group": "CRUISE_DRIVE_MODE",
-      "locales": {
-        "en": {
-          "anchor": "MyDrivingMode",
-          "factsHash": "fd438837b148dae2dca5e1e15e920b3fdce5cec978263ec66aa47357cea83bb3",
-          "page": "EN-DrivingMode-Init(3).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "MyDrivingMode",
-          "factsHash": "ceac82c00bbd85e9ee6c6f138b543d39ccc5dc1ff8167f9bd675a7f1a4a8c103",
-          "page": "KO-드라이브모드-(3).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "MyDrivingMode",
-          "factsHash": "5335778b6201df72ae3a866c83a16bd6c106449cf9fce68781431cc7179ddbaf",
-          "page": "ZH-驾驶模式-初始-(3).md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "MyDrivingMode",
-          "factsHash": "1e88879efc8f1934e50164dbb095c4111bf86da28f3f2622efadab601e6fb8df",
-          "page": "ZH-TW-駕駛模式-初始-(3).md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "6405b6142b9c6696548a67a172fbe0c6fcae9520e0055bb628b5ca3647987b6e"
-    },
-    "MyDrivingModeAuto": {
-      "group": "CRUISE_DRIVE_MODE",
-      "locales": {
-        "en": {
-          "anchor": "MyDrivingModeAuto",
-          "factsHash": "c155b8b1b8abacd1f737b5c14f80505ec0cd41600262cdf2864d14e78397be18",
-          "page": "EN-DrivingMode-Auto.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "MyDrivingModeAuto",
-          "factsHash": "e6ce6ced8552ad27a25a01c23aa27dca37e4bb5a942a1b9ce1d4a28ff9d34f43",
-          "page": "KO-드라이브모드-자동.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "MyDrivingModeAuto",
-          "factsHash": "6a3f9adfcb13cfd4f5efeea1bf94840acd4e661dd2a1f5c701c10bc6eac028e3",
-          "page": "ZH-驾驶模式-自动.md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "MyDrivingModeAuto",
-          "factsHash": "59eab8f828f72ed6082b941ee4e7ba0d1cfc770030dd50a859ef3bb00510f841",
-          "page": "ZH-TW-駕駛模式-自動.md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "0704a17d228794f4dfa2ce01cffbcaf023b513a0993d4106e62db6057ef8b025"
     },
     "NNFF": {
       "group": "STEER_TORQUE_COEFF",
@@ -8964,37 +6734,6 @@
       "reviewStatus": "needs_review",
       "semanticHash": "fd79f1bf1968efdfc0592e51e5336d2ab76734d8ffd69c233cc4444a22b4c036"
     },
-    "SignalAssistMode": {
-      "group": "SPEED_TRAFFIC",
-      "locales": {
-        "en": {
-          "anchor": "SignalAssistMode",
-          "factsHash": "b749580573f91aa2200dbabc1cc5ae47391c700639e105a7ba001acc2536e1f4",
-          "page": "EN-Signal-Assistance-Mode-(Trial).md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "SignalAssistMode",
-          "factsHash": "91f3c9bb108d40eefcb7fbb59fea1c9d74108d8f20da0fb23b1588df3e644d77",
-          "page": "KO-신호보조-모드-(시험).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "SignalAssistMode",
-          "factsHash": "6cb3695ccc37add6ce4a5eac832f3193d32637a0def9f2fdbf20841d1b2e7803",
-          "page": "ZH-信号辅助模式(试验).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "SignalAssistMode",
-          "factsHash": "6cf47229c740b81e2b58e92bea5c6689617df9c362cc4864eeaa3b6523fac664",
-          "page": "ZH-TW-訊號輔助模式(試驗).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "ba8119151eab7971db5323d2e70e29e83140178360a67bae13fb690b0084d730"
-    },
     "SoftHoldOnCancel": {
       "group": "BASIC_AUTOCRUISE",
       "locales": {
@@ -9212,37 +6951,6 @@
       "reviewStatus": "current",
       "semanticHash": "826f2d40ddf5f91d56d0f427bee488abab5c3cb4e0d0c3487843d985b45560cc"
     },
-    "SpeedTFFactor": {
-      "group": "CRUISE_GAP",
-      "locales": {
-        "en": {
-          "anchor": "SpeedTFFactor",
-          "factsHash": "dad57d2b99e48665eb97b442e5dbce57626eaaa005cd44e69bc0939da42e4cd4",
-          "page": "EN-Speed-TF-multiplier.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "SpeedTFFactor",
-          "factsHash": "735cfd99aacae84ccac33291860f717fd41431e90592c240abf2b1562ede14fb",
-          "page": "KO-속도별-TF-배율.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "SpeedTFFactor",
-          "factsHash": "73090864e99537002a1125b5fbf13c63ce5b102e68fcb92583855eecafb44c6c",
-          "page": "ZH-速度-TF-倍率.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "SpeedTFFactor",
-          "factsHash": "da67033c06ebf551ec7e17cae6340899288fff9be0bc9a357954063f19393a02",
-          "page": "ZH-TW-速度-TF-倍率.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "5a06220209167170871cd56a8bbad19e3a0ee27e7de4e1e4e83b573a1dc6126a"
-    },
     "SteerActuatorDelay": {
       "group": "STEER_FEEL",
       "locales": {
@@ -9305,222 +7013,253 @@
       "reviewStatus": "needs_review",
       "semanticHash": "3dcdc5b26050ba384382fe8733f365d2de9ff1bc73e56b23703f73b6dce4381b"
     },
-    "StopDistanceCarrot": {
-      "group": "CRUISE_STOPGO",
+    "SunnyAutoLongitudinal": {
+      "group": "DAILY_DRIVING",
       "locales": {
         "en": {
-          "anchor": "StopDistanceCarrot",
-          "factsHash": "7cdd8af4705561d05db47357ae6bb58f755fa12c0e1d287906337a6f7887d472",
-          "page": "EN-StopDistance(600)cm.md",
-          "reviewStatus": "current"
+          "anchor": "SunnyAutoLongitudinal",
+          "factsHash": "8c2fc7cd82675cce03ea5b3ca6abecf343ee8fa6a6d89f6d078e82d7f03dedab",
+          "page": "EN-Automatic-Alpha-longitudinal-setup.md",
+          "reviewStatus": "needs_review"
         },
         "ko": {
-          "anchor": "StopDistanceCarrot",
-          "factsHash": "cda4ed210c1cc88c5be3c4061f257045895de3b652c19bb4e0b8f01af6bb2320",
-          "page": "KO-StopDistance(600)cm.md",
-          "reviewStatus": "current"
+          "anchor": "SunnyAutoLongitudinal",
+          "factsHash": "2b3ce5ed28a93321564c4a24814ca6e9d1626c8aa46913f59d85a620e2c54e14",
+          "page": "KO-Alpha-종방향-자동-설정.md",
+          "reviewStatus": "needs_review"
         },
         "zh": {
-          "anchor": "StopDistanceCarrot",
-          "factsHash": "3a682cddb4dd0601aac3a0e683031a560343e4f471cc9a2b328388d41d341ca6",
-          "page": "ZH-停止距离(600)cm.md",
+          "anchor": "SunnyAutoLongitudinal",
+          "factsHash": "5809330fac1fe80b80be87dd16993344542126bb54f3c8f268aac167303cd307",
+          "page": "ZH-自动适配-Alpha-纵向控制.md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
-          "anchor": "StopDistanceCarrot",
-          "factsHash": "0bd841b93a245324bc56eaf909455faf5dbfca30245d5cf426d81c9655a5592a",
-          "page": "ZH-TW-停止距離(600)cm.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "828f04295b09ba58b2345b32de89023747b2e835cd5f40e45378caea5d4fc7d8"
-    },
-    "StoppingAccel": {
-      "group": "CRUISE_STOPGO",
-      "locales": {
-        "en": {
-          "anchor": "StoppingAccel",
-          "factsHash": "dda627c068e414ef029b768b503cebbe4b2df17300d23fcb41e1e7c2f6cdd83e",
-          "page": "EN-StoppingStartAccelx0.01(-50).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "StoppingAccel",
-          "factsHash": "80fecbfd3f3e9d4f5595a681e2f3a0bf765eb85a6a0a9e9410804b13b63f5677",
-          "page": "KO-정지시작가속도x0.01(-50).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "StoppingAccel",
-          "factsHash": "21b87831ceaf67a1b6a3f4376c5afe3862919526b26a62417ed9184ed6ba8398",
-          "page": "ZH-停止起步加速度-x0.01(-50).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "StoppingAccel",
-          "factsHash": "213f4252088de4f4d9fd5cba7b7af49675e926c2b775c5a6b08fcb573a3f9d85",
-          "page": "ZH-TW-停止起步加速度-x0.01(-50).md",
+          "anchor": "SunnyAutoLongitudinal",
+          "factsHash": "f42dd408ef10667fa478581a87d4fe529a8951c6034ccb35359270ed58a91db4",
+          "page": "ZH-TW-依車型自動適配-Alpha-縱向控制.md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "804fd76b953b107e414ad27b3ef47d2d75140f0fd06273972f700c8ec2f23490"
+      "semanticHash": "b032da29216a143436fc1982943af9a476c336b89129eb5fd2776c74fbb951ea"
     },
-    "TFollowDecelBoost": {
-      "group": "CRUISE_GAP",
+    "SunnyBlinkerPauseKph": {
+      "group": "DAILY_DRIVING",
       "locales": {
         "en": {
-          "anchor": "TFollowDecelBoost",
-          "factsHash": "862b1817f57d0dab48edffd1eaefd7233d215176bab065e0348aff47fb78594a",
-          "page": "EN-Deceleration-Gap-Margin-(0-).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyBlinkerPauseKph",
+          "factsHash": "e7e64583d39e7bb717ac9188c02d578bb81d1e6d437bc95091a3f7a45164138f",
+          "page": "EN-Pause-steering-below-speed-with-one-indicator-(km-h).md",
+          "reviewStatus": "needs_review"
         },
         "ko": {
-          "anchor": "TFollowDecelBoost",
-          "factsHash": "3b503844092eb188a7454f4a9ecbb5a25ad990c492ef2354d7ac4927460ad5a0",
-          "page": "KO-감속-시-차간-여유(0-).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyBlinkerPauseKph",
+          "factsHash": "5e4932af86ee43d77d664bddbad392a8243d2edb2b687d232e80c845654eccce",
+          "page": "KO-방향지시등-조향-일시-정지-(km-h).md",
+          "reviewStatus": "needs_review"
         },
         "zh": {
-          "anchor": "TFollowDecelBoost",
-          "factsHash": "f1b36d3b21adc1cc90dfe82e0295417216866d9d8b56ad112c13ff035ad89950",
-          "page": "ZH-减速时车距余量-(0-).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyBlinkerPauseKph",
+          "factsHash": "3579175d237471e11919815806b7089be4ec65960cd4e94ee6a34eb8e6f8a462",
+          "page": "ZH-低速打灯暂停转向(km-h).md",
+          "reviewStatus": "needs_review"
         },
         "zh-tw": {
-          "anchor": "TFollowDecelBoost",
-          "factsHash": "57f922cca3bb4476d27241721d0967c7419c5edf6058edb2492c2282ceacf61e",
-          "page": "ZH-TW-減速時車距餘量-(0-).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyBlinkerPauseKph",
+          "factsHash": "d079ba5611ec889b4634387354cea02a7a29e4921150dd9537557f9b40ba651f",
+          "page": "ZH-TW-低速打燈暫停轉向(km-h).md",
+          "reviewStatus": "needs_review"
         }
       },
-      "reviewStatus": "current",
-      "semanticHash": "a003496b606637110045bb4c8096e6fd7af91b9b8c2778f41be61772125c46ca"
+      "reviewStatus": "needs_review",
+      "semanticHash": "49fff7c9b8de6f29293c0c3f9603a7ed153258de03b3b3f959c81becee0952ed"
     },
-    "TFollowGap1": {
-      "group": "CRUISE_GAP",
+    "SunnyCruiseOnly": {
+      "group": "DAILY_DRIVING",
       "locales": {
         "en": {
-          "anchor": "TFollowGap1",
-          "factsHash": "28f8b38062cf874dc2fec22a96778f721a23b3f54eef6b4a6aeef0675ffb7216",
-          "page": "EN-TF(1)-TimeFollow1x0.01s(110).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyCruiseOnly",
+          "factsHash": "264ca4605264d8739b36e42ed4ddc744d83d111cb3c33f34714784aa52591d4d",
+          "page": "EN-Cruise-only.md",
+          "reviewStatus": "needs_review"
         },
         "ko": {
-          "anchor": "TFollowGap1",
-          "factsHash": "38388be7e517e3105411bb0441e5d7be5b8285b9994bb285d753696502bad653",
-          "page": "KO-TF(1)-차량간격시간1x0.01s(110).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyCruiseOnly",
+          "factsHash": "a83a8bf5cc285592563bfd871ebe83d93e8f5ca97bd3ae57e7add8904ecbb7cc",
+          "page": "KO-크루즈만-사용.md",
+          "reviewStatus": "needs_review"
         },
         "zh": {
-          "anchor": "TFollowGap1",
-          "factsHash": "75a34d280cac2c8471e07f68b5fff6467c8680c1d9fbcde0f0f45d7bd949ca16",
-          "page": "ZH-跟车时间(1)-TimeFollow1x0.01s(110).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyCruiseOnly",
+          "factsHash": "912df5e5138986e63be4e669f5d848373c2923988d97ce7870ea9e46b18e8340",
+          "page": "ZH-仅巡航,手动转向.md",
+          "reviewStatus": "needs_review"
         },
         "zh-tw": {
-          "anchor": "TFollowGap1",
-          "factsHash": "c05eace2b07e8ed7324fa61e4256cee353b47c04970e860f94d1fc8ebd0ee736",
-          "page": "ZH-TW-跟車時間(1)-TimeFollow1x0.01s(110).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyCruiseOnly",
+          "factsHash": "b9b42c53a7e775f2ffabc0c2cb3c03dc6e8312ddcf2708303a364dcf1654ba87",
+          "page": "ZH-TW-僅巡航,手動轉向.md",
+          "reviewStatus": "needs_review"
         }
       },
-      "reviewStatus": "current",
-      "semanticHash": "ed3db450ac23993e30fe62a41b6390389aef7f0343a5afe4ff667f18b0fc589a"
+      "reviewStatus": "needs_review",
+      "semanticHash": "224e07da8312b2baa85daa50eac23e50ac7912fd7c1b95fc7b793a98ee56225e"
     },
-    "TFollowGap2": {
-      "group": "CRUISE_GAP",
+    "SunnyLaneCenter": {
+      "group": "DAILY_DRIVING",
       "locales": {
         "en": {
-          "anchor": "TFollowGap2",
-          "factsHash": "fe6e62dd612f062f5059076d3954c018978d82b44fbd99a69a55bde9ab697470",
-          "page": "EN-TF(2)-TimeFollow2x0.01s(120).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyLaneCenter",
+          "factsHash": "b41bd2726589803696d80eddaf421cbd4a0170a2e43f51a971c5b9b3d3e84705",
+          "page": "EN-Lane-centering.md",
+          "reviewStatus": "needs_review"
         },
         "ko": {
-          "anchor": "TFollowGap2",
-          "factsHash": "3c8ffa320c7c2e612e7e783040e8e1866f31a54060797c610602d490f4eb1ca5",
-          "page": "KO-TF(2)-차량간격시간2x0.01s(120).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyLaneCenter",
+          "factsHash": "072331039df2f9d1e855fd938545d5490f5bfff439cee53ec2a33f7933535487",
+          "page": "KO-차로-중앙-유지.md",
+          "reviewStatus": "needs_review"
         },
         "zh": {
-          "anchor": "TFollowGap2",
-          "factsHash": "289a2b838accf8db02ec859fb752c0eb13f41eaa48bf405af1fdefde1ebf5b13",
-          "page": "ZH-跟车时间(2)-TimeFollow2x0.01s(120).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyLaneCenter",
+          "factsHash": "88790030871edb69deadbf2d610b4c01978409f79e0a52f1fbd79d4dc2dcb288",
+          "page": "ZH-车道居中.md",
+          "reviewStatus": "needs_review"
         },
         "zh-tw": {
-          "anchor": "TFollowGap2",
-          "factsHash": "c640bfd245e9848ce4b896b8feba03217cddde66468d18a3f69f7e4c3e4de242",
-          "page": "ZH-TW-跟車時間(2)-TimeFollow2x0.01s(120).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyLaneCenter",
+          "factsHash": "630155250b116a8a83e36210d4c4d0ee44f55892c02fb147c86321e8b141c865",
+          "page": "ZH-TW-車道置中.md",
+          "reviewStatus": "needs_review"
         }
       },
-      "reviewStatus": "current",
-      "semanticHash": "4352d22a167ac26fa0a74811c302d3a719e21aaf91e7e7767b23e77fec61b555"
+      "reviewStatus": "needs_review",
+      "semanticHash": "8995da555e12498cdc75004b3e2a15b25c746fb274f0d56d60c682a3b605b150"
     },
-    "TFollowGap3": {
-      "group": "CRUISE_GAP",
+    "SunnyLaneTurn": {
+      "group": "DAILY_DRIVING",
       "locales": {
         "en": {
-          "anchor": "TFollowGap3",
-          "factsHash": "fec2c016770cc483f2e2ec3043ce1ee9f80c012acea116c5c228e845ce0f49b8",
-          "page": "EN-TF(3)-TimeFollow3x0.01s(140).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyLaneTurn",
+          "factsHash": "1bb63983cb06d3f870f864d33df55c8849a05a60852bc59e2092bb30aa5764ee",
+          "page": "EN-Low-speed-signaled-turns.md",
+          "reviewStatus": "needs_review"
         },
         "ko": {
-          "anchor": "TFollowGap3",
-          "factsHash": "526a1d8a16fa618e9b7549a56938bf214ff29396dfce907e5be35ab31aabdd8e",
-          "page": "KO-TF(3)-차량간격시간3x0.01s(140).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyLaneTurn",
+          "factsHash": "6c10a1cd567acc799a222ac179b558d90846f044208cf1ac07ca57ec3f8071ad",
+          "page": "KO-저속-방향지시등-회전.md",
+          "reviewStatus": "needs_review"
         },
         "zh": {
-          "anchor": "TFollowGap3",
-          "factsHash": "1c07e3d0a58071a198296f0d1e5db5885acc83a13a12bb4324e592c9871afbe1",
-          "page": "ZH-跟车时间(3)-TimeFollow3x0.01s(140).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyLaneTurn",
+          "factsHash": "4b34d71900f62d488fc68cd5bd8f6699484cc30ae7fda79ac00f9a54475ce807",
+          "page": "ZH-低速转向灯转弯.md",
+          "reviewStatus": "needs_review"
         },
         "zh-tw": {
-          "anchor": "TFollowGap3",
-          "factsHash": "e71759b0d8c78965cf4a59b566b4c0e7dc7dc4390f8ccb0c58f9bbbc17245ea6",
-          "page": "ZH-TW-跟車時間(3)-TimeFollow3x0.01s(140).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyLaneTurn",
+          "factsHash": "0e9050ec0d9274c5fcb7062bc42a3d74a9b5f0b4fa53a59c9eed0f4c619b5fc3",
+          "page": "ZH-TW-低速方向燈轉彎.md",
+          "reviewStatus": "needs_review"
         }
       },
-      "reviewStatus": "current",
-      "semanticHash": "9716f07b3b27c698d4848f5f0616674737d977a27f883067bb593444a3008774"
+      "reviewStatus": "needs_review",
+      "semanticHash": "f271252fcf1bb96a23ee3c55743963d09d6623a0bde1bca7722569e29b1e9f4f"
     },
-    "TFollowGap4": {
-      "group": "CRUISE_GAP",
+    "SunnyMapCurve": {
+      "group": "DAILY_DRIVING",
       "locales": {
         "en": {
-          "anchor": "TFollowGap4",
-          "factsHash": "7a37a8d8c9d7f38b8948f2c98b6c13271f6ff8ddb877b5c52fcb2313494eda9e",
-          "page": "EN-TF(4)-TimeFollow4x0.01s(160).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyMapCurve",
+          "factsHash": "6489f3ef66e6938b530862b72201b3de8f6b0a1c5da683c3201b411202aaa622",
+          "page": "EN-Map-curve-assist.md",
+          "reviewStatus": "needs_review"
         },
         "ko": {
-          "anchor": "TFollowGap4",
-          "factsHash": "af2cc59094403b55f0399183066f91e938787d2eeee5ca6d3902e21c4cf3a7a3",
-          "page": "KO-TF(4)-차량간격시간4x0.01s(160).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyMapCurve",
+          "factsHash": "d371cd82fba00cf1bdb4dad72ac4497ce49355f671811a0b22bce694579b9715",
+          "page": "KO-지도-커브-감속.md",
+          "reviewStatus": "needs_review"
         },
         "zh": {
-          "anchor": "TFollowGap4",
-          "factsHash": "20420d5fd460d47f9b4f818c993d8b0e81fa6a8e157b82b4ec73f57700e03c72",
-          "page": "ZH-跟车时间(4)-TimeFollow4x0.01s(160).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyMapCurve",
+          "factsHash": "8d1f7cd0f9de0175bcdaef9ab2c5b770982e0e80273dcb7c4f6687390435c6f6",
+          "page": "ZH-地图弯速辅助.md",
+          "reviewStatus": "needs_review"
         },
         "zh-tw": {
-          "anchor": "TFollowGap4",
-          "factsHash": "6fe67509b5568ac8045614bcd2d28ad3b328274c2320a52bf1d1a3ed83f3dcfd",
-          "page": "ZH-TW-跟車時間(4)-TimeFollow4x0.01s(160).md",
-          "reviewStatus": "current"
+          "anchor": "SunnyMapCurve",
+          "factsHash": "5b8c3f3dfc035a4db396242f47c71404099fefe4669ff6ded422f38267fb47dc",
+          "page": "ZH-TW-地圖彎速輔助.md",
+          "reviewStatus": "needs_review"
         }
       },
-      "reviewStatus": "current",
-      "semanticHash": "a772a1a64ce8b511e296150a40a883a31e7950a6c45ae92c5a364b37c775e817"
+      "reviewStatus": "needs_review",
+      "semanticHash": "23a5fd23adcec8bfb16ab0a1530d7c481e68c90d70453bb67deffb96fa48e8b5"
+    },
+    "SunnySpeedLimit": {
+      "group": "DAILY_DRIVING",
+      "locales": {
+        "en": {
+          "anchor": "SunnySpeedLimit",
+          "factsHash": "d8c3c1da91682ad48b18fbf9cdc0ac1c066a8fcaf251f7f35fb5e1fe854e0400",
+          "page": "EN-Navigation-speed-limit-assist.md",
+          "reviewStatus": "needs_review"
+        },
+        "ko": {
+          "anchor": "SunnySpeedLimit",
+          "factsHash": "20021d24d6f808ccc9a8c26c3e79e833f8732fe5233208628cd09082d844e3c8",
+          "page": "KO-내비게이션-제한속도-보조.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh": {
+          "anchor": "SunnySpeedLimit",
+          "factsHash": "525928259f7b6453939fb51008b739a95276e834407182543aa9cc6583bdec13",
+          "page": "ZH-导航道路限速辅助.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh-tw": {
+          "anchor": "SunnySpeedLimit",
+          "factsHash": "081dd5f1d4d21017584c59881f901bb58a81c44e9c85bcdee565bec5b218b0bc",
+          "page": "ZH-TW-導航道路速限輔助.md",
+          "reviewStatus": "needs_review"
+        }
+      },
+      "reviewStatus": "needs_review",
+      "semanticHash": "9d66fc7ffc2e446e7ee7acdbff378fec3504bcae168112cc6944f81e76613333"
+    },
+    "SunnyVisionCurve": {
+      "group": "DAILY_DRIVING",
+      "locales": {
+        "en": {
+          "anchor": "SunnyVisionCurve",
+          "factsHash": "35f87aa0911710af6f613b53ec6151062d6e9193c2d530551e9956fb9c69a84b",
+          "page": "EN-Vision-curve-assist.md",
+          "reviewStatus": "needs_review"
+        },
+        "ko": {
+          "anchor": "SunnyVisionCurve",
+          "factsHash": "e61e186cf1dbec6fabc67871fd96c890dd1a8f4a64db6f2f9175258ff48b83fd",
+          "page": "KO-비전-커브-감속.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh": {
+          "anchor": "SunnyVisionCurve",
+          "factsHash": "2580c2ae55c152d5c33acb54eccd4da6a727161fd125db62930022c6e5245307",
+          "page": "ZH-视觉弯速辅助.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh-tw": {
+          "anchor": "SunnyVisionCurve",
+          "factsHash": "c809d30b1e480b8e302fbc9988030a00b77c7d826113aa227bc6e3a2c5da6deb",
+          "page": "ZH-TW-視覺彎速輔助.md",
+          "reviewStatus": "needs_review"
+        }
+      },
+      "reviewStatus": "needs_review",
+      "semanticHash": "c6b646e22c50917763853a297c5134b896a7186b3376ab2c71af1a1d1cc20ea7"
     },
     "TeslaAutoSpeedLimit": {
       "group": "TESLA_FEATURES",
@@ -9708,99 +7447,6 @@
       "reviewStatus": "current",
       "semanticHash": "edf04a247afa9d6aaf6f0a28c3a2a9441df5e3bfed9758d06e290ced61ea05b0"
     },
-    "TrafficLightDetectMode": {
-      "group": "SPEED_TRAFFIC",
-      "locales": {
-        "en": {
-          "anchor": "TrafficLightDetectMode",
-          "factsHash": "1d1fb189ed216e0fc84c6eb24bfde3a977c7498addc53b2a7ef171dce6f45993",
-          "page": "EN-TrafficLightDetectMode.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "TrafficLightDetectMode",
-          "factsHash": "8e6470e97f1bec4d039f79ad0a010a13095d2b5c21a5fb509e4170e05cf2859c",
-          "page": "KO-신호감지-기능.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "TrafficLightDetectMode",
-          "factsHash": "9fc3d6d6648819f3c5da7388a9337d70afb193fbc350ed71cc9c05776419bf3b",
-          "page": "ZH-红绿灯检测模式.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "TrafficLightDetectMode",
-          "factsHash": "c95dc200429696a622ba14606307486f4df483bdef78f63d6722ef531bac24cd",
-          "page": "ZH-TW-紅綠燈檢測模式.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "fd5f942d148667ec255b07cf1ad246adcea8b41be25a134af644d9c7d0792e99"
-    },
-    "TrafficStopDistanceAdjust": {
-      "group": "SPEED_TRAFFIC",
-      "locales": {
-        "en": {
-          "anchor": "TrafficStopDistanceAdjust",
-          "factsHash": "a7320536f231c217ec95f4d80b0474e86d0a4765f3d1438b464fcd8fe3957bf9",
-          "page": "EN-TrafficStopDistanceAdjust.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "TrafficStopDistanceAdjust",
-          "factsHash": "bd497d61e61650ac64cfd54e948d27756cb0d56ba85c7fd316f2803ea727e5e4",
-          "page": "KO-TrafficStopDistanceAdjust(-150).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "TrafficStopDistanceAdjust",
-          "factsHash": "e2095555b297810d18c13a612e2179caf7fe2f88adbf536d40a36f48350aa07d",
-          "page": "ZH-交通信号停止距离调整.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "TrafficStopDistanceAdjust",
-          "factsHash": "2e9856750d86a5dfac1bd2770b68f21a2d8ca9d5d42c5c4709ed1101af9ea70f",
-          "page": "ZH-TW-交通訊號停止距離調整.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "2c0307757de5931be931759240b41c4dbfa911d065c2e58f09356222e3b41eaa"
-    },
-    "TurnSpeedControlMode": {
-      "group": "SPEED_CURVE",
-      "locales": {
-        "en": {
-          "anchor": "TurnSpeedControlMode",
-          "factsHash": "99dce64487e63c1fb30b6dc73cdcce2d565df6ff830407a1ab8c1428ad673e4e",
-          "page": "EN-TurnSpeedControlMode.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "TurnSpeedControlMode",
-          "factsHash": "e0d18053fe490a4ddc6f916fc11280bc1c6b0e3861c86f3d0af13609f86f1b27",
-          "page": "KO-턴속도제어방법.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "TurnSpeedControlMode",
-          "factsHash": "0574689f35959069b8e0c9c29e3cbcfba5a07ad618c8a0c11119e97456d070e0",
-          "page": "ZH-转向速度控制模式.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "TurnSpeedControlMode",
-          "factsHash": "200c7a98733beafe26ce792204011f97eb3c4b95ae88d82d51b000c154e24f3f",
-          "page": "ZH-TW-轉向速度控制模式.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "0e0a5e58e9061594b9a41986ec433b7b6680c5f6ce99da897cd9b4e52ded8e38"
-    },
     "UseLaneLineCurveSpeed": {
       "group": "STEER_LANEMODE",
       "locales": {
@@ -9893,378 +7539,6 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "98f6143429525738b1a1748e10af5089802e78c1eeeb632ec050ee74ca08fd18"
-    },
-    "VEgoStopping": {
-      "group": "CRUISE_STOPGO",
-      "locales": {
-        "en": {
-          "anchor": "VEgoStopping",
-          "factsHash": "84d49c554660c2bbb1f43b0318ce727f754becb2d68aa27630eeeccaea4e2af4",
-          "page": "EN-VEgoStopping(50)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VEgoStopping",
-          "factsHash": "004c045af0f94f3ed8772aa31c53d93067461557e06a9ec600339a7919f90e77",
-          "page": "KO-정지출발민감도(50)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VEgoStopping",
-          "factsHash": "cff4af76b573ccf6603d8f7125f0b64407d965b2229e40571881f99d3043fba4",
-          "page": "ZH-停止-启动灵敏度(50)x0.01.md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "VEgoStopping",
-          "factsHash": "cff9861a5478c47af3496976facef699424de035a482891738b50b31fed033cf",
-          "page": "ZH-TW-停止-啟動靈敏度(50)x0.01.md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "887184b01d8bb7422533a0039715941602b954e65f56f045b2a9a34d9b135001"
-    },
-    "VehicleNaviCanControl": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviCanControl",
-          "factsHash": "7705af34e08985f694042118b413cff9a8b672255c2d74caf1366bc576227795",
-          "page": "EN-Vehicle-Navigation-CAN-Deceleration-Mode.md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "VehicleNaviCanControl",
-          "factsHash": "145a39171ca2523054d47c3aa8a11b46fe5376223427db2445948cdd6583fbbb",
-          "page": "KO-차량-내비-CAN-감속-적용-모드.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "VehicleNaviCanControl",
-          "factsHash": "7bef370d049ff35577439801a948010fcfd73596b55caa961cc3321c8a795139",
-          "page": "ZH-车辆导航-CAN-减速应用模式.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviCanControl",
-          "factsHash": "9174f881d199d4e82cb68f58c46826c7a5fe290a0dc334e0569318d304630831",
-          "page": "ZH-TW-車輛導航-CAN-減速應用模式.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "f8d1712821a73e6fe7eba60cf61124d25e39d1cbafcd0c3129f9732ab42f4b13"
-    },
-    "VehicleNaviDecelCancel": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviDecelCancel",
-          "factsHash": "2ea9ff9d3d2b513f85cc529218313ef6388c8f232473380a75aaf5ad52a382c0",
-          "page": "EN-Stock-Navigation-Deceleration-Cancel-Request.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleNaviDecelCancel",
-          "factsHash": "15103c79ca00e6ca98b45c32723719bef3c32198766bc1564ee14c086038e8a9",
-          "page": "KO-차량-내비-감속-중지-요청.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleNaviDecelCancel",
-          "factsHash": "74ec3b3d3c8371d326fa73af65f800a55a5ca1274065daad466459000e722690",
-          "page": "ZH-原车导航减速中止请求.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviDecelCancel",
-          "factsHash": "c1161d32687148f922e4d040337e05b012cbec19247bc488987535654aa71964",
-          "page": "ZH-TW-原車導航減速中止請求.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "b4932756ef27f4ad90176e3da43004bb00e3808dc92ffd2bff98e1c48d5fe10f"
-    },
-    "VehicleNaviDecelCancelBox": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviDecelCancelBox",
-          "factsHash": "cc785b565da1aa899ddaeb0273cf18046ff3a0de72ee5a0f9c98811fccfa2de1",
-          "page": "EN-Deceleration-Cancel-Box-Camera.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleNaviDecelCancelBox",
-          "factsHash": "b7652d989d73c78bfe7c7405ed35719e40d947d957a6a7cfbf5219f79101439f",
-          "page": "KO-감속-중지-박스형-카메라.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleNaviDecelCancelBox",
-          "factsHash": "26e1ca0854fdbb68256d294c22644f81a6d4087620c929148f696f8894efaecd",
-          "page": "ZH-减速中止-箱式摄像头.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviDecelCancelBox",
-          "factsHash": "71884729f9fa7879f80306283eaf812de9a57e90f2b6348a16624b864247eb29",
-          "page": "ZH-TW-減速中止-箱式攝影機.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "42f846ee76666e7420105b1833d0fa4ff8f300b9c3d5efc820cd0fdc3d3d1eef"
-    },
-    "VehicleNaviDecelCancelBump": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviDecelCancelBump",
-          "factsHash": "8a2df07f8ce2bb4682437752222ff748c16c00f5631ae5a4eddd17e389df7766",
-          "page": "EN-Deceleration-Cancel-Speed-Bump.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleNaviDecelCancelBump",
-          "factsHash": "df3174107262cf3a6ea62204e2a0ad0ebb5701860f67630a855e069341b70c70",
-          "page": "KO-감속-중지-과속방지턱.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleNaviDecelCancelBump",
-          "factsHash": "44c7a9d041628b739907874346023551152246c907696b8dd34a1c73c8e5ca7e",
-          "page": "ZH-减速中止-减速带.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviDecelCancelBump",
-          "factsHash": "37e553b28e93ebc8fda6edc67805a5e7b8f19ed4280e9ce8e72261855537cbf8",
-          "page": "ZH-TW-減速中止-減速帶.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "ab15a94879c1067db343091913a6b8ee055f955c0564f0b44795d843826bedfd"
-    },
-    "VehicleNaviDecelCancelEarlyWarning": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviDecelCancelEarlyWarning",
-          "factsHash": "6698cb3136efe130c650538fe229419434a585d00cf6c94c4a4513c44481dc18",
-          "page": "EN-Deceleration-Cancel-Early-Warning-Correction-Experimental.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleNaviDecelCancelEarlyWarning",
-          "factsHash": "fe2383fe986ca7ad8f40fe570cd2c5c8c4b507b7123c20b7b18dfd49b772d8ba",
-          "page": "KO-감속-중지-경고-조기-시작-보정-실험.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleNaviDecelCancelEarlyWarning",
-          "factsHash": "475c0a918e24154bef14ab734f4773549c0c842a36df05f029c1f1622d319889",
-          "page": "ZH-减速中止-提前警告修正-实验.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviDecelCancelEarlyWarning",
-          "factsHash": "ed5b08c2ce225fb53a83cb9d9b147cb2eb28915a419053cbfe62b7e2f09cbd94",
-          "page": "ZH-TW-減速中止-提前警告修正-實驗.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "ca6595f1bd5ba33a43b5c946ad4d3a7cb99440c06da4c111043f7d1654d3b7c6"
-    },
-    "VehicleNaviDecelCancelMobileZone": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviDecelCancelMobileZone",
-          "factsHash": "6fee8eb40848bbba31e8a45004e37d4501c35bf42b5b75bf748e0e4ff1612a01",
-          "page": "EN-Deceleration-Cancel-Mobile-Zone.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleNaviDecelCancelMobileZone",
-          "factsHash": "8a2082774198bddf51e858e15535aab29c003e0fd1304061161b8f08eb8bfdcc",
-          "page": "KO-감속-중지-이동식-단속-구간.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleNaviDecelCancelMobileZone",
-          "factsHash": "8a23742c348875aba6d0d357610d5ba949582640d7050d382689ff0657437b6a",
-          "page": "ZH-减速中止-移动测速区间.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviDecelCancelMobileZone",
-          "factsHash": "a56ff62c80a172e9771aa66c0eabfe6945c4b8a12d7a84510dfda6bd73b25038",
-          "page": "ZH-TW-減速中止-移動測速區間.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "570b00e282ceb2973c52e7d7121aea5fd059e453aac9b714b972da032891c62e"
-    },
-    "VehicleNaviDecelCancelUnknown": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviDecelCancelUnknown",
-          "factsHash": "35bd808da8245ab8867b8cb12fb941b772aa0e411bac45bb95e72e3fa527cb40",
-          "page": "EN-Deceleration-Cancel-Undetected-Camera-Kind-Experimental.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleNaviDecelCancelUnknown",
-          "factsHash": "ec03b941ea45973a554f58971e8c970f8708a98d7f2377db922de45c02a40c9f",
-          "page": "KO-감속-중지-과속카메라-종류-미탐지-건-실험.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleNaviDecelCancelUnknown",
-          "factsHash": "4bfda5573816aacceb0682298ff47912c6af2254890b31edddfb2c8b0f85f26b",
-          "page": "ZH-减速中止-未识别类型的测速摄像头-实验.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviDecelCancelUnknown",
-          "factsHash": "e68f6210d133b26a52184a07522c8fda9b160ba2bb468b0382da64ee21c4f786",
-          "page": "ZH-TW-減速中止-未識別型別的測速攝影機-實驗.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "bc790dfd91a22232bbc47f0077d136baa937beae69d660870e3b370ffa0052a7"
-    },
-    "VehicleNaviSchoolZoneControl": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviSchoolZoneControl",
-          "factsHash": "f591b80f080c70a48041c51e8d5d54a82827a3c452df5adbe1d9fe4ad6492a06",
-          "page": "EN-Stock-Navigation-30-km-h-Zone-Limit.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleNaviSchoolZoneControl",
-          "factsHash": "8cbfeafc4711b1bb6be09e75ab45cab9ecb755d734d81aa64932e392d377c9bb",
-          "page": "KO-차량-내비-어린이보호구역-30km-h-제한.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleNaviSchoolZoneControl",
-          "factsHash": "b169ebc79b89e43850a19206419ec6467311c63af3d7d202ba735992feafe4d1",
-          "page": "ZH-原车导航-30-km-h-区域限速.md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviSchoolZoneControl",
-          "factsHash": "a797ce7985fc785f64f3ad7e7e3f10eb8c417b0a73a7edade7790cf2b4542da7",
-          "page": "ZH-TW-原車導航-30-km-h-區域限速.md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "15eb22197321d7512c27030134cd141a289a4cd2499931c4f1406a9fe2630761"
-    },
-    "VehicleNaviSectionAvgControl": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleNaviSectionAvgControl",
-          "factsHash": "c3e6b77ef9dee82d4fd0755f82843209d501bbbf3aec480c3b3a757bd333efcc",
-          "page": "EN-Stock-Navigation-Section-Average-speed-Control.md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleNaviSectionAvgControl",
-          "factsHash": "4ce8279f5ee08be1815918153260a7c2db71ec7a8911e7d07707c3939fda290c",
-          "page": "KO-차량-내비-구간단속-평균속도-제어.md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleNaviSectionAvgControl",
-          "factsHash": "7c3d91920081f52569619c204bae7d216dfdee0ad36a93c1fbcb27e4e1244a91",
-          "page": "ZH-原车导航区间测速平均速度控制.md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleNaviSectionAvgControl",
-          "factsHash": "4135e7795ead920cd1b2b420ae31731649989fe2dd89ece377375ade24fd948b",
-          "page": "ZH-TW-原車導航區間測速平均速度控制.md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "279eeacf277d306a733765fc4b26354220278af698c6266e606d727260d2e3ec"
-    },
-    "VehicleSpeedCameraControlMode": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleSpeedCameraControlMode",
-          "factsHash": "adb48a0a1a4f609f7ae9f213565ad0f2723cc8a40be1ada8a446a72226c81769",
-          "page": "EN-Vehicle-received-Speed-Camera-Deceleration(Always-apply).md",
-          "reviewStatus": "needs_review"
-        },
-        "ko": {
-          "anchor": "VehicleSpeedCameraControlMode",
-          "factsHash": "055249507f5eeab3ce55ee3d934cdaedb528cd81b771085416b40593c77e885c",
-          "page": "KO-차량-수신-과속카메라-감속(항상-적용).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh": {
-          "anchor": "VehicleSpeedCameraControlMode",
-          "factsHash": "4494448e20ad7e5d036355b857a058668e938801e071061c25a00bcf87d65e40",
-          "page": "ZH-车辆接收测速摄像头减速(始终应用).md",
-          "reviewStatus": "needs_review"
-        },
-        "zh-tw": {
-          "anchor": "VehicleSpeedCameraControlMode",
-          "factsHash": "b5f21eaebc4a6457553b29b71d5723c91f44ef909f11ded90396b680dff7da46",
-          "page": "ZH-TW-車輛接收測速攝影機減速(始終應用).md",
-          "reviewStatus": "needs_review"
-        }
-      },
-      "reviewStatus": "needs_review",
-      "semanticHash": "751d90cd219472ee82418f090d5685fd521295720a7ff37eb36bf0b66f9d92e9"
-    },
-    "VehicleSpeedCameraDistanceTime": {
-      "group": "SPEED_CAMERA",
-      "locales": {
-        "en": {
-          "anchor": "VehicleSpeedCameraDistanceTime",
-          "factsHash": "ba9080bab8f245fcb2574d2adb825ce78207386f3f0f7804f6b08f0c1fdf8843",
-          "page": "EN-Vehicle-Speed-Camera-Virtual-Distance-Time-(6.0-s).md",
-          "reviewStatus": "current"
-        },
-        "ko": {
-          "anchor": "VehicleSpeedCameraDistanceTime",
-          "factsHash": "080d1ab05711270bbffa1233dcdda075d510aef70fd3ea3dda3f90c1d172a17b",
-          "page": "KO-차량-과속카메라-가상거리-시간(6.0초).md",
-          "reviewStatus": "current"
-        },
-        "zh": {
-          "anchor": "VehicleSpeedCameraDistanceTime",
-          "factsHash": "fbca2d7f9bb6186f315d72928d22d693e031527f07467b31256877020041f006",
-          "page": "ZH-车辆测速摄像头虚拟距离时间(6.0秒).md",
-          "reviewStatus": "current"
-        },
-        "zh-tw": {
-          "anchor": "VehicleSpeedCameraDistanceTime",
-          "factsHash": "2b29d999e785b80c0eaf886ec87579e4172107e9c785fcdc7a2d89ae7a3860f0",
-          "page": "ZH-TW-車輛測速攝影機虛擬距離時間(6.0秒).md",
-          "reviewStatus": "current"
-        }
-      },
-      "reviewStatus": "current",
-      "semanticHash": "b3ca6436f7051d2fd82ae24a9dc3974abf6b5ee32c633d085c3eb4bee630c364"
     }
   }
 }

@@ -11,6 +11,17 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 
 #### 시작·오토
 
+##### 일상 주행
+
+- [Alpha 종방향 자동 설정](https://github.com/ajouatom/openpilot/wiki/KO-Alpha-%EC%A2%85%EB%B0%A9%ED%96%A5-%EC%9E%90%EB%8F%99-%EC%84%A4%EC%A0%95) — `SunnyAutoLongitudinal`
+- [비전 커브 감속](https://github.com/ajouatom/openpilot/wiki/KO-%EB%B9%84%EC%A0%84-%EC%BB%A4%EB%B8%8C-%EA%B0%90%EC%86%8D) — `SunnyVisionCurve`
+- [지도 커브 감속](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A7%80%EB%8F%84-%EC%BB%A4%EB%B8%8C-%EA%B0%90%EC%86%8D) — `SunnyMapCurve`
+- [내비게이션 제한속도 보조](https://github.com/ajouatom/openpilot/wiki/KO-%EB%82%B4%EB%B9%84%EA%B2%8C%EC%9D%B4%EC%85%98-%EC%A0%9C%ED%95%9C%EC%86%8D%EB%8F%84-%EB%B3%B4%EC%A1%B0) — `SunnySpeedLimit`
+- [방향지시등 조향 일시 정지 (km/h)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%B0%A9%ED%96%A5%EC%A7%80%EC%8B%9C%EB%93%B1-%EC%A1%B0%ED%96%A5-%EC%9D%BC%EC%8B%9C-%EC%A0%95%EC%A7%80-%28km-h%29) — `SunnyBlinkerPauseKph`
+- [크루즈만 사용](https://github.com/ajouatom/openpilot/wiki/KO-%ED%81%AC%EB%A3%A8%EC%A6%88%EB%A7%8C-%EC%82%AC%EC%9A%A9) — `SunnyCruiseOnly`
+- [차로 중앙 유지](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B0%A8%EB%A1%9C-%EC%A4%91%EC%95%99-%EC%9C%A0%EC%A7%80) — `SunnyLaneCenter`
+- [저속 방향지시등 회전](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A0%80%EC%86%8D-%EB%B0%A9%ED%96%A5%EC%A7%80%EC%8B%9C%EB%93%B1-%ED%9A%8C%EC%A0%84) — `SunnyLaneTurn`
+
 ##### 시작 동작
 
 - [오토인게이지](https://github.com/ajouatom/openpilot/wiki/KO-%EC%98%A4%ED%86%A0%EC%9D%B8%EA%B2%8C%EC%9D%B4%EC%A7%80) — `AutoEngage`
@@ -146,118 +157,13 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 - [\_CustomSteerDeltaUpLC(0)](https://github.com/ajouatom/openpilot/wiki/KO-_CustomSteerDeltaUpLC%280%29) — `CustomSteerDeltaUpLC`
 - [\_CustomSteerDeltaDownLC(0)](https://github.com/ajouatom/openpilot/wiki/KO-_CustomSteerDeltaDownLC%280%29) — `CustomSteerDeltaDownLC`
 
-#### 속도·감속
-
-##### 과속카메라
-
-- [후면단속 통과 후 유지 거리(m)](https://github.com/ajouatom/openpilot/wiki/KO-%ED%9B%84%EB%A9%B4%EB%8B%A8%EC%86%8D-%ED%86%B5%EA%B3%BC-%ED%9B%84-%EC%9C%A0%EC%A7%80-%EA%B1%B0%EB%A6%AC%28m%29) — `AutoNaviRearCameraHoldDistance`
-- [과속카메라감속 완료 시간(6초)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B3%BC%EC%86%8D%EC%B9%B4%EB%A9%94%EB%9D%BC%EA%B0%90%EC%86%8D-%EC%99%84%EB%A3%8C-%EC%8B%9C%EA%B0%84%286%EC%B4%88%29) — `AutoNaviSpeedCtrlEnd`
-- [네비게이션감속모드(2)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%84%A4%EB%B9%84%EA%B2%8C%EC%9D%B4%EC%85%98%EA%B0%90%EC%86%8D%EB%AA%A8%EB%93%9C%282%29) — `AutoNaviSpeedCtrlMode`
-- [차량 내비 CAN 감속 적용 모드](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B0%A8%EB%9F%89-%EB%82%B4%EB%B9%84-CAN-%EA%B0%90%EC%86%8D-%EC%A0%81%EC%9A%A9-%EB%AA%A8%EB%93%9C) — `VehicleNaviCanControl`
-- [차량 내비 어린이보호구역 30km/h 제한](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B0%A8%EB%9F%89-%EB%82%B4%EB%B9%84-%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%B3%B4%ED%98%B8%EA%B5%AC%EC%97%AD-30km-h-%EC%A0%9C%ED%95%9C) — `VehicleNaviSchoolZoneControl`
-- [차량 내비 감속 중지 요청](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B0%A8%EB%9F%89-%EB%82%B4%EB%B9%84-%EA%B0%90%EC%86%8D-%EC%A4%91%EC%A7%80-%EC%9A%94%EC%B2%AD) — `VehicleNaviDecelCancel`
-- [감속 중지: 박스형 카메라](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%90%EC%86%8D-%EC%A4%91%EC%A7%80-%EB%B0%95%EC%8A%A4%ED%98%95-%EC%B9%B4%EB%A9%94%EB%9D%BC) — `VehicleNaviDecelCancelBox`
-- [감속 중지: 이동식 단속 구간](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%90%EC%86%8D-%EC%A4%91%EC%A7%80-%EC%9D%B4%EB%8F%99%EC%8B%9D-%EB%8B%A8%EC%86%8D-%EA%B5%AC%EA%B0%84) — `VehicleNaviDecelCancelMobileZone`
-- [감속 중지: 과속방지턱](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%90%EC%86%8D-%EC%A4%91%EC%A7%80-%EA%B3%BC%EC%86%8D%EB%B0%A9%EC%A7%80%ED%84%B1) — `VehicleNaviDecelCancelBump`
-- [감속 중지: 과속카메라 종류 미탐지 건 \[실험\]](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%90%EC%86%8D-%EC%A4%91%EC%A7%80-%EA%B3%BC%EC%86%8D%EC%B9%B4%EB%A9%94%EB%9D%BC-%EC%A2%85%EB%A5%98-%EB%AF%B8%ED%83%90%EC%A7%80-%EA%B1%B4-%EC%8B%A4%ED%97%98) — `VehicleNaviDecelCancelUnknown`
-- [감속 중지: 경고 조기 시작 보정 \[실험\]](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%90%EC%86%8D-%EC%A4%91%EC%A7%80-%EA%B2%BD%EA%B3%A0-%EC%A1%B0%EA%B8%B0-%EC%8B%9C%EC%9E%91-%EB%B3%B4%EC%A0%95-%EC%8B%A4%ED%97%98) — `VehicleNaviDecelCancelEarlyWarning`
-- [차량 내비 구간단속 평균속도 제어](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B0%A8%EB%9F%89-%EB%82%B4%EB%B9%84-%EA%B5%AC%EA%B0%84%EB%8B%A8%EC%86%8D-%ED%8F%89%EA%B7%A0%EC%86%8D%EB%8F%84-%EC%A0%9C%EC%96%B4) — `VehicleNaviSectionAvgControl`
-- [차량 수신 과속카메라 감속(항상 적용)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B0%A8%EB%9F%89-%EC%88%98%EC%8B%A0-%EA%B3%BC%EC%86%8D%EC%B9%B4%EB%A9%94%EB%9D%BC-%EA%B0%90%EC%86%8D%28%ED%95%AD%EC%83%81-%EC%A0%81%EC%9A%A9%29) — `VehicleSpeedCameraControlMode`
-- [차량 과속카메라 가상거리 시간(6.0초)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B0%A8%EB%9F%89-%EA%B3%BC%EC%86%8D%EC%B9%B4%EB%A9%94%EB%9D%BC-%EA%B0%80%EC%83%81%EA%B1%B0%EB%A6%AC-%EC%8B%9C%EA%B0%84%286.0%EC%B4%88%29) — `VehicleSpeedCameraDistanceTime`
-- [과속카메라 감속율 x0.01m/s^2(120)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B3%BC%EC%86%8D%EC%B9%B4%EB%A9%94%EB%9D%BC-%EA%B0%90%EC%86%8D%EC%9C%A8-x0.01m-s%5E2%28120%29) — `AutoNaviSpeedDecelRate`
-- [네비알림 카운트다운 방법](https://github.com/ajouatom/openpilot/wiki/KO-%EB%84%A4%EB%B9%84%EC%95%8C%EB%A6%BC-%EC%B9%B4%EC%9A%B4%ED%8A%B8%EB%8B%A4%EC%9A%B4-%EB%B0%A9%EB%B2%95) — `AutoNaviCountDownMode`
-- [과속카메라 제한속도적용율(105)%](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B3%BC%EC%86%8D%EC%B9%B4%EB%A9%94%EB%9D%BC-%EC%A0%9C%ED%95%9C%EC%86%8D%EB%8F%84%EC%A0%81%EC%9A%A9%EC%9C%A8%28105%29) — `AutoNaviSpeedSafetyFactor`
-
-##### 제한속도
-
-- [자동속도증가 (100)%](https://github.com/ajouatom/openpilot/wiki/KO-%EC%9E%90%EB%8F%99%EC%86%8D%EB%8F%84%EC%A6%9D%EA%B0%80-%28100%29) — `AutoSpeedUptoRoadSpeedLimit`
-- [자동도로제한속도감속 (50)%](https://github.com/ajouatom/openpilot/wiki/KO-%EC%9E%90%EB%8F%99%EB%8F%84%EB%A1%9C%EC%A0%9C%ED%95%9C%EC%86%8D%EB%8F%84%EA%B0%90%EC%86%8D-%2850%29) — `AutoRoadSpeedAdjust`
-- [도로제한속도맞춤(-1)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%8F%84%EB%A1%9C%EC%A0%9C%ED%95%9C%EC%86%8D%EB%8F%84%EB%A7%9E%EC%B6%A4%28-1%29) — `AutoRoadSpeedLimitOffset`
-
-##### 방지턱
-
-- [사고방지턱 감속완료시간시점(1s)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%82%AC%EA%B3%A0%EB%B0%A9%EC%A7%80%ED%84%B1-%EA%B0%90%EC%86%8D%EC%99%84%EB%A3%8C%EC%8B%9C%EA%B0%84%EC%8B%9C%EC%A0%90%281s%29) — `AutoNaviSpeedBumpTime`
-- [과속방지턱 속도(35Km/h)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B3%BC%EC%86%8D%EB%B0%A9%EC%A7%80%ED%84%B1-%EC%86%8D%EB%8F%84%2835Km-h%29) — `AutoNaviSpeedBumpSpeed`
-- [방지턱 감속 조기 종료 거리(200cm)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%B0%A9%EC%A7%80%ED%84%B1-%EA%B0%90%EC%86%8D-%EC%A1%B0%EA%B8%B0-%EC%A2%85%EB%A3%8C-%EA%B1%B0%EB%A6%AC%28200cm%29) — `AutoNaviSpeedBumpEndDistance`
-
-##### 커브·턴
-
-- [커브속도 조절비율(100%)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%BB%A4%EB%B8%8C%EC%86%8D%EB%8F%84-%EC%A1%B0%EC%A0%88%EB%B9%84%EC%9C%A8%28100-%29) — `AutoCurveSpeedFactor`
-- [모델 주행속도 적용 비율](https://github.com/ajouatom/openpilot/wiki/KO-%EB%AA%A8%EB%8D%B8-%EC%A3%BC%ED%96%89%EC%86%8D%EB%8F%84-%EC%A0%81%EC%9A%A9-%EB%B9%84%EC%9C%A8) — `ApplyModelSpeed`
-- [커브속도 최저속도(30)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%BB%A4%EB%B8%8C%EC%86%8D%EB%8F%84-%EC%B5%9C%EC%A0%80%EC%86%8D%EB%8F%84%2830%29) — `AutoCurveSpeedLowerLimit`
-- [턴속도제어방법](https://github.com/ajouatom/openpilot/wiki/KO-%ED%84%B4%EC%86%8D%EB%8F%84%EC%A0%9C%EC%96%B4%EB%B0%A9%EB%B2%95) — `TurnSpeedControlMode`
-- [경로턴속도반영비율(100%)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B2%BD%EB%A1%9C%ED%84%B4%EC%86%8D%EB%8F%84%EB%B0%98%EC%98%81%EB%B9%84%EC%9C%A8%28100-%29) — `MapTurnSpeedFactor`
-
-##### 신호감지
-
-- [TrafficStopDistanceAdjust(-150)](https://github.com/ajouatom/openpilot/wiki/KO-TrafficStopDistanceAdjust%28-150%29) — `TrafficStopDistanceAdjust`
-- [앞차 브레이크등 관찰 (실험)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%95%9E%EC%B0%A8-%EB%B8%8C%EB%A0%88%EC%9D%B4%ED%81%AC%EB%93%B1-%EA%B4%80%EC%B0%B0-%28%EC%8B%A4%ED%97%98%29) — `LeadBrakeLights`
-- [신호보조 모드 (시험)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%8B%A0%ED%98%B8%EB%B3%B4%EC%A1%B0-%EB%AA%A8%EB%93%9C-%28%EC%8B%9C%ED%97%98%29) — `SignalAssistMode`
-- [신호감지 기능](https://github.com/ajouatom/openpilot/wiki/KO-%EC%8B%A0%ED%98%B8%EA%B0%90%EC%A7%80-%EA%B8%B0%EB%8A%A5) — `TrafficLightDetectMode`
-
-#### 크루즈·차간
-
-##### 가속 성향
-
-###### 드라이브 모드
-
-- [드라이브모드:(3)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%93%9C%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%AA%A8%EB%93%9C-%283%29) — `MyDrivingMode`
-- [드라이브모드: 자동](https://github.com/ajouatom/openpilot/wiki/KO-%EB%93%9C%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%AA%A8%EB%93%9C-%EC%9E%90%EB%8F%99) — `MyDrivingModeAuto`
-
-###### 속도별 가속값
-
-- [가속도설정 0 : 0km/h(160)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%80%EC%86%8D%EB%8F%84%EC%84%A4%EC%A0%95-0-0km-h%28160%29) — `CruiseMaxVals0`
-- [가속도설정 1 : 10km/h(160)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%80%EC%86%8D%EB%8F%84%EC%84%A4%EC%A0%95-1-10km-h%28160%29) — `CruiseMaxVals1`
-- [가속도설정 2 : 40km/h(120)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%80%EC%86%8D%EB%8F%84%EC%84%A4%EC%A0%95-2-40km-h%28120%29) — `CruiseMaxVals2`
-- [가속도설정 3 : 60km/h(100)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%80%EC%86%8D%EB%8F%84%EC%84%A4%EC%A0%95-3-60km-h%28100%29) — `CruiseMaxVals3`
-- [가속도설정 4 : 80km/h(80)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%80%EC%86%8D%EB%8F%84%EC%84%A4%EC%A0%95-4-80km-h%2880%29) — `CruiseMaxVals4`
-- [가속도설정 5 : 110km/h(70)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%80%EC%86%8D%EB%8F%84%EC%84%A4%EC%A0%95-5-110km-h%2870%29) — `CruiseMaxVals5`
-- [가속도설정 6 : 140km/h(60)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%80%EC%86%8D%EB%8F%84%EC%84%A4%EC%A0%95-6-140km-h%2860%29) — `CruiseMaxVals6`
-
-##### 정차·재출발
-
-- [StopDistance(600)cm](https://github.com/ajouatom/openpilot/wiki/KO-StopDistance%28600%29cm) — `StopDistanceCarrot`
-- [AChangeCostStarting](https://github.com/ajouatom/openpilot/wiki/KO-AChangeCostStarting) — `AChangeCostStarting`
-- [정지출발민감도(50)x0.01](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A0%95%EC%A7%80%EC%B6%9C%EB%B0%9C%EB%AF%BC%EA%B0%90%EB%8F%84%2850%29x0.01) — `VEgoStopping`
-- [정지시작가속도x0.01(-50)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A0%95%EC%A7%80%EC%8B%9C%EC%9E%91%EA%B0%80%EC%86%8D%EB%8F%84x0.01%28-50%29) — `StoppingAccel`
-
-##### 가감속 튜닝
-
-- [Long KpV(100)x0.01](https://github.com/ajouatom/openpilot/wiki/KO-Long-KpV%28100%29x0.01) — `LongTuningKpV`
-- [Long Kf(100)x0.01](https://github.com/ajouatom/openpilot/wiki/KO-Long-Kf%28100%29x0.01) — `LongTuningKf`
-- [Long KiV(0)x0.001](https://github.com/ajouatom/openpilot/wiki/KO-Long-KiV%280%29x0.001) — `LongTuningKiV`
-- [LongActuatorDelay(20)x0.01](https://github.com/ajouatom/openpilot/wiki/KO-LongActuatorDelay%2820%29x0.01) — `LongActuatorDelay`
-
-##### 차간거리
-
-- [갭 단계 수](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%AD-%EB%8B%A8%EA%B3%84-%EC%88%98) — `CruiseGapLevels`
-- [TF(1): 차량간격시간1x0.01s(110)](https://github.com/ajouatom/openpilot/wiki/KO-TF%281%29-%EC%B0%A8%EB%9F%89%EA%B0%84%EA%B2%A9%EC%8B%9C%EA%B0%841x0.01s%28110%29) — `TFollowGap1`
-- [TF(2): 차량간격시간2x0.01s(120)](https://github.com/ajouatom/openpilot/wiki/KO-TF%282%29-%EC%B0%A8%EB%9F%89%EA%B0%84%EA%B2%A9%EC%8B%9C%EA%B0%842x0.01s%28120%29) — `TFollowGap2`
-- [TF(3): 차량간격시간3x0.01s(140)](https://github.com/ajouatom/openpilot/wiki/KO-TF%283%29-%EC%B0%A8%EB%9F%89%EA%B0%84%EA%B2%A9%EC%8B%9C%EA%B0%843x0.01s%28140%29) — `TFollowGap3`
-- [TF(4): 차량간격시간4x0.01s(160)](https://github.com/ajouatom/openpilot/wiki/KO-TF%284%29-%EC%B0%A8%EB%9F%89%EA%B0%84%EA%B2%A9%EC%8B%9C%EA%B0%844x0.01s%28160%29) — `TFollowGap4`
-- [추종응답성 · 공통](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B6%94%EC%A2%85%EC%9D%91%EB%8B%B5%EC%84%B1-%C2%B7-%EA%B3%B5%ED%86%B5) — `LeadAccelResponse`
-- [TF1 추종응답성](https://github.com/ajouatom/openpilot/wiki/KO-TF1-%EC%B6%94%EC%A2%85%EC%9D%91%EB%8B%B5%EC%84%B1) — `LeadAccelResponseTF1`
-- [TF2 추종응답성](https://github.com/ajouatom/openpilot/wiki/KO-TF2-%EC%B6%94%EC%A2%85%EC%9D%91%EB%8B%B5%EC%84%B1) — `LeadAccelResponseTF2`
-- [TF3 추종응답성](https://github.com/ajouatom/openpilot/wiki/KO-TF3-%EC%B6%94%EC%A2%85%EC%9D%91%EB%8B%B5%EC%84%B1) — `LeadAccelResponseTF3`
-- [TF4 추종응답성](https://github.com/ajouatom/openpilot/wiki/KO-TF4-%EC%B6%94%EC%A2%85%EC%9D%91%EB%8B%B5%EC%84%B1) — `LeadAccelResponseTF4`
-- [속도별 TF 배율](https://github.com/ajouatom/openpilot/wiki/KO-%EC%86%8D%EB%8F%84%EB%B3%84-TF-%EB%B0%B0%EC%9C%A8) — `SpeedTFFactor`
-- [차선변경 반응(100%)](https://github.com/ajouatom/openpilot/wiki/KO-%EC%B0%A8%EC%84%A0%EB%B3%80%EA%B2%BD-%EB%B0%98%EC%9D%91%28100-%29) — `DynamicTFollowLC`
-- [감속 시 차간 여유(0%)](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B0%90%EC%86%8D-%EC%8B%9C-%EC%B0%A8%EA%B0%84-%EC%97%AC%EC%9C%A0%280-%29) — `TFollowDecelBoost`
-
-##### 당근 크루즈
-
-- [크루즈연비제어(2km/h)](https://github.com/ajouatom/openpilot/wiki/KO-%ED%81%AC%EB%A3%A8%EC%A6%88%EC%97%B0%EB%B9%84%EC%A0%9C%EC%96%B4%282km-h%29) — `CruiseEcoControl`
-- [크루즈 코스팅 여유](https://github.com/ajouatom/openpilot/wiki/KO-%ED%81%AC%EB%A3%A8%EC%A6%88-%EC%BD%94%EC%8A%A4%ED%8C%85-%EC%97%AC%EC%9C%A0) — `CruiseCoastingPercent`
-- [당근크루즈감속도x0.01(-1)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%8B%B9%EA%B7%BC%ED%81%AC%EB%A3%A8%EC%A6%88%EA%B0%90%EC%86%8D%EB%8F%84x0.01%28-1%29) — `CarrotCruiseDecel`
-- [당근크루즈감속도ATCx0.01(-1)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%8B%B9%EA%B7%BC%ED%81%AC%EB%A3%A8%EC%A6%88%EA%B0%90%EC%86%8D%EB%8F%84ATCx0.01%28-1%29) — `CarrotCruiseAtcDecel`
-
 ### 차량·하드웨어
 
 #### 현대·기아
 
 - [핸들햅틱기능사용(0)](https://github.com/ajouatom/openpilot/wiki/KO-%ED%95%B8%EB%93%A4%ED%96%85%ED%8B%B1%EA%B8%B0%EB%8A%A5%EC%82%AC%EC%9A%A9%280%29) — `HapticFeedbackWhenSpeedCamera`
 - [순정 교통 표지 및 제한 속도 표시](https://github.com/ajouatom/openpilot/wiki/KO-%EC%88%9C%EC%A0%95-%EA%B5%90%ED%86%B5-%ED%91%9C%EC%A7%80-%EB%B0%8F-%EC%A0%9C%ED%95%9C-%EC%86%8D%EB%8F%84-%ED%91%9C%EC%8B%9C) — `HyundaiShowStockSigns`
-- [HYUNDAI: CAMERA SCC](https://github.com/ajouatom/openpilot/wiki/KO-HYUNDAI-CAMERA-SCC) — `HyundaiCameraSCC`
+- [특수 SCC 배선](https://github.com/ajouatom/openpilot/wiki/KO-%ED%8A%B9%EC%88%98-SCC-%EB%B0%B0%EC%84%A0) — `HyundaiCameraSCC`
 - [HYUNDAI: LDWS ONLY CAR(0)](https://github.com/ajouatom/openpilot/wiki/KO-HYUNDAI-LDWS-ONLY-CAR%280%29) — `IsLdwsCar`
 
 #### CANFD·HDA
@@ -265,7 +171,7 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 - [정차 SPAS 깜박이 시험](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A0%95%EC%B0%A8-SPAS-%EA%B9%9C%EB%B0%95%EC%9D%B4-%EC%8B%9C%ED%97%98) — `CanfdBlinkerTest`
 - [CAN-FD SPAS 깜박이 사용(시험)](https://github.com/ajouatom/openpilot/wiki/KO-CAN-FD-SPAS-%EA%B9%9C%EB%B0%95%EC%9D%B4-%EC%82%AC%EC%9A%A9%28%EC%8B%9C%ED%97%98%29) — `CanfdBlinkerControl`
 - [HDP 사용(CCNC)](https://github.com/ajouatom/openpilot/wiki/KO-HDP-%EC%82%AC%EC%9A%A9%28CCNC%29) — `HDPuse`
-- [CANFD HDA2지원(0)](https://github.com/ajouatom/openpilot/wiki/KO-CANFD-HDA2%EC%A7%80%EC%9B%90%280%29) — `CanfdHDA2`
+- [현대 CAN-FD 배선](https://github.com/ajouatom/openpilot/wiki/KO-%ED%98%84%EB%8C%80-CAN-FD-%EB%B0%B0%EC%84%A0) — `CanfdHDA2`
 - [계기판 CAN 직접 송신](https://github.com/ajouatom/openpilot/wiki/KO-%EA%B3%84%EA%B8%B0%ED%8C%90-CAN-%EC%A7%81%EC%A0%91-%EC%86%A1%EC%8B%A0) — `HyundaiCanfdClusterDirectTx`
 - [CANFD Debug(0)](https://github.com/ajouatom/openpilot/wiki/KO-CANFD-Debug%280%29) — `CanfdDebug`
 
@@ -389,6 +295,17 @@ Per-setting pages generated from the current settings catalog.
 ### Driving
 
 #### Start & Auto
+
+##### Daily driving
+
+- [Automatic Alpha longitudinal setup](https://github.com/ajouatom/openpilot/wiki/EN-Automatic-Alpha-longitudinal-setup) — `SunnyAutoLongitudinal`
+- [Vision curve assist](https://github.com/ajouatom/openpilot/wiki/EN-Vision-curve-assist) — `SunnyVisionCurve`
+- [Map curve assist](https://github.com/ajouatom/openpilot/wiki/EN-Map-curve-assist) — `SunnyMapCurve`
+- [Navigation speed limit assist](https://github.com/ajouatom/openpilot/wiki/EN-Navigation-speed-limit-assist) — `SunnySpeedLimit`
+- [Pause steering below speed with one indicator (km/h)](https://github.com/ajouatom/openpilot/wiki/EN-Pause-steering-below-speed-with-one-indicator-%28km-h%29) — `SunnyBlinkerPauseKph`
+- [Cruise only](https://github.com/ajouatom/openpilot/wiki/EN-Cruise-only) — `SunnyCruiseOnly`
+- [Lane centering](https://github.com/ajouatom/openpilot/wiki/EN-Lane-centering) — `SunnyLaneCenter`
+- [Low-speed signaled turns](https://github.com/ajouatom/openpilot/wiki/EN-Low-speed-signaled-turns) — `SunnyLaneTurn`
 
 ##### Engage
 
@@ -525,118 +442,13 @@ Per-setting pages generated from the current settings catalog.
 - [\_CustomSteerDeltaUpLC(0)](https://github.com/ajouatom/openpilot/wiki/EN-_CustomSteerDeltaUpLC%280%29) — `CustomSteerDeltaUpLC`
 - [\_CustomSteerDeltaDownLC(0)](https://github.com/ajouatom/openpilot/wiki/EN-_CustomSteerDeltaDownLC%280%29) — `CustomSteerDeltaDownLC`
 
-#### Speed & Decel
-
-##### Speed Camera
-
-- [Rear Camera Post-pass Hold Distance (m)](https://github.com/ajouatom/openpilot/wiki/EN-Rear-Camera-Post-pass-Hold-Distance-%28m%29) — `AutoNaviRearCameraHoldDistance`
-- [NaviSpeedEndingPoint(6s)](https://github.com/ajouatom/openpilot/wiki/EN-NaviSpeedEndingPoint%286s%29) — `AutoNaviSpeedCtrlEnd`
-- [NaviSpeedControlMode(2)](https://github.com/ajouatom/openpilot/wiki/EN-NaviSpeedControlMode%282%29) — `AutoNaviSpeedCtrlMode`
-- [Vehicle Navigation CAN Deceleration Mode](https://github.com/ajouatom/openpilot/wiki/EN-Vehicle-Navigation-CAN-Deceleration-Mode) — `VehicleNaviCanControl`
-- [Stock Navigation 30 km/h Zone Limit](https://github.com/ajouatom/openpilot/wiki/EN-Stock-Navigation-30-km-h-Zone-Limit) — `VehicleNaviSchoolZoneControl`
-- [Stock Navigation Deceleration Cancel Request](https://github.com/ajouatom/openpilot/wiki/EN-Stock-Navigation-Deceleration-Cancel-Request) — `VehicleNaviDecelCancel`
-- [Deceleration Cancel: Box Camera](https://github.com/ajouatom/openpilot/wiki/EN-Deceleration-Cancel-Box-Camera) — `VehicleNaviDecelCancelBox`
-- [Deceleration Cancel: Mobile Zone](https://github.com/ajouatom/openpilot/wiki/EN-Deceleration-Cancel-Mobile-Zone) — `VehicleNaviDecelCancelMobileZone`
-- [Deceleration Cancel: Speed Bump](https://github.com/ajouatom/openpilot/wiki/EN-Deceleration-Cancel-Speed-Bump) — `VehicleNaviDecelCancelBump`
-- [Deceleration Cancel: Undetected Camera Kind \[Experimental\]](https://github.com/ajouatom/openpilot/wiki/EN-Deceleration-Cancel-Undetected-Camera-Kind-Experimental) — `VehicleNaviDecelCancelUnknown`
-- [Deceleration Cancel: Early Warning Correction \[Experimental\]](https://github.com/ajouatom/openpilot/wiki/EN-Deceleration-Cancel-Early-Warning-Correction-Experimental) — `VehicleNaviDecelCancelEarlyWarning`
-- [Stock Navigation Section Average-speed Control](https://github.com/ajouatom/openpilot/wiki/EN-Stock-Navigation-Section-Average-speed-Control) — `VehicleNaviSectionAvgControl`
-- [Vehicle-received Speed Camera Deceleration(Always apply)](https://github.com/ajouatom/openpilot/wiki/EN-Vehicle-received-Speed-Camera-Deceleration%28Always-apply%29) — `VehicleSpeedCameraControlMode`
-- [Vehicle Speed Camera Virtual Distance Time (6.0 s)](https://github.com/ajouatom/openpilot/wiki/EN-Vehicle-Speed-Camera-Virtual-Distance-Time-%286.0-s%29) — `VehicleSpeedCameraDistanceTime`
-- [NaviSpeedDecelRate 0.01m/s^2x(120)](https://github.com/ajouatom/openpilot/wiki/EN-NaviSpeedDecelRate-0.01m-s%5E2x%28120%29) — `AutoNaviSpeedDecelRate`
-- [NaviCountDownMode](https://github.com/ajouatom/openpilot/wiki/EN-NaviCountDownMode) — `AutoNaviCountDownMode`
-- [NaviSpeedLimitRatio(105)%](https://github.com/ajouatom/openpilot/wiki/EN-NaviSpeedLimitRatio%28105%29) — `AutoNaviSpeedSafetyFactor`
-
-##### Speed Limit
-
-- [AutoSpeedUpx:(100)%](https://github.com/ajouatom/openpilot/wiki/EN-AutoSpeedUpx-%28100%29) — `AutoSpeedUptoRoadSpeedLimit`
-- [AutoRoadLimitSpeedAdjust (50)%](https://github.com/ajouatom/openpilot/wiki/EN-AutoRoadLimitSpeedAdjust-%2850%29) — `AutoRoadSpeedAdjust`
-- [RoadSpeedLimitOffset(-1)](https://github.com/ajouatom/openpilot/wiki/EN-RoadSpeedLimitOffset%28-1%29) — `AutoRoadSpeedLimitOffset`
-
-##### Speed Bump
-
-- [SpeedBumpEndingPoint(1s)](https://github.com/ajouatom/openpilot/wiki/EN-SpeedBumpEndingPoint%281s%29) — `AutoNaviSpeedBumpTime`
-- [SpeedBumpSpeed(35km/h)](https://github.com/ajouatom/openpilot/wiki/EN-SpeedBumpSpeed%2835km-h%29) — `AutoNaviSpeedBumpSpeed`
-- [Speed Bump Early Release Distance (200 cm)](https://github.com/ajouatom/openpilot/wiki/EN-Speed-Bump-Early-Release-Distance-%28200-cm%29) — `AutoNaviSpeedBumpEndDistance`
-
-##### Curve & Turn
-
-- [CurveSpeedFactor(100%)](https://github.com/ajouatom/openpilot/wiki/EN-CurveSpeedFactor%28100-%29) — `AutoCurveSpeedFactor`
-- [Model Speed Apply Ratio](https://github.com/ajouatom/openpilot/wiki/EN-Model-Speed-Apply-Ratio) — `ApplyModelSpeed`
-- [AutoCurveSpeed LowerLimit(30)](https://github.com/ajouatom/openpilot/wiki/EN-AutoCurveSpeed-LowerLimit%2830%29) — `AutoCurveSpeedLowerLimit`
-- [TurnSpeedControlMode](https://github.com/ajouatom/openpilot/wiki/EN-TurnSpeedControlMode) — `TurnSpeedControlMode`
-- [MapTurnSpeedFactor](https://github.com/ajouatom/openpilot/wiki/EN-MapTurnSpeedFactor) — `MapTurnSpeedFactor`
-
-##### Traffic Light
-
-- [TrafficStopDistanceAdjust](https://github.com/ajouatom/openpilot/wiki/EN-TrafficStopDistanceAdjust) — `TrafficStopDistanceAdjust`
-- [Lead Brake Lamp Observation (Trial)](https://github.com/ajouatom/openpilot/wiki/EN-Lead-Brake-Lamp-Observation-%28Trial%29) — `LeadBrakeLights`
-- [Signal Assistance Mode (Trial)](https://github.com/ajouatom/openpilot/wiki/EN-Signal-Assistance-Mode-%28Trial%29) — `SignalAssistMode`
-- [TrafficLightDetectMode](https://github.com/ajouatom/openpilot/wiki/EN-TrafficLightDetectMode) — `TrafficLightDetectMode`
-
-#### Cruise & Gap
-
-##### Accel Profile
-
-###### Drive Mode
-
-- [DrivingMode:Init(3)](https://github.com/ajouatom/openpilot/wiki/EN-DrivingMode-Init%283%29) — `MyDrivingMode`
-- [DrivingMode: Auto](https://github.com/ajouatom/openpilot/wiki/EN-DrivingMode-Auto) — `MyDrivingModeAuto`
-
-###### Speed Accel Table
-
-- [AccelSet0:0km/h(160)](https://github.com/ajouatom/openpilot/wiki/EN-AccelSet0-0km-h%28160%29) — `CruiseMaxVals0`
-- [AccelSet1:10km/h(160)](https://github.com/ajouatom/openpilot/wiki/EN-AccelSet1-10km-h%28160%29) — `CruiseMaxVals1`
-- [AccelSet2:40km/h(120)](https://github.com/ajouatom/openpilot/wiki/EN-AccelSet2-40km-h%28120%29) — `CruiseMaxVals2`
-- [AccelSet3:60km/h(100)](https://github.com/ajouatom/openpilot/wiki/EN-AccelSet3-60km-h%28100%29) — `CruiseMaxVals3`
-- [AccelSet4:80km/h(80)](https://github.com/ajouatom/openpilot/wiki/EN-AccelSet4-80km-h%2880%29) — `CruiseMaxVals4`
-- [AccelSet5:110km/h(70)](https://github.com/ajouatom/openpilot/wiki/EN-AccelSet5-110km-h%2870%29) — `CruiseMaxVals5`
-- [AccelSet6:140km/h(60)](https://github.com/ajouatom/openpilot/wiki/EN-AccelSet6-140km-h%2860%29) — `CruiseMaxVals6`
-
-##### Stop & Resume
-
-- [StopDistance(600)cm](https://github.com/ajouatom/openpilot/wiki/EN-StopDistance%28600%29cm) — `StopDistanceCarrot`
-- [AChangeCostStarting](https://github.com/ajouatom/openpilot/wiki/EN-AChangeCostStarting) — `AChangeCostStarting`
-- [VEgoStopping(50)x0.01](https://github.com/ajouatom/openpilot/wiki/EN-VEgoStopping%2850%29x0.01) — `VEgoStopping`
-- [StoppingStartAccelx0.01(-50)](https://github.com/ajouatom/openpilot/wiki/EN-StoppingStartAccelx0.01%28-50%29) — `StoppingAccel`
-
-##### Accel/Brake Tuning
-
-- [Long KpV(100)x0.01](https://github.com/ajouatom/openpilot/wiki/EN-Long-KpV%28100%29x0.01) — `LongTuningKpV`
-- [Long Kf(100)x0.01](https://github.com/ajouatom/openpilot/wiki/EN-Long-Kf%28100%29x0.01) — `LongTuningKf`
-- [Long KiV(0)x0.001](https://github.com/ajouatom/openpilot/wiki/EN-Long-KiV%280%29x0.001) — `LongTuningKiV`
-- [LongActuatorDelay(20)x0.01](https://github.com/ajouatom/openpilot/wiki/EN-LongActuatorDelay%2820%29x0.01) — `LongActuatorDelay`
-
-##### Follow Gap
-
-- [Gap cycle levels](https://github.com/ajouatom/openpilot/wiki/EN-Gap-cycle-levels) — `CruiseGapLevels`
-- [TF(1): TimeFollow1x0.01s(110)](https://github.com/ajouatom/openpilot/wiki/EN-TF%281%29-TimeFollow1x0.01s%28110%29) — `TFollowGap1`
-- [TF(2): TimeFollow2x0.01s(120)](https://github.com/ajouatom/openpilot/wiki/EN-TF%282%29-TimeFollow2x0.01s%28120%29) — `TFollowGap2`
-- [TF(3): TimeFollow3x0.01s(140)](https://github.com/ajouatom/openpilot/wiki/EN-TF%283%29-TimeFollow3x0.01s%28140%29) — `TFollowGap3`
-- [TF(4): TimeFollow4x0.01s(160)](https://github.com/ajouatom/openpilot/wiki/EN-TF%284%29-TimeFollow4x0.01s%28160%29) — `TFollowGap4`
-- [Following responsiveness · common](https://github.com/ajouatom/openpilot/wiki/EN-Following-responsiveness-%C2%B7-common) — `LeadAccelResponse`
-- [TF1 following responsiveness](https://github.com/ajouatom/openpilot/wiki/EN-TF1-following-responsiveness) — `LeadAccelResponseTF1`
-- [TF2 following responsiveness](https://github.com/ajouatom/openpilot/wiki/EN-TF2-following-responsiveness) — `LeadAccelResponseTF2`
-- [TF3 following responsiveness](https://github.com/ajouatom/openpilot/wiki/EN-TF3-following-responsiveness) — `LeadAccelResponseTF3`
-- [TF4 following responsiveness](https://github.com/ajouatom/openpilot/wiki/EN-TF4-following-responsiveness) — `LeadAccelResponseTF4`
-- [Speed TF multiplier](https://github.com/ajouatom/openpilot/wiki/EN-Speed-TF-multiplier) — `SpeedTFFactor`
-- [Lane Change Response (100%)](https://github.com/ajouatom/openpilot/wiki/EN-Lane-Change-Response-%28100-%29) — `DynamicTFollowLC`
-- [Deceleration Gap Margin (0%)](https://github.com/ajouatom/openpilot/wiki/EN-Deceleration-Gap-Margin-%280-%29) — `TFollowDecelBoost`
-
-##### Carrot Cruise
-
-- [CruiseEcoControl(2km/h)](https://github.com/ajouatom/openpilot/wiki/EN-CruiseEcoControl%282km-h%29) — `CruiseEcoControl`
-- [Cruise Coasting Margin](https://github.com/ajouatom/openpilot/wiki/EN-Cruise-Coasting-Margin) — `CruiseCoastingPercent`
-- [CarrotCruiseDecel(-1)](https://github.com/ajouatom/openpilot/wiki/EN-CarrotCruiseDecel%28-1%29) — `CarrotCruiseDecel`
-- [CarrotCruiseDecelATCx0.01(-1)](https://github.com/ajouatom/openpilot/wiki/EN-CarrotCruiseDecelATCx0.01%28-1%29) — `CarrotCruiseAtcDecel`
-
 ### Vehicle & Hardware
 
 #### Hyundai·Kia
 
 - [HapticFeedbackSpeedCamera(0)](https://github.com/ajouatom/openpilot/wiki/EN-HapticFeedbackSpeedCamera%280%29) — `HapticFeedbackWhenSpeedCamera`
 - [Show OEM traffic signs and speed limits](https://github.com/ajouatom/openpilot/wiki/EN-Show-OEM-traffic-signs-and-speed-limits) — `HyundaiShowStockSigns`
-- [HYUNDAI: CAMERA SCC(0)](https://github.com/ajouatom/openpilot/wiki/EN-HYUNDAI-CAMERA-SCC%280%29) — `HyundaiCameraSCC`
+- [Special SCC harness](https://github.com/ajouatom/openpilot/wiki/EN-Special-SCC-harness) — `HyundaiCameraSCC`
 - [HYUNDAI: LDWS ONLY CAR(0)](https://github.com/ajouatom/openpilot/wiki/EN-HYUNDAI-LDWS-ONLY-CAR%280%29) — `IsLdwsCar`
 
 #### CANFD·HDA
@@ -644,7 +456,7 @@ Per-setting pages generated from the current settings catalog.
 - [Parked SPAS indicator test](https://github.com/ajouatom/openpilot/wiki/EN-Parked-SPAS-indicator-test) — `CanfdBlinkerTest`
 - [CAN-FD SPAS indicators (trial)](https://github.com/ajouatom/openpilot/wiki/EN-CAN-FD-SPAS-indicators-%28trial%29) — `CanfdBlinkerControl`
 - [Use HDP(CCNC)](https://github.com/ajouatom/openpilot/wiki/EN-Use-HDP%28CCNC%29) — `HDPuse`
-- [CANFD HDA2(0)](https://github.com/ajouatom/openpilot/wiki/EN-CANFD-HDA2%280%29) — `CanfdHDA2`
+- [Hyundai CAN-FD harness](https://github.com/ajouatom/openpilot/wiki/EN-Hyundai-CAN-FD-harness) — `CanfdHDA2`
 - [Cluster CAN Direct Send](https://github.com/ajouatom/openpilot/wiki/EN-Cluster-CAN-Direct-Send) — `HyundaiCanfdClusterDirectTx`
 - [CANFD Debug(0)](https://github.com/ajouatom/openpilot/wiki/EN-CANFD-Debug%280%29) — `CanfdDebug`
 
@@ -768,6 +580,17 @@ Per-setting pages generated from the current settings catalog.
 ### 驾驶控制
 
 #### 启动·自动
+
+##### 日常驾驶
+
+- [自动适配 Alpha 纵向控制](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%8A%A8%E9%80%82%E9%85%8D-Alpha-%E7%BA%B5%E5%90%91%E6%8E%A7%E5%88%B6) — `SunnyAutoLongitudinal`
+- [视觉弯速辅助](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%A7%86%E8%A7%89%E5%BC%AF%E9%80%9F%E8%BE%85%E5%8A%A9) — `SunnyVisionCurve`
+- [地图弯速辅助](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%9C%B0%E5%9B%BE%E5%BC%AF%E9%80%9F%E8%BE%85%E5%8A%A9) — `SunnyMapCurve`
+- [导航道路限速辅助](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%AF%BC%E8%88%AA%E9%81%93%E8%B7%AF%E9%99%90%E9%80%9F%E8%BE%85%E5%8A%A9) — `SunnySpeedLimit`
+- [低速打灯暂停转向（km/h）](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BD%8E%E9%80%9F%E6%89%93%E7%81%AF%E6%9A%82%E5%81%9C%E8%BD%AC%E5%90%91%28km-h%29) — `SunnyBlinkerPauseKph`
+- [仅巡航，手动转向](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BB%85%E5%B7%A1%E8%88%AA%2C%E6%89%8B%E5%8A%A8%E8%BD%AC%E5%90%91) — `SunnyCruiseOnly`
+- [车道居中](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%BD%A6%E9%81%93%E5%B1%85%E4%B8%AD) — `SunnyLaneCenter`
+- [低速转向灯转弯](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BD%8E%E9%80%9F%E8%BD%AC%E5%90%91%E7%81%AF%E8%BD%AC%E5%BC%AF) — `SunnyLaneTurn`
 
 ##### 起步动作
 
@@ -904,118 +727,13 @@ Per-setting pages generated from the current settings catalog.
 - [变道自定义转向增大斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8F%98%E9%81%93%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BD%AC%E5%90%91%E5%A2%9E%E5%A4%A7%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaUpLC`
 - [变道自定义转向减小斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8F%98%E9%81%93%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BD%AC%E5%90%91%E5%87%8F%E5%B0%8F%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaDownLC`
 
-#### 速度与减速
-
-##### 测速摄像头
-
-- [后向摄像头通过后保持距离(m)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%90%8E%E5%90%91%E6%91%84%E5%83%8F%E5%A4%B4%E9%80%9A%E8%BF%87%E5%90%8E%E4%BF%9D%E6%8C%81%E8%B7%9D%E7%A6%BB%28m%29) — `AutoNaviRearCameraHoldDistance`
-- [导航减速结束点 (6秒)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%AF%BC%E8%88%AA%E5%87%8F%E9%80%9F%E7%BB%93%E6%9D%9F%E7%82%B9-%286%E7%A7%92%29) — `AutoNaviSpeedCtrlEnd`
-- [导航减速模式 (2)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%AF%BC%E8%88%AA%E5%87%8F%E9%80%9F%E6%A8%A1%E5%BC%8F-%282%29) — `AutoNaviSpeedCtrlMode`
-- [车辆导航 CAN 减速应用模式](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%BD%A6%E8%BE%86%E5%AF%BC%E8%88%AA-CAN-%E5%87%8F%E9%80%9F%E5%BA%94%E7%94%A8%E6%A8%A1%E5%BC%8F) — `VehicleNaviCanControl`
-- [原车导航 30 km/h 区域限速](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8E%9F%E8%BD%A6%E5%AF%BC%E8%88%AA-30-km-h-%E5%8C%BA%E5%9F%9F%E9%99%90%E9%80%9F) — `VehicleNaviSchoolZoneControl`
-- [原车导航减速中止请求](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8E%9F%E8%BD%A6%E5%AF%BC%E8%88%AA%E5%87%8F%E9%80%9F%E4%B8%AD%E6%AD%A2%E8%AF%B7%E6%B1%82) — `VehicleNaviDecelCancel`
-- [减速中止：箱式摄像头](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E4%B8%AD%E6%AD%A2-%E7%AE%B1%E5%BC%8F%E6%91%84%E5%83%8F%E5%A4%B4) — `VehicleNaviDecelCancelBox`
-- [减速中止：移动测速区间](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E4%B8%AD%E6%AD%A2-%E7%A7%BB%E5%8A%A8%E6%B5%8B%E9%80%9F%E5%8C%BA%E9%97%B4) — `VehicleNaviDecelCancelMobileZone`
-- [减速中止：减速带](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E4%B8%AD%E6%AD%A2-%E5%87%8F%E9%80%9F%E5%B8%A6) — `VehicleNaviDecelCancelBump`
-- [减速中止：未识别类型的测速摄像头 \[实验\]](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E4%B8%AD%E6%AD%A2-%E6%9C%AA%E8%AF%86%E5%88%AB%E7%B1%BB%E5%9E%8B%E7%9A%84%E6%B5%8B%E9%80%9F%E6%91%84%E5%83%8F%E5%A4%B4-%E5%AE%9E%E9%AA%8C) — `VehicleNaviDecelCancelUnknown`
-- [减速中止：提前警告修正 \[实验\]](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E4%B8%AD%E6%AD%A2-%E6%8F%90%E5%89%8D%E8%AD%A6%E5%91%8A%E4%BF%AE%E6%AD%A3-%E5%AE%9E%E9%AA%8C) — `VehicleNaviDecelCancelEarlyWarning`
-- [原车导航区间测速平均速度控制](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8E%9F%E8%BD%A6%E5%AF%BC%E8%88%AA%E5%8C%BA%E9%97%B4%E6%B5%8B%E9%80%9F%E5%B9%B3%E5%9D%87%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6) — `VehicleNaviSectionAvgControl`
-- [车辆接收测速摄像头减速（始终应用）](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%BD%A6%E8%BE%86%E6%8E%A5%E6%94%B6%E6%B5%8B%E9%80%9F%E6%91%84%E5%83%8F%E5%A4%B4%E5%87%8F%E9%80%9F%28%E5%A7%8B%E7%BB%88%E5%BA%94%E7%94%A8%29) — `VehicleSpeedCameraControlMode`
-- [车辆测速摄像头虚拟距离时间（6.0秒）](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%BD%A6%E8%BE%86%E6%B5%8B%E9%80%9F%E6%91%84%E5%83%8F%E5%A4%B4%E8%99%9A%E6%8B%9F%E8%B7%9D%E7%A6%BB%E6%97%B6%E9%97%B4%286.0%E7%A7%92%29) — `VehicleSpeedCameraDistanceTime`
-- [导航减速效率 0.01m/s^2x(120)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%AF%BC%E8%88%AA%E5%87%8F%E9%80%9F%E6%95%88%E7%8E%87-0.01m-s%5E2x%28120%29) — `AutoNaviSpeedDecelRate`
-- [导航倒计时模式](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%AF%BC%E8%88%AA%E5%80%92%E8%AE%A1%E6%97%B6%E6%A8%A1%E5%BC%8F) — `AutoNaviCountDownMode`
-- [导航限速比例 (105)%](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%AF%BC%E8%88%AA%E9%99%90%E9%80%9F%E6%AF%94%E4%BE%8B-%28105%29) — `AutoNaviSpeedSafetyFactor`
-
-##### 限速
-
-- [自动加速至: (100)%](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%8A%A8%E5%8A%A0%E9%80%9F%E8%87%B3-%28100%29) — `AutoSpeedUptoRoadSpeedLimit`
-- [自动道路限速调整 (50)%](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%8A%A8%E9%81%93%E8%B7%AF%E9%99%90%E9%80%9F%E8%B0%83%E6%95%B4-%2850%29) — `AutoRoadSpeedAdjust`
-- [道路限速偏移 (-1)](https://github.com/ajouatom/openpilot/wiki/ZH-%E9%81%93%E8%B7%AF%E9%99%90%E9%80%9F%E5%81%8F%E7%A7%BB-%28-1%29) — `AutoRoadSpeedLimitOffset`
-
-##### 减速带
-
-- [减速带结束点 (1秒)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E5%B8%A6%E7%BB%93%E6%9D%9F%E7%82%B9-%281%E7%A7%92%29) — `AutoNaviSpeedBumpTime`
-- [减速带速度 (35km/h)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E5%B8%A6%E9%80%9F%E5%BA%A6-%2835km-h%29) — `AutoNaviSpeedBumpSpeed`
-- [减速带减速提前解除距离（200厘米）](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E5%B8%A6%E5%87%8F%E9%80%9F%E6%8F%90%E5%89%8D%E8%A7%A3%E9%99%A4%E8%B7%9D%E7%A6%BB%28200%E5%8E%98%E7%B1%B3%29) — `AutoNaviSpeedBumpEndDistance`
-
-##### 弯道与转弯
-
-- [弯道速度调节比例(100%)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%BC%AF%E9%81%93%E9%80%9F%E5%BA%A6%E8%B0%83%E8%8A%82%E6%AF%94%E4%BE%8B%28100-%29) — `AutoCurveSpeedFactor`
-- [模型车速应用比例](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%A8%A1%E5%9E%8B%E8%BD%A6%E9%80%9F%E5%BA%94%E7%94%A8%E6%AF%94%E4%BE%8B) — `ApplyModelSpeed`
-- [弯道自动减速下限 (30)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%BC%AF%E9%81%93%E8%87%AA%E5%8A%A8%E5%87%8F%E9%80%9F%E4%B8%8B%E9%99%90-%2830%29) — `AutoCurveSpeedLowerLimit`
-- [转向速度控制模式](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%BD%AC%E5%90%91%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6%E6%A8%A1%E5%BC%8F) — `TurnSpeedControlMode`
-- [地图转向速度因子](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%9C%B0%E5%9B%BE%E8%BD%AC%E5%90%91%E9%80%9F%E5%BA%A6%E5%9B%A0%E5%AD%90) — `MapTurnSpeedFactor`
-
-##### 信号灯
-
-- [交通信号停止距离调整](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BA%A4%E9%80%9A%E4%BF%A1%E5%8F%B7%E5%81%9C%E6%AD%A2%E8%B7%9D%E7%A6%BB%E8%B0%83%E6%95%B4) — `TrafficStopDistanceAdjust`
-- [前车制动灯观察（试验）](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%89%8D%E8%BD%A6%E5%88%B6%E5%8A%A8%E7%81%AF%E8%A7%82%E5%AF%9F%28%E8%AF%95%E9%AA%8C%29) — `LeadBrakeLights`
-- [信号辅助模式（试验）](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BF%A1%E5%8F%B7%E8%BE%85%E5%8A%A9%E6%A8%A1%E5%BC%8F%28%E8%AF%95%E9%AA%8C%29) — `SignalAssistMode`
-- [红绿灯检测模式](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%BA%A2%E7%BB%BF%E7%81%AF%E6%A3%80%E6%B5%8B%E6%A8%A1%E5%BC%8F) — `TrafficLightDetectMode`
-
-#### 巡航与车距
-
-##### 加速特性
-
-###### 驾驶模式
-
-- [驾驶模式: 初始 (3)](https://github.com/ajouatom/openpilot/wiki/ZH-%E9%A9%BE%E9%A9%B6%E6%A8%A1%E5%BC%8F-%E5%88%9D%E5%A7%8B-%283%29) — `MyDrivingMode`
-- [驾驶模式: 自动](https://github.com/ajouatom/openpilot/wiki/ZH-%E9%A9%BE%E9%A9%B6%E6%A8%A1%E5%BC%8F-%E8%87%AA%E5%8A%A8) — `MyDrivingModeAuto`
-
-###### 速度加速表
-
-- [加速度设置 0: 0km/h(160)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%AE%BE%E7%BD%AE-0-0km-h%28160%29) — `CruiseMaxVals0`
-- [加速度设置 1: 10km/h(160)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%AE%BE%E7%BD%AE-1-10km-h%28160%29) — `CruiseMaxVals1`
-- [加速度设置 2: 40km/h(120)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%AE%BE%E7%BD%AE-2-40km-h%28120%29) — `CruiseMaxVals2`
-- [加速度设置 3: 60km/h(100)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%AE%BE%E7%BD%AE-3-60km-h%28100%29) — `CruiseMaxVals3`
-- [加速度设置 4: 80km/h(80)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%AE%BE%E7%BD%AE-4-80km-h%2880%29) — `CruiseMaxVals4`
-- [加速度设置 5: 110km/h(70)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%AE%BE%E7%BD%AE-5-110km-h%2870%29) — `CruiseMaxVals5`
-- [加速度设置 6: 140km/h(60)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%AE%BE%E7%BD%AE-6-140km-h%2860%29) — `CruiseMaxVals6`
-
-##### 停车与再起步
-
-- [停止距离(600)cm](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%81%9C%E6%AD%A2%E8%B7%9D%E7%A6%BB%28600%29cm) — `StopDistanceCarrot`
-- [启动加速度限制](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%90%AF%E5%8A%A8%E5%8A%A0%E9%80%9F%E5%BA%A6%E9%99%90%E5%88%B6) — `AChangeCostStarting`
-- [停止/启动灵敏度(50)x0.01](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%81%9C%E6%AD%A2-%E5%90%AF%E5%8A%A8%E7%81%B5%E6%95%8F%E5%BA%A6%2850%29x0.01) — `VEgoStopping`
-- [停止起步加速度 x0.01(-50)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%81%9C%E6%AD%A2%E8%B5%B7%E6%AD%A5%E5%8A%A0%E9%80%9F%E5%BA%A6-x0.01%28-50%29) — `StoppingAccel`
-
-##### 加减速调校
-
-- [纵向 KpV(100)x0.01](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%BA%B5%E5%90%91-KpV%28100%29x0.01) — `LongTuningKpV`
-- [纵向 Kf(100)x0.01](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%BA%B5%E5%90%91-Kf%28100%29x0.01) — `LongTuningKf`
-- [纵向 KiV(0)x0.001](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%BA%B5%E5%90%91-KiV%280%29x0.001) — `LongTuningKiV`
-- [纵向执行器延迟(20)x0.01](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%BA%B5%E5%90%91%E6%89%A7%E8%A1%8C%E5%99%A8%E5%BB%B6%E8%BF%9F%2820%29x0.01) — `LongActuatorDelay`
-
-##### 车距
-
-- [车距循环级数](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%BD%A6%E8%B7%9D%E5%BE%AA%E7%8E%AF%E7%BA%A7%E6%95%B0) — `CruiseGapLevels`
-- [跟车时间(1): TimeFollow1x0.01s(110)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%B7%9F%E8%BD%A6%E6%97%B6%E9%97%B4%281%29-TimeFollow1x0.01s%28110%29) — `TFollowGap1`
-- [跟车时间(2): TimeFollow2x0.01s(120)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%B7%9F%E8%BD%A6%E6%97%B6%E9%97%B4%282%29-TimeFollow2x0.01s%28120%29) — `TFollowGap2`
-- [跟车时间(3): TimeFollow3x0.01s(140)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%B7%9F%E8%BD%A6%E6%97%B6%E9%97%B4%283%29-TimeFollow3x0.01s%28140%29) — `TFollowGap3`
-- [跟车时间(4): TimeFollow4x0.01s(160)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%B7%9F%E8%BD%A6%E6%97%B6%E9%97%B4%284%29-TimeFollow4x0.01s%28160%29) — `TFollowGap4`
-- [跟车响应性 · 通用](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%B7%9F%E8%BD%A6%E5%93%8D%E5%BA%94%E6%80%A7-%C2%B7-%E9%80%9A%E7%94%A8) — `LeadAccelResponse`
-- [TF1 跟车响应性](https://github.com/ajouatom/openpilot/wiki/ZH-TF1-%E8%B7%9F%E8%BD%A6%E5%93%8D%E5%BA%94%E6%80%A7) — `LeadAccelResponseTF1`
-- [TF2 跟车响应性](https://github.com/ajouatom/openpilot/wiki/ZH-TF2-%E8%B7%9F%E8%BD%A6%E5%93%8D%E5%BA%94%E6%80%A7) — `LeadAccelResponseTF2`
-- [TF3 跟车响应性](https://github.com/ajouatom/openpilot/wiki/ZH-TF3-%E8%B7%9F%E8%BD%A6%E5%93%8D%E5%BA%94%E6%80%A7) — `LeadAccelResponseTF3`
-- [TF4 跟车响应性](https://github.com/ajouatom/openpilot/wiki/ZH-TF4-%E8%B7%9F%E8%BD%A6%E5%93%8D%E5%BA%94%E6%80%A7) — `LeadAccelResponseTF4`
-- [速度 TF 倍率](https://github.com/ajouatom/openpilot/wiki/ZH-%E9%80%9F%E5%BA%A6-TF-%E5%80%8D%E7%8E%87) — `SpeedTFFactor`
-- [变道响应 (100%)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8F%98%E9%81%93%E5%93%8D%E5%BA%94-%28100-%29) — `DynamicTFollowLC`
-- [减速时车距余量 (0%)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%87%8F%E9%80%9F%E6%97%B6%E8%BD%A6%E8%B7%9D%E4%BD%99%E9%87%8F-%280-%29) — `TFollowDecelBoost`
-
-##### Carrot巡航
-
-- [巡航节能控制(2km/h)](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%B7%A1%E8%88%AA%E8%8A%82%E8%83%BD%E6%8E%A7%E5%88%B6%282km-h%29) — `CruiseEcoControl`
-- [巡航滑行余量](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%B7%A1%E8%88%AA%E6%BB%91%E8%A1%8C%E4%BD%99%E9%87%8F) — `CruiseCoastingPercent`
-- [胡萝卜巡航减速度(-1)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%83%A1%E8%90%9D%E5%8D%9C%E5%B7%A1%E8%88%AA%E5%87%8F%E9%80%9F%E5%BA%A6%28-1%29) — `CarrotCruiseDecel`
-- [胡萝卜巡航 ATC 减速度(-1)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%83%A1%E8%90%9D%E5%8D%9C%E5%B7%A1%E8%88%AA-ATC-%E5%87%8F%E9%80%9F%E5%BA%A6%28-1%29) — `CarrotCruiseAtcDecel`
-
 ### 车辆与硬件
 
 #### 现代·起亚
 
 - [超速照相触感反馈 (0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%B6%85%E9%80%9F%E7%85%A7%E7%9B%B8%E8%A7%A6%E6%84%9F%E5%8F%8D%E9%A6%88-%280%29) — `HapticFeedbackWhenSpeedCamera`
 - [显示原车交通标志与限速](https://github.com/ajouatom/openpilot/wiki/ZH-%E6%98%BE%E7%A4%BA%E5%8E%9F%E8%BD%A6%E4%BA%A4%E9%80%9A%E6%A0%87%E5%BF%97%E4%B8%8E%E9%99%90%E9%80%9F) — `HyundaiShowStockSigns`
-- [现代: 摄像头 SCC (0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%8E%B0%E4%BB%A3-%E6%91%84%E5%83%8F%E5%A4%B4-SCC-%280%29) — `HyundaiCameraSCC`
+- [特殊 SCC 线束](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%89%B9%E6%AE%8A-SCC-%E7%BA%BF%E6%9D%9F) — `HyundaiCameraSCC`
 - [现代: 仅配备 LDWS 的车辆 (0)](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%8E%B0%E4%BB%A3-%E4%BB%85%E9%85%8D%E5%A4%87-LDWS-%E7%9A%84%E8%BD%A6%E8%BE%86-%280%29) — `IsLdwsCar`
 
 #### CANFD·HDA
@@ -1023,7 +741,7 @@ Per-setting pages generated from the current settings catalog.
 - [Parked SPAS indicator test](https://github.com/ajouatom/openpilot/wiki/ZH-Parked-SPAS-indicator-test) — `CanfdBlinkerTest`
 - [CAN-FD SPAS indicators (trial)](https://github.com/ajouatom/openpilot/wiki/ZH-CAN-FD-SPAS-indicators-%28trial%29) — `CanfdBlinkerControl`
 - [使用 HDP (CCNC)](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BD%BF%E7%94%A8-HDP-%28CCNC%29) — `HDPuse`
-- [CANFD HDA2 (0)](https://github.com/ajouatom/openpilot/wiki/ZH-CANFD-HDA2-%280%29) — `CanfdHDA2`
+- [现代 CAN-FD 线束](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%8E%B0%E4%BB%A3-CAN-FD-%E7%BA%BF%E6%9D%9F) — `CanfdHDA2`
 - [仪表 CAN 直接发送](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BB%AA%E8%A1%A8-CAN-%E7%9B%B4%E6%8E%A5%E5%8F%91%E9%80%81) — `HyundaiCanfdClusterDirectTx`
 - [CANFD 调试 (0)](https://github.com/ajouatom/openpilot/wiki/ZH-CANFD-%E8%B0%83%E8%AF%95-%280%29) — `CanfdDebug`
 
@@ -1147,6 +865,17 @@ Per-setting pages generated from the current settings catalog.
 ### 駕駛控制
 
 #### 啟動·自動
+
+##### 日常駕駛
+
+- [依車型自動適配 Alpha 縱向控制](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%BE%9D%E8%BB%8A%E5%9E%8B%E8%87%AA%E5%8B%95%E9%81%A9%E9%85%8D-Alpha-%E7%B8%B1%E5%90%91%E6%8E%A7%E5%88%B6) — `SunnyAutoLongitudinal`
+- [視覺彎速輔助](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%A6%96%E8%A6%BA%E5%BD%8E%E9%80%9F%E8%BC%94%E5%8A%A9) — `SunnyVisionCurve`
+- [地圖彎速輔助](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%9C%B0%E5%9C%96%E5%BD%8E%E9%80%9F%E8%BC%94%E5%8A%A9) — `SunnyMapCurve`
+- [導航道路速限輔助](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B0%8E%E8%88%AA%E9%81%93%E8%B7%AF%E9%80%9F%E9%99%90%E8%BC%94%E5%8A%A9) — `SunnySpeedLimit`
+- [低速打燈暫停轉向（km/h）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%BD%8E%E9%80%9F%E6%89%93%E7%87%88%E6%9A%AB%E5%81%9C%E8%BD%89%E5%90%91%28km-h%29) — `SunnyBlinkerPauseKph`
+- [僅巡航，手動轉向](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%83%85%E5%B7%A1%E8%88%AA%2C%E6%89%8B%E5%8B%95%E8%BD%89%E5%90%91) — `SunnyCruiseOnly`
+- [車道置中](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%BB%8A%E9%81%93%E7%BD%AE%E4%B8%AD) — `SunnyLaneCenter`
+- [低速方向燈轉彎](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%BD%8E%E9%80%9F%E6%96%B9%E5%90%91%E7%87%88%E8%BD%89%E5%BD%8E) — `SunnyLaneTurn`
 
 ##### 起步動作
 
@@ -1283,118 +1012,13 @@ Per-setting pages generated from the current settings catalog.
 - [變道自定義轉向增大斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%AE%8A%E9%81%93%E8%87%AA%E5%AE%9A%E7%BE%A9%E8%BD%89%E5%90%91%E5%A2%9E%E5%A4%A7%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaUpLC`
 - [變道自定義轉向減小斜率(0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%AE%8A%E9%81%93%E8%87%AA%E5%AE%9A%E7%BE%A9%E8%BD%89%E5%90%91%E6%B8%9B%E5%B0%8F%E6%96%9C%E7%8E%87%280%29) — `CustomSteerDeltaDownLC`
 
-#### 速度與減速
-
-##### 測速攝影機
-
-- [後向攝影機透過後保持距離(m)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%BE%8C%E5%90%91%E6%94%9D%E5%BD%B1%E6%A9%9F%E9%80%8F%E9%81%8E%E5%BE%8C%E4%BF%9D%E6%8C%81%E8%B7%9D%E9%9B%A2%28m%29) — `AutoNaviRearCameraHoldDistance`
-- [導航減速結束點 (6秒)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B0%8E%E8%88%AA%E6%B8%9B%E9%80%9F%E7%B5%90%E6%9D%9F%E9%BB%9E-%286%E7%A7%92%29) — `AutoNaviSpeedCtrlEnd`
-- [導航減速模式 (2)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B0%8E%E8%88%AA%E6%B8%9B%E9%80%9F%E6%A8%A1%E5%BC%8F-%282%29) — `AutoNaviSpeedCtrlMode`
-- [車輛導航 CAN 減速應用模式](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%BB%8A%E8%BC%9B%E5%B0%8E%E8%88%AA-CAN-%E6%B8%9B%E9%80%9F%E6%87%89%E7%94%A8%E6%A8%A1%E5%BC%8F) — `VehicleNaviCanControl`
-- [原車導航 30 km/h 區域限速](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8E%9F%E8%BB%8A%E5%B0%8E%E8%88%AA-30-km-h-%E5%8D%80%E5%9F%9F%E9%99%90%E9%80%9F) — `VehicleNaviSchoolZoneControl`
-- [原車導航減速中止請求](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8E%9F%E8%BB%8A%E5%B0%8E%E8%88%AA%E6%B8%9B%E9%80%9F%E4%B8%AD%E6%AD%A2%E8%AB%8B%E6%B1%82) — `VehicleNaviDecelCancel`
-- [減速中止：箱式攝影機](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E4%B8%AD%E6%AD%A2-%E7%AE%B1%E5%BC%8F%E6%94%9D%E5%BD%B1%E6%A9%9F) — `VehicleNaviDecelCancelBox`
-- [減速中止：移動測速區間](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E4%B8%AD%E6%AD%A2-%E7%A7%BB%E5%8B%95%E6%B8%AC%E9%80%9F%E5%8D%80%E9%96%93) — `VehicleNaviDecelCancelMobileZone`
-- [減速中止：減速帶](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E4%B8%AD%E6%AD%A2-%E6%B8%9B%E9%80%9F%E5%B8%B6) — `VehicleNaviDecelCancelBump`
-- [減速中止：未識別型別的測速攝影機 \[實驗\]](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E4%B8%AD%E6%AD%A2-%E6%9C%AA%E8%AD%98%E5%88%A5%E5%9E%8B%E5%88%A5%E7%9A%84%E6%B8%AC%E9%80%9F%E6%94%9D%E5%BD%B1%E6%A9%9F-%E5%AF%A6%E9%A9%97) — `VehicleNaviDecelCancelUnknown`
-- [減速中止：提前警告修正 \[實驗\]](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E4%B8%AD%E6%AD%A2-%E6%8F%90%E5%89%8D%E8%AD%A6%E5%91%8A%E4%BF%AE%E6%AD%A3-%E5%AF%A6%E9%A9%97) — `VehicleNaviDecelCancelEarlyWarning`
-- [原車導航區間測速平均速度控制](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8E%9F%E8%BB%8A%E5%B0%8E%E8%88%AA%E5%8D%80%E9%96%93%E6%B8%AC%E9%80%9F%E5%B9%B3%E5%9D%87%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6) — `VehicleNaviSectionAvgControl`
-- [車輛接收測速攝影機減速（始終應用）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%BB%8A%E8%BC%9B%E6%8E%A5%E6%94%B6%E6%B8%AC%E9%80%9F%E6%94%9D%E5%BD%B1%E6%A9%9F%E6%B8%9B%E9%80%9F%28%E5%A7%8B%E7%B5%82%E6%87%89%E7%94%A8%29) — `VehicleSpeedCameraControlMode`
-- [車輛測速攝影機虛擬距離時間（6.0秒）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%BB%8A%E8%BC%9B%E6%B8%AC%E9%80%9F%E6%94%9D%E5%BD%B1%E6%A9%9F%E8%99%9B%E6%93%AC%E8%B7%9D%E9%9B%A2%E6%99%82%E9%96%93%286.0%E7%A7%92%29) — `VehicleSpeedCameraDistanceTime`
-- [導航減速效率 0.01m/s^2x(120)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B0%8E%E8%88%AA%E6%B8%9B%E9%80%9F%E6%95%88%E7%8E%87-0.01m-s%5E2x%28120%29) — `AutoNaviSpeedDecelRate`
-- [導航倒計時模式](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B0%8E%E8%88%AA%E5%80%92%E8%A8%88%E6%99%82%E6%A8%A1%E5%BC%8F) — `AutoNaviCountDownMode`
-- [導航限速比例 (105)%](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B0%8E%E8%88%AA%E9%99%90%E9%80%9F%E6%AF%94%E4%BE%8B-%28105%29) — `AutoNaviSpeedSafetyFactor`
-
-##### 限速
-
-- [自動加速至: (100)%](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%87%AA%E5%8B%95%E5%8A%A0%E9%80%9F%E8%87%B3-%28100%29) — `AutoSpeedUptoRoadSpeedLimit`
-- [自動道路限速調整 (50)%](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%87%AA%E5%8B%95%E9%81%93%E8%B7%AF%E9%99%90%E9%80%9F%E8%AA%BF%E6%95%B4-%2850%29) — `AutoRoadSpeedAdjust`
-- [道路限速偏移 (-1)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%81%93%E8%B7%AF%E9%99%90%E9%80%9F%E5%81%8F%E7%A7%BB-%28-1%29) — `AutoRoadSpeedLimitOffset`
-
-##### 減速帶
-
-- [減速帶結束點 (1秒)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E5%B8%B6%E7%B5%90%E6%9D%9F%E9%BB%9E-%281%E7%A7%92%29) — `AutoNaviSpeedBumpTime`
-- [減速帶速度 (35km/h)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E5%B8%B6%E9%80%9F%E5%BA%A6-%2835km-h%29) — `AutoNaviSpeedBumpSpeed`
-- [減速帶減速提前解除距離（200釐米）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E5%B8%B6%E6%B8%9B%E9%80%9F%E6%8F%90%E5%89%8D%E8%A7%A3%E9%99%A4%E8%B7%9D%E9%9B%A2%28200%E9%87%90%E7%B1%B3%29) — `AutoNaviSpeedBumpEndDistance`
-
-##### 彎道與轉彎
-
-- [彎道速度調節比例(100%)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%BD%8E%E9%81%93%E9%80%9F%E5%BA%A6%E8%AA%BF%E7%AF%80%E6%AF%94%E4%BE%8B%28100-%29) — `AutoCurveSpeedFactor`
-- [模型車速應用比例](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%A8%A1%E5%9E%8B%E8%BB%8A%E9%80%9F%E6%87%89%E7%94%A8%E6%AF%94%E4%BE%8B) — `ApplyModelSpeed`
-- [彎道自動減速下限 (30)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%BD%8E%E9%81%93%E8%87%AA%E5%8B%95%E6%B8%9B%E9%80%9F%E4%B8%8B%E9%99%90-%2830%29) — `AutoCurveSpeedLowerLimit`
-- [轉向速度控制模式](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%BD%89%E5%90%91%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6%E6%A8%A1%E5%BC%8F) — `TurnSpeedControlMode`
-- [地圖轉向速度因子](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%9C%B0%E5%9C%96%E8%BD%89%E5%90%91%E9%80%9F%E5%BA%A6%E5%9B%A0%E5%AD%90) — `MapTurnSpeedFactor`
-
-##### 訊號燈
-
-- [交通訊號停止距離調整](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%BA%A4%E9%80%9A%E8%A8%8A%E8%99%9F%E5%81%9C%E6%AD%A2%E8%B7%9D%E9%9B%A2%E8%AA%BF%E6%95%B4) — `TrafficStopDistanceAdjust`
-- [前車制動燈觀察（試驗）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%89%8D%E8%BB%8A%E5%88%B6%E5%8B%95%E7%87%88%E8%A7%80%E5%AF%9F%28%E8%A9%A6%E9%A9%97%29) — `LeadBrakeLights`
-- [訊號輔助模式（試驗）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%A8%8A%E8%99%9F%E8%BC%94%E5%8A%A9%E6%A8%A1%E5%BC%8F%28%E8%A9%A6%E9%A9%97%29) — `SignalAssistMode`
-- [紅綠燈檢測模式](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%B4%85%E7%B6%A0%E7%87%88%E6%AA%A2%E6%B8%AC%E6%A8%A1%E5%BC%8F) — `TrafficLightDetectMode`
-
-#### 巡航與車距
-
-##### 加速特性
-
-###### 駕駛模式
-
-- [駕駛模式: 初始 (3)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%A7%95%E9%A7%9B%E6%A8%A1%E5%BC%8F-%E5%88%9D%E5%A7%8B-%283%29) — `MyDrivingMode`
-- [駕駛模式: 自動](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%A7%95%E9%A7%9B%E6%A8%A1%E5%BC%8F-%E8%87%AA%E5%8B%95) — `MyDrivingModeAuto`
-
-###### 速度加速表
-
-- [加速度設定 0: 0km/h(160)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%A8%AD%E5%AE%9A-0-0km-h%28160%29) — `CruiseMaxVals0`
-- [加速度設定 1: 10km/h(160)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%A8%AD%E5%AE%9A-1-10km-h%28160%29) — `CruiseMaxVals1`
-- [加速度設定 2: 40km/h(120)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%A8%AD%E5%AE%9A-2-40km-h%28120%29) — `CruiseMaxVals2`
-- [加速度設定 3: 60km/h(100)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%A8%AD%E5%AE%9A-3-60km-h%28100%29) — `CruiseMaxVals3`
-- [加速度設定 4: 80km/h(80)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%A8%AD%E5%AE%9A-4-80km-h%2880%29) — `CruiseMaxVals4`
-- [加速度設定 5: 110km/h(70)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%A8%AD%E5%AE%9A-5-110km-h%2870%29) — `CruiseMaxVals5`
-- [加速度設定 6: 140km/h(60)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8A%A0%E9%80%9F%E5%BA%A6%E8%A8%AD%E5%AE%9A-6-140km-h%2860%29) — `CruiseMaxVals6`
-
-##### 停車與再起步
-
-- [停止距離(600)cm](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%81%9C%E6%AD%A2%E8%B7%9D%E9%9B%A2%28600%29cm) — `StopDistanceCarrot`
-- [啟動加速度限制](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%95%9F%E5%8B%95%E5%8A%A0%E9%80%9F%E5%BA%A6%E9%99%90%E5%88%B6) — `AChangeCostStarting`
-- [停止/啟動靈敏度(50)x0.01](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%81%9C%E6%AD%A2-%E5%95%9F%E5%8B%95%E9%9D%88%E6%95%8F%E5%BA%A6%2850%29x0.01) — `VEgoStopping`
-- [停止起步加速度 x0.01(-50)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%81%9C%E6%AD%A2%E8%B5%B7%E6%AD%A5%E5%8A%A0%E9%80%9F%E5%BA%A6-x0.01%28-50%29) — `StoppingAccel`
-
-##### 加減速調校
-
-- [縱向 KpV(100)x0.01](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%B8%B1%E5%90%91-KpV%28100%29x0.01) — `LongTuningKpV`
-- [縱向 Kf(100)x0.01](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%B8%B1%E5%90%91-Kf%28100%29x0.01) — `LongTuningKf`
-- [縱向 KiV(0)x0.001](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%B8%B1%E5%90%91-KiV%280%29x0.001) — `LongTuningKiV`
-- [縱向執行器延遲(20)x0.01](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%B8%B1%E5%90%91%E5%9F%B7%E8%A1%8C%E5%99%A8%E5%BB%B6%E9%81%B2%2820%29x0.01) — `LongActuatorDelay`
-
-##### 車距
-
-- [車距迴圈級數](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%BB%8A%E8%B7%9D%E8%BF%B4%E5%9C%88%E7%B4%9A%E6%95%B8) — `CruiseGapLevels`
-- [跟車時間(1): TimeFollow1x0.01s(110)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%B7%9F%E8%BB%8A%E6%99%82%E9%96%93%281%29-TimeFollow1x0.01s%28110%29) — `TFollowGap1`
-- [跟車時間(2): TimeFollow2x0.01s(120)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%B7%9F%E8%BB%8A%E6%99%82%E9%96%93%282%29-TimeFollow2x0.01s%28120%29) — `TFollowGap2`
-- [跟車時間(3): TimeFollow3x0.01s(140)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%B7%9F%E8%BB%8A%E6%99%82%E9%96%93%283%29-TimeFollow3x0.01s%28140%29) — `TFollowGap3`
-- [跟車時間(4): TimeFollow4x0.01s(160)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%B7%9F%E8%BB%8A%E6%99%82%E9%96%93%284%29-TimeFollow4x0.01s%28160%29) — `TFollowGap4`
-- [跟車響應性 · 通用](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%B7%9F%E8%BB%8A%E9%9F%BF%E6%87%89%E6%80%A7-%C2%B7-%E9%80%9A%E7%94%A8) — `LeadAccelResponse`
-- [TF1 跟車響應性](https://github.com/ajouatom/openpilot/wiki/ZH-TW-TF1-%E8%B7%9F%E8%BB%8A%E9%9F%BF%E6%87%89%E6%80%A7) — `LeadAccelResponseTF1`
-- [TF2 跟車響應性](https://github.com/ajouatom/openpilot/wiki/ZH-TW-TF2-%E8%B7%9F%E8%BB%8A%E9%9F%BF%E6%87%89%E6%80%A7) — `LeadAccelResponseTF2`
-- [TF3 跟車響應性](https://github.com/ajouatom/openpilot/wiki/ZH-TW-TF3-%E8%B7%9F%E8%BB%8A%E9%9F%BF%E6%87%89%E6%80%A7) — `LeadAccelResponseTF3`
-- [TF4 跟車響應性](https://github.com/ajouatom/openpilot/wiki/ZH-TW-TF4-%E8%B7%9F%E8%BB%8A%E9%9F%BF%E6%87%89%E6%80%A7) — `LeadAccelResponseTF4`
-- [速度 TF 倍率](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%80%9F%E5%BA%A6-TF-%E5%80%8D%E7%8E%87) — `SpeedTFFactor`
-- [變道響應 (100%)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%AE%8A%E9%81%93%E9%9F%BF%E6%87%89-%28100-%29) — `DynamicTFollowLC`
-- [減速時車距餘量 (0%)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E6%B8%9B%E9%80%9F%E6%99%82%E8%BB%8A%E8%B7%9D%E9%A4%98%E9%87%8F-%280-%29) — `TFollowDecelBoost`
-
-##### Carrot巡航
-
-- [巡航節能控制(2km/h)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B7%A1%E8%88%AA%E7%AF%80%E8%83%BD%E6%8E%A7%E5%88%B6%282km-h%29) — `CruiseEcoControl`
-- [巡航滑行餘量](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B7%A1%E8%88%AA%E6%BB%91%E8%A1%8C%E9%A4%98%E9%87%8F) — `CruiseCoastingPercent`
-- [胡蘿蔔巡航減速度(-1)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%83%A1%E8%98%BF%E8%94%94%E5%B7%A1%E8%88%AA%E6%B8%9B%E9%80%9F%E5%BA%A6%28-1%29) — `CarrotCruiseDecel`
-- [胡蘿蔔巡航 ATC 減速度(-1)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%83%A1%E8%98%BF%E8%94%94%E5%B7%A1%E8%88%AA-ATC-%E6%B8%9B%E9%80%9F%E5%BA%A6%28-1%29) — `CarrotCruiseAtcDecel`
-
 ### 車輛與硬體
 
 #### 現代·起亞
 
 - [超速照相觸感反饋 (0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%B6%85%E9%80%9F%E7%85%A7%E7%9B%B8%E8%A7%B8%E6%84%9F%E5%8F%8D%E9%A5%8B-%280%29) — `HapticFeedbackWhenSpeedCamera`
 - [顯示原車交通標誌與速限（ISLA）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%A1%AF%E7%A4%BA%E5%8E%9F%E8%BB%8A%E4%BA%A4%E9%80%9A%E6%A8%99%E8%AA%8C%E8%88%87%E9%80%9F%E9%99%90%28ISLA%29) — `HyundaiShowStockSigns`
-- [現代: 攝影機 SCC (0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%8F%BE%E4%BB%A3-%E6%94%9D%E5%BD%B1%E6%A9%9F-SCC-%280%29) — `HyundaiCameraSCC`
+- [特殊 SCC 線束](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%89%B9%E6%AE%8A-SCC-%E7%B7%9A%E6%9D%9F) — `HyundaiCameraSCC`
 - [現代: 僅配備 LDWS 的車輛 (0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%8F%BE%E4%BB%A3-%E5%83%85%E9%85%8D%E5%82%99-LDWS-%E7%9A%84%E8%BB%8A%E8%BC%9B-%280%29) — `IsLdwsCar`
 
 #### CANFD·HDA
@@ -1402,7 +1026,7 @@ Per-setting pages generated from the current settings catalog.
 - [Parked SPAS indicator test](https://github.com/ajouatom/openpilot/wiki/ZH-TW-Parked-SPAS-indicator-test) — `CanfdBlinkerTest`
 - [CAN-FD SPAS indicators (trial)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-CAN-FD-SPAS-indicators-%28trial%29) — `CanfdBlinkerControl`
 - [使用 HDP (CCNC)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%BD%BF%E7%94%A8-HDP-%28CCNC%29) — `HDPuse`
-- [CANFD HDA2 (0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-CANFD-HDA2-%280%29) — `CanfdHDA2`
+- [現代／起亞 CAN-FD 線束](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%8F%BE%E4%BB%A3-%E8%B5%B7%E4%BA%9E-CAN-FD-%E7%B7%9A%E6%9D%9F) — `CanfdHDA2`
 - [儀表 CAN 直接傳送](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%84%80%E8%A1%A8-CAN-%E7%9B%B4%E6%8E%A5%E5%82%B3%E9%80%81) — `HyundaiCanfdClusterDirectTx`
 - [CANFD 除錯 (0)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-CANFD-%E9%99%A4%E9%8C%AF-%280%29) — `CanfdDebug`
 

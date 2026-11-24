@@ -163,7 +163,8 @@ class WikiSettingsGeneratorTest(unittest.TestCase):
       + quote("KO-상시-조향", safe="-._~"),
       catalog_page,
     )
-    self.assertIn("### 주행 제어\n\n#### 시작·오토\n\n##### 시작 동작", catalog_page)
+    self.assertIn("### 주행 제어\n\n#### 시작·오토", catalog_page)
+    self.assertIn("##### 시작 동작", catalog_page)
 
   def test_manual_region_is_byte_preserved_and_semantic_change_requires_review(self):
     with tempfile.TemporaryDirectory() as temp:

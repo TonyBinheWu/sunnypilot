@@ -167,7 +167,7 @@ class AugmentedRoadView(CameraView):
     self._model_renderer = ModelRenderer()
     from openpilot.selfdrive.ui.layout_profile import device_layout
     from openpilot.selfdrive.ui.onroad.reality_scene import RealityScene
-    self._reality = RealityScene(device_layout("c4"))
+    self._reality = RealityScene(device_layout("c4"), font=gui_app.font(FontWeight.DISPLAY), translate=tr)
     self._hud_renderer = HudRenderer()
     self._overlay_state = OverlayState()
     self._model_renderer._overlay_state = self._overlay_state
