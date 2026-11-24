@@ -1,6 +1,6 @@
 SConscript(['pandad/SConscript'])
 SConscript(['controls/lib/lateral_mpc_lib/SConscript'])
-SConscript(['controls/lib/longitudinal_mpc_lib/SConscript'])
+SConscript(['controls/lib/longitudinal_mpc_lib/SConscript', 'controls/lib/upstream_mpc/SConscript'])
 SConscript(['locationd/SConscript'])
 SConscript(['modeld/SConscript'])
 SConscript(['ui/SConscript'])

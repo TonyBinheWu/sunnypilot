@@ -423,6 +423,7 @@
               "en": "Follow Gap",
               "zh": "车距",
               "params": [
+                "DrivingPlannerMode",
                 "CruiseGapLevels",
                 "TFollowGap1",
                 "TFollowGap2",
@@ -3884,6 +3885,44 @@
       "tgroup": "啟動設定",
       "ttitle": "音量調節，啟用音量 (10%)",
       "tdescr": ""
+    },
+    {
+      "group": "차량간격",
+      "name": "DrivingPlannerMode",
+      "title": "주행 플래너",
+      "descr": "다음 주행부터 적용",
+      "egroup": "FDIST",
+      "etitle": "Driving planner",
+      "edescr": "Applies on the next drive.",
+      "cgroup": "跟车距离",
+      "ctitle": "驾驶规划器",
+      "cdescr": "下次行程生效。",
+      "tgroup": "跟車距離",
+      "ttitle": "駕駛規劃器",
+      "tdescr": "下次行程生效。上游模式使用視覺、跟車與巡航上限決定加速度，並跟隨模型轉向。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1,
+      "control": "select",
+      "options": {
+        "ko": [
+          "CarrotPlanner",
+          "openpilot Autospeed"
+        ],
+        "en": [
+          "CarrotPlanner",
+          "openpilot Autospeed"
+        ],
+        "zh": [
+          "CarrotPlanner",
+          "openpilot Autospeed"
+        ],
+        "zh-tw": [
+          "CarrotPlanner",
+          "openpilot Autospeed"
+        ]
+      }
     },
     {
       "group": "차량간격",

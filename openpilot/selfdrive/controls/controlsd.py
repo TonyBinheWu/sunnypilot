@@ -197,7 +197,8 @@ class Controls:
     # Steering PID loop and lateral MPC
     lat_plan = self.sm['lateralPlan']
     curve_speed_abs = abs(self.sm['carrotMan'].vTurnSpeed)
-    self.lanefull_mode_enabled = (lat_plan.useLaneLines and curve_speed_abs > self.params.get_int("UseLaneLineCurveSpeed"))
+    upstream = long_plan.plannerProfile == 'upstream'
+    self.lanefull_mode_enabled = (not upstream and lat_plan.useLaneLines and curve_speed_abs > self.params.get_int("UseLaneLineCurveSpeed"))
     if CC.latActive and len(lat_plan.curvatures) > 0 and (lat_plan.useLaneLines if self.is_vw_meb else self.lanefull_mode_enabled):
       lat_smooth_seconds = self.params.get_float("LatSmoothSec") * 0.01
       steer_actuator_delay = self.params.get_float("SteerActuatorDelay") * 0.01
@@ -216,19 +217,25 @@ class Controls:
       alpha = 1 - np.exp(-DT_CTRL / tau) if tau > 0 else 1
       return alpha * val + (1 - alpha) * prev_val
 
+    self.steering_influence = 'model'
     if not CC.latActive:
+      self.steering_influence = 'inactive'
       new_desired_curvature = self.curvature
+    elif upstream:
+      new_desired_curvature = float(model_v2.action.desiredCurvature)
     elif self.is_vw_meb:
       # VW MEB(ID.4/ID.5): 기본은 레인리스(raw 모델곡률 = infiniteCable2 동일).
       # carrot 횡플래너가 레인모드 활성(lat_plan.useLaneLines, UseLaneLineSpeed>0 & 차선감지)일 때만
       # 차선기반 lateralPlan 경로를 쓴다(opt-in). 모델 경로 출렁임(차선넘나듦)을 차선 지오메트리로 보완.
       if getattr(lat_plan, 'useLaneLines', False) and len(lat_plan.curvatures) > 0:
+        self.steering_influence = 'laneLines'
         curvature = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures,
                                                steer_actuator_delay + lat_smooth_seconds, lat_plan.distances)
         new_desired_curvature = smooth_value(curvature, self.desired_curvature, lat_smooth_seconds)
       else:
         new_desired_curvature = float(model_v2.action.desiredCurvature)  # raw 모델곡률 (if2 기본과 동일)
     elif self.lanefull_mode_enabled:
+      self.steering_influence = 'laneLines' if len(lat_plan.curvatures) else 'holdCurvature'
       if len(lat_plan.curvatures) == 0:
         new_desired_curvature = self.curvature
       else:
@@ -237,12 +244,15 @@ class Controls:
     else:
       # Preserve custom lane-planner filter and its delay compensation. Only
       # the model-target branch uses faster low-speed same-direction turn-in.
+      self.steering_influence = 'hkgFilter' if hkg_assist_active else 'modelFilter'
       tau = low_speed_response_tau(model_v2.action.desiredCurvature, self.desired_curvature, CS.vEgo, .1) if hkg_assist_active else .1
       new_desired_curvature = smooth_value(model_v2.action.desiredCurvature, self.desired_curvature, tau)
 
     # Both response changes stay upstream of the original physical limits.
     self.desired_curvature, curvature_limited = clip_curvature(CS.vEgo, self.desired_curvature, new_desired_curvature, lp.roll)
 
+    if CC.latActive and (curvature_limited or abs(self.desired_curvature - new_desired_curvature) > 1e-8):
+      self.steering_influence += '+limit'
     actuators.curvature = float(self.desired_curvature)
 
     # VW MEB 폐루프 곡률 보정 = infiniteCable2 LatControlCurvature.update() 정확 복제.
@@ -455,6 +465,7 @@ class Controls:
     cs.curvature = self.curvature
     cs.longitudinalPlanMonoTime = self.sm.logMonoTime['longitudinalPlan']
     cs.lateralPlanMonoTime = self.sm.logMonoTime['modelV2']
+    cs.steeringInfluence = self.steering_influence
     cs.desiredCurvature = self.desired_curvature
     cs.longControlState = self.LoC.long_control_state
     cs.upAccelCmd = float(self.LoC.pid.p)

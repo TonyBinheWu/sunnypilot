@@ -351,6 +351,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SoundLanguageSetting", {PERSISTENT, STRING, "auto"}},
     {"SoundLanguageVolume", {PERSISTENT, INT, "100"}},
 
+    {"DrivingPlannerMode", {PERSISTENT, INT, "0"}},
     {"CruiseGapLevels", {PERSISTENT, INT, "4"}},
     {"TFollowGap1", {PERSISTENT, INT, "110"}},
     {"TFollowGap2", {PERSISTENT, INT, "120"}},

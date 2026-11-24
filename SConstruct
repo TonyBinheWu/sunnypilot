@@ -299,6 +299,7 @@ SConscript([
   'openpilot/selfdrive/pandad/SConscript',
   'openpilot/selfdrive/controls/lib/lateral_mpc_lib/SConscript',
   'openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/SConscript',
+  'openpilot/selfdrive/controls/lib/upstream_mpc/SConscript',
   'openpilot/selfdrive/locationd/SConscript',
   'openpilot/selfdrive/modeld/SConscript',
   'openpilot/selfdrive/ui/SConscript',

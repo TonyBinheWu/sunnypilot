@@ -134,6 +134,7 @@ class LongitudinalPlanner:
       self.coasting_target = 0.0
       self.coasting.reset()
       if decision.hold:
+        self.signal_constraint = 'signalHold'
         self.output_should_stop = True
         self.output_v_target_now = 0.0
         self.output_a_target = min(self.output_a_target, 0.0)
@@ -468,6 +469,7 @@ class LongitudinalPlanner:
     if self.coasting_target and self.CP.openpilotLongitudinalControl and output_a_target < output_a_target_mpc:
       self.coasting_target = 0.0
       self.coasting.reset()
+    self.signal_constraint = ''
     self.apply_signal_stop_prepare(sm, carrot, reset_state)
     self.apply_signal_start_guard(carrot, v_ego)
     if getattr(self, 'tesla_traffic_decision', None) is not None:
@@ -496,6 +498,7 @@ class LongitudinalPlanner:
       self.output_v_target_now = min(self.output_v_target_now, max(0., cs.vEgo+self.output_a_target*self.dt))
       self.a_desired = min(self.a_desired, self.output_a_target)
       if self.output_a_target < uncapped:
+        self.signal_constraint = 'signalPrepare'
         self.output_j_target_now = min(self.output_j_target_now, (self.output_a_target-previous)/elapsed)
       # No shouldStop or go request: the existing model owns stopping/handover.
 
@@ -503,6 +506,7 @@ class LongitudinalPlanner:
     from openpilot.selfdrive.carrot.signal_assist import departed_signal_stop
     if (not departed_signal_stop(v_ego)
         and carrot.start_decision is not None and carrot.start_decision.hold):
+      self.signal_constraint = 'signalHold'
       # Explicit departure veto, including the first constrained MPC cycle.
       # Preserve any stronger braking and normal longitudinal/Panda gating.
       self.output_should_stop = True
@@ -589,6 +593,18 @@ class LongitudinalPlanner:
     longitudinalPlan.jerks = self.j_desired_trajectory.tolist()
 
     longitudinalPlan.hasLead = sm['radarState'].leadOne.status
+    longitudinalPlan.plannerProfile = 'carrot'
+    reason = self.mpc.source
+    if carrot.soft_hold_active:
+      reason = 'softHold'
+    elif reason == 'cruise':
+      if sm['controlsState'].forceDecel:
+        reason = 'forceDecel'
+      elif self.hkg_curve_ceiling is not None:
+        reason = 'hkgCurve'
+      elif self.v_cruise_kph < min(sm['carState'].vCruise, V_CRUISE_MAX) and sm.valid['carrotMan']:
+        reason = 'carrot/' + str(sm['carrotMan'].desiredSource)
+    longitudinalPlan.speedConstraint = self.signal_constraint or reason
     longitudinalPlan.longitudinalPlanSource = self.mpc.source
     longitudinalPlan.fcw = self.fcw
 

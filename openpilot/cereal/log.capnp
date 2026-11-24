@@ -867,6 +867,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   desiredCurvature @61 :Float32;  # lag adjusted curvatures used by lateral controllers
   forceDecel @51 :Bool;
 
+  steeringInfluence @68 :Text;
   activeLaneLine @67 : Bool;
 
   lateralControlState :union {
@@ -1284,6 +1285,8 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
   cruiseCoastingPercent @63 :UInt8;
   signalDetectionSuspended @64 :Bool; # fresh vNavi motorway/urban expressway classification
   signalObservationColor @65 :UInt8; # helper current evidence: 0 unknown, 1 red, 2 green, 3 mixed
+  plannerProfile @67 :Text;
+  speedConstraint @68 :Text;
   signalAssistAction @66 :UInt8; # actual helper action: 0 none, 1 departure veto, 2 preparation, 3 confirmed green transition
 
   solverExecutionTime @35 :Float32;
