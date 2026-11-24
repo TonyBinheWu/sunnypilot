@@ -10,10 +10,10 @@ class Messages(dict):
   pass
 
 
-def setup(monkeypatch):
+def setup(monkeypatch, platform='HYUNDAI_IONIQ_5_PE'):
   monkeypatch.setattr(h, 'CanBus', lambda cp: NS(ECAN=0))
   params = NS(value=0, get_int=lambda key: params.value)
-  cp = NS(brand='hyundai', flags=HyundaiFlags.CANFD_SPAS_BLINKERS, passive=False, carFingerprint='HYUNDAI_IONIQ_5_PE')
+  cp = NS(brand='hyundai', flags=HyundaiFlags.CANFD_SPAS_BLINKERS, passive=False, carFingerprint=platform)
   sig = h.SpasSignals(cp, params)
   sig.worker = NS(latest=lambda: None, send=lambda value: None)
   cs = NS(
@@ -489,9 +489,10 @@ def test_stalk_trial_isolated_and_revoked(monkeypatch, fault):
 
 @pytest.mark.parametrize('side', ['left', 'right'])
 @pytest.mark.parametrize('gear', ['park', 'drive'])
-def test_web_lamp_tap_deadline_and_driver_override(monkeypatch, tmp_path, side, gear):
+@pytest.mark.parametrize('platform', ['KIA_EV6', 'HYUNDAI_IONIQ_5_PE'])
+def test_web_lamp_tap_deadline_and_driver_override(monkeypatch, tmp_path, side, gear, platform):
   from openpilot.selfdrive.carrot.bluetooth.model import atomic_json, read_json
-  s, _, cs, sm = setup(monkeypatch)
+  s, _, cs, sm = setup(monkeypatch, platform)
   s.web_indicator.root = tmp_path
   s.web_indicator.started = 9
   warm(s)
@@ -501,6 +502,7 @@ def test_web_lamp_tap_deadline_and_driver_override(monkeypatch, tmp_path, side, 
   s.settings_at = 0
   sent = s.update(cs, sm, 10.01, True)
   assert read_json(tmp_path / 'reply.json')['accepted'] is (gear == 'park')
+  assert read_json(tmp_path / 'reply.json')['reason'] == (None if gear == 'park' else 'not_in_park')
   assert s.web_indicator.take(10.02) is None
   if gear == 'park':
     assert sent and s.test_direction == side

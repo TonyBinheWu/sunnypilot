@@ -9,6 +9,26 @@ from openpilot.selfdrive.car.parked_indicator import ACCEPT_WINDOW, ROOT
 from openpilot.selfdrive.carrot.bluetooth.model import atomic_json, read_json
 
 
+def unavailable_reason(params):
+  if params is None:
+    return "controller_state_unavailable"
+  if params.get_bool("IsOffroad") or params.get_bool("ForceOffroadObserver"):
+    return "offroad"
+  data = params.get("CarParams")
+  if not data:
+    return "controller_state_unavailable"
+  from openpilot.cereal import car
+  from opendbc.car.hyundai.values import HyundaiFlags
+  with car.CarParams.from_bytes(data) as cp:
+    if cp.passive or cp.dashcamOnly:
+      return "passive"
+    if cp.brand != "hyundai" or cp.flags & HyundaiFlags.ENABLE_BLINKERS:
+      return "spas_test_unavailable"
+    if not cp.flags & HyundaiFlags.CANFD_SPAS_BLINKERS:
+      return "spas_setting_off" if not params.get_bool("CanfdBlinkerControl") else "spas_not_active"
+  return None
+
+
 async def parked_indicator(request):
   origin = urlsplit(request.headers.get("Origin", ""))
   if origin.netloc != request.host or origin.scheme != request.scheme or request.headers.get("Sec-Fetch-Site") == "cross-site":
@@ -16,6 +36,9 @@ async def parked_indicator(request):
   if request.content_type != "application/json":
     raise web.HTTPUnsupportedMediaType()
   side = request.match_info["side"]
+  reason = unavailable_reason(request.app.get("params"))
+  if reason:
+    return web.json_response({"ok": False, "reason": reason}, status=409)
   stamp = time.monotonic()
   previous = read_json(ROOT / "request.json", {})
   if isinstance(previous, dict) and stamp - previous.get("stamp", 0) < 1:
@@ -25,5 +48,7 @@ async def parked_indicator(request):
     await asyncio.sleep(.05)
     receipt = read_json(ROOT / "reply.json", {})
     if isinstance(receipt, dict) and receipt.get("stamp") == stamp:
-      return web.json_response({"ok": receipt.get("accepted") is True}, status=200 if receipt.get("accepted") is True else 409)
+      if receipt.get("accepted") is True:
+        return web.json_response({"ok": True})
+      return web.json_response({"ok": False, "reason": receipt.get("reason") or "controller_rejected"}, status=409)
   return web.json_response({"ok": False, "reason": "unconfirmed"}, status=503)

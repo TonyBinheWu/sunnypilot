@@ -2618,7 +2618,31 @@ function parkedIndicatorButtons() {
     try { localStorage.setItem(key, JSON.stringify(entries)); } catch { storageWritable = false; }
     renderLog();
     copyStatus.textContent = "";
-    feedback.textContent = labels[4];
+    const messages = {
+      busy: "兩次請求相隔不到一秒，這次未送出。",
+      another_test_selected: "其他方向燈測試已選取或仍在執行。",
+      not_in_park: "車機讀到的檔位不是 P 檔。",
+      standstill_unconfirmed: "尚未確認車輛已完全靜止。",
+      assistance_active: "駕駛輔助仍啟用中。",
+      controller_or_can_not_ready: "控制器初始化或 CAN 狀態尚未就緒。",
+      stalk_data_not_ready: "尚未收到足夠且即時的方向燈撥桿資料。",
+      control_state_not_ready: "控制狀態資料尚未就緒。",
+      panda_not_ready_or_controls_allowed: "Panda 狀態尚未就緒，或仍允許行車控制。",
+      spas_session_busy: "SPAS 通道正在使用中。",
+      control_loop_not_continuous: "控制器尚未連續更新。",
+      driver_override: "偵測到駕駛操作。",
+      stock_spas_not_ready: "尚未確認原車 SPAS 訊號就緒。",
+      indicator_active: "原車方向燈正在使用中。",
+      test_cooldown: "測試仍在冷卻時間內。",
+      offroad: "車機目前在非行駛或唯讀模式。",
+      passive: "車機目前僅記錄，控制器未啟用。",
+      spas_test_unavailable: "目前車型配置未使用這個 SPAS 測試通道。",
+      controller_state_unavailable: "尚未取得本次啟動的車型設定。",
+      spas_setting_off: "啟動設定中的 CAN-FD SPAS indicators (trial) 已關閉。",
+      spas_not_active: "設定已開啟，本次啟動尚未辨識到可測試的 SPAS 通道。",
+      unconfirmed: "車機未在期限內回覆，方向燈狀態未知。",
+    };
+    feedback.textContent = (LANG === "zh-tw" && messages[reason.split(" | ")[1]]) || labels[4];
   }
   copy.onclick = async () => {
     try {
@@ -2638,6 +2662,7 @@ function parkedIndicatorButtons() {
     button.onclick = async () => {
       for (const action of actions.children) action.disabled = true;
       feedback.textContent = "";
+      const started = performance.now();
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
@@ -2651,6 +2676,9 @@ function parkedIndicatorButtons() {
         recordError(labels[index + 1], controller.signal.aborted ? "request_timeout" : `network_error | ${error.message}`);
       } finally {
         clearTimeout(timeout);
+        // Both sides share the server's one-second request interval.
+        const remaining = 1100 - (performance.now() - started);
+        if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining));
         for (const action of actions.children) action.disabled = false;
       }
     };

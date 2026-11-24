@@ -133,6 +133,7 @@ class SpasSignals:
       tap = self.web_indicator.take(now)
       web_request = tap is not None and setting == self.test_setting == 0 and self.test_request is None
       accepted = False
+      reason = 'another_test_selected'
       if web_request or (setting != self.test_setting and setting in range(1, 19)):
         # Consume the edge even when the parked guard fails; never run later.
         cc, ss = sm['carControl'], sm['selfdriveState']
@@ -145,8 +146,23 @@ class SpasSignals:
                         self.session.stock_direction == 0 and not (cs.leftBlinker or cs.rightBlinker)))
         accepted = parked and (setting <= 2 or self.hold_supported) and self.session.state == 'idle' and direct_ready
         if web_request:
-          accepted = (accepted and continuous and not self.driver_override and self.session.stock_ready(now)
-                      and not self.session.stock_direction and not (cs.leftBlinker or cs.rightBlinker) and now >= self.direct_cooldown)
+          checks = (
+            (str(cs.gearShifter) == 'park', 'not_in_park'),
+            (cs.standstill and abs(cs.vEgo) < .01, 'standstill_unconfirmed'),
+            (not (cc.latActive or cc.longActive or ss.active or ss.enabled), 'assistance_active'),
+            (initialized and cs.canValid, 'controller_or_can_not_ready'),
+            (self.driver_count >= 3 and 0 <= now-self.driver_at < .5, 'stalk_data_not_ready'),
+            (healthy, 'control_state_not_ready'),
+            (parked, 'panda_not_ready_or_controls_allowed'),
+            (self.session.state == 'idle', 'spas_session_busy'),
+            (continuous, 'control_loop_not_continuous'),
+            (not self.driver_override, 'driver_override'),
+            (self.session.stock_ready(now), 'stock_spas_not_ready'),
+            (not (self.session.stock_direction or cs.leftBlinker or cs.rightBlinker), 'indicator_active'),
+            (now >= self.direct_cooldown, 'test_cooldown'),
+          )
+          reason = next((code for passed, code in checks if not passed), None)
+          accepted = accepted and reason is None
         if accepted:
           self.web_active = web_request
           self.test_serial += 1
@@ -177,7 +193,7 @@ class SpasSignals:
           self.pulse_started = None
           self.lamp_confirmed = False
       if tap is not None:
-        self.web_indicator.reply(tap[0], bool(web_request and accepted))
+        self.web_indicator.reply(tap[0], bool(web_request and accepted), reason)
       self.test_setting = setting
       self.settings_at = now+.1
     record = self.worker.latest() if self.worker is not None else None
