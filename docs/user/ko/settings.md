@@ -2,6 +2,14 @@
 
 [English](../en/settings.md)
 
+## C3X·C4 주행 설정
+
+**설정 → 토글 → 주행 화면**에서 기존 3D, 전방 카메라, 모델 감지 3D를 선택합니다. 모델 화면은 도로 경계, 차선, 경로 및 선행 차량을 표시합니다. 보행자와 차종 분류는 별도 전방 카메라 검출 결과입니다. 양쪽 도로 경계가 함께 넓어졌다 좁아지면 교차로 후보를 표시합니다. 도로 형상 기반 추정이므로 다른 개방 구간에서도 나타날 수 있습니다.
+
+차로 중앙 유지 기능은 양쪽 차선이 뚜렷할 때 모델 경로를 중앙으로 점진적으로 보정합니다. 방향지시등, 운전자 조향 또는 차선 신뢰도 저하 시 모델 경로로 복귀합니다. 저속 방향지시등 회전은 약 32 km/h 이하에서 한쪽 방향지시등으로 모델에 회전을 요청합니다. 두 설정 모두 다음 운행부터 적용됩니다. 지도 입력을 지원하는 모델은 유효한 경로와 위치가 있으면 도로 지도를 사용할 수 있습니다.
+
+주차 후 **설정 → 모델**에서 모델을 선택합니다. 다운로드가 끝난 뒤 재부팅하면 장치에서 컴파일합니다. 실패 시 기본 CD210을 사용합니다. 현대·기아 설정에서 일반 배선과 CAN-FD 버스 자동 감지가 기본이며, 설치한 하네스에 맞게 카메라와 ADAS ECU 중에서 직접 선택할 수 있습니다. Carrot Web 내비게이션에서 국가별 오프라인 도로 지도를 다운로드하거나 전환할 수 있습니다.
+
 ## 기기 화면 배치
 
 개발 컴퓨터에서 `python tools/layout_studio/server.py`를 실행하고 출력된 로컬 주소를 엽니다. 준비된 배치 작업 브랜치에서 `--publish`를 추가하면 내보낸 뒤 **推送至 carrot-wip**을 사용할 수 있습니다. 확인하면 원격 브랜치에 반영됩니다. C3X 또는 C4를 고른 뒤 설정 메뉴나 주행 화면을 선택합니다. 화살표로 메뉴 순서를 바꾸고 글자 크기와 간격을 조정할 수 있습니다. 주행 화면에서는 속도 표시를 끌어 위치를 바꿀 수 있습니다. 초안은 기기별로 브라우저에 저장됩니다. **輸出版面**을 누르면 두 기기의 배치가 작업 폴더에 기록됩니다. 브랜치 업데이트 후 기기 UI를 다시 시작하면 적용됩니다. 미리보기는 예시 주행 데이터를 사용합니다.
@@ -290,68 +298,12 @@ VW MEB(ID.4 포함)에도 수동 조향비와 학습 비율이 적용됩니다. 
 
 힘 센서의 추세는 손 접촉 해제나 운전자의 인계 동의를 뜻하지 않습니다. 기존 `steeringPressed` 판정과 운전자 감시는 그대로이며, 기본 적용이 모든 차량에서 동일한 조향감을 보장하지는 않습니다.
 
-### 속도·감속 — 23개
+### 추종·속도·정차
 
-아래 표의 **세부 구역 제목을 누르면** 카메라 감속 계산, 제한속도 연동과 커브·신호 로직을 설명한 페이지로 이동합니다.
+오픈파일럿이 가감속을 제어할 때 모델의 가속·정지 요청, 선행 차량 MPC와 크루즈 설정 속도를 함께 반영합니다. 주행 성향에 따라 추종 시간이 달라집니다. 일상 주행 메뉴에서 비전 커브, 지도 커브, 속도 제한 보조를 선택할 수 있습니다. 액추에이터 지연과 정차 감속은 차량별 보정값을 사용합니다. 기존 속도·감속과 가감속 PID 상세 메뉴는 제거되었습니다.
 
-| 세부 구역 | 파라미터 | 용도 |
-|---|---|---|
-| [과속카메라](speed-deceleration.md#speed-camera) | `AutoNaviSpeedCtrlMode`, `AutoNaviSpeedCtrlEnd`, `AutoNaviRearCameraHoldDistance`, `AutoNaviSpeedDecelRate`, `AutoNaviSpeedSafetyFactor`, `AutoNaviCountDownMode`, `VehicleNaviCanControl`, `VehicleNaviSchoolZoneControl`, `VehicleNaviDecelCancel`(`VehicleNaviDecelCancelBox`, `VehicleNaviDecelCancelMobileZone`, `VehicleNaviDecelCancelBump`, `VehicleNaviDecelCancelUnknown`, `VehicleNaviDecelCancelEarlyWarning`), `VehicleNaviSectionAvgControl`, `VehicleSpeedCameraControlMode`, `VehicleSpeedCameraDistanceTime` | 안전운전 이벤트의 대상, 후면단속 통과 후 유지, 순정 카메라 거리 연결·가상거리, PV5 단속 상태에 따른 카메라 유지·해제와 구간단속 제한속도 유지, 감속 시점과 목표 속도 |
-| [도로 제한속도](speed-deceleration.md#road-speed-limit) | `AutoRoadSpeedLimitOffset`, `AutoRoadSpeedAdjust`, `AutoSpeedUptoRoadSpeedLimit` | 도로 제한속도에 맞춘 목표 속도 조절 |
-| [과속방지턱](speed-deceleration.md#speed-bump) | `AutoNaviSpeedBumpTime`, `AutoNaviSpeedBumpSpeed`, `AutoNaviSpeedBumpEndDistance` | 방지턱 감속 완료 시점, 통과 속도와 조기 종료 거리 |
-| [커브·턴](speed-deceleration.md#curve-turn) | `AutoCurveSpeedFactor`, `AutoCurveSpeedLowerLimit`, `TurnSpeedControlMode`, `MapTurnSpeedFactor`, `ApplyModelSpeed` | 곡률·남은 거리 기반 감속, 회전 완화 확인 후 빠른 복구와 경로 턴 속도 |
-| [신호감지](speed-deceleration.md#traffic-light) | `TrafficLightDetectMode`, `TrafficStopDistanceAdjust` | 신호 정지·출발 감지, 정지 위치 및 정지차 기준 자동 보정 |
+모델 또는 MPC가 정지를 요청하면 정차 상태를 유지합니다. 두 요청이 해제되어도 브레이크, 소프트홀드 또는 순정 크루즈 정차 요청이 있으면 출발하지 않습니다. 순정 가감속을 쓰는 차는 차량의 재출발 조건을 따릅니다. 운전자는 신호, 교차로 및 선행 차량을 직접 확인해야 합니다.
 
-`AutoNaviSpeedCtrlMode`는 `0` 미사용, `1` 과속카메라, `2` 과속카메라+방지턱, `3` 과속카메라+방지턱+이동식카메라입니다.
-
-외부 내비 연결 중에는 감속·카운트다운·내비 속도 표시에 외부 내비만 사용합니다. 외부 내비의 안내 항목이 없어도 순정 내비는 제외하며, 연결 종료 또는 수신 시간 초과가 확인되면 순정 내비 설정을 다시 적용합니다.
-
-`VehicleSpeedCameraControlMode=2`는 차량 수신 카메라의 실제 감속이 시작된 뒤 새로 가속페달을 밟으면 현재 이벤트를 무시하려는 의사로 판단합니다. 감속구간에서 가속으로 도달한 최고속도를 하한으로 유지하고 이벤트가 끝나면 초기화하며, 감속 전부터 계속 밟은 입력은 오버라이드를 시작하지 않습니다.
-
-`AutoNaviSpeedDecelRate`의 기본값은 `120`(1.20m/s²)이며, 값이 낮을수록 더 먼 거리에서 감속을 시작합니다. 기존 저장값은 업데이트만으로 변경되지 않습니다. `AutoNaviSpeedSafetyFactor`는 감속 목표에 적용하는 제한속도 비율입니다. 감속이 이상하면 값부터 바꾸지 말고 이벤트 종류, 제한속도와 남은 거리가 정상 수신되는지 먼저 확인하세요.
-
-`TrafficLightDetectMode`는 `0` 미사용, `1` 정지만 감지, `2` 정지와 출발을 모두 감지합니다. 모델 판단에 의존하므로 운전자가 항상 직접 확인해야 합니다.
-
-### 크루즈·차간 — 전체 29개, 현대·기아·제네시스 26개
-
-아래 표의 **세부 구역 제목을 누르면** 실제 코드 기준의 계산 방식, 값의 방향과 주의사항을 설명한 페이지로 이동합니다.
-
-| 세부 구역 | 파라미터 | 용도 |
-|---|---|---|
-| [가속 성향·드라이브 모드](cruise-gap.md#driving-mode) | `MyDrivingMode`, `MyDrivingModeAuto` | 연비, 안전, 일반, 고속 모드와 자동 전환 |
-| [가속 성향·속도별 가속값](cruise-gap.md#acceleration-table) | `CruiseMaxVals0`, `CruiseMaxVals1`, `CruiseMaxVals2`, `CruiseMaxVals3`, `CruiseMaxVals4`, `CruiseMaxVals5`, `CruiseMaxVals6` | 속도 구간별 최대 가속 성향 |
-| [정차·재출발](cruise-gap.md#stop-resume) | `StopDistanceCarrot`, `StoppingAccel`, `VEgoStopping`, `AChangeCostStarting` | 정지 위치, 정지 진입과 재출발 특성 |
-| [가감속 튜닝](cruise-gap.md#longitudinal-tuning) | `LongTuningKpV`, `LongTuningKiV`, `LongTuningKf`, `LongActuatorDelay` | 레이 EV 콤마페달은 저장 게인 적용; 그 외 현기차 `100/0/100`, 토요타·렉서스 `0/0/100` 고정·숨김; VW MEB(ID.4 포함)는 저장 게인 적용 |
-| [차간거리](cruise-gap.md#following-gap) | `TFollowGap1`, `TFollowGap2`, `TFollowGap3`, `TFollowGap4`, `DynamicTFollowLC`, `SpeedTFFactor`, `TFollowDecelBoost` | 차간 단계별 시간, 정상 선택 앞차 기준 차로 변경 완화와 감속 여유(기본 0%) |
-| [추종응답성](cruise-gap.md#lead-response) | `LeadAccelResponse`, `LeadAccelResponseTF1`–`LeadAccelResponseTF4` | 모든 차간 단계의 앞차 출발·가속 추종과 접근 반응 |
-| [당근 크루즈](cruise-gap.md#carrot-cruise) | `CruiseEcoControl`, `CruiseCoastingPercent`, `CarrotCruiseDecel`, `CarrotCruiseAtcDecel` | 연비 제어, 진입 기준속도를 고정하는 코스팅 여유(기본 0%: 기존 제어), 당근 크루즈 감속 특성 |
-
-`MyDrivingMode`는 `1` 연비, `2` 안전, `3` 일반, `4` 고속 모드입니다. 고속 모드는 신호 감지를 무시하고 가속 성향을 높이므로 모드 이름만 보고 선택하지 말고 설명을 확인하세요.
-
-모드별 앞차 반응 상한은 연비 2, 안전 3이며 일반·고속은 선택값을 유지합니다. 공통값과 TF별 반응을 먼저 선택한 뒤 적용하고 낮은 값과 0은 올리지 않습니다. TF 배율은 연비 ×1.1·안전 ×1.2를 유지하며 모드 여유는 복귀 때 서서히 줄입니다. 자동전환은 정지 접근·지속 서행에서 안전을 선택합니다. 정지 접근이 아니며 앞차 가속도가 1.0m/s² 초과로 약 0.5초 유지되면 일반/연비로 복귀하고, 그 외에는 흐름 회복 3초 또는 앞차 없이 15km/h 이상 주행 4초를 확인합니다.
-
-`CruiseGapLevels`(갭 단계 수)는 버튼 순환을 2단계부터 차량 최대 단계까지 줄일 수 있으며 기본값은 차량 최대 단계입니다. 2는 TF1·TF2, 3은 TF1~TF3을 사용합니다. 다음 갭 버튼 조작부터 적용하며 사용하지 않는 TF·추종응답성 값은 보관합니다. openpilot 가감속 제어에 적용합니다.
-
-`TFollowGap1`~`TFollowGap4`는 저장값에 `0.01초`를 곱한 시간 간격입니다. 값을 줄이면 선행차와 가까워집니다. 앞차 가속 추종은 `LeadAccelResponse`로 조절합니다. 1~3은 완만한 반응, 4는 빠른 추종, 5는 최대 추종이며 감속 시작 거리를 별도로 기억해 차간을 늘리지는 않습니다.
-
-`LeadAccelResponse`: 앞차가 출발하거나 속도를 높일 때 따라가는 반응을 조절합니다. 낮을수록 차간을 천천히 좁히고, 높을수록 빠르게 따라갑니다. 0은 가속 반응 강화를 끄고, 5는 가장 적극적으로 따라가는 시험 단계입니다. 자세한 동작은 [추종응답성 설명](cruise-gap.md#lead-response)을 확인하세요. 추가 여유의 유지 조건은 TF 거리(속도×TF＋정지거리)의 1.2배까지 적용하고, 1.2~1.5배에서 점차 해제합니다. 1.5배 이상에서는 앞차 속도와 관계없이 여유를 회수합니다.
-
-`SpeedTFFactor`는 선택한 기본 TF에 속도별 선형 배율을 적용합니다. 10은 변화 없음, 20은 100km/h에서 2배입니다. 단계별 `LeadAccelResponseTF1`~`TF4`는 -1이면 공통값, 0~5이면 해당 반응을 사용합니다. 반응 4~5도 속도 배율을 유지합니다. 주행 화면의 거리 바는 동적 보정이 반영된 추종 목표거리를 m로 표시합니다.
-
-
-감속 미리보기는 반응 단계와 별도로 동작합니다. 상대 가속도가 줄거나 앞차가 레이더·비전 사이에서 전환되거나 사라져도, 제어 중에는 남은 보정을 점진적으로 해제합니다. 가속·브레이크 페달 개입이나 종방향 제어 종료 시에는 초기화합니다.
-
-`LongTuning*`, `LongActuatorDelay`는 openpilot이 가감속을 제어하는 차량에서 직접적인 영향을 줄 수 있는 고급 항목입니다. 차량 식별로 확인된 레이 EV 콤마페달에서는 세 게인을 표시하고 저장값을 속도 PID에 적용합니다. 그 외 현대·기아·제네시스에서는 `LongTuningKpV`, `LongTuningKiV`, `LongTuningKf`가 안전값 `100/0/100`으로 고정되어 설정 화면에 나오지 않으며, 토요타·렉서스는 전용 보정기 앞의 중복 보정을 막기 위해 공통 게인을 `0/0/100`으로 고정·숨깁니다. 순정 ACC 차량에서는 관련 없는 항목도 있습니다.
-
-`StoppingAccel`(정지시작가속도)은 기본 `-50`, 범위 `-100~-50`, 변경 단위 `10`으로 다시 조정할 수 있습니다. 저장값에 0.01을 곱한 가속도를 사용하며, 제어에서도 범위를 제한합니다. 기존 정지 진입·감속 방식과 차종별 소프트홀드를 사용하고 변경은 약 1초 안에 반영됩니다. [정차·재출발](cruise-gap.md#stop-resume)을 참고하세요.
-
-`VEgoStopping`(정지출발민감도)은 범위 `10~100`, 기본 `50`이며, `10`은 `0.10m/s`입니다. 기존의 `10` 미만 저장값은 자동으로 `10`으로 올리고, 주행 중에도 같은 최저값을 적용합니다.
-
-현대·기아 CANFD 오픈파일럿 종방향 제어에서는 StopReq를 켜는 첫 프레임부터 aReqRaw·aReqValue를 0으로 보내므로, 이 설정은 StopReq 유지 중 송신 가속도를 바꾸지 않습니다. 자동 해제·재시도는 제거되었습니다.
-
-지원되는 Tesla 차량에서 추가 차량 버스와 **alpha longitudinal**(`AlphaLongitudinalEnabled`)뿐 아니라 Carrot Web의 `TeslaAutoSpeedLimit`도 켜야 [크루즈 설정속도 자동 조절](tesla.md#automatic-cruise-speed)이 활성화됩니다. 기본 꺼짐이며 변경 후 전체 재시작이 필요합니다. 내비게이션·Carrot 속도 제어가 활성 상태이면 DAS 기반 조절을 중지하고, 해당 제어가 끝난 뒤 제한속도가 다시 안정되면 재개합니다. 수동 조작에 따른 중지는 그대로 유지됩니다. 오른쪽 속도 휠을 직접 돌리면 일시 중지하며, 1초 안에 반대 방향으로 돌리거나 제어를 해제했다가 다시 켜면 재개합니다. 끄면 자동 휠 송신만 중지하며 수동 휠은 유지됩니다.
-
-<a id="vehicle-hardware"></a>
 ## 차량·하드웨어
 
 차량·하드웨어에는 일반 메뉴 18개와 검색 전용 운전자 감시 예외 설정 1개가 있습니다. 차종, 하네스와 기기 하드웨어 구성을 결정하므로 화면 표시 설정처럼 시험 삼아 켜면 안 됩니다.

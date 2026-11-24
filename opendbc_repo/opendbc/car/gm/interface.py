@@ -176,7 +176,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerActuatorDelay = 0.28  # Default delay, not measured yet
 
     ret.steerLimitTimer = 0.4
-    ret.longitudinalActuatorDelay = Params().get_float("LongActuatorDelay")*0.01 # 0.5  # large delay to initially start braking
+    ret.longitudinalActuatorDelay = 0.5
 
     if candidate == CAR.CHEVROLET_VOLT:
       ret.steerActuatorDelay = 0.45 if useEVTables else 0.3

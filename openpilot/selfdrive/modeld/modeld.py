@@ -15,7 +15,6 @@ from openpilot.selfdrive.modeld.egpu_events import log_event
 from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
 from openpilot.common.driving_planner import active_planner_mode, camera_only
 from openpilot.common.params import Params
-from openpilot.common.stopping_params import get_stopping_speed
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import config_realtime_process, DT_MDL
 from openpilot.common.transformations.camera import DEVICE_CAMERAS
@@ -346,8 +345,22 @@ def main(demo=False):
   # A standby model must not spawn a separate experimental ONNX observer that
   # receives no live samples. Keep standby inference/warmup and fallback intact;
   # optional comparison remains available when internal inference starts active.
-  small_model = ModelState(vipc_client_main.width, vipc_client_main.height, False,
-                           enable_shadow=not usbgpu_model_loaded) if model is None or USBGPU else None
+  from openpilot.common import internal_models
+  small_model = None
+  if model is None or USBGPU:
+    choice = internal_models.active()
+    if choice != 'cd210':
+      try:
+        small_model = ModelState(vipc_client_main.width, vipc_client_main.height, False, internal_models.artifact(choice, '.pkl'),
+                                 enable_shadow=False)
+      except Exception:
+        cloudlog.exception("Unable to load selected internal model; falling back to CD210")
+        try:
+          internal_models.record('cd210', True)
+        except OSError:
+          cloudlog.exception('Unable to save internal model fallback status')
+    if small_model is None:
+      small_model = ModelState(vipc_client_main.width, vipc_client_main.height, False, enable_shadow=not usbgpu_model_loaded)
   if usbgpu_model_loaded:
     from openpilot.selfdrive.modeld.internal_model_warmup import warm_internal_model_from_camera
     warm_internal_model_from_camera(small_model, vipc_client_main)
@@ -433,7 +446,7 @@ def main(demo=False):
   frame = 0
   custom_lat_delay = 0.0
   lat_smooth_seconds = LAT_SMOOTH_SECONDS
-  vEgoStopping = get_stopping_speed(params)
+  vEgoStopping = CP.vEgoStopping
   camera_yaw_trim_deg = params.get_float("CameraYawTrimDeg") * 0.01
   lat_delay_dynamic = lat_smooth_seconds
   diagnostics = RuntimeDiagnostics('modeld', cloudlog.event)
@@ -444,8 +457,6 @@ def main(demo=False):
     if frame % 100 == 0:
       custom_lat_delay = params.get_float("SteerActuatorDelay") * 0.01
       lat_smooth_seconds = params.get_float("LatSmoothSec") * 0.01
-      long_delay = params.get_float("LongActuatorDelay")*0.01
-      vEgoStopping = get_stopping_speed(params)
       camera_yaw_trim_deg = params.get_float("CameraYawTrimDeg") * 0.01
       # eGPU power follows ignition on the vehicle. Keep UI state current when
       # the shared USB hub is connected or removed after modeld starts.

@@ -60,6 +60,7 @@ class DesireHelper:
 
     self.desire = log.Desire.none
     self.turn_direction = TurnDirection.none
+    self.sunny_lane_turn = self.params.get_bool("SunnyLaneTurn")
     self.enable_turn_desires = True
     self.turn_desire_state = False
     self.desire_disable_count = 0
@@ -603,6 +604,20 @@ class DesireHelper:
       if lever_type is not None:
         new_type = lever_type
       lever_decided_turn = lever_type == "turn"
+      if self.sunny_lane_turn and driver_enabled and side is not None and 0 <= v_ego <= 20 * CV.MPH_TO_MS:
+        # Only a driver-owned single indicator may condition the driving model.
+        # Preserve active lane-change completion, cancellation and takeover paths.
+        clear = (indicator_valid and assistant_valid and carstate.canValid and not carstate.steeringPressed and
+                 (carstate.leftBlinker != carstate.rightBlinker) and (carstate.leftBlinker == (side.name == "left")) and
+                 not getattr(carstate, side.name + 'Blindspot', True) and
+                 not side.bsd_hold_counter and not side.side_object_detected)
+        new_type = "turn" if clear else "none"
+        lever_decided_turn = False
+        if not clear:
+          desire_enabled = False
+      elif self.sunny_lane_turn and driver_enabled and new_type == "turn":
+        new_type = "lane_change"
+        lever_decided_turn = False
 
       if trailer_maneuver_blocked and new_type in ("lane_change", "turn"):
         new_type = "none"

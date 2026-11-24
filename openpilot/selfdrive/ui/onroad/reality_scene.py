@@ -8,12 +8,46 @@ import time
 
 from openpilot.selfdrive.carrot.server.config import CARROT_WEB_SETTINGS_PATH, WEB_DIR
 
+import numpy as np
 import pyray as rl
 
 
 def fresh(state, service, seconds, now):
   sm = state.sm
   return sm.valid[service] and sm.recv_frame[service] >= state.started_frame and 0 <= now - sm.logMonoTime[service] * 1e-9 < seconds
+
+
+def road_opening(model):
+  """Bracket a possible crossroads using observed widening on both sides of the driving path."""
+  if len(model.roadEdges) != 2 or len(model.roadEdgeStds) != 2 or not all(0 <= s < .5 for s in model.roadEdgeStds):
+    return None
+  grid = np.arange(4., 58., 2.)
+  samples = []
+  for line in (model.position, model.roadEdges[0], model.roadEdges[1]):
+    x, y = np.asarray(line.x), np.asarray(line.y)
+    if len(x) != len(y) or len(x) < 5 or not np.isfinite(x).all() or not np.isfinite(y).all() or not (np.diff(x) > 0).all():
+      return None
+    values = np.interp(grid, x, y, left=np.nan, right=np.nan)
+    idx = np.clip(np.searchsorted(x, grid), 1, len(x)-1)
+    values[x[idx] - x[idx-1] > 8.] = np.nan
+    samples.append(values)
+  path, left, right = samples
+  margins = np.column_stack((path - left, right - path))
+  for i in range(2, len(grid) - 4):
+    before = margins[i-2:i]
+    if not ((before >= 1.3) & (before <= 10.)).all() or np.max(np.ptp(before, axis=0)) > 1.:
+      continue
+    base = before.mean(axis=0)
+    wide = (margins[i:] - base >= 2.).all(axis=1)
+    if not wide[:2].all():
+      continue
+    ends = np.flatnonzero(~wide)
+    if ends.size and 2 <= ends[0] <= 10:
+      end = i + ends[0]
+      after = margins[end:end+2]
+      if len(after) == 2 and (np.abs(after - base) < 1.5).all():
+        return float(grid[i]), float(grid[end])
+  return None
 
 
 def vehicle_points(model, radar):
@@ -74,6 +108,9 @@ class RealityScene:
     self.next_demand = self.image_time = 0
     self.key = None
     self.faces = []
+    self.objects = ()
+    self.next_objects = 0.
+    self.opening = None
     self.next_style_check = 0
     self.settings_stamp = None
     self.ego_scale = (1, 1, 1)
@@ -97,17 +134,24 @@ class RealityScene:
       self.ego_scale = (1, 1, 1)
       self.settings_stamp = None
 
-  def draw(self, rect, state):
+  def draw(self, rect, state, model_only=False):
     now = time.monotonic()
     model_ok = fresh(state, "modelV2", 0.5, now)
-    radar_ok = fresh(state, "radarState", 0.5, now)
+    radar_ok = not model_only and fresh(state, "radarState", 0.5, now)
     sm = state.sm
-    car_ok = fresh(state, "carState", 0.5, now)
+    car_ok = not model_only and fresh(state, "carState", 0.5, now)
     lamps = ego_lamps(sm["carState"] if car_ok else None, now)
     rear = rear_points(sm["carState"] if car_ok else None, sm["radarState"] if radar_ok else None)
+    if model_only and model_ok and now >= self.next_objects:
+      from openpilot.selfdrive.ui.onroad.scene_objects import read_objects
+      self.objects = read_objects(now)
+      self.next_objects = now + .1
+    elif not model_only or not model_ok:
+      self.objects = ()
+      self.next_objects = 0.
     self.update_appearance(now)
     key = (
-      car_ok, lamps, rear, self.ego_scale,
+      model_only, self.objects, car_ok, lamps, rear, self.ego_scale,
       sm.recv_frame["modelV2"] if model_ok else -1,
       sm.recv_frame["radarState"] if radar_ok else -1,
       rect.x,
@@ -116,7 +160,7 @@ class RealityScene:
       rect.height,
     )
     if key != self.key:
-      self.faces = self.geometry(rect, sm["modelV2"] if model_ok else None, sm["radarState"] if radar_ok else None, car_ok, lamps, rear)
+      self.faces = self.geometry(rect, sm["modelV2"] if model_ok else None, sm["radarState"] if radar_ok else None, car_ok, lamps, rear, self.objects, model_only)
       self.key = key
     night = self.style["scene_style"] == 1
     rl.draw_rectangle_gradient_v(
@@ -129,6 +173,29 @@ class RealityScene:
     )
     for vertices, color in self.faces:
       rl.draw_triangle_fan(vertices, len(vertices), color)
+    if model_only:
+      if self.objects:
+        font = max(10, int(rect.height * .025))
+        occupied = []
+        for kind, z, x in sorted(self.objects, key=lambda obj: obj[1]):
+          scale = 740 / (z + 8)
+          px = rect.x + rect.width * ((435 + x * scale) / 1000 + self.style["vehicle_x"] / 100)
+          py = rect.y + rect.height * ((118 + 2.2 * scale) / 450 + self.style["vehicle_y"] / 100) - font * 1.4
+          width = rl.measure_text(kind, font)
+          if (rect.x <= px - width/2 and px + width/2 <= rect.x + rect.width and rect.y <= py < rect.y + rect.height - font
+              and all(abs(px - ox) > (width + ow)/2 + 2 or abs(py - oy) > font + 2 for ox, oy, ow in occupied)):
+            rl.draw_rectangle(int(px - width/2 - 2), int(py - 1), width + 4, font + 2, tint(0x18232F, alpha=210))
+            rl.draw_text(kind, int(px - width/2), int(py), font, rl.WHITE)
+            occupied.append((px, py, width))
+        rl.draw_text("ROAD detector", int(rect.x + rect.width * .03), int(rect.y + rect.height * .79),
+                     max(10, int(rect.height * .03)), rl.SKYBLUE)
+      if self.opening:
+        rl.draw_text(f"Possible junction  {self.opening[0]:.0f} m", int(rect.x + rect.width * .03),
+                     int(rect.y + rect.height * .12), max(11, int(rect.height * .033)), rl.SKYBLUE)
+      if not model_ok:
+        rl.draw_text("modelV2 unavailable", int(rect.x + rect.width * .32), int(rect.y + rect.height * .46),
+                     max(13, int(rect.height * .045)), rl.LIGHTGRAY)
+      return
     self.draw_map(rect, state, now)
     if fresh(state, "navInstructionCarrot", 2, now):
       instruction = sm["navInstructionCarrot"]
@@ -146,8 +213,9 @@ class RealityScene:
             rl.Rectangle(rect.x + rect.width * side, rect.y + rect.height * 0.42, rect.width * 0.012, rect.height * 0.13), tint(0xFFB54E)
           )
 
-  def geometry(self, rect, model, radar, car_ok=False, lamps=(False, False, False), rear=()):
+  def geometry(self, rect, model, radar, car_ok=False, lamps=(False, False, False), rear=(), objects=(), model_only=False):
     v = self.style
+    self.opening = road_opening(model) if model_only and model is not None else None
     faces = []
 
     # Pull behind the furthest measured rear target, including room for its body.
@@ -181,6 +249,18 @@ class RealityScene:
         previous = pair
 
     if model is not None:
+      if model_only and len(model.roadEdges) == len(model.roadEdgeStds) == 2 and all(0 <= s < .5 for s in model.roadEdgeStds):
+        left, right = model.roadEdges
+        previous = None
+        for zl, xl, zr, xr in zip(left.x, left.y, right.x, right.y):
+          if not (0 <= zl <= 110 and 0 <= zr <= 110 and -30 <= xl < xr <= 30):
+            previous = None
+            continue
+          pair = [(xl, zl, 0), (xr, zr, 0)]
+          if previous and zl > previous[0][1] and zr > previous[1][1]:
+            in_opening = self.opening and self.opening[0] <= (zl + zr) / 2 <= self.opening[1]
+            face("lane", previous + pair[::-1], tint(0x466D72 if in_opening else 0x425563))
+          previous = pair
       for edge, std in zip(getattr(model, "roadEdges", ()), getattr(model, "roadEdgeStds", ())):
         if 0 <= std < 0.5:
           ribbon("lane", edge, 0.09, 85)
@@ -189,6 +269,20 @@ class RealityScene:
         if prob > 0.5:
           ribbon("lane", line, 0.12, int(255 * min(prob, 1)))
     vehicles = vehicle_points(model, radar)
+    if objects:
+      vehicles = [(d, y) for d, y in vehicles if not any(abs(d - od) < 2 and abs(y - oy) < 1.2 for _, od, oy in objects)]
+    # Ground positions come from calibrated image detections. Icon dimensions
+    # identify the class and are independent of the estimated object distance.
+    for kind, z, x in sorted(objects, key=lambda obj: -obj[1]):
+      if kind == 'person':
+        face('vehicle', [(x-.24,z,0),(x+.24,z,0),(x+.22,z,1.3),(x-.22,z,1.3)], tint(0xFCB971))
+        face('vehicle', [(x-.18,z,1.35),(x+.18,z,1.35),(x+.16,z,1.72),(x-.16,z,1.72)], tint(0xFCB971))
+      else:
+        narrow = kind in ('bicycle', 'motorcycle')
+        width, height, length = (.36, 1.3, 1.8) if narrow else (1.2, 2.6, 5.5) if kind in ('bus','truck') else (.88, 1.35, 3.8)
+        color = 0xCF9DF6 if narrow else 0x59C5DB
+        face('vehicle', [(x-width,z,0),(x+width,z,0),(x+width,z,height),(x-width,z,height)], tint(color,.78))
+        face('vehicle', [(x-width,z,height),(x+width,z,height),(x+width,z+length,height),(x-width,z+length,height)], tint(color))
     if car_ok:
       vehicles.append((1.3, 0))  # viewport anchor for the reporting vehicle
     vehicles.extend(sorted(rear, reverse=True))

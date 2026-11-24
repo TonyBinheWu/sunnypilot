@@ -1,17 +1,6 @@
 "use strict";
 
-/* 3단계 — HDA1 / HDA2  (현대·기아·제네시스 전용)
- *
- * CanfdHDA2: 0 = HDA1, 1 = HDA2   (params_keys.h:294)
- * HKG 가 아니면 이 단계 자체를 건너뛰고 param 도 건드리지 않는다.
- *
- * 이 값은 CAN 버스 구성을 바꾼다:
- *   opendbc/car/hyundai/interface.py:42  hda2 = params.get_int("CanfdHDA2") > 0
- *   opendbc/car/hyundai/interface.py:43  CAN = CanBus(None, fingerprint, hda2)
- *
- * ⚠ HDA2 는 CAN-FD 차량 개념인데, 차량이 CAN-FD 인지 판별할 수단이 웹에 없다
- *   (/api/cars 는 이름만 준다). 지금은 사용자 자율 선택 + 설명 문구로만 안내.
- *   계획서 §7 남은 결정. */
+// CAN-FD steering bus: 2 detects observed LKAS frames; 0 and 1 select the harness explicitly.
 
 CarrotIntro.register({
   id: "hda",
@@ -27,7 +16,7 @@ CarrotIntro.register({
       <h2 class="intro-title">${t("hdaTitle")}</h2>
       <p class="intro-lead"><b>${escapeHtml(ctx.car)}</b></p>
       <div class="intro-opts">
-        ${[[0, "hda1", "hda1d"], [1, "hda2", "hda2d"]].map(([v, tk, dk]) => `
+        ${[[2, "hdaAuto", "hdaAutoD"], [0, "hda1", "hda1d"], [1, "hda2", "hda2d"]].map(([v, tk, dk]) => `
           <button class="intro-opt intro-opt--desc ${ctx.hda === v ? "is-picked" : ""}"
                   type="button" data-hda="${v}" aria-pressed="${ctx.hda === v}">
             ${t(tk)}

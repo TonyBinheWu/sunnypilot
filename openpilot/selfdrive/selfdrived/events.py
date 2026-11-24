@@ -443,8 +443,8 @@ def car_parser_result(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMast
   if (CP.brand == "hyundai" and not (CP.flags & HyundaiFlags.CAMERA_SCC)
       and params.get_int("HyundaiCameraSCC") == 0 and params.get_bool("HyundaiCameraSccHint")):
     return Alert(
-      "CAN Error: Enable CameraSCC",
-      "SCC detected on camera bus",
+      tr("Check Hyundai harness selection"),
+      tr("SCC detected on camera bus"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 1., creation_delay=1.)
   results = params.get("CanParserResult")

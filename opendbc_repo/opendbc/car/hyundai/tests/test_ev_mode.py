@@ -192,3 +192,27 @@ def test_ev_mode_parser_is_optional_for_can_validity():
 
   assert state.ignore_alive
   assert state.ignore_counter
+
+
+@pytest.mark.parametrize("harness,special,bus,address,dlc,hda2", [
+  (2, 0, 2, 0x50, 16, True), (2, 0, 2, 0x110, 32, True),
+  (2, 0, 2, 0x50, 8, False), (2, 0, 1, 0x50, 16, False),
+  (2, 1, 1, 0x50, 16, True), (0, 0, 2, 0x50, 16, False), (1, 0, 2, 0, 0, True),
+])
+def test_ev6_steering_harness_fingerprint(monkeypatch, harness, special, bus, address, dlc, hda2):
+  class HarnessParams:
+    def get_int(self, name):
+      return {"CanfdHDA2": harness, "HyundaiCameraSCC": special}.get(name, 0)
+
+    def __getattr__(self, attr):
+      return getattr(Params(), attr)
+  from opendbc.car.hyundai import interface, hyundaicanfd
+  monkeypatch.setattr(interface, "Params", HarnessParams)
+  monkeypatch.setattr(hyundaicanfd, "Params", HarnessParams)
+  fingerprint = gen_empty_fingerprint()
+  if address:
+    fingerprint[bus][address] = dlc
+  cp = CarInterface.get_params(CAR.KIA_EV6, fingerprint, [], False, False, False)
+  assert bool(cp.flags & HyundaiFlags.CANFD_HDA2) == hda2
+  if harness == 2 and hda2:
+    assert bool(cp.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING) == (address == 0x110)

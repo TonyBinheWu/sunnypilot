@@ -2,7 +2,7 @@ from openpilot.system.ui.lib.multilang import tr
 from openpilot.cereal import log
 
 from openpilot.system.ui.widgets.scroller import NavScroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle
+from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
 from openpilot.selfdrive.ui.ui_state import ui_state
@@ -25,7 +25,13 @@ class TogglesLayoutMici(NavScroller):
     record_mic = BigParamControl(tr("record & upload mic audio"), "RecordAudio", toggle_callback=restart_needed_callback)
     enable_openpilot = BigParamControl(tr("enable openpilot"), "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
 
+    self._scene_view = BigMultiToggle(tr("Driving view"), [tr("3D scene"), tr("Camera"), tr("3D model")],
+                                     select_callback=lambda value: ui_state.params.put("DrivingSceneView", self._scene_view._options.index(value)))
+    lane_center = BigParamControl(tr("Lane centering"), "SunnyLaneCenter")
+    lane_turn = BigParamControl(tr("Low-speed signaled turns"), "SunnyLaneTurn")
     self._scroller.add_widgets([
+      lane_center, lane_turn,
+      self._scene_view,
       self._personality_toggle,
       self._experimental_btn,
       is_metric_toggle,
@@ -39,6 +45,7 @@ class TogglesLayoutMici(NavScroller):
 
     # Toggle lists
     self._refresh_toggles = (
+      ("SunnyLaneCenter", lane_center), ("SunnyLaneTurn", lane_turn),
       ("ExperimentalMode", self._experimental_btn),
       ("IsMetric", is_metric_toggle),
       ("RainbowMode", rainbow_toggle),
@@ -74,6 +81,7 @@ class TogglesLayoutMici(NavScroller):
 
   def _update_toggles(self):
     ui_state.update_params()
+    self._scene_view.set_value(self._scene_view._options[max(0, ui_state.driving_scene_view)])
 
     # CP gating for experimental mode
     if ui_state.CP is not None:

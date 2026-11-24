@@ -467,7 +467,11 @@ def load_catalog(path: Path, locales: Iterable[str] = DEFAULT_LOCALES) -> tuple[
   for leaf in leaves:
     for param in leaf.params:
       if param in placement:
-        raise GenerationError(f"parameter {param} appears in more than one menu leaf")
+        # Daily Driving also links to settings in their primary menu.
+        if leaf.id == "DAILY_DRIVING":
+          continue
+        if placement[param].id != "DAILY_DRIVING":
+          raise GenerationError(f"parameter {param} appears in more than one menu leaf")
       placement[param] = leaf
   missing_definitions = sorted(set(placement) - set(by_name))
   missing_placement = sorted(set(by_name) - set(placement))

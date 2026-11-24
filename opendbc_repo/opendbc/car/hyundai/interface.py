@@ -44,9 +44,12 @@ class CarInterface(CarInterfaceBase):
     if candidate == CAR.KIA_SORENTO:
       ret.extFlags |= HyundaiExtFlags.RADAR_GROUP4.value
 
-    cam_can = CanBus(None, fingerprint).CAM if camera_scc == 0 else 1
-    hda2 = False #0x50 in fingerprint[cam_can] or 0x110 in fingerprint[cam_can]
-    hda2 = hda2 or params.get_int("CanfdHDA2") > 0
+    base_bus = CanBus(None, fingerprint)
+    cam_can = base_bus.CAM if camera_scc == 0 else base_bus.ACAN
+    harness = params.get_int("CanfdHDA2")
+    observed = fingerprint[cam_can] if ret.flags & HyundaiFlags.CANFD else {}
+    hda2 = harness == 1 or (harness == 2 and bool(ret.flags & HyundaiFlags.CANFD) and
+                             (observed.get(0x50) == 16 or observed.get(0x110) == 32))
     CAN = CanBus(None, fingerprint, hda2)
 
     # Prefer the current camera wiring, while supporting recorded src=1 wiring.
@@ -99,7 +102,10 @@ class CarInterface(CarInterfaceBase):
       if hda2:
         print("$$$CANFD HDA2")
         ret.flags |= HyundaiFlags.CANFD_HDA2.value
-        if camera_scc > 0:
+        if harness == 2:
+          if observed.get(0x110) == 32:
+            ret.flags |= HyundaiFlags.CANFD_HDA2_ALT_STEERING.value
+        elif camera_scc > 0:
           if 0x110 in fingerprint[CAN.ACAN]:
             ret.flags |= HyundaiFlags.CANFD_HDA2_ALT_STEERING.value
             print("$$$CANFD ALT_STEERING1")

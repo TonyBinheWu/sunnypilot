@@ -1,5 +1,8 @@
 "use strict";
 globalThis.CarrotNavigationZhTw = Object.freeze({
+  "Offline map country": "離線地圖國家",
+  "Select a country to store its map on the device.": "選擇國家，將離線地圖儲存到車機。",
+  "Download or select map": "下載或選用地圖",
   "Continue straight": "直行",
   "Turn left": "左轉",
   "Turn right": "右轉",

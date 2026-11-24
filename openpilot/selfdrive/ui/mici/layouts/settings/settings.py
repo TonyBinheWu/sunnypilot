@@ -46,9 +46,7 @@ class SettingsLayout(NavScroller):
     firehose_btn.set_click_callback(lambda: gui_app.push_widget(firehose_panel))
 
     usbgpu_panel = UsbGpuLayoutMici()
-    usbgpu_btn = SettingsBigButton(tr("eGPU"), "", gui_app.texture("icons_mici/settings/network/wifi_strength_full.png", 76, 56))
-    usbgpu_btn.set_visible(lambda: ui_state.usbgpu_present or ui_state.usbgpu_compiled or
-                          ui_state.params.get("GitBranch") == "carrot-egpu")
+    usbgpu_btn = SettingsBigButton(tr("Models"), "", gui_app.texture("icons_mici/settings/network/wifi_strength_full.png", 76, 56))
     usbgpu_btn.set_click_callback(lambda: gui_app.push_widget(usbgpu_panel))
 
     language_panel = LanguageLayoutMici()

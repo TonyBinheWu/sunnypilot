@@ -707,6 +707,11 @@ function launch {
     echo "Native Params still do not match this checkout; not starting manager."
     show_startup_failure "Native Params do not match this checkout"
   fi
+  # Compile an offroad-selected internal model against this checkout at boot.
+  # The normal CD210 build remains available if compilation or verification fails.
+  if ! run_startup_command python3 -m openpilot.common.internal_models; then
+    echo "Internal model selection unavailable, using bundled model"
+  fi
   start_big_model_update
   if ! run_startup_command start_manager; then
     show_startup_failure "Manager failed to start"

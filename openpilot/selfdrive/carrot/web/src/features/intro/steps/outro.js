@@ -25,7 +25,7 @@ CarrotIntro.register({
       const changes=setupChanges(ctx);
       for(const row of changes){const item=document.createElement('p');
         const title=row.key==='CarSelected3'?t('againVehicle'):row.key==='web_language'?t('againLanguage'):row.key==='CanfdHDA2'?t('hdaTitle'):row.title;
-        const value=v=>row.key==='CanfdHDA2'&&[0,1].includes(v)?t(v===1?'hda2':'hda1'):v??'—';
+        const value=v=>row.key==='CanfdHDA2'&&[0,1,2].includes(v)?t(['hda1','hda2','hdaAuto'][v]):v??'—';
         item.textContent=`${title}: ${value(row.before)} → ${value(row.after)}`;list.appendChild(item);}
       if(!changes.length)list.textContent=t('againNoChanges');
       const help=document.createElement('p');help.className='intro-lead';help.textContent=t('againReviewHelp');

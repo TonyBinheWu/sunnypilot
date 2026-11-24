@@ -254,8 +254,9 @@ class AugmentedRoadView(CameraView):
       int(self._content_rect.height)
     )
 
-    reality = bool(self._reality.style["scene_style"]) and not self._suppress_camera_for_cluster
-    road_view_mode = self._road_view_mode()
+    view = ui_state.driving_scene_view
+    reality = (view in (0, 2) or (view == -1 and bool(self._reality.style["scene_style"]))) and not self._suppress_camera_for_cluster
+    road_view_mode = 1 if view == 1 else self._road_view_mode()
     _t = time.monotonic()
     if reality or self._suppress_camera_for_cluster or road_view_mode in (2, 3):
       rl.draw_rectangle_rec(self._content_rect, rl.BLACK)
@@ -268,7 +269,7 @@ class AugmentedRoadView(CameraView):
 
     if reality:
       _t = time.monotonic()
-      timing.call("model", self._reality.draw, self._content_rect, ui_state)
+      timing.call("model", self._reality.draw, self._content_rect, ui_state, view == 2)
       model_ms = (time.monotonic() - _t) * 1000.
     elif not self._suppress_camera_for_cluster and road_view_mode in (0, 2):
       # Draw all UI overlays
@@ -276,7 +277,7 @@ class AugmentedRoadView(CameraView):
       timing.call('model', self._model_renderer.render, self._content_rect)
       model_ms = (time.monotonic() - _t) * 1000.0
 
-    if not reality and not self._suppress_camera_for_cluster:
+    if view == -1 and not reality and not self._suppress_camera_for_cluster:
       # Fade out bottom of overlays for looks
       _t = time.monotonic()
       rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)

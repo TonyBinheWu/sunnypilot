@@ -204,8 +204,6 @@ def filter_settings_catalog_for_brand(
       for hidden_brand in item.get("hidden_brands", [])
     }
   }
-  if normalized_brand == "hyundai" and ray_pedal_control:
-    hidden_names.difference_update(("LongTuningKpV", "LongTuningKiV", "LongTuningKf"))
   if not hidden_names:
     return dict(groups), list(groups_list), categories, set()
 

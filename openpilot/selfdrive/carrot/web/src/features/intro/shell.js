@@ -183,7 +183,7 @@ globalThis.CarrotIntroShell = (() => {
       Object.assign(CarrotIntro.ctx,{reconfigure:true,baseline:reconfigure,
         lang:reconfigure.lang||globalThis.CarrotWebSettingsState?.web_language||CarrotIntro.ctx.lang,
         car:reconfigure.car||'',maker:String(reconfigure.car||'').split(' ',1)[0],
-        hda:[0,1].includes(reconfigure.values?.CanfdHDA2)?reconfigure.values.CanfdHDA2:null});
+        hda:[0,1,2].includes(reconfigure.values?.CanfdHDA2)?reconfigure.values.CanfdHDA2:null});
     }
     if (CarrotIntro.ctx.preview || CarrotIntro.ctx.reconfigure) {
       previewDocumentLang = document.documentElement.lang || "";

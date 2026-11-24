@@ -24,6 +24,8 @@ class TraditionalManualTest(unittest.TestCase):
   def test_all_overlay_translations_match_source_and_bundled_manual(self):
     self.assertEqual(len(self.translations), 144)
     for param, entry in self.translations.items():
+      if ("en", param) not in self.existing:  # archived translation for a retired control
+        continue
       english = self.existing["en", param].manual_block
       manual = self.existing["zh-tw", param].manual_block
       self.assertEqual(entry["manual"], manual, param)

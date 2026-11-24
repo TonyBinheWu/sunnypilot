@@ -43,6 +43,8 @@ class TogglesLayout(Widget):
 
     # param, title, desc, icon, needs_restart
     self._toggle_defs = {
+      "SunnyLaneCenter": (lambda: tr("Lane centering"), tr_noop("Blend the model path toward reliable lane lines on the next drive."), "experimental.png", False),
+      "SunnyLaneTurn": (lambda: tr("Low-speed signaled turns"), tr_noop("A single indicator can request a model-planned turn at or below 20 mph on the next drive."), "experimental.png", False),
       "OpenpilotEnabledToggle": (
         lambda: tr("Enable openpilot"),
         DESCRIPTIONS["OpenpilotEnabledToggle"],
@@ -109,6 +111,11 @@ class TogglesLayout(Widget):
       icon="speed_limit.png"
     )
 
+    self._scene_view = multiple_button_item(
+      lambda: tr("Driving view"), lambda: tr("Choose the road camera, your configured 3D scene, or the driving model output."),
+      buttons=[lambda: tr("3D scene"), lambda: tr("Camera"), lambda: tr("3D model")], button_width=220,
+      callback=lambda i: self._params.put("DrivingSceneView", i), selected_index=max(0, ui_state.driving_scene_view),
+    )
     self._toggles = {}
     self._locked_toggles = set()
     for param, (title, desc, icon, needs_restart) in self._toggle_defs.items():
@@ -143,7 +150,7 @@ class TogglesLayout(Widget):
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
 
     self._update_experimental_mode_icon()
-    self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
+    self._scroller = Scroller([self._scene_view, *self._toggles.values()], line_separator=True, spacing=0)
 
     ui_state.add_engaged_transition_callback(self._update_toggles)
 
@@ -161,6 +168,7 @@ class TogglesLayout(Widget):
 
   def _update_toggles(self):
     ui_state.update_params()
+    self._scene_view.action_item.set_selected_button(max(0, ui_state.driving_scene_view))
 
     e2e_description = tr(
       "<h4>Autospeed</h4><br>" +

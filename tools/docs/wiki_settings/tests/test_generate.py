@@ -81,7 +81,7 @@ def write_catalog(root, payload):
 class WikiSettingsGeneratorTest(unittest.TestCase):
   def test_locale_iterator_keeps_requested_menu_labels(self):
     settings, leaves = GENERATOR.load_catalog(GENERATOR.DEFAULT_CATALOG, iter(("ko", "en")))
-    self.assertEqual(len(settings), 217)
+    self.assertEqual(len(settings), len(json.loads(GENERATOR.DEFAULT_CATALOG.read_bytes())["params"]))
     self.assertTrue(all(set(leaf.labels) == {"ko", "en"} for leaf in leaves))
 
   def test_traditional_bundle_matches_current_catalog_and_preserves_manual(self):
@@ -89,7 +89,7 @@ class WikiSettingsGeneratorTest(unittest.TestCase):
     index = json.loads((bundle / "Settings-Catalog.json").read_text(encoding="utf-8"))
     result = GENERATOR.generate(
       GENERATOR.DEFAULT_CATALOG, wiki_dir=bundle, locales=index["locales"],
-      catalog_commit=index["catalogCommit"], wiki_commit=index["wikiCommit"], generated_at=index["generatedAt"],
+      catalog_commit=index["catalogCommit"], wiki_commit=index.get("wikiCommit"), generated_at=index["generatedAt"],
     )
     self.assertIn("zh-tw", result.index["locales"])
     for name, text in result.pages.items():
@@ -101,7 +101,8 @@ class WikiSettingsGeneratorTest(unittest.TestCase):
       catalog_commit=COMMIT,
       generated_at=STAMP,
     )
-    self.assertEqual(len(result.generated_settings), 217)
+    catalog_names = {p["name"] for p in json.loads(GENERATOR.DEFAULT_CATALOG.read_bytes())["params"]}
+    self.assertEqual(set(result.generated_settings), catalog_names)
     self.assertIn("RainbowMode", result.index["settings"])
     self.assertIn("LowSpeedSteerReserve", result.index["settings"])
     self.assertIn("HkgPhase1Assist", result.index["settings"])
@@ -116,8 +117,8 @@ class WikiSettingsGeneratorTest(unittest.TestCase):
     self.assertNotIn("CenterToFrontRatioEnabled", result.index["settings"])
     self.assertIn("CenterToFrontRatio", result.index["settings"])
     self.assertNotIn("SteerHandoverMode", result.index["settings"])
-    self.assertIn("SignalAssistMode", result.index["settings"])
-    self.assertIn("CruiseCoastingPercent", result.index["settings"])
+    self.assertNotIn("SignalAssistMode", result.index["settings"])
+    self.assertNotIn("CruiseCoastingPercent", result.index["settings"])
     self.assertIn("RadarTrackFlip", result.index["settings"])
     self.assertIn("DriverMonitoringEnabled", result.index["settings"])
     self.assertNotIn("DriverMonitoringSessionDisabled", result.index["settings"])
@@ -126,15 +127,15 @@ class WikiSettingsGeneratorTest(unittest.TestCase):
     for retired in ("ClusterHudPriority", "ClusterHudCoreMode", "ClusterHudLiveFps", "CanfdStopRetry", "DisableDM",
                     "CarrotYouTubeLive", "CarrotYouTubeQuality", "CarrotYouTubeTimestamp"):
       self.assertNotIn(retired, result.index["settings"])
-    self.assertEqual(result.index["review"], {"current": 0, "needs_review": 217})
+    self.assertEqual(result.index["review"], {"current": 0, "needs_review": len(catalog_names)})
     self.assertEqual(result.index["locales"], ["ko", "en", "zh"])
-    self.assertEqual(len(result.pages), (217 * 3) + 2)
+    self.assertEqual(len(result.pages), (len(catalog_names) * 3) + 2)
     setting_pages = {
       name: text
       for name, text in result.pages.items()
       if GENERATOR.GENERATED_PAGE_RE.fullmatch(name)
     }
-    self.assertEqual(len(setting_pages), 217 * 3)
+    self.assertEqual(len(setting_pages), len(catalog_names) * 3)
     self.assertTrue(all(text.count("<!-- CARROT:SETTING:BEGIN ") == 1 for text in setting_pages.values()))
     for name, text in result.pages.items():
       if name.endswith(".md"):

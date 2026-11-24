@@ -1,3 +1,4 @@
+from openpilot.selfdrive.ui.lib.model_choices import ModelChoices
 from openpilot.selfdrive.ui.lib.hardware_status import localize_hardware_status
 from openpilot.system.ui.lib.multilang import tr
 import threading
@@ -89,7 +90,19 @@ class UsbGpuLayoutMici(NavScroller):
     compile_button.set_visible(lambda: not ui_state.usbgpu_compiled)
     compile_button.set_enabled(lambda: not ui_state.started)
     compile_button.set_click_callback(self._force_compile)
-    self._scroller.add_widgets([UsbGpuInfoLayout(), CheckUsbGpuButton(), compile_button])
+    self.choices = ModelChoices(ui_state.is_offroad)
+    self.model_buttons = []
+    for big, key, name in self.choices.items:
+      button = BigButton(name, "", scroll=True)
+      button.set_enabled(lambda: ui_state.is_offroad() and not self.choices.busy)
+      button.set_click_callback(lambda b=big, k=key: self.choices.choose(b, k))
+      self.model_buttons.append((button, big, key))
+    self._scroller.add_widgets([*(b for b, _, _ in self.model_buttons), UsbGpuInfoLayout(), CheckUsbGpuButton(), compile_button])
+
+  def _update_state(self):
+    super()._update_state()
+    for button, big, key in self.model_buttons:
+      button.set_value((tr("External") if big else tr("Internal")) + " · " + self.choices.status(big, key))
 
   @staticmethod
   def _force_compile():

@@ -22,7 +22,7 @@ def screen():
   cls.bases = [ast.Name(id="CameraBase", ctx=ast.Load())]
   cls.body = [node for node in cls.body if isinstance(node, ast.FunctionDef)
               and node.name in ("_road_view_mode", "_render", "set_cluster_hud_connected")]
-  state = SimpleNamespace(started=True, show_model_view=0, show_brightness_ratio=1.0, started_time=100.0, sm={})
+  state = SimpleNamespace(started=True, driving_scene_view=-1, show_model_view=0, show_brightness_ratio=1.0, started_time=100.0, sm={})
   rl = Mock()
   rl.Rectangle.side_effect = lambda x, y, width, height: SimpleNamespace(x=x, y=y, width=width, height=height)
   namespace = {
@@ -39,6 +39,7 @@ def screen():
                "_model_renderer", "_hud_renderer", "_vision_renderer", "_alert_renderer", "_driver_state_renderer",
                "_traffic_light", "_confidence_ball", "_bookmark_icon", "_offroad_label", "_pm", "_overlay_state", "client"):
     setattr(view, name, Mock())
+  view._reality = Mock(style={"scene_style": 0})
   view.stream_type = 0
   view.rect = SimpleNamespace(x=0, y=0, width=540, height=960)
   view._fade_texture = object()
@@ -98,3 +99,18 @@ def test_render_combinations_preserve_alerts_and_cluster_preference(screen, mode
   view._hud_renderer.render.assert_called_once()
   view._alert_renderer.render.assert_called_once()
   view._driver_state_renderer.draw_onroad.assert_called_once()
+
+
+@pytest.mark.parametrize("mode", [0, 1, 2])
+@pytest.mark.parametrize("cluster", [False, True])
+def test_driving_scene_choice_preserves_alerts(screen, mode, cluster):
+  view, state, _ = screen
+  view.set_cluster_hud_connected(cluster, False)
+  state.driving_scene_view = mode
+  view._render(None)
+  assert view.camera.called == (mode == 1 and not cluster)
+  assert view._reality.draw.called == (mode != 1 and not cluster)
+  if view._reality.draw.called:
+    assert view._reality.draw.call_args.args[-1] == (mode == 2)
+  view._alert_renderer.render.assert_called_once()
+  view._hud_renderer.render.assert_called_once()

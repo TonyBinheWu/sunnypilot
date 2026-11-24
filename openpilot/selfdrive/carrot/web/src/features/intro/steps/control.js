@@ -45,23 +45,27 @@ CarrotIntro.register({
     const { t, ctx, br } = CarrotIntro;
 
     const OPTIONS = [
+      ["standard", "standardControl", "standardControlD"],
       ["radar_long",  "p1", "p1d"],
       ["camera_long", "p2", "p2d"],
       ["stock",       "p3", "p3d"],
     ];
 
+    const option = ([preset, title, description]) => `
+      <button class="intro-opt intro-opt--desc ${ctx.preset === preset ? "is-picked" : ""}"
+              type="button" data-preset="${preset}" aria-pressed="${ctx.preset === preset}">
+        ${t(title)}<span class="intro-opt__d">${br(t(description))}</span>
+      </button>`;
+
     el.innerHTML = `
       ${CarrotIntroIcons.ctrl}
       <h2 class="intro-title">${t("ctrlTitle")}</h2>
       <p class="intro-lead">${t("ctrlSub")}</p>
-      <div class="intro-opts">
-        ${OPTIONS.map(([preset, tk, dk]) => `
-          <button class="intro-opt intro-opt--desc ${ctx.preset === preset ? "is-picked" : ""}"
-                  type="button" data-preset="${preset}" aria-pressed="${ctx.preset === preset}">
-            ${t(tk)}
-            <span class="intro-opt__d">${br(t(dk))}</span>
-          </button>`).join("")}
-      </div>`;
+      <div class="intro-opts">${option(OPTIONS[0])}</div>
+      <details ${ctx.preset && ctx.preset !== "standard" ? "open" : ""}>
+        <summary>${t("advancedControl")}</summary>
+        <div class="intro-opts">${OPTIONS.slice(1).map(option).join("")}</div>
+      </details>`;
     if(ctx.reconfigure){const keep=document.createElement('button');keep.className='intro-ghost';keep.type='button';
       keep.textContent=t('againKeepControl');keep.onclick=()=>{ctx.preset=null;CarrotIntroShell.goTo('legal');};el.appendChild(keep);}
 

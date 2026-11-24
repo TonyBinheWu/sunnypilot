@@ -107,3 +107,19 @@ class TestDesireHelperDriverIntent:
     self.update()
     self.update()
     assert self.helper.lane_change_state != log.LaneChangeState.laneChangeStarting
+
+  @pytest.mark.parametrize("direction", ["left", "right"])
+  @pytest.mark.parametrize("block", [None, "above_threshold", "blindspot", "both", "steering", "inactive", "stale"])
+  def test_low_speed_physical_indicator_turn(self, direction, block):
+    self.helper.sunny_lane_turn = True
+    self.carrot_man.atcType = ''
+    state = make_car_state()
+    state.vEgo = 8.9408 if block != "above_threshold" else 9.
+    state.leftBlinker = direction == "left" or block == "both"
+    state.rightBlinker = direction == "right" or block == "both"
+    state.leftBlindspot = state.rightBlindspot = block == "blindspot"
+    state.steeringPressed = block == "steering"
+    self.helper.update(state, SimpleNamespace(), block != "inactive", .1, self.carrot_man, SimpleNamespace(),
+                       indicator_valid=True, assistant_valid=block != "stale")
+    desired = log.Desire.turnLeft if direction == 'left' else log.Desire.turnRight
+    assert (self.helper.desire == desired) == (block is None)

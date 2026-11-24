@@ -81,14 +81,18 @@ def test_cruise_and_gap_tuning_is_removed(settings):
   assert "SunnyAutoLongitudinal" in by_name
 
 
-def test_rear_camera_hold_uses_meter_values_and_persistent_default(settings, params):
-  hold = next(p for p in params if p["name"] == "AutoNaviRearCameraHoldDistance")
-  assert (hold["min"], hold["max"], hold["default"], hold["unit"]) == (0, 300, 100, 10)
-  assert '"AutoNaviRearCameraHoldDistance", {PERSISTENT, INT, "100"}' in PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  driving = next(category for category in settings["menu"] if category["id"] == "DRIVING")
-  speed = next(group for group in driving["groups"] if group["id"] == "SPEED")
-  cameras = next(group for group in speed["groups"] if group["id"] == "SPEED_CAMERA")
-  assert hold["name"] in cameras["params"]
+def test_removed_speed_and_longitudinal_panels(settings, params):
+  names = {p['name'] for p in params}
+  retired = {'ApplyModelSpeed', 'LongTuningKpV', 'LongTuningKiV', 'LongTuningKf', 'LongActuatorDelay',
+             'AutoNaviRearCameraHoldDistance', 'VehicleNaviCanControl', 'VehicleNaviDecelCancel', 'VehicleNaviSchoolZoneControl',
+             'AutoNaviSpeedBumpEndDistance', 'VehicleNaviSectionAvgControl', 'TrafficStopDistanceAdjust'}
+  registry = PARAMS_KEYS_PATH.read_text(encoding='utf8')
+  assert retired.isdisjoint(names)
+  assert all(f'{{"{name}", {{CLEAR_ON_MANAGER_START,' in registry for name in retired)
+  assert not {'SPEED', 'VEH_LONGTUNE'} & {g['id'] for cat in settings['menu'] for g in cat['groups']}
+  for key in ('SunnyLaneTurn', 'SunnyLaneCenter'):
+    item = next(p for p in params if p['name'] == key)
+    assert (item['default'], item['min'], item['max']) == (0, 0, 1)
 
 
 def test_onnx_vision_toggle_uses_existing_runtime_flag_and_first_steering_section(settings, params):
@@ -139,26 +143,6 @@ def test_retired_carrot_following_settings_are_absent(params):
                            "TFollowDecelBoost", "DynamicTFollowLC"})
 
 
-def test_longitudinal_pid_defaults_match_registry(params):
-  by_name = {p["name"]: p for p in params}
-  assert tuple(by_name[name]["default"] for name in (
-    "LongTuningKpV", "LongTuningKiV", "LongTuningKf",
-  )) == (100, 0, 100)
-  for name in ("LongTuningKpV", "LongTuningKiV", "LongTuningKf"):
-    assert by_name[name]["hidden_brands"] == ["hyundai", "toyota"]
-    assert "Toyota/Lexus" in by_name[name]["edescr"]
-    assert "현대·기아·제네시스" in by_name[name]["descr"]
-    assert "hidden and ignored" in by_name[name]["edescr"]
-
-  params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  for name, default in (
-    ("LongTuningKpV", 100),
-    ("LongTuningKiV", 0),
-    ("LongTuningKf", 100),
-  ):
-    assert f'{{"{name}", {{PERSISTENT, INT, "{default}"}}}}' in params_keys
-
-
 @pytest.mark.parametrize("brand", ["hyundai", "toyota"])
 def test_fixed_tuning_catalog_hides_longitudinal_pid_settings(settings, brand):
   groups, by_name, groups_list = group_index(settings)
@@ -177,7 +161,7 @@ def test_fixed_tuning_catalog_hides_longitudinal_pid_settings(settings, brand):
     for name in section["items"]
   }
 
-  assert hidden_names == hidden
+  assert hidden_names.isdisjoint(hidden)
   assert hidden.isdisjoint(visible_names)
   assert hidden.isdisjoint(menu_names)
   assert all(
@@ -185,18 +169,6 @@ def test_fixed_tuning_catalog_hides_longitudinal_pid_settings(settings, brand):
                           if not item.get("detail_parent") and not item.get("search_only"))
     for group in filtered_groups_list
   )
-
-
-def test_other_brands_keep_longitudinal_pid_settings(settings):
-  groups, by_name, groups_list = group_index(settings)
-  categories = build_menu_categories(settings, by_name)
-  filtered_groups, _filtered_groups_list, _filtered_categories, hidden_names = filter_settings_catalog_for_brand(
-    groups, groups_list, categories, "gm",
-  )
-  visible_names = {item["name"] for items in filtered_groups.values() for item in items}
-
-  assert hidden_names == set()
-  assert {"LongTuningKpV", "LongTuningKiV", "LongTuningKf"} <= visible_names
 
 
 @pytest.mark.parametrize("car_name", [
@@ -246,12 +218,12 @@ def test_ray_pedal_catalog_uses_identified_capability(settings, fingerprint, ped
   visible = {item["name"] for items in filtered.values() for item in items}
   menu_names = {name for category in menu for group in category["groups"]
                 for section in group["sections"] for name in section["items"]}
-  assert (tuning <= visible) == expected
-  assert (tuning <= menu_names) == expected
-  assert tuning <= {item["name"] for items in groups.values() for item in items}
+  assert tuning.isdisjoint(visible)
+  assert tuning.isdisjoint(menu_names)
+  assert tuning.isdisjoint(item["name"] for items in groups.values() for item in items)
   assert all(group["count"] == sum(not item.get("detail_parent") and not item.get("search_only")
                                   for item in filtered[group["group"]]) for group in counts)
-  assert hidden == (set() if expected else tuning)
+  assert tuning.isdisjoint(hidden)
 
 
 @pytest.mark.parametrize("car_params", [None, b"invalid"])
@@ -296,11 +268,9 @@ def test_settings_catalog_and_snapshot_follow_ray_capability_changes(monkeypatch
     catalog = feature._settings_catalog_payload()
     snapshot = feature._settings_snapshot_payload()
     visible = {item["name"] for items in catalog["items_by_group"].values() for item in items}
-    assert (tuning <= visible) == active
-    assert (tuning <= snapshot["values"].keys()) == active
-    assert snapshot["favorites"] == (["LongTuningKiV"] if active else [])
-    if active:
-      assert snapshot["values"]["LongTuningKiV"] == 50
+    assert tuning.isdisjoint(visible)
+    assert tuning.isdisjoint(snapshot["values"])
+    assert snapshot["favorites"] == []
 
 
 def test_c3x_lite_hardware_setting_is_exposed(settings, params):
@@ -381,98 +351,6 @@ def test_driver_monitoring_setting_is_default_on_search_only_and_session_state_i
   params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
   assert '{"DriverMonitoringEnabled", {PERSISTENT, BOOL, "1"}}' in params_keys
   assert '{"DriverMonitoringSessionDisabled", {CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_ON, BOOL}}' in params_keys
-
-
-def test_vehicle_navi_can_control_exposes_route_filter_modes(settings, params):
-  by_name = {p["name"]: p for p in params}
-  control = by_name["VehicleNaviCanControl"]
-  assert (control["min"], control["max"], control["default"]) == (0, 3, 0)
-  assert control["control"] == "select"
-  assert all(len(control["options"][locale]) == 4 for locale in ("ko", "en", "zh"))
-  assert control["risk"] == "high"
-  assert "calculated route" in control["edescr"]
-  assert "VehicleSpeedCameraControlMode" in control["edescr"]
-
-  driving = next(category for category in settings["menu"] if category["id"] == "DRIVING")
-  speed = next(group for group in driving["groups"] if group["id"] == "SPEED")
-  camera = next(group for group in speed["groups"] if group["id"] == "SPEED_CAMERA")
-  assert "VehicleNaviCanControl" in camera["params"]
-
-  params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  assert '{"VehicleNaviCanControl", {PERSISTENT, INT, "0"}}' in params_keys
-
-
-def test_speed_bump_early_release_distance_is_exposed_in_centimeters(settings, params):
-  by_name = {p["name"]: p for p in params}
-  distance = by_name["AutoNaviSpeedBumpEndDistance"]
-  assert (distance["min"], distance["max"], distance["default"], distance["unit"]) == (0, 5000, 200, 10)
-  assert distance["display_unit"] == "distanceCm"
-  assert distance["risk"] == "high"
-
-  driving = next(category for category in settings["menu"] if category["id"] == "DRIVING")
-  speed = next(group for group in driving["groups"] if group["id"] == "SPEED")
-  bump = next(group for group in speed["groups"] if group["id"] == "SPEED_BUMP")
-  assert "AutoNaviSpeedBumpEndDistance" in bump["params"]
-
-  params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  assert '{"AutoNaviSpeedBumpEndDistance", {PERSISTENT, INT, "200"}}' in params_keys
-
-
-def test_vehicle_navi_school_zone_control_is_opt_in(settings, params):
-  by_name = {p["name"]: p for p in params}
-  control = by_name["VehicleNaviSchoolZoneControl"]
-  assert (control["min"], control["max"], control["default"]) == (0, 1, 0)
-  assert control["control"] == "toggle"
-  assert control["risk"] == "high"
-  assert "PV5에서는 아직 동작하지 않습니다" in control["descr"]
-  assert "not yet supported on the PV5" in control["edescr"]
-
-  driving = next(category for category in settings["menu"] if category["id"] == "DRIVING")
-  speed = next(group for group in driving["groups"] if group["id"] == "SPEED")
-  camera = next(group for group in speed["groups"] if group["id"] == "SPEED_CAMERA")
-  assert "VehicleNaviSchoolZoneControl" in camera["params"]
-
-  params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  assert '{"VehicleNaviSchoolZoneControl", {PERSISTENT, BOOL, "0"}}' in params_keys
-
-
-def test_speedcam_decel_cancel_and_section_average_settings_are_opt_in(settings, params):
-  by_name = {p["name"]: p for p in params}
-  master, children = "VehicleNaviDecelCancel", ("VehicleNaviDecelCancelBox", "VehicleNaviDecelCancelMobileZone",
-                                                 "VehicleNaviDecelCancelBump")
-  defaults = {master: 0, "VehicleNaviSectionAvgControl": 0, **{name: 1 for name in children},
-              "VehicleNaviDecelCancelUnknown": 0,  # experimental: kind unknown, opt-in
-              "VehicleNaviDecelCancelEarlyWarning": 0}  # experimental: wider lead window, opt-in
-  for name, default in defaults.items():
-    control = by_name[name]
-    assert (control["min"], control["max"], control["default"]) == (0, 1, default)
-    assert control["control"] == "toggle"
-    assert control["risk"] == "high"
-  # Per-kind toggles live in the master's detail screen; only the master is opt-in.
-  assert not by_name[master].get("detail_parent")
-  assert all(by_name[name]["detail_parent"] == master and by_name[name]["group"] == by_name[master]["group"]
-             for name in (*children, "VehicleNaviDecelCancelUnknown",
-                          "VehicleNaviDecelCancelEarlyWarning"))
-
-  driving = next(category for category in settings["menu"] if category["id"] == "DRIVING")
-  speed = next(group for group in driving["groups"] if group["id"] == "SPEED")
-  camera = next(group for group in speed["groups"] if group["id"] == "SPEED_CAMERA")
-  params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  for name, default in defaults.items():
-    assert name in camera["params"]
-    assert f'{{"{name}", {{PERSISTENT, BOOL, "{default}"}}}}' in params_keys
-  for removed in ("VehicleNaviSkipBoxCamera", "VehicleNaviSkipMobileZone", "VehicleNaviSectionAvgMargin"):
-    assert removed not in by_name
-    assert removed not in params_keys
-
-
-def test_vehicle_navi_curve_control_settings_are_removed(settings):
-  driving = next(category for category in settings["menu"] if category["id"] == "DRIVING")
-  speed = next(group for group in driving["groups"] if group["id"] == "SPEED")
-  curve = next(group for group in speed["groups"] if group["id"] == "SPEED_CURVE")
-  assert not any(name.startswith("VehicleNaviCurve") for name in curve["params"])
-  params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  assert "VehicleNaviCurve" not in params_keys
 
 
 def test_tpms_position_setting_matches_device_support(params):
@@ -605,12 +483,6 @@ def test_no_parameter_declares_the_empty_unit(params):
   assert [p["name"] for p in params if p.get("display_unit") == "raw"] == []
 
 
-def test_a_percent_parameter_still_carries_its_unit(params):
-  by_name = {p["name"]: p for p in params}
-  # The parameter behind the cruise-speed incident; its unit must survive.
-  assert by_name["ApplyModelSpeed"]["display_unit"] == "percent"
-
-
 def test_steer_ratio_rate_has_safe_catalog_and_registry_defaults(params):
   by_name = {p["name"]: p for p in params}
   steer_ratio_rate = by_name["SteerRatioRate"]
@@ -651,21 +523,6 @@ def test_every_declared_risk_is_one_the_ui_knows(params):
   declared = {p["name"]: p["risk"] for p in params if "risk" in p}
   unknown = {name: level for name, level in declared.items() if level not in KNOWN_RISK_LEVELS}
   assert unknown == {}
-
-
-def test_the_incident_parameter_is_flagged_risky(params):
-  # ApplyModelSpeed at -1 pins cruise to 5 km/h — the parameter this whole
-  # effort started from. It stays marked so its warning badge shows.
-  by_name = {p["name"]: p for p in params}
-  assert by_name["ApplyModelSpeed"].get("risk") == "high"
-
-
-def test_declared_numeric_bounds_stay_intact(params):
-  """The migration rewrote the whole file, so the values it did not touch
-  have to be exactly what they were."""
-  by_name = {p["name"]: p for p in params}
-  assert (by_name["ApplyModelSpeed"]["min"], by_name["ApplyModelSpeed"]["max"]) == (-120, 120)
-  assert by_name["ApplyModelSpeed"]["default"] == 0
 
 
 def test_live_geometry_has_zero_default_and_no_enable_switch(settings, params):

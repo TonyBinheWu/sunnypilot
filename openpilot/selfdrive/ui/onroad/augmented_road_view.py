@@ -119,7 +119,8 @@ class AugmentedRoadView(CameraView):
       int(self._content_rect.height)
     )
 
-    reality = bool(self._reality.style["scene_style"]) and not self._suppress_camera_for_cluster
+    view = ui_state.driving_scene_view
+    reality = (view in (0, 2) or (view == -1 and bool(self._reality.style["scene_style"]))) and not self._suppress_camera_for_cluster
     _t = time.monotonic()
     if reality or self._suppress_camera_for_cluster:
       rl.draw_rectangle_rec(self._content_rect, rl.BLACK)
@@ -132,9 +133,9 @@ class AugmentedRoadView(CameraView):
 
     if reality:
       _t = time.monotonic()
-      timing.call("model", self._reality.draw, self._content_rect, ui_state)
+      timing.call("model", self._reality.draw, self._content_rect, ui_state, view == 2)
       model_ms = (time.monotonic() - _t) * 1000.
-    elif not self._suppress_camera_for_cluster:
+    elif view == -1 and not self._suppress_camera_for_cluster:
       # Draw the model overlay only with the camera view
       _t = time.monotonic()
       timing.call('model', self.model_renderer.render, self._content_rect)

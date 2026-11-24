@@ -96,6 +96,12 @@ regular_prefix = 'big_' if os.getenv('BIG_INTO_SMALL') else ''
 regular_onnx = File(f"models/{regular_prefix}driving_supercombo.onnx").abspath
 model_builds.append((False, modeld_pkl_path(False), get_existing_chunks(regular_onnx), regular_onnx, tg_flags))
 
+internal_choice = os.environ.get('SUNNY_COMPILE_INTERNAL')
+if internal_choice:
+  from openpilot.common.internal_models import artifact
+  onnx = str(artifact(internal_choice, '.onnx'))
+  model_builds.append((False, str(artifact(internal_choice, '.pkl')), [onnx], onnx, tg_flags))
+
 if USBGPU:
   big_manifest = active_manifest()
   big_onnx = active_model_path()
@@ -122,6 +128,8 @@ for usbgpu, pkl_path, driving_onnx_deps, driving_onnx, cmd_flags in model_builds
     tinygrad_files + compile_modeld_script + driving_onnx_deps + [Value(chunk_targets), chunker_file],
     [cmd, Action(do_chunk, "  [CHUNK] $TARGET")],
   )
+  if internal_choice and not usbgpu and driving_onnx != regular_onnx:
+    lenv.Alias('sunny_internal_model', node)
   if usbgpu:
     lenv.SideEffect(usbgpu_lock, node)
     lenv.NoCache(node)

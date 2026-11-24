@@ -20,6 +20,7 @@ def render_interval(cpu_seconds):
 
 
 def main():
+  from openpilot.selfdrive.navigation.shortbread import ShortbreadTiles, local_source
   from openpilot.selfdrive.navigation.tiles import RemoteTiles
   from openpilot.selfdrive.navigation.mapbox_tiles import MapboxTiles
   import openpilot.cereal.messaging as messaging
@@ -44,6 +45,7 @@ def main():
   server.start_listener()
   params = Params()
   demand_checked, demand = 0., False
+  offline_source = None
   mapbox_token = ''
   archive_created = 0.
   diagnostics = RuntimeDiagnostics('mapsd', cloudlog.event, interval=5.)
@@ -79,12 +81,13 @@ def main():
         token = os.environ.get('MAPBOX_TOKEN') or params.get('MapboxPublicKey') or ''
         if isinstance(token, bytes):
           token = token.decode('utf-8')
-        if token != mapbox_token or (archive is not None and now - archive_created >= 3600):
+        installed = local_source(gps) if demand else None
+        if installed != offline_source or token != mapbox_token or (archive is not None and now - archive_created >= 3600):
           if archive is not None:
             archive.close()
           archive = renderer = None
           retry_at = next_render = 0.
-          mapbox_token = token
+          mapbox_token, offline_source = token, installed
         demand_checked = now + 1.
       ready = demand and tracker is not None and gps is not None and fresh_tbt
       if now >= next_render or (was_ready and not ready):
@@ -95,7 +98,10 @@ def main():
         try:
           if ready and now >= retry_at:
             if renderer is None:
-              archive = MapboxTiles(mapbox_token) if mapbox_token else PMTiles(RemoteTiles())
+              if offline_source:
+                archive = ShortbreadTiles(*offline_source)
+              else:
+                archive = MapboxTiles(mapbox_token) if mapbox_token else PMTiles(RemoteTiles())
               archive_created = now
               renderer = MapRenderer(archive)
             pose = tracker.update_pose(gps.longitude, gps.latitude, gps.speed * (now - gps.time))

@@ -69,6 +69,7 @@ class Controls:
     mode = active_planner_mode(self.CP, self.params)
     self.vision_profile_requested = camera_only(mode)
     self.sunny_profile = mode == SUNNY_BLENDED
+    self.lane_center = self.sunny_profile and self.params.get_bool("SunnyLaneCenter")
     self.steering_selected = not (self.sunny_profile and self.params.get_bool("SunnyCruiseOnly"))
     self.blinker_pause_speed = self.params.get_int("SunnyBlinkerPauseKph") * CV.KPH_TO_MS if self.sunny_profile else 0.
     self.CI = interfaces[self.CP.carFingerprint](self.CP)
@@ -242,6 +243,16 @@ class Controls:
     if not CC.latActive:
       self.steering_influence = 'cruiseOnly' if not self.steering_selected else 'blinkerPause' if blinker_paused else 'inactive'
       new_desired_curvature = self.curvature
+    elif (self.lane_center and lat_plan.useLaneLines and lat_plan.mpcSolutionValid and
+          not (CS.leftBlinker or CS.rightBlinker or CS.steeringPressed) and
+          self.sm.all_checks(['lateralPlan', 'modelV2', 'carState']) and
+          0 <= time.monotonic() - self.sm.recv_time['lateralPlan'] < .2 and
+          0 <= self.sm.logMonoTime['modelV2'] - lat_plan.modelMonoTime < 150_000_000 and
+          all(len(v) == CONTROL_N and all(map(math.isfinite, v)) for v in (lat_plan.psis, lat_plan.curvatures, lat_plan.distances))):
+      curvature = get_lag_adjusted_curvature(self.CP, CS.vEgo, lat_plan.psis, lat_plan.curvatures,
+                                             self.CP.steerActuatorDelay, lat_plan.distances)
+      new_desired_curvature = curvature if math.isfinite(curvature) else float(model_v2.action.desiredCurvature)
+      self.steering_influence = 'laneLines' if math.isfinite(curvature) else 'model'
     elif upstream:
       new_desired_curvature = float(model_v2.action.desiredCurvature)
     elif self.is_vw_meb:

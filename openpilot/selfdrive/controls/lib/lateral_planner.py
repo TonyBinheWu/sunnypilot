@@ -13,6 +13,7 @@ from openpilot.cereal import log
 from openpilot.common.params import Params
 #from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
 from openpilot.selfdrive.controls.lib.lane_planner_2 import LanePlanner
+from openpilot.selfdrive.controls.lib.lane_centering import lane_midpoint
 from openpilot.selfdrive.controls.lib.lane_model_speed import LaneModelSpeedGuard
 from collections import deque
 
@@ -77,6 +78,8 @@ class LateralPlanner:
     self.curve_speed = 0
     self.lane_model_speed_guard = LaneModelSpeedGuard(recovery_frames=int(1 / DT_MDL))
     self.laneless_only = True
+    self.lane_center = self.params.get_bool("SunnyLaneCenter")
+    self.center_weight = 0.0
 
   def reset_mpc(self, x0=None):
     if x0 is None:
@@ -85,7 +88,6 @@ class LateralPlanner:
     self.lat_mpc.reset(x0=self.x0)
 
   def update(self, sm, carrot=None):
-    global LATERAL_ACCEL_COST, LATERAL_JERK_COST, STEERING_RATE_COST
     if self.geometry.update(getattr(sm['liveParameters'], 'centerToFrontRatio', 0.0)):
       self.factor1 = self.geometry.wheelbase - self.geometry.center_to_front
       self.factor2 = self.geometry.center_to_front * self.mass / (self.geometry.wheelbase * self.geometry.stiffness_rear)
@@ -94,11 +96,12 @@ class LateralPlanner:
       self.readParams = 10
       self.useLaneLineSpeedApply = sm['carState'].useLaneLineSpeed
       self.pathOffset = float(self.params.get_int("PathOffset")) * 0.01
-      self.lateralPathCost = self.params.get_float("LatMpcPathCost") * 0.01
-      self.lateralMotionCost = self.params.get_float("LatMpcMotionCost") * 0.01
-      LATERAL_ACCEL_COST = self.params.get_float("LatMpcAccelCost") * 0.01
-      LATERAL_JERK_COST = self.params.get_float("LatMpcJerkCost") * 0.01
-      STEERING_RATE_COST = self.params.get_float("LatMpcSteeringRateCost")
+      if self.lane_center:
+        self.mpc_weights = (PATH_COST, LATERAL_MOTION_COST, LATERAL_ACCEL_COST, LATERAL_JERK_COST, STEERING_RATE_COST)
+      else:
+        self.mpc_weights = (self.params.get_float("LatMpcPathCost") * .01, self.params.get_float("LatMpcMotionCost") * .01,
+                            self.params.get_float("LatMpcAccelCost") * .01, self.params.get_float("LatMpcJerkCost") * .01,
+                            self.params.get_float("LatMpcSteeringRateCost"))
 
     # clip speed , lateral planning is not possible at 0 speed
     measured_curvature = sm['controlsState'].curvature
@@ -110,8 +113,9 @@ class LateralPlanner:
     # Parse model predictions
     md = sm['modelV2']
     model_active = False
-    if (len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE and
-        len(md.velocity.x) == TRAJECTORY_SIZE):
+    if all(len(series) == TRAJECTORY_SIZE and np.isfinite(series).all() for series in
+           (md.position.x, md.position.y, md.position.z, md.position.t, md.orientation.z, md.orientationRate.z,
+            md.velocity.x, md.velocity.y, md.velocity.z)):
       model_active = True
       self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
       self.t_idxs = np.array(md.position.t)
@@ -152,7 +156,22 @@ class LateralPlanner:
     self.LP.lane_width_left = md.meta.laneWidthLeft
     self.LP.lane_width_right = md.meta.laneWidthRight
     self.LP.curvature = measured_curvature
-    self.path_xyz, self.lanelines_active = self.LP.get_d_path(sm['carState'], v_ego_car, self.t_idxs, self.path_xyz, self.curve_speed)
+    if self.lane_center:
+      cs = sm['carState']
+      eligible = (model_active and not self.laneless_only and sm.all_checks(['carState', 'modelV2'])
+                  and cs.canValid and not cs.steeringPressed and not (cs.leftBlinker or cs.rightBlinker)
+                  and self.LP.lane_change_multiplier == 1 and speed_kph >= 10.)
+      midpoint = lane_midpoint(md, self.path_xyz[:, 0]) if eligible else None
+      self.lanelines_active = midpoint is not None
+      self.center_weight = min(1., self.center_weight + DT_MDL) if self.lanelines_active else 0.
+      if midpoint is not None:
+        model_y = self.path_xyz[:, 1]
+        delta = np.where(np.isfinite(midpoint), midpoint - model_y, 0.)
+        correction = self.center_weight * np.clip(delta, -.5, .5)
+        model_y += correction
+        self.LP.offset_total = float(correction[0])
+    else:
+      self.path_xyz, self.lanelines_active = self.LP.get_d_path(sm['carState'], v_ego_car, self.t_idxs, self.path_xyz, self.curve_speed)
 
     if self.lanelines_active:
       self.plan_yaw, self.plan_yaw_rate = yaw_from_path_no_scipy(
@@ -165,11 +184,10 @@ class LateralPlanner:
     self.latDebugText = self.LP.debugText
     #self.lanelines_active = True if self.LP.d_prob > 0.3 and self.LP.lanefull_mode else False
 
-    self.path_xyz[:, 1] += self.pathOffset
+    if not self.lane_center:
+      self.path_xyz[:, 1] += self.pathOffset
 
-    self.lat_mpc.set_weights(self.lateralPathCost, self.lateralMotionCost,
-                             LATERAL_ACCEL_COST, LATERAL_JERK_COST,
-                             STEERING_RATE_COST)
+    self.lat_mpc.set_weights(*self.mpc_weights)
 
     y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
     heading_pts = self.plan_yaw[:LAT_MPC_N+1]
@@ -196,6 +214,7 @@ class LateralPlanner:
     mpc_nans = np.isnan(self.lat_mpc.x_sol[:, 3]).any()
     t = time.monotonic()
     if mpc_nans or self.lat_mpc.solution_status != 0:
+      self.lanelines_active = False
       self.reset_mpc()
       self.x0[3] = measured_curvature * self.v_ego
       if t > self.last_cloudlog_t + 5.0:
@@ -203,6 +222,7 @@ class LateralPlanner:
         cloudlog.warning("Lateral mpc - nan: True")
 
     if self.lat_mpc.cost > 1e6 or mpc_nans:
+      self.lanelines_active = False
       self.solution_invalid_cnt += 1
     else:
       self.solution_invalid_cnt = 0

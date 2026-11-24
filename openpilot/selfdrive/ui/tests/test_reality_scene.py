@@ -70,3 +70,33 @@ def test_chase_uses_signed_rear_positions_and_suppresses_duplicates():
   assert rear_points(car, radar) == ((-9, -3),)
   car.canValid = False
   assert not rear_points(car, radar)
+
+
+def test_model_only_geometry_draws_observed_surface_and_separate_classes():
+  line = lambda y: Obj(x=[4, 10, 20], y=[y] * 3)
+  model = Obj(position=line(0), laneLines=[], laneLineProbs=[], leadsV3=[],
+              roadEdges=[line(-4), line(4)], roadEdgeStds=[.1, .2])
+  for profile in defaults()['devices'].values():
+    scene = RealityScene(profile)
+    rect = rl.Rectangle(0, 0, 536, 240)
+    bare = scene.geometry(rect, model, None, model_only=True)
+    objects = [('person', 8., -2.), ('motorcycle', 12., 1.)]
+    assert len(scene.geometry(rect, model, None, objects=objects, model_only=True)) == len(bare) + 4
+    model.roadEdgeStds[0] = .8
+    assert len(scene.geometry(rect, model, None, model_only=True)) < len(bare)
+    model.roadEdgeStds[0] = .1
+
+
+def test_possible_junction_requires_two_measured_openings_and_narrowing():
+  from openpilot.selfdrive.ui.onroad.reality_scene import road_opening
+  x = list(range(0, 60, 2))
+  center = [n * .05 for n in x]
+  spread = [3. if 18 <= n < 30 else 0. for n in x]
+  edges = [Obj(x=x, y=[y + sign * (4 + w) for y, w in zip(center, spread)]) for sign in (-1, 1)]
+  model = Obj(position=Obj(x=x, y=center), roadEdges=edges, roadEdgeStds=[.2, .2])
+  assert road_opening(model) == (18., 30.)
+  model.roadEdgeStds[0] = .8
+  assert road_opening(model) is None
+  model.roadEdgeStds[0] = .2
+  model.roadEdges[1] = Obj(x=x, y=[y + 4 for y in center])
+  assert road_opening(model) is None

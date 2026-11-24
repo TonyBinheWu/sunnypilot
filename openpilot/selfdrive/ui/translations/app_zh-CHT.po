@@ -2578,3 +2578,57 @@ msgstr "請確認車況並自行操作方向燈"
 #: openpilot/selfdrive/ui/lane_change_notice.py
 msgid "Indicator on; check surrounding traffic"
 msgstr "方向燈已開啟，請確認周圍車況"
+
+msgid "Models"
+msgstr "模型"
+
+msgid "Driving view"
+msgstr "駕駛畫面"
+
+msgid "3D scene"
+msgstr "動態 3D"
+
+msgid "Camera"
+msgstr "攝影機"
+
+msgid "3D model"
+msgstr "模型感知 3D"
+
+msgid "Lane centering"
+msgstr "車道置中"
+
+msgid "Low-speed signaled turns"
+msgstr "低速方向燈轉彎"
+
+msgid "Preparing…"
+msgstr "準備中…"
+
+msgid "Selection failed"
+msgstr "選擇失敗"
+
+msgid "Build failed"
+msgstr "編譯失敗"
+
+msgid "This boot"
+msgstr "本次開機"
+
+msgid "Next boot"
+msgstr "下次開機"
+
+msgid "Internal"
+msgstr "內建 GPU"
+
+msgid "External"
+msgstr "外接 GPU"
+
+msgid "Blend the model path toward reliable lane lines on the next drive."
+msgstr "下次行駛時，在兩側標線可信時逐步將模型路徑調整到車道中央。"
+
+msgid "A single indicator can request a model-planned turn at or below 20 mph on the next drive."
+msgstr "下次行駛時，時速約 32 公里以下開啟單側方向燈，可要求模型規劃同方向轉彎。"
+
+msgid "Choose the road camera, your configured 3D scene, or the driving model output."
+msgstr "可切換前方攝影機、原有動態 3D 或模型感知畫面。"
+
+msgid "Check Hyundai harness selection"
+msgstr "請確認現代／起亞線束設定"

@@ -182,6 +182,8 @@ procs = [
   # Restart GPS without forking the running manager's IPC state.
   PythonProcess("qcomgpsd", "openpilot.system.qcomgpsd.qcomgpsd", qcomgps, enabled=TICI, spawn=True),
   PythonProcess("navd", "openpilot.selfdrive.navd.navd", only_onroad),
+  PythonProcess("sceneobjectd", "openpilot.selfdrive.ui.onroad.scene_objects",
+                lambda started, params, CP: started and params.get_int("DrivingSceneView") == 2, enabled=TICI, spawn=True),
   PythonProcess("mapsd", "openpilot.selfdrive.navigation.mapsd", only_onroad),
   PythonProcess("pandad", "openpilot.selfdrive.pandad.pandad", always_run),
   PythonProcess("paramsd", "openpilot.selfdrive.locationd.paramsd", only_onroad),

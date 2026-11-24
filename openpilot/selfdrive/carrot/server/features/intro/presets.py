@@ -32,6 +32,7 @@ from typing import Dict
 # Param -> value. Keys must exist in selfdrive/carrot_settings.json so the
 # clamp in services.params can validate them.
 PRESETS: Dict[str, Dict[str, int]] = {
+  "standard": {"HyundaiCameraSCC": 0, "EnableRadarTracks": 0, "EnableCornerRadar": 0, "SpeedFromPCM": 0},
   "radar_long": {
     "HyundaiCameraSCC": 1,   # 1: long-con vehicle (interface.py forces OP long)
     "SpeedFromPCM": 0,       # 0: curve/camera decel + long

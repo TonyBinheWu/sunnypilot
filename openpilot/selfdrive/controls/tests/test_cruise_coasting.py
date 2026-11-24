@@ -11,7 +11,7 @@ from openpilot.selfdrive.controls.lib.cruise_coasting import (
   BRAKE_RELEASE_JERK, CruiseCoastingPlan, coasting_percent, coasting_relief, no_coasting_lead,
 )
 # This existing fixture also supplies Windows-only Params/hardware import shims.
-from openpilot.selfdrive.controls.tests.test_longcontrol_hyundai_tuning import DictParams, make_cp
+from openpilot.selfdrive.controls.tests.test_longcontrol_hyundai_tuning import make_cp
 import openpilot.selfdrive.controls.lib.longcontrol as lc
 
 
@@ -118,9 +118,7 @@ def test_real_changes_restart_entry_and_capture_a_new_reference(change):
 
 
 @pytest.fixture
-def control(monkeypatch):
-  monkeypatch.setattr(lc, 'Params', lambda: DictParams({'StoppingAccel': -50, 'LongTuningKpV': 100,
-                                                     'LongTuningKiV': 200, 'LongTuningKf': 100}))
+def control():
   def create(brand='hyundai'):
     cp = make_cp(brand)
     cp.longitudinalTuning = SimpleNamespace(kpBP=[0.], kpV=[1.], kiBP=[0.], kiV=[.2], kf=1.)
@@ -420,19 +418,8 @@ def test_zero_setting_skips_planner_coasting_inputs(planner_gate):
   assert step() == 0
 
 
-def test_catalog_and_persistent_default_agree():
+def test_retired_coasting_setting_stays_out_of_catalog():
   root = Path(__file__).resolve().parents[4]
   catalog = json.loads((root / 'openpilot/selfdrive/carrot_settings.json').read_text(encoding='utf-8'))
-  def objects(value):
-    if isinstance(value, dict):
-      yield value
-      for child in value.values():
-        yield from objects(child)
-    elif isinstance(value, list):
-      for child in value:
-        yield from objects(child)
-  entries = list(objects(catalog))
-  setting = next(x for x in entries if x.get('name') == 'CruiseCoastingPercent')
-  assert (setting['default'], setting['min'], setting['max'], setting['unit'], setting['display_unit']) == (0, 0, 10, 1, 'percent')
-  assert 'CruiseCoastingPercent' in next(x for x in entries if x.get('id') == 'CRUISE_CARROT')['params']
+  assert all(item['name'] != 'CruiseCoastingPercent' for item in catalog['params'])
   assert '{"CruiseCoastingPercent", {PERSISTENT, INT, "0"}}' in (root / 'openpilot/common/params_keys.h').read_text(encoding='utf-8')

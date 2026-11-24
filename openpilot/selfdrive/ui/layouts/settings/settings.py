@@ -65,7 +65,7 @@ class SettingsLayout(Widget):
       PanelType.SOFTWARE: PanelInfo(tr_noop("Software"), SoftwareLayout()),
       PanelType.FIREHOSE: PanelInfo(tr_noop("Firehose"), FirehoseLayout()),
       PanelType.DEVELOPER: PanelInfo(tr_noop("Developer"), DeveloperLayout()),
-      PanelType.EGPU: PanelInfo(tr_noop("eGPU"), UsbGpuLayout()),
+      PanelType.EGPU: PanelInfo(tr_noop("Models"), UsbGpuLayout()),
     }
 
     self._panels = {PanelType[key.upper()]: self._panels[PanelType[key.upper()]] for key in LAYOUT["order"]}

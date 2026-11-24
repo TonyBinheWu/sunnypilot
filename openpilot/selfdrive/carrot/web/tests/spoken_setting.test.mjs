@@ -4,7 +4,12 @@ import { readFileSync } from 'node:fs';
 import { resolveSpokenSetting, assignSpokenSetting } from '../src/features/tools/spoken_setting.js';
 import { createLocalVoice } from '../src/features/tools/local_voice.js';
 
-const { params } = JSON.parse(readFileSync(new URL('../../../carrot_settings.json', import.meta.url)));
+const { params: catalog } = JSON.parse(readFileSync(new URL('../../../carrot_settings.json', import.meta.url)));
+// Numbered multilingual fixtures exercise recognition independently of the available tuning menu.
+const params = [...catalog, ...[0, 1].map(n => ({
+  name: `CruiseMaxVals${n}`, title: `가속도설정 ${n}`, etitle: `Acceleration Setting ${n}`,
+  ttitle: `加速度設定 ${n}`, ctitle: `加速度设置 ${n}`, min: 0, max: 250,
+}))];
 const target = 'CruiseMaxVals0';
 const id = 'a'.repeat(43);
 globalThis.document = { hidden: false };

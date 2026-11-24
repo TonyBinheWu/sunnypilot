@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -23,7 +24,8 @@ class SeedTest(unittest.TestCase):
       wiki = Path(directory)
       home = wiki / "Home.md"
       home.write_text("# Keep this home\n", encoding="utf-8")
-      self.assertEqual(SEED.seed_missing_guides(BUNDLED, wiki), 868)
+      index = json.loads((BUNDLED / "Settings-Catalog.json").read_bytes())
+      self.assertEqual(SEED.seed_missing_guides(BUNDLED, wiki), len(index["settings"]) * len(index["locales"]))
       page = wiki / "ZH-TW-語音播報音量.md"
       self.assertIn("### 使用方式", page.read_text(encoding="utf-8"))
       renamed = wiki / "ZH-TW-Custom-title.md"

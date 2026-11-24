@@ -1,3 +1,4 @@
+from openpilot.selfdrive.ui.lib.model_choices import ModelChoices
 from openpilot.selfdrive.ui.lib.hardware_status import localize_hardware_status
 import threading
 
@@ -14,7 +15,13 @@ class UsbGpuLayout(Widget):
     super().__init__()
     self._checking = False
     self._check_result = "not checked"
-    self._scroller = Scroller([
+    self.choices = ModelChoices(ui_state.is_offroad)
+    model_items = [button_item(name, lambda b=big, k=key: self.choices.status(b, k),
+                               lambda b=big: tr("External") if b else tr("Internal"),
+                               callback=lambda b=big, k=key: self.choices.choose(b, k),
+                               enabled=lambda: ui_state.is_offroad() and not self.choices.busy)
+                   for big, key, name in self.choices.items]
+    self._scroller = Scroller([*model_items,
       text_item(lambda: tr("eGPU Status"), self._status),
       text_item(lambda: tr("USB Link"), self._link),
       text_item(lambda: tr("Connection Check"), lambda: localize_hardware_status(self._check_result)),

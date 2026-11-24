@@ -119,3 +119,7 @@ An authenticated owner viewing lease can start camerad offroad for wide-road or 
 ## Lane-change notices and warning priority
 
 The new lane-change progress card yields to existing onroad alerts, including driver-monitoring warnings. It does not acknowledge or clear attention warnings, change escalation or lockout, or imply the driver may stop watching the road. Confirmed completion only ends the current lane-change desire. Existing blind-spot blocked warnings remain even when a held lamp is waiting for another driver request. See [lane-change notices](lane-change.md#observed-completion-and-advance-notices).
+
+## Driving views on C3X and C4
+
+All three driving views keep the driver monitor and takeover alerts on screen. The 3D model view uses the road-facing camera for its labeled road users.

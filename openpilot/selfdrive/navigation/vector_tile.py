@@ -97,7 +97,7 @@ def decode_roads(data: bytes) -> list[Road]:
       continue
     layer_fields = list(fields(layer))
     name = next((v.decode('utf-8') for n, w, v in layer_fields if n == 1 and w == 2), '')
-    if name not in ('roads', 'road'):
+    if name not in ('roads', 'road', 'streets'):
       continue
     version = next((v for n, w, v in layer_fields if n == 15 and w == 0), 1)
     extent = next((v for n, w, v in layer_fields if n == 5 and w == 0), 4096)
@@ -127,20 +127,21 @@ def decode_roads(data: bytes) -> list[Road]:
         if tags[i] >= len(keys) or tags[i + 1] >= len(values):
           raise ValueError("MVT tag index out of bounds")
         properties[keys[tags[i]]] = values[tags[i + 1]]
-      if name == 'road':
+      if name in ('road', 'streets'):
         # Mapbox Streets v8 uses class/structure instead of Protomaps kind.
         # Keep the training renderer's widths, intensities and bridge ordering.
-        detail = properties.get('class', '')
+        detail = properties.get('kind' if name == 'streets' else 'class', '')
         if detail in ('motorway', 'trunk', 'primary', 'motorway_link', 'trunk_link', 'primary_link'):
           kind = 'highway'
         elif detail in ('secondary', 'tertiary', 'secondary_link', 'tertiary_link'):
           kind = 'major_road'
-        elif detail in ('street', 'street_limited', 'service', 'track'):
+        elif (detail in ('street', 'street_limited', 'service', 'track') or
+              (name == 'streets' and detail in ('residential', 'living_street', 'unclassified'))):
           kind = 'minor_road'
         else:
           continue  # rail, pedestrian, path, ferry and construction are not driveable roads
-        roads.extend(Road(points, kind, extent, detail, properties.get('structure') == 'tunnel',
-                          properties.get('structure') == 'bridge') for points in decode_lines(geometry))
+        roads.extend(Road(points, kind, extent, detail, properties.get('structure') == 'tunnel' or properties.get('tunnel') is True,
+                          properties.get('structure') == 'bridge' or properties.get('bridge') is True) for points in decode_lines(geometry))
         continue
       kind = properties.get('kind', '')
       if kind in ('highway', 'major_road', 'minor_road', 'other'):

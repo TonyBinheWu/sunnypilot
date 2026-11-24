@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import numpy as np
 
 from openpilot.selfdrive.controls.lib.lane_model_speed import LaneModelSpeedGuard
+from openpilot.selfdrive.controls.lib.lane_centering import lane_midpoint
 from opendbc.car.lateral_geometry import LateralGeometry
 
 
@@ -36,16 +37,17 @@ class StubLanePlanner:
     return path, self.lanefull_mode
 
 
-def make_planner(cp=None):
+def make_planner(cp=None, *, center=False):
   # Compile the complete, unchanged production class. Only the numerical MPC,
   # lane geometry, Params and IPC imports are substituted for routing tests.
   source = Path(__file__).parents[1] / 'lib/lateral_planner.py'
   tree = ast.parse(source.read_text(encoding='utf8'))
-  params = SimpleNamespace(get_int=lambda _: 1, get_float=lambda _: 1.0)
+  params = SimpleNamespace(get_int=lambda _: 1, get_float=lambda _: 1.0, get_bool=lambda _: center)
   namespace = {
     'np': np,
     'DT_MDL': 0.05,
-    'TRAJECTORY_SIZE': 33,
+    'TRAJECTORY_SIZE': 33, 'lane_midpoint': lane_midpoint,
+    'PATH_COST': 1., 'LATERAL_MOTION_COST': .11, 'LATERAL_ACCEL_COST': 0., 'LATERAL_JERK_COST': .04, 'STEERING_RATE_COST': 700.,
     'MIN_SPEED': 1.0,
     'LAT_MPC_N': 32,
     'Params': lambda: params,
@@ -121,3 +123,38 @@ def test_missing_model_speed_cannot_reuse_lane_mode_eligibility():
   for _ in range(20):
     assert not update(planner, inputs())
   assert update(planner, inputs())
+
+
+def test_centering_blends_then_releases_on_driver_input_or_unusable_lines():
+  class Services(dict):
+    valid = True
+
+    def all_checks(self, services):
+      return self.valid
+
+  planner = make_planner(center=True)
+  sm = Services(inputs())
+  cs, md = sm['carState'], sm['modelV2']
+  cs.canValid, cs.steeringPressed, cs.leftBlinker, cs.rightBlinker = True, False, False, False
+  x = md.position.x
+  md.laneLines = [None] + [SimpleNamespace(x=x, y=np.full(len(x), y)) for y in (-1., 2.6)]
+  md.laneLineProbs, md.laneLineStds = [0., .95, .95], [0., .1, .1]
+  for _ in range(45):
+    update(planner, sm)
+  assert planner.lanelines_active
+  assert np.allclose(planner.path_xyz[:, 1], .5)
+  for attr in ('leftBlinker', 'rightBlinker', 'steeringPressed'):
+    setattr(cs, attr, True)
+    assert not update(planner, sm)
+    assert np.allclose(planner.path_xyz[:, 1], 0)
+    setattr(cs, attr, False)
+    assert update(planner, sm)
+    assert np.allclose(planner.path_xyz[:, 1], .025)
+  sm.valid = False
+  assert not update(planner, sm)
+  sm.valid = True
+  md.laneLineProbs[1] = .3
+  assert not update(planner, sm)
+  md.laneLineProbs[1] = .95
+  md.laneLines[2].y += 4
+  assert not update(planner, sm)

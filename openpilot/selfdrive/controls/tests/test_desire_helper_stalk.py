@@ -49,9 +49,10 @@ class TestDesireHelperStalkRequest:
 
   def setup_method(self):
     # These FSM tests must not read workstation/device settings or Bluetooth IO.
-    with patch('openpilot.selfdrive.controls.lib.desire_helper.Params'), \
+    with patch('openpilot.selfdrive.controls.lib.desire_helper.Params') as params, \
          patch('openpilot.selfdrive.controls.lib.desire_helper.CommandReader') as reader:
       reader.return_value.read.return_value = None
+      params.return_value.get_bool.return_value = False
       self.helper = DesireHelper()
     self.helper._update_params_periodic = lambda: None
     self.helper._process_sides = lambda car, model, radar: None

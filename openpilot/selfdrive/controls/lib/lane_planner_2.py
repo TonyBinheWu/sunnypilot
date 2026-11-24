@@ -79,7 +79,8 @@ class LanePlanner:
     lane_lines = md.laneLines
     edges = md.roadEdges
 
-    if len(lane_lines) >= 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
+    if (len(lane_lines) >= 3 and len(md.laneLineProbs) >= 3 and len(md.laneLineStds) >= 3 and
+        all(len(v) == TRAJECTORY_SIZE for i in (1, 2) for v in (lane_lines[i].x, lane_lines[i].y, lane_lines[i].t))):
       self.ll_t = (np.array(lane_lines[1].t) + np.array(lane_lines[2].t))/2
       # left and right ll x is the same
       self.ll_x = lane_lines[1].x
@@ -90,7 +91,9 @@ class LanePlanner:
       self.lll_std = md.laneLineStds[1]
       self.rll_std = md.laneLineStds[2]
 
-    if len(edges[0].t) == TRAJECTORY_SIZE:
+    else:
+      self.lll_prob = self.rll_prob = 0.
+    if len(edges) >= 2 and len(md.roadEdgeStds) >= 2 and all(len(edges[i].y) == TRAJECTORY_SIZE for i in (0, 1)):
       self.le_y = np.array(edges[0].y) + md.roadEdgeStds[0] * 0.4
       self.re_y = np.array(edges[1].y) - md.roadEdgeStds[1] * 0.4
     else:

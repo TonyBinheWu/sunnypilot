@@ -237,3 +237,7 @@ When ego changes lanes, the separate [Lane Change Response](cruise-gap.md#dynami
 The normally selected leadOne/leadTwo at lane-change entry form the reference pair. If either selected lead changes or disappears, additional acceleration relief stops for the rest of that maneuver. Braking uses only the currently selected leads; side radar candidates and stored entry vehicles never become additional braking obstacles.
 
 A confirmed moving front lead that is leaving the path can receive bounded future following-distance relief in ACC for `EnableRadarTracks=1`, `2`, or `3`. This requires earlier vision confirmation, a confident visual switch to a farther vehicle, continuous outward radar motion, and enough remaining distance through predicted body clearance. Radar distance, speed and L1 selection stay intact; the adjustment begins only after predicted clearance plus 0.30 seconds and is capped at half the configured time gap, 0.50 seconds, and 8 m. It cancels when the evidence fails and does not apply to SCC-only leads, strong turns, stationary leads, hard-braking leads, or blended mode.
+
+## Hyundai steering harness
+
+Choose automatic detection, the camera bus or the ADAS ECU bus in the vehicle wizard. Automatic detection checks the steering message and its payload length on the connected CAN-FD harness. The standard control preset uses the vehicle’s configured longitudinal controller. Special SCC wiring presets are under **Other wiring and factory cruise**.

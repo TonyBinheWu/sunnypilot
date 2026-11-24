@@ -1,4 +1,4 @@
-"""Install a complete, redistributable Taiwan OSM map for the web viewer."""
+"""Install and select bounded, redistributable country OSM packages."""
 import asyncio
 import contextlib
 from datetime import datetime, timezone
@@ -9,18 +9,12 @@ import sqlite3
 import aiohttp
 from aiohttp import web
 
+from openpilot.common.big_model_catalog import atomic_json
+from openpilot.selfdrive.navigation.shortbread import COUNTRIES, active_country, database, read_tile
 from ..config import CARROT_DATA_DIR
 
-
-SOURCE = "https://download.geofabrik.de/asia/taiwan-shortbread-1.0.mbtiles"
 LIMIT = 1024**3
 RESERVE = 512 * 1024**2
-
-
-def database(path):
-  db = sqlite3.connect(path.resolve().as_uri() + "?mode=ro&immutable=1", uri=True)
-  db.execute("PRAGMA trusted_schema=OFF")
-  return contextlib.closing(db)
 
 
 def inspect_package(path):
@@ -40,16 +34,11 @@ def inspect_package(path):
     return {'bounds': bounds, 'minZoom': min_zoom, 'maxZoom': max_zoom}
 
 
-def read_tile(path, z, x, y):
-  with database(path) as db:
-    row = db.execute("SELECT tile_data FROM tiles WHERE zoom_level=? AND tile_column=? AND tile_row=?",
-                     (z, x, (1 << z) - 1 - y)).fetchone()
-    return row[0] if row else None
-
-
 class OfflineMap:
   def __init__(self, directory):
-    self.path = Path(directory) / 'taiwan.mbtiles'
+    self.directory = Path(directory)
+    self.country = active_country(self.directory)
+    self.path = self.directory / (self.country + '.mbtiles')
     self.partial = self.path.with_suffix('.download')
     self.task = None
     self.received = self.total = 0
@@ -61,25 +50,44 @@ class OfflineMap:
     async with self.lock:
       if self.installed is None and self.path.is_file():
         try:
-          self.installed = await asyncio.to_thread(installed_info, self.path)
+          self.installed = dict(await asyncio.to_thread(installed_info, self.path), country=self.country)
         except (OSError, ValueError, KeyError, sqlite3.Error):
           self.stage = 'invalid'
       return self.installed
 
   def status(self):
-    return {'stage': self.stage, 'installed': self.installed, 'received': self.received, 'total': self.total}
+    return {'stage': self.stage, 'countries': list(COUNTRIES), 'installed': self.installed, 'received': self.received, 'total': self.total}
 
-  def start(self, session):
+  def start(self, session, country='taiwan'):
+    if country not in COUNTRIES:
+      raise ValueError('Unsupported country')
     if self.task is None or self.task.done():
       self.received = self.total = 0
       self.stage = 'downloading'
-      self.task = asyncio.create_task(self.download(session))
+      self.task = asyncio.create_task(self.download(session, country))
 
-  async def download(self, session):
+  async def activate(self, country, path, info):
+    async with self.lock:
+      atomic_json(self.directory / 'active.json', {'country': country})
+      self.path, self.country = path, country
+      self.installed, self.stage = dict(info, country=country), 'idle'
+
+  async def download(self, session, country):
+    target = self.directory / (country + '.mbtiles')
+    self.partial = target.with_suffix('.download')
     try:
       self.path.parent.mkdir(parents=True, exist_ok=True)
       self.partial.unlink(missing_ok=True)
-      async with session.get(SOURCE, timeout=aiohttp.ClientTimeout(total=1800, sock_read=45)) as response:
+      if target != self.path and target.is_file():
+        try:
+          info = await asyncio.to_thread(installed_info, target)
+        except (ValueError, KeyError, sqlite3.Error):
+          pass
+        else:
+          await self.activate(country, target, info)
+          return
+      url = f'https://download.geofabrik.de/{COUNTRIES[country]}/{country}-shortbread-1.0.mbtiles'
+      async with session.get(url, timeout=aiohttp.ClientTimeout(total=1800, sock_read=45)) as response:
         response.raise_for_status()
         self.total = response.content_length or 0
         if self.total < 0 or self.total > LIMIT:
@@ -104,10 +112,8 @@ class OfflineMap:
           raise ValueError("incomplete package")
       self.stage = 'verifying'
       info = await asyncio.to_thread(installed_info, self.partial)
-      async with self.lock:
-        self.partial.replace(self.path)
-        self.installed = info
-        self.stage = 'idle'
+      self.partial.replace(target)
+      await self.activate(country, target, info)
     except (OSError, ValueError, KeyError, sqlite3.Error, TimeoutError, aiohttp.ClientError):
       self.stage = 'failed'
     finally:
@@ -132,7 +138,14 @@ def register(app, directory=None):
     if request.content_type != 'application/json' or request.headers.get('Sec-Fetch-Site') == 'cross-site':
       raise web.HTTPBadRequest()
     await store.metadata()
-    store.start(request.app['http'])
+    try:
+      body = await request.json()
+      country = body.get('country', 'taiwan')
+      if not isinstance(country, str) or country not in COUNTRIES:
+        raise ValueError()
+    except (ValueError, AttributeError):
+      raise web.HTTPBadRequest() from None
+    store.start(request.app['http'], country)
     return web.json_response(store.status(), status=202, headers={'Cache-Control': 'no-store'})
 
   async def tile(request):
