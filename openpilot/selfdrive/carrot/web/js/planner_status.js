@@ -6,7 +6,7 @@
     cruiseOnly: '僅巡航，轉向由駕駛操作', sunny: '模型與跟車協同', mapCurve: '地圖彎速', speedLimit: '導航道路速限', blinkerPause: '低速方向燈暫停轉向',
     carrot: 'CarrotPlanner', upstream: 'openpilot Autospeed', inactive: '控制未介入',
     mpc: '縱向 MPC', lead0: '第一跟車目標', lead1: '第二跟車目標', lead2: '第三跟車目標', cruise: '巡航設定',
-    e2e: '視覺模型', model: '模型曲率', e2eCurve: '視覺模型與彎道減速',
+    e2e: '視覺模型', openingLead: '前車拉遠，平順恢復巡航', model: '模型曲率', e2eCurve: '視覺模型與彎道減速',
     hkgCurve: 'HKG 彎道限速', forceDecel: '系統要求減速', softHold: '停車保持',
     signalPrepare: '號誌預備減速', signalHold: '號誌起步等待', modelFilter: '模型曲率平滑',
     hkgFilter: 'HKG 曲率平滑', laneLines: '車道線規劃', holdCurvature: '維持目前曲率',

@@ -13,7 +13,7 @@ from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.curve_speed import CurveSpeed
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
-from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import LongitudinalMpc, LongitudinalPlanSource, get_T_FOLLOW
+from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import LongitudinalMpc, LongitudinalPlanSource, STOP_DISTANCE, get_T_FOLLOW
 from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, smooth_value
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
@@ -105,6 +105,8 @@ class LongitudinalPlanner:
     self.fcw = False
     self.dt = dt
     self.curve_speed = CurveSpeed(dt)
+    self.opening_track = None
+    self.opening_since = self.last_radar_time = 0
 
     self.v_desired_filter = FirstOrderFilter(init_v, 2.0, self.dt)
     self.a_cruise = init_a
@@ -115,6 +117,27 @@ class LongitudinalPlanner:
     self.a_desired_trajectory = np.zeros(CONTROL_N)
     self.j_desired_trajectory = np.zeros(CONTROL_N)
 
+  def opening_lead_boost(self, sm, eligible):
+    """Modest recovery only during sustained separation from the same tracked lead."""
+    lead = self.leads.leadOne
+    second = self.leads.leadTwo
+    cs = sm['carState']
+    stamp = sm.logMonoTime['radarState']
+    if not (eligible and lead.status and lead.radar and lead.radarTrackId >= 0 and
+            lead.vRel > 0.5 and lead.aLeadK >= -0.2 and
+            lead.dRel > STOP_DISTANCE + (self.t_follow + 0.5) * cs.vEgo and
+            not (second.status and second.dRel < lead.dRel) and
+            sm.all_checks(['radarState', 'controlsState', 'selfdriveState']) and
+            0 <= sm.logMonoTime['modelV2'] - stamp < 150_000_000):
+      self.opening_track = None
+      return 0.
+    if self.opening_track != lead.radarTrackId or not 0 <= stamp - self.last_radar_time < 150_000_000:
+      self.opening_track = lead.radarTrackId
+      self.opening_since = stamp
+    self.last_radar_time = stamp
+    seconds = (stamp - self.opening_since) * 1e-9
+    return min(0.35, 0.2 * lead.vRel, 0.2 * max(0., seconds - 1.))
+
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     if self.vision_only or self.sunny:
@@ -123,6 +146,7 @@ class LongitudinalPlanner:
         v_ego, sm['carState'].aEgo, sm['liveParameters'].roll, model.action.desiredAcceleration,
         model.action.desiredCurvature)))
       if not self.camera_input_valid:
+        self.opening_track = None
         return
     personality = sm['selfdriveState'].personality.raw
     if personality == log.LongitudinalPersonality.moreRelaxed:
@@ -194,6 +218,21 @@ class LongitudinalPlanner:
       self.a_cruise = min(self.a_cruise, 0.)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
+    recovery = 0.
+    if self.sunny:
+      cs = sm['carState']
+      eligible = (self.CP.openpilotLongitudinalControl and not reset_state and
+                  v_ego > 5. and v_cruise - v_ego > 2. and not sm['controlsState'].forceDecel and
+                  0. < output_a_target_e2e < 0.6 and not output_should_stop_e2e and
+                  curve_offset == 0. and abs(model.action.desiredCurvature) * v_ego**2 < 1. and
+                  not cs.standstill and not cs.gasPressed and not cs.brakePressed and not self.fcw)
+      if eligible:
+        trajectory = zip(model.position.t, model.velocity.x, model.orientationRate.z, strict=False)
+        preview = [abs(v * yaw) for t, v, yaw in trajectory if 0. <= t <= 3.]
+        eligible = bool(preview) and all(a < 1. for a in preview)
+      recovery = min(self.opening_lead_boost(sm, eligible), max(0., 0.6 - output_a_target_e2e))
+      output_a_target_e2e += recovery
+
     candidates = [(output_a_target_mpc, self.mpc.source, output_should_stop_mpc),
                   (self.a_cruise, LongitudinalPlanSource.cruise, cruise_should_stop),
                   (output_a_target_e2e, LongitudinalPlanSource.e2e, output_should_stop_e2e)]
@@ -205,6 +244,8 @@ class LongitudinalPlanner:
       self.speed_reason = 'forceDecel'
     elif self.speed_reason == 'cruise' and self.a_cruise < output_a_target_mpc:
       self.speed_reason = ceiling_reason
+    elif self.mpc.source == LongitudinalPlanSource.e2e and recovery > 0.:
+      self.speed_reason = 'openingLead'
     elif self.mpc.source == LongitudinalPlanSource.e2e and curve_offset < 0:
       self.speed_reason = 'e2eCurve'
     elif self.speed_reason in ('lead0', 'lead1'):

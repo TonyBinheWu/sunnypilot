@@ -16,7 +16,7 @@ def inputs():
   model.action.desiredAcceleration = -1.3
   model.action.shouldStop = True
   model.position.t, model.velocity.x, model.orientationRate.z = [1.], [25.], [.3]
-  sm = Inputs(modelV2=model, carState=NS(vEgo=25., vCruise=110., aEgo=0., standstill=False),
+  sm = Inputs(modelV2=model, carState=NS(vEgo=25., vCruise=110., aEgo=0., standstill=False, gasPressed=False, brakePressed=False),
               controlsState=NS(forceDecel=False, longControlState="pid"), liveParameters=NS(roll=0.),
               selfdriveState=NS(personality=NS(raw=1), enabled=True), radarState=log.RadarState.new_message(),
               carrotMan=NS(routeCurveKph=72., positionFixMonoTime=9_900_000_000), navInstruction=NS(speedLimit=15.))
@@ -84,3 +84,49 @@ def test_missing_set_speed_never_requests_acceleration(monkeypatch, missing):
   planner.publish(sm, NS(send=out.__setitem__))
   plan = out["longitudinalPlan"].longitudinalPlan
   assert not plan.allowThrottle and plan.aTarget <= 0. and plan.cruiseTarget == 0.
+
+
+@pytest.mark.parametrize("interrupt", ["cut_in", "closing", "braking", "stop", "curve", "stale", "gas", "ceiling", "force_decel"])
+def test_opening_lead_recovery_requires_continuous_eligible_observations(monkeypatch, interrupt):
+  monkeypatch.setattr(module, "Params", lambda: NS(get_bool=lambda _: False))
+  planner = module.LongitudinalPlanner(NS(openpilotLongitudinalControl=True, longitudinalActuatorDelay=.2), init_v=25., sunny=True)
+  sm = inputs()
+  model = sm["modelV2"]
+  model.action.desiredAcceleration, model.action.shouldStop = .15, False
+  model.orientationRate.z = [0.]
+  lead = sm["radarState"].leadOne
+  lead.status = lead.radar = True
+  lead.radarTrackId, lead.vRel, lead.dRel = 5, 2., 80.
+  lead.vLead = lead.vLeadK = 27.
+  lead.aLeadTau = 1.5
+  for i in range(80):
+    sm.logMonoTime["modelV2"] = sm.logMonoTime["radarState"] = 10_000_000_000 + i * 50_000_000
+    planner.update(sm)
+    if i <= 20:
+      assert planner.output_a_target <= .151
+  assert planner.speed_reason == "openingLead"
+  assert .15 < planner.output_a_target <= .501
+
+  if interrupt == "cut_in":
+    lead.radarTrackId, lead.dRel = 8, 18.
+  elif interrupt == "closing":
+    lead.vRel = -2.
+  elif interrupt == "braking":
+    model.action.desiredAcceleration = -.3
+  elif interrupt == "stop":
+    model.action.shouldStop = True
+  elif interrupt == "curve":
+    model.orientationRate.z = [.2]
+  elif interrupt == "stale":
+    sm.logMonoTime["modelV2"] += 250_000_000
+  elif interrupt == "gas":
+    sm["carState"].gasPressed = True
+  elif interrupt == "ceiling":
+    sm["carState"].vCruise = 90.
+  else:
+    sm["controlsState"].forceDecel = True
+  planner.update(sm)
+  assert planner.speed_reason != "openingLead"
+  assert planner.output_a_target <= model.action.desiredAcceleration
+  if interrupt == "stop":
+    assert planner.output_should_stop
