@@ -1,3 +1,8 @@
+carrot-wip (2026-11-24)
+========================
+* Autospeed uses the driving model, lead-vehicle planner and driver-set cruise ceiling whenever openpilot controls longitudinal motion.
+* Experimental Mode and DEC retain their trajectory-planning choices. Autospeed also applies with Experimental Mode off.
+
 carrot (2026-06-22)
 ========================
 * Update comma 4 system components (AGNOS, camera pipeline, and model runtime)

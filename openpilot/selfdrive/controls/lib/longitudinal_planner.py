@@ -10,6 +10,7 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
+from openpilot.selfdrive.controls.lib.autospeed import Autospeed
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, N
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan, is_volkswagen_meb
@@ -61,6 +62,7 @@ class LongitudinalPlanner:
     # VW MEB(ID.4/ID.5)에서만 True. 가속 오버라이드 중 출발 FCW 오탐을 끄기 위한 게이트.
     self.is_vw_meb = is_volkswagen_meb(CP)
     self.dt = dt
+    self.autospeed = Autospeed(dt)
     self.allow_throttle = True
 
     self.a_desired = init_a
@@ -430,7 +432,20 @@ class LongitudinalPlanner:
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
     output_v_target_now_e2e = sm['modelV2'].action.desiredVelocity
 
-    if self.mpc.mode == 'acc' and not getattr(self, 'tesla_traffic_blended', False):
+    if self.CP.openpilotLongitudinalControl and reset_state:
+      self.autospeed.reset(sm['carState'].aEgo)
+    if self.CP.openpilotLongitudinalControl and not reset_state:
+      # The driver ceiling applies even when Carrot's Eco target is above the set speed.
+      ratio = self.vCluRatio if vCluRatio > .5 else 1.
+      ceiling = min(v_cruise, v_cruise_kph * CV.KPH_TO_MS * ratio)
+      roll = sm['liveParameters'].roll if sm.valid['liveParameters'] else 0.
+      output_a_target, self.mpc.source, self.output_should_stop = self.autospeed.update(
+        sm['modelV2'], roll, sm['selfdriveState'].personality.raw, v_ego, ceiling, self.output_a_target,
+        output_a_target_mpc, self.mpc.source, output_should_stop_mpc)
+      output_v_target_now = min(output_v_target_mpc, ceiling)
+      if self.mpc.source == 'e2e':
+        output_v_target_now = min(output_v_target_now, output_v_target_now_e2e)
+    elif self.mpc.mode == 'acc' and not getattr(self, 'tesla_traffic_blended', False):
       output_a_target = output_a_target_mpc
       output_v_target_now = output_v_target_mpc
       self.output_should_stop = output_should_stop_mpc
@@ -450,6 +465,9 @@ class LongitudinalPlanner:
 
     self.update_coasting(sm, carrot, v_cruise_kph, v_cruise, reset_state,
                          force_slow_decel, coasting_turn_blocked, cutin_predecel_limit)
+    if self.coasting_target and self.CP.openpilotLongitudinalControl and output_a_target < output_a_target_mpc:
+      self.coasting_target = 0.0
+      self.coasting.reset()
     self.apply_signal_stop_prepare(sm, carrot, reset_state)
     self.apply_signal_start_guard(carrot, v_ego)
     if getattr(self, 'tesla_traffic_decision', None) is not None:
@@ -548,7 +566,10 @@ class LongitudinalPlanner:
   ):
     plan_send = messaging.new_message('longitudinalPlan')
 
-    plan_send.valid = sm.all_checks(service_list=['carState', 'controlsState', 'selfdriveState'])
+    required = ['carState', 'controlsState', 'selfdriveState']
+    if self.CP.openpilotLongitudinalControl:
+      required.append('modelV2')
+    plan_send.valid = sm.all_checks(service_list=required)
 
     longitudinalPlan = plan_send.longitudinalPlan
     longitudinalPlan.modelMonoTime = sm.logMonoTime['modelV2']

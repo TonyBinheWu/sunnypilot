@@ -163,12 +163,9 @@ class TogglesLayout(Widget):
     ui_state.update_params()
 
     e2e_description = tr(
-      "openpilot defaults to driving in chill mode. Experimental mode enables alpha-level features that aren't ready for chill mode. " +
-      "Experimental features are listed below:<br>" +
-      "<h4>End-to-End Longitudinal Control</h4><br>" +
-      "Let the driving model control the gas and brakes. openpilot will drive as it thinks a human would, including stopping for red lights and stop signs. " +
-      "Since the driving model decides the speed to drive, the set speed will only act as an upper bound. This is an alpha quality feature; " +
-      "mistakes should be expected.<br>" +
+      "<h4>Autospeed</h4><br>" +
+      "When openpilot controls acceleration and braking, Autospeed uses the driving scene to plan speed up to the cruise setting. " +
+      "It remains active with Experimental Mode off. Experimental Mode selects the blended trajectory planner.<br>" +
       "<h4>New Driving Visualization</h4><br>" +
       "The driving visualization will transition to the road-facing wide-angle camera at low speeds to better show some turns. " +
       "The Experimental mode logo will also be shown in the top right corner."
