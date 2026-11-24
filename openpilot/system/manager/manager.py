@@ -5,6 +5,7 @@ import os
 import signal
 import sys
 import time
+from openpilot.common.driving_planner import automatic_longitudinal
 from openpilot.common.forced_offroad import observer_failed, release_observer
 import traceback
 
@@ -89,6 +90,10 @@ def manager_init() -> UpdateStatus:
   configure_monitoring(params)
   migrate_atc_params(params)
   migrate_lateral_geometry_params(params)
+
+  # Preserve the previous explicit Alpha auto-setup choice independently of planning.
+  if params.get("SunnyAutoLongitudinal") is None:
+    params.put_bool("SunnyAutoLongitudinal", automatic_longitudinal(params.get_int("DrivingPlannerMode")))
 
   # set unset params to their default value
   for k in params.all_keys():

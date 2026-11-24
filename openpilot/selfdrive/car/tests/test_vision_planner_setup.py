@@ -38,9 +38,8 @@ def test_auto_setup(monkeypatch, case, provider, calls):
   assert requested == calls
 
 
-def test_trip_mode_is_latched_with_legacy_fallback():
+@pytest.mark.parametrize("saved_mode", [-1, 0, 1, 2, 3, 4, 99])
+def test_trip_always_uses_blended_planning(saved_mode):
   params = Mock()
-  params.get_int.return_value = 1
-  assert active_planner_mode(SimpleNamespace(drivingPlannerMode=3), params) == 3
+  assert active_planner_mode(SimpleNamespace(drivingPlannerMode=saved_mode), params) == 4
   params.get_int.assert_not_called()
-  assert active_planner_mode(SimpleNamespace(drivingPlannerMode=-1), params) == 1

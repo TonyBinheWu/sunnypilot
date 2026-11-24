@@ -5,7 +5,7 @@ import numpy as np
 from openpilot.cereal import car
 from openpilot.common.constants import CV
 from openpilot.selfdrive.carrot.carrot_man_input import get_carrot_man
-from openpilot.selfdrive.carrot.cruise_gap import cruise_gap_levels, next_gap_personality, supported_gap_levels
+from openpilot.selfdrive.carrot.cruise_gap import next_gap_personality, supported_gap_levels
 from openpilot.selfdrive.carrot.bluetooth.model import BLUETOOTH_CANCEL, CommandReader, REMOTE_BUTTONS
 from openpilot.selfdrive.carrot.assistant_speed import AssistantSpeed
 from openpilot.selfdrive.car.toyota_pcm_speed import ToyotaPcmSetSpeedSync
@@ -734,10 +734,8 @@ class VCruiseCarrot:
 
       elif button_type == ButtonType.gapAdjustCruise:
         longitudinalPersonalityMax = supported_gap_levels(self.params.get_int("LongitudinalPersonalityMax"))
-        gap_levels = cruise_gap_levels(self.params.get_int("CruiseGapLevels"), longitudinalPersonalityMax)
-        if not self.CP.openpilotLongitudinalControl:
-          gap_levels = longitudinalPersonalityMax
-        if remote == 'gapAdjustCruise' or CS.pcmCruiseGap == 0 or gap_levels < longitudinalPersonalityMax:
+        gap_levels = longitudinalPersonalityMax
+        if remote == 'gapAdjustCruise' or CS.pcmCruiseGap == 0:
           personality = next_gap_personality(self.params.get_int('LongitudinalPersonality'), gap_levels)
         else:
           personality = int(np.clip(CS.pcmCruiseGap - 1, 0, longitudinalPersonalityMax - 1))

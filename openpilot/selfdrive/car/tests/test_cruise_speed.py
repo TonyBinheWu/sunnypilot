@@ -7,13 +7,13 @@ from openpilot.cereal import log
 from openpilot.selfdrive.car.cruise import VCruiseHelper, V_CRUISE_MIN, V_CRUISE_MAX, V_CRUISE_INITIAL, IMPERIAL_INCREMENT
 from openpilot.cereal import car
 from openpilot.common.constants import CV
-from openpilot.selfdrive.test.longitudinal_maneuvers.maneuver import Maneuver
 
 ButtonEvent = car.CarState.ButtonEvent
 ButtonType = car.CarState.ButtonEvent.Type
 
 
 def run_cruise_simulation(cruise, e2e, personality, t_end=20.):
+  from openpilot.selfdrive.test.longitudinal_maneuvers.maneuver import Maneuver
   man = Maneuver(
     '',
     duration=t_end,

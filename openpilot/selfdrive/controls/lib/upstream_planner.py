@@ -128,8 +128,10 @@ class LongitudinalPlanner:
     if personality == log.LongitudinalPersonality.moreRelaxed:
       personality = log.LongitudinalPersonality.relaxed
     self.t_follow = get_T_FOLLOW(personality)
-    v_cruise_kph = min(sm['carState'].vCruise, V_CRUISE_MAX)
-    v_cruise = v_cruise_kph * CV.KPH_TO_MS
+    raw_ceiling = sm['carState'].vCruise
+    self.ceiling_available = math.isfinite(raw_ceiling) and 0 <= raw_ceiling < V_CRUISE_UNSET
+    self.cruise_target = min(raw_ceiling, V_CRUISE_MAX) if self.ceiling_available else 0.
+    v_cruise = self.cruise_target * CV.KPH_TO_MS if self.ceiling_available else v_ego
     ceiling_reason = 'cruise'
     if self.sunny:
       v_cruise, ceiling_reason = assisted_ceiling(sm, v_cruise, self.map_curve, self.speed_limit)
@@ -141,8 +143,7 @@ class LongitudinalPlanner:
     # Reset current state when not engaged, or user is controlling the speed
     reset_state = long_control_off if self.CP.openpilotLongitudinalControl else not sm['selfdriveState'].enabled
     # PCM cruise speed may be updated a few cycles later, check if initialized
-    v_cruise_initialized = sm['carState'].vCruise != V_CRUISE_UNSET
-    reset_state = reset_state or not v_cruise_initialized
+    reset_state = reset_state or not self.ceiling_available
 
     if reset_state:
       self.v_desired_filter.x = v_ego
@@ -189,6 +190,8 @@ class LongitudinalPlanner:
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
     self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt)
+    if not self.ceiling_available:
+      self.a_cruise = min(self.a_cruise, 0.)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
     candidates = [(output_a_target_mpc, self.mpc.source, output_should_stop_mpc),
@@ -251,9 +254,9 @@ class LongitudinalPlanner:
     if self.vision_only or self.sunny:
       longitudinalPlan.visionPlannerSetup = getattr(self.CP, "visionPlannerSetup", "")
     longitudinalPlan.speedConstraint = self.speed_reason if self.CP.openpilotLongitudinalControl else 'stockLong'
-    longitudinalPlan.allowThrottle = True
+    longitudinalPlan.allowThrottle = self.ceiling_available
     longitudinalPlan.vTargetNow = float(max(0., sm['carState'].vEgo + self.output_a_target * self.dt))
     longitudinalPlan.jTargetNow = float(self.j_desired_trajectory[0])
-    longitudinalPlan.cruiseTarget = min(sm['carState'].vCruise, V_CRUISE_MAX)
+    longitudinalPlan.cruiseTarget = self.cruise_target
     longitudinalPlan.tFollow = self.t_follow
     pm.send('longitudinalPlan', plan_send)

@@ -5,12 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from openpilot.cereal import car, log
-from openpilot.common.driving_planner import SUNNY_BLENDED, active_planner_mode, camera_only
 from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
-from openpilot.selfdrive.carrot.radar import effective_radar_track_mode
-from openpilot.selfdrive.carrot.radar_motion.timing import front_radar_distance_delay_s
-from openpilot.selfdrive.controls.lib.longitudinal_fast_radar import RadarStateOverride
-from openpilot.selfdrive.controls.lib.longitudinal_stopping_lead import StoppingLeadFilter
 
 
 class EndOfInputs(Exception):
@@ -71,20 +66,12 @@ def run_planner_events(mocker, brand, configured_mode, radar_period_ms, *, stopp
   cp = SimpleNamespace(brand=brand, flags=0, radarUnavailable=False, radarDelay=0.8, openpilotLongitudinalControl=True)
   params = mocker.Mock()
   params.get_int.side_effect = lambda key: int(upstream) if key == "DrivingPlannerMode" else configured_mode
-  fast_radar = mocker.Mock()
-  fast_radar.lead_one_ready.return_value = True
-  fast_radar.build.return_value = SimpleNamespace(
-    radar_state=radar_state, lead_mask=1, lead_one_track_id=35, lead_one_reason='active',
-  )
   planner = mocker.Mock()
   calls = []
   planner.publish.side_effect = lambda *args, **kwargs: calls.append((sm.now, kwargs))
   namespace = {
     'time': SimpleNamespace(monotonic=lambda: sm.now, thread_time=lambda: sm.now),
     'car': car,
-    'active_planner_mode': active_planner_mode,
-    'SUNNY_BLENDED': SUNNY_BLENDED,
-    'camera_only': camera_only,
     'Params': lambda: params,
     'Priority': SimpleNamespace(CTRL_LOW=0),
     'config_realtime_process': mocker.Mock(),
@@ -92,13 +79,7 @@ def run_planner_events(mocker, brand, configured_mode, radar_period_ms, *, stopp
     'RuntimeDiagnostics': RuntimeDiagnostics,
     'LongitudinalPlanner': mocker.Mock(return_value=planner),
     'LateralPlanner': mocker.Mock(),
-    'FastRadarOverlay': mocker.Mock(return_value=fast_radar),
-    'RadarStateOverride': RadarStateOverride,
-    'StoppingLeadFilter': StoppingLeadFilter,
     'LaneDepartureWarning': mocker.Mock(),
-    'CarrotPlanner': lambda: SimpleNamespace(mode='acc'),
-    'effective_radar_track_mode': effective_radar_track_mode,
-    'front_radar_distance_delay_s': front_radar_distance_delay_s,
     'messaging': SimpleNamespace(
       log_from_bytes=lambda value, schema: cp,
       PubMaster=mocker.Mock(),
@@ -112,69 +93,20 @@ def run_planner_events(mocker, brand, configured_mode, radar_period_ms, *, stopp
   tree = ast.parse(path.read_text(encoding='utf-8'), filename=str(path))
   tree.body = [node for node in tree.body if isinstance(node, (ast.Assign, ast.FunctionDef))]
   exec(compile(tree, str(path), 'exec'), namespace)
-  namespace['make_longitudinal_planner'] = lambda cp, selected: planner if selected == upstream else None
   with pytest.raises(EndOfInputs):
     namespace['main']()
+  namespace['LongitudinalPlanner'].assert_called_once_with(cp, sunny=True)
   assert planner.update.call_count == len(calls)
-  return calls, sub_master_factory.call_args.kwargs['poll'], fast_radar, planner
+  return calls, sub_master_factory.call_args.kwargs['poll'], planner
 
 
-@pytest.mark.parametrize('brand', ('volkswagen', 'toyota', 'honda', 'ford', 'subaru'))
-@pytest.mark.parametrize('radar_period_ms', (20, 40, 50))
-@pytest.mark.parametrize('configured_mode', (0, 1, 3))
-def test_other_brands_plan_at_model_cadence_with_a_stable_radar_lead(mocker, brand, radar_period_ms, configured_mode):
-  calls, poll, fast_radar, _ = run_planner_events(mocker, brand, configured_mode, radar_period_ms)
-
+@pytest.mark.parametrize('brand', ['hyundai', 'volkswagen', 'toyota', 'honda'])
+@pytest.mark.parametrize('radar_period_ms', [20, 40, 50])
+@pytest.mark.parametrize('saved_mode', [0, 1, 2, 3, 4])
+def test_all_profiles_plan_at_model_rate_using_unmodified_leads(mocker, brand, radar_period_ms, saved_mode):
+  calls, poll, planner = run_planner_events(mocker, brand, 1, radar_period_ms, upstream=saved_mode)
+  assert poll == 'modelV2'
   assert [timestamp for timestamp, _ in calls] == pytest.approx([10.0 + n * 0.05 for n in range(20)])
-  assert poll == 'modelV2'
-  assert all(values['planning_trigger'] == 'modelV2' for _, values in calls)
-  assert all(values['fast_lead_mask'] == 0 for _, values in calls)
-  fast_radar.build.assert_not_called()
-
-
-@pytest.mark.parametrize('configured_mode', (1, 2, 3))
-def test_hyundai_keeps_current_radar_cadence_and_overlay(mocker, configured_mode):
-  calls, poll, fast_radar, _ = run_planner_events(mocker, 'hyundai', configured_mode, 50)
-
-  # The first model arrives before radar; subsequent plans use the radar clock.
-  expected = [10.0, *(10.0 + ms / 1000.0 for ms in range(70, 1000, 50))]
-  assert [timestamp for timestamp, _ in calls] == pytest.approx(expected)
-  assert poll == ['modelV2', 'liveTracks']
-  assert calls[0][1]['planning_trigger'] == 'modelV2'
-  assert all(values['planning_trigger'] == 'liveTracks' for _, values in calls[1:])
-  assert fast_radar.build.call_count == len(calls) - 1
-
-
-@pytest.mark.parametrize('configured_mode', (-2, -1, 0))
-def test_hyundai_without_radar_tracks_keeps_model_cadence(mocker, configured_mode):
-  calls, poll, fast_radar, _ = run_planner_events(mocker, 'hyundai', configured_mode, 50)
-
-  assert [timestamp for timestamp, _ in calls] == pytest.approx([10.0 + n * 0.05 for n in range(20)])
-  assert poll == 'modelV2'
-  fast_radar.build.assert_not_called()
-
-
-@pytest.mark.parametrize('configured_mode', (0, 1))
-def test_stopping_conditions_final_planner_input_on_model_and_fast_radar_clocks(mocker, configured_mode):
-  _, _, fast_radar, planner = run_planner_events(mocker, 'hyundai', configured_mode, 50, stopping=True)
-  inputs = [call.args[0]['radarState'].leadOne.vLead for call in planner.update.call_args_list]
-  assert inputs[0] == pytest.approx(0.217)
-  assert inputs[-5:] == [0.0] * 5
-  # The fast source is still noisy: conditioning happened after that refresh.
-  assert fast_radar.build.return_value.radar_state.leadOne.vLead == pytest.approx(0.217)
-
-
-def test_driver_gas_override_bypasses_stopping_input_filter(mocker):
-  _, _, _, planner = run_planner_events(mocker, 'hyundai', 1, 50, stopping=True, gas_pressed=True)
-  assert all(call.args[0]['radarState'].leadOne.vLead == pytest.approx(0.217) for call in planner.update.call_args_list)
-
-
-@pytest.mark.parametrize("mode", [1, 2, 3, 4])
-def test_upstream_planner_uses_raw_radar_at_model_rate(mocker, mode):
-  calls, poll, fast_radar, planner = run_planner_events(mocker, 'hyundai', 1, 50, stopping=True, upstream=mode)
-  assert poll == 'modelV2'
-  assert len(calls) == 20
-  fast_radar.build.assert_not_called()
   for call in planner.update.call_args_list:
     sm, = call.args
     assert sm['radarState'].leadOne.vLead == pytest.approx(.217)

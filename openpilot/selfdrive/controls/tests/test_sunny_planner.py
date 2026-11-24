@@ -70,3 +70,17 @@ def test_closing_lead_wins_even_with_model_requesting_acceleration(monkeypatch):
   planner.update(sm)
   assert planner.speed_reason == "lead0" and planner.output_a_target < 0.
   assert planner.output_should_stop
+
+
+@pytest.mark.parametrize("missing", [-1., 255., float("nan")])
+def test_missing_set_speed_never_requests_acceleration(monkeypatch, missing):
+  monkeypatch.setattr(module, "Params", lambda: NS(get_bool=lambda _: False))
+  planner = module.LongitudinalPlanner(NS(openpilotLongitudinalControl=True, longitudinalActuatorDelay=.2), sunny=True)
+  sm = inputs()
+  sm["carState"].vCruise = missing
+  sm["modelV2"].action.desiredAcceleration = 1.
+  planner.update(sm)
+  out = {}
+  planner.publish(sm, NS(send=out.__setitem__))
+  plan = out["longitudinalPlan"].longitudinalPlan
+  assert not plan.allowThrottle and plan.aTarget <= 0. and plan.cruiseTarget == 0.

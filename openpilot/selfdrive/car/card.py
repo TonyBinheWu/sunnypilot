@@ -8,7 +8,7 @@ import openpilot.cereal.messaging as messaging
 
 from openpilot.cereal import car, log
 
-from openpilot.common.driving_planner import automatic_longitudinal
+from openpilot.common.driving_planner import SUNNY_BLENDED
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
 from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
@@ -24,7 +24,7 @@ from opendbc.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.pandad import can_capnp_to_list, can_list_to_can_capnp
 from openpilot.selfdrive.car.alternative_experience import get_alternative_experience
 from openpilot.selfdrive.car.card_diagnostics import should_log_card_diagnostics
-from openpilot.selfdrive.car.cruise import VCruiseCarrot
+from openpilot.selfdrive.car.cruise import VCruiseCarrot, VCruiseHelper
 from openpilot.selfdrive.car.car_specific import MockCarState
 from openpilot.selfdrive.car.openpilot_toggle import CruiseMainOpenpilotToggle
 from openpilot.selfdrive.car.tesla_turn_signals import TeslaTurnSignals
@@ -125,17 +125,16 @@ class Car:
         with car.CarParams.from_bytes(cached_params_raw) as _cached_params:
           cached_params = _cached_params
 
-      planner_mode = self.params.get_int("DrivingPlannerMode")
       self.CI = get_car(*self.can_callbacks, obd_callback(self.params), alpha_long_allowed, is_release, num_pandas, cached_params,
-                        auto_long=automatic_longitudinal(planner_mode))
+                        auto_long=self.params.get_bool("SunnyAutoLongitudinal"))
       self.CP = self.CI.CP
-      self.CP.drivingPlannerMode = planner_mode if planner_mode in (0, 1, 2, 3, 4) else 0
 
       # continue onto next fingerprinting step in pandad
       self.params.put_bool("FirmwareQueryDone", True)
     else:
       self.CI, self.CP = CI, CI.CP
 
+    self.CP.drivingPlannerMode = SUNNY_BLENDED
     self.CP.alternativeExperience = get_alternative_experience(self.params.get_bool("DisengageOnAccelerator"))
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
     controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
@@ -192,7 +191,8 @@ class Car:
     self.params.put_nonblocking("CarParamsPersistent", cp_bytes)
 
     self.mock_carstate = MockCarState()
-    self.v_cruise_helper = VCruiseCarrot(self.CP, cached_settings=True) #VCruiseHelper(self.CP)
+    self.v_cruise_helper = VCruiseCarrot(self.CP, cached_settings=True)
+    self.driver_set_speed = VCruiseHelper(self.CP)
 
     self.is_metric = self.params.get_bool("IsMetric")
     self.experimental_mode = self.params.get_bool("ExperimentalMode")
@@ -250,7 +250,7 @@ class Car:
     # joongyu01/speedcam: camera skips and section unlock (+ / gas tap) apply only while engaged,
     # and a section unlocks only when the set speed is above its cap.
     self.CI.CS.speedcam_engaged = self.sm['carControl'].enabled
-    self.CI.CS.speedcam_v_cruise = self.v_cruise_helper.v_cruise_kph
+    self.CI.CS.speedcam_v_cruise = self.driver_set_speed.v_cruise_kph
     CS = self.CI.update(can_list)
     self.spas_signals.observe(can_list, time.monotonic())
     if self.CP.brand == 'mock':
@@ -308,25 +308,19 @@ class Car:
     vision_done_ns = time.monotonic_ns()
     #self.t2 = time.monotonic()
 
-    #self.v_cruise_helper.update_v_cruise(CS, self.sm['carControl'].enabled, self.is_metric)
-    # A gas tap spent on a camera skip must not also raise the set speed by +10.
+    enabled = self.sm['carControl'].enabled
+    self.driver_set_speed.update_v_cruise(CS, enabled, self.is_metric)
     self.v_cruise_helper.speedcam_gas_tok_consumed = getattr(self.CI.CS, "speedcam_gas_tok_consumed", False)
     self.v_cruise_helper.update_v_cruise(CS, self.sm, self.is_metric)
-    #self.t3 = time.monotonic()
-    if self.sm['carControl'].enabled and not self.CC_prev.enabled:
-      # Use CarState w/ buttons from the step selfdrived enables on
+    if enabled and not self.CC_prev.enabled:
       self.v_cruise_helper.initialize_v_cruise(self.CS_prev, self.experimental_mode)
+      self.driver_set_speed.initialize_v_cruise(self.CS_prev, experimental_mode=False)
 
-    # TODO: mirror the carState.cruiseState struct?
-    #self.v_cruise_helper.update_v_cruise(CS, self.sm['carControl'].enabled, self.is_metric)
-    if self.v_cruise_helper._paddle_decel_active:
-      v_cruise_kph = v_cruise_cluster_kph = 0
-    else:
-      v_cruise_kph = self.v_cruise_helper.v_cruise_kph
-      v_cruise_cluster_kph = self.v_cruise_helper.v_cruise_cluster_kph
     CS.logCarrot = self.v_cruise_helper.log
-    CS.vCruise = float(v_cruise_kph)
-    CS.vCruiseCluster = float(v_cruise_cluster_kph)
+    CS.vCruise = float(self.driver_set_speed.v_cruise_kph)
+    CS.vCruiseCluster = float(self.driver_set_speed.v_cruise_cluster_kph)
+    if self.v_cruise_helper._paddle_decel_active:
+      CS.vCruise = CS.vCruiseCluster = 0.
     CS.softHoldActive = self.v_cruise_helper._soft_hold_active
     CS.cruiseCancelState = self.v_cruise_helper._cruise_cancel_state
     CS.activateCruise = self.v_cruise_helper._activate_cruise

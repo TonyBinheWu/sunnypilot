@@ -663,14 +663,14 @@ def test_gap_cycle_limits(maximum, requested, expected):
 
 
 @pytest.mark.parametrize("maximum,requested,pcm_gap,expected", [
-  (4, 2, 0, [1, 0, 1, 0]),
-  (4, 2, 4, [1, 0, 1, 0]),
-  (4, 3, 4, [2, 1, 0, 2]),
-  (3, 2, 3, [1, 0, 1, 0]),
+  (4, 2, 0, [3, 2, 1, 0]),
+  (4, 2, 4, [3, 3, 3, 3]),
+  (4, 3, 4, [3, 3, 3, 3]),
+  (3, 2, 3, [2, 2, 2, 2]),
   (4, 4, 0, [3, 2, 1, 0]),
   (3, 4, 0, [2, 1, 0, 2]),
 ])
-def test_gap_button_cycles_selected_levels(maximum, requested, pcm_gap, expected):
+def test_gap_button_ignores_legacy_cycle_limit(maximum, requested, pcm_gap, expected):
   helper, CS, CC = make_cruise_helper(80, 0, False, True)
   helper._prepare_buttons = lambda CS, speed, remote=None: (speed, ButtonType.gapAdjustCruise, False)
   helper.CP = SimpleNamespace(openpilotLongitudinalControl=True)
@@ -684,7 +684,7 @@ def test_gap_button_cycles_selected_levels(maximum, requested, pcm_gap, expected
 
 
 @pytest.mark.parametrize("openpilot_long,requested,pcm_gap,current,expected", [
-  (True, 2, 4, 3, 1),  # Reducing from TF4 enters TF2 on the next press.
+  (True, 2, 4, 3, 3),  # Retired Carrot settings cannot restrict the physical gap button.
   (True, 4, 3, 0, 2),  # Default preserves the vehicle-reported gap.
   (False, 2, 4, 0, 3),  # Stock ACC owns its gap cycle.
   (False, 2, 0, 0, 3),

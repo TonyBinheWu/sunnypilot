@@ -47,12 +47,12 @@ function getLocalDeviceGroupParamNames(groupId) {
     DEVICE_TOGGLES.forEach((entry) => {
       if (entry.confirmedParam) names.push(entry.confirmedParam);
     });
-    names.push("LongitudinalPersonality", "DrivingPlannerMode");
+    names.push("LongitudinalPersonality", "SunnyAutoLongitudinal");
     return names;
   }
   if (groupId === "Developer") {
     return [
-      "DrivingPlannerMode",
+      "SunnyAutoLongitudinal",
       ...DEVICE_DEVELOPER_TOGGLES.map((entry) => entry.param),
       "GithubUsername",
       "GithubSshKeys",
@@ -527,7 +527,7 @@ function renderDeviceGroupItems(groupId, values) {
 function renderDeviceToggleItems(values) {
   let html = "";
   DEVICE_TOGGLES.forEach((toggle) => {
-    if ([3, 4].includes(Number(values.DrivingPlannerMode)) && toggle.param === "ExperimentalMode") {
+    if (Number(values.SunnyAutoLongitudinal) === 1 && toggle.param === "ExperimentalMode") {
       html += renderDeviceInfoRow(getUIText(toggle.labelKey, toggle.defaultLabel), plannerManagedLabel());
       return;
     }
@@ -563,7 +563,7 @@ function plannerManagedLabel() {
 function renderDeviceDeveloperItems(values) {
   let html = renderSshKeysRow(values.SshKeyStatus || values.GithubUsername || "", Boolean(values.GithubSshKeys));
   DEVICE_DEVELOPER_TOGGLES.forEach((toggle) => {
-    if ([3, 4].includes(Number(values.DrivingPlannerMode)) && toggle.param === "AlphaLongitudinalEnabled") {
+    if (Number(values.SunnyAutoLongitudinal) === 1 && toggle.param === "AlphaLongitudinalEnabled") {
       html += renderDeviceInfoRow(getUIText(toggle.labelKey, toggle.defaultLabel), plannerManagedLabel());
       return;
     }

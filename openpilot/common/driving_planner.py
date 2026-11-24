@@ -13,8 +13,8 @@ def camera_only(mode):
 
 
 def active_planner_mode(cp, params):
-  mode = getattr(cp, "drivingPlannerMode", -1)
-  return params.get_int("DrivingPlannerMode") if mode == -1 else mode
+  # Historical CarParams and saved settings can contain retired planner profiles.
+  return SUNNY_BLENDED
 
 
 def auto_alpha_candidate(cp, *, recognized, release, stock_requested):

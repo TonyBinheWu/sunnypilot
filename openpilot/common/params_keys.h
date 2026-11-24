@@ -356,6 +356,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SunnySpeedLimit", {PERSISTENT, BOOL, "0"}},
     {"SunnyCruiseOnly", {PERSISTENT, BOOL, "0"}},
     {"SunnyBlinkerPauseKph", {PERSISTENT, INT, "0"}},
+    {"SunnyAutoLongitudinal", {PERSISTENT, BOOL, "0"}},
     {"DrivingPlannerMode", {PERSISTENT, INT, "0"}},
     {"CruiseGapLevels", {PERSISTENT, INT, "4"}},
     {"TFollowGap1", {PERSISTENT, INT, "110"}},

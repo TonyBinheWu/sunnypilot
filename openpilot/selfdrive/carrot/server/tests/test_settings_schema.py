@@ -16,7 +16,6 @@ from openpilot.selfdrive.carrot.server.services.settings import (
   current_vehicle_settings_context,
   filter_settings_catalog_for_brand,
   group_index,
-  with_vehicle_gap_limits,
 )
 
 SETTINGS_PATH = Path(__file__).resolve().parents[3] / "carrot_settings.json"
@@ -62,23 +61,6 @@ def test_tesla_switches_have_a_dedicated_browser_group(settings):
   assert '{"TeslaAutoSpeedLimit", {PERSISTENT, BOOL, "0"}}' in PARAMS_KEYS_PATH.read_text(encoding="utf-8")
 
 
-@pytest.mark.parametrize("maximum", (3, 4))
-def test_gap_cycle_catalog_uses_vehicle_maximum_without_mutating_cache(settings, maximum):
-  groups, by_name, groups_list = group_index(settings)
-  original = by_name["CruiseGapLevels"]
-  data, adapted_groups, adapted_names, _ = with_vehicle_gap_limits((settings, groups, by_name, groups_list), maximum)
-  selected = adapted_names["CruiseGapLevels"]
-  assert (selected["min"], selected["max"], selected["default"]) == (2, maximum, maximum)
-  assert all(len(options) == maximum - 1 for options in selected["options"].values())
-  from openpilot.selfdrive.carrot.server.services.params import clamp_numeric
-  assert clamp_numeric(4, selected) == maximum
-  assert clamp_numeric(1, selected) == 2
-  assert next(p for p in data["params"] if p["name"] == "CruiseGapLevels") is selected
-  assert next(p for p in adapted_groups[selected["group"]] if p["name"] == "CruiseGapLevels") is selected
-  assert (original["max"], original["default"]) == (4, 4)
-  assert all(len(options) == 3 for options in original["options"].values())
-
-
 @pytest.mark.parametrize("maximum,stored,expected", ((3, 4, 3), (4, 4, 4), (3, 2, 2), (4, 3, 3), (3, 0, 3)))
 def test_gap_cycle_read_matches_vehicle_limit(monkeypatch, maximum, stored, expected):
   from openpilot.selfdrive.carrot.server.services import params as service
@@ -91,13 +73,12 @@ def test_gap_cycle_read_matches_vehicle_limit(monkeypatch, maximum, stored, expe
   assert service.get_param_values(["CruiseGapLevels"], {"CruiseGapLevels": maximum}) == {"CruiseGapLevels": expected}
 
 
-def test_gap_cycle_setting_is_registered_and_in_gap_menu(settings):
-  assert '{"CruiseGapLevels", {PERSISTENT, INT, "4"}}' in PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  groups, by_name, _ = group_index(settings)
+def test_cruise_and_gap_tuning_is_removed(settings):
+  _, by_name, _ = group_index(settings)
+  assert not {"CruiseGapLevels", "TFollowGap1", "DrivingPlannerMode"}.intersection(by_name)
   categories = build_menu_categories(settings, by_name)
-  section = next(section for category in categories for group in category["groups"] for section in group["sections"]
-                 if "TFollowGap1" in section["items"])
-  assert section["items"].index("CruiseGapLevels") < section["items"].index("TFollowGap1")
+  assert all(group["id"] != "CRUISE" for category in categories for group in category["groups"])
+  assert "SunnyAutoLongitudinal" in by_name
 
 
 def test_rear_camera_hold_uses_meter_values_and_persistent_default(settings, params):
@@ -152,45 +133,10 @@ def test_obsolete_lead_response_settings_are_removed(settings, params):
   assert all(name not in params_keys for name in removed)
 
 
-def test_automatic_driving_mode_exposes_manual_normal_and_eco_choices(params):
-  by_name = {p["name"]: p for p in params}
-  automatic = by_name["MyDrivingModeAuto"]
-  assert (automatic["min"], automatic["max"], automatic["default"]) == (0, 2, 0)
-  assert "1:일반↔안전" in automatic["descr"]
-  assert "2:에코↔안전" in automatic["descr"]
-
-
-def test_longitudinal_comfort_settings_use_driver_facing_language(params):
-  by_name = {p["name"]: p for p in params}
-
-  assert "DynamicTFollow" not in by_name
-
-  lead_accel_response = by_name["LeadAccelResponse"]
-  assert (lead_accel_response["min"], lead_accel_response["max"], lead_accel_response["default"]) == (0, 5, 0)
-  assert lead_accel_response["control"] == "select"
-  assert all(lead_accel_response[key].strip() for key in ("descr", "edescr", "cdescr"))
-  assert lead_accel_response["options"]["ko"][3] == "3 균형 추종"
-  assert lead_accel_response["options"]["ko"][-1] == "5 최대 추종(시험)"
-
-  params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  assert '{"LeadAccelResponse", {PERSISTENT, INT, "0"}}' in params_keys
-  assert '{"DynamicTFollow",' not in params_keys
-
-  lane_change = by_name["DynamicTFollowLC"]
-  assert lane_change["default"] == 100
-  assert "100은 추가 완화 없음" in lane_change["descr"]
-
-  driving_mode = by_name["MyDrivingMode"]
-  assert "ComfortBrake" not in driving_mode["descr"]
-  assert "멀리서부터 천천히 감속" in driving_mode["descr"]
-
-
-def test_deceleration_gap_margin_defaults_match_registry(params):
-  decel_margin = next(p for p in params if p["name"] == "TFollowDecelBoost")
-  assert decel_margin["default"] == 0
-  assert "목표 간격" in decel_margin["descr"]
-  params_keys = PARAMS_KEYS_PATH.read_text(encoding="utf-8")
-  assert '{"TFollowDecelBoost", {PERSISTENT, INT, "0"}}' in params_keys
+def test_retired_carrot_following_settings_are_absent(params):
+  names = {setting["name"] for setting in params}
+  assert names.isdisjoint({"MyDrivingModeAuto", "DynamicTFollow", "LeadAccelResponse",
+                           "TFollowDecelBoost", "DynamicTFollowLC"})
 
 
 def test_longitudinal_pid_defaults_match_registry(params):
@@ -663,7 +609,6 @@ def test_a_percent_parameter_still_carries_its_unit(params):
   by_name = {p["name"]: p for p in params}
   # The parameter behind the cruise-speed incident; its unit must survive.
   assert by_name["ApplyModelSpeed"]["display_unit"] == "percent"
-  assert by_name["TFollowDecelBoost"]["display_unit"] == "percent"
 
 
 def test_steer_ratio_rate_has_safe_catalog_and_registry_defaults(params):
@@ -721,7 +666,6 @@ def test_declared_numeric_bounds_stay_intact(params):
   by_name = {p["name"]: p for p in params}
   assert (by_name["ApplyModelSpeed"]["min"], by_name["ApplyModelSpeed"]["max"]) == (-120, 120)
   assert by_name["ApplyModelSpeed"]["default"] == 0
-  assert by_name["TFollowDecelBoost"]["unit"] == 10
 
 
 def test_live_geometry_has_zero_default_and_no_enable_switch(settings, params):
