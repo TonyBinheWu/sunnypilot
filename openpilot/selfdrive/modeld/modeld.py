@@ -240,12 +240,12 @@ def main(demo=False):
   from openpilot.common import sunny_models
   from openpilot.selfdrive.modeld.sunny_runner import SunnyModelState
   sunny_small, sunny_big = sunny_models.key_for(False, True), sunny_models.key_for(True, True)
-  aux_role = sunny_models.prefs(True).get('assistant') is True
+  internal_primary = sunny_models.internal_primary(boot=True)
   usbgpu_pkl_path = usbgpu_compiled_path()
   _compiled = bool(sunny_big or usbgpu_pkl_path is not None)
   _hardware_seen = params.get_bool("UsbGpuHardwareSeen")
   _present = usbgpu_present()
-  if not aux_role and not _present and _compiled and _hardware_seen:
+  if not internal_primary and not _present and _compiled and _hardware_seen:
     cloudlog.warning(
       f"eGPU USB not present at modeld start; waiting up to {USBGPU_DISCOVERY_GRACE_SECONDS:.1f}s for SuperSpeed enumeration"
     )
@@ -255,7 +255,7 @@ def main(demo=False):
     else:
       cloudlog.warning("eGPU USB still absent after startup grace period; using internal model")
   _startup_failed = params.get_bool("UsbGpuStartupFailed")
-  USBGPU = _present and _compiled and not _startup_failed and not aux_role
+  USBGPU = _present and _compiled and not _startup_failed and not internal_primary
   cloudlog.warning(f"usbgpu present: {_present}, compiled: {_compiled}, startup_failed: {_startup_failed}, requested: {USBGPU}")
   params.put_bool("UsbGpuPresent", _present)
   if _present or _compiled:
@@ -393,7 +393,7 @@ def main(demo=False):
     model = small_model
   # Keep the existing eGPU selection unchanged. A separate USB owner handles
   # external computers and late server startup through the selected Jetlink model.
-  if not USBGPU and not aux_role and os.path.isfile('/AGNOS'):
+  if not USBGPU and not internal_primary and os.path.isfile('/AGNOS'):
     phase_start = time.monotonic()
     adapter_ready = False
     try:
@@ -464,24 +464,6 @@ def main(demo=False):
                     boundary_indicator_supported=CP.carFingerprint == 'HYUNDAI_IONIQ_5_PE')
   boundary_observer = BoundaryObserver(cloudlog.event) if DH.boundary_indicator_supported else None
   nav_input = MapInput()
-  auxiliary = None
-  aux_nav = MapInput()
-  if aux_role and _present and _compiled and not _startup_failed:
-    from openpilot.selfdrive.modeld.auxiliary_inference import AuxiliaryInference
-    def load_aux():
-      if sunny_big:
-        try:
-          runner = SunnyModelState(vipc_client_main.width, vipc_client_main.height, sunny_big)
-        except Exception:
-          sunny_models.mark_load(True, sunny_big)
-          raise
-        sunny_models.mark_load(True, None)
-        return runner
-      from openpilot.selfdrive.modeld.precompiled_runner import PrecompiledModelState
-      if usbgpu_pkl_path.name != 'model.pkl' or not (usbgpu_pkl_path.parent / 'installed.json').is_file():
-        raise ValueError('Auxiliary inference needs an isolated eGPU model')
-      return PrecompiledModelState(vipc_client_main.width, vipc_client_main.height, usbgpu_pkl_path)
-    auxiliary = AuxiliaryInference(load_aux)
   lane_advisory = LaneChangeAdvisory()
 
 
@@ -572,9 +554,6 @@ def main(demo=False):
       'lateral_control_params': np.array([v_ego, policy_lat_delay], dtype=np.float32),
     }
 
-    if auxiliary is not None and auxiliary.runner is not None and not prepare_only and live_calib_seen:
-      aux_inputs = {**inputs, **aux_nav.update(auxiliary.runner, sm, v_ego)}
-      auxiliary.submit(bufs, transforms, aux_inputs, meta_main.frame_id, meta_main.timestamp_eof * 1e-9)
     inputs.update(nav_input.update(model, sm, v_ego))
 
     inference_started = time.monotonic()
@@ -647,17 +626,6 @@ def main(demo=False):
 
       action = get_action_from_model(model_output, prev_action, lat_action_t, long_action_t, v_ego, lat_smooth_seconds_dynamic, vEgoStopping)
       prev_action = action
-      if auxiliary is not None:
-        cs = sm['carState']
-        now = time.monotonic()
-        healthy = (all(sm.valid[k] and sm.alive[k] and 0 <= now-sm.recv_time[k] < .2 for k in ('carState', 'carControl'))
-                   and sm.valid['liveCalibration'] and sm.alive['liveCalibration'] and sm['liveCalibration'].calStatus == 'calibrated'
-                   and cs.canValid and cs.gearShifter == 'drive' and v_ego > 4 and sm['carControl'].longActive
-                   and not (cs.brakePressed or cs.gasPressed or cs.steeringPressed) and not prepare_only)
-        accel = auxiliary.acceleration(model_output, action, meta_main.frame_id, meta_main.timestamp_eof * 1e-9, now, healthy, long_action_t)
-        if accel != action.desiredAcceleration:
-          action = action.as_reader().as_builder()
-          action.desiredAcceleration = accel
       fill_model_msg(modelv2_send, model_output, action,
                      publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id,
                      frame_drop_ratio, meta_main.timestamp_eof, model_execution_time, live_calib_seen)

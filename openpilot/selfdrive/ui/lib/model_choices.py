@@ -74,24 +74,14 @@ class ModelChoices:
         self.busy = False
     threading.Thread(target=run, name='model-selection', daemon=True).start()
 
-  def toggle_aux(self):
+  def toggle_primary(self):
     if self.offroad() and not self.busy:
-      sunny.save('assistant', not bool(sunny.prefs().get('assistant')))
+      sunny.save('primary', 'auto' if sunny.internal_primary() else 'internal')
       self.next_role = 0.
 
-  def aux_text(self):
+  def primary_text(self):
     now = time.monotonic()
     if now >= self.next_role:
       self.next_role = now + 1.
-      self.role_value = tr("Primary model")
-      if sunny.prefs().get('assistant'):
-        self.role_value = tr("Auxiliary braking")
-        if sunny.prefs(True).get('assistant'):
-          report = external.read_json(sunny.AUX_STATUS)
-          latency = report.get('latency')
-          if report.get('state') == 'unavailable':
-            self.role_value += " · " + tr("Load failed")
-          elif 0 <= now - report.get('eof', -10) < 2 and isinstance(latency, (float, int)):
-            states = {'ready': tr("Ready"), 'warming': tr("Warming up"), 'late': tr("Late")}
-            self.role_value += f" · {states.get(report.get('state'), '')} {latency*1000:.0f} ms"
+      self.role_value = tr("Internal small model") if sunny.internal_primary() else tr("Prefer external large model")
     return self.role_value

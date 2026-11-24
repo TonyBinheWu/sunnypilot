@@ -10,7 +10,6 @@ from functools import lru_cache
 
 from openpilot.common import big_model_catalog as library
 
-AUX_STATUS = Path('/dev/shm/sunnypilot-aux-status.json')
 # Plain kernels retain their build metadata. The loader uses the tinygrad submodule
 # paired with sunnypilot modeld_v2 at abada631, which reads both catalog generations.
 RUNTIME_REF = '92b742f711c7d216fd3ed7a46a30a959e3c43bd4'
@@ -152,10 +151,10 @@ def freeze_boot():
       library.atomic_json(directory() / 'boot.json', {**prefs(), 'boot': library.boot_id()})
 
 
-def auxiliary_map_demand(now):
-  status = library.read_json(AUX_STATUS)
-  eof = status.get('eof')
-  return status.get('nav') is True and isinstance(eof, (float,int)) and 0 <= now-eof < 2.
+def internal_primary(boot=False):
+  selection = prefs(boot)
+  # The retired second-driving-model mode ran the selected small model as primary.
+  return selection.get('primary', 'internal' if selection.get('assistant') is True else 'auto') == 'internal'
 
 
 def failed_key(big):

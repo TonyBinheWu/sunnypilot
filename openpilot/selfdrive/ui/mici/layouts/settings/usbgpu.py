@@ -93,9 +93,9 @@ class UsbGpuLayoutMici(NavScroller):
     self.choices = ModelChoices(ui_state.is_offroad)
     self.group_button = BigButton(tr("Model list"), self.choices.group_text(), scroll=True)
     self.group_button.set_click_callback(self.choices.next_group)
-    self.role = BigButton(tr("eGPU role after reboot"), self.choices.aux_text(), scroll=True)
+    self.role = BigButton(tr("Primary driving model after reboot"), self.choices.primary_text(), scroll=True)
     self.role.set_enabled(ui_state.is_offroad)
-    self.role.set_click_callback(self.choices.toggle_aux)
+    self.role.set_click_callback(self.choices.toggle_primary)
     self.model_buttons = []
     for big, key, name in self.choices.items:
       button = BigButton(name, "", scroll=True)
@@ -108,7 +108,7 @@ class UsbGpuLayoutMici(NavScroller):
   def _update_state(self):
     super()._update_state()
     self.group_button.set_value(self.choices.group_text())
-    self.role.set_value(self.choices.aux_text())
+    self.role.set_value(self.choices.primary_text())
     for button, big, key in self.model_buttons:
       button.set_value((tr("External") if big else tr("Internal")) + " · " + self.choices.status(big, key))
 
