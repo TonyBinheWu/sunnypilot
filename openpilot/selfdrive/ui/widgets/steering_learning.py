@@ -104,9 +104,12 @@ def learning_mici_dialog():
   from openpilot.system.ui.widgets.scroller import NavRawScrollPanel
   from openpilot.system.ui.widgets.html_render import HtmlRenderer, ElementType
 
-  class MiciLearningPanel(NavRawScrollPanel):
+  from openpilot.selfdrive.ui.mici.layouts.settings.navigation import SettingsDetail
+
+  class MiciLearningPanel(SettingsDetail, NavRawScrollPanel):
     def __init__(self):
       super().__init__()
+      self.init_settings_header(TITLE)
       self._reader = LearningReader(Params())
       self._next_update = 0.
       self._last_html = ''
@@ -121,7 +124,7 @@ def learning_mici_dialog():
           self._last_html = content
           self._content.parse_html_content(content)
 
-    def _render(self, rect):
+    def _render_body(self, rect):
       viewport = rl.Rectangle(rect.x + 12, rect.y + 8, max(1, rect.width - 24), max(1, rect.height - 16))
       height = self._content.get_total_height(int(viewport.width))
       offset = self._scroll_panel.update(viewport, height)

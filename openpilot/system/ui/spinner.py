@@ -1,175 +1,162 @@
 #!/usr/bin/env python3
-import pyray as rl
-import select
 import sys
+from functools import lru_cache
 
-from openpilot.common.basedir import BASEDIR
-from openpilot.common.network_info import start_ip_monitor, label_with_port
-from openpilot.system.ui.lib.application import FONT_SCALE, FontWeight, gui_app
-from openpilot.system.ui.lib.text_measure import measure_text_cached
-from openpilot.system.ui.text import wrap_text
-from openpilot.system.ui.widgets import Widget
+import pyray as rl
 
-# Constants
-if gui_app.big_ui():
-  PROGRESS_BAR_WIDTH = 1000
-  PROGRESS_BAR_HEIGHT = 20
-  TEXTURE_SIZE = 360
-  WRAPPED_SPACING = 50
-  CENTERED_SPACING = 150
-  MARGIN_H = 100
-  FONT_SIZE = 96
-  LINE_HEIGHT = 104
-  IP_FONT_SIZE = 72
-  IP_TOP_MARGIN = 36
-  STATUS_FONT_SIZE = 48
-  STATUS_LINE_MARGIN = 14
-else:
-  PROGRESS_BAR_WIDTH = 268
-  PROGRESS_BAR_HEIGHT = 10
-  TEXTURE_SIZE = 140
-  WRAPPED_SPACING = 10
-  CENTERED_SPACING = 20
-  MARGIN_H = 20
-  FONT_SIZE = 28
-  LINE_HEIGHT = 32
-  IP_FONT_SIZE = 36
-  IP_TOP_MARGIN = 12
-  STATUS_FONT_SIZE = 28
-  STATUS_LINE_MARGIN = 4
-DEGREES_PER_SECOND = 360.0  # one full rotation per second
+from openpilot.common.network_info import label_with_port, start_ip_monitor
+from openpilot.system.ui.boot_status import BootStatus, StatusInput, fit_lines
+from openpilot.system.ui.lib.application import ASSETS_DIR, FontWeight, gui_app
+from openpilot.system.ui.lib.multilang import multilang, tr
+
 RECOVERY_PORT = 6999
-DARKGRAY = (55, 55, 55, 255)
+BG = (19, 29, 26, 255)
+INK = (238, 245, 237, 255)
+MUTED = (163, 184, 171, 255)
+MINT = (173, 235, 192, 255)
+TRACK = (53, 73, 63, 255)
 
 
-def clamp(value, min_value, max_value):
-  return max(min(value, max_value), min_value)
+def road_point(t):
+  # Perspective study for the splash illustration, in local artwork coordinates.
+  center = .58 - .34*t + .30*t*t
+  return center, .48 + .52*t, .012 + .44*t**1.45
 
 
-def fit_single_line(text: str, font: rl.Font, font_size: float, max_width: float) -> str:
-  text = " ".join(text.split())
-  if not text:
-    return ""
-  if rl.measure_text_ex(font, text, font_size, 0.0).x <= max_width:
-    return text
+class RoadIllustration:
+  def __init__(self, rect):
+    self.rect = rect
+    def ribbon(levels, left, right):
+      points = []
+      for t in levels:
+        center, y, half = road_point(t)
+        points.extend((self.point(center+right*half, y), self.point(center+left*half, y)))
+      return points
+    levels = [i/22 for i in range(23)]
+    self.strips = []
+    for heights, color in [((.53,.46,.48,.40,.32,.39,.42,.37,.46), (83, 125, 102, 255)),
+                           ((.56,.51,.47,.50,.52,.47,.44,.49,.45), (53, 91, 73, 255))]:
+      points = []
+      for i, y in enumerate(heights):
+        x = i / (len(heights)-1)
+        points.extend((self.point(x, y), self.point(x, 1.)))
+      self.strips.append((points, color))
+    self.strips.extend([(ribbon(levels, -1., 1.), (34, 56, 50, 255)),
+                        (ribbon(levels, -.98, -.95), (144, 184, 156, 255)),
+                        (ribbon(levels, .95, .98), (145, 185, 156, 255))])
 
-  suffix = "..."
-  lo, hi = 0, len(text)
-  while lo < hi:
-    mid = (lo + hi + 1) // 2
-    candidate = text[:mid].rstrip() + suffix
-    if rl.measure_text_ex(font, candidate, font_size, 0.0).x <= max_width:
-      lo = mid
-    else:
-      hi = mid - 1
-  return text[:lo].rstrip() + suffix
+  def point(self, x, y):
+    r = self.rect
+    return rl.Vector2(r.x + r.width*x, r.y + r.height*y)
+
+  def draw(self, phase):
+    r = self.rect
+    rl.draw_rectangle_gradient_v(int(r.x), int(r.y), int(r.width), int(r.height), (42, 77, 66, 255), (161, 193, 153, 255))
+    rl.draw_circle_v(self.point(.65,.33), min(r.width,r.height)*.112, (249, 189, 131, 255))
+    for vertices, color in self.strips:
+      rl.draw_triangle_strip(vertices, len(vertices), color)
+    for i in range(7):
+      a, b = (i + phase) / 7, min(1., (i + phase + .46)/7)
+      x1, y1, _ = road_point(a*a)
+      x2, y2, _ = road_point(b*b)
+      rl.draw_line_ex(self.point(x1,y1), self.point(x2,y2), max(1., r.width*(.002+.012*a*a)), MINT)
 
 
-class Spinner(Widget):
+class Spinner:
   def __init__(self):
-    super().__init__()
-    self._comma_texture = gui_app.texture("img_spinner_comma.png", TEXTURE_SIZE, TEXTURE_SIZE)
-    self._spinner_texture = gui_app.texture("img_spinner_track.png", TEXTURE_SIZE, TEXTURE_SIZE, alpha_premultiply=True)
-    self._rotation = 0.0
-    self._progress: int | None = None
-    self._status_line = ""
-    self._wrapped_lines: list[str] = []
+    self.status = BootStatus()
+    self.size = self.art = None
+    self.font = gui_app.font(FontWeight.PRETENDARD)
+    self.localized = None
+    if multilang.language in ("zh-CHT", "zh-CHS", "ja", "ko"):
+      # A pre-baked small atlas is available even on a clean checkout.
+      self.localized = rl.load_font((ASSETS_DIR / "boot/labels.fnt").as_posix())
+      rl.set_texture_filter(self.localized.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    self.lines = lru_cache(maxsize=16)(self._lines)
     start_ip_monitor()
-    
-  def set_text(self, text: str) -> None:
-    text = text.strip()
-    if text.isdigit():
-      self._progress = clamp(int(text), 0, 100)
-      self._wrapped_lines = []
+
+  def close(self):
+    if self.localized is not None:
+      if rl.is_window_ready():
+        rl.unload_font(self.localized)
+      self.localized = None
+    self.lines.cache_clear()
+
+  def font_for(self, text):
+    return self.localized if self.localized is not None and not text.isascii() else self.font
+
+  def _lines(self, text, width, size):
+    font = self.font_for(text)
+    return fit_lines(text, width, lambda part: rl.measure_text_ex(font, part, size, 0).x)  # noqa: TID251 -- native bitmap sizes
+
+  def draw_text(self, text, x, y, size, color):
+    # Use logical pixel sizes for both measurement and drawing on each device.
+    draw = getattr(rl, "_orig_draw_text_ex", rl.draw_text_ex)
+    draw(self.font_for(text), text, rl.Vector2(x,y), size, 0, color)
+
+  def render(self, width, height, elapsed):
+    compact = width < 800
+    scale = min(width/536, height/240)
+    if self.size != (width, height):
+      self.size = (width, height)
+      art = rl.Rectangle(0, 0, int(width*.34), height) if compact else rl.Rectangle(
+        int(width*.046), int(height*.09), int(width*.40), int(height*.82))
+      self.art = RoadIllustration(art)
+    rl.draw_rectangle(0, 0, width, height, BG)
+    phase = (elapsed / 1.65) % 1.
+    self.art.draw(phase)
+    x = round(width * (.382 if compact else .51))
+    right = width - round(width*(.04 if compact else .065))
+    span = right-x
+    self.draw_text("carrotpilot", x, height*.13, (41 if compact else 43)*scale, INK)
+    detail = tr(self.status.detail) if self.status.detail else ""
+    if self.status.context:
+      detail = self.status.context + ("  /  "+detail if detail else "")
+    if not detail:
+      detail = tr("Starting up" if self.status.progress is None else "Building software")
+    size = (20 if compact else 17)*scale
+    for i, line in enumerate(self.lines(detail, span, size)):
+      self.draw_text(line, x, height*.405+i*size*1.15, size, INK)
+    y, h = round(height*.685), max(3,round(3.5*scale))
+    bar_width = span
+    if self.status.progress is not None:
+      label = f"{self.status.progress}%"
+      label_size = 17*scale
+      label_width = rl.measure_text_ex(self.font, label, label_size, 0).x  # noqa: TID251
+      bar_width -= round(53*scale)
+      self.draw_text(label, right-label_width, y-label_size*.43, label_size, MINT)
+    rl.draw_rectangle(x, y, bar_width, h, TRACK)
+    if self.status.progress is None:
+      segment = round(bar_width*.20)
+      left = round((bar_width+segment)*phase)-segment
+      start, end = max(0,left), min(bar_width,left+segment)
     else:
-      self._status_line = text
-      if self._progress is None:
-        self._wrapped_lines = wrap_text(text, FONT_SIZE, gui_app.width - MARGIN_H)
+      start, end = 0, round(bar_width*self.status.progress/100)
+    if end > start:
+      rl.draw_rectangle(x+start, y, end-start, h, MINT)
 
-  def _render(self, rect: rl.Rectangle):
-    # Recovery IP label at top-center.
-    ip_label = label_with_port(RECOVERY_PORT)
-    ip_font = gui_app.font(FontWeight.PRETENDARD)
-    ip_scaled_size = IP_FONT_SIZE * FONT_SCALE
-    ip_size = rl.measure_text_ex(ip_font, ip_label, ip_scaled_size, 0.0)
-    ip_x = rect.x + rect.width / 2.0 - ip_size.x / 2.0
-    draw_text_ex = getattr(rl, "_orig_draw_text_ex", rl.draw_text_ex)
-    draw_text_ex(ip_font, ip_label, rl.Vector2(round(ip_x), rect.y + IP_TOP_MARGIN),
-                 ip_scaled_size, 0.0, rl.Color(230, 230, 230, 235))
-    if self._wrapped_lines:
-      # Calculate total height required for spinner and text
-      spacing = WRAPPED_SPACING
-      total_height = TEXTURE_SIZE + spacing + len(self._wrapped_lines) * LINE_HEIGHT
-      center_y = (rect.height - total_height) / 2.0 + TEXTURE_SIZE / 2.0
-    else:
-      # Center spinner vertically
-      spacing = CENTERED_SPACING
-      center_y = rect.height / 2.0
-    y_pos = center_y + TEXTURE_SIZE / 2.0 + spacing
-
-    center = rl.Vector2(rect.width / 2.0, center_y)
-    spinner_origin = rl.Vector2(TEXTURE_SIZE / 2.0, TEXTURE_SIZE / 2.0)
-    comma_position = rl.Vector2(center.x - TEXTURE_SIZE / 2.0, center.y - TEXTURE_SIZE / 2.0)
-
-    delta_time = rl.get_frame_time()
-    self._rotation = (self._rotation + DEGREES_PER_SECOND * delta_time) % 360.0
-
-    # Draw rotating spinner and static comma logo
-    rl.draw_texture_pro(self._spinner_texture, rl.Rectangle(0, 0, TEXTURE_SIZE, TEXTURE_SIZE),
-                        rl.Rectangle(center.x, center.y, TEXTURE_SIZE, TEXTURE_SIZE),
-                        spinner_origin, self._rotation, rl.WHITE)
-    rl.draw_texture_v(self._comma_texture, comma_position, rl.WHITE)
-
-    # Display the progress bar or text based on user input
-    if self._progress is not None:
-      bar = rl.Rectangle(center.x - PROGRESS_BAR_WIDTH / 2.0, y_pos, PROGRESS_BAR_WIDTH, PROGRESS_BAR_HEIGHT)
-      rl.draw_rectangle_rounded(bar, 1, 10, DARKGRAY)
-
-      bar.width *= self._progress / 100.0
-      rl.draw_rectangle_rounded(bar, 1, 10, rl.WHITE)
-
-      if self._status_line:
-        status_font = gui_app.font(FontWeight.PRETENDARD)
-        status_scaled_size = STATUS_FONT_SIZE * FONT_SCALE
-        status_line = fit_single_line(self._status_line, status_font, status_scaled_size, gui_app.width - MARGIN_H)
-        status_size = rl.measure_text_ex(status_font, status_line, status_scaled_size, 0.0)
-        status_y = y_pos - STATUS_LINE_MARGIN - status_size.y
-        draw_text_ex = getattr(rl, "_orig_draw_text_ex", rl.draw_text_ex)
-        draw_text_ex(status_font, status_line, rl.Vector2(round(center.x - status_size.x / 2), status_y),
-                     status_scaled_size, 0.0, rl.LIGHTGRAY)
-    elif self._wrapped_lines:
-      for i, line in enumerate(self._wrapped_lines):
-        text_size = measure_text_cached(gui_app.font(), line, FONT_SIZE)
-        rl.draw_text_ex(gui_app.font(), line, rl.Vector2(center.x - text_size.x / 2, y_pos + i * LINE_HEIGHT),
-                        FONT_SIZE, 0.0, rl.WHITE)
-
-
-def _read_stdin():
-  """Non-blocking read of available lines from stdin."""
-  lines = []
-  while True:
-    rlist, _, _ = select.select([sys.stdin], [], [], 0.0)
-    if not rlist:
-      break
-    line = sys.stdin.readline().strip()
-    if line == "":
-      break
-    lines.append(line)
-  return lines
+    address = label_with_port(RECOVERY_PORT)
+    y = height*.845
+    label = tr("Recovery")
+    size = (17 if compact else 14)*scale
+    self.draw_text(label, x, y, size, MUTED)
+    value = tr("Offline") if address == "no network" else address
+    text_width = rl.measure_text_ex(self.font_for(value), value, size, 0).x  # noqa: TID251
+    self.draw_text(value, right-text_width, y, size, INK)
 
 
 def main():
-  # The source-build spinner starts before SCons has generated every font atlas.
-  # Loading only these fonts avoids generating the large CJK atlases in parallel
-  # with the build.
   gui_app.init_window("Spinner", font_weights=(FontWeight.NORMAL, FontWeight.PRETENDARD))
+  gui_app.set_display_rate(20)
   spinner = Spinner()
-  for _ in gui_app.render():
-    text_list = _read_stdin()
-    for text in text_list:
-      spinner.set_text(text)
-
-    spinner.render(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
+  stream = StatusInput(sys.stdin.fileno())
+  try:
+    for visible in gui_app.render():
+      stream.poll(spinner.status)
+      if visible:
+        spinner.render(gui_app.width, gui_app.height, rl.get_time())
+  finally:
+    spinner.close()
 
 
 if __name__ == "__main__":

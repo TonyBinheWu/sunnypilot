@@ -2096,3 +2096,48 @@ msgstr "모델 검색"
 
 msgid "No matching models"
 msgstr "일치하는 모델 없음"
+
+msgid "Starting up"
+msgstr "시작 중"
+
+msgid "Building software"
+msgstr "소프트웨어 빌드 중"
+
+msgid "Preparing runtime packages"
+msgstr "실행 환경 준비 중"
+
+msgid "Building settings registry"
+msgstr "설정 레지스트리 구성 중"
+
+msgid "registering device"
+msgstr "기기 등록 중"
+
+msgid "Downloading model"
+msgstr "모델 다운로드 중"
+
+msgid "Downloading precompiled model"
+msgstr "사전 빌드 모델 다운로드 중"
+
+msgid "Checking precompiled model"
+msgstr "사전 빌드 모델 확인 중"
+
+msgid "Validating precompiled model"
+msgstr "사전 빌드 모델 검증 중"
+
+msgid "Recovery"
+msgstr "복구 연결"
+
+msgid "Next page"
+msgstr "다음 페이지"
+
+msgid "Previous page"
+msgstr "이전 페이지"
+
+msgid "Offline"
+msgstr "오프라인"
+
+msgid "Confirm action"
+msgstr "작업 확인"
+
+msgid "Delete"
+msgstr "지우기"

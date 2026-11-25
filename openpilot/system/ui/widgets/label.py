@@ -383,6 +383,9 @@ class UnifiedLabel(Widget):
     if self._shimmer:
       self.reset_shimmer()
 
+  def set_shimmer(self, enabled: bool):
+    self._shimmer = enabled
+
   def reset_shimmer(self, offset: float = 0.0):
     """Reset shimmer animation timing."""
     self._shimmer_start_time = rl.get_time() + offset

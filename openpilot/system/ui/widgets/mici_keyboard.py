@@ -427,11 +427,10 @@ class MiciKeyboard(Widget):
     bg_y = self._rect.y + self._rect.height - self._txt_bg.height
 
     scale = self._bg_scale_filter.update(1.0307692307692307 if self._closest_key[0] is not None else 1.0)
-    src_rec = rl.Rectangle(0, 0, self._txt_bg.width, self._txt_bg.height)
     dest_rec = rl.Rectangle(self._rect.x + self._rect.width / 2 - self._txt_bg.width * scale / 2, bg_y,
                             self._txt_bg.width * scale, self._txt_bg.height)
 
-    rl.draw_texture_pro(self._txt_bg, src_rec, dest_rec, rl.Vector2(0, 0), 0.0, rl.WHITE)
+    rl.draw_rectangle_rounded(dest_rec, .12, 5, rl.Color(39, 52, 45, 255))
 
     # draw keys
     if not self._initialized:

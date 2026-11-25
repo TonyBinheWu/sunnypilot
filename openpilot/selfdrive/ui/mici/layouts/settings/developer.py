@@ -1,7 +1,7 @@
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.ui.widgets.scroller import NavScroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigToggle, BigParamControl, BigCircleParamControl
+from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigToggle, BigParamControl
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigInputDialog
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
@@ -48,8 +48,8 @@ class DeveloperLayoutMici(NavScroller):
 
     # adb, ssh, ssh keys, debug mode, joystick debug mode, longitudinal maneuver mode, ip address
     # ******** Main Scroller ********
-    self._adb_toggle = BigCircleParamControl(gui_app.texture("icons_mici/adb_short.png", 82, 82), "AdbEnabled", icon_offset=(0, 12))
-    self._ssh_toggle = BigCircleParamControl(gui_app.texture("icons_mici/ssh_short.png", 82, 82), "SshEnabled", icon_offset=(0, 12))
+    self._adb_toggle = BigParamControl("ADB", "AdbEnabled")
+    self._ssh_toggle = BigParamControl("SSH", "SshEnabled")
     self._joystick_toggle = BigToggle(tr("joystick debug mode"),
                                       initial_state=ui_state.params.get_bool("JoystickDebugMode"),
                                       toggle_callback=self._on_joystick_debug_mode)

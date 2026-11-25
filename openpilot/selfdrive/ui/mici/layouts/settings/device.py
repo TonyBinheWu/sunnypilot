@@ -9,16 +9,16 @@ from openpilot.selfdrive.ui.layout_profile import device_layout
 from openpilot.common.params import Params
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.ui.widgets.scroller import NavRawScrollPanel, NavScroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton
+from openpilot.selfdrive.ui.mici.widgets.button import BigButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog
 from openpilot.selfdrive.ui.mici.widgets.pairing_dialog import PairingDialog
 from openpilot.selfdrive.ui.mici.onroad.driver_camera_dialog import DriverCameraDialog
 from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage
-from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
+from openpilot.system.ui.lib.application import gui_app, MousePos
 from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.system.ui.widgets import Widget
 from openpilot.selfdrive.ui.ui_state import device, ui_state
-from openpilot.system.ui.widgets.label import UnifiedLabel
+from openpilot.selfdrive.ui.mici.layouts.settings.navigation import SettingsDetail, add_section_navigation, info_fields
 from openpilot.system.ui.widgets.html_render import HtmlModal, HtmlRenderer
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 from openpilot.selfdrive.ui.widgets.forced_offroad import offroad_big_toggle
@@ -33,9 +33,18 @@ class ReviewTermsPage(TermsPage, NavScroller):
     self._must_accept_card.set_visible(False)
     self._accept_button.set_visible(False)
     self._decline_button.set_visible(False)
+    add_section_navigation(self, "terms &\nconditions")
 
 
 class ReviewTrainingGuide(TrainingGuide):
+  def __init__(self, completed_callback):
+    super().__init__(completed_callback)
+    title = "review\ntraining guide"
+    add_section_navigation(self._steps[0], title, self.dismiss)
+    for step in (self._steps[1], self._steps[3], self._steps[2]._bad_face_page):
+      add_section_navigation(step, title)
+    self._steps[2].enable_review_header(title)
+
   def show_event(self):
     super().show_event()
     device.set_override_interactive_timeout(300)
@@ -46,13 +55,14 @@ class ReviewTrainingGuide(TrainingGuide):
     ui_state.params.put_bool_nonblocking("IsDriverViewEnabled", False)
 
 
-class MiciFccModal(NavRawScrollPanel):
+class MiciFccModal(SettingsDetail, NavRawScrollPanel):
   def __init__(self, file_path: str | None = None, text: str | None = None):
     super().__init__()
+    self.init_settings_header("regulatory info")
     self._content = HtmlRenderer(file_path=file_path, text=text)
     self._fcc_logo = gui_app.texture("icons_mici/settings/device/fcc_logo.png", 76, 64)
 
-  def _render(self, rect: rl.Rectangle):
+  def _render_body(self, rect):
     content_height = self._content.get_total_height(int(rect.width))
     content_height += self._fcc_logo.height + 20
 
@@ -62,9 +72,11 @@ class MiciFccModal(NavRawScrollPanel):
     fcc_pos = rl.Vector2(rect.x + 20, rect.y + 20 + scroll_offset)
 
     scroll_content_rect.y += scroll_offset + self._fcc_logo.height + 20
+    rl.begin_scissor_mode(int(rect.x), int(rect.y), int(rect.width), int(rect.height))
     self._content.render(scroll_content_rect)
 
     rl.draw_texture_ex(self._fcc_logo, fcc_pos, 0.0, 1.0, rl.WHITE)
+    rl.end_scissor_mode()
 
 
 def _engaged_confirmation_click(callback: Callable, action_text: str, icon: rl.Texture, exit_on_confirm: bool = True, red: bool = False):
@@ -81,13 +93,6 @@ def _engaged_confirmation_click(callback: Callable, action_text: str, icon: rl.T
     gui_app.push_widget(BigDialog("", tr("Disengage to {action}").format(action=tr(action_text))))
 
 
-class EngagedConfirmationCircleButton(BigCircleButton):
-  def __init__(self, title: str, icon: rl.Texture, callback: Callable[[], None], exit_on_confirm: bool = True,
-               red: bool = False, icon_offset: tuple[int, int] = (0, 0)):
-    super().__init__(icon, red, icon_offset)
-    self.set_click_callback(lambda: _engaged_confirmation_click(callback, title, icon, exit_on_confirm=exit_on_confirm, red=red))
-
-
 class EngagedConfirmationButton(BigButton):
   def __init__(self, text: str, action_text: str, icon: rl.Texture, callback: Callable[[], None],
                exit_on_confirm: bool = True, red: bool = False):
@@ -102,28 +107,11 @@ class DeviceInfoLayoutMici(Widget):
     self.set_rect(rl.Rectangle(0, 0, 360, 180))
 
     params = Params()
-    subheader_color = rl.Color(255, 255, 255, int(255 * 0.9 * 0.65))
-    max_width = int(self._rect.width - 20)
-    self._dongle_id_label = UnifiedLabel(tr("device ID"), 48, max_width=max_width, font_weight=FontWeight.DISPLAY, wrap_text=False)
-    self._dongle_id_text_label = UnifiedLabel(params.get("DongleId") or 'N/A', 32, max_width=max_width, text_color=subheader_color,
-                                              font_weight=FontWeight.ROMAN, wrap_text=False)
+    self._fields = ((tr("device ID"), params.get("DongleId") or "N/A"),
+                    (tr("serial"), params.get("HardwareSerial") or "N/A"))
 
-    self._serial_number_label = UnifiedLabel(tr("serial"), 48, max_width=max_width, font_weight=FontWeight.DISPLAY, wrap_text=False)
-    self._serial_number_text_label = UnifiedLabel(params.get("HardwareSerial") or 'N/A', 32, max_width=max_width, text_color=subheader_color,
-                                                  font_weight=FontWeight.ROMAN, wrap_text=False)
-
-  def _render(self, _):
-    self._dongle_id_label.set_position(self._rect.x + 20, self._rect.y - 10)
-    self._dongle_id_label.render()
-
-    self._dongle_id_text_label.set_position(self._rect.x + 20, self._rect.y + 68 - 25)
-    self._dongle_id_text_label.render()
-
-    self._serial_number_label.set_position(self._rect.x + 20, self._rect.y + 114 - 30)
-    self._serial_number_label.render()
-
-    self._serial_number_text_label.set_position(self._rect.x + 20, self._rect.y + 161 - 25)
-    self._serial_number_text_label.render()
+  def _render(self, rect):
+    info_fields(rect, self._fields)
 
 
 class UpdaterState(IntEnum):
@@ -323,11 +311,11 @@ class DeviceLayoutMici(NavScroller):
                                                         gui_app.texture("icons_mici/settings/device/uninstall.png", 64, 64),
                                                         uninstall_openpilot_callback, exit_on_confirm=False)
 
-    reboot_btn = EngagedConfirmationCircleButton(tr("reboot"), gui_app.texture("icons_mici/settings/device/reboot.png", 64, 70),
-                                                 reboot_callback, exit_on_confirm=False)
+    reboot_btn = EngagedConfirmationButton(tr("reboot"), tr_noop("reboot"), gui_app.texture("icons_mici/settings/device/reboot.png", 64, 70),
+                                          reboot_callback, exit_on_confirm=False)
 
-    self._power_off_btn = EngagedConfirmationCircleButton(tr("power off"), gui_app.texture("icons_mici/settings/device/power.png", 64, 66),
-                                                          power_off_callback, exit_on_confirm=False, red=True)
+    self._power_off_btn = EngagedConfirmationButton(tr("power off"), tr_noop("power off"), gui_app.texture("icons_mici/settings/device/power.png", 64, 66),
+                                                   power_off_callback, exit_on_confirm=False, red=True)
     self._power_off_btn.set_visible(lambda: not ui_state.ignition)
 
     regulatory_btn = BigButton(tr("regulatory info"), "", gui_app.texture("icons_mici/settings/device/info.png", 64, 64))

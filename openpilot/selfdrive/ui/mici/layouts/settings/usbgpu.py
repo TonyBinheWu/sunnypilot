@@ -13,9 +13,9 @@ from openpilot.selfdrive.ui.mici.widgets.button import BigButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog, BigInputDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.hardware.usbgpu import check_usbgpu, get_usbgpu_device, usbgpu_status
-from openpilot.system.ui.lib.application import FontWeight, gui_app
+from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import Widget
-from openpilot.system.ui.widgets.label import UnifiedLabel
+from openpilot.selfdrive.ui.mici.layouts.settings.navigation import info_fields
 from openpilot.system.ui.widgets.scroller import NavScroller
 
 
@@ -24,23 +24,19 @@ class UsbGpuInfoLayout(Widget):
     super().__init__()
     self._next_status = 0.
     self.set_rect(rl.Rectangle(0, 0, 360, 180))
-    sub_color = rl.Color(255, 255, 255, int(255 * 0.9 * 0.65))
-    self._status = UnifiedLabel(tr("status"), 48, max_width=340, font_weight=FontWeight.DISPLAY, wrap_text=False)
-    self._status_value = UnifiedLabel("", 32, max_width=340, text_color=sub_color, font_weight=FontWeight.ROMAN, wrap_text=False)
-    self._link = UnifiedLabel(tr("USB link"), 48, max_width=340, font_weight=FontWeight.DISPLAY, wrap_text=False)
-    self._link_value = UnifiedLabel("", 32, max_width=340, text_color=sub_color, font_weight=FontWeight.ROMAN, wrap_text=False)
+    self._status_value = self._link_value = ""
 
   def _update_state(self):
     now = time.monotonic()
     if now < self._next_status:
       return
     self._next_status = now + 1.
-    self._status_value.set_text(localize_hardware_status(usbgpu_status(ui_state.usbgpu_compiled, ui_state.usbgpu_loading, ui_state.usbgpu_active,
-                                              ui_state.usbgpu_startup_failed,
-                                              compile_pending=ui_state.usbgpu_compile_pending)))
+    status = usbgpu_status(ui_state.usbgpu_compiled, ui_state.usbgpu_loading, ui_state.usbgpu_active,
+                          ui_state.usbgpu_startup_failed, compile_pending=ui_state.usbgpu_compile_pending)
+    self._status_value = localize_hardware_status(status)
     recovery = getattr(ui_state, 'usbgpu_recovery_badge', None)
     if recovery and not ui_state.usbgpu_active:
-      self._status_value.set_text(recovery[0])
+      self._status_value = recovery[0]
     device = get_usbgpu_device()
     if device is None:
       value = tr("not connected")
@@ -48,13 +44,10 @@ class UsbGpuInfoLayout(Widget):
       value = f"{device.speed_mbps // 1000} Gbps"
     else:
       value = f"{device.speed_mbps} Mbps"
-    self._link_value.set_text(value)
+    self._link_value = value
 
-  def _render(self, _):
-    x, y = self._rect.x + 20, self._rect.y
-    for label, offset in ((self._status, -10), (self._status_value, 43), (self._link, 84), (self._link_value, 136)):
-      label.set_position(x, y + offset)
-      label.render()
+  def _render(self, rect):
+    info_fields(rect, ((tr("status"), self._status_value), (tr("USB link"), self._link_value)))
 
 
 class CheckUsbGpuButton(BigButton):

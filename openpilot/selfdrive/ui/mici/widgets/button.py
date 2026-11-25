@@ -4,6 +4,7 @@ import pyray as rl
 from typing import Union
 from enum import Enum
 from collections.abc import Callable
+from openpilot.selfdrive.ui.device_design import BAR, INK, MINT, SELECTED, TILE, caption
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.scroller import DO_ZOOM
@@ -32,6 +33,8 @@ class BigCircleButton(Widget):
   def __init__(self, icon: rl.Texture, red: bool = False, icon_offset: tuple[int, int] = (0, 0)):
     super().__init__()
     self._red = red
+    self._settings_style = False
+    self.settings_title = ""
     self._icon_offset = icon_offset
 
     # State
@@ -49,6 +52,9 @@ class BigCircleButton(Widget):
     self._txt_btn_red_bg = gui_app.texture("icons_mici/buttons/button_circle_red.png", 180, 180)
     self._txt_btn_red_pressed_bg = gui_app.texture("icons_mici/buttons/button_circle_red_pressed.png", 180, 180)
 
+  def use_settings_style(self):
+    self._settings_style = True
+
   def _draw_content(self, btn_y: float):
     # draw icon
     icon_color = rl.Color(255, 255, 255, int(255 * 0.9)) if self.enabled else rl.Color(255, 255, 255, int(255 * 0.35))
@@ -56,6 +62,14 @@ class BigCircleButton(Widget):
                                         btn_y + (self._rect.height - self._txt_icon.height) / 2 + self._icon_offset[1]), 0, 1.0, icon_color)
 
   def _render(self, _):
+    if self._settings_style:
+      color = rl.Color(100, 51, 47, 255) if self._red else TILE
+      rl.draw_rectangle_rounded(self.rect, .13, 5, SELECTED if self.is_pressed else color)
+      box = rl.Rectangle(self.rect.x+18, self.rect.y, self.rect.width-116, self.rect.height)
+      caption(box, self.settings_title.replace("\n", " "), 29)
+      icon = self._txt_icon
+      rl.draw_texture_v(icon, rl.Vector2(self.rect.x+self.rect.width-icon.width-20, self.rect.y+(self.rect.height-icon.height)/2), MINT)
+      return
     # draw background
     txt_bg = self._txt_btn_bg if not self._red else self._txt_btn_red_bg
     if not self.enabled:
@@ -111,6 +125,7 @@ class BigButton(Widget):
   def __init__(self, text: str, value: str = "", icon: Union[rl.Texture, None] = None, scroll: bool = False):
     super().__init__()
     self.set_rect(rl.Rectangle(0, 0, 402, 180))
+    self._settings_style = False
     self.text = text
     self.value = value
     self._txt_icon = icon
@@ -132,6 +147,12 @@ class BigButton(Widget):
 
     self._load_images()
 
+  def use_settings_style(self):
+    self._settings_style = True
+    self._label.set_font_size(32)
+    self._sub_label.set_font_size(25)
+    self._sub_label.set_color(MINT)
+
   def set_icon(self, icon: Union[rl.Texture, None]):
     self._txt_icon = icon
 
@@ -150,7 +171,7 @@ class BigButton(Widget):
 
   def _width_hint(self) -> int:
     # Single line if scrolling, so hide behind icon if exists
-    icon_size = self._txt_icon.width if self._txt_icon and self._scroll and self.value else 0
+    icon_size = self._txt_icon.width if self._txt_icon and (self._settings_style or self._scroll and self.value) else 0
     return int(self._rect.width - self.LABEL_HORIZONTAL_PADDING * 2 - icon_size)
 
   def _get_label_font_size(self):
@@ -160,7 +181,7 @@ class BigButton(Widget):
       return 42
 
   def _update_label_layout(self):
-    self._label.set_font_size(self._get_label_font_size())
+    self._label.set_font_size(32 if self._settings_style else self._get_label_font_size())
     if self.value:
       self._label.set_alignment_vertical(TextAlignmentVertical.TOP)
     else:
@@ -252,6 +273,12 @@ class BigButton(Widget):
       rl.draw_texture_pro(self._txt_icon, source_rec, dest_rec, origin, rotation, rl.Color(255, 255, 255, int(255 * 0.9)))
 
   def _render(self, _):
+    if self._settings_style:
+      if self._grow_animation_until is not None and rl.get_time() >= self._grow_animation_until:
+        self._grow_animation_until = None
+      rl.draw_rectangle_rounded(self.rect, .13, 6, (SELECTED if self.is_pressed else TILE) if self.enabled else BAR)
+      self._draw_content(self.rect.y)
+      return
     txt_bg, btn_x, btn_y, scale = self._handle_background()
 
     if self._scroll:
@@ -288,6 +315,11 @@ class BigToggle(BigButton):
 
   def _draw_pill(self, x: float, y: float, checked: bool):
     # draw toggle icon top right
+    if self._settings_style:
+      box = rl.Rectangle(x+8, y+15, 58, 26)
+      rl.draw_rectangle_rounded(box, 1, 8, MINT if checked else rl.Color(95, 111, 103, 255))
+      rl.draw_circle(int(box.x+(44 if checked else 14)), int(box.y+13), 9, BAR if checked else INK)
+      return
     if checked:
       rl.draw_texture_ex(self._txt_enabled_toggle, (x, y), 0, 1.0, rl.WHITE)
     else:
@@ -373,6 +405,8 @@ class GreyBigButton(BigButton):
     return 36
 
   def _render(self, _):
+    if self._settings_style:
+      return BigButton._render(self, self.rect)
     rl.draw_rectangle_rounded(self._rect, 0.4, 10, rl.Color(255, 255, 255, int(255 * 0.15)))
     self._draw_content(self._rect.y)
 

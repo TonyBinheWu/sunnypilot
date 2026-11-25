@@ -119,15 +119,23 @@ class FormosaPairingDialog(Widget):
     self._state = "intro"
     self._qr_texture = None
     big = gui_app.big_ui()
+    self.compact = not big and not embedded
+    if self.compact:
+      from openpilot.selfdrive.ui.mici.widgets.settings_action import SettingsAction
+    action = SettingsAction if self.compact else Button
     padding = 20 if big else 8
-    self._close = Button(lambda: text("close"), self._close_dialog, font_size=40 if big else 14, text_padding=padding, button_style=ButtonStyle.NORMAL)
-    self._start = Button(lambda: text("start"), self._request, font_size=40 if big else 14, text_padding=padding, button_style=ButtonStyle.PRIMARY)
+    self._close = action(lambda: text("close"), self._close_dialog, font_size=40 if big else 14, text_padding=padding, button_style=ButtonStyle.NORMAL)
+    self._start = action(lambda: text("start"), self._request, font_size=40 if big else 14, text_padding=padding, button_style=ButtonStyle.PRIMARY)
     self._start.set_enabled(lambda: not self._busy and ui_state.is_offroad())
-    self._remote = Button(lambda: text("remote_on" if ui_state.params.get_bool(REMOTE_KEY) else "remote_off"), self._toggle_remote,
+    self._remote = action(lambda: text("remote_on" if ui_state.params.get_bool(REMOTE_KEY) else "remote_off"), self._toggle_remote,
                           font_size=34 if big else 11, text_padding=padding)
     self._remote.set_enabled(ui_state.is_offroad)
     from openpilot.sunnypilot.formosalink.training_ui import open_training
-    self._training = Button(lambda: {"zh-TW": "訓練授權", "en": "Training data", "ja": "学習データ"}[language()], open_training, button_style=ButtonStyle.NORMAL)
+    training_names = {"zh-TW": "訓練授權", "en": "Training data", "ja": "学習データ"}
+    self._training = action(lambda: training_names[language()], open_training, button_style=ButtonStyle.NORMAL)
+    if self.compact:
+      for button in (self._close, self._training, self._start, self._remote):
+        button.set_touch_valid_callback(lambda: self.enabled)
 
   def show_event(self):
     super().show_event()
@@ -246,6 +254,8 @@ class FormosaPairingDialog(Widget):
     body_font = font_fallback(gui_app.font(FontWeight.NORMAL), message)
     if getattr(multilang, "requires_font_fallback", lambda: False)():
       gui_app.fallback_font(message + text("close") + text("start") + text("remote_on") + text("remote_off"))
+    if self.compact:
+      return self._render_compact(rect, message)
     rl.draw_rectangle_rec(rect, rl.Color(15, 20, 36, 255))
     rl.draw_text_ex(font, "FormosaLink", rl.Vector2(rect.x+margin, rect.y+12*scale), 27*scale, 0, rl.WHITE)
     self._close._label.set_font_size(17*scale)
@@ -281,4 +291,36 @@ class FormosaPairingDialog(Widget):
                             rect.y+48*scale+(rect.height-60*scale-qr_size)/2, qr_size, qr_size)
       self._last_qr_rect = target
       rl.draw_texture_pro(self._qr_texture, rl.Rectangle(0,0,self._qr_texture.width,self._qr_texture.height), target, rl.Vector2(0,0), 0, rl.WHITE)
+    return -1
+
+  def _render_compact(self, rect, message):
+    from openpilot.selfdrive.ui.device_design import BASE, BAR, INK, MINT, caption
+    from openpilot.system.ui.lib.multilang import tr
+    rl.draw_rectangle_rec(rect, BASE)
+    rl.draw_rectangle_rec(rl.Rectangle(rect.x, rect.y, rect.width, 58), BAR)
+    self._close.set_text(tr("Back"))
+    self._close.render(rl.Rectangle(rect.x+6, rect.y+4, 94, 50))
+    caption(rl.Rectangle(rect.x+112, rect.y, rect.width-260, 58), "FormosaLink", 24, INK)
+    self._training.render(rl.Rectangle(rect.x+rect.width-138, rect.y+4, 132, 50))
+    qr_space = rect.height-62 if self._qr_texture else 0
+    width = rect.width-16-qr_space
+    font = font_fallback(gui_app.font(FontWeight.NORMAL), message)
+    for size in range(21, 12, -1):
+      content = "\n".join(wrap_text(font, message, size, int(width-12)))
+      measured = measure_text_cached(font, content, size)
+      if measured.y <= rect.height-58-70:
+        break
+    self._last_status_rect = rl.Rectangle(rect.x+12, rect.y+65, measured.x, measured.y)
+    rl.draw_text_ex(font, content, rl.Vector2(rect.x+12, rect.y+65), size, 0, MINT)
+    width = (width-8)/2
+    for i, button in enumerate((self._start, self._remote)):
+      button.render(rl.Rectangle(rect.x+8+i*(width+8), rect.y+rect.height-62, width, 54))
+    self._last_qr_rect = None
+    if self._qr_texture:
+      modules = self._qr_texture.width//10
+      size = max(modules, int(qr_space/modules)*modules)
+      target = rl.Rectangle(rect.x+rect.width-size-4, rect.y+58+(rect.height-58-size)/2, size, size)
+      self._last_qr_rect = target
+      rl.draw_texture_pro(self._qr_texture, rl.Rectangle(0, 0, self._qr_texture.width, self._qr_texture.height),
+                          target, rl.Vector2(0, 0), 0, rl.WHITE)
     return -1

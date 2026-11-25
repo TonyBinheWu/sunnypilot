@@ -1521,3 +1521,48 @@ msgstr "モデルを検索"
 
 msgid "No matching models"
 msgstr "一致するモデルがありません"
+
+msgid "Starting up"
+msgstr "起動しています"
+
+msgid "Building software"
+msgstr "ソフトウェアをビルド中"
+
+msgid "Preparing runtime packages"
+msgstr "実行環境を準備中"
+
+msgid "Building settings registry"
+msgstr "設定を構築中"
+
+msgid "registering device"
+msgstr "デバイスを登録中"
+
+msgid "Downloading model"
+msgstr "モデルをダウンロード中"
+
+msgid "Downloading precompiled model"
+msgstr "ビルド済みモデルをダウンロード中"
+
+msgid "Checking precompiled model"
+msgstr "ビルド済みモデルを確認中"
+
+msgid "Validating precompiled model"
+msgstr "ビルド済みモデルを検証中"
+
+msgid "Recovery"
+msgstr "復旧用アドレス"
+
+msgid "Next page"
+msgstr "次のページ"
+
+msgid "Previous page"
+msgstr "前のページ"
+
+msgid "Offline"
+msgstr "オフライン"
+
+msgid "Confirm action"
+msgstr "操作の確認"
+
+msgid "Delete"
+msgstr "一字削除"

@@ -1,3 +1,4 @@
+from openpilot.selfdrive.ui.mici.layouts.settings.navigation import SettingsDetail
 from openpilot.system.ui.lib.multilang import tr
 import pyray as rl
 import qrcode
@@ -13,13 +14,14 @@ from openpilot.system.ui.lib.application import FontWeight, gui_app
 from openpilot.system.ui.widgets.label import UnifiedLabel
 
 
-class PairingDialog(NavWidget):
+class PairingDialog(SettingsDetail, NavWidget):
   """Dialog for device pairing with QR code."""
 
   QR_REFRESH_INTERVAL = 300  # 5 minutes in seconds
 
   def __init__(self):
     super().__init__()
+    self.init_settings_header("Pair Device")
     self._params = Params()
     self._qr_texture: rl.Texture | None = None
     self._last_qr_generation = float("-inf")
@@ -71,29 +73,29 @@ class PairingDialog(NavWidget):
     if ui_state.prime_state.is_paired() and not self.is_dismissing:
       self.dismiss()
 
-  def _render(self, rect: rl.Rectangle):
+  def _render_body(self, rect: rl.Rectangle):
     self._check_qr_refresh()
 
-    self._render_qr_code()
+    self._render_qr_code(rect)
 
-    label_x = self._rect.x + 8 + self._rect.height + 24
-    self._pair_label.set_max_width(int(self._rect.width - label_x))
-    self._pair_label.set_position(label_x, self._rect.y + 16)
+    label_x = rect.x + 8 + rect.height + 24
+    self._pair_label.set_max_width(int(rect.x + rect.width - label_x - 8))
+    self._pair_label.set_position(label_x, rect.y + 16)
     self._pair_label.render()
 
-    rl.draw_texture_ex(self._txt_pair, rl.Vector2(label_x, self._rect.y + self._rect.height - self._txt_pair.height - 16),
+    rl.draw_texture_ex(self._txt_pair, rl.Vector2(label_x, rect.y + rect.height - self._txt_pair.height - 16),
                        0.0, 1.0, rl.Color(255, 255, 255, int(255 * 0.35)))
 
-  def _render_qr_code(self) -> None:
+  def _render_qr_code(self, rect) -> None:
     if not self._qr_texture:
       error_font = gui_app.font(FontWeight.BOLD)
       rl.draw_text_ex(
-        error_font, "QR Code Error", rl.Vector2(self._rect.x + 20, self._rect.y + self._rect.height // 2 - 15), 30, 0.0, rl.RED
+        error_font, "QR Code Error", rl.Vector2(rect.x + 20, rect.y + rect.height // 2 - 15), 30, 0.0, rl.RED
       )
       return
 
-    scale = self._rect.height / self._qr_texture.height
-    pos = rl.Vector2(round(self._rect.x + 8), round(self._rect.y))
+    scale = rect.height / self._qr_texture.height
+    pos = rl.Vector2(round(rect.x + 8), round(rect.y))
     rl.draw_texture_ex(self._qr_texture, pos, 0.0, scale, rl.WHITE)
 
   def __del__(self):

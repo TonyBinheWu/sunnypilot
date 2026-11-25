@@ -95,7 +95,7 @@ def test_c4_language_selection_waits_for_offroad_and_never_reboots():
   widget = scope["LanguageLayoutMici"]()
   widget._buttons = {"zh-CHT": object()}
   widget._params = SimpleNamespace(put=lambda *args: writes.append(args))
-  widget.show_event = lambda: None
+  widget._refresh_selection = lambda: None
   widget._select("zh-CHT")
   assert not writes and not dialogs
   parked[0] = True

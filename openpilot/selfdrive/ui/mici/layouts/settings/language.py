@@ -23,6 +23,9 @@ class LanguageLayoutMici(NavScroller):
 
   def show_event(self):
     super().show_event()
+    self._refresh_selection()
+
+  def _refresh_selection(self):
     current = (self._params.get("LanguageSetting") or "en").removeprefix("main_")
     for code, button in self._buttons.items():
       button.set_value(tr("Selected") if code == current else "")
@@ -31,5 +34,5 @@ class LanguageLayoutMici(NavScroller):
     if not ui_state.is_offroad() or code not in self._buttons:
       return
     self._params.put("LanguageSetting", code)
-    self.show_event()
+    self._refresh_selection()
     gui_app.push_widget(BigDialog(tr("Language saved"), tr("Restart your device from Device settings to apply the language.")))

@@ -2740,3 +2740,45 @@ msgstr "搜尋模型"
 
 msgid "No matching models"
 msgstr "找不到相符的模型"
+
+msgid "Starting up"
+msgstr "正在啟動"
+
+msgid "Building software"
+msgstr "正在建置軟體"
+
+msgid "Preparing runtime packages"
+msgstr "正在準備執行環境"
+
+msgid "Building settings registry"
+msgstr "正在建立設定登錄表"
+
+msgid "registering device"
+msgstr "正在註冊裝置"
+
+msgid "Downloading model"
+msgstr "正在下載模型"
+
+msgid "Downloading precompiled model"
+msgstr "正在下載預編譯模型"
+
+msgid "Checking precompiled model"
+msgstr "正在檢查預編譯模型"
+
+msgid "Validating precompiled model"
+msgstr "正在驗證預編譯模型"
+
+msgid "Recovery"
+msgstr "復原連線"
+
+msgid "Next page"
+msgstr "下一頁"
+
+msgid "Previous page"
+msgstr "上一頁"
+
+msgid "Confirm action"
+msgstr "確認操作"
+
+msgid "Delete"
+msgstr "刪字"

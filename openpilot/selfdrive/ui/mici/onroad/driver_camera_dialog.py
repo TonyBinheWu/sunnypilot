@@ -1,3 +1,4 @@
+from openpilot.selfdrive.ui.mici.layouts.settings.navigation import SettingsDetail
 import pyray as rl
 from openpilot.cereal import log, messaging
 from msgq.visionipc import VisionStreamType
@@ -247,9 +248,12 @@ class BaseDriverCameraDialog(Widget):
     rl.draw_texture_v(self._glasses_texture, glasses_pos, rl.Color(70, 80, 161, int(255 * glasses_prob)))
 
 
-class DriverCameraDialog(NavWidget, BaseDriverCameraDialog):
+class DriverCameraDialog(SettingsDetail, NavWidget, BaseDriverCameraDialog):
+  _render_body = BaseDriverCameraDialog._render
+
   def __init__(self):
     super().__init__()
+    self.init_settings_header("driver\ncamera preview")
     # TODO: this can grow unbounded, should be given some thought
     device.add_interactive_timeout_callback(gui_app.pop_widget)
 

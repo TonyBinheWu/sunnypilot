@@ -106,6 +106,7 @@ class TrainingGuideDMTutorial(NavWidget):
     self._progress = FirstOrderFilter(0.0, 0.5, 1 / gui_app.target_fps)
     self._dialog = DriverCameraSetupDialog()
     self._bad_face_page = DMBadFaceDetected()
+    self._review_header = None
 
     # Disable driver monitoring model when device times out for inactivity
     def inactivity_callback():
@@ -148,13 +149,25 @@ class TrainingGuideDMTutorial(NavWidget):
 
     self._good_button.set_enabled(self._progress.x >= 0.999)
 
-  def _render(self, _):
-    self._dialog.render(self._rect)
+  def enable_review_header(self, title):
+    from openpilot.selfdrive.ui.mici.layouts.settings.navigation import SettingsToolbar
+    self._review_header = self._child(SettingsToolbar(lambda: tr(title).replace("\n", " "), self.dismiss))
+    self._review_header.set_enabled(lambda: self.enabled and not self.is_dismissing)
 
-    gradient_y = int(self._rect.y + self._rect.height - 80)
-    gradient_h = int(self._rect.y) + int(self._rect.height) - gradient_y
-    rl.draw_rectangle_gradient_v(int(self._rect.x), gradient_y,
-                                 int(self._rect.width), gradient_h, rl.BLANK, rl.BLACK)
+  def _render(self, rect):
+    from openpilot.selfdrive.ui.mici.layouts.settings.navigation import HEADER_HEIGHT
+    if self._review_header:
+      self._review_header.render(rl.Rectangle(rect.x, rect.y, rect.width, HEADER_HEIGHT))
+      rect = rl.Rectangle(rect.x, rect.y+HEADER_HEIGHT, rect.width, rect.height-HEADER_HEIGHT)
+    self._render_tutorial(rect)
+
+  def _render_tutorial(self, rect):
+    self._dialog.render(rect)
+
+    gradient_y = int(rect.y + rect.height - 80)
+    gradient_h = int(rect.y) + int(rect.height) - gradient_y
+    rl.draw_rectangle_gradient_v(int(rect.x), gradient_y,
+                                 int(rect.width), gradient_h, rl.BLANK, rl.BLACK)
 
     # draw white ring around dm icon to indicate progress
     ring_thickness = 8
@@ -162,8 +175,8 @@ class TrainingGuideDMTutorial(NavWidget):
     # DM icon is 120x120, positioned on opposite side from driver
     dm_size = 120
     is_rhd = self._dialog.driver_state_renderer._is_rhd
-    dm_center_x = (self._rect.x + dm_size / 2 + 8) if is_rhd else (self._rect.x + self._rect.width - dm_size / 2 - 8)
-    dm_center_y = self._rect.y + dm_size / 2 + 8
+    dm_center_x = (rect.x + dm_size / 2 + 8) if is_rhd else (rect.x + rect.width - dm_size / 2 - 8)
+    dm_center_y = rect.y + dm_size / 2 + 8
     icon_edge_radius = dm_size / 2
     outer_radius = icon_edge_radius + 1  # 2px outward from icon edge
     inner_radius = outer_radius - ring_thickness  # Inset by ring_thickness
@@ -193,22 +206,22 @@ class TrainingGuideDMTutorial(NavWidget):
 
     if self._dialog._camera_view.frame:
       self._back_button.render(rl.Rectangle(
-        self._rect.x + 8,
-        self._rect.y + self._rect.height - self._back_button.rect.height,
+        rect.x + 8,
+        rect.y + rect.height - self._back_button.rect.height,
         self._back_button.rect.width,
         self._back_button.rect.height,
       ))
 
       self._good_button.render(rl.Rectangle(
-        self._rect.x + self._rect.width - self._good_button.rect.width - 8,
-        self._rect.y + self._rect.height - self._good_button.rect.height,
+        rect.x + rect.width - self._good_button.rect.width - 8,
+        rect.y + rect.height - self._good_button.rect.height,
         self._good_button.rect.width,
         self._good_button.rect.height,
       ))
 
     # rounded border
-    rl.begin_scissor_mode(int(self._rect.x), int(self._rect.y), int(self._rect.width), int(self._rect.height))
-    rl.draw_rectangle_rounded_lines_ex(self._rect, 0.2 * 1.02, 10, 50, rl.BLACK)
+    rl.begin_scissor_mode(int(rect.x), int(rect.y), int(rect.width), int(rect.height))
+    rl.draw_rectangle_rounded_lines_ex(rect, 0.2 * 1.02, 10, 50, rl.BLACK)
     rl.end_scissor_mode()
 
 
@@ -302,8 +315,9 @@ class QRCodeWidget(Widget):
 
   def _render(self, _):
     if self._qr_texture:
-      scale = self._size / self._qr_texture.height
-      rl.draw_texture_ex(self._qr_texture, rl.Vector2(round(self._rect.x), round(self._rect.y)), 0.0, scale, rl.WHITE)
+      scale = min(self._size, self.rect.width, self.rect.height) / self._qr_texture.height
+      rl.draw_texture_ex(self._qr_texture, rl.Vector2(round(self.rect.x+(self.rect.width-self._qr_texture.width*scale)/2),
+                                                        round(self.rect.y+(self.rect.height-self._qr_texture.height*scale)/2)), 0.0, scale, rl.WHITE)
 
   def __del__(self):
     if self._qr_texture and self._qr_texture.id != 0:

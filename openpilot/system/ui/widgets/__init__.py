@@ -52,6 +52,7 @@ class Widget(abc.ABC):
     self._click_release_time: float | None = None
     self._click_callback: Callable[[], None] | None = None
     self._multi_touch = False
+    self.cancel_touch_on_exit = False
     self.__was_awake = True
 
   @property
@@ -185,6 +186,8 @@ class Widget(abc.ABC):
 
       # Mouse/touch left our rect but may come back into focus later
       elif not mouse_in_rect:
+        if self.cancel_touch_on_exit:
+          self.__tracking_is_pressed[mouse_event.slot] = False
         self.__is_pressed[mouse_event.slot] = False
         self._handle_mouse_event(mouse_event)
 

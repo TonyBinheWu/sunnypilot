@@ -34,6 +34,7 @@ jobs:
             openpilot/system/tests/test_startup_touch_log.py \
             openpilot/system/tests/test_reboot_sound.py \
             openpilot/system/tests/test_bootstrap_ui.py \
+            openpilot/system/tests/test_boot_spinner.py \
             openpilot/selfdrive/carrot/server/tests/test_git_config.py
 
   fresh_install:
@@ -60,3 +61,7 @@ jobs:
           python -m pytest -c /dev/null --rootdir=. --confcutdir=openpilot/system/tests -q
           openpilot/system/tests/test_fresh_install_bootstrap.py
           openpilot/system/tests/test_bootstrap_font_atlas.py
+      - name: Check C4 settings targets and secondary navigation
+        env:
+          PYTHONPATH: .:opendbc_repo
+        run: python -m pytest --noconftest -o addopts= -q openpilot/selfdrive/ui/tests/test_mici_settings_targets.py

@@ -5,6 +5,8 @@ import pyray as rl
 from collections.abc import Callable
 
 from openpilot.common.swaglog import cloudlog
+from openpilot.selfdrive.ui.device_design import SELECTED, TILE
+from openpilot.selfdrive.ui.mici.layouts.settings.navigation import add_section_navigation
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigInputDialog, BigConfirmationDialog
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, LABEL_COLOR
 from openpilot.system.ui.lib.application import gui_app, MousePos, FontWeight
@@ -101,6 +103,11 @@ class WifiButton(BigButton):
     self._network_forgetting = False
     self._wrong_password = False
 
+  def use_settings_style(self):
+    super().use_settings_style()
+    self._forget_btn.settings_style = True
+    self._forget_btn.cancel_touch_on_exit = True
+
   def update_network(self, network: Network):
     self._network = network
     self._wifi_icon.update_network(network)
@@ -155,13 +162,13 @@ class WifiButton(BigButton):
   def _draw_content(self, btn_y: float):
     self._label.set_color(LABEL_COLOR)
     label_rect = rl.Rectangle(self._rect.x + self.LABEL_PADDING, btn_y + self.LABEL_VERTICAL_PADDING,
-                              self.LABEL_WIDTH, self._rect.height - self.LABEL_VERTICAL_PADDING * 2)
+                              self.rect.width-self.LABEL_PADDING-28, self._rect.height - self.LABEL_VERTICAL_PADDING * 2)
     self._label.render(label_rect)
 
     if self.value:
       sub_label_x = self._rect.x + self.LABEL_HORIZONTAL_PADDING
       label_y = btn_y + self._rect.height - self.LABEL_VERTICAL_PADDING
-      sub_label_w = self.SUB_LABEL_WIDTH - (self._forget_btn.rect.width if self._show_forget_btn else 0)
+      sub_label_w = self.rect.width - self.LABEL_HORIZONTAL_PADDING * 2 - (self._forget_btn.rect.width if self._show_forget_btn else 0)
       sub_label_height = self._sub_label.get_content_height(sub_label_w)
 
       if self._is_connected and not self._network_forgetting:
@@ -239,6 +246,7 @@ class ForgetButton(Widget):
   def __init__(self, forget_network: Callable):
     super().__init__()
     self._forget_network = forget_network
+    self.settings_style = False
 
     self._bg_txt = gui_app.texture("icons_mici/settings/network/new/forget_button.png", 84, 84)
     self._bg_pressed_txt = gui_app.texture("icons_mici/settings/network/new/forget_button_pressed.png", 84, 84)
@@ -252,8 +260,12 @@ class ForgetButton(Widget):
 
   def _render(self, _):
     bg_txt = self._bg_pressed_txt if self.is_pressed else self._bg_txt
-    rl.draw_texture_ex(bg_txt, (self._rect.x + (self._rect.width - self._bg_txt.width) / 2,
-                                self._rect.y + (self._rect.height - self._bg_txt.height) / 2), 0, 1.0, rl.WHITE)
+    if self.settings_style:
+      box = rl.Rectangle(self.rect.x+8, self.rect.y+8, self.rect.width-16, self.rect.height-16)
+      rl.draw_rectangle_rounded(box, .18, 5, SELECTED if self.is_pressed else TILE)
+    else:
+      rl.draw_texture_ex(bg_txt, (self._rect.x + (self._rect.width - self._bg_txt.width) / 2,
+                                  self._rect.y + (self._rect.height - self._bg_txt.height) / 2), 0, 1.0, rl.WHITE)
 
     trash_x = self._rect.x + (self._rect.width - self._trash_txt.width) / 2
     trash_y = self._rect.y + (self._rect.height - self._trash_txt.height) / 2
@@ -279,6 +291,7 @@ class WifiUIMici(NavScroller):
   def __init__(self, wifi_manager: WifiManager):
     super().__init__()
 
+    add_section_navigation(self, "Wi-Fi")
     self._scanning_btn = ScanningButton()
 
     self._wifi_manager = wifi_manager

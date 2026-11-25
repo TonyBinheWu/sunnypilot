@@ -1,3 +1,5 @@
+import math
+
 import pyray as rl
 import numpy as np
 from collections.abc import Callable
@@ -79,6 +81,7 @@ class _Scroller(Widget):
     self._pad = pad
 
     self._reset_scroll_at_show = True
+    self._page_style = None
 
     # target offset, block manual interruption, block child widget interaction
     self._scrolling_to: tuple[float | None, bool, bool] = (None, False, False)
@@ -145,7 +148,17 @@ class _Scroller(Widget):
   def content_size(self) -> float:
     return self._content_size
 
+  def set_page_style(self, prepare: Callable[[Widget], None]):
+    """A full-width card at each stop, including items added after a Wi-Fi scan."""
+    self._page_style = prepare
+    self._spacing, self._pad = 16, 8
+    self._edge_shadows = self._show_scroll_indicator = False
+    for item in self._items:
+      prepare(item)
+
   def add_widget(self, item: Widget) -> None:
+    if self._page_style:
+      self._page_style(item)
     self._items.append(item)
 
     # preserve original touch valid callback
@@ -297,6 +310,12 @@ class _Scroller(Widget):
   def _layout(self):
     self._visible_items = [item for item in self._items if item.is_visible]
 
+    if self._page_style:
+      width, height = max(1, self.rect.width - self._pad * 2), max(1, self.rect.height - 16)
+      for item in self._visible_items:
+        if item.rect.width != width or item.rect.height != height:
+          item.set_rect(rl.Rectangle(item.rect.x, item.rect.y, width, height))
+
     self._content_size = sum(item.rect.width if self._horizontal else item.rect.height for item in self._visible_items)
     self._content_size += self._spacing * (len(self._visible_items) - 1)
     self._content_size += self._pad * 2
@@ -425,18 +444,46 @@ class Scroller(Widget):
   def __init__(self, **kwargs):
     super().__init__()
     self._scroller = self._child(_Scroller([], **kwargs))
+    self._header = None
+    self._header_height = 0
     # pass down enabled to child widget for nav stack
     self._scroller.set_enabled(lambda: self.enabled)
 
-  def _render(self, _):
-    self._scroller.render(self._rect)
+  def set_header(self, widget: Widget, height: int):
+    self._header = self._child(widget)
+    self._header_height = height
+    widget.set_enabled(lambda: self.enabled and not getattr(self, "is_dismissing", False))
+
+  def _page_distance(self, direction):
+    scroller = self._scroller
+    width = scroller.rect.width
+    offset = scroller.scroll_panel.get_offset()
+    if width <= 0:
+      return 0
+    # After a drag, advance to the next aligned card in the requested direction.
+    index = math.floor((-offset+1)/width) + 1 if direction > 0 else math.ceil((-offset-1)/width) - 1
+    target = max(min(0, width - scroller.content_size), min(0, -index * width))
+    return offset - target
+
+  def can_page(self, direction):
+    return abs(self._page_distance(direction)) >= 1
+
+  def page_by(self, direction):
+    self._scroller.scroll_to(self._page_distance(direction), smooth=True, block_widget_interaction=True)
+
+  def _render(self, rect):
+    if self._header is None:
+      return self._scroller.render(rect)
+    height = self._header_height
+    rl.draw_rectangle_rec(rect, self._header.background)
+    self._scroller.render(rl.Rectangle(rect.x, rect.y+height, rect.width, rect.height-height))
+    self._header.render(rl.Rectangle(rect.x, rect.y, rect.width, height))
 
 
 class NavScroller(NavWidget, Scroller):
-  """Full screen Scroller that properly supports nav stack w/ animations"""
+  """Full screen scroller that supports nav stack animations."""
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
-    # pass down enabled to child widget for nav stack + disable while swiping away NavWidget
     self._scroller.set_enabled(lambda: self.enabled and not self.is_dismissing)
 
   def _back_enabled(self) -> bool:

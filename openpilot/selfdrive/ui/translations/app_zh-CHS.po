@@ -1977,3 +1977,48 @@ msgstr "搜索模型"
 
 msgid "No matching models"
 msgstr "没有匹配的模型"
+
+msgid "Starting up"
+msgstr "正在启动"
+
+msgid "Building software"
+msgstr "正在构建软件"
+
+msgid "Preparing runtime packages"
+msgstr "正在准备运行环境"
+
+msgid "Building settings registry"
+msgstr "正在生成设置注册表"
+
+msgid "registering device"
+msgstr "正在注册设备"
+
+msgid "Downloading model"
+msgstr "正在下载模型"
+
+msgid "Downloading precompiled model"
+msgstr "正在下载预编译模型"
+
+msgid "Checking precompiled model"
+msgstr "正在检查预编译模型"
+
+msgid "Validating precompiled model"
+msgstr "正在验证预编译模型"
+
+msgid "Recovery"
+msgstr "恢复连接"
+
+msgid "Next page"
+msgstr "下一页"
+
+msgid "Previous page"
+msgstr "上一页"
+
+msgid "Offline"
+msgstr "离线"
+
+msgid "Confirm action"
+msgstr "确认操作"
+
+msgid "Delete"
+msgstr "退格"

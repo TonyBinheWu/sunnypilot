@@ -12,7 +12,7 @@ from openpilot.common.steering_learning import section
 
 def panel_scope():
   path = Path(__file__).parents[1] / 'widgets' / 'steering_learning.py'
-  tree = ast.parse(path.read_text())
+  tree = ast.parse(path.read_text(encoding="utf-8"))
   names = {'TITLE', 'SOURCE', 'STATUS', 'value', 'learning_html', 'learning_mici_dialog'}
   tree.body = [node for node in tree.body if getattr(node, 'name', None) in names or
                isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id in names for t in node.targets)]
@@ -67,6 +67,10 @@ def test_c4_panel_scrolls_and_clips_within_its_small_canvas(monkeypatch, width, 
     result = ModuleType(name)
     result.__dict__.update(attrs)
     monkeypatch.setitem(sys.modules, name, result)
+  class Detail:
+    def init_settings_header(self, title):
+      assert title
+  module('openpilot.selfdrive.ui.mici.layouts.settings.navigation', SettingsDetail=Detail)
   module('pyray', Rectangle=Rectangle,
          begin_scissor_mode=lambda *args: calls.append(('clip', *args)),
          end_scissor_mode=lambda: calls.append(('end',)))
@@ -75,7 +79,7 @@ def test_c4_panel_scrolls_and_clips_within_its_small_canvas(monkeypatch, width, 
   scope = panel_scope()
   scope.update(LearningReader=lambda params: None, Params=lambda: None)
   panel = scope['learning_mici_dialog']()
-  panel._render(Rectangle(0, 0, width, height))
+  panel._render_body(Rectangle(0, 58, width, height-58))
   viewport = calls[0][1]
   assert 0 <= viewport.x < width and 0 <= viewport.y < height
   assert viewport.x + viewport.width <= width and viewport.y + viewport.height <= height

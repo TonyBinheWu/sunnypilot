@@ -1,5 +1,4 @@
 import abc
-import math
 import pyray as rl
 from typing import Union
 from collections.abc import Callable
@@ -7,14 +6,13 @@ from openpilot.system.ui.widgets.nav_widget import NavWidget
 from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.mici_keyboard import MiciKeyboard
 from openpilot.system.ui.lib.text_measure import measure_text_cached
-from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
-from openpilot.system.ui.widgets.slider import RedBigSlider, BigSlider
-from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.selfdrive.ui.mici.widgets.button import BigCircleButton, BigButton, GreyBigButton
-
-DEBUG = False
-
-PADDING = 20
+from openpilot.system.ui.lib.application import font_fallback, gui_app, FontWeight, MousePos, TextAlignment
+from openpilot.system.ui.widgets.slider import BigSlider
+from openpilot.system.ui.lib.scroll_panel2 import GuiScrollPanel2
+from openpilot.system.ui.lib.multilang import tr
+from openpilot.selfdrive.ui.device_design import BASE, BAR, INK, MINT, SELECTED, TILE, caption
+from openpilot.selfdrive.ui.mici.layouts.settings.navigation import DeviceTouchMenu, SettingsDetail
+from openpilot.selfdrive.ui.mici.widgets.button import BigCircleButton, BigButton
 
 
 class BigDialogBase(NavWidget, abc.ABC):
@@ -23,33 +21,62 @@ class BigDialogBase(NavWidget, abc.ABC):
     self.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
 
 
-class BigDialog(BigDialogBase):
+class BigDialog(SettingsDetail, BigDialogBase):
   def __init__(self, title: str, description: str, icon: Union[rl.Texture, None] = None):
     super().__init__()
-    self._card = GreyBigButton(title, description, icon)
+    self.init_settings_header(title or "Device settings")
+    self._message = UnifiedLabel(description, 26, font_weight=FontWeight.MEDIUM, text_color=INK)
+    self._scroll = GuiScrollPanel2(horizontal=False)
+    self._scroll.set_enabled(lambda: self.enabled and not self.is_dismissing)
+    self._icon = icon
 
-  def _render(self, _):
-    self._card.render(rl.Rectangle(
-      self._rect.x + self._rect.width / 2 - self._card.rect.width / 2,
-      self._rect.y + self._rect.height / 2 - self._card.rect.height / 2,
-      self._card.rect.width,
-      self._card.rect.height,
-    ))
+  def _render_body(self, rect):
+    box = rl.Rectangle(rect.x+8, rect.y+7, rect.width-16, rect.height-15)
+    rl.draw_rectangle_rounded(box, .14, 5, TILE)
+    x = box.x + 14
+    if self._icon:
+      rl.draw_texture_v(self._icon, rl.Vector2(x, box.y+12), MINT)
+      x += self._icon.width + 12
+    view = rl.Rectangle(x, box.y+8, box.x+box.width-x-14, box.height-16)
+    height = max(view.height, self._message.get_content_height(int(view.width)))
+    offset = self._scroll.update(view, height)
+    rl.begin_scissor_mode(int(view.x), int(view.y), int(view.width), int(view.height))
+    self._message.render(rl.Rectangle(view.x, view.y+offset, view.width, height))
+    rl.end_scissor_mode()
 
 
-class BigConfirmationDialog(BigDialogBase):
+class ConfirmationSlider(BigSlider):
+  def __init__(self, title, icon, callback, red):
+    super().__init__(title, icon, confirm_callback=callback)
+    self.red = red
+    self._label.set_font_size(32)
+    self._label.set_text_color(INK)
+    self._label.set_alignment(TextAlignment.LEFT)
+    self._label.set_shimmer(False)
+
+  def _render(self, rect):
+    track = rl.Rectangle(rect.x+8, rect.y+8, rect.width-16, rect.height-16)
+    rl.draw_rectangle_rounded(track, .14, 5, TILE)
+    self._label.render(rl.Rectangle(track.x+20, track.y+22, track.width-216, track.height-34))
+    # Keep the original slider travel, start region and release threshold.
+    handle = rl.Rectangle(track.x+track.width-180+self._scroll_x_circle_filter.x, track.y, 180, track.height)
+    rl.draw_rectangle_rounded(handle, .14, 5, rl.Color(110, 52, 48, 255) if self.red else SELECTED)
+    mid = int(handle.y+handle.height/2)
+    rl.draw_triangle(rl.Vector2(handle.x+8, mid), rl.Vector2(handle.x+22, mid+11), rl.Vector2(handle.x+22, mid-11), INK)
+    rl.draw_texture_v(self._icon, rl.Vector2(handle.x+(handle.width-self._icon.width)/2+6,
+                                             handle.y+(handle.height-self._icon.height)/2), INK)
+
+
+class BigConfirmationDialog(SettingsDetail, BigDialogBase):
   def __init__(self, title: str, icon: rl.Texture, confirm_callback: Callable[[], None],
                exit_on_confirm: bool = True, red: bool = False):
     super().__init__()
+    self.init_settings_header("Confirm action")
     self._confirm_callback = confirm_callback
     self._exit_on_confirm = exit_on_confirm
-
-    self._slider: BigSlider | RedBigSlider
-    if red:
-      self._slider = self._child(RedBigSlider(title, icon, confirm_callback=self._on_confirm))
-    else:
-      self._slider = self._child(BigSlider(title, icon, confirm_callback=self._on_confirm))
-    self._slider.set_enabled(lambda: self.enabled and not self.is_dismissing)  # for nav stack + NavWidget
+    self._slider = self._child(ConfirmationSlider(title, icon, self._on_confirm, red))
+    self._slider.set_enabled(lambda: self.enabled and not self.is_dismissing)
+    self.header.set_enabled(lambda: self.enabled and not self.is_dismissing and not self._slider.confirmed)
 
   def _on_confirm(self):
     if self._exit_on_confirm:
@@ -62,158 +89,86 @@ class BigConfirmationDialog(BigDialogBase):
     if self.is_dismissing and not self._slider.confirmed:
       self._slider.reset()
 
-  def _render(self, _):
-    self._slider.render(self._rect)
+  def _render_body(self, rect):
+    self._slider.render(rect)
+
+
+class InputActions(DeviceTouchMenu):
+  def __init__(self, dialog):
+    super().__init__()
+    self.dialog = dialog
+    self.repeat_at = None
+    self.repeated = False
+
+  def _handle_mouse_press(self, pos):
+    super()._handle_mouse_press(pos)
+    self.repeated = False
+    self.repeat_at = rl.get_time()+.5 if self._pressed_target == "erase" else None
+
+  def activate(self, key):
+    if key == "back":
+      self.dialog.dismiss()
+    elif key == "confirm":
+      self.dialog.submit()
+    elif not self.repeated:
+      self.dialog._keyboard.backspace()
+
+  def _render(self, rect):
+    keyboard = self.dialog._keyboard
+    text = keyboard.text()
+    if self.enabled and self._pressed_target == "erase" and self.repeat_at is not None and rl.get_time() >= self.repeat_at:
+      keyboard.backspace()
+      self.repeated = True
+      self.repeat_at = rl.get_time()+.08
+    rl.draw_rectangle_rec(rect, BAR)
+    self.targets.clear()
+    for key, label, x, width, enabled in (
+      ("back", tr("Back"), rect.x+6, 88, True),
+      ("erase", tr("Delete"), rect.x+rect.width-172, 76, bool(text)),
+      ("confirm", tr("OK"), rect.x+rect.width-90, 84, len(text) >= self.dialog._minimum_length),
+    ):
+      box = rl.Rectangle(x, rect.y+4, width, rect.height-8)
+      if enabled:
+        self.targets[key] = box
+      rl.draw_rectangle_rounded(box, .2, 5, SELECTED if self._pressed_target == key else TILE)
+      caption(box, label, 21, INK if enabled else rl.GRAY, centered=True)
+
+    field = rl.Rectangle(rect.x+102, rect.y+5, rect.width-282, rect.height-10)
+    value = text + keyboard.get_candidate_character()
+    if not value:
+      caption(field, self.dialog.hint, 21)
+      return
+    font = font_fallback(gui_app.font(FontWeight.MEDIUM), value)
+    width = measure_text_cached(font, value, 25).x
+    rl.begin_scissor_mode(int(field.x), int(field.y), int(field.width), int(field.height))
+    rl.draw_text_ex(font, value, rl.Vector2(field.x+min(0, field.width-width), field.y+(field.height-25)/2), 25, 0, INK)
+    rl.end_scissor_mode()
 
 
 class BigInputDialog(BigDialogBase):
   BACK_TOUCH_AREA_PERCENTAGE = 0.2
-  BACKSPACE_RATE = 25  # hz
-  TEXT_INPUT_SIZE = 35
 
-  def __init__(self,
-               hint: str,
-               default_text: str = "",
-               minimum_length: int = 1,
-               confirm_callback: Callable[[str], None] | None = None,
-               auto_return_to_letters: str = ""):
+  def __init__(self, hint: str, default_text: str = "", minimum_length: int = 1,
+               confirm_callback: Callable[[str], None] | None = None, auto_return_to_letters: str = ""):
     super().__init__()
-    self._hint_label = UnifiedLabel(hint, font_size=35, text_color=rl.Color(255, 255, 255, int(255 * 0.35)),
-                                    font_weight=FontWeight.MEDIUM)
-    self._keyboard = MiciKeyboard(auto_return_to_letters=auto_return_to_letters)
-    self._keyboard.set_text(default_text)
-    self._keyboard.set_enabled(lambda: self.enabled and not self.is_dismissing)  # for nav stack + NavWidget
+    self.hint = hint
     self._minimum_length = minimum_length
+    self._confirm_callback = confirm_callback
+    self._keyboard = self._child(MiciKeyboard(auto_return_to_letters=auto_return_to_letters))
+    self._keyboard.set_text(default_text)
+    self.actions = self._child(InputActions(self))
+    for child in (self._keyboard, self.actions):
+      child.set_enabled(lambda: self.enabled and not self.is_dismissing)
 
-    self._backspace_held_time: float | None = None
-
-    self._backspace_img = gui_app.texture("icons_mici/settings/keyboard/backspace.png", 42, 36)
-    self._backspace_img_alpha = FirstOrderFilter(0, 0.05, 1 / gui_app.target_fps)
-
-    self._enter_img = gui_app.texture("icons_mici/settings/keyboard/enter.png", 76, 62)
-    self._enter_disabled_img = gui_app.texture("icons_mici/settings/keyboard/enter_disabled.png", 76, 62)
-    self._enter_img_alpha = FirstOrderFilter(0, 0.05, 1 / gui_app.target_fps)
-
-    # rects for top buttons
-    self._top_left_button_rect = rl.Rectangle(0, 0, 0, 0)
-    self._top_right_button_rect = rl.Rectangle(0, 0, 0, 0)
-
-    def confirm_callback_wrapper():
-      text = self._keyboard.text()
-      self.dismiss((lambda: confirm_callback(text)) if confirm_callback else None)
-    self._confirm_callback = confirm_callback_wrapper
-
-  def _update_state(self):
-    super()._update_state()
-
-    if self.is_dismissing:
-      self._backspace_held_time = None
-      return
-
-    last_mouse_event = gui_app.last_mouse_event
-    if last_mouse_event.left_down and rl.check_collision_point_rec(last_mouse_event.pos, self._top_right_button_rect) and self._backspace_img_alpha.x > 1:
-      if self._backspace_held_time is None:
-        self._backspace_held_time = rl.get_time()
-
-      if rl.get_time() - self._backspace_held_time > 0.5:
-        if gui_app.frame % round(gui_app.target_fps / self.BACKSPACE_RATE) == 0:
-          self._keyboard.backspace()
-
-    else:
-      self._backspace_held_time = None
-
-  def _render(self, _):
-    # draw current text so far below everything. text floats left but always stays in view
+  def submit(self):
     text = self._keyboard.text()
-    candidate_char = self._keyboard.get_candidate_character()
-    text_size = measure_text_cached(gui_app.font(FontWeight.ROMAN), text + candidate_char or self._hint_label.text, self.TEXT_INPUT_SIZE)
+    if not self.is_dismissing and len(text) >= self._minimum_length:
+      self.dismiss((lambda: self._confirm_callback(text)) if self._confirm_callback else None)
 
-    bg_block_margin = 5
-    text_x = PADDING / 2 + self._enter_img.width + PADDING
-    text_field_rect = rl.Rectangle(text_x, self._rect.y + PADDING - bg_block_margin,
-                                   self._rect.width - text_x * 2,
-                                   text_size.y)
-
-    # draw text input
-    # push text left with a gradient on left side if too long
-    if text_size.x > text_field_rect.width:
-      text_x -= text_size.x - text_field_rect.width
-
-    rl.begin_scissor_mode(int(text_field_rect.x), int(text_field_rect.y), int(text_field_rect.width), int(text_field_rect.height))
-    rl.draw_text_ex(gui_app.font(FontWeight.ROMAN), text, rl.Vector2(text_x, text_field_rect.y), self.TEXT_INPUT_SIZE, 0, rl.WHITE)
-
-    # draw grayed out character user is hovering over
-    if candidate_char:
-      candidate_char_size = measure_text_cached(gui_app.font(FontWeight.ROMAN), candidate_char, self.TEXT_INPUT_SIZE)
-      rl.draw_text_ex(gui_app.font(FontWeight.ROMAN), candidate_char,
-                      rl.Vector2(min(text_x + text_size.x, text_field_rect.x + text_field_rect.width) - candidate_char_size.x, text_field_rect.y),
-                      self.TEXT_INPUT_SIZE, 0, rl.Color(255, 255, 255, 128))
-
-    rl.end_scissor_mode()
-
-    # draw gradient on left side to indicate more text
-    if text_size.x > text_field_rect.width:
-      rl.draw_rectangle_gradient_ex(rl.Rectangle(text_field_rect.x, text_field_rect.y, 80, text_field_rect.height),
-                                    rl.BLACK, rl.BLANK, rl.BLANK, rl.BLACK)
-
-    # draw cursor
-    blink_alpha = (math.sin(rl.get_time() * 6) + 1) / 2
-    if text:
-      cursor_x = min(text_x + text_size.x + 3, text_field_rect.x + text_field_rect.width)
-    else:
-      cursor_x = text_field_rect.x - 6
-    rl.draw_rectangle_rounded(rl.Rectangle(cursor_x, text_field_rect.y, 4, text_size.y),
-                              1, 4, rl.Color(255, 255, 255, int(255 * blink_alpha)))
-
-    # draw backspace icon with nice fade
-    self._backspace_img_alpha.update(255 * bool(text))
-    if self._backspace_img_alpha.x > 1:
-      color = rl.Color(255, 255, 255, int(self._backspace_img_alpha.x))
-      rl.draw_texture_ex(self._backspace_img, rl.Vector2(self._rect.width - self._backspace_img.width - 27, self._rect.y + 14), 0.0, 1.0, color)
-
-    if not text and self._hint_label.text and not candidate_char:
-      # draw description if no text entered yet and not drawing candidate char
-      hint_rect = rl.Rectangle(text_field_rect.x, text_field_rect.y,
-                               self._rect.width - text_field_rect.x - PADDING,
-                               text_field_rect.height)
-      self._hint_label.render(hint_rect)
-
-    # TODO: move to update state
-    # make rect take up entire area so it's easier to click
-    self._top_left_button_rect = rl.Rectangle(self._rect.x, self._rect.y, text_field_rect.x, self._rect.height - self._keyboard.get_keyboard_height())
-    self._top_right_button_rect = rl.Rectangle(text_field_rect.x + text_field_rect.width, self._rect.y,
-                                               self._rect.width - (text_field_rect.x + text_field_rect.width), self._top_left_button_rect.height)
-
-    # draw enter button
-    self._enter_img_alpha.update(255 if len(text) >= self._minimum_length else 0)
-    color = rl.Color(255, 255, 255, int(self._enter_img_alpha.x))
-    rl.draw_texture_ex(self._enter_img, rl.Vector2(self._rect.x + PADDING / 2, self._rect.y), 0.0, 1.0, color)
-    color = rl.Color(255, 255, 255, 255 - int(self._enter_img_alpha.x))
-    rl.draw_texture_ex(self._enter_disabled_img, rl.Vector2(self._rect.x + PADDING / 2, self._rect.y), 0.0, 1.0, color)
-
-    # keyboard goes over everything
-    self._keyboard.render(self._rect)
-
-    # draw debugging rect bounds
-    if DEBUG:
-      rl.draw_rectangle_lines_ex(text_field_rect, 1, rl.Color(100, 100, 100, 255))
-      rl.draw_rectangle_lines_ex(self._top_right_button_rect, 1, rl.Color(0, 255, 0, 255))
-      rl.draw_rectangle_lines_ex(self._top_left_button_rect, 1, rl.Color(0, 255, 0, 255))
-
-  def _handle_mouse_press(self, mouse_pos: MousePos):
-    super()._handle_mouse_press(mouse_pos)
-    # TODO: need to track where press was so enter and back can activate on release rather than press
-    #  or turn into icon widgets :eyes_open:
-
-    if self.is_dismissing:
-      return
-
-    # handle backspace icon click
-    if rl.check_collision_point_rec(mouse_pos, self._top_right_button_rect) and self._backspace_img_alpha.x > 254:
-      self._keyboard.backspace()
-    elif rl.check_collision_point_rec(mouse_pos, self._top_left_button_rect) and self._enter_img_alpha.x > 254:
-      # handle enter icon click
-      self._confirm_callback()
+  def _render(self, rect):
+    rl.draw_rectangle_rec(rect, BASE)
+    self._keyboard.render(rect)
+    self.actions.render(rl.Rectangle(rect.x, rect.y, rect.width, rect.height-self._keyboard.get_keyboard_height()))
 
 
 class BigDialogButton(BigButton):
@@ -232,6 +187,7 @@ class BigConfirmationCircleButton(BigCircleButton):
   def __init__(self, title: str, icon: rl.Texture, confirm_callback: Callable[[], None], exit_on_confirm: bool = True,
                red: bool = False, icon_offset: tuple[int, int] = (0, 0)):
     super().__init__(icon, red, icon_offset)
+    self.settings_title = title
 
     def show_confirm_dialog():
       gui_app.push_widget(BigConfirmationDialog(title, icon, confirm_callback,

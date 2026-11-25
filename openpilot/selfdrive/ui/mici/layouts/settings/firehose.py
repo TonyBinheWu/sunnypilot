@@ -3,6 +3,9 @@ import threading
 import time
 import pyray as rl
 
+from openpilot.selfdrive.ui.mici.layouts.settings.navigation import SettingsDetail
+from openpilot.selfdrive.ui.device_design import INK, MINT
+from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.common.api import api_get
 from openpilot.common.params import Params
 from openpilot.common.swaglog import cloudlog
@@ -218,5 +221,33 @@ class FirehoseLayoutBase(Widget):
       time.sleep(self.UPDATE_INTERVAL)
 
 
-class FirehoseLayout(NavRawScrollPanel, FirehoseLayoutBase):
-  pass
+class FirehoseLayout(SettingsDetail, NavRawScrollPanel, FirehoseLayoutBase):
+  def __init__(self):
+    super().__init__()
+    self.init_settings_header(TITLE)
+    self._text_key = None
+    self._paragraphs = []
+
+  def _render_body(self, rect):
+    status, color = self._get_status()
+    key = (status, self._segment_count)
+    if self._text_key != key:
+      self._text_key = key
+      lines = [(status, 26, color), (tr(DESCRIPTION), 22, INK)]
+      if self._segment_count:
+        count = trn("{} segment of your driving is in the training dataset so far.",
+                    "{} segments of your driving is in the training dataset so far.", self._segment_count).format(self._segment_count)
+        lines.append((count, 22, MINT))
+      lines.extend(((tr(INSTRUCTIONS_INTRO), 22, INK), (tr(FAQ_HEADER), 25, MINT)))
+      for question, answer in FAQ_ITEMS:
+        lines.extend(((tr(question), 23, MINT), (tr(answer), 22, INK)))
+      self._paragraphs = [UnifiedLabel(text, size, text_color=ink) for text, size, ink in lines]
+    width = int(rect.width-32)
+    heights = [label.get_content_height(width) for label in self._paragraphs]
+    y = rect.y+8+self._scroll_panel.update(rect, sum(heights)+14*len(heights))
+    rl.begin_scissor_mode(int(rect.x), int(rect.y), int(rect.width), int(rect.height))
+    for label, height in zip(self._paragraphs, heights, strict=True):
+      if y+height > rect.y and y < rect.y+rect.height:
+        label.render(rl.Rectangle(rect.x+16, y, width, height))
+      y += height+14
+    rl.end_scissor_mode()
