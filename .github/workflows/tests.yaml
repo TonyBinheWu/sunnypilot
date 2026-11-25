@@ -266,6 +266,7 @@ jobs:
           opendbc_repo/opendbc/car/hyundai/tests/test_blinker_stalks.py
           opendbc_repo/opendbc/car/hyundai/tests/test_ccnc_cluster.py
           opendbc_repo/opendbc/car/hyundai/tests/test_ev6_cluster_radar.py
+          opendbc_repo/opendbc/car/hyundai/tests/test_ev6_mode0_display.py
           opendbc_repo/opendbc/car/hyundai/tests/test_cluster_direct_tx.py
           opendbc_repo/opendbc/car/hyundai/tests/test_ccnc_counter.py
           opendbc_repo/opendbc/car/hyundai/tests/test_carstate_buttons.py

@@ -20,6 +20,8 @@ from opendbc.car.can_definitions import CanData, CanRecvCallable, CanSendCallabl
 from opendbc.car.carlog import carlog
 from opendbc.car.fw_versions import ObdCallback
 from opendbc.car.car_helpers import get_car
+from opendbc.car.hyundai.cluster_indicators import executing_indicators
+from opendbc.car.hyundai.cluster_radar import EV6DisplayCorner180
 from opendbc.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.pandad import can_capnp_to_list, can_list_to_can_capnp
 from openpilot.selfdrive.car.alternative_experience import get_alternative_experience
@@ -141,8 +143,18 @@ class Car:
     self.CP.passive = not controller_available or self.CP.dashcamOnly
     self.cluster_corners = getattr(self.CI.CC, 'cluster_corners', None)
     self.cluster_corner_sock = None
+    self.ev6_mode0_display = not self.CP.passive and getattr(self.CI.CC, 'ev6_mode0_display', False)
+    self.raw_display_corners = None
     if self.cluster_corners is not None and not self.CP.passive and self.params.get_int("EnableCornerRadar") > 0:
       self.cluster_corner_sock = messaging.sub_sock('liveTracks', conflate=True)
+      if self.ev6_mode0_display:
+        can = self.CI.CC.CAN
+        try:
+          self.raw_display_corners = EV6DisplayCorner180((can.ACAN, can.ECAN, can.CAM), self.cluster_corners)
+        except (OSError, KeyError) as exc:
+          cloudlog.warning(f"EV6 cluster corner radar DBC unavailable: {exc}")
+        else:
+          self.CI.CC.raw_display_corners = self.raw_display_corners
     if self.CP.passive:
       if self.CP.visionPlannerSetup:
         self.CP.visionPlannerSetup = "passive"
@@ -263,6 +275,9 @@ class Car:
 
     self.sm.update(0)
     sm_done_ns = time.monotonic_ns()
+    if self.raw_display_corners is not None:
+      model = self.sm['modelV2'] if self.sm.valid['modelV2'] and self.sm.alive['modelV2'] else None
+      self.raw_display_corners.update(can_list, model, CS, can_list[-1][0] if REPLAY and can_list else sm_done_ns)
     if self.CP.brand == "tesla":
       signal_now = can_list[-1][0] if REPLAY and can_list else time.clock_gettime_ns(getattr(time, "CLOCK_BOOTTIME", time.CLOCK_MONOTONIC))
       self.tesla_signals.observe_driver(CS, signal_now)
@@ -454,6 +469,9 @@ class Car:
         CC.leftBlinker = CC.rightBlinker = False
         CC.assistantLaneSignalId = ''
         CC = CC.as_reader()
+      if self.ev6_mode0_display:
+        panda_index = self.CI.CC.CAN.offset // 4
+        self.CI.CC.ev6_indicator_tick = (now_nanos, *executing_indicators(self.sm, CS, CC, now_nanos, panda_index))
       self.last_actuators_output, can_sends = self.CI.apply(CC, now_nanos, model_v2, radar_state)
       if self.tesla_signals.configured:
         fresh = all(self.sm.seen[s] and self.sm.alive[s] and self.sm.valid[s] and

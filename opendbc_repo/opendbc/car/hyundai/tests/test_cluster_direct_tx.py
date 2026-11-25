@@ -69,6 +69,7 @@ def test_ev6_cluster_scc_ownership(configuration, monkeypatch, mode, tracks, lon
             (("ADRV_0x1ea", lane_state), ("SCC_CONTROL", scc))]
   assert parser.update([1_000_000_000, inputs]) == {0x1ea, 0x1a0}
   assert cp.openpilotLongitudinalControl == longitudinal
+  assert controller.ev6_mode0_display == (mode == 0 and longitudinal)
   assert controller.CAN.ECAN == bus
   assert (controller.cluster_corners is not None) == longitudinal
   if longitudinal:
@@ -93,6 +94,38 @@ def test_ev6_cluster_scc_ownership(configuration, monkeypatch, mode, tracks, lon
       kind = 3 if addr == 0x162 else 1
       assert get_raw_value(data, sigs["RF_DETECT"]) == (kind if corner_setting else 0)
       assert get_raw_value(data, sigs["RR_DETECT"]) == 0
+
+
+@pytest.mark.parametrize("age", [0, 1])
+def test_ev6_mode0_apply_display(configuration, monkeypatch, age):
+  from opendbc.can import CANParser
+  from opendbc.car import Bus
+  from opendbc.car.hyundai import carcontroller
+  from opendbc.car.hyundai.cluster_indicators import executing_indicators
+  from opendbc.car.hyundai.cluster_radar import EV6DisplayCorner180
+  from opendbc.car.hyundai.tests.test_ev6_mode0_display import STAMP, driving, scan
+  values, make = configuration
+  values.update(HyundaiCameraSCC=0, EnableRadarTracks=1, CanfdHDA2=1, EnableCornerRadar=2)
+  monkeypatch.setattr(carcontroller, "Params", interface.Params)
+  cp = make(CAR.KIA_EV6)
+  controller = carcontroller.CarController({Bus.pt: "hyundai_canfd_generated"}, cp)
+  cs = carstate.CarState(cp)
+  sm, cs.out, cc = driving()
+  cs.out.cruiseState.available = True
+  cs.cp = CANParser("hyundai_canfd_generated", [("SCC_CONTROL", 50), ("ADRV_0x1ea", 20)], 1)
+  reader = EV6DisplayCorner180((0, 1, 2), controller.cluster_corners)
+  for t, counter in ((STAMP - 30_000_000, 20), (STAMP, 21)):
+    sm["modelV2"].timestampEof = t
+    reader.update([(t, scan(1, counter, 12.))], sm["modelV2"], cs.out, t)
+  controller.raw_display_corners = reader
+  controller.ev6_indicator_tick = (STAMP, *executing_indicators(sm, cs.out, cc, STAMP))
+  _, packets = controller.update(cc.as_reader(), cs, STAMP + age)
+  decoder = CANParser("hyundai_canfd_generated", [("SCC_CONTROL", 50), ("ADRV_0x1ea", 20)], 1)
+  assert decoder.update([STAMP + age, packets]) >= {0x1a0, 0x1ea}
+  lanes, scc = decoder.vl["ADRV_0x1ea"], decoder.vl["SCC_CONTROL"]
+  assert (lanes["LF_DETECT"], lanes["RF_DETECT"], lanes["LR_DETECT"], lanes["RR_DETECT"]) == (1, 1, 0, 0)
+  assert (lanes["LEFT_BLINK_HOLD"], lanes["RIGHT_BLINK_HOLD"]) == (0, 0)
+  assert (lanes["HDA_MODE2"], lanes["LANE_CHANGING"], scc["NSCCOper"]) == ((3, 3, 2) if age == 0 else (0, 0, 0))
 
 
 @pytest.mark.parametrize("candidate", [c for c in CANFD_CAR if c in interfaces_module.get_torque_params()])

@@ -1,3 +1,4 @@
+import binascii
 import math
 
 import numpy as np
@@ -17,7 +18,11 @@ class EV6ClusterCorners:
     self.neighbors = {}
 
   def update(self, event, model, now):
-    stamp = event.logMonoTime
+    points = ((str(p.radarSource), p.trackId, p.dRel, p.yRel, p.vLead) for p in event.liveTracks.points
+              if p.measured and str(p.radarSource) in ("corner180", "corner235"))
+    self.observe(event.logMonoTime, model, now, points, event.valid and healthy_radar(event.liveTracks.errors))
+
+  def observe(self, stamp, model, now, points, valid):
     previous = self.previous if 0 < stamp - self.stamp <= 150_000_000 else {}
     self.expires = 0
     self.previous = {}
@@ -25,8 +30,7 @@ class EV6ClusterCorners:
     if stamp <= self.stamp or not 0 <= now - stamp <= 150_000_000:
       return
     self.stamp = stamp
-    if not (event.valid and healthy_radar(event.liveTracks.errors)
-            and model is not None and model.timestampEof and 0 <= now - model.timestampEof <= 250_000_000
+    if not (valid and model is not None and model.timestampEof and 0 <= now - model.timestampEof <= 250_000_000
             and len(model.laneLines) == len(model.laneLineProbs) == 4):
       return
     self.expires = min(stamp + 150_000_000, model.timestampEof + 250_000_000)
@@ -43,14 +47,10 @@ class EV6ClusterCorners:
       if len(boundaries) == 2:
         lanes[side] = boundaries
 
-    for p in event.liveTracks.points:
-      source = str(p.radarSource)
-      if source not in ("corner180", "corner235") or not p.measured:
-        continue
-      d, y = p.dRel, p.yRel
+    for source, track_id, d, y, speed in points:
       # These sensors clip alongside/behind objects to zero longitudinal range.
       # A stationary return can also be roadside infrastructure.
-      if not (1 <= d <= 110 and 0.1 <= abs(y) <= 12.7 and math.isfinite(p.vLead) and abs(p.vLead) > 2.5):
+      if not (1 <= d <= 110 and 0.1 <= abs(y) <= 12.7 and math.isfinite(speed) and abs(speed) > 2.5):
         continue
       side = "LF" if y > 0 else "RF"
       bounds = lanes.get(side)
@@ -60,7 +60,7 @@ class EV6ClusterCorners:
       left, right = (np.interp(x, xs, ys) for xs, ys in bounds)
       if not (2.4 <= right - left <= 5 and left + 0.3 < -y < right - 0.3):
         continue
-      key = (source, p.trackId, side)
+      key = (source, track_id, side)
       self.previous[key] = (d, y)
       last = previous.get(key)
       if last and abs(d - last[0]) <= 5 and abs(y - last[1]) <= 1:
@@ -74,3 +74,65 @@ class EV6ClusterCorners:
           values[f"{side}_DETECT"] = 1
           values[f"{side}_DETECT_DISTANCE"] = distance
           values[f"{side}_DETECT_LATERAL"] = lateral
+
+
+class EV6DisplayCorner180:
+  """Read complete physical corner scans independently of the front radar publication clock."""
+
+  def __init__(self, buses, live):
+    from opendbc.can.dbc import DBC
+    signals = DBC("hyundai_canfd_corner_radar_180_generated").addr_to_msg[0x180].sigs
+    self.slots = [tuple(signals[f"SLOT{slot}_{field}"] for field in ("QUAL_LEVEL", "AGE", "OBJECT_ID", "REL_POS_X", "REL_POS_Y", "REL_VEL_X"))
+                  for slot in (1, 2)]
+    self.pending = {bus: {} for bus in buses}
+    self.bus = None
+    self.counter = None
+    self.last_scan = 0
+    self.corners = EV6ClusterCorners()
+    self.live = live
+
+  def _points(self, group, bus, v_ego):
+    from opendbc.can.parser import get_raw_value
+
+    def physical(payload, sig):
+      return get_raw_value(payload, sig) * sig.factor + sig.offset
+
+    for addr, (_, payload) in group.items():
+      for slot, (quality, age, identity, x, y, vx) in enumerate(self.slots):
+        if 0 < get_raw_value(payload, quality) <= 100 and get_raw_value(payload, age) > 0:
+          v_rel = physical(payload, vx)
+          if v_rel > -99.:
+            yield bus, (addr, slot, get_raw_value(payload, identity)), physical(payload, x), physical(payload, y), v_ego + v_rel
+
+  def fill(self, values, now, *, stock=None):
+    self.corners.fill(values, now, stock=stock)
+    self.live.fill(values, now, stock=stock)
+
+  def update(self, can_packets, model, car, now):
+    for stamp, frames in can_packets:
+      if stamp <= self.last_scan or not 0 <= now - stamp <= 100_000_000:
+        continue
+      for address, data, bus in frames:
+        if bus not in self.pending or not 0x180 <= address <= 0x184 or len(data) != 32:
+          continue
+        if bus != self.bus and self.bus is not None and stamp - self.last_scan <= 100_000_000:
+          continue
+        group = self.pending[bus]
+        checksum = binascii.crc_hqx(address.to_bytes(2, "little"), binascii.crc_hqx(data[2:], 0)) ^ 0x9f5b
+        if int.from_bytes(data[:2], "little") != checksum:
+          group.clear()
+          continue
+        group[address] = (stamp, data)
+        if len(group) != 5:
+          continue
+        counter = data[2]
+        if not all(payload[2] == counter and 0 <= stamp - t <= 20_000_000 for t, payload in group.values()):
+          continue
+        if self.bus == bus and self.counter == counter and stamp - self.last_scan <= 100_000_000:
+          group.clear()
+          continue
+        if self.bus != bus or self.counter is None or (self.counter + 1) % 256 != counter or stamp - self.last_scan > 100_000_000:
+          self.corners.previous.clear()
+        self.bus, self.counter, self.last_scan = bus, counter, stamp
+        self.corners.observe(stamp, model, now, self._points(group, bus, car.vEgo), car.canValid and not car.canTimeout)
+        group.clear()
