@@ -13,7 +13,9 @@
     "test:settings": "node --test \"tests/settings_*.test.mjs\""
   },
   "devDependencies": {
+    "bootstrap": "5.3.9",
     "esbuild": "0.28.1",
+    "sass": "1.97.3",
     "three": "0.185.0"
   },
   "dependencies": {

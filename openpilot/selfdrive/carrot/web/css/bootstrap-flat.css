@@ -1,0 +1,147 @@
+/* Shared Bootstrap controls take their colors from the active Carrot or cockpit theme. */
+.carrot-flat {
+  --bs-body-color: var(--md-on-surface);
+  --bs-body-bg: var(--md-surface);
+  --bs-secondary-color: var(--md-on-surface-var);
+  --bs-secondary-bg: var(--md-surface-cont-h);
+  --bs-border-color: color-mix(in srgb, var(--md-outline-var) 55%, var(--md-surface-cont));
+  --bs-border-radius: 6px;
+  --control-radius: var(--bs-border-radius);
+  --dialog-sheet-radius: 10px;
+  --dialog-sheet-radius-mobile: 10px;
+}
+
+.carrot-flat .nav { flex-wrap: nowrap; }
+.carrot-flat .topbar .nav-btn {
+  gap: 5px;
+  padding-block: 5px;
+  border-radius: 0;
+}
+.carrot-flat .topbar .nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carrot-flat .topbar .nav-icon svg { width: 20px; height: 20px; }
+.carrot-flat .topbar .nav-btn.active {
+  box-shadow: inset 0 3px var(--md-primary);
+}
+.carrot-flat .topbar .nav-btn:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: -4px;
+}
+@media (min-aspect-ratio: 13/10), (horizontal-viewport-segments: 2), (vertical-viewport-segments: 2), (min-width: 640px) and (min-height: 650px) {
+  .carrot-flat .topbar .nav-btn.active { box-shadow: inset 3px 0 var(--md-primary); }
+}
+@media (max-height: 450px) {
+  .carrot-flat .topbar .nav-icon svg { width: 16px; height: 16px; }
+}
+
+.carrot-flat :is(.btn, .smallBtn, .setting-tab, .c-segmented-control, .c-segmented-control__item) {
+  border-radius: var(--control-radius);
+  box-shadow: none;
+}
+.carrot-flat :is(.tools-group, .setting-group-card, .egpu-model-card, .model-library) {
+  background: var(--md-surface-cont);
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  box-shadow: none;
+}
+.carrot-flat .tools-group { padding: var(--sp-md) var(--sp-lg); }
+.carrot-flat :is(.setting-tabbar, .logs-tabs) {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  box-shadow: none;
+}
+.carrot-flat :is(.setting-tabbar, .logs-tabs) [aria-selected="true"] {
+  background: var(--md-primary-state-soft);
+  box-shadow: inset 0 -2px var(--md-primary);
+  color: var(--md-primary);
+}
+.carrot-flat :is(.tools-console-shell, .terminal-toolbar, .app-dialog__sheet) {
+  border-color: var(--bs-border-color);
+  box-shadow: none;
+}
+.carrot-flat .tools-group__toggle { min-height: 44px; }
+.carrot-flat .tools-group.is-open .tools-group__body { border-top: 1px solid var(--bs-border-color); padding-top: var(--sp-md); }
+.carrot-flat .tools-primary-actions .btn,
+.carrot-flat .tools-group__body .btn:not(.btn--danger) {
+  background: var(--md-surface-cont-l);
+  border: 1px solid var(--bs-border-color);
+}
+.carrot-flat .tools-primary-actions .btn:enabled:hover,
+.carrot-flat .tools-primary-actions a.btn:hover,
+.carrot-flat .tools-group__body .btn:not(.btn--danger):enabled:hover { border-color: var(--md-primary); }
+.carrot-flat .egpu-model-card::after { content: none; }
+.carrot-flat .egpu-model-card__icon {
+  background: var(--md-primary-state);
+  color: var(--md-primary);
+  box-shadow: none;
+  border-radius: var(--bs-border-radius);
+}
+.carrot-flat .egpu-model-card__track span { background: var(--md-primary); }
+
+.carrot-flat .model-library:not([hidden]) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-md) var(--sp-lg);
+  padding: clamp(14px, 2vw, 24px);
+}
+.carrot-flat .model-library > :not(label) { grid-column: 1 / -1; }
+.carrot-flat .model-library h3 { margin: 0; font-size: var(--fs-title-lg); }
+.carrot-flat .model-library p { margin: 0; opacity: 1; color: var(--bs-secondary-color); }
+.carrot-flat .model-library .model-boot {
+  border-block: 1px solid var(--bs-border-color);
+  padding-block: var(--sp-sm);
+  color: var(--md-primary);
+}
+.carrot-flat .model-library label {
+  min-width: 0;
+  margin: 0;
+  font-size: var(--fs-label-md);
+  font-weight: 600;
+  align-content: end;
+}
+.carrot-flat .model-library .form-select {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 36px 8px 12px;
+  font: inherit;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-body-bg);
+  background-image: var(--bs-form-select-bg-img);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 12px;
+}
+.carrot-flat .form-select:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 2px; }
+.carrot-flat .model-library .form-select:disabled { opacity: .65; }
+@media (min-width: 760px) {
+  .carrot-flat .model-library:not([hidden]) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .carrot-flat .model-library label:has([data-field="vla_observer"]) { grid-column: 1 / -1; }
+}
+.carrot-flat .model-transfer {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px;
+  background: var(--md-surface-cont-l);
+  border-inline-start: 3px solid var(--md-primary);
+  overflow-wrap: anywhere;
+}
+.carrot-flat .model-transfer .progress {
+  --bs-progress-height: 8px;
+  --bs-progress-bg: var(--bs-border-color);
+  --bs-progress-bar-bg: var(--md-primary);
+}
+.carrot-flat .model-transfer small { color: var(--bs-secondary-color); font-variant-numeric: tabular-nums; }
+.model-transfer .progress-bar.is-indeterminate { width: 28%; animation: transfer-wait 1.4s ease-in-out infinite alternate; }
+@keyframes transfer-wait { to { transform: translateX(255%); } }
+@media (prefers-reduced-motion: reduce) {
+  .model-transfer .progress-bar.is-indeterminate { animation: none; }
+}

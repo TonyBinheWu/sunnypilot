@@ -37,6 +37,7 @@ export function renderLibrary(library, force = false) {
   root.append(text("p", `${t("current")}: ${effective?.name || library.effective_name || library.effective} · ${t((effective?.noo ?? library.effective_noo) ? "noo" : "no_noo")}`));
   const label = text("label", t("next"));
   const select = document.createElement("select");
+  select.className = "form-select";
   select.setAttribute("aria-label", t("next"));
   for (const model of library.models) {
     const option = text("option", `${model.name} · ${t(model.noo ? "noo" : "no_noo")}`);

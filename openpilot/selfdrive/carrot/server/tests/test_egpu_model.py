@@ -322,7 +322,8 @@ def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
   monkeypatch.setattr(feature, 'HAS_PARAMS', True)
   monkeypatch.setattr(feature, 'maintain_library_once', lambda: None)
   entered, resume = Event(), Event()
-  def install(offroad):
+  def install(offroad, progress):
+    progress('downloading', 'tinygrad.zip', 1048576, None)
     entered.set()
     assert resume.wait(5)
     if not offroad():
@@ -358,6 +359,7 @@ def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
       assert await asyncio.to_thread(entered.wait, 5)
       try:
         assert (await state())['job']['state'] == 'preparing'
+        assert (await state())['job']['progress'] == {'phase': 'downloading', 'file': 'tinygrad.zip', 'received': 1048576, 'total': None}
         assert (await change('small', 'cd210')).status == 409
         flags['IsOnroad'] = True
       finally:
@@ -390,8 +392,9 @@ def test_vla_selector_prepares_only_on_parked_c4(feature, monkeypatch):
   monkeypatch.setattr(api, 'device_params', lambda: params)
   monkeypatch.setattr(api, 'is_c4', lambda: False)
   entered, resume = Event(), Event()
-  def install(parked):
+  def install(parked, *, progress):
     assert parked()
+    progress('downloading', 'weights.gguf', 2, 3)
     entered.set()
     assert resume.wait(4)
   monkeypatch.setattr(vla_status, 'prepare_weights', install)

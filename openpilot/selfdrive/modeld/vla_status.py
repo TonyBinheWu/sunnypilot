@@ -19,10 +19,16 @@ def parked(params):
     params.get_bool(k) for k in ('IsOnroad', 'IsEngaged', 'ForceOffroad', 'ForceOffroadActive'))
 
 
-def prepare_weights(offroad, directory=WEIGHTS):
+def prepare_weights(offroad, directory=WEIGHTS, *, progress=None):
   from openpilot.common.sunny_models import download
   import shutil
   directory.mkdir(parents=True, exist_ok=True)
+  total_size = sum(size for size, _ in ARTIFACTS.values())
+  prepared = 0
+  def report(phase, name, received, total):
+    if progress is not None:
+      progress(phase, name, prepared + received, total_size)
+
   for name, (size, sha) in ARTIFACTS.items():
     path = directory / name
     if not offroad():
@@ -30,7 +36,8 @@ def prepare_weights(offroad, directory=WEIGHTS):
     if not path.exists() and shutil.disk_usage(directory).free < size + (2 << 30):
       raise OSError('Insufficient free space for VLA weights')
     url = f'https://huggingface.co/mradermacher/PhysicalAI-reason-VLA-GGUF/resolve/{REVISION}/{name}'
-    download(url, sha, path, offroad, size)
+    download(url, sha, path, offroad, size, report, name, size)
+    prepared += size
 
 
 def write_status(state, **fields):

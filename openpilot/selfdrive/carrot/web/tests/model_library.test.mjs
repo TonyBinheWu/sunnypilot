@@ -2,10 +2,11 @@
 import test from 'node:test';
 import { renderLibrary } from '../src/features/tools/model_library.js';
 class Element {
-  constructor(tag) { this.tag = tag; this.children = []; this.dataset = {}; this.events = {}; }
+  constructor(tag) { this.tag = tag; this.children = []; this.dataset = {}; this.events = {}; this.style = {}; this.attributes = {}; }
   append(...children) { this.children.push(...children); }
   replaceChildren(...children) { this.children = children; }
-  setAttribute() {}
+  setAttribute(k, v) { this.attributes[k] = v; }
+  removeAttribute(k) { delete this.attributes[k]; }
   addEventListener(name, callback) { this.events[name] = callback; }
   querySelector(tag) { return this.children.find(e => e.tag === tag) || this.children.map(e => e.querySelector?.(tag)).find(Boolean); }
   querySelectorAll(tag) { return this.children.flatMap(e => [...(e.tag === tag ? [e] : []), ...e.querySelectorAll(tag)]); }
@@ -54,6 +55,21 @@ test('shared tools render both model catalogs without an eGPU and submit the sel
   observer.value = 'off';
   await observer.events.change();
   assert.deepEqual(calls.at(-1), ['/api/driving-models/selection', {field: 'vla_observer', value: 'off'}]);
+  async function progress(received, total, phase = 'downloading') {
+    await renderLibrary({...data, selector: {...selector, job: {state: 'preparing', model: 'sunny-b', progress: {phase, file: 'model.pkl', received, total}}}});
+  }
+  await progress(1048576, 4194304);
+  const track = root.querySelectorAll('div').find(e => e.attributes.role === 'progressbar');
+  const selected = root.querySelector('select');
+  assert.equal(track.attributes['aria-valuenow'], '25');
+  await progress(2097152, 4194304);
+  assert.equal(track.attributes['aria-valuenow'], '50');
+  assert.equal(root.querySelector('select'), selected);
+  await progress(2097152, null);
+  assert.equal(track.attributes['aria-valuenow'], undefined);
+  assert.match(root.querySelectorAll('small').at(-1).textContent, /2 MiB received/);
+  await progress(4194304, 4194304, 'verifying');
+  assert.equal(root.querySelectorAll('small').at(-1).hidden, true);
   await renderLibrary({...data, selector: {...selector, offroad: false}});
   assert.ok(root.querySelectorAll('select').every(e => e.disabled));
   assert.equal(loads, 1);

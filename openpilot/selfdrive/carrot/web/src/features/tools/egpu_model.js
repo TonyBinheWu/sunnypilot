@@ -268,7 +268,7 @@ async function refresh() {
     const root = document.getElementById("externalModelLibrary");
     if (!lastStatus && root) renderModelConnectionError(root);
     if (lastStatus?.library?.selector) {
-      lastStatus = {...lastStatus, library: {...lastStatus.library, selector: {...lastStatus.library.selector, offroad: false}}};
+      lastStatus = {...lastStatus, library: {...lastStatus.library, selector: {...lastStatus.library.selector, offroad: false, connection_lost: true}}};
       renderLibrary(lastStatus.library);
     }
     if (lastStatus?.jetlink) render({ ...lastStatus, jetlink: {

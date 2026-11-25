@@ -8,6 +8,27 @@ from openpilot.selfdrive.modeld import vla_observer as observer, vla_status
 from openpilot.tools.vla.shared_bench import PERIOD, PrimarySchedule
 
 
+def test_two_weight_progress_includes_already_verified_file(tmp_path, monkeypatch):
+  import hashlib
+  from openpilot.common import sunny_models
+  weights = {'model.gguf': b'existing weights', 'projector.gguf': b'projector'}
+  directory = tmp_path/'weights'
+  directory.mkdir()
+  (directory/'model.gguf').write_bytes(weights['model.gguf'])
+  for name, data in weights.items():
+    (tmp_path/name).write_bytes(data)
+  monkeypatch.setattr(vla_status, 'ARTIFACTS', {k: (len(v), hashlib.sha256(v).hexdigest()) for k,v in weights.items()})
+  download = sunny_models.download
+  def local_download(url, sha, path, *args):
+    download((tmp_path/path.name).as_uri(), sha, path, *args)
+  monkeypatch.setattr(sunny_models, 'download', local_download)
+  updates = []
+  vla_status.prepare_weights(lambda: True, directory, progress=lambda *row: updates.append(row))
+  assert [r for r in updates if r[0] == 'downloading'] == [
+    ('downloading', 'projector.gguf', 16, 25), ('downloading', 'projector.gguf', 25, 25)]
+  assert (directory/'projector.gguf').read_bytes() == weights['projector.gguf']
+
+
 def model(eof=1_000_000_000):
   return NS(visionCompute='nonUsb', visionCameraInputs='roadWide', frameId=1, timestampEof=eof, frameAge=0, frameDropPerc=.02, leadsV3=[],
             modelExecutionTime=.019, action=NS(desiredAcceleration=0., desiredCurvature=0., shouldStop=True))

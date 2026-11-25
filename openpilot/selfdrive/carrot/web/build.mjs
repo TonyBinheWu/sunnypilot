@@ -1,5 +1,6 @@
 import { Marked } from "marked";
 import { build } from "esbuild";
+import { compile } from "sass";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -9,6 +10,15 @@ import { validateDriveContentCatalog } from "./src/features/drive/core/registry.
 
 const buildFile = fileURLToPath(import.meta.url);
 const webRoot = dirname(buildFile);
+const bootstrapStyles = {
+  name: "bootstrap-components",
+  setup(builder) {
+    builder.onLoad({filter: /bootstrap-components\.scss$/}, ({path}) => ({
+      contents: compile(path, {loadPaths: [resolve(webRoot, "node_modules")], quietDeps: true, silenceDeprecations: ["import"]}).css,
+      loader: "css",
+    }));
+  },
+};
 
 export const driveContentCatalogDefinition = Object.freeze({
   source: "src/features/drive/core/content_catalog.json",
@@ -364,6 +374,7 @@ export async function buildWeb({ outputRoot } = {}) {
       entryPoints: [resolve(webRoot, definition.entry)],
       outfile: resolve(buildOutputRoot, definition.output),
       bundle: true,
+      plugins: [bootstrapStyles],
       platform: "browser",
       format: "iife",
       target: ["chrome100"],

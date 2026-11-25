@@ -61,10 +61,13 @@ class ModelPreparation:
     self.job = {}
     self.closing = Event()
 
+  def progress(self, phase, name, received, total):
+    self.job = {**self.job, 'progress': {'phase': phase, 'file': name, 'received': received, 'total': total}}
+
   async def prepare(self, params, field, key):
     try:
       await asyncio.to_thread(sunny_models.choose_model, field == 'large', key,
-                              lambda: not self.closing.is_set() and offroad(params))
+                              lambda: not self.closing.is_set() and offroad(params), self.progress)
       self.job = {'state': 'saved', 'model': key}
     except Exception:
       self.job = {'state': 'failed', 'model': key}
@@ -73,7 +76,7 @@ class ModelPreparation:
     def parked():
       return not self.closing.is_set() and vla_status.parked(params)
     try:
-      await asyncio.to_thread(vla_status.prepare_weights, parked)
+      await asyncio.to_thread(vla_status.prepare_weights, parked, progress=self.progress)
       if not parked():
         raise ValueError('Offroad preparation interrupted')
       params.put_bool('C4VlaObserve', True)

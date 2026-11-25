@@ -37,6 +37,26 @@ def test_bad_download_does_not_replace_cache(tmp_path):
   assert dst.read_bytes() == b'new'
 
 
+@pytest.mark.parametrize('known_size', [True, False])
+def test_download_counts_received_chunks_and_verifies_before_publication(tmp_path, monkeypatch, known_size):
+  import hashlib
+  from io import BytesIO
+  payload = b'a' * (1 << 20) + b'end'
+  source = BytesIO(payload)
+  source.headers = {'Content-Length': str(len(payload))} if known_size else {}
+  monkeypatch.setattr(sunny.urllib.request, 'urlopen', lambda *_, **__: source)
+  dst = tmp_path/'weights'
+  records = []
+  def progress(*row):
+    assert not dst.exists()
+    records.append(row)
+  sunny.download('https://example.invalid', hashlib.sha256(payload).hexdigest(), dst, lambda: True, 2 << 20, progress)
+  total = len(payload) if known_size else None
+  assert [r[2:] for r in records if r[0] == 'downloading'] == [(0, total), (1 << 20, total), (len(payload), total)]
+  assert records[-1][:2] == ('verifying', 'weights')
+  assert dst.read_bytes() == payload
+
+
 def test_primary_migrates_previous_role_without_changing_catalog_selections(tmp_path, monkeypatch):
   monkeypatch.setenv('CARROT_BIG_MODEL_DIR', str(tmp_path))
   assert not sunny.internal_primary()

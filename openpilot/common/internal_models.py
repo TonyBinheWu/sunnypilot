@@ -10,6 +10,7 @@ import urllib.request
 
 from openpilot.common import big_model_catalog as library
 from openpilot.common.file_chunker import get_existing_chunks
+from openpilot.common.model_download import copy_download, notify
 
 # Original supercombo graphs from the commaai/openpilot revisions in sunnypilot's
 # driving_models_v25.json. Compile locally for this fork's tinygrad and cameras.
@@ -52,14 +53,18 @@ def verify(path, expected):
     return hashlib.file_digest(stream, 'sha256').hexdigest() == expected
 
 
-def select(key, offroad):
+def select(key, offroad, progress=None):
   if key not in MODELS or not offroad():
     raise ValueError('Park before selecting a model')
   with download_lock:
     folder = directory()
     folder.mkdir(parents=True, exist_ok=True)
     oid = MODELS[key][1]
+    name = MODELS[key][0] + '.onnx'
+    if oid:
+      notify(progress, 'verifying', name)
     if oid and not verify(artifact(key, '.onnx'), oid):
+      notify(progress, 'connecting', name)
       body = json.dumps({'operation': 'download', 'transfers': ['basic'], 'objects': [{'oid': oid, 'size': SIZE}]}).encode()
       headers = {'Accept': 'application/vnd.git-lfs+json', 'Content-Type': 'application/vnd.git-lfs+json'}
       with urllib.request.urlopen(urllib.request.Request(LFS, body, headers), timeout=30) as reply:
@@ -73,11 +78,8 @@ def select(key, offroad):
         temp = Path(f.name)
       try:
         with urllib.request.urlopen(urllib.request.Request(link['href'], headers=link.get('header', {})), timeout=35) as src, temp.open('wb') as dst:
-          while chunk := src.read(1024 * 1024):
-            if not offroad() or dst.tell() + len(chunk) > SIZE:
-              raise ValueError('Download interrupted')
-            dst.write(chunk)
-        if not verify(temp, oid):
+          actual = copy_download(src, dst, offroad, SIZE, name, progress, SIZE)
+        if actual != oid or not offroad():
           raise ValueError('Model verification failed')
         temp.replace(artifact(key, '.onnx'))
       finally:

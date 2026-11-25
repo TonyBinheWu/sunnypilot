@@ -12,6 +12,7 @@ import zipfile
 from functools import lru_cache
 
 from openpilot.common import big_model_catalog as library
+from openpilot.common.model_download import copy_download, notify
 
 # Plain kernels retain their build metadata. The loader uses the tinygrad submodule
 # paired with sunnypilot modeld_v2 at abada631, which reads both catalog generations.
@@ -51,34 +52,34 @@ def digest(path):
     return hashlib.file_digest(f, 'sha256').hexdigest()
 
 
-def download(url, sha, path, offroad, limit):
-  if path.is_file() and digest(path) == sha:
-    return
+def download(url, sha, path, offroad, limit, progress=None, name=None, size=None):
+  name = name or path.name
+  if path.is_file():
+    notify(progress, 'verifying', name)
+    if digest(path) == sha:
+      return
   path.parent.mkdir(parents=True, exist_ok=True)
   with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as f:
     temp = Path(f.name)
   try:
+    notify(progress, 'connecting', name)
     with urllib.request.urlopen(url, timeout=45) as src, temp.open('wb') as dst:
-      hasher = hashlib.sha256()
-      while block := src.read(1 << 20):
-        if not offroad() or dst.tell() + len(block) > limit:
-          raise ValueError('Model download interrupted')
-        dst.write(block)
-        hasher.update(block)
-    if hasher.hexdigest() != sha or not offroad():
+      actual = copy_download(src, dst, offroad, limit, name, progress, size)
+    if actual != sha or not offroad():
       raise ValueError('Model verification failed')
     temp.replace(path)
   finally:
     temp.unlink(missing_ok=True)
 
 
-def install_runtime(offroad):
+def install_runtime(offroad, progress=None):
   target = runtime()
   if (target / 'tinygrad/__init__.py').is_file():
     return
   ref, sha = RUNTIME_REF, RUNTIME_SHA
   archive = directory() / (ref + '.zip')
-  download('https://codeload.github.com/sunnypilot/tinygrad/zip/' + ref, sha, archive, offroad, 25 << 20)
+  download('https://codeload.github.com/sunnypilot/tinygrad/zip/' + ref, sha, archive, offroad, 25 << 20, progress, 'tinygrad.zip')
+  notify(progress, 'installing', 'tinygrad')
   prefix = f'tinygrad-{ref}/'
   with tempfile.TemporaryDirectory(dir=directory()) as tmp:
     dest = Path(tmp) / 'runtime'
@@ -132,17 +133,19 @@ def warp_url(sha, size):
   return href
 
 
-def select(big, key, offroad):
+def select(big, key, offroad, progress=None):
   entry = catalog()[key]
   if entry['big'] != big or not offroad():
     raise ValueError('Park before selecting a model')
-  install_runtime(offroad)
+  install_runtime(offroad, progress)
   for name, (sha, size) in WARPS.items():
     if name.startswith('big_') == big:
       path = warp_directory() / name
+      notify(progress, 'verifying', name)
       if not path.is_file() or digest(path) != sha:
-        download(warp_url(sha, size), sha, path, offroad, size)
-  download(entry['url'], entry['sha256'], model_file(key), offroad, 3 << 30)
+        notify(progress, 'connecting', name)
+        download(warp_url(sha, size), sha, path, offroad, size, progress, name, size)
+  download(entry['url'], entry['sha256'], model_file(key), offroad, 3 << 30, progress, entry['name'])
   if not offroad():
     raise ValueError('Park before selecting a model')
   save('big' if big else 'small', key)
@@ -174,18 +177,18 @@ def model_items():
           + [(row['big'], key, row['name']) for key, row in reversed(catalog().items())])
 
 
-def choose_model(big, key, offroad):
+def choose_model(big, key, offroad, progress=None):
   from openpilot.common import internal_models as internal
   with choice_lock():
     if not offroad():
       raise ValueError('Park before selecting a model')
     if key in catalog():
-      select(big, key, offroad)
+      select(big, key, offroad, progress)
     else:
       if big:
         library.select(key)
       else:
-        internal.select(key, offroad)
+        internal.select(key, offroad, progress)
       save('big' if big else 'small', None)
 
 

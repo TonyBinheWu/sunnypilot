@@ -69,7 +69,7 @@
       "kind": "bundle",
       "source": "src/entries/tools.js",
       "path": "js/generated/tools.js",
-      "hash": "d5a5473b47af20a818b4e8415aeaf81aee715355a5e1f86fc93f9e8c884fccdc"
+      "hash": "c51c38238672727ae3f913c89e713a323f1c7056dd797c44a2b8f0791778258f"
     },
     {
       "id": "logs.runtime",
@@ -125,7 +125,7 @@
       "kind": "bundle",
       "source": "src/entries/design_system.css",
       "path": "css/generated/design-system.css",
-      "hash": "8d146581b0a52522b813cb76937cd2c886065172989a1aca5b66933b0b145b60"
+      "hash": "ee401d4a0429c6e340bc8d833816acf2e650dd47e171d2677a0b4a4fb8386964"
     },
     {
       "id": "drive.styles",
