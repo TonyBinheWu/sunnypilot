@@ -159,7 +159,7 @@ def test_real_lamp_feedback_uses_unchanged_desire_path(monkeypatch):
   monkeypatch.setitem(sys.modules, 'openpilot.system.hardware', NS(PC=True, TICI=False))
   from openpilot.selfdrive.controls.lib import desire_helper as module
   from openpilot.cereal import log
-  monkeypatch.setattr(module, 'Params', lambda: NS())
+  monkeypatch.setattr(module, 'Params', lambda: NS(get_bool=lambda _: False))
   h = module.DesireHelper()
   h._update_params_periodic = lambda: None
   h._check_desire_state = lambda *args: None

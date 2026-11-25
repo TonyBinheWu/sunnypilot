@@ -194,7 +194,7 @@ def test_lamp_and_synthesized_stalk_feedback_cannot_request_steering(monkeypatch
   from openpilot.selfdrive.controls.tests.test_desire_helper import TestDesireHelperDriverIntent
   from openpilot.cereal import log
 
-  monkeypatch.setattr(dh, 'Params', lambda: N())
+  monkeypatch.setattr(dh, 'Params', lambda: N(get_bool=lambda _: False))
   t = TestDesireHelperDriverIntent()
   t.setup_method()
   t.helper.bluetooth_commands = N(read=lambda **kw: None)
@@ -378,7 +378,7 @@ def test_desire_helper_observes_manual_motion_during_navigation_preparation(monk
   from openpilot.selfdrive.controls.lib import desire_helper as dh
   from openpilot.selfdrive.controls.tests.test_desire_helper import TestDesireHelperDriverIntent
   from openpilot.cereal import log
-  monkeypatch.setattr(dh, 'Params', lambda: N())
+  monkeypatch.setattr(dh, 'Params', lambda: N(get_bool=lambda _: False))
   t = TestDesireHelperDriverIntent()
   t.setup_method()
   t.helper.boundary_indicator_supported = True
