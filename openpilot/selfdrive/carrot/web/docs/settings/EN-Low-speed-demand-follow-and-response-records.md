@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested headroom up to 409 at ≤30 km/h and demand-dependent command slew up to 4/4 per 10 ms. Taper at 30–40 km/h; ≥40 uses factory scaling and 2/3. Stored manual values and tuning remain. Records never raise limits. Requires updated Panda firmware, reboot and vehicle validation. For supported EV6/Ioniq 5/Carnival/Sorento variants, HkgPhase1Assist also enables this bounded low-speed path. Turn both switches off to restore stored manual limits. The 2024 Sorento uses the factory torque rise rate in this mode.
+Hyundai/Kia CAN-FD torque only. After 0.30 s sustained demand, allow requested headroom up to 409 at ≤30 km/h and demand-dependent command slew up to 4/4 per 10 ms. Taper at 30–40 km/h; ≥40 uses factory scaling and 2/3. Stored manual values and tuning remain. Records never raise limits. Requires updated Panda firmware, reboot and vehicle validation. For supported EV6/Ioniq 5/Carnival/Sorento variants, HkgPhase1Assist also enables this bounded low-speed path. Turn both switches off to restore stored manual limits. The 2024 Sorento uses the factory torque rise rate in this mode. EV6 HDA2 torque steering on the ADAS ECU keeps its two speed bands and bounded rates with either switch on. Response recording remains available.
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="7c300a3501e166c400c1d96c69c8c3447f9456f3703bca9199b5f3889cbaed27" semantic="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="ebec46f65d04f5f9704753894b03d6085f1f6c6cbed74a59801a91e58765c8d0" semantic="590d03646724ca00ba438170b3d640523f2302c26f3eed63a702beb88e0b8aaa" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`

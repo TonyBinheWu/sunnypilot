@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaUpLC`
 
-力矩控制車輛 — 變道期間臨時應用轉向增大斜率
+力矩控制車輛 — 變道期間臨時應用轉向增大斜率 使用 ADAS ECU 的 EV6 HDA2 扭矩轉向每 10 ms 最多增加 2 個單位，也可設為更低的正值。
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaUpLC -->
-<!-- CARROT:AUTO:SOURCE facts="3fdde3578232ada1652ea736a1f9f80a7daa1433e6cc9f43dcfdaa1054ff82e8" semantic="4c4f646026bac5f61b4baffbdf4b28f1bd790783dd022d744209c74a30c33e3e" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="64476acbba9a84200d7b8c65a0f8dbced7b5f611de33ad163344d648dbb6f9b5" semantic="a269ff8291eb110176550d7c9962c300e661cb8701b0d25780bbf6bd978c1ba5" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 數值
 - **預設值:** `0`

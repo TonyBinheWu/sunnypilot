@@ -13,10 +13,10 @@
 
 `CustomSteerMax`
 
-Maximum Steering Torque — Use the largest value among 270/384/409 that does not cause errors
+Maximum Steering Torque — Use the largest value among 270/384/409 that does not cause errors EV6 HDA2 torque steering on the ADAS ECU uses 384 below 11 m/s and 330 from 11 m/s. A lower positive setting caps either band.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerMax -->
-<!-- CARROT:AUTO:SOURCE facts="a09cd2547b2eaf1ed9be7641c4573b050aa8013d6a740444d6fe0cbb7df76953" semantic="669ef6b96724cee684584bacd4c6c1cce990b4de53df8969d58d5f175dc0e1ed" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="c2967dded24fc3b3a406566d602c5ee424b36a14bff6147e2262e7b33358a5ae" semantic="69a6e47badf874d2955d531c868fbb567fbe47091875499338aed77993a98279" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Number
 - **Default:** `0`

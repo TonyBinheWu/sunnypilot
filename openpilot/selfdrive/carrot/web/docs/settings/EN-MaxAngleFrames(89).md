@@ -13,10 +13,10 @@
 
 `MaxAngleFrames`
 
-Recommended setting: 89. On the 2024 Sorento with camera SCC and torque steering, the controller uses 92–94 frames to match the camera cadence.
+Recommended setting: 89. On the 2024 Sorento with camera SCC and torque steering, the controller uses 92–94 frames to match the camera cadence. EV6 HDA2 torque steering on the ADAS ECU uses a fixed 89 request frames followed by 2 cut frames while wheel angle stays at or beyond 85 degrees in either direction.
 
 <!-- CARROT:AUTO:BEGIN MaxAngleFrames -->
-<!-- CARROT:AUTO:SOURCE facts="07950b96155f2694bae56163d8a0da53b3f38b7dacb262f4752178e34f5dd617" semantic="1ed546e0abdc6d700858338cf8462a7210f582b9b9cefadc69fe75b66788aaa6" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="041f33ed4775420de9e45de190bd998e88fc5d0972f9a9488272422d9576138e" semantic="3efcdf66d1890c952d559944a1833a717b8b8cec62bcdab5fed66cd6ea160801" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Number
 - **Default:** `89`

@@ -13,10 +13,10 @@
 
 `CustomSteerMax`
 
-최대조향토크 270/384/409 중 오류가 안나는 가장 큰 값 사용
+최대조향토크 270/384/409 중 오류가 안나는 가장 큰 값 사용 ADAS ECU 연결 EV6 HDA2 토크형은 11 m/s 미만에서 384, 그 이상에서 330을 사용합니다. 더 낮은 양수 설정은 두 구간에 적용됩니다.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerMax -->
-<!-- CARROT:AUTO:SOURCE facts="f38a1f13f1c7576540a483e156cbe7059b800e19f6051da785c1ad975b370cd8" semantic="669ef6b96724cee684584bacd4c6c1cce990b4de53df8969d58d5f175dc0e1ed" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="f79d82b74f39c21ac1e51457062fda0e52b5ab95b6233b6e5f4790cf682044b8" semantic="69a6e47badf874d2955d531c868fbb567fbe47091875499338aed77993a98279" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 숫자
 - **기본값:** `0`

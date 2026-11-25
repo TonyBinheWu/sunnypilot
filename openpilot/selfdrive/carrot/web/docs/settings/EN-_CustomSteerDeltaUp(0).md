@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaUp`
 
-Torque Vehicle — Higher values increase steering wheel turn speed
+Torque Vehicle — Higher values increase steering wheel turn speed EV6 HDA2 torque steering on the ADAS ECU allows up to 2 units per 10 ms and honors a lower positive setting.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaUp -->
-<!-- CARROT:AUTO:SOURCE facts="e95315163fe3d65994ece1be0ec7281357a262a959cdaa22c99ff165eec7bb48" semantic="22505d7f9d2fdc5441ecca4890ef75dd0dd73869c71f0347effa2d7f6d892664" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="d9b711b994380eb5da9f8709e3c00333dc9ad0243bff0b2475c0abeaa5cc9ebe" semantic="487f32b08b65f588060dd1c924fb762ecab0c2e2bebb4e6c2d3b934e1ca081d3" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Number
 - **Default:** `0`

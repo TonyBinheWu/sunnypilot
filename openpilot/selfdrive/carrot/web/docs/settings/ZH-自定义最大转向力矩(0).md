@@ -13,10 +13,10 @@
 
 `CustomSteerMax`
 
-最大转向力矩 — 在 270/384/409 中选择不报错的最大值
+最大转向力矩 — 在 270/384/409 中选择不报错的最大值 使用 ADAS ECU 的 EV6 HDA2 扭矩转向在低于 11 m/s 时采用 384，达到 11 m/s 时采用 330。较低的正数设定可限制两段输出。
 
 <!-- CARROT:AUTO:BEGIN CustomSteerMax -->
-<!-- CARROT:AUTO:SOURCE facts="c74a24afb0be2b55a1185a8628a3db8a08664e83faa347c7298dfa286fa5ffad" semantic="669ef6b96724cee684584bacd4c6c1cce990b4de53df8969d58d5f175dc0e1ed" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="f1dee382162722cd53776a37e953550a7e54dbda6e95a610558175d4c4653a02" semantic="69a6e47badf874d2955d531c868fbb567fbe47091875499338aed77993a98279" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 数值
 - **默认值:** `0`

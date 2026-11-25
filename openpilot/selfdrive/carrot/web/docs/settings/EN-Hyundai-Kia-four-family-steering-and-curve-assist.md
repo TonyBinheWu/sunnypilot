@@ -13,10 +13,10 @@
 
 `HkgPhase1Assist`
 
-Registered EV6, Ioniq 5, Carnival and Sorento platforms only. CAN-FD torque variants reuse bounded low-speed demand follow (up to 409 and 4/4); stored manual limits remain. Angle control and classic Sorento retain existing actuator limits. Small curvature corrections are smoothed progressively at 40–80 km/h; large requests receive less filtering. In direct longitudinal ACC mode, three fresh consecutive model frames qualify a preview curve speed ceiling upstream of MPC. Default off. EPS/Panda guards remain; no emergency avoidance, U-turn or vehicle-performance guarantee. At low speed, same-direction turn-in reduces the existing target filter time constant by up to 40%; return and reversal keep the original filter, with a 30–40 km/h taper. The faster low-speed model-target response applies only to the lane-less model path; custom lane-planner filtering and its delay compensation remain unchanged.
+Registered EV6, Ioniq 5, Carnival and Sorento platforms only. CAN-FD torque variants reuse bounded low-speed demand follow (up to 409 and 4/4); stored manual limits remain. Angle control and classic Sorento retain existing actuator limits. Small curvature corrections are smoothed progressively at 40–80 km/h; large requests receive less filtering. In direct longitudinal ACC mode, three fresh consecutive model frames qualify a preview curve speed ceiling upstream of MPC. Default off. EPS/Panda guards remain; no emergency avoidance, U-turn or vehicle-performance guarantee. At low speed, same-direction turn-in reduces the existing target filter time constant by up to 40%; return and reversal keep the original filter, with a 30–40 km/h taper. The faster low-speed model-target response applies only to the lane-less model path; custom lane-planner filtering and its delay compensation remain unchanged. EV6 HDA2 torque steering on the ADAS ECU keeps its two speed bands and bounded rates with either switch on. Response recording remains available.
 
 <!-- CARROT:AUTO:BEGIN HkgPhase1Assist -->
-<!-- CARROT:AUTO:SOURCE facts="a22be7dc124e3b5829b190a6c3ccdb467cd20bed2ac8da13cafc35ae866f23f3" semantic="1c9c7c054bb743a7a9af0906faec089755f21f0f914e02d4a5b7addd3c56d7c2" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="461f06704f4618209aa03ea14f802d2a71e001d3418aaf83af4089da5a39f53f" semantic="0e6f0cdf4d784a5157f3298eeadcb01f00db7ae44d927282eb756eaab2599891" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`

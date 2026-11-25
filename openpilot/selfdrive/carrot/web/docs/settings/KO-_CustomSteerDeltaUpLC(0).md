@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaUpLC`
 
-(토크차량) 차선변경 시 일시적용 SteerDeltaUp
+(토크차량) 차선변경 시 일시적용 SteerDeltaUp ADAS ECU 연결 EV6 HDA2 토크형은 10 ms당 최대 2이며, 더 낮은 양수 설정도 적용됩니다.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaUpLC -->
-<!-- CARROT:AUTO:SOURCE facts="78c72a8f981b6bfc8ec31111e7b7179c2b309db5b9bb95088eefe59d26699bdf" semantic="4c4f646026bac5f61b4baffbdf4b28f1bd790783dd022d744209c74a30c33e3e" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="4837acb362fa66f83ba85a82ecbc3cc0c110b9fba9bbba1f6dff66ecef8c6203" semantic="a269ff8291eb110176550d7c9962c300e661cb8701b0d25780bbf6bd978c1ba5" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 숫자
 - **기본값:** `0`

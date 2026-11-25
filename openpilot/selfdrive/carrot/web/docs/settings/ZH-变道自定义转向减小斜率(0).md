@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaDownLC`
 
-力矩控制车辆 — 变道期间临时应用转向减小斜率
+力矩控制车辆 — 变道期间临时应用转向减小斜率 使用 ADAS ECU 的 EV6 HDA2 扭矩转向以每 10 ms 3 个单位的固定速率收回扭矩，驾驶员接管时同样适用。
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaDownLC -->
-<!-- CARROT:AUTO:SOURCE facts="bdabf373cb4b46ff28a4129368b4f5eeb5c2789fbcfe0d736ea43312c3b7aa2a" semantic="a336e35a09a15ab311502cba35f76a68aa166dc74ce982901b724dd1b69de65e" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="17a9a0ae8155a63b1dd81103bfe2c0d4f9dc2ad72429f9dcb179a8f6515dfc1f" semantic="24f993369a8dc843e97c8b377086b40d1cb55d05c6cdf714f2e9f859ab68ba73" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 数值
 - **默认值:** `0`

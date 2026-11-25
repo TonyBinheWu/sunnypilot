@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaDown`
 
-(토크차량) 높을수록 핸들 푸는속도 빨라짐
+(토크차량) 높을수록 핸들 푸는속도 빨라짐 ADAS ECU 연결 EV6 HDA2 토크형은 운전자 인계 시에도 10 ms당 3의 고정 감소율을 사용합니다.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaDown -->
-<!-- CARROT:AUTO:SOURCE facts="85244235de50eb0348aec4ef04e4ca218b955c50ded99f0bb99211b771e7ac51" semantic="3a4631b4c069572270462f11246712d178942f087b84cb31aae626aefbbeb3b8" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="622080c6e0a7787d6db0290463147830318bea9e5696865664c851974cda64a4" semantic="a804ff8b309581e89bebde4f8a28234c43931ae219c283217df3cfec42cf2e44" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 숫자
 - **기본값:** `0`

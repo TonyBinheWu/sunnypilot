@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaUp`
 
-力矩控制车辆 — 值越高方向盘转动速度越快
+力矩控制车辆 — 值越高方向盘转动速度越快 使用 ADAS ECU 的 EV6 HDA2 扭矩转向每 10 ms 最多增加 2 个单位，也可设置更低的正值。
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaUp -->
-<!-- CARROT:AUTO:SOURCE facts="8d3fc6879d7307d52140709b7b4bd5d624f1ac64c2d8822cfe77f93de1d0d5b4" semantic="22505d7f9d2fdc5441ecca4890ef75dd0dd73869c71f0347effa2d7f6d892664" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="7cdfe449d252c2cbda642d7ef0216dab08258b27b512d4321ff7405261b93037" semantic="487f32b08b65f588060dd1c924fb762ecab0c2e2bebb4e6c2d3b934e1ca081d3" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 数值
 - **默认值:** `0`

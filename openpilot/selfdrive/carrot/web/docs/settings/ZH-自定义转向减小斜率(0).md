@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaDown`
 
-力矩控制车辆 — 值越高方向盘回正速度越快
+力矩控制车辆 — 值越高方向盘回正速度越快 使用 ADAS ECU 的 EV6 HDA2 扭矩转向以每 10 ms 3 个单位的固定速率收回扭矩，驾驶员接管时同样适用。
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaDown -->
-<!-- CARROT:AUTO:SOURCE facts="bb679de797d55582925f21d65ac2e7ef7665960f5c64d0e1d25b37780d055bd9" semantic="3a4631b4c069572270462f11246712d178942f087b84cb31aae626aefbbeb3b8" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="c280da374a8e108bd2ba905f060c280fcf0e69c1530a5b44edba1365f2f11265" semantic="a804ff8b309581e89bebde4f8a28234c43931ae219c283217df3cfec42cf2e44" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 数值
 - **默认值:** `0`

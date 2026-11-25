@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaDownLC`
 
-(토크차량) 차선변경 시 일시적용 SteerDeltaDown
+(토크차량) 차선변경 시 일시적용 SteerDeltaDown ADAS ECU 연결 EV6 HDA2 토크형은 운전자 인계 시에도 10 ms당 3의 고정 감소율을 사용합니다.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaDownLC -->
-<!-- CARROT:AUTO:SOURCE facts="3ba9cf450c6a26a169894fc8dc5b804c96b78f13ad3cb0ec66c0426278a99312" semantic="a336e35a09a15ab311502cba35f76a68aa166dc74ce982901b724dd1b69de65e" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="974e412e8f8d5f333a6531992f6103d468157a9dc9747b58dbfdeb1e0c0eccfd" semantic="24f993369a8dc843e97c8b377086b40d1cb55d05c6cdf714f2e9f859ab68ba73" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 숫자
 - **기본값:** `0`

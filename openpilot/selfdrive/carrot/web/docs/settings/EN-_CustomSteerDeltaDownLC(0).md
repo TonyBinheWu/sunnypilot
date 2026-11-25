@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaDownLC`
 
-Torque Vehicle — Temporarily applies SteerDeltaDown during lane changes
+Torque Vehicle — Temporarily applies SteerDeltaDown during lane changes EV6 HDA2 torque steering on the ADAS ECU uses a fixed withdrawal rate of 3 units per 10 ms, including driver override.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaDownLC -->
-<!-- CARROT:AUTO:SOURCE facts="d62c54c4ade0c85a3be858149132f6b5ef952eec88f66bcaef1817d0e57b6ea2" semantic="a336e35a09a15ab311502cba35f76a68aa166dc74ce982901b724dd1b69de65e" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="6499a805f917de0ec6589ba10dd495e0e0c8866011760876048e307140c07d62" semantic="24f993369a8dc843e97c8b377086b40d1cb55d05c6cdf714f2e9f859ab68ba73" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Number
 - **Default:** `0`

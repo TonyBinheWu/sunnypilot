@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaDown`
 
-Torque Vehicle — Higher values increase steering wheel release speed
+Torque Vehicle — Higher values increase steering wheel release speed EV6 HDA2 torque steering on the ADAS ECU uses a fixed withdrawal rate of 3 units per 10 ms, including driver override.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaDown -->
-<!-- CARROT:AUTO:SOURCE facts="43272be40a4b7c5236f9ebb66cbc7448fb59f42981ac04dea33f9b02aa03200d" semantic="3a4631b4c069572270462f11246712d178942f087b84cb31aae626aefbbeb3b8" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="4f755fc485ffccc66fc1bf2ea8594c4545356028fbc26c6df5b3a1c3d8a61fbb" semantic="a804ff8b309581e89bebde4f8a28234c43931ae219c283217df3cfec42cf2e44" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Number
 - **Default:** `0`

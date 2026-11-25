@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "00735b853fe2f07aca8b39ea6e2ca04d26bbafc8",
-  "contentHash": "12912dc6fafe2d940ee9c177f15c15f67b6605466b80393210336026b14df578",
-  "generatedAt": "2026-11-24T00:00:00Z",
+  "catalogCommit": "01a0bd178cd14cc8a222a49452297a5fffefd210",
+  "contentHash": "0202b23fd0652686d4e6a3435be62ed5aeed07e2686fc7ef858b622dad84ebce",
+  "generatedAt": "2026-11-26T00:00:00+08:00",
   "locales": [
     "ko",
     "en",
@@ -286,8 +286,8 @@
       "hash": "aa4fab38b7961db3f3ccfa67c8c723e0a184b2204e49557b129a84c4a0e1c41e"
     },
     "EN-Hyundai-Kia-four-family-steering-and-curve-assist.md": {
-      "bytes": 4824,
-      "hash": "608ef7edc181935b7b4369571c11a7a716b76d9ed65246c4862fae2d9a7bac99"
+      "bytes": 4975,
+      "hash": "27e73872977694abc59c5c9432e336976ca3ae84da31785b649c092958d6ab38"
     },
     "EN-LATMPC.AccelCost(120).md": {
       "bytes": 2169,
@@ -366,8 +366,8 @@
       "hash": "0494fbd26c7d8eeffabdd35528ee11d4872e75d407263330176aacf11ed5c778"
     },
     "EN-Low-speed-demand-follow-and-response-records.md": {
-      "bytes": 4749,
-      "hash": "6b7c982fe37ee677a3e565c5bcec853f63fcbf8ca7b871d25ed649c50edcaa7f"
+      "bytes": 4900,
+      "hash": "c894b0bda66bf7ca8902559cc541e968f399b3462cc964cda6a77bc86a9632ea"
     },
     "EN-Low-speed-signaled-turns.md": {
       "bytes": 1231,
@@ -390,8 +390,8 @@
       "hash": "f4935ce8433533bff94389ce4298f3ac80ab91ac48605a1c4a6d1bd1eff33bb9"
     },
     "EN-MaxAngleFrames(89).md": {
-      "bytes": 2145,
-      "hash": "149f57fcca0420dc7eb194ab02057f8cb542116640cbe8443a3d0333be2233d1"
+      "bytes": 2311,
+      "hash": "06a8ecfb66c5b140745364e164d05cbc28fc3fe9ba562f2673e6566002cdcc6d"
     },
     "EN-Model-desire-indicator-(trial).md": {
       "bytes": 4429,
@@ -602,24 +602,24 @@
       "hash": "a1dc8d9dc322508b6037309aa5d0eb62a43d592bca90a02a4d698be757abc984"
     },
     "EN-_CustomSteerDeltaDown(0).md": {
-      "bytes": 2219,
-      "hash": "276aaf230d0ba133d93f52083c6da42125697b45110c3780c9ac18b9849c5df2"
+      "bytes": 2343,
+      "hash": "20e1d8d9f7ae18bb4e098e72a2fa9f9252456422b86423c519ccc33b440dde39"
     },
     "EN-_CustomSteerDeltaDownLC(0).md": {
-      "bytes": 2247,
-      "hash": "e940d15630d16d0cf6ea131c50b7fa6a89a67e4d2f0e9654927146e77d1ab8c6"
+      "bytes": 2371,
+      "hash": "66938939396d63a698bc27546723e7b5fc65229c8946526bca31dc6b83aae1af"
     },
     "EN-_CustomSteerDeltaUp(0).md": {
-      "bytes": 2191,
-      "hash": "63088e46fa2182d4f330716393cf68f63e17f89ae117c5ce70dbbce346fbe55c"
+      "bytes": 2305,
+      "hash": "052a0c2046730bc816056eca12d46f3c8b4f076eb551dc35cadcfed5a705f93f"
     },
     "EN-_CustomSteerDeltaUpLC(0).md": {
-      "bytes": 2221,
-      "hash": "617cf8727c7512186726609619b989e4b1787d944752d9d3d48cfaab9dbaf107"
+      "bytes": 2335,
+      "hash": "a2b363cf299c7ac5a1788ba90301c495a571a576821cac26a901b4abc9eff4f4"
     },
     "EN-_CustomSteerMax(0).md": {
-      "bytes": 2195,
-      "hash": "29d267ba2c3a2ace3f45ca62c35b9301b3cb7e8ee767ef06b8ae699fdaa75fef"
+      "bytes": 2327,
+      "hash": "f2203611d8e7f3d91c2d9768a5fa01099975fbef70177d245e9aa8818b1cfef6"
     },
     "EN-_LateralTorqueAccelFactor-0.001(2500).md": {
       "bytes": 2444,
@@ -750,8 +750,8 @@
       "hash": "31121611ce9f6649e9cfd16bc24448f24945b052496782a5d03d6883b36b0577"
     },
     "KO-MaxAngleFrames(89).md": {
-      "bytes": 2260,
-      "hash": "6db5357d57330b27a63a6971e6a2f1f5b0ee89e6f0bb4eabbacc8c4a6734203e"
+      "bytes": 2372,
+      "hash": "489db4ff6b423a63969eae0cd894bc34aa1d69ee081e473776b1e4edc9211ed0"
     },
     "KO-NNFF-토크-제어.md": {
       "bytes": 1629,
@@ -806,24 +806,24 @@
       "hash": "e14383f000d22be678888fdcfe89c6610c8e624e4fc474c0f9779e2211ce71fb"
     },
     "KO-_CustomSteerDeltaDown(0).md": {
-      "bytes": 2316,
-      "hash": "557d5a418528c3f5e0b27f6f55afd59e69426d269782e544fb7060514e518954"
+      "bytes": 2437,
+      "hash": "03c2908664a56b50afc0e345c0b5d005e5b3d63b3b887c9cdc9a834a4308fd80"
     },
     "KO-_CustomSteerDeltaDownLC(0).md": {
-      "bytes": 2342,
-      "hash": "c18d24471ad763fa573bf6fea640ca38cf9aeaf322a486218201fd3ba3dd221a"
+      "bytes": 2463,
+      "hash": "66080274bbc20198fd09fc012e01bd9daa47fd0654fc2b4416ebc8e793a75c82"
     },
     "KO-_CustomSteerDeltaUp(0).md": {
-      "bytes": 2294,
-      "hash": "79ae3d3d636cb7e75d694f181f8c162ef584d4a88a241fdb7e4a3d6e20677c00"
+      "bytes": 2407,
+      "hash": "fb7b1901af083ccd34417a5589c11268e00172a393c403eb5318286cd7d215af"
     },
     "KO-_CustomSteerDeltaUpLC(0).md": {
-      "bytes": 2316,
-      "hash": "7be241f02a874a04c79cafc41572993de4a1792608b862177223c94b2929c6d1"
+      "bytes": 2429,
+      "hash": "fd8dee629f449e7a4250c9585828d1b8ad0a2fd1fe99eae6f0a23849ee8d7125"
     },
     "KO-_CustomSteerMax(0).md": {
-      "bytes": 2307,
-      "hash": "92a0161cf5ed817e62e6c8a371b13c8b90d2a194e2d4584c6f5255fe7ddd2688"
+      "bytes": 2475,
+      "hash": "b8edcbda3647c001727cace064efcf720e96cc821bc13af2670b3b342fb6fae5"
     },
     "KO-_LateralTorqueAccelFactor-0.001(2500).md": {
       "bytes": 2485,
@@ -1098,8 +1098,8 @@
       "hash": "49ade38502d4501fab686986808c79ed95fed0a93696ddfcd0971589bae5e681"
     },
     "KO-저속-요구-추종·응답-기록.md": {
-      "bytes": 5226,
-      "hash": "867dc5041e12cd2c31ef9570e9cf798a9e49c4933583d9da6f7abc27261dc0b8"
+      "bytes": 5390,
+      "hash": "06e4ed2c84ad6a086b7cb7a36dd3db89e3cbc6f4c63dc626a48078e9680d1602"
     },
     "KO-저속조향제한해제.md": {
       "bytes": 2188,
@@ -1286,8 +1286,8 @@
       "hash": "7ea35daeb7a2e507a941175599935397802d1fbdeb626665e9c025bc68866d98"
     },
     "KO-현대·기아-4차종-조향·커브-보조.md": {
-      "bytes": 4967,
-      "hash": "730c78802a49fd26e34f5bd6419747fe90f1cbe60a1256ad7300c0ee36ad71b5"
+      "bytes": 5131,
+      "hash": "cf252cd5e267e23e89b3ed9a3beb8339cca6e3f5708b9d9e9da208a15c8d423f"
     },
     "Settings-Catalog.md": {
       "bytes": 105620,
@@ -1454,8 +1454,8 @@
       "hash": "d84c247fac7bef146e75aa2bc7903bf56b0d61bdfc09b4eafcca81a3ccc1667e"
     },
     "ZH-TW-低速需求跟隨與反應記錄.md": {
-      "bytes": 4608,
-      "hash": "9e65e5e95f72936be47a1b588ea829045cd0662844c87950c73a2f29d38a68dd"
+      "bytes": 4754,
+      "hash": "be78a329ffca4cff7ca642d7f61236396a1b71ae840204b28fc1b22b594305b6"
     },
     "ZH-TW-使用-HDP-(CCNC).md": {
       "bytes": 1730,
@@ -1646,8 +1646,8 @@
       "hash": "b6f0b83b762990fb3746473ed681551f7310e8746b9a1e1a981a8746fda74967"
     },
     "ZH-TW-最大角度幀數-(89).md": {
-      "bytes": 2030,
-      "hash": "5f0dbfd7c0e87bd451b85c76d1823849b855ccd6cd96cd13e46bfd7e5c900d78"
+      "bytes": 2158,
+      "hash": "51e07c1c97f8a25af7b6f97a03d2dc8b93f701f52a77f403debde6c1a9b2e072"
     },
     "ZH-TW-模型意圖轉向燈(試驗).md": {
       "bytes": 3971,
@@ -1714,8 +1714,8 @@
       "hash": "1d033933d91a02773b7824efd51e89a440dd2c693325a0514381f50120041de6"
     },
     "ZH-TW-現代起亞四車系轉向與彎道輔助.md": {
-      "bytes": 4153,
-      "hash": "56d3beea67730e027a7bafd927404e973c833299b12eedefdfc014aff1a271f9"
+      "bytes": 4299,
+      "hash": "543802424e721b12839d0b10488a785b1936ed55f9844cb28c318bf348a2c3a9"
     },
     "ZH-TW-盲區保持時間.md": {
       "bytes": 1621,
@@ -1754,16 +1754,16 @@
       "hash": "76585be012230bb8d8719fbf7e01b6fbdd36ddfdd4b1cdafc5b7ba3de37f99aa"
     },
     "ZH-TW-自定義最大轉向力矩(0).md": {
-      "bytes": 2081,
-      "hash": "1aa4ea6bf8ee5b0e2175b64a04a0647ce770052b6967f3179f09b32d85102161"
+      "bytes": 2225,
+      "hash": "c0d691d92e0815636b40e8ed00bbac8f3f2598139e66f86b4b33d70120d8be5c"
     },
     "ZH-TW-自定義轉向力矩(0).md": {
       "bytes": 2024,
       "hash": "ec974674b12f01ee87c2fe14e07bbc263caf18796cf186b0fde0e519966d062c"
     },
     "ZH-TW-自定義轉向增大斜率(0).md": {
-      "bytes": 2095,
-      "hash": "c4346c2c9bde85948c4346a2286ca812a22c0a4512fb915e8ab878de6252b7af"
+      "bytes": 2204,
+      "hash": "e05c988446b3552fcd406e543cbbca8fcd5a0cba0a003aafc3478d76e833d87a"
     },
     "ZH-TW-自定義轉向比x0.1(0).md": {
       "bytes": 2298,
@@ -1774,8 +1774,8 @@
       "hash": "0f18b953ffc4bcc9e9edd13cdc18c2ce360745e56c6087e738fd787ce7e37b6b"
     },
     "ZH-TW-自定義轉向減小斜率(0).md": {
-      "bytes": 2113,
-      "hash": "aabf036496dd99052377580bfbec8711a525ecb6ca7c341923a1545bcbef7a4c"
+      "bytes": 2239,
+      "hash": "646ed4e62d3009a8495377226ad8e6dfd4c4de1d66a0a896fb6160a0872aa039"
     },
     "ZH-TW-行車中螢幕亮度(100-).md": {
       "bytes": 1677,
@@ -1814,12 +1814,12 @@
       "hash": "9fb8f16f6bf858b600f3d71e36d657455f9f9fd1b35391c81f48e755c46d0b5f"
     },
     "ZH-TW-變道自定義轉向增大斜率(0).md": {
-      "bytes": 2129,
-      "hash": "08f0143a0606ab09117f7d7a7fb864e1215d8d76e3c40cbef81e2f23a317656e"
+      "bytes": 2238,
+      "hash": "dd55d1b8e6772aca7c40fb37819dd6a05c7037b8903c8624c334d40f921bad9a"
     },
     "ZH-TW-變道自定義轉向減小斜率(0).md": {
-      "bytes": 2149,
-      "hash": "5f33edc8d3b2b9a2658cc5b03905dd976f9b0f7a2d77dc48e7bd409d8a573e11"
+      "bytes": 2275,
+      "hash": "e4edfabceeef49a8e70e94cfe2d975eb9af69048953457a53a42d7b14c57155b"
     },
     "ZH-TW-變道車道判斷.md": {
       "bytes": 2020,
@@ -2026,8 +2026,8 @@
       "hash": "7ae9dfbb5db587e0e74b97b1e7cafa0034d32614ee6bad7fab2db4633eac59c3"
     },
     "ZH-低速需求跟随与反应记录.md": {
-      "bytes": 4597,
-      "hash": "329f861b03c161d762b611cc0623148fcee65031508a057162bc6bd83dc8dd5e"
+      "bytes": 4743,
+      "hash": "f85a8d6963cab813ea23d5eaaa71af1c68c9f379c407aa41f0836c48ff675b7f"
     },
     "ZH-使用-HDP-(CCNC).md": {
       "bytes": 1054,
@@ -2070,12 +2070,12 @@
       "hash": "5ffa987f071cbc56f1faaa8ba85d3f634589dafcb847787f1b96ad3b12cbd3d2"
     },
     "ZH-变道自定义转向减小斜率(0).md": {
-      "bytes": 1327,
-      "hash": "6dedc3ef89142d31cac4f109dbd88fb2e22e7dd5826f3deac96f14065ee15c92"
+      "bytes": 1456,
+      "hash": "5dc9c72bcc841d2e8ec85c8aef689a93afbad839deec47cdb2ec1c9bd51a3e7f"
     },
     "ZH-变道自定义转向增大斜率(0).md": {
-      "bytes": 1309,
-      "hash": "cc4996b67cdaa0677e1378bce9502b946dbedf10281cb49285b4f46a56d4d58a"
+      "bytes": 1418,
+      "hash": "eddf38e36ab2f0b72608e6e08f7f909a23c775c8bc482249c4cb400b4a9c178a"
     },
     "ZH-变道车道判断.md": {
       "bytes": 1228,
@@ -2310,8 +2310,8 @@
       "hash": "b6d2fa9f750202426e45fddcb8584cd378c473aedbb4173ff1a2647e29c3532c"
     },
     "ZH-最大角度帧数-(89).md": {
-      "bytes": 1241,
-      "hash": "d76218f81889bbb39642dc65f452f151acf80a5d642b0824ed259ee3713146aa"
+      "bytes": 1369,
+      "hash": "6f8f542cf7701f58608b6d70d8ef63eb310438b43f4b2a1796534345a21abf5d"
     },
     "ZH-来自-PCM-的速度-(原厂-SCC).md": {
       "bytes": 1836,
@@ -2386,8 +2386,8 @@
       "hash": "2f0a7f2e632f59532d5fcaaa197176365fcbfcfdd0129a963d6172e61c8c8647"
     },
     "ZH-现代起亚四车系转向与弯道辅助.md": {
-      "bytes": 4152,
-      "hash": "a40517dcb01085a950945013d1acea0a90d09e4bd61bebb6fbdf430f10386f1b"
+      "bytes": 4298,
+      "hash": "f629612debb2edcaceb81c6f5da9188403a01051afa071440f258b85a20aa9d1"
     },
     "ZH-盲区保持时间.md": {
       "bytes": 1618,
@@ -2426,20 +2426,20 @@
       "hash": "8303591acce8833ae50d76c719bf4c2f5d8e7eb906e193cc2a6aa2401349c9ab"
     },
     "ZH-自定义最大转向力矩(0).md": {
-      "bytes": 1250,
-      "hash": "9a7e0dfab218ad34a3ced467d807a6ef2a6162695c9ec21ec25dd106d21b6b1d"
+      "bytes": 1400,
+      "hash": "b99169689469c4ff8ac4ccc9e2c5555dc9d1ce03eca5d89bd4698fb18f2ef90d"
     },
     "ZH-自定义转向减小斜率(0).md": {
-      "bytes": 1291,
-      "hash": "9f88e2ec6ca2670492e8b955bde742f02b7cc5fbcaac027d59921394996504d2"
+      "bytes": 1420,
+      "hash": "23fa4b36875ed5d291cb8f8b51a1f36ec9461b0c987aa384c1487e972e5d6335"
     },
     "ZH-自定义转向力矩(0).md": {
       "bytes": 1249,
       "hash": "4ae605343c9098f5a7fb8cf0a318ce69dd961dd009b1f5331bf28516f85392d6"
     },
     "ZH-自定义转向增大斜率(0).md": {
-      "bytes": 1273,
-      "hash": "4bba19019eada312c7f5ea07880e1890b1bba295b814d4866ad1ad99f91808af"
+      "bytes": 1382,
+      "hash": "78bbf0b134819198541fd7d9660ef80317c270322fd963a2c016a65e86249a8f"
     },
     "ZH-自定义转向比x0.1(0).md": {
       "bytes": 1132,
@@ -2575,8 +2575,8 @@
     }
   },
   "review": {
-    "current": 28,
-    "needs_review": 132
+    "current": 26,
+    "needs_review": 134
   },
   "schemaVersion": 1,
   "settings": {
@@ -4259,155 +4259,155 @@
       "locales": {
         "en": {
           "anchor": "CustomSteerDeltaDown",
-          "factsHash": "43272be40a4b7c5236f9ebb66cbc7448fb59f42981ac04dea33f9b02aa03200d",
+          "factsHash": "4f755fc485ffccc66fc1bf2ea8594c4545356028fbc26c6df5b3a1c3d8a61fbb",
           "page": "EN-_CustomSteerDeltaDown(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "CustomSteerDeltaDown",
-          "factsHash": "85244235de50eb0348aec4ef04e4ca218b955c50ded99f0bb99211b771e7ac51",
+          "factsHash": "622080c6e0a7787d6db0290463147830318bea9e5696865664c851974cda64a4",
           "page": "KO-_CustomSteerDeltaDown(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "CustomSteerDeltaDown",
-          "factsHash": "bb679de797d55582925f21d65ac2e7ef7665960f5c64d0e1d25b37780d055bd9",
+          "factsHash": "c280da374a8e108bd2ba905f060c280fcf0e69c1530a5b44edba1365f2f11265",
           "page": "ZH-自定义转向减小斜率(0).md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "CustomSteerDeltaDown",
-          "factsHash": "1eda63d7b7162209f600ed044eb37406657ddc76e14e8e9660e26ba647f264cd",
+          "factsHash": "afa587b6ee9cb92e6dad044ba993ebc2ef7ed81f265bf0ddb2ceff1de0adaacd",
           "page": "ZH-TW-自定義轉向減小斜率(0).md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "3a4631b4c069572270462f11246712d178942f087b84cb31aae626aefbbeb3b8"
+      "semanticHash": "a804ff8b309581e89bebde4f8a28234c43931ae219c283217df3cfec42cf2e44"
     },
     "CustomSteerDeltaDownLC": {
       "group": "STEER_TORQUE_LIMIT",
       "locales": {
         "en": {
           "anchor": "CustomSteerDeltaDownLC",
-          "factsHash": "d62c54c4ade0c85a3be858149132f6b5ef952eec88f66bcaef1817d0e57b6ea2",
+          "factsHash": "6499a805f917de0ec6589ba10dd495e0e0c8866011760876048e307140c07d62",
           "page": "EN-_CustomSteerDeltaDownLC(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "CustomSteerDeltaDownLC",
-          "factsHash": "3ba9cf450c6a26a169894fc8dc5b804c96b78f13ad3cb0ec66c0426278a99312",
+          "factsHash": "974e412e8f8d5f333a6531992f6103d468157a9dc9747b58dbfdeb1e0c0eccfd",
           "page": "KO-_CustomSteerDeltaDownLC(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "CustomSteerDeltaDownLC",
-          "factsHash": "bdabf373cb4b46ff28a4129368b4f5eeb5c2789fbcfe0d736ea43312c3b7aa2a",
+          "factsHash": "17a9a0ae8155a63b1dd81103bfe2c0d4f9dc2ad72429f9dcb179a8f6515dfc1f",
           "page": "ZH-变道自定义转向减小斜率(0).md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "CustomSteerDeltaDownLC",
-          "factsHash": "fcbc620e22f05b4a8aa9c83edd9fffaf2adb88535965aca9e90783c81e40e991",
+          "factsHash": "76cfe4b6f59763b4ddd53a5274d8d35fda688f9ed25647f03375a648b1fde9aa",
           "page": "ZH-TW-變道自定義轉向減小斜率(0).md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "a336e35a09a15ab311502cba35f76a68aa166dc74ce982901b724dd1b69de65e"
+      "semanticHash": "24f993369a8dc843e97c8b377086b40d1cb55d05c6cdf714f2e9f859ab68ba73"
     },
     "CustomSteerDeltaUp": {
       "group": "STEER_TORQUE_LIMIT",
       "locales": {
         "en": {
           "anchor": "CustomSteerDeltaUp",
-          "factsHash": "e95315163fe3d65994ece1be0ec7281357a262a959cdaa22c99ff165eec7bb48",
+          "factsHash": "d9b711b994380eb5da9f8709e3c00333dc9ad0243bff0b2475c0abeaa5cc9ebe",
           "page": "EN-_CustomSteerDeltaUp(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "CustomSteerDeltaUp",
-          "factsHash": "1a46cae0a2cbe97f8c05ce7eb3b16312f199d47359d360664aafe69e46b3c3af",
+          "factsHash": "9d1771edda713f6f3c263728449b72c2969fc429605556672a37870834becbde",
           "page": "KO-_CustomSteerDeltaUp(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "CustomSteerDeltaUp",
-          "factsHash": "8d3fc6879d7307d52140709b7b4bd5d624f1ac64c2d8822cfe77f93de1d0d5b4",
+          "factsHash": "7cdfe449d252c2cbda642d7ef0216dab08258b27b512d4321ff7405261b93037",
           "page": "ZH-自定义转向增大斜率(0).md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "CustomSteerDeltaUp",
-          "factsHash": "a2769a18dbd75d0f2a2319aa3fe6520796998dda60e5adebf823911b7fc6a8b5",
+          "factsHash": "82916377592982b0df67ba5ec8a50d8aaaa9ee9edab886bbc243c75caf3a564c",
           "page": "ZH-TW-自定義轉向增大斜率(0).md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "22505d7f9d2fdc5441ecca4890ef75dd0dd73869c71f0347effa2d7f6d892664"
+      "semanticHash": "487f32b08b65f588060dd1c924fb762ecab0c2e2bebb4e6c2d3b934e1ca081d3"
     },
     "CustomSteerDeltaUpLC": {
       "group": "STEER_TORQUE_LIMIT",
       "locales": {
         "en": {
           "anchor": "CustomSteerDeltaUpLC",
-          "factsHash": "c655555c406d420121bd99d8189ed9a01892af858988d334d038a60058765515",
+          "factsHash": "4b4e8b881094920ead4d9e7f2efb360aa9b57f41e79bb2c5bc6b8ef23cc7e555",
           "page": "EN-_CustomSteerDeltaUpLC(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "CustomSteerDeltaUpLC",
-          "factsHash": "78c72a8f981b6bfc8ec31111e7b7179c2b309db5b9bb95088eefe59d26699bdf",
+          "factsHash": "4837acb362fa66f83ba85a82ecbc3cc0c110b9fba9bbba1f6dff66ecef8c6203",
           "page": "KO-_CustomSteerDeltaUpLC(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "CustomSteerDeltaUpLC",
-          "factsHash": "f0de79326c21e1492aa5fa6a79181d6890ff306af667133b2faaddbac0c39e3f",
+          "factsHash": "8db2b25bf35bf0e6507a8a6a7cb367d8c02e3bad98c55fe2dbb256702c9ca6b5",
           "page": "ZH-变道自定义转向增大斜率(0).md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "CustomSteerDeltaUpLC",
-          "factsHash": "3fdde3578232ada1652ea736a1f9f80a7daa1433e6cc9f43dcfdaa1054ff82e8",
+          "factsHash": "64476acbba9a84200d7b8c65a0f8dbced7b5f611de33ad163344d648dbb6f9b5",
           "page": "ZH-TW-變道自定義轉向增大斜率(0).md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "4c4f646026bac5f61b4baffbdf4b28f1bd790783dd022d744209c74a30c33e3e"
+      "semanticHash": "a269ff8291eb110176550d7c9962c300e661cb8701b0d25780bbf6bd978c1ba5"
     },
     "CustomSteerMax": {
       "group": "STEER_TORQUE_LIMIT",
       "locales": {
         "en": {
           "anchor": "CustomSteerMax",
-          "factsHash": "a09cd2547b2eaf1ed9be7641c4573b050aa8013d6a740444d6fe0cbb7df76953",
+          "factsHash": "c2967dded24fc3b3a406566d602c5ee424b36a14bff6147e2262e7b33358a5ae",
           "page": "EN-_CustomSteerMax(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "CustomSteerMax",
-          "factsHash": "f38a1f13f1c7576540a483e156cbe7059b800e19f6051da785c1ad975b370cd8",
+          "factsHash": "f79d82b74f39c21ac1e51457062fda0e52b5ab95b6233b6e5f4790cf682044b8",
           "page": "KO-_CustomSteerMax(0).md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "CustomSteerMax",
-          "factsHash": "c74a24afb0be2b55a1185a8628a3db8a08664e83faa347c7298dfa286fa5ffad",
+          "factsHash": "f1dee382162722cd53776a37e953550a7e54dbda6e95a610558175d4c4653a02",
           "page": "ZH-自定义最大转向力矩(0).md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "CustomSteerMax",
-          "factsHash": "9a5d14e5bb1e1f9250898eaba947dfd4134864f1353f0cfb3f7d128f5161e041",
+          "factsHash": "a6ae7a342c738446ad7504770db9e8e6755c8dd1f2a3b4997c9ee160d4ebd915",
           "page": "ZH-TW-自定義最大轉向力矩(0).md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "669ef6b96724cee684584bacd4c6c1cce990b4de53df8969d58d5f175dc0e1ed"
+      "semanticHash": "69a6e47badf874d2955d531c868fbb567fbe47091875499338aed77993a98279"
     },
     "DisableMinSteerSpeed": {
       "group": "BASIC_START",
@@ -4662,31 +4662,31 @@
       "locales": {
         "en": {
           "anchor": "HkgPhase1Assist",
-          "factsHash": "a22be7dc124e3b5829b190a6c3ccdb467cd20bed2ac8da13cafc35ae866f23f3",
+          "factsHash": "461f06704f4618209aa03ea14f802d2a71e001d3418aaf83af4089da5a39f53f",
           "page": "EN-Hyundai-Kia-four-family-steering-and-curve-assist.md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "HkgPhase1Assist",
-          "factsHash": "302e6748e18a7083e043a54f47220ff1b49e6ae80778ea24e113ed557167ade2",
+          "factsHash": "15a7b6df9d7f5fb1f2ccf898d45c8fc3933e20fff9ba8a0684f75dba643c360b",
           "page": "KO-현대·기아-4차종-조향·커브-보조.md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "HkgPhase1Assist",
-          "factsHash": "d661b1f6f8871a26792cac2b9e6522525f958e96c606b40dd4c2f37458f44936",
+          "factsHash": "7050dc2baa91a6fe118a80123d3693550dc1bf00c5e0e3da020813b30939f825",
           "page": "ZH-现代起亚四车系转向与弯道辅助.md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "HkgPhase1Assist",
-          "factsHash": "527533dbc49133dd2ba8619e49a61cc786027a1915fb52a70dc4bb8cce4307f7",
+          "factsHash": "f6f7d36e19f117c7a063d3e747295d5703c77fed08fbcb40e49798455d07fcf2",
           "page": "ZH-TW-現代起亞四車系轉向與彎道輔助.md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         }
       },
-      "reviewStatus": "current",
-      "semanticHash": "1c9c7c054bb743a7a9af0906faec089755f21f0f914e02d4a5b7addd3c56d7c2"
+      "reviewStatus": "needs_review",
+      "semanticHash": "0e6f0cdf4d784a5157f3298eeadcb01f00db7ae44d927282eb756eaab2599891"
     },
     "HotspotOnBoot": {
       "group": "SYS_NET",
@@ -5499,31 +5499,31 @@
       "locales": {
         "en": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "7c300a3501e166c400c1d96c69c8c3447f9456f3703bca9199b5f3889cbaed27",
+          "factsHash": "ebec46f65d04f5f9704753894b03d6085f1f6c6cbed74a59801a91e58765c8d0",
           "page": "EN-Low-speed-demand-follow-and-response-records.md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "0811660900fe7ed35ff5309ee89c169a0a60c399dea1c74baaf0f3c14447ab8c",
+          "factsHash": "16a3acc24c78f527956d5064d7bece2828196cdc1c3e7b752f710fc9b4071c02",
           "page": "KO-저속-요구-추종·응답-기록.md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "7ac2ee85c100c5da42ac6814f81b7b3827796a069cff37dc7465e2c69d2749b0",
+          "factsHash": "ec44b8c5a21ed340f4209886b4ffeeaed2ab7a4b94972029d6fd16c9adbeb3b0",
           "page": "ZH-低速需求跟随与反应记录.md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "LowSpeedSteerReserve",
-          "factsHash": "fdedd0d1ce4945185eacef1b29ee61855c477b1a81fc1beaaedfb96ab6a6bd8a",
+          "factsHash": "ca838a189cf91ecc84de68a0dd43cb66e4a28eb59c7b6af2ce43f5e2cc61eea9",
           "page": "ZH-TW-低速需求跟隨與反應記錄.md",
-          "reviewStatus": "current"
+          "reviewStatus": "needs_review"
         }
       },
-      "reviewStatus": "current",
-      "semanticHash": "05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc"
+      "reviewStatus": "needs_review",
+      "semanticHash": "590d03646724ca00ba438170b3d640523f2302c26f3eed63a702beb88e0b8aaa"
     },
     "ManualLaneChangeIndicator": {
       "group": "STEER_LANECHANGE",
@@ -5623,31 +5623,31 @@
       "locales": {
         "en": {
           "anchor": "MaxAngleFrames",
-          "factsHash": "07950b96155f2694bae56163d8a0da53b3f38b7dacb262f4752178e34f5dd617",
+          "factsHash": "041f33ed4775420de9e45de190bd998e88fc5d0972f9a9488272422d9576138e",
           "page": "EN-MaxAngleFrames(89).md",
           "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "MaxAngleFrames",
-          "factsHash": "96542bce6b4a4a7a01f68375ae8c2f9047cd51ffaf6a80accb963b8cc36d0446",
+          "factsHash": "1e64dafa0c63975521291b2792e3be1dc8d54588104ab9bcca8e739edf8e04f5",
           "page": "KO-MaxAngleFrames(89).md",
           "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "MaxAngleFrames",
-          "factsHash": "10665a2836daa679f329d2d6e3f1e5bba9c2df73ec2514cf36597bd061d86bd8",
+          "factsHash": "a9230f4c258e5e4c57637809b18987d008f6eff8a4049eca86cdceed5635ff72",
           "page": "ZH-最大角度帧数-(89).md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "MaxAngleFrames",
-          "factsHash": "122e8d49f13053a354777643c14f286c990f413a7a1fd174b4a3e3149ab657e0",
+          "factsHash": "66ef1fd2c99e2e5c5fe59c09a8fa2b46a4ef2e7ae819617cf21b436c7213f8c8",
           "page": "ZH-TW-最大角度幀數-(89).md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "1ed546e0abdc6d700858338cf8462a7210f582b9b9cefadc69fe75b66788aaa6"
+      "semanticHash": "3efcdf66d1890c952d559944a1833a717b8b8cec62bcdab5fed66cd6ea160801"
     },
     "MaxTimeOffroadMin": {
       "group": "SYS_RECORD_BASIC",

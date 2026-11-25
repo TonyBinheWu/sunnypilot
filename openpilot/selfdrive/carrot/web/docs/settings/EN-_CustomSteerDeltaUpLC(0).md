@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaUpLC`
 
-Torque Vehicle — Temporarily applies SteerDeltaUp during lane changes
+Torque Vehicle — Temporarily applies SteerDeltaUp during lane changes EV6 HDA2 torque steering on the ADAS ECU allows up to 2 units per 10 ms and honors a lower positive setting.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaUpLC -->
-<!-- CARROT:AUTO:SOURCE facts="c655555c406d420121bd99d8189ed9a01892af858988d334d038a60058765515" semantic="4c4f646026bac5f61b4baffbdf4b28f1bd790783dd022d744209c74a30c33e3e" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="4b4e8b881094920ead4d9e7f2efb360aa9b57f41e79bb2c5bc6b8ef23cc7e555" semantic="a269ff8291eb110176550d7c9962c300e661cb8701b0d25780bbf6bd978c1ba5" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Number
 - **Default:** `0`

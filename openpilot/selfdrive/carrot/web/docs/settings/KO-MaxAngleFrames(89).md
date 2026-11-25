@@ -13,10 +13,10 @@
 
 `MaxAngleFrames`
 
-권장 저장값은 89입니다. 2024 쏘렌토의 카메라 SCC 토크 조향은 실차 카메라 주기에 맞춰 92~94프레임을 적용합니다.
+권장 저장값은 89입니다. 2024 쏘렌토의 카메라 SCC 토크 조향은 실차 카메라 주기에 맞춰 92~94프레임을 적용합니다. ADAS ECU 연결 EV6 HDA2 토크형은 좌우 85도 이상에서 요청 89프레임 후 2프레임을 쉽니다.
 
 <!-- CARROT:AUTO:BEGIN MaxAngleFrames -->
-<!-- CARROT:AUTO:SOURCE facts="96542bce6b4a4a7a01f68375ae8c2f9047cd51ffaf6a80accb963b8cc36d0446" semantic="1ed546e0abdc6d700858338cf8462a7210f582b9b9cefadc69fe75b66788aaa6" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="1e64dafa0c63975521291b2792e3be1dc8d54588104ab9bcca8e739edf8e04f5" semantic="3efcdf66d1890c952d559944a1833a717b8b8cec62bcdab5fed66cd6ea160801" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 숫자
 - **기본값:** `89`

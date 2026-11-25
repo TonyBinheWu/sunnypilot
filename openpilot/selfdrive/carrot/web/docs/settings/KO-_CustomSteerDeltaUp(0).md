@@ -13,10 +13,10 @@
 
 `CustomSteerDeltaUp`
 
-(토크차량) 높을수록 핸들 감는속도 빨라짐
+(토크차량) 높을수록 핸들 감는속도 빨라짐 ADAS ECU 연결 EV6 HDA2 토크형은 10 ms당 최대 2이며, 더 낮은 양수 설정도 적용됩니다.
 
 <!-- CARROT:AUTO:BEGIN CustomSteerDeltaUp -->
-<!-- CARROT:AUTO:SOURCE facts="1a46cae0a2cbe97f8c05ce7eb3b16312f199d47359d360664aafe69e46b3c3af" semantic="22505d7f9d2fdc5441ecca4890ef75dd0dd73869c71f0347effa2d7f6d892664" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="9d1771edda713f6f3c263728449b72c2969fc429605556672a37870834becbde" semantic="487f32b08b65f588060dd1c924fb762ecab0c2e2bebb4e6c2d3b934e1ca081d3" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 숫자
 - **기본값:** `0`

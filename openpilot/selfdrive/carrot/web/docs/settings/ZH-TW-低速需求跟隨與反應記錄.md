@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-僅 Hyundai／Kia CAN-FD 扭力控制。持續需求 0.30 秒後，≤30 km/h 按需提供最高 409，指令增加／減少速率依需求最高 4／4（每 10 毫秒）。30–40 漸退；≥40 使用車型預設比例與 2／3。保留手動值與學習參數；紀錄不會提高上限。需更新 Panda 韌體並重啟，尚待實車驗證。 支援的 EV6／Ioniq 5／Carnival／Sorento 也可由 HkgPhase1Assist 啟用此低速路徑；兩個開關都關閉後才恢復已存手動限制。 2024 年式 Sorento 在此模式下以原廠速率增加轉向扭力。
+僅 Hyundai／Kia CAN-FD 扭力控制。持續需求 0.30 秒後，≤30 km/h 按需提供最高 409，指令增加／減少速率依需求最高 4／4（每 10 毫秒）。30–40 漸退；≥40 使用車型預設比例與 2／3。保留手動值與學習參數；紀錄不會提高上限。需更新 Panda 韌體並重啟，尚待實車驗證。 支援的 EV6／Ioniq 5／Carnival／Sorento 也可由 HkgPhase1Assist 啟用此低速路徑；兩個開關都關閉後才恢復已存手動限制。 2024 年式 Sorento 在此模式下以原廠速率增加轉向扭力。 使用 ADAS ECU 的 EV6 HDA2 扭矩轉向在開啟任一功能時仍採用專用兩段上限與受限增減速率，可記錄轉向反應。
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="fdedd0d1ce4945185eacef1b29ee61855c477b1a81fc1beaaedfb96ab6a6bd8a" semantic="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="ca838a189cf91ecc84de68a0dd43cb66e4a28eb59c7b6af2ce43f5e2cc61eea9" semantic="590d03646724ca00ba438170b3d640523f2302c26f3eed63a702beb88e0b8aaa" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 開關
 - **預設值:** `0`

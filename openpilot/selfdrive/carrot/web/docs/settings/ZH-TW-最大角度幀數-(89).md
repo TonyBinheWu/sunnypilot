@@ -13,10 +13,10 @@
 
 `MaxAngleFrames`
 
-建議保留 89。2024 Sorento 使用鏡頭 SCC 與扭力轉向時，控制器會依鏡頭更新頻率的特性，自動將有效設定限制在 92 至 94 幀。
+建議保留 89。2024 Sorento 使用鏡頭 SCC 與扭力轉向時，控制器會依鏡頭更新頻率的特性，自動將有效設定限制在 92 至 94 幀。 使用 ADAS ECU 的 EV6 HDA2 扭矩轉向在左右持續達到 85 度時，固定送出 89 幀轉向請求，再暫停 2 幀。
 
 <!-- CARROT:AUTO:BEGIN MaxAngleFrames -->
-<!-- CARROT:AUTO:SOURCE facts="122e8d49f13053a354777643c14f286c990f413a7a1fd174b4a3e3149ab657e0" semantic="1ed546e0abdc6d700858338cf8462a7210f582b9b9cefadc69fe75b66788aaa6" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="66ef1fd2c99e2e5c5fe59c09a8fa2b46a4ef2e7ae819617cf21b436c7213f8c8" semantic="3efcdf66d1890c952d559944a1833a717b8b8cec62bcdab5fed66cd6ea160801" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 數值
 - **預設值:** `89`

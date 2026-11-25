@@ -13,10 +13,10 @@
 
 `HkgPhase1Assist`
 
-仅限已登记的 EV6、Ioniq 5、Carnival、Sorento 平台。CAN-FD 力矩车型沿用低速需求跟随（最高 409、4/4），保留已存手动值；角度控制及旧款 Sorento 保持原执行器限制。40–80 km/h 逐渐平滑小幅曲率修正，大幅需求减少滤波。直接纵向 ACC 模式下，以连续三个新鲜模型帧确认前方弯道，再降低 MPC 速度上限。默认关闭，保留 EPS/Panda 保护；不包含紧急避让，不保证迴转或实车效果。 低速同方向入弯需求将既有目标滤波时间常数最多缩短 40%；回正与反向维持原滤波，30–40 km/h 渐退。 低速模型目标反应调整仅用于无车道线模型路径；自定义车道线规划滤波及其延迟补偿保持不变。
+仅限已登记的 EV6、Ioniq 5、Carnival、Sorento 平台。CAN-FD 力矩车型沿用低速需求跟随（最高 409、4/4），保留已存手动值；角度控制及旧款 Sorento 保持原执行器限制。40–80 km/h 逐渐平滑小幅曲率修正，大幅需求减少滤波。直接纵向 ACC 模式下，以连续三个新鲜模型帧确认前方弯道，再降低 MPC 速度上限。默认关闭，保留 EPS/Panda 保护；不包含紧急避让，不保证迴转或实车效果。 低速同方向入弯需求将既有目标滤波时间常数最多缩短 40%；回正与反向维持原滤波，30–40 km/h 渐退。 低速模型目标反应调整仅用于无车道线模型路径；自定义车道线规划滤波及其延迟补偿保持不变。 使用 ADAS ECU 的 EV6 HDA2 扭矩转向在开启任一功能时仍采用专用两段上限和受限增减速率，可记录转向响应。
 
 <!-- CARROT:AUTO:BEGIN HkgPhase1Assist -->
-<!-- CARROT:AUTO:SOURCE facts="d661b1f6f8871a26792cac2b9e6522525f958e96c606b40dd4c2f37458f44936" semantic="1c9c7c054bb743a7a9af0906faec089755f21f0f914e02d4a5b7addd3c56d7c2" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="7050dc2baa91a6fe118a80123d3693550dc1bf00c5e0e3da020813b30939f825" semantic="0e6f0cdf4d784a5157f3298eeadcb01f00db7ae44d927282eb756eaab2599891" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **类型:** 开关
 - **默认值:** `0`

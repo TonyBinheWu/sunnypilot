@@ -13,10 +13,10 @@
 
 `LowSpeedSteerReserve`
 
-현대/기아 CAN-FD 토크 전용. 0.30초 지속 요구 후 ≤30 km/h에서 필요한 출력만 최대 409, 명령 증가/감소율은 최대 4/4(10 ms당)까지 조정합니다. 30–40 km/h에서 감쇠하고 ≥40은 공장 기본 비율과 2/3을 사용합니다. 수동 값과 학습값은 보존하며 기록으로 한계를 높이지 않습니다. Panda 업데이트와 재시작 및 실차 검증이 필요합니다. 지원 EV6/Ioniq 5/Carnival/Sorento에서는 HkgPhase1Assist도 이 저속 경로를 켭니다. 저장된 수동 한계를 복원하려면 두 스위치를 모두 끄십시오. 2024년형 쏘렌토는 이 모드에서 순정 속도로 조향 토크를 높입니다.
+현대/기아 CAN-FD 토크 전용. 0.30초 지속 요구 후 ≤30 km/h에서 필요한 출력만 최대 409, 명령 증가/감소율은 최대 4/4(10 ms당)까지 조정합니다. 30–40 km/h에서 감쇠하고 ≥40은 공장 기본 비율과 2/3을 사용합니다. 수동 값과 학습값은 보존하며 기록으로 한계를 높이지 않습니다. Panda 업데이트와 재시작 및 실차 검증이 필요합니다. 지원 EV6/Ioniq 5/Carnival/Sorento에서는 HkgPhase1Assist도 이 저속 경로를 켭니다. 저장된 수동 한계를 복원하려면 두 스위치를 모두 끄십시오. 2024년형 쏘렌토는 이 모드에서 순정 속도로 조향 토크를 높입니다. ADAS ECU 연결 EV6 HDA2 토크형에는 전용 2단 토크 한계와 기본 증가·감소율이 그대로 적용되며 선택 시 응답을 기록합니다.
 
 <!-- CARROT:AUTO:BEGIN LowSpeedSteerReserve -->
-<!-- CARROT:AUTO:SOURCE facts="0811660900fe7ed35ff5309ee89c169a0a60c399dea1c74baaf0f3c14447ab8c" semantic="05eafe68a23035bc4348334280884728605203a66ac88d3eaa2331b7d736becc" review="current" -->
+<!-- CARROT:AUTO:SOURCE facts="16a3acc24c78f527956d5064d7bece2828196cdc1c3e7b752f710fc9b4071c02" semantic="590d03646724ca00ba438170b3d640523f2302c26f3eed63a702beb88e0b8aaa" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`
