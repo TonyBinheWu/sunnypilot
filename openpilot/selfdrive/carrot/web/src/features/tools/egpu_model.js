@@ -1,8 +1,10 @@
 "use strict";
 import { renderLibrary } from "./model_library.js";
+import { renderModelConnectionError } from "./driving_models.js";
 
 const POLL_INTERVAL_MS = 2000;
 let pollTimer = null;
+let pollVersion = 0;
 let lastStatus = null;
 let restartPending = false;
 
@@ -256,15 +258,24 @@ function render(status = lastStatus) {
 }
 
 async function refresh() {
+  const version = ++pollVersion;
+  window.clearTimeout(pollTimer);
   try {
-    render(await getJson("/api/egpu/model"));
+    const status = await getJson("/api/egpu/model");
+    if (version === pollVersion) render(status);
   } catch (_error) {
+    if (version !== pollVersion) return;
+    const root = document.getElementById("externalModelLibrary");
+    if (!lastStatus && root) renderModelConnectionError(root);
+    if (lastStatus?.library?.selector) {
+      lastStatus = {...lastStatus, library: {...lastStatus.library, selector: {...lastStatus.library.selector, offroad: false}}};
+      renderLibrary(lastStatus.library);
+    }
     if (lastStatus?.jetlink) render({ ...lastStatus, jetlink: {
       ...lastStatus.jetlink, severity: "unknown", addresses: [], temp_c: null, reason: "", fresh: false,
     } });
   } finally {
-    window.clearTimeout(pollTimer);
-    pollTimer = window.setTimeout(refresh, POLL_INTERVAL_MS);
+    if (version === pollVersion) pollTimer = window.setTimeout(refresh, POLL_INTERVAL_MS);
   }
 }
 

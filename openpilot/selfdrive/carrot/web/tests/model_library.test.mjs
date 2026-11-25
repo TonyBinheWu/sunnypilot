@@ -8,11 +8,46 @@ class Element {
   setAttribute() {}
   addEventListener(name, callback) { this.events[name] = callback; }
   querySelector(tag) { return this.children.find(e => e.tag === tag) || this.children.map(e => e.querySelector?.(tag)).find(Boolean); }
+  querySelectorAll(tag) { return this.children.flatMap(e => [...(e.tag === tag ? [e] : []), ...e.querySelectorAll(tag)]); }
 }
 const data = { effective: 'n16', selected: 'flip-flop', reboot_required: true, models: [
   { id: 'n16', name: 'N16 Nav', noo: true, hidden: false, protected: true, egpu_bytes: 100, jetson_bytes: null },
   { id: 'flip-flop', name: 'Flip Flop', noo: false, hidden: false, protected: true, egpu_bytes: 200, jetson_bytes: 300 },
 ] };
+
+test('shared tools render both model catalogs without an eGPU and submit the selected device field', async t => {
+  const old = {document: globalThis.document, postJson: globalThis.postJson, getJson: globalThis.getJson};
+  t.after(() => Object.assign(globalThis, old));
+  const root = new Element('section');
+  globalThis.document = {getElementById: () => root, createElement: tag => new Element(tag)};
+  const choices = [
+    ['cd210', 'CD210', 'small', 'carrot-wip'], ['sunny-s', 'SP small', 'small', 'sunnypilot'],
+    ['n16', 'N16', 'large', 'carrot-wip'], ['sunny-b', 'SP large', 'large', 'sunnypilot'],
+  ];
+  let loads = 0;
+  globalThis.getJson = async url => {
+    assert.equal(url, '/api/driving-models/catalog');
+    loads++;
+    return {models: choices.map(([id, name, size, source]) => ({id, name, size, source}))};
+  };
+  const calls = [];
+  globalThis.postJson = async (url, body) => { calls.push([url, body]); return {ok: true}; };
+  const boot = {small: 'cd210', large: 'n16', primary: 'auto'};
+  const selector = {boot, next: {...boot, small: 'sunny-s'}, offroad: true, scene: -1, job: {}};
+  await renderLibrary({...data, selector});
+  const [small, large, primary, scene] = root.querySelectorAll('select');
+  assert.deepEqual([small.value, large.value, primary.value, scene.value], ['sunny-s', 'n16', 'auto', -1]);
+  assert.deepEqual(small.children.map(e => e.label), ['carrot-wip (1)', 'sunnypilot (1)']);
+  assert.deepEqual(large.children.map(e => e.children[0].value), ['n16', 'sunny-b']);
+  assert.ok(root.children.some(e => e.textContent?.includes('PhysicalAI-reason-VLA 4B')));
+  assert.equal(root.querySelectorAll('select').some(e => e.dataset.field === 'vla'), false);
+  scene.value = '2';
+  await scene.events.change();
+  assert.deepEqual(calls, [['/api/driving-models/selection', {field: 'scene', value: 2}]]);
+  await renderLibrary({...data, selector: {...selector, offroad: false}});
+  assert.ok(root.querySelectorAll('select').every(e => e.disabled));
+  assert.equal(loads, 1);
+});
 test('model choice distinguishes current/pending/NOO and preserves in-flight choice across polls', t => {
   const old = globalThis.document;
   t.after(() => { globalThis.document = old; });

@@ -1,9 +1,12 @@
 """Immutable sunnypilot selector snapshot and offroad installation for both accelerators."""
+from contextlib import contextmanager
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import tempfile
+import threading
 import urllib.request
 import zipfile
 from functools import lru_cache
@@ -143,6 +146,54 @@ def select(big, key, offroad):
   if not offroad():
     raise ValueError('Park before selecting a model')
   save('big' if big else 'small', key)
+
+
+_choice_lock = threading.Lock()
+
+
+@contextmanager
+def choice_lock():
+  """Admit one model change across native UI and web processes, without queuing a stale choice."""
+  if not _choice_lock.acquire(blocking=False):
+    raise BlockingIOError('Another model selection is in progress')
+  try:
+    directory().mkdir(parents=True, exist_ok=True)
+    with (directory() / '.choice.lock').open('a') as handle:
+      if os.name == 'posix':
+        import fcntl
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+      yield
+  finally:
+    _choice_lock.release()
+
+
+def model_items():
+  from openpilot.common import internal_models as internal
+  return ([(False, key, model[0]) for key, model in internal.MODELS.items()]
+          + [(True, key, model['name']) for key, model in library.available().items()]
+          + [(row['big'], key, row['name']) for key, row in reversed(catalog().items())])
+
+
+def choose_model(big, key, offroad):
+  from openpilot.common import internal_models as internal
+  with choice_lock():
+    if not offroad():
+      raise ValueError('Park before selecting a model')
+    if key in catalog():
+      select(big, key, offroad)
+    else:
+      if big:
+        library.select(key)
+      else:
+        internal.select(key, offroad)
+      save('big' if big else 'small', None)
+
+
+def set_primary(role, offroad):
+  with choice_lock():
+    if role not in ('auto', 'internal') or not offroad():
+      raise ValueError('Invalid primary model selection')
+    save('primary', role)
 
 
 def freeze_boot():

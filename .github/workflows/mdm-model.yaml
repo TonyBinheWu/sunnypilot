@@ -97,6 +97,6 @@ jobs:
         working-directory: openpilot/selfdrive/carrot/web
         run: |
           npm ci
-          node --test tests/egpu_model.test.mjs tests/egpu_model_status.test.mjs
+          node --test tests/egpu_model.test.mjs tests/egpu_model_status.test.mjs tests/model_library.test.mjs
           npm run build
           git diff --exit-code

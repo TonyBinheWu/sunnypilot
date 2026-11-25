@@ -14,6 +14,7 @@ from openpilot.selfdrive.modeld.egpu_worker_progress import current_failure, sav
 from openpilot.selfdrive.modeld.egpu_rejection import rejection_status, request_retry
 
 from ..services.params import HAS_PARAMS, Params
+from .. import driving_models
 
 
 def _params_bool(params: Any, key: str) -> bool:
@@ -111,10 +112,13 @@ def build_status_payload(params: Any | None = None) -> dict[str, Any]:
   }
 
 
-async def api_status(_request: web.Request) -> web.Response:
+async def api_status(request: web.Request) -> web.Response:
   from openpilot.selfdrive.modeld.model_library import status
+  library, selector = await asyncio.gather(asyncio.to_thread(status),
+                                          asyncio.to_thread(driving_models.selection_status, driving_models.device_params()))
+  selector['job'] = request.app[driving_models.PREPARATION].job
   return web.json_response({**build_status_payload(), 'jetlink': jetlink_diagnostics(),
-                            'library': await asyncio.to_thread(status)})
+                            'library': {**library, 'selector': selector}})
 
 
 async def api_diagnostics(_request: web.Request) -> web.Response:
@@ -186,7 +190,11 @@ async def api_library(request: web.Request) -> web.Response:
     action, key = body['action'], body['model']
     if action != 'select' or not isinstance(key, str) or key not in catalog.available():
       raise ValueError('unknown model action')
-    await asyncio.to_thread(catalog.select, key)
+    from openpilot.common.sunny_models import choice_lock
+    def select_legacy_preset():
+      with choice_lock():
+        catalog.select(key)
+    await asyncio.to_thread(select_legacy_preset)
     return web.json_response({'ok': True, 'library': await asyncio.to_thread(library.status)})
   except (ValueError, OSError) as exc:
     return web.json_response({'ok': False, 'error': str(exc)}, status=409)
@@ -217,6 +225,7 @@ async def library_maintenance(app):
 
 
 def register(app: web.Application) -> None:
+  driving_models.register(app)
   app.cleanup_ctx.append(library_maintenance)
   app.router.add_get("/api/egpu/model", api_status)
   app.router.add_post("/api/egpu/model/library", api_library)

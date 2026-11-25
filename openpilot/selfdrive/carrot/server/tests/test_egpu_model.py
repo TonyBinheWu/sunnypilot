@@ -305,3 +305,74 @@ def test_library_retired_entry_cannot_be_selected(feature, monkeypatch, tmp_path
     async def json(self): return {'action': 'select', 'model': 'md-v3'}
   assert asyncio.run(feature.api_library(Request())).status == 409
   assert not (tmp_path / 'selection.json').exists()
+
+
+def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
+  from aiohttp import web
+  from aiohttp.test_utils import TestClient, TestServer
+  from threading import Event
+  from openpilot.common import sunny_models as sunny
+  from openpilot.selfdrive.carrot.server import driving_models
+
+  flags = {'IsOffroad': True, 'DrivingSceneView': -1}
+  params = SimpleNamespace(get_bool=lambda k: bool(flags.get(k)), get=lambda k, **_: flags.get(k), put=flags.__setitem__)
+  monkeypatch.setenv('CARROT_BIG_MODEL_DIR', str(tmp_path))
+  monkeypatch.setattr(driving_models, 'device_params', lambda: params)
+  monkeypatch.setattr(feature, 'Params', lambda: params)
+  monkeypatch.setattr(feature, 'HAS_PARAMS', True)
+  monkeypatch.setattr(feature, 'maintain_library_once', lambda: None)
+  entered, resume = Event(), Event()
+  def install(offroad):
+    entered.set()
+    assert resume.wait(5)
+    if not offroad():
+      raise ValueError('Ignition changed')
+  monkeypatch.setattr(sunny, 'install_runtime', install)
+  monkeypatch.setattr(sunny, 'warp_url', lambda *_: 'fixture')
+  monkeypatch.setattr(sunny, 'download', lambda *_: None)
+  sunny.freeze_boot()
+
+  async def run():
+    app = web.Application()
+    feature.register(app)
+    async with TestClient(TestServer(app)) as client:
+      async def change(field, value):
+        return await client.post('/api/driving-models/selection', json={'field': field, 'value': value})
+      async def state():
+        status = await (await client.get('/api/egpu/model')).json()
+        assert status['available'] is False
+        return status['library']['selector']
+      models = (await (await client.get('/api/driving-models/catalog')).json())['models']
+      groups = {size: [r['id'] for r in models if r['source'] == 'sunnypilot' and r['size'] == size] for size in ('small', 'large')}
+      assert (len(groups['small']), len(groups['large'])) == (79, 25)
+      assert [r['id'] for r in models if r['size'] == 'small' and r['source'] == 'carrot-wip'] == ['cd210', 'mrlv2', 'rebel']
+      assert (await state())['scene'] == -1
+      assert (await change('scene', 2)).status == 200 and (await state())['scene'] == 2
+      assert (await change('scene', True)).status == 409
+      assert (await change('primary', 'internal')).status == 200
+      assert (await state())['next']['primary'] == 'internal' and (await state())['boot']['primary'] == 'auto'
+      assert (await change('large', groups['small'][0])).status == 409
+      assert (await change('small', '../../model')).status == 409
+      assert (await change('primary', 'vla')).status == 409
+      assert (await change('large', groups['large'][0])).status == 202
+      assert await asyncio.to_thread(entered.wait, 5)
+      try:
+        assert (await state())['job']['state'] == 'preparing'
+        assert (await change('small', 'cd210')).status == 409
+        flags['IsOnroad'] = True
+      finally:
+        resume.set()
+      await app[driving_models.PREPARATION].task
+      assert (await state())['job']['state'] == 'failed' and (await state())['next']['large'] == 'n16'
+      assert (await change('small', 'cd210')).status == 409
+      flags['IsOnroad'] = False
+      for size in ('large', 'small'):
+        assert (await change(size, groups[size][0])).status == 202
+        await app[driving_models.PREPARATION].task
+        selected = await state()
+        assert selected['job']['state'] == 'saved' and selected['next'][size] == groups[size][0]
+        assert selected['boot'][size] != selected['next'][size]
+      assert (await change('large', 'flip-flop')).status == 202
+      await app[driving_models.PREPARATION].task
+      assert (await state())['next'] == {'primary': 'internal', 'small': groups['small'][0], 'large': 'flip-flop'}
+  asyncio.run(run())

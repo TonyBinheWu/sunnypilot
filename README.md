@@ -10,6 +10,8 @@
 
 [下載與安裝](#下載與安裝) · [中文語音](#繁體中文語音指令) · [介面語言](#繁體中文介面) · [手機功能](#手機操作功能) · [車機安裝](#安裝與發行策略) · [Jetson](#jetson-連接與安裝) · [車輛支援](#車輛支援範圍) · [法律聲明](#法律聲明)
 
+手機瀏覽器與 CarrotAssist 可在「工具 → sunnypilot 駕駛模型選擇器」選擇內建小模型、eGPU 大模型及 C3X／C4 本機駕駛畫面。Formosa 座艙從「應用程式 → 工具／診斷」開啟。[模型清單、回放 VLA 與駕駛畫面說明](docs/SUNNYPILOT_MODELS_AND_SCENE.zh-TW.md)
+
 ## 上游合併（2026-11-14）
 
 已合併上游 `carrot-wip` 至 [`f89f40a3`](https://github.com/ajouatom/openpilot/commit/f89f40a37965b8a75f6a313e879cee02d8cff610)，保留本分支的繁體中文、CarrotAssist、FormosaLink、導航最愛、語音音量及停車 Vision 等功能。合併前版本保存在 [`carrot-wip-backup-2026-11-14`](https://github.com/TonyBinheWu/sunnypilot/tree/carrot-wip-backup-2026-11-14)。

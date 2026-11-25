@@ -4,11 +4,12 @@
 <style>:root{color-scheme:dark}body{font-family:system-ui,sans-serif;line-height:1.8;max-width:960px;margin:auto;padding:20px;color:#e5e7eb;background:#111827}a{color:#93c5fd}h1,h2,h3{line-height:1.4;scroll-margin-top:20px}h2{margin-top:2em}table{display:block;overflow-x:auto;border-collapse:collapse}th,td{padding:10px;border:1px solid #4b5563;min-width:120px}code{overflow-wrap:anywhere}nav{display:flex;gap:20px;flex-wrap:wrap}li{margin:.5em 0}</style>
 <nav><a href="/?page=tools">返回 Carrot Web 工具</a><a href="#details">各頁面詳細操作</a></nav>
 <main><h1>carrotpilot 手機操作指南與功能解析</h1>
-<h2>C3X 與 C4 的駕駛畫面與規劃</h2>
-<p>在裝置「設定 → 切換 → 駕駛畫面」選擇「動態 3D」、「攝影機」或「模型感知 3D」。模型感知會畫出駕駛模型目前輸出的道路邊界、標線、路徑及前車。標有「前向攝影機偵測」的行人、汽機車等分類來自另外的前向影像辨識。兩側道路邊界同時展開再收窄時，畫面標示可能的路口及距離。</p>
-<p>「車道置中」與「低速方向燈轉彎」於下次行駛生效。置中需要左右標線都有足夠信心；低速轉彎在時速約 32 公里以下接受駕駛的單側方向燈。駕駛仍需判斷路權、注意號誌與對向車。停車後可在「設定 → 模型」下載並選擇模型，重新開機後套用。</p>
-<p>現代、起亞及 Genesis 在車輛設定精靈預設使用一般線束與自動偵測。已確認線束接在 ADAS ECU 的 EV6，可直接選該匯流排。Carrot Web 導航的離線地圖可下載台灣、南韓、盧森堡或安道爾的道路圖磚。地圖輸入支援程度依模型而異。</p>
 <p>依本倉庫 <code>carrot-wip</code> 的程式碼及既有指南整理。清單代表程式提供的功能；實際可用性仍取決於車型、裝置版本、資料來源、瀏覽器與權限。本次未進行實車或實體手機驗證。</p>
+<h2>C3X 與 C4 的駕駛畫面與模型</h2>
+<p>手機瀏覽器與 CarrotAssist 從「工具 → sunnypilot 駕駛模型選擇器」進入。Formosa 座艙從「應用程式 → 工具／診斷」進入。清單包含 carrot-wip 原有模型以及 sunnypilot 的 79 個小模型、25 個大模型。停車並關閉點火後，選擇模型，等到顯示「已儲存，下次開機套用」，再重啟車機。PhysicalAI-reason-VLA 4B 目前僅供行車紀錄回放比對。<a href="https://github.com/TonyBinheWu/sunnypilot/blob/carrot-wip/docs/SUNNYPILOT_MODELS_AND_SCENE.zh-TW.md">模型、硬體及驗證說明</a></p>
+<p>同一頁的「C3X／C4 本機駕駛畫面」可選動態 3D、原始鏡頭或模型感知 3D。本機也可由設定中的「駕駛畫面」切換。模型感知顯示道路邊界、標線、路徑及前車。前向影像辨識提供行人和汽機車分類。畫面分別標示可能的道路開口和離線圖資的路口。</p>
+<p>「車道置中」與「低速方向燈轉彎」於下次行駛生效。置中需要左右標線都有足夠信心。低速轉彎在時速約 32 公里以下接受駕駛的單側方向燈。駕駛仍需判斷路權、注意號誌與對向車。</p>
+<p>現代、起亞及 Genesis 在車輛設定精靈預設使用一般線束與自動偵測。已確認線束接在 ADAS ECU 的 EV6，可直接選該匯流排。Carrot Web 導航的離線地圖可下載台灣、南韓、盧森堡或安道爾的道路圖磚。地圖輸入支援程度依模型而異。</p>
 <h2>車道建圖與多趟比對（研究工具）</h2>
 <p>更新車機後，網頁及既有 CarrotAssist 0.2.19 可由「工具 → 車道建圖與多趟比對」開啟離線成果。支援 BEV／3D、旋轉／縮放／平移、趟次篩選、來源與品質、版本觀測差異、人工審查 JSON。可看明確標示的合成範例、本機／貼上 JSON，或管理者手動放在 <code>/data/carrot/mapping</code> 的成果。資料不自動上傳；審查僅存目前分頁，需匯出保存。</p>
 <p>工作站工具擷取模型車道，配合外部已配準位姿建圖；沒有新增 VIO 求解器、訓練權重、完整環景或可控制車輛的高精度地圖。不同路線／視野造成的未觀測不代表道路消失，分散度也不是實測精度。前窄角＋廣角仍需內外參與時間同步；更高精度另需測量／RTK 基準。<a href="https://github.com/TonyBinheWu/sunnypilot/blob/carrot-wip/docs/carrot_mapping_zh-TW.md">完整繁中格式、指令與配套清單</a>。</p>

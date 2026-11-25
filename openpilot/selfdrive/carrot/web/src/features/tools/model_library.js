@@ -1,4 +1,5 @@
 ﻿"use strict";
+import { renderDrivingLibrary } from "./driving_models.js";
 const EN = {
   title: "External driving model", internal: "Internal model: CD210 (fixed)",
   help: "One choice for eGPU and Jetson. Choosing saves the next-boot selection. Reboot comma and Jetson while parked with ignition off and internet available. First use downloads files; Jetson also prepares its engine.",
@@ -25,6 +26,7 @@ export function renderLibrary(library, force = false) {
   const root = document.getElementById("externalModelLibrary");
   if (!root) return;
   root.hidden = false;
+  if (library.selector) return renderDrivingLibrary(root, library);
   const signature = JSON.stringify([library, t("title")]);
   if (!force && root.dataset.signature === signature) return;
   // Do not replace an in-flight selection with an older status poll.

@@ -10,9 +10,7 @@ from openpilot.system.ui.lib.multilang import tr
 class ModelChoices:
   def __init__(self, offroad):
     self.offroad = offroad
-    self.items = [(False, key, model[0]) for key, model in internal.MODELS.items()]
-    self.items += [(True, key, model['name']) for key, model in external.available().items()]
-    self.items += [(row["big"], key, row["name"]) for key, row in reversed(sunny.catalog().items())]
+    self.items = sunny.model_items()
     self.group = 0
     self.busy = False
     self.error = None
@@ -58,15 +56,7 @@ class ModelChoices:
     self.busy, self.error = (big, key), None
     def run():
       try:
-        if key in sunny.catalog():
-          sunny.select(big, key, self.offroad)
-        elif big:
-          if self.offroad():
-            external.select(key)
-            sunny.save("big", None)
-        else:
-          internal.select(key, self.offroad)
-          sunny.save("small", None)
+        sunny.choose_model(big, key, self.offroad)
       except Exception:
         self.error = (big, key)
       finally:
@@ -76,7 +66,10 @@ class ModelChoices:
 
   def toggle_primary(self):
     if self.offroad() and not self.busy:
-      sunny.save('primary', 'auto' if sunny.internal_primary() else 'internal')
+      try:
+        sunny.set_primary('auto' if sunny.internal_primary() else 'internal', self.offroad)
+      except (OSError, ValueError):
+        return
       self.next_role = 0.
 
   def primary_text(self):

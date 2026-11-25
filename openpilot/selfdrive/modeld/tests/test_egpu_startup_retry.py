@@ -31,7 +31,7 @@ def test_link_retry_stops_then_preserves_internal_fallback(monkeypatch, tmp_path
     return sentinel
   monkeypatch.setattr(precompiled_runner, 'PrecompiledModelState', construct)
   namespace = {
-    'precompiled': precompiled, 'usbgpu_model': None, 'usbgpu_pkl_path': tmp_path / 'model.pkl',
+    'sunny_big': None, 'precompiled': precompiled, 'usbgpu_model': None, 'usbgpu_pkl_path': tmp_path / 'model.pkl',
     'vipc_client_main': SimpleNamespace(width=1928, height=1208), 'ModelState': construct,
     'usbgpu_pcie_not_ready': usbgpu_pcie_not_ready, 'time': SimpleNamespace(sleep=sleeps.append),
     'refresh_usbgpu_device_cache': lambda: refreshes.append(True),
