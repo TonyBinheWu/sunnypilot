@@ -1,4 +1,5 @@
 from collections import deque
+import math
 
 import numpy as np
 from opendbc.car.hyundai.scalar import clip_float
@@ -14,7 +15,7 @@ from opendbc.car.hyundai.phase1 import phase1_enabled
 from opendbc.car.hyundai.steering_observations import SteeringObservations
 from opendbc.car.carlog import carlog
 from opendbc.car.hyundai.hyundaicanfd import CanBus
-from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags
+from opendbc.car.hyundai.values import HyundaiFlags, Buttons, CarControllerParams, CAR, CAN_GEARS, HyundaiExtFlags, uses_ev6_adas_torque
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.vehicle_model import VehicleModel
 from opendbc.car.hyundai.values import get_pedal_interceptor_params
@@ -32,6 +33,9 @@ from openpilot.common.params import Params, UnknownKeyName
 MAX_ANGLE = 85
 MAX_ANGLE_FRAMES = 89
 MAX_ANGLE_CONSECUTIVE_FRAMES = 2
+EV6_LOW_SPEED_TORQUE_MAX = 384
+EV6_HIGH_SPEED_TORQUE_MAX = 330
+EV6_TORQUE_SPEED_THRESHOLD = 11.0  # m/s, taco2 uses raw vehicle speed
 DRIVER_TORQUE_FILTER_TAU = 0.12
 PRE_OVERRIDE_PREDICTION_TIME = 0.15
 PRE_OVERRIDE_START_RATIO = 0.90
@@ -222,7 +226,8 @@ class CarController(CarControllerBase):
     super().__init__(dbc_names, CP)
     self.CAN = CanBus(CP)
     self.params = CarControllerParams(CP)
-    self.default_steer_max = self.params.STEER_MAX
+    self.ev6_adas_torque = uses_ev6_adas_torque(CP)
+    self.default_steer_max = EV6_LOW_SPEED_TORQUE_MAX if self.ev6_adas_torque else self.params.STEER_MAX
     self.low_speed_steer_reserve = LowSpeedSteerReserve()
     self.reserve_supported = supports_reserve(CP)
     self.reserve_enabled = False
@@ -257,6 +262,8 @@ class CarController(CarControllerBase):
         and not CP.flags & HyundaiFlags.ANGLE_CONTROL):
       self.lfa_cadence = CameraLfaCadence()
       self.angle_frame_bounds = (92, 94)
+    elif self.ev6_adas_torque:
+      self.angle_frame_bounds = (MAX_ANGLE_FRAMES, MAX_ANGLE_FRAMES)
     else:
       self.angle_frame_bounds = (MAX_ANGLE_FRAMES, 100)
     self.max_angle_frames = self.angle_frame_bounds[0]
@@ -310,6 +317,13 @@ class CarController(CarControllerBase):
 
   def update(self, CC, CS, now_nanos):
 
+    if (self.ev6_adas_torque and CC.latActive and
+        (not CS.out.canValid or CS.out.canTimeout or CS.out.steerFaultTemporary or CS.out.steerFaultPermanent or
+         not math.isfinite(CS.out.vEgoRaw) or CS.out.vEgoRaw < 0)):
+      CC = CC.as_builder()
+      CC.latActive = False
+      CC = CC.as_reader()
+
     lfa_fresh, lfa_due = True, True
     if self.lfa_cadence is not None:
       lfa_fresh, lfa_due = self.lfa_cadence.poll(CS.cp_cam, now_nanos)
@@ -341,7 +355,7 @@ class CarController(CarControllerBase):
       steerDeltaDownLC = params.get_int("CustomSteerDeltaDownLC")
       # Demand-follow mode always uses factory mapping/slew, including highway.
       # Keep the stored manual settings untouched for when this mode is disabled.
-      if self.reserve_enabled:
+      if self.reserve_enabled and not self.ev6_adas_torque:
         steerMax = steerDeltaUp = steerDeltaDown = steerDeltaUpLC = steerDeltaDownLC = 0
       if steerMax > 0:
         self.params.STEER_MAX = steerMax
@@ -398,11 +412,21 @@ class CarController(CarControllerBase):
     angle_control = self.CP.flags & HyundaiFlags.ANGLE_CONTROL
 
     # steering torque
-    new_torque = int(round(actuators.torque * self.params.STEER_MAX))
+    torque_scale = self.params.STEER_MAX
+    if self.ev6_adas_torque:
+      low_speed = 0 <= CS.out.vEgoRaw < EV6_TORQUE_SPEED_THRESHOLD
+      torque_scale = min(torque_scale, EV6_LOW_SPEED_TORQUE_MAX if low_speed else EV6_HIGH_SPEED_TORQUE_MAX)
+    new_torque = int(round(actuators.torque * torque_scale))
     reserve_max = self.low_speed_steer_reserve.update(
-      enabled=self.reserve_enabled, active=CC.latActive, cs=CS.out, base=self.params.STEER_MAX,
+      enabled=self.reserve_enabled, active=CC.latActive, cs=CS.out, base=torque_scale,
       model_frame=CS.modelV2.frameId if CS.modelV2 is not None else None, demand=actuators.torque)
-    if self.reserve_enabled:
+    if self.ev6_adas_torque:
+      # One torque envelope on both steering buses. Keep the current Panda-compatible
+      # rise and driver-withdrawal rates across the speed boundary and during lane changes.
+      reserve_max = torque_scale
+      self.params.STEER_DELTA_UP = min(self.params.STEER_DELTA_UP, self.steerDeltaUpOrg)
+      self.params.STEER_DELTA_DOWN = self.steerDeltaDownOrg
+    elif self.reserve_enabled:
       self.params.STEER_DELTA_UP, self.params.STEER_DELTA_DOWN = self.low_speed_steer_reserve.rates(
         requested=max(-reserve_max, min(new_torque, reserve_max)), previous=self.apply_torque_last, base=self.params.STEER_MAX,
         up=self.steerDeltaUpOrg, down=self.steerDeltaDownOrg)
@@ -786,7 +810,7 @@ class CarController(CarControllerBase):
         can_sends.append(pedal_message)
 
     new_actuators = actuators.as_builder()
-    new_actuators.torque = apply_torque / self.params.STEER_MAX
+    new_actuators.torque = apply_torque / torque_scale
     # torqueOutputCan reflects the steering authority value actually sent over CAN.
     # Torque-control platforms send the signed torque command, while angle-control
     # platforms send LKAS_ANGLE_MAX_TORQUE alongside the requested angle.
@@ -799,6 +823,8 @@ class CarController(CarControllerBase):
       try:
         reason = self.low_speed_steer_reserve.reason
         if self.reserve_enabled and CC.latActive and reason in ('demand', 'qualifying', 'following', 'taper', 'ceiling', 'factory'):
+          if self.ev6_adas_torque:
+            reason = 'factory'
           if not apply_steer_req:
             reason = 'request_cut'
           elif abs(new_torque - apply_torque) > 1 and abs(new_torque) <= reserve_max:
@@ -806,7 +832,7 @@ class CarController(CarControllerBase):
         self.steering_observations.update(
           now=now_nanos * 1e-9, enabled=self.reserve_enabled, active=CC.latActive, cs=CS.out,
           requested=new_torque, command=apply_torque, target_angle=actuators.steeringAngleDeg,
-          base=self.params.STEER_MAX, ceiling=reserve_max,
+          base=torque_scale, ceiling=reserve_max,
           up=self.params.STEER_DELTA_UP, down=self.params.STEER_DELTA_DOWN, reason=reason)
       except Exception:
         pass  # No observed value is fed back into control or safety limits.

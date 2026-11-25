@@ -154,6 +154,33 @@ def test_wrong_bus_and_angle_format_cannot_bypass_torque_checks():
   assert not g.tx(0,addr='LFA',bus=1,angle_active=2)
 
 
+@pytest.mark.parametrize('sign', [-1, 1])
+def test_ev6_adas_speed_transition_emits_admissible_steering(monkeypatch, sign):
+  from opendbc.car.hyundai.tests.test_low_speed_steer_reserve import ev6_adas_controller
+  from opendbc.car.hyundai.tests.test_steering_handover_controller import step
+
+  controller, cs, cc, settings = ev6_adas_controller(monkeypatch, enabled=True)
+  settings.update(MaxAngleFrames=100, CustomSteerDeltaUp=50, CustomSteerDeltaDown=1)
+  cc.actuators.torque = sign
+  guard = Guard(int(F.CANFD_LKA_STEERING))
+  expected = {249: 384, 250: 381, 270: 330, 400: 327, 549: 0, 550: 2, 580: 0}
+  for frame in range(600):
+    cs.out.vEgoRaw = cs.out.vEgo = 10.99 if frame < 250 else 11.0
+    cs.out.steeringAngleDeg = sign * min(frame * 2, 360)
+    cs.out.steeringPressed = 400 <= frame < 550
+    cs.out.steeringTorque = -sign * 1000 if cs.out.steeringPressed else 0
+    cc.latActive = frame < 580
+    guard.now += 10000
+    guard.s.set_timer(guard.now)
+    guard.sensors(cs.out.vEgoRaw * 3.6, cs.out.steeringTorque)
+    guard.s.set_controls_allowed(cc.latActive)
+    output, messages = step(controller, cs, cc)
+    packet, = [libsafety_py.make_CANPacket(addr, bus, data) for addr, data, bus in messages if (addr, bus) == (0x50, 0)]
+    assert guard.s.safety_tx_hook(packet), frame
+    if frame in expected:
+      assert sign * output.torqueOutputCan == expected[frame]
+
+
 def test_redundant_output_histories_and_89_2_request_cuts_are_independent():
   g=Guard(int(F.CANFD_LKA_STEERING|F.LONG))
   g.s.set_controls_allowed(True)

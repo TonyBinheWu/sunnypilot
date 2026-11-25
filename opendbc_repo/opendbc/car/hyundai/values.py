@@ -13,6 +13,12 @@ from opendbc.car.pedal_interceptor import PedalInterceptorParams
 Ecu = CarParams.Ecu
 
 
+def uses_ev6_adas_torque(cp: CarParams) -> bool:
+  return (cp.carFingerprint == CAR.KIA_EV6 and cp.steerControlType == "torque"
+          and bool(cp.flags & HyundaiFlags.CANFD_HDA2) and bool(cp.flags & HyundaiFlags.CANFD)
+          and not cp.flags & (HyundaiFlags.CAMERA_SCC | HyundaiFlags.CANFD_CAMERA_SCC | HyundaiFlags.ANGLE_CONTROL))
+
+
 class CarControllerParams:
   ACCEL_MIN = -4.0 # m/s
   ACCEL_MAX = 2.5 # m/s

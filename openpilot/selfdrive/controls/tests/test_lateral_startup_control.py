@@ -73,7 +73,7 @@ def control_fixture(phase1=False, cp_override=None):
     lateral = LatControlAngle(cp, ci)
   else:
     lateral = LatControlTorque(cp, ci)
-  control = NS(vision_profile_requested=False, sunny_profile=False, steering_selected=True, blinker_pause_speed=0.,
+  control = NS(vision_profile_requested=False, sunny_profile=False, lane_center=False, steering_selected=True, blinker_pause_speed=0.,
                hkg_phase1_enabled=phase1, CP=cp, CI=ci, sm=sm, params=params, VM=VehicleModel(cp), LaC=lateral,
                LoC=NS(reset=lambda: None, update=lambda *args: (0.0, 0.0, 0.0), long_control_state='off'),
                carrot_controls=NS(lat_suspend_control=lambda cs, active: active), is_vw_meb=False,

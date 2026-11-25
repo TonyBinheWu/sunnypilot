@@ -18,7 +18,8 @@ def setup_controller(monkeypatch, *, mode=None, angle=True, camera=True, cp_over
     assert key != "SteerHandoverMode", "retired setting must not be read"
     return settings.get(key, 0)
 
-  params = NS(get_int=get_int, get_bool=lambda key: False)
+  params = NS(get_int=get_int, get_bool=lambda key: bool(get_int(key)),
+              get=lambda key, return_default=False: settings.get(key, return_default and key == "HyundaiShowStockSigns"))
   monkeypatch.setattr(carcontroller, "Params", lambda: params)
   monkeypatch.setattr(hyundaicanfd, "Params", lambda: params)
   # Keep actual angle limiting, legacy authority and steering

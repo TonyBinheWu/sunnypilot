@@ -1,12 +1,9 @@
-from types import SimpleNamespace as NS
-
 import pytest
 
 from opendbc.car import structs
-from opendbc.car.hyundai import carcontroller
 from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
 from opendbc.car.hyundai.tests.test_steering_handover_controller import setup_controller, step
-from opendbc.car.hyundai.values import CAR, HyundaiFlags
+from opendbc.car.hyundai.values import CAR, HyundaiFlags, uses_ev6_adas_torque
 
 
 def state(**kw):
@@ -71,11 +68,94 @@ def torque_fixture(monkeypatch, enabled=True, cp=None):
   # Fixture CP is generic: this test explicitly selects supported Hyundai torque control.
   controller.reserve_supported = True
   settings['LowSpeedSteerReserve'] = int(enabled)
-  monkeypatch.setattr(carcontroller, 'Params',
-                      lambda: NS(get_int=lambda k: settings.get(k, 0), get_bool=lambda k: bool(settings.get(k, 0))))
   cs.out = state()
   cc.actuators.torque = 1.5
   return controller, cs, cc, settings
+
+
+def ev6_adas_controller(monkeypatch, enabled=False):
+  model = CAR.KIA_EV6
+  flags = HyundaiFlags.CANFD | HyundaiFlags.CANFD_HDA2
+  cp = structs.CarParams(brand='hyundai', carFingerprint=model, flags=int(flags), steerControlType='torque',
+                         wheelbase=model.config.specs.wheelbase, steerRatio=model.config.specs.steerRatio)
+  cp.lateralTuning.init('torque')
+  controller, cs, cc, settings = torque_fixture(monkeypatch, enabled=enabled, cp=cp)
+  cs.cam_0x362 = cs.cam_0x2a4 = None
+  return controller, cs, cc, settings
+
+
+@pytest.mark.parametrize('sign', [-1, 1])
+@pytest.mark.parametrize('desire,normal,lane_change,expected_step', [(0, 5, 1, 2), (3, 1, 5, 2), (0, 1, 5, 1), (4, 5, 1, 1)])
+def test_ev6_adas_manual_rise_during_sustained_turn(monkeypatch, sign, desire, normal, lane_change, expected_step):
+  controller, cs, cc, settings = ev6_adas_controller(monkeypatch)
+  settings.update(CustomSteerDeltaUp=normal, CustomSteerDeltaUpLC=lane_change, MaxAngleFrames=100)
+  cc.hudControl.modelDesire = desire
+  cc.actuators.torque = sign * 0.8
+  cs.out.steeringAngleDeg = sign * 360
+  requests = []
+  for frame in range(183):
+    actuators, messages = step(controller, cs, cc)
+    data, = [data for addr, data, bus in messages if addr == 0x50 and bus == 0]
+    torque = ((int.from_bytes(data, 'little') >> 41) & 0x7ff) - 1024
+    assert torque == actuators.torqueOutputCan == sign * min(round(384 * 0.8), (frame + 1) * expected_step)
+    requests.append(bool(data[6] & 0x10))
+  assert requests == ([True] * 89 + [False] * 2) * 2 + [True]
+  assert (settings['CustomSteerDeltaUp'], settings['CustomSteerDeltaUpLC']) == (normal, lane_change)
+
+
+@pytest.mark.parametrize('sign', [-1, 1])
+@pytest.mark.parametrize('reserve,phase1', [(False, False), (True, False), (False, True), (True, True)])
+def test_ev6_adas_speed_boundary_and_driver_withdrawal(monkeypatch, sign, reserve, phase1):
+  controller, cs, cc, settings = ev6_adas_controller(monkeypatch, reserve)
+  settings.update(HkgPhase1Assist=int(phase1), CustomSteerMax=30000, CustomSteerDeltaDown=1)
+  cc.actuators.torque = sign * 1.5
+  cs.out.vEgoRaw = 10.999
+  def command():
+    output, _ = step(controller, cs, cc)
+    return sign * output.torqueOutputCan
+  assert [command() for _ in range(195)] == [min(2 * n, 384) for n in range(1, 196)]
+  cs.out.vEgoRaw = 11.0
+  assert [command() for _ in range(20)] == [max(330, 384 - 3 * n) for n in range(1, 21)]
+  cs.out.vEgoRaw = 10.999
+  assert [command() for _ in range(27)] == list(range(332, 385, 2))
+  cs.out.steeringPressed = True
+  cs.out.steeringTorque = -1000 * sign
+  assert [command() for _ in range(130)] == [max(0, 384 - 3 * n) for n in range(1, 131)]
+  cs.out.steeringPressed, cs.out.steeringTorque = False, 0
+  settings['CustomSteerMax'] = 150
+  assert [command() for _ in range(200)][-1] == 150
+
+
+@pytest.mark.parametrize('field,value', [('canValid', False), ('canTimeout', True), ('steerFaultTemporary', True),
+                                         ('steerFaultPermanent', True), ('vEgoRaw', float('nan')), ('vEgoRaw', -1)])
+def test_ev6_adas_fault_releases_and_recovers_from_zero(monkeypatch, field, value):
+  controller, cs, cc, _ = ev6_adas_controller(monkeypatch)
+  for _ in range(100):
+    step(controller, cs, cc)
+  healthy = getattr(cs.out, field)
+  setattr(cs.out, field, value)
+  output, msgs = step(controller, cs, cc)
+  assert output.torqueOutputCan == 0
+  data, = [data for addr, data, bus in msgs if addr == 0x50 and bus == 0]
+  assert not (data[6] & 0x10)
+  setattr(cs.out, field, healthy)
+  assert step(controller, cs, cc)[0].torqueOutputCan == 2
+
+
+@pytest.mark.parametrize('model,hda2,extra,protocol,expected', [
+  (CAR.KIA_EV6, True, 0, 'torque', True),
+  (CAR.KIA_EV6, True, HyundaiFlags.CANFD_HDA2_ALT_STEERING, 'torque', True),
+  (CAR.KIA_EV6, True, HyundaiFlags.CAMERA_SCC, 'torque', False),
+  (CAR.KIA_EV6, True, HyundaiFlags.CANFD_CAMERA_SCC, 'torque', False),
+  (CAR.KIA_EV6, False, 0, 'torque', False),
+  (CAR.KIA_EV6, True, HyundaiFlags.ANGLE_CONTROL, 'angle', False),
+  (CAR.KIA_EV6_PE, True, 0, 'torque', False),
+  (CAR.HYUNDAI_IONIQ_5, True, 0, 'torque', False),
+])
+def test_ev6_adas_scope(model, hda2, extra, protocol, expected):
+  flags = HyundaiFlags.CANFD | extra | (HyundaiFlags.CANFD_HDA2 if hda2 else 0)
+  cp = structs.CarParams(carFingerprint=model, steerControlType=protocol, flags=int(flags))
+  assert uses_ev6_adas_torque(cp) is expected
 
 
 @pytest.mark.parametrize('sign', [-1, 1])

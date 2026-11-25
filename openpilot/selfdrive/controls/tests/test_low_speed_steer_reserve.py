@@ -7,11 +7,11 @@ from opendbc.car.hyundai.values import HyundaiFlags
 from openpilot.selfdrive.controls.lib import latcontrol_torque
 
 
-def make_controller(monkeypatch, enabled, fingerprint="", phase1=False):
+def make_controller(monkeypatch, enabled, fingerprint="", phase1=False, flags=HyundaiFlags.CANFD):
   settings = {'LowSpeedSteerReserve': enabled, 'CustomSteerMax': 0, 'HkgPhase1Assist': phase1}
   monkeypatch.setattr(latcontrol_torque, 'Params', lambda: NS(
     get_bool=lambda k: bool(settings.get(k, 0)), get_int=lambda k: settings.get(k, 0)))
-  cp = structs.CarParams(carFingerprint=fingerprint, brand='hyundai', flags=int(HyundaiFlags.CANFD), steerControlType='torque', steerLimitTimer=.4)
+  cp = structs.CarParams(carFingerprint=fingerprint, brand='hyundai', flags=int(flags), steerControlType='torque', steerLimitTimer=.4)
   cp.lateralTuning.init('torque')
   cp.lateralTuning.torque = dict(kp=1, ki=0, kf=1, useSteeringAngle=True, latAccelFactor=3.2)
   # Controlled geometry/torque mapping isolates the real controller/PID clipping.
@@ -83,3 +83,11 @@ def test_phase1_switch_uses_existing_real_pid_headroom_and_live_off(monkeypatch,
 def test_phase1_does_not_enable_reserve_on_other_platform(monkeypatch):
   f = make_controller(monkeypatch, False, 'HYUNDAI_TUCSON_4TH_GEN', True)
   assert abs(run(f, .04)[-1]) == 1
+
+
+@pytest.mark.parametrize('sign', [-1, 1])
+def test_ev6_adas_speed_mapping_keeps_one_normalized_pid_envelope(monkeypatch, sign):
+  f = make_controller(monkeypatch, True, 'KIA_EV6', True, HyundaiFlags.CANFD | HyundaiFlags.CANFD_HDA2)
+  for raw_speed in (7, 11, 12, 10.999):
+    f[1].vEgo = f[1].vEgoRaw = raw_speed
+    assert abs(run(f, sign * .04)[-1]) == 1.0

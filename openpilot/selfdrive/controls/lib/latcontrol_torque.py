@@ -11,7 +11,7 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N
 from opendbc.car.interfaces import LatControlInputs
 from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
 from opendbc.car.hyundai.phase1 import supports_phase1
-from opendbc.car.hyundai.values import CarControllerParams
+from opendbc.car.hyundai.values import CarControllerParams, uses_ev6_adas_torque
 from opendbc.car.vehicle_model import ACCELERATION_DUE_TO_GRAVITY
 from openpilot.selfdrive.controls.lib.latcontrol import LatControl
 from openpilot.common.pid import PIDController
@@ -82,7 +82,8 @@ class LatControlTorque(LatControl):
     self.frame = 0
     self.params = Params()
     self.phase1_supported = supports_phase1(CP)
-    self.reserve_supported = supports_reserve(CP)
+    # EV6 ADAS ECU maps the normal +/-1 PID output to its own speed-dependent envelope.
+    self.reserve_supported = supports_reserve(CP) and not uses_ev6_adas_torque(CP)
     self.reserve = LowSpeedSteerReserve()
     self.reserve_enabled = False
     self.reserve_base = self.reserve_default_base = CarControllerParams(CP).STEER_MAX if self.reserve_supported else 1

@@ -4,6 +4,16 @@
 
 ## 控制器行為
 
+### Kia EV6 HDA2 接 ADAS ECU
+
+車機辨識為 `KIA_EV6`、HDA2 且採扭矩轉向的 ADAS ECU 接線車型，依原始車速決定扭矩換算比例。低於 11 m/s（39.6 km/h）採 384，達到分界時採 330，單位為 CAN 扭矩指令。正值 `CustomSteerMax` 可進一步降低兩段上限。轉向模型的正規化需求限制在 ±1。方向盤實際轉動角度取決於車況與方向機。[taco2 車速分段](https://github.com/commaai/openpilot/blob/a8c957e9d98cb3c334ab60c09e731c262605ae56/selfdrive/car/hyundai/values.py#L27-L34)
+
+本車型每 10 ms 最多增加 2 個單位，正常與變換車道各自採用較低的手動增量。收回扭矩時每 10 ms 減少最多 3 個單位，跨越車速分界亦逐步收回。退出橫向輔助或收到方向機故障時立即送出零扭矩。開啟低速需求追蹤或第一階段輔助時，仍採用相同的扭矩比例和速率，轉向反應記錄可照常使用。
+
+左轉或右轉持續達到 85° 時，連續送出 89 幀轉向請求，再將請求位元清除 2 幀。角度回到門檻內或退出輔助就重新計數。此車型採固定週期。這項調整沿用 ADAS ECU 的匯流排和儀表輸出。[taco2 大角度處理](https://github.com/commaai/openpilot/blob/a8c957e9d98cb3c334ab60c09e731c262605ae56/selfdrive/car/hyundai/carcontroller.py#L99-L110)
+
+### 其他支援車型的低速需求追蹤
+
 `LowSpeedSteerReserve` 仍位於 `CustomSteerMax` 下方，預設關閉。它同時管理低速扭力餘量與動態指令速率。
 
 | 車速 | 扭力需求 | 主機指令增加／減少速率 |
