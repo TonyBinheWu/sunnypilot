@@ -64,4 +64,5 @@ jobs:
       - name: Check C4 settings targets and secondary navigation
         env:
           PYTHONPATH: .:opendbc_repo
+          SCALE: '1'
         run: python -m pytest --noconftest -o addopts= -q openpilot/selfdrive/ui/tests/test_mici_settings_targets.py
