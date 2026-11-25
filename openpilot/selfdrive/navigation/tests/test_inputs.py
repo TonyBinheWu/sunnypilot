@@ -132,11 +132,12 @@ def test_verified_instruction_without_tiles_and_legacy_tbt_only(monkeypatch):
 
 
 def test_logged_route_report_round_trips_into_the_model_input_gate():
-  from openpilot.cereal import log, messaging
+  from openpilot.cereal import log
   from openpilot.selfdrive.navigation.helpers import nearby_maneuver
   sm = nav_streams()
   sm['navInstructionCarrot'].allManeuvers[0].distance = 20.
-  msg = messaging.new_message('mapRenderState', valid=True)
+  msg = log.Event.new_message(valid=True)
+  msg.init('mapRenderState')
   msg.mapRenderState.carrotRouteId = 123
   msg.mapRenderState.routeMatch = 'matched'
   msg.mapRenderState.approachManeuver = 'turn right'

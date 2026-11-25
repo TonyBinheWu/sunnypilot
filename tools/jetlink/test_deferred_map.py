@@ -207,10 +207,15 @@ def test_map_input_metadata_preserves_integer_clock_and_clears_cancel(monkeypatc
   source.image=np.ones((256,256),np.uint8);source.image_time_ns=9_800_000_001
   source.image_time=source.image_time_ns*1e-9;source.route_time=77
   class SM(dict):pass
-  sm=SM(navInstructionCarrot=NS(allManeuvers=[]),navRoute=NS(carrotRouteId=77))
-  sm.valid={'navInstructionCarrot':True,'navRoute':True};sm.recv_time={'navInstructionCarrot':9.9}
+  sm = SM(navInstructionCarrot=NS(allManeuvers=[]), navRoute=NS(carrotRouteId=77, coordinates=[0, 1]),
+          mapRenderState=NS(carrotRouteId=77, routeMatch='matched', locationMonoTime=9_800_000_000,
+                            matchedSinceMonoTime=9_700_000_000, approachManeuver=''))
+  sm.valid = dict.fromkeys(sm, True)
+  sm.logMonoTime = dict.fromkeys(sm, 9_900_000_000)
   seen=[];model=NS(views={'nav_map':None},set_nav_metadata=seen.append)
   assert 'nav_map' in source.update(model,sm,0)
   assert seen==[None,(77,9_800_000_001,10_300_000_001)]
+  sm['mapRenderState'].locationMonoTime = 8_100_000_000
+  assert 'nav_map' in source.update(model,sm,0) and seen[-1] == (77,9_800_000_001,10_100_000_000)
   sm['navRoute'].carrotRouteId=78
   assert 'nav_map' not in source.update(model,sm,0) and seen[-1] is None
