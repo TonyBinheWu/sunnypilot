@@ -7,7 +7,29 @@ const EN = {
   unavailable: "Cannot load the model list. Checking the connection…", preparing: "Preparing model…",
   failed: "Preparation failed. Check the connection and free space, then select the model again.",
   load_failed: "Model failed to load this boot", saved: "Saved for next boot", jetson: "Jetson model",
-  vla: "PhysicalAI-reason-VLA 4B · Recorded-drive comparison only. On-road inference is unavailable.",
+  vla: "PhysicalAI-reason-VLA 4B · Recorded-drive comparison",
+  vla_observer: "PhysicalAI-reason-VLA 4B · C4 Chestnut observation",
+  off: "Off",
+  observe: "Compare with the built-in primary model",
+  observe_help: "Select the internal primary and reboot. First use verifies a 2.95 GB download. The VLA compares decisions on matching frames. Vehicle control stays with the primary model.",
+  idle: "Waiting for a session",
+  waiting: "Waiting for healthy, aligned inputs",
+  loading_vla: "Loading VLA weights",
+  inferencing: "Running inference",
+  expired: "Result expired",
+  result: "Received an aligned observation",
+  too_slow: "Stopped after three late results",
+  usb_unavailable: "Chestnut connection or power unavailable",
+  worker_failed: "GPU worker unavailable or timed out",
+  primary_guard: "Stopped to protect primary inference",
+  primary_owns_gpu: "Select the internal primary and reboot",
+  session: "Session totals · accepted / late",
+  latency: "Last completed inference, camera to result",
+  last_comparison: "Last accepted stop comparison",
+  both_stop: "Both models indicated stop",
+  only_vla_stop: "Only the VLA indicated stop",
+  only_primary_stop: "Only the primary indicated stop",
+  inconclusive: "No comparable stop decision",
 };
 const t = key => typeof getUIText === "function" ? getUIText("driving_models_" + key, EN[key]) : EN[key];
 function element(tag, value) {
@@ -112,5 +134,21 @@ export async function renderDrivingLibrary(root, library) {
   for (const key of state.failed || []) root.append(element("p", t("load_failed") + " · " + name(key)));
   if (state.internal_build_failed) root.append(element("p", t("load_failed") + " · " + t("small")));
   if (library.selected && library.selected !== state.next.large) root.append(element("p", t("jetson") + " · " + name(library.selected)));
-  root.append(element("p", t("vla")));
+  const observer = state.vla_observer;
+  if (!observer) {
+    root.append(element("p", t("vla")));
+    return;
+  }
+  addSelect("vla_observer", observer.enabled ? "on" : "off", [["", [["off", t("off")], ["on", t("observe")]]]]);
+  root.append(element("p", t("observe_help")));
+  if (observer.enabled) {
+    const status = observer.last_error || observer.state || "idle";
+    root.append(element("p", t(status === "loading" ? "loading_vla" : status)));
+    const stats = observer.session;
+    if (stats) {
+      root.append(element("p", t("session") + " · " + stats.accepted + " / " + stats.expired));
+      if (Number.isFinite(stats.last_ms)) root.append(element("p", t("latency") + " · " + stats.last_ms + " ms"));
+      if (stats.last_comparison) root.append(element("p", t("last_comparison") + " · " + t(stats.last_comparison)));
+    }
+  }
 }

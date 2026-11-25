@@ -376,3 +376,51 @@ def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
       await app[driving_models.PREPARATION].task
       assert (await state())['next'] == {'primary': 'internal', 'small': groups['small'][0], 'large': 'flip-flop'}
   asyncio.run(run())
+
+
+def test_vla_selector_prepares_only_on_parked_c4(feature, monkeypatch):
+  from aiohttp import web
+  from aiohttp.test_utils import TestClient, TestServer
+  from threading import Event
+  from openpilot.selfdrive.carrot.server import driving_models as api
+  from openpilot.selfdrive.modeld import vla_status
+
+  flags = {'IsOffroad': True}
+  params = SimpleNamespace(get_bool=lambda k: bool(flags.get(k)), put_bool=flags.__setitem__)
+  monkeypatch.setattr(api, 'device_params', lambda: params)
+  monkeypatch.setattr(api, 'is_c4', lambda: False)
+  entered, resume = Event(), Event()
+  def install(parked):
+    assert parked()
+    entered.set()
+    assert resume.wait(4)
+  monkeypatch.setattr(vla_status, 'prepare_weights', install)
+  async def run():
+    app = web.Application()
+    api.register(app)
+    async with TestClient(TestServer(app)) as client:
+      async def change(value):
+        return await client.post('/api/driving-models/selection', json={'field': 'vla_observer', 'value': value})
+      assert (await change('on')).status == 409
+      monkeypatch.setattr(api, 'is_c4', lambda: True)
+      for flag in ('IsEngaged', 'IsOnroad', 'ForceOffroadActive', 'ForceOffroad'):
+        flags[flag] = True
+        assert (await change('on')).status == 409
+        flags[flag] = False
+      job = app[api.PREPARATION]
+      assert (await change('on')).status == 202
+      try:
+        assert await asyncio.to_thread(entered.wait, 2)
+        assert (await change('off')).status == 409
+        flags['IsOnroad'] = True
+      finally:
+        resume.set()
+      await job.task
+      assert job.job['state'] == 'failed' and 'C4VlaObserve' not in flags
+      flags['IsOnroad'] = False
+      assert (await change('on')).status == 202
+      await job.task
+      assert flags['C4VlaObserve'] and job.job['state'] == 'saved'
+      assert (await change('off')).status == 200 and not flags['C4VlaObserve']
+      assert (await change('actuate')).status == 409
+  asyncio.run(run())

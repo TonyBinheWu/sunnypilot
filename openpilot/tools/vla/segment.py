@@ -28,39 +28,68 @@ def history_at(eof, times, motion):
   return [[(px-x)*c + (py-y)*s, -(px-x)*s + (py-y)*c, math.remainder(yaw-heading, math.tau)] for px,py,yaw in poses]
 
 
+class MotionWindow:
+  def __init__(self):
+    self.times, self.motion = [], []
+    self.speed = self.vehicle_down = None
+    self.speed_time = self.calibration_time = 0
+
+  def observe(self, kind, t, valid, data):
+    point = None
+    if kind == 'liveCalibration':
+      self.vehicle_down = None
+      self.calibration_time = t
+      if valid and data.calStatus == 'calibrated' and len(data.rpyCalib) == 3 and all(map(math.isfinite, data.rpyCalib)):
+        # z column of device_from_calib (Rz Ry Rx), used to rotate measured device rates to vehicle yaw.
+        r, p, yaw = data.rpyCalib
+        self.vehicle_down = (math.cos(yaw)*math.sin(p)*math.cos(r) + math.sin(yaw)*math.sin(r),
+                             math.sin(yaw)*math.sin(p)*math.cos(r) - math.cos(yaw)*math.sin(r), math.cos(p)*math.cos(r))
+        return
+    elif kind == 'carState':
+      self.speed_time = t
+      self.speed = data.vEgo if valid and data.canValid and data.gearShifter == 'drive' and math.isfinite(data.vEgo) and data.vEgo >= 0 else None
+      if self.speed is not None:
+        return
+    elif kind == 'livePose':
+      pose, rate = data, data.angularVelocityDevice
+      valid = (0 < pose.timestamp <= t and t-pose.timestamp <= 100_000_000 and valid and pose.inputsOK and pose.posenetOK and
+               pose.sensorsOK and rate.valid and self.vehicle_down is not None and
+               self.speed is not None and 0 <= t-self.speed_time <= 100_000_000 and 0 <= t-self.calibration_time <= 5_000_000_000 and
+               all(map(math.isfinite, (rate.x, rate.y, rate.z))))
+      if valid:
+        point = (self.speed, sum(a*b for a,b in zip(self.vehicle_down, (rate.x,rate.y,rate.z), strict=True)))
+    else:
+      return
+    if self.times and t < self.times[-1]:
+      self.times.clear()
+      self.motion.clear()
+    self.times.append(t)
+    self.motion.append(point)
+
+  def trim(self, since):
+    n = bisect_right(self.times, since)
+    del self.times[:n]
+    del self.motion[:n]
+
+  def at(self, eof):
+    return history_at(eof, self.times, self.motion)
+
+
+def primary_action(m):
+  if m.visionCameraInputs not in ('road', 'roadWide') or not m.timestampEof:
+    return None
+  if not all(map(math.isfinite, (m.action.desiredAcceleration, m.action.desiredCurvature))):
+    return None
+  return {'compute': str(m.visionCompute), 'desired_acceleration': m.action.desiredAcceleration,
+          'desired_curvature': m.action.desiredCurvature, 'should_stop': m.action.shouldStop}
+
+
 def recorded_pairs(events):
-  indexes, primary, motion, times = {}, {}, [], []
-  speed = vehicle_down = None
-  speed_time = calibration_time = 0
+  indexes, primary, motion = {}, {}, MotionWindow()
   for msg in events:
     kind, t = msg.which(), msg.logMonoTime
-    if kind == 'liveCalibration':
-      cal = msg.liveCalibration
-      vehicle_down = None
-      calibration_time = t
-      if msg.valid and cal.calStatus == 'calibrated' and len(cal.rpyCalib) == 3 and all(map(math.isfinite, cal.rpyCalib)):
-        # z column of device_from_calib (Rz Ry Rx), used to rotate measured device rates to vehicle yaw.
-        r, p, yaw = cal.rpyCalib
-        vehicle_down = (math.cos(yaw)*math.sin(p)*math.cos(r) + math.sin(yaw)*math.sin(r),
-                      math.sin(yaw)*math.sin(p)*math.cos(r) - math.cos(yaw)*math.sin(r), math.cos(p)*math.cos(r))
-      if vehicle_down is None:
-        times.append(t)
-        motion.append(None)
-    elif kind == 'carState':
-      cs = msg.carState
-      speed = cs.vEgo if msg.valid and cs.canValid and cs.gearShifter == 'drive' and math.isfinite(cs.vEgo) and cs.vEgo >= 0 else None
-      speed_time = t
-      if speed is None:
-        times.append(t)
-        motion.append(None)
-    elif kind == 'livePose':
-      pose, rate = msg.livePose, msg.livePose.angularVelocityDevice
-      valid = (0 < pose.timestamp <= t and t-pose.timestamp <= 100_000_000 and msg.valid and pose.inputsOK and pose.posenetOK and
-               pose.sensorsOK and rate.valid and vehicle_down is not None and
-               speed is not None and 0 <= t-speed_time <= 100_000_000 and 0 <= t-calibration_time <= 5_000_000_000 and
-               all(map(math.isfinite, (rate.x, rate.y, rate.z))))
-      times.append(t)
-      motion.append((speed, sum(a*b for a,b in zip(vehicle_down,(rate.x,rate.y,rate.z), strict=True))) if valid else None)
+    if kind in ('liveCalibration', 'carState', 'livePose'):
+      motion.observe(kind, t, msg.valid, getattr(msg, kind))
     elif kind == 'roadEncodeIdx' and msg.valid and msg.roadEncodeIdx.type == 'fullHEVC':
       idx = msg.roadEncodeIdx
       key = (idx.frameId, idx.timestampEof)
@@ -69,9 +98,7 @@ def recorded_pairs(events):
       m = msg.modelV2
       if m.visionCameraInputs in ('road', 'roadWide') and m.timestampEof > 0:
         key = (m.frameId, m.timestampEof)
-        action = {'compute': str(m.visionCompute), 'desired_acceleration': m.action.desiredAcceleration,
-                  'desired_curvature': m.action.desiredCurvature, 'should_stop': m.action.shouldStop}
-        primary[key] = None if key in primary or not all(math.isfinite(action[k]) for k in ('desired_acceleration','desired_curvature')) else action
+        primary[key] = None if key in primary else primary_action(m)
   segments = {idx[0] for idx in indexes.values() if idx is not None}
   if len(segments) != 1:
     return
@@ -80,7 +107,7 @@ def recorded_pairs(events):
     key = (frame, eof)
     if eof < next_eof or indexes[key] is None or primary[key] is None:
       continue
-    history = history_at(eof, times, motion)
+    history = motion.at(eof)
     if history is not None:
       yield indexes[key][1], {'frame_id': frame, 'timestamp_eof_ns': eof, 'timestamp_us': eof//1000,
                               'egomotion': history, 'primary': primary[key]}

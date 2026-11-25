@@ -93,7 +93,7 @@ def patch_order(x):
   return x.reshape(h//2, 2, w//2, 2, d).transpose(1, 2).reshape(h*w, d)
 
 
-def encode_image(weights, rgb):
+def encode_image(weights, rgb, checkpoint=None):
   pixels = Tensor(rgb.astype(np.float32) / 127.5 - 1., device=weights.tensors['v.patch_embd.bias'][0].device).half()
   height, width = rgb.shape[0] // 16, rgb.shape[1] // 16
   patches = pixels.reshape(height, 16, width, 16, 3).permute(0, 2, 4, 1, 3).reshape(height, width, -1)
@@ -116,6 +116,8 @@ def encode_image(weights, rgb):
       p = f'v.deepstack.{layer}.'
       merged = weights.norm(x.reshape(-1, 4096), p+'norm')
       features.append(weights.linear(weights.linear(merged, p+'fc1').gelu(), p+'fc2').realize())
+    if checkpoint is not None:
+      checkpoint()
   x = weights.norm(x, 'v.post_ln').reshape(-1, 4096)
   return weights.linear(weights.linear(x, 'mm.0').gelu(), 'mm.2').realize(), features
 
@@ -124,7 +126,7 @@ def rms(x, w):
   return (x.float() * (x.float().square().mean(axis=-1, keepdim=True) + 1e-6).rsqrt()).half() * w
 
 
-def classify(weights, tokenizer, rgb, vision, history):
+def classify(weights, tokenizer, rgb, vision, history, checkpoint=None):
   before, suffixes = prompts(history)
   first = tokenizer.encode(before + '<|vision_start|>')
   tails = [tokenizer.encode('<|vision_end|>' + suffix) for suffix in suffixes]
@@ -156,6 +158,8 @@ def classify(weights, tokenizer, rgb, vision, history):
     if layer < len(deep):
       x = x + deep[layer].pad(((n, seq_len-image_end), (0, 0)))
     x = x.realize()
+    if checkpoint is not None:
+      checkpoint()
   hidden = rms(x[list(range(batch)), [image_end+len(t)-1 for t in tails]], weights['output_norm.weight'])
   # Compare against the entire vocabulary. A non-letter prediction is an abstention.
   best = np.full(batch, -np.inf)
@@ -172,4 +176,6 @@ def classify(weights, tokenizer, rgb, vision, history):
     values = scores[np.arange(batch),idx]
     ids = np.where(values > best, idx + offset, ids)
     best = np.maximum(best, values)
+    if checkpoint is not None:
+      checkpoint()
   return [tokenizer.decode([int(i)]) for i in ids]

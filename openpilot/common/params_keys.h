@@ -352,6 +352,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SoundLanguageVolume", {PERSISTENT, INT, "100"}},
 
     {"DrivingSceneView", {PERSISTENT, INT, "-1"}},
+    {"C4VlaObserve", {PERSISTENT, BOOL, "0"}},
     {"SunnyLaneCenter", {PERSISTENT, BOOL, "0"}},
     {"SunnyLaneTurn", {PERSISTENT, BOOL, "0"}},
     {"SunnyVisionCurve", {PERSISTENT, BOOL, "0"}},

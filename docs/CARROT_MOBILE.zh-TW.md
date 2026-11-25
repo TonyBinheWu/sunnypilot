@@ -4,7 +4,7 @@
 
 ## C3X 與 C4 的駕駛畫面與模型
 
-手機瀏覽器與 CarrotAssist 從「工具 → sunnypilot 駕駛模型選擇器」進入。Formosa 座艙從「應用程式 → 工具／診斷」進入。清單包含 carrot-wip 原有模型以及 sunnypilot 的 79 個小模型、25 個大模型。停車並關閉點火後，選擇模型，等到顯示「已儲存，下次開機套用」，再重啟車機。PhysicalAI-reason-VLA 4B 目前僅供行車紀錄回放比對。[模型、硬體及驗證說明](SUNNYPILOT_MODELS_AND_SCENE.zh-TW.md)
+手機瀏覽器與 CarrotAssist 從「工具 → sunnypilot 駕駛模型選擇器」進入。Formosa 座艙從「應用程式 → 工具／診斷」進入。清單包含 carrot-wip 原有模型以及 sunnypilot 的 79 個小模型、25 個大模型。停車並關閉點火後，選擇模型，等到顯示「已儲存，下次開機套用」，再重啟車機。在 C4 同一頁可開啟 PhysicalAI-reason-VLA 4B 與內建主模型的決策比對，由 Chestnut USB 上的 RX 9060 8 GB 執行 VLA。[模型、硬體及驗證說明](SUNNYPILOT_MODELS_AND_SCENE.zh-TW.md)
 
 同一頁的「C3X／C4 本機駕駛畫面」可選動態 3D、原始鏡頭或模型感知 3D。本機也可由設定中的「駕駛畫面」切換。模型感知顯示道路邊界、標線、路徑及前車。前向影像辨識提供行人和汽機車分類。畫面分別標示可能的道路開口和離線圖資的路口。
 

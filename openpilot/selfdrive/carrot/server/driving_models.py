@@ -1,14 +1,23 @@
 import asyncio
+from pathlib import Path
 from threading import Event
 
 from aiohttp import web
 
 from openpilot.common import big_model_catalog, internal_models, sunny_models
+from openpilot.selfdrive.modeld import vla_status
 from .services.params import HAS_PARAMS, Params, UnknownKeyName
 
 
 def device_params():
   return Params() if HAS_PARAMS and Params is not None else None
+
+
+def is_c4():
+  if not Path('/TICI').is_file():
+    return False
+  from openpilot.system.hardware import HARDWARE
+  return HARDWARE.get_device_type() == 'mici'
 
 
 def offroad(params):
@@ -19,12 +28,19 @@ def offroad(params):
 
 
 def selection_status(params):
+  observer = None
   try:
     raw_scene = params.get('DrivingSceneView', return_default=True) if params is not None else None
   except Exception as exc:
     if UnknownKeyName is None or not isinstance(exc, UnknownKeyName):
       raise
     raw_scene = None
+  if params is not None and is_c4():
+    try:
+      observer = {'enabled': params.get_bool('C4VlaObserve'), **vla_status.read_status()}
+    except Exception as exc:
+      if UnknownKeyName is None or not isinstance(exc, UnknownKeyName):
+        raise
 
   def selection(boot):
     return {
@@ -33,6 +49,7 @@ def selection_status(params):
       'primary': 'internal' if sunny_models.internal_primary(boot) else 'auto',
     }
   return {'boot': selection(True), 'next': selection(False), 'offroad': offroad(params),
+          'vla_observer': observer,
           'scene': raw_scene if raw_scene in (-1, 0, 1, 2) else None,
           'failed': [key for big in (False, True) if (key := sunny_models.failed_key(big))],
           'internal_build_failed': bool(internal_models.state().get('failed'))}
@@ -51,6 +68,18 @@ class ModelPreparation:
       self.job = {'state': 'saved', 'model': key}
     except Exception:
       self.job = {'state': 'failed', 'model': key}
+
+  async def prepare_vla(self, params):
+    def parked():
+      return not self.closing.is_set() and vla_status.parked(params)
+    try:
+      await asyncio.to_thread(vla_status.prepare_weights, parked)
+      if not parked():
+        raise ValueError('Offroad preparation interrupted')
+      params.put_bool('C4VlaObserve', True)
+      self.job = {'state': 'saved', 'model': 'PhysicalAI-reason-VLA 4B'}
+    except Exception:
+      self.job = {'state': 'failed', 'model': 'PhysicalAI-reason-VLA 4B'}
 
 
 PREPARATION = web.AppKey('driving_model_preparation', ModelPreparation)
@@ -79,6 +108,14 @@ async def change(request):
       raise ValueError('Another model selection is in progress')
     if field == 'primary':
       await asyncio.to_thread(sunny_models.set_primary, value, lambda: offroad(params))
+    elif field == 'vla_observer' and is_c4() and value in ('on', 'off'):
+      if not vla_status.parked(params):
+        raise ValueError('Turn the ignition off and leave forced offroad mode')
+      if value == 'on':
+        job.job = {'state': 'preparing', 'model': 'PhysicalAI-reason-VLA 4B'}
+        job.task = asyncio.create_task(job.prepare_vla(params))
+        return web.json_response({'ok': True, 'job': job.job}, status=202)
+      params.put_bool('C4VlaObserve', False)
     elif field == 'scene':
       if type(value) is not int or value not in (-1, 0, 1, 2):
         raise ValueError('Unknown driving view')

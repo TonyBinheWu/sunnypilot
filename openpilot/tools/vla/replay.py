@@ -140,24 +140,29 @@ def reference(directory, server, gpu):
         proc.wait()
 
 
-def native(directory, backend):
-  if backend == 'chestnut':
-    from openpilot.selfdrive.modeld.precompiled_worker import claim_gpu_owner
-    claim_gpu_owner()
+def load_native(directory, device, checkpoint=None):
   from tinygrad import Device
   from tinygrad.llm.cli import SimpleTokenizer
   from openpilot.tools.vla.model import Weights, classify, encode_image
-  device = 'AMD' if backend == 'chestnut' else 'CUDA'
-  if backend == 'chestnut' and not Device[device].is_usb():
-    raise RuntimeError('Expected USB AMD backend')
   weights = Weights(directory/MODEL, device)
   vision = Weights(directory/PROJECTOR, device)
   tokenizer = SimpleTokenizer.from_gguf_kv(weights.meta)
   Device[device].synchronize()
 
   def predict(rgb, history):
-    return classify(weights, tokenizer, rgb, encode_image(vision, rgb), history)
+    return classify(weights, tokenizer, rgb, encode_image(vision, rgb, checkpoint), history, checkpoint)
   return device + ' ' + str(getattr(Device[device], 'arch', '')), predict
+
+
+def native(directory, backend):
+  if backend == 'chestnut':
+    from openpilot.selfdrive.modeld.precompiled_worker import claim_gpu_owner
+    claim_gpu_owner()
+  from tinygrad import Device
+  device = 'AMD' if backend == 'chestnut' else 'CUDA'
+  if backend == 'chestnut' and not Device[device].is_usb():
+    raise RuntimeError('Expected USB AMD backend')
+  return load_native(directory, device)
 
 
 def main():
