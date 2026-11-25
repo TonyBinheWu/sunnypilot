@@ -138,30 +138,31 @@ def test_cluster_objects_restore_corner_state_without_blinking_or_distance_clamp
     assert source == original
 
 
-@pytest.mark.parametrize("age,visible", [(0, True), (150_000_000, True), (150_000_001, False), (-1, False)])
-def test_ev6_non_camera_scc_hidden_corner_packet(age, visible):
+@pytest.mark.parametrize("age", [0, 150_000_000, 150_000_001, -1])
+@pytest.mark.parametrize("kind", [0, 1, 2, 3, 4])
+def test_ev6_adas_preserves_raw_corner_and_warning(age, kind):
   name = "ADRV_0x1ea"
-  source = {}
-  for side, kind, distance in [("LF", 4, 12.3), ("RF", 2, 5.2), ("LR", 0, 7), ("RR", 4, 0)]:
-    source.update({f"{side}_DETECT": kind, f"{side}_DETECT_DISTANCE": distance, f"{side}_DETECT_LATERAL": 1.2})
-  parser = SimpleNamespace(ts_nanos={name: {"COUNTER": 100}}, _last_update_nanos=100+age,
-                           dat={0x1EA: bytes(32)}, vl={name: source})
+  stamp = 1_000_000_000
+  packer = CANPacker("hyundai_canfd_generated")
+  parser = CANParser("hyundai_canfd_generated", [(name, 20)], 1)
+  fields = {"HDA_MODE2": 5, "AUTOLANECHANGE_MSG": 8, "LANE_CHANGING": 2, "LANELINE_LEFT_POSITION": 19,
+            "LF_DETECT": kind, "LF_DETECT_DISTANCE": 12.3, "LF_DETECT_LATERAL": 1.2}
+  addr, raw, bus = packer.make_can_msg(name, 1, fields)
+  data = bytearray(raw)
+  data[16] = 0xa6  # Unnamed bits in this DBC.
+  data[:2] = hyundaicanfd.hkg_can_fd_checksum(addr, None, data).to_bytes(2, "little")
+  assert parser.update([stamp, [(addr, bytes(data), bus)]]) == {addr}
   cp = SimpleNamespace(flags=HyundaiFlags.CANFD_HDA2, carFingerprint=hyundaicanfd.CAR.KIA_EV6)
-  def packet(cam):
-    packer = CANPacker("hyundai_canfd_generated")
-    msgs = hyundaicanfd.create_adrv_messages(cp, packer, SimpleNamespace(ECAN=1), 5, cam)
-    assert len(msgs) == 2
-    addr, data, bus = msgs[0]
-    assert (addr, bus) == (0x1EA, 1)
-    return {k: get_raw_value(data, sig) * sig.factor + sig.offset for k, sig in packer.dbc.name_to_msg[name].sigs.items()}
-  expected = packet(None)
-  if visible:
-    expected.update(LF_DETECT=1, RF_DETECT=2, LF_DETECT_DISTANCE=12.3, RF_DETECT_DISTANCE=5.2,
-                    LF_DETECT_LATERAL=1.2, RF_DETECT_LATERAL=1.2)
-  actual = packet(parser)
-  del actual["CHECKSUM"], expected["CHECKSUM"]
-  assert actual == pytest.approx(expected)
-
+  out = hyundaicanfd.create_adrv_messages(cp, packer, SimpleNamespace(ECAN=1), 5, parser, now_nanos=stamp+age)
+  assert len(out) == 2
+  address, payload, dest = out[0]
+  assert (address, dest) == (addr, 1)
+  if 0 <= age <= 150_000_000:
+    assert payload[3:] == data[3:]
+  else:
+    sigs = packer.dbc.addr_to_msg[addr].sigs
+    assert all(get_raw_value(payload, sigs[field]) == 0 for field in ("HDA_MODE2", "LANE_CHANGING", "LF_DETECT"))
+  assert int.from_bytes(payload[:2], "little") == hyundaicanfd.hkg_can_fd_checksum(addr, None, payload)
 
 
 def test_ev6_adas_display_uses_physical_ecan_rx():
@@ -179,30 +180,6 @@ def test_ev6_adas_display_uses_physical_ecan_rx():
     "RF_DETECT": 1, "RF_DETECT_DISTANCE": 9.5, "RF_DETECT_LATERAL": 1.2})
   parser.update([150_000_102, [(addr, data, 129)]])
   assert not hyundaicanfd.ev6_cluster_corners(parser)
-
-@pytest.mark.parametrize("age,fault,expected", [(100_000_000, False, 1), (250_000_001, False, 0), (0, True, 0)])
-def test_ev6_adas_neighbor_fallback(age, fault, expected):
-  packer = CANPacker("hyundai_canfd_generated")
-  stamp = 1_000_000_000
-  source = {"HDA_MODE2": 5, "AUTOLANECHANGE_MSG": 8, "LANE_LEFT": 1, "LANE_RIGHT": 0, "LANE_CHANGING": 1}
-  for side in ("LF", "RF", "LR", "RR"):
-    source.update({f"{side}_DETECT": 2 if side == "LF" else 0,
-                   f"{side}_DETECT_DISTANCE": 9, f"{side}_DETECT_LATERAL": 2})
-  parser = SimpleNamespace(ts_nanos={"ADRV_0x1ea": {"COUNTER": stamp}}, _last_update_nanos=stamp,
-                           dat={0x1EA: bytes(32)}, vl={"ADRV_0x1ea": source})
-  def lead(d, y):
-    return SimpleNamespace(status=True, radar=True, dRel=d, yRel=y)
-  radar = SimpleNamespace(mdMonoTime=stamp, leadsLeft=[lead(3, 3)], leadsRight=[lead(1, 3), lead(24, -3), lead(7, -2)],
-                          radarErrors=SimpleNamespace(canError=fault, radarFault=False, wrongConfig=False, radarUnavailableTemporary=False))
-  cp = SimpleNamespace(flags=HyundaiFlags.CANFD_HDA2, carFingerprint=hyundaicanfd.CAR.KIA_EV6)
-  msg = hyundaicanfd.create_adrv_messages(cp, packer, SimpleNamespace(ECAN=1), 5, parser, radar=radar, now_nanos=stamp+age)[0]
-  values = {k: get_raw_value(msg[1], sig) * sig.factor + sig.offset for k, sig in packer.dbc.name_to_msg["ADRV_0x1ea"].sigs.items()}
-  assert (values["HDA_MODE2"], values["AUTOLANECHANGE_MSG"]) == (5, 8)
-  assert (values["LANE_LEFT"], values["LANE_RIGHT"], values["LANE_CHANGING"]) == (1, 0, 1)
-  assert (values["LF_DETECT"], values["LF_DETECT_DISTANCE"]) == (2, 9)
-  assert (values["RF_DETECT"], values["RF_DETECT_DISTANCE"], values["RF_DETECT_LATERAL"]) == (expected, 7*expected, 2*expected)
-  assert values["LR_DETECT"] == values["RR_DETECT"] == 0
-
 
 @pytest.mark.parametrize("target, offset, age, occupied, expected", [
   (-3.5, 0, 100, False, "LF"), (3.5, 0, 100, False, "RF"),
@@ -237,7 +214,7 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
   corner["HDA_MODE2"] = stock_mode
   cam = SimpleNamespace(ts_nanos={"ADRV_0x161":{"COUNTER":stamp}}, _last_update_nanos=stamp,
                         dat={0x161: bytes(32)}, vl={"ADRV_0x161":stock})
-  state = SimpleNamespace(adrv_0x161=stock, adrv_0x1ea=corner, cp_cam=cam, modelV2=model, out=structs.CarState(leftBlinker=True),
+  state = SimpleNamespace(adrv_0x161=stock, adrv_0x1ea=corner, cp_cam=cam, modelV2=model, out=structs.CarState(leftBlinker=True, canValid=True),
                           lfahda_cluster=None, cruise_buttons_msg=None, adrv_0x200=None, ccnc_0x162=blank("CCNC_0x162"), scc_control=None,
                           is_metric=True, paddle_button_prev=0, softHoldActive=0, trailer_connected=False)
   control = structs.CarControl(latActive=True, enabled=True)
@@ -249,7 +226,7 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
   lead.status, lead.radar, lead.dRel, lead.yRel = True, True, 12.0, -3.5
   corner.update(LR_DETECT=2, LR_DETECT_DISTANCE=8, LR_DETECT_LATERAL=3)
   cam.ts_nanos["ADRV_0x1ea"] = {"COUNTER": stamp}
-  cam.dat[0x1ea] = bytes(32)
+  cam.dat[0x1ea] = packer.make_can_msg("ADRV_0x1ea", 2, corner)[1]
   cam.vl["ADRV_0x1ea"] = corner
   model.init("leadsV3", 1)
   target = model.leadsV3[0]
@@ -266,12 +243,14 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
     return get_raw_value(frames[addr], packer.dbc.addr_to_msg[addr].sigs[key])
   assert [raw(0x161,k) for k in ("NAV_ICON","LCA_RIGHT_ICON","LCA_LEFT_ARROW")] == [4,1,1]
   assert (raw(0x161, "LANELINE_LEFT"), raw(0x161, "LANELINE_RIGHT")) == (6, 4)
-  assert raw(0x1ea,"HDA_MODE2") == stock_mode
+  assert (0x1ea in frames) == (age <= 150_000_000)
+  if 0x1ea in frames:
+    assert raw(0x1ea, "HDA_MODE2") == stock_mode
+    assert raw(0x1ea, "RF_DETECT") == 0  # A fused lead supplies no measured corner position.
   assert raw(0x162, "LR_DETECT") == (3 if age <= 150_000_000 else 0)
   assert raw(0x162, "RR_DETECT") == 0
   assert raw(0x162, "RF_DETECT") == (3 if age <= 250_000_000 else 0)
   assert raw(0x162, "FF_DETECT") == (3 if age <= 250_000_000 else 0)
-  assert raw(0x1ea,"RF_DETECT") == int(age <= 250_000_000)
 
   # Check a factory notification, then its cancellation on the following frame.
   scene = state.ccnc_0x162
@@ -300,45 +279,3 @@ def test_ev6_camera_scc_oem_icons(monkeypatch, age, stock_mode):
       frames = {addr: data for addr, data, _ in msgs}
       for key in ("SIGNS", "SPEEDLIMIT", "SPEEDLIMIT_FLASH", "SPEEDLIMIT_WEATHER"):
         assert raw(0x162, key) == (scene[key] if visible else 0)
-
-
-
-
-@pytest.mark.parametrize("age,kind,lateral,expected", [
-  (0, 3, 3.5, True), (150_000_000, 6, 6.3, True), (150_000_001, 3, 3.5, False),
-  (0, 0, 3.5, False), (0, 7, 3.5, False), (0, 3, 6.4, False),
-])
-def test_ev6_ccnc_corner_neighbors(age, kind, lateral, expected):
-  stamp = 1_000_000_000
-  source = dict(LF_DETECT=3, LF_DETECT_DISTANCE=40, LF_DETECT_LATERAL=3.5,
-                RF_DETECT=6, RF_DETECT_DISTANCE=75, RF_DETECT_LATERAL=8,
-                LR_DETECT=4, LR_DETECT_DISTANCE=8, LR_DETECT_LATERAL=4,
-                RR_DETECT=kind, RR_DETECT_DISTANCE=5, RR_DETECT_LATERAL=lateral)
-  cam = SimpleNamespace(ts_nanos={"CCNC_0x162": {"COUNTER": stamp}}, _last_update_nanos=stamp,
-                        dat={0x162: bytes(32)}, vl={"CCNC_0x162": source})
-  values = dict(LR_DETECT=2, LR_DETECT_DISTANCE=10, LR_DETECT_LATERAL=3)
-  original = values.copy()
-  hyundaicanfd._add_ev6_corner_neighbors(values, cam, stamp + age)
-  if age <= 150_000_000:
-    original.update(LF_DETECT=1, LF_DETECT_DISTANCE=40, LF_DETECT_LATERAL=3.5,
-                    RF_DETECT=1, RF_DETECT_DISTANCE=75, RF_DETECT_LATERAL=8)
-  if expected:
-    original.update(RR_DETECT=1, RR_DETECT_DISTANCE=5, RR_DETECT_LATERAL=lateral)
-  assert values == original
-
-@pytest.mark.parametrize("side", ["L", "R"])
-def test_ev6_passing_neighbor_positions(side):
-  packer = CANPacker("hyundai_canfd_generated")
-  name = "CCNC_0x162"
-  parser = CANParser("hyundai_canfd_generated", [], 2)
-  parser._add_message(name, float("nan"), ignore_counter=True)
-  for i, (end, distance) in enumerate([("R", 12), ("R", 4), ("R", 0.5), ("F", 0.5), ("F", 4), ("F", 12)]):
-    stamp = 1_000_000_000 + i * 50_000_000
-    slot = side + end
-    frame = packer.make_can_msg(name, 2, {f"{slot}_DETECT": 3, f"{slot}_DETECT_DISTANCE": distance,
-                                          f"{slot}_DETECT_LATERAL": 3.5})
-    parser.update([stamp, [frame]])
-    values = {}
-    hyundaicanfd._add_ev6_corner_neighbors(values, parser, stamp)
-    assert values == pytest.approx({f"{slot}_DETECT": 1, f"{slot}_DETECT_DISTANCE": distance,
-                                    f"{slot}_DETECT_LATERAL": 3.5})

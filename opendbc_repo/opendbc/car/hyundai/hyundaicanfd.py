@@ -519,7 +519,7 @@ def _apply_scc_lead(values, radar_state, model_v2=None, hud_lateral=None):
 
 
 def create_acc_control_scc2(packer, CAN, enabled, accel_value_last, accel, stopping, gas_override, set_speed, hud_control, hyundai_jerk, CS,
-                            stop_controller=None, hud_lateral=None):
+                            stop_controller=None, hud_lateral=None, *, ev6_display=False, now_nanos=0):
 
   if stop_controller is not None:
     stop_controller.stop_object_active = False
@@ -595,6 +595,11 @@ def create_acc_control_scc2(packer, CAN, enabled, accel_value_last, accel, stopp
   values["ZEROS_7"] = 0 if stop_controller is not None else 1
   apply_canfd_stopping(values, CS, stop_controller, accel, previous_value, jerk_u, jerk_l)
 
+  if ev6_display:
+    stock = _fresh_ev6_cluster_rx(getattr(CS, "cp_cam", None), "SCC_CONTROL", 0x1A0, now_nanos) if CS.out.canValid else {}
+    braking_object = stop_controller is not None and values["ACCMode"] == 1 and values["StopReq"] == 1
+    _copy_ev6_scc_display(values, stock, braking_object=braking_object)
+
   # OEM SCC_ObjSta=2 denotes an object controllable longitudinally. During a
   # final stop request, also promote a receding real lead from state 1. Keep
   # its measured kinematics and the existing no-lead state fallback.
@@ -647,14 +652,9 @@ def create_acc_control(packer, CAN, enabled, accel_last, accel, stopping, gas_ov
     "ZEROS_7": 0,
   }
 
-  if ev6_display and CS.out.canValid:
-    # SCC_ObjSta also describes longitudinal eligibility. Only the physical OEM
-    # SCC on this harness may supply it; never derive it from a display track.
-    parser = getattr(CS, "cp", None)
-    stock = _fresh_ev6_cluster_rx(parser, "SCC_CONTROL", 0x1A0)
-    if stock and 0 <= now_nanos - parser.ts_nanos["SCC_CONTROL"]["COUNTER"] <= 150_000_000:
-      for key in ("HUD_LEAD_INFO", "ACC_ObjDist", "ACC_ObjRelSpd", "ACC_ObjLatPos"):
-        values[key] = stock[key]
+  if ev6_display:
+    stock = _fresh_ev6_cluster_rx(getattr(CS, "cp", None), "SCC_CONTROL", 0x1A0, now_nanos) if CS.out.canValid else {}
+    _copy_ev6_scc_display(values, stock)
 
   # accel_last is the legacy raw target, not necessarily the previous SCC
   # output. Keep ordinary packet limiting; anchor recovery to the returned value.
@@ -737,12 +737,54 @@ def forward_button_message(packer, CAN, frame, CS, cruise_button, MainMode_ACC_t
       ret.append(packer.make_can_msg(CS.cruise_btns_msg_canfd, CAN.CAM, values))
   return ret
 
-def _fresh_ev6_cluster_rx(parser, name, address):
+def _fresh_ev6_cluster_rx(parser, name, address, now_nanos=None):
   if parser is not None:
     stamp = parser.ts_nanos.get(name, {}).get("COUNTER", 0)
-    if stamp and 0 <= parser._last_update_nanos - stamp <= 150_000_000 and len(parser.dat.get(address, b"")) == 32:
+    if (stamp and 0 <= parser._last_update_nanos - stamp <= 150_000_000
+        and (now_nanos is None or 0 <= now_nanos - stamp <= 150_000_000)
+        and len(parser.dat.get(address, b"")) == 32):
       return parser.vl[name]
   return {}
+
+
+def _copy_ev6_scc_display(values, stock, *, braking_object=False):
+  values["NSCCOper"] = stock.get("NSCCOper", 0)
+  values["NSCCOnOff"] = stock.get("NSCCOnOff", 0)
+  # During an active camera-SCC stop the brake ECU consumes this same object.
+  if not braking_object:
+    values.update(HUD_LEAD_INFO=stock.get("HUD_LEAD_INFO", 0), ACC_ObjDist=stock.get("ACC_ObjDist", 204.6),
+                  ACC_ObjRelSpd=stock.get("ACC_ObjRelSpd", 239.4), ACC_ObjLatPos=stock.get("ACC_ObjLatPos", 0.))
+
+
+def _ev6_three_lane_message(packer, bus, parser, now, corners, *, hold=None, camera=False):
+  # The DBC loader imports this module to register Hyundai's checksum.
+  from opendbc.can.packer import set_value
+  from opendbc.can.parser import get_raw_value
+
+  name = "ADRV_0x1ea"
+  stock = _fresh_ev6_cluster_rx(parser, name, 0x1EA, now)
+  if camera and not stock:
+    # Panda can forward the next original without a stale host replacement.
+    return []
+  edits = {}
+  if corners is not None:
+    corners.fill(edits, now, stock=stock)
+  # These two fields command physical lamps. Keep their existing owner on
+  # camera wiring, and keep both released on the ADAS-generated frame.
+  edits.update(LEFT_BLINK_HOLD=int(hold == 3), RIGHT_BLINK_HOLD=int(hold == 4))
+  if not stock:
+    return [packer.make_can_msg(name, bus, {"SET_ME_FF": 0xff, **edits})]
+
+  # Start with the validated wire image so unknown bits, HDA_MODE2 (including
+  # cancel/fault), lane geometry and all occupied/hidden OEM slots survive.
+  _, packed, _ = packer.make_can_msg(name, bus, edits, rx_counter=stock.get("COUNTER"))
+  data = bytearray(parser.dat[0x1EA])
+  sigs = packer.dbc.addr_to_msg[0x1EA].sigs
+  for field in edits:
+    set_value(data, sigs[field], get_raw_value(packed, sigs[field]))
+  data[2] = packed[2]
+  data[:2] = hkg_can_fd_checksum(0x1EA, None, data).to_bytes(2, "little")
+  return [(0x1EA, bytes(data), bus)]
 
 
 def ev6_cluster_corners(parser):
@@ -758,19 +800,6 @@ def ev6_cluster_corners(parser):
       corners[f"{side}_DETECT_DISTANCE"] = distance
       corners[f"{side}_DETECT_LATERAL"] = source[f"{side}_DETECT_LATERAL"]
   return corners
-
-
-def _add_ev6_corner_neighbors(values, parser, now_nanos):
-  source = _fresh_ev6_cluster_rx(parser, "CCNC_0x162", 0x162)
-  if not source or not 0 <= now_nanos - parser.ts_nanos["CCNC_0x162"]["COUNTER"] <= 150_000_000:
-    return
-  for side, max_distance, max_lateral in (("LF", 204.7, 12.7), ("RF", 204.7, 12.7), ("LR", 25.5, 6.3), ("RR", 25.5, 6.3)):
-    detect = f"{side}_DETECT"
-    distance = f"{side}_DETECT_DISTANCE"
-    lateral = f"{side}_DETECT_LATERAL"
-    # CCNC types 3..6 identify cars and trucks. Rear slots have a smaller encoding range.
-    if not values.get(detect) and source[detect] in (3, 4, 5, 6) and 0 < source[distance] <= max_distance and 0 <= source[lateral] <= max_lateral:
-      values.update({detect: 1, distance: source[distance], lateral: source[lateral]})
 
 
 def _fresh_display_radar(radar, now_nanos):
@@ -832,7 +861,7 @@ def _add_ev6_vision_neighbor(values, model, now_nanos, *, center=False):
       values[f"{side}_DETECT_LATERAL"] = abs(y)
 
 
-def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=None, model=None, now_nanos=0, corners=None):
+def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, now_nanos=0, corners=None):
   # messages needed to car happy after disabling
   # the ADAS Driving ECU to do longitudinal control
 
@@ -853,18 +882,10 @@ def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=No
         #'DATA26': 1,  #1
         #'DATA32': 5,  #5
       }
-      if CP.carFingerprint == CAR.KIA_EV6:
-        stock = _fresh_ev6_cluster_rx(corner_parser, "ADRV_0x1ea", 0x1EA)
-        for key in ("HDA_MODE2", "AUTOLANECHANGE_MSG", "LANE_LEFT", "LANE_RIGHT", "LANE_CHANGING"):
-          if key in stock:
-            values[key] = stock[key]
-        values.update(ev6_cluster_corners(corner_parser))
-        _add_ev6_corner_neighbors(values, corner_parser, now_nanos)
-        _add_ev6_front_neighbors(values, radar, now_nanos)
-        if corners is not None:
-          corners.fill(values, now_nanos)
-        _add_ev6_vision_neighbor(values, model, now_nanos)
-      ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))
+      if CP.carFingerprint == CAR.KIA_EV6 and CP.flags & HyundaiFlags.CANFD_HDA2:
+        ret.extend(_ev6_three_lane_message(packer, CAN.ECAN, corner_parser, now_nanos, corners))
+      else:
+        ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))
 
       values = {
         'SET_ME_E1': 0xe1,
@@ -1319,33 +1340,24 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
         ret.append(packer.make_can_msg("ADRV_0x200", CAN.ECAN, values, rx_counter = rx_counter))
 
       if CS.adrv_0x1ea is not None:
-        values = copy.copy(CS.adrv_0x1ea)
-        rx_counter = values.pop("COUNTER", None)
         # blinker hold: the confirmed lane change until the body is across (see _blink_hold_side)
         hold_desire = 0 if getattr(CS.out, "cruiseCancelState", False) else desire
         hold = _blink_hold_side(md, hold_desire, create_ccnc_messages.__dict__.setdefault("_blink_hold", {}))
         external_hold = getattr(hud_control, "physicalBlinkerHold", 0)
         if external_hold in (1, 2, 3):
           hold = {1:0, 2:3, 3:4}[external_hold]
-        values['LEFT_BLINK_HOLD'] = 1 if hold == 3 else 0
-        values['RIGHT_BLINK_HOLD'] = 1 if hold == 4 else 0
-
-        _apply_cluster_lane_lines(values, CS, lat_active, desire)
         if ev6_display:
-          parser = getattr(CS, "cp_cam", None)
-          if not (_fresh_ev6_cluster_rx(parser, "ADRV_0x1ea", 0x1ea) and
-                  0 <= now_nanos - parser.ts_nanos["ADRV_0x1ea"]["COUNTER"] <= 150_000_000):
-            for side in ("LF", "RF", "LR", "RR"):
-              values.update({f"{side}_DETECT": 0, f"{side}_DETECT_DISTANCE": 0, f"{side}_DETECT_LATERAL": 0})
-        _normalize_cluster_corner_objects(values)
-        if ev6_display and enable_corner_radar > 0:
-          _add_ev6_corner_neighbors(values, getattr(CS, "cp_cam", None), now_nanos)
-          _add_ev6_front_neighbors(values, getattr(CS, "radarState", None), now_nanos)
-          if corners is not None:
-            corners.fill(values, now_nanos)
-          _add_ev6_vision_neighbor(values, md, now_nanos)
-
-        ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values, rx_counter = rx_counter))
+          parser = getattr(CS, "cp_cam", None) if CS.out.canValid else None
+          ret.extend(_ev6_three_lane_message(packer, CAN.ECAN, parser, now_nanos,
+                                             corners if enable_corner_radar > 0 else None, hold=hold, camera=True))
+        else:
+          values = copy.copy(CS.adrv_0x1ea)
+          rx_counter = values.pop("COUNTER", None)
+          values['LEFT_BLINK_HOLD'] = 1 if hold == 3 else 0
+          values['RIGHT_BLINK_HOLD'] = 1 if hold == 4 else 0
+          _apply_cluster_lane_lines(values, CS, lat_active, desire)
+          _normalize_cluster_corner_objects(values)
+          ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values, rx_counter=rx_counter))
 
       if CS.ccnc_0x162 is not None:
         values = copy.copy(CS.ccnc_0x162)

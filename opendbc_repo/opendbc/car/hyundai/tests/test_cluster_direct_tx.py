@@ -43,6 +43,7 @@ def configuration(monkeypatch):
                                                        (2, 0, True, 0), (3, 1, False, 0)])
 @pytest.mark.parametrize("corner_setting", [0, 1, 2])
 def test_ev6_cluster_scc_ownership(configuration, monkeypatch, mode, tracks, longitudinal, bus, corner_setting):
+  from opendbc.can import CANParser
   from opendbc.can.parser import get_raw_value
   from opendbc.car import Bus, structs
   from opendbc.car.hyundai import carcontroller
@@ -56,6 +57,17 @@ def test_ev6_cluster_scc_ownership(configuration, monkeypatch, mode, tracks, lon
   cs.scc_control = dict.fromkeys(controller.packer.dbc.name_to_msg["SCC_CONTROL"].sigs, 0)
   cs.adrv_0x1ea = dict.fromkeys(controller.packer.dbc.name_to_msg["ADRV_0x1ea"].sigs, 0)
   cs.ccnc_0x162 = dict.fromkeys(controller.packer.dbc.name_to_msg["CCNC_0x162"].sigs, 0)
+  rx_bus = 2 if mode else bus
+  parser = CANParser("hyundai_canfd_generated", [("SCC_CONTROL", 50), ("ADRV_0x1ea", 20)], rx_bus)
+  if mode:
+    cs.cp_cam = parser
+  else:
+    cs.cp = parser
+  lane_state = {"HDA_MODE2": 3, "AUTOLANECHANGE_MSG": 9, "LANELINE_RIGHT_POSITION": 92, "LR_DETECT": 4}
+  scc = {"NSCCOnOff": 2, "NSCCOper": 2, "HUD_LEAD_INFO": 1, "ACC_ObjDist": 17.5}
+  inputs = [controller.packer.make_can_msg(name, rx_bus, fields) for name, fields in
+            (("ADRV_0x1ea", lane_state), ("SCC_CONTROL", scc))]
+  assert parser.update([1_000_000_000, inputs]) == {0x1ea, 0x1a0}
   assert cp.openpilotLongitudinalControl == longitudinal
   assert controller.CAN.ECAN == bus
   assert (controller.cluster_corners is not None) == longitudinal
@@ -71,6 +83,11 @@ def test_ev6_cluster_scc_ownership(configuration, monkeypatch, mode, tracks, lon
   assert set(cluster) == expected
   assert len(cluster) == len(expected)
   for addr, data, _ in packets:
+    if addr in (0x1a0, 0x1ea):
+      fields = scc if addr == 0x1a0 else lane_state
+      sigs = controller.packer.dbc.addr_to_msg[addr].sigs
+      for key, expected_value in fields.items():
+        assert get_raw_value(data, sigs[key]) * sigs[key].factor + sigs[key].offset == pytest.approx(expected_value)
     if addr in (0x162, 0x1ea):
       sigs = controller.packer.dbc.addr_to_msg[addr].sigs
       kind = 3 if addr == 0x162 else 1

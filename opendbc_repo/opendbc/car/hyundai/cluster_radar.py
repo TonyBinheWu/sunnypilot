@@ -67,10 +67,10 @@ class EV6ClusterCorners:
         if side not in self.neighbors or d < self.neighbors[side][0]:
           self.neighbors[side] = (d, abs(y))
 
-  def fill(self, values, now):
+  def fill(self, values, now, *, stock=None):
     if self.stamp <= now <= self.expires:
       for side, (distance, lateral) in self.neighbors.items():
-        if not values.get(f"{side}_DETECT"):
+        if not values.get(f"{side}_DETECT") and not (stock and stock.get(f"{side}_DETECT")):
           values[f"{side}_DETECT"] = 1
           values[f"{side}_DETECT_DISTANCE"] = distance
           values[f"{side}_DETECT_LATERAL"] = lateral
