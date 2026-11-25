@@ -28,6 +28,12 @@
 
 <!-- CARROT:MANUAL:BEGIN EnableCornerRadar -->
 <!-- CARROT:REVIEW reviewed-for="" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 工作方式
+
+EV6 HDA2 由 openpilot 控制纵向时，两种启用选项都能用角雷达连续确认的相邻车道移动目标补上仪表左前或右前的空位。后方位置采用原厂观测。使用原厂巡航时，仪表沿用原厂显示。
+
+<!-- CARROT:SECTION:END BEHAVIOR -->
 <!-- CARROT:MANUAL:END EnableCornerRadar -->
 
 <!-- CARROT:SETTING:END EnableCornerRadar -->

@@ -80,6 +80,8 @@ Select inversion only after confirming a left/right mismatch between video and r
 
 Corner-radar objects are created only when the vehicle code recognizes a supported message group. The supported 0x430 message family is also classified as corner-radar input rather than front radar. The cut-in processing in mode `2` currently focuses on Hyundai-family implementations and must not be generalized to other manufacturers.
 
+On EV6 HDA2 with openpilot longitudinal control, either enabled setting can fill an empty left-front or right-front cluster position with a moving corner-radar track confirmed in the adjacent lane. Rear positions use factory observations. With factory cruise, the instrument cluster receives the factory display.
+
 ### Carrot Radar Mode
 
 | `CarrotRadarMode` | Meaning |

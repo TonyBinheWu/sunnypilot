@@ -42,6 +42,8 @@ With CAN-FD CameraSCC, openpilot longitudinal control and corner radar enabled, 
 
 With CAN-FD CameraSCC and openpilot longitudinal control, the OEM SCC MAIN state used for cluster display is tracked separately from Carrot engagement intent. Steering activation follows AutoEngage initialization and the existing driver-button settings.
 
+On EV6 HDA2 with the ADAS ECU harness and openpilot longitudinal control, the outgoing SCC message preserves fresh front-object fields received on physical E-CAN. If the factory transmitter stops, the cluster may have no central target. With factory cruise, the original SCC transmitter owns this display.
+
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

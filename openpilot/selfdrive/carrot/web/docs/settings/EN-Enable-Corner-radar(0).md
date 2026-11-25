@@ -34,6 +34,8 @@
 - `0` — Does not use corner radar.
 - `1` — Uses supported corner-radar tracks.
 - `2` — Uses corner-radar tracks and cut-in detection.
+On EV6 HDA2 with openpilot longitudinal control, either enabled setting can fill an empty left-front or right-front cluster position with a moving corner-radar track confirmed in the adjacent lane. Rear positions use factory observations. With factory cruise, the instrument cluster receives the factory display.
+
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

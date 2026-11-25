@@ -107,7 +107,7 @@ def test_counter_crc_and_input_survive_suppression_transitions(longitudinal):
 @pytest.mark.parametrize("lateral", [False, True])
 @pytest.mark.parametrize("longitudinal", [False, True])
 def test_controller_popup_vehicle_scope(monkeypatch, candidate, eligible, camera, lateral, longitudinal):
-  params = SimpleNamespace(get_int=lambda key: 0, get_bool=lambda key: False)
+  params = SimpleNamespace(get_int=lambda key: 0, get_bool=lambda key: False, get=lambda key, return_default=False: return_default)
   monkeypatch.setattr(carcontroller, "Params", lambda: params)
   # Exercise the real controller selection and cluster packer; other CAN paths
   # are unrelated to this display-only vehicle restriction.

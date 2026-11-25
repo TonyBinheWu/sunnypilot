@@ -8,6 +8,7 @@ from opendbc.car import Bus, DT_CTRL, apply_driver_steer_torque_limits, common_f
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.hyundai import hyundaicanfd, hyundaican
 from opendbc.car.hyundai.carstate import CarState
+from opendbc.car.hyundai.cluster_radar import EV6ClusterCorners
 from opendbc.car.hyundai.stopping import CanfdStopping
 from opendbc.car.hyundai.steering_handover import SteeringHandover
 from opendbc.car.hyundai.low_speed_steer_reserve import LowSpeedSteerReserve, supports_reserve
@@ -247,6 +248,9 @@ class CarController(CarControllerBase):
                            if CP.flags & HyundaiFlags.CANFD and CP.openpilotLongitudinalControl else None)
     self.apply_torque_last = 0
     self.car_fingerprint = CP.carFingerprint
+    self.ev6_adas_display = (self.car_fingerprint == CAR.KIA_EV6 and bool(CP.flags & HyundaiFlags.CANFD_HDA2)
+                             and CP.openpilotLongitudinalControl)
+    self.cluster_corners = EV6ClusterCorners() if self.ev6_adas_display else None
     pedal_interceptor_params = get_pedal_interceptor_params(CP)
     self.pedal_interceptor = (PedalInterceptor(CANPacker(dbc_names[Bus.party]), pedal_interceptor_params)
                               if pedal_interceptor_params is not None else None)
@@ -710,6 +714,7 @@ class CarController(CarControllerBase):
         self.canfd_toggle_adas(CC, CS)
       if self.CP.openpilotLongitudinalControl:
         hud_lateral = self.display_lead_lateral.update(getattr(CS, "radarState", None), getattr(CS, "modelV2", None))
+        corners = self.cluster_corners if self.enable_corner_radar > 0 and CS.out.canValid else None
         self.hyundai_jerk.make_jerk(self.CP, CS, accel, actuators, hud_control)
         self.hyundai_jerk.check_carrot_cruise(CC, CS, hud_control, stopping, accel, actuators.aTarget)
 
@@ -718,11 +723,13 @@ class CarController(CarControllerBase):
             self.CP, self.packer, self.CAN, self.frame, CC, CS, hud_control, apply_angle,
             left_lane_warning, right_lane_warning, self.enable_corner_radar, stopping,
             self.canfd_debug, self.paddle_mode, hud_lateral=hud_lateral, now_nanos=now_nanos, show_stock_signs=self.show_stock_signs,
+            corners=corners,
           ))
           if hda2:
             can_sends.extend(hyundaicanfd.create_adrv_messages(self.CP, self.packer, self.CAN, self.frame,
                                                               CS.cp if self.car_fingerprint == CAR.KIA_EV6 else None,
-                                                              radar=getattr(CS, 'radarState', None), model=CS.modelV2, now_nanos=now_nanos))
+                                                              radar=getattr(CS, 'radarState', None), model=CS.modelV2, now_nanos=now_nanos,
+                                                              corners=corners))
           else:
             can_sends.extend(hyundaicanfd.create_fca_warning_light(self.CP, self.packer, self.CAN, self.frame))
         if self.frame % 2 == 0:
@@ -740,6 +747,7 @@ class CarController(CarControllerBase):
               CC.cruiseControl.override, set_speed_in_units, hud_control,
               self.hyundai_jerk.jerk_u, self.hyundai_jerk.jerk_l, CS, self.canfd_stopping,
               accel_value_last=self.accel_value_last,
+              ev6_display=self.ev6_adas_display, now_nanos=now_nanos,
             )
             can_sends.append(msg)
             self.accel_last = accel

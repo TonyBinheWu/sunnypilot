@@ -139,6 +139,10 @@ class Car:
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
     controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
     self.CP.passive = not controller_available or self.CP.dashcamOnly
+    self.cluster_corners = getattr(self.CI.CC, 'cluster_corners', None)
+    self.cluster_corner_sock = None
+    if self.cluster_corners is not None and not self.CP.passive and self.params.get_int("EnableCornerRadar") > 0:
+      self.cluster_corner_sock = messaging.sub_sock('liveTracks', conflate=True)
     if self.CP.passive:
       if self.CP.visionPlannerSetup:
         self.CP.visionPlannerSetup = "passive"
@@ -438,6 +442,10 @@ class Car:
       now_nanos = self.can_log_mono_time if REPLAY else int(time.monotonic() * 1e9)
       model_v2 = self.sm['modelV2'] if self.sm.valid['modelV2'] and self.sm.alive['modelV2'] else None
       radar_state = self.sm['radarState'] if self.sm.valid['radarState'] and self.sm.alive['radarState'] else None
+      if self.cluster_corner_sock is not None:
+        tracks = messaging.recv_one_or_none(self.cluster_corner_sock)
+        if tracks is not None:
+          self.cluster_corners.update(tracks, model_v2 if CS.canValid else None, now_nanos)
       native_cancelled = CS.cruiseCancelState and (CC.leftBlinker or CC.rightBlinker or CC.assistantLaneSignalId)
       if native_cancelled or (CC.assistantLaneSignalId and not (CC.latActive and model_v2 is not None and
           model_v2.meta.assistantLaneSignalRoute == 'native' and model_v2.meta.assistantLaneSignalId == CC.assistantLaneSignalId and

@@ -42,6 +42,8 @@ CAN-FD CameraSCC에서 캐럿 롱컨과 코너레이더가 켜져 있으면, 정
 
 CAN-FD CameraSCC에서 캐럿 롱컨을 사용하는 경우 계기판용 순정 SCC MAIN 상태와 캐럿의 활성 선택을 분리해 처리합니다. 조향 활성은 AutoEngage 초기 설정과 기존 운전자 버튼 설정을 따릅니다.
 
+EV6 HDA2의 ADAS ECU 배선에서 openpilot이 종방향을 제어할 때 송신 SCC 메시지는 물리 E-CAN에서 받은 최신 전방 물체 필드를 보존합니다. 순정 송신이 중단되면 계기판에 중앙 표적이 표시되지 않을 수 있습니다. 순정 크루즈에서는 순정 SCC가 이 표시를 담당합니다.
+
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

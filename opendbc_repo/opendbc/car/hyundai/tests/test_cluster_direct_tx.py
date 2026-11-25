@@ -21,7 +21,10 @@ def configuration(monkeypatch):
     def get_bool(self, key):
       return bool(values.get(key, False))
 
-    def get(self, key):
+    def get_float(self, key):
+      return float(values.get(key, 0))
+
+    def get(self, key, return_default=False):
       return values.get(key, "")
 
     def put_bool(self, key, value):
@@ -34,6 +37,45 @@ def configuration(monkeypatch):
     return interface.CarInterface.get_params(candidate, fingerprint, [], False, False, False)
 
   return values, make
+
+
+@pytest.mark.parametrize("mode,tracks,longitudinal,bus", [(0, 0, False, 1), (0, 1, True, 1), (1, 0, True, 0),
+                                                       (2, 0, True, 0), (3, 1, False, 0)])
+@pytest.mark.parametrize("corner_setting", [0, 1, 2])
+def test_ev6_cluster_scc_ownership(configuration, monkeypatch, mode, tracks, longitudinal, bus, corner_setting):
+  from opendbc.can.parser import get_raw_value
+  from opendbc.car import Bus, structs
+  from opendbc.car.hyundai import carcontroller
+  values, make = configuration
+  values.update(HyundaiCameraSCC=mode, EnableRadarTracks=tracks, CanfdHDA2=1, EnableCornerRadar=corner_setting)
+  cp = make(CAR.KIA_EV6)
+  monkeypatch.setattr(carcontroller, "Params", interface.Params)
+  controller = carcontroller.CarController({Bus.pt: "hyundai_canfd_generated"}, cp)
+  cs = carstate.CarState(cp)
+  cs.out = structs.CarState(canValid=True)
+  cs.scc_control = dict.fromkeys(controller.packer.dbc.name_to_msg["SCC_CONTROL"].sigs, 0)
+  cs.adrv_0x1ea = dict.fromkeys(controller.packer.dbc.name_to_msg["ADRV_0x1ea"].sigs, 0)
+  cs.ccnc_0x162 = dict.fromkeys(controller.packer.dbc.name_to_msg["CCNC_0x162"].sigs, 0)
+  assert cp.openpilotLongitudinalControl == longitudinal
+  assert controller.CAN.ECAN == bus
+  assert (controller.cluster_corners is not None) == longitudinal
+  if longitudinal:
+    controller.cluster_corners.stamp = 1_000_000_000
+    controller.cluster_corners.expires = 1_150_000_000
+    controller.cluster_corners.neighbors = {"RF": (16., 3.5)}
+  _, packets = controller.update(structs.CarControl().as_reader(), cs, 1_000_000_000)
+  cluster = [(addr, net) for addr, _, net in packets if addr in (0x1a0, 0x162, 0x1ea)]
+  expected = {(0x1a0, bus), (0x1ea, bus)} if longitudinal else set()
+  if mode in (1, 2):
+    expected.add((0x162, bus))
+  assert set(cluster) == expected
+  assert len(cluster) == len(expected)
+  for addr, data, _ in packets:
+    if addr in (0x162, 0x1ea):
+      sigs = controller.packer.dbc.addr_to_msg[addr].sigs
+      kind = 3 if addr == 0x162 else 1
+      assert get_raw_value(data, sigs["RF_DETECT"]) == (kind if corner_setting else 0)
+      assert get_raw_value(data, sigs["RR_DETECT"]) == 0
 
 
 @pytest.mark.parametrize("candidate", [c for c in CANFD_CAR if c in interfaces_module.get_torque_params()])

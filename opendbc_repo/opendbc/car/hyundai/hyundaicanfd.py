@@ -8,6 +8,7 @@ from opendbc.car.crc import CRC16_XMODEM
 from opendbc.car.hyundai.values import CAR, HyundaiFlags, HyundaiExtFlags
 from opendbc.car.hyundai.stopping import MOVING_SPEED, STOP_LOWER_BAND
 from opendbc.car.hyundai.stop_object import apply_signal_stop_object
+from opendbc.car.hyundai.cluster_radar import healthy_radar
 from openpilot.common.params import Params
 from openpilot.common.filter_simple import FirstOrderFilter
 from opendbc.car.common.conversions import Conversions as CV
@@ -606,7 +607,7 @@ def create_acc_control_scc2(packer, CAN, enabled, accel_value_last, accel, stopp
   return packer.make_can_msg("SCC_CONTROL", CAN.ECAN, values), values["aReqValue"]
 
 def create_acc_control(packer, CAN, enabled, accel_last, accel, stopping, gas_override, set_speed, hud_control, jerk_u, jerk_l, CS,
-                       stop_controller=None, accel_value_last=None):
+                       stop_controller=None, accel_value_last=None, *, ev6_display=False, now_nanos=0):
 
   interlock_active = longitudinal_interlock_active(CS)
   soft_hold_active = CS.softHoldActive > 0 and CS.out.cruiseState.available
@@ -645,6 +646,15 @@ def create_acc_control(packer, CAN, enabled, accel_last, accel, stopping, gas_ov
       4 if not interlock_active and stopping and CS.out.cruiseState.standstill else 0),
     "ZEROS_7": 0,
   }
+
+  if ev6_display and CS.out.canValid:
+    # SCC_ObjSta also describes longitudinal eligibility. Only the physical OEM
+    # SCC on this harness may supply it; never derive it from a display track.
+    parser = getattr(CS, "cp", None)
+    stock = _fresh_ev6_cluster_rx(parser, "SCC_CONTROL", 0x1A0)
+    if stock and 0 <= now_nanos - parser.ts_nanos["SCC_CONTROL"]["COUNTER"] <= 150_000_000:
+      for key in ("HUD_LEAD_INFO", "ACC_ObjDist", "ACC_ObjRelSpd", "ACC_ObjLatPos"):
+        values[key] = stock[key]
 
   # accel_last is the legacy raw target, not necessarily the previous SCC
   # output. Keep ordinary packet limiting; anchor recovery to the returned value.
@@ -763,11 +773,13 @@ def _add_ev6_corner_neighbors(values, parser, now_nanos):
       values.update({detect: 1, distance: source[distance], lateral: source[lateral]})
 
 
+def _fresh_display_radar(radar, now_nanos):
+  return (radar is not None and radar.mdMonoTime and 0 <= now_nanos - radar.mdMonoTime <= 250_000_000
+          and healthy_radar(radar.radarErrors))
+
+
 def _add_ev6_front_neighbors(values, radar, now_nanos):
-  if radar is None or not radar.mdMonoTime or not 0 <= now_nanos - radar.mdMonoTime <= 250_000_000:
-    return
-  errors = radar.radarErrors
-  if errors.canError or errors.radarFault or errors.wrongConfig or errors.radarUnavailableTemporary:
+  if not _fresh_display_radar(radar, now_nanos):
     return
   for side, sign, leads in (("LF", 1, radar.leadsLeft), ("RF", -1, radar.leadsRight)):
     if values.get(f"{side}_DETECT"):
@@ -820,7 +832,7 @@ def _add_ev6_vision_neighbor(values, model, now_nanos, *, center=False):
       values[f"{side}_DETECT_LATERAL"] = abs(y)
 
 
-def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=None, model=None, now_nanos=0):
+def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=None, model=None, now_nanos=0, corners=None):
   # messages needed to car happy after disabling
   # the ADAS Driving ECU to do longitudinal control
 
@@ -849,6 +861,8 @@ def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, radar=No
         values.update(ev6_cluster_corners(corner_parser))
         _add_ev6_corner_neighbors(values, corner_parser, now_nanos)
         _add_ev6_front_neighbors(values, radar, now_nanos)
+        if corners is not None:
+          corners.fill(values, now_nanos)
         _add_ev6_vision_neighbor(values, model, now_nanos)
       ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))
 
@@ -1096,7 +1110,8 @@ def create_alt2_adas_button_request(packer, CAN, frame, CC, CS, stopping, *, kee
 
 def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
                          disp_angle, left_lane_warning, right_lane_warning,
-                         enable_corner_radar, stopping, canfd_debug, paddle_mode, hud_lateral=None, now_nanos=0, show_stock_signs=True):
+                         enable_corner_radar, stopping, canfd_debug, paddle_mode, hud_lateral=None, now_nanos=0, show_stock_signs=True,
+                         corners=None):
   ret = []
   interlock_active = longitudinal_interlock_active(CS)
   display_lead = _display_lead(getattr(CS, "radarState", None))
@@ -1326,6 +1341,8 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
         if ev6_display and enable_corner_radar > 0:
           _add_ev6_corner_neighbors(values, getattr(CS, "cp_cam", None), now_nanos)
           _add_ev6_front_neighbors(values, getattr(CS, "radarState", None), now_nanos)
+          if corners is not None:
+            corners.fill(values, now_nanos)
           _add_ev6_vision_neighbor(values, md, now_nanos)
 
         ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values, rx_counter = rx_counter))
@@ -1355,6 +1372,8 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
             if parser and 0 <= now_nanos - parser.ts_nanos.get("ADRV_0x1ea", {}).get("COUNTER", 0) <= 150_000_000:
               neighbors.update(ev6_cluster_corners(parser))
             _add_ev6_front_neighbors(neighbors, radar, now_nanos)
+            if corners is not None:
+              corners.fill(neighbors, now_nanos)
             _add_ev6_vision_neighbor(neighbors, md, now_nanos)
             for side in ("LF", "RF", "LR", "RR"):
               if not values[f"{side}_DETECT"] and neighbors.get(f"{side}_DETECT"):
@@ -1362,11 +1381,8 @@ def create_ccnc_messages(CP, packer, CAN, frame, CC, CS, hud_control,
                 for field in ("DISTANCE", "LATERAL"):
                   key = f"{side}_DETECT_{field}"
                   values[key] = neighbors[key]
-          if radar is not None:
-            errors = radar.radarErrors
-            if (not radar.mdMonoTime or not 0 <= now_nanos - radar.mdMonoTime <= 250_000_000 or
-                errors.canError or errors.radarFault or errors.wrongConfig or errors.radarUnavailableTemporary):
-              radar = None
+          if not _fresh_display_radar(radar, now_nanos):
+            radar = None
           if not (fresh_stock and values["FF_DETECT"] and 0 < values["FF_DISTANCE"] <= 204.5):
             _apply_ccnc_lead(values, radar, CC.enabled, md, hud_lateral)
           _add_ev6_vision_neighbor(values, md, now_nanos, center=True)

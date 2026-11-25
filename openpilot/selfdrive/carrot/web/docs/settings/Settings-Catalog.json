@@ -1,6 +1,6 @@
 {
   "catalogCommit": "01a0bd178cd14cc8a222a49452297a5fffefd210",
-  "contentHash": "0202b23fd0652686d4e6a3435be62ed5aeed07e2686fc7ef858b622dad84ebce",
+  "contentHash": "86ea89d3be45e7f8413c8f353fd92badf9c71d687d11dfe8ccad969bdc579e95",
   "generatedAt": "2026-11-26T00:00:00+08:00",
   "locales": [
     "ko",
@@ -202,8 +202,8 @@
       "hash": "deb76ee85fd12c196b0feadad1394e3e3c4277428a43a54ee5c6922d14b86fc3"
     },
     "EN-Enable-Corner-radar(0).md": {
-      "bytes": 2129,
-      "hash": "a387f83849bc2e1e0ebf823f2d02c3f6f4c9169c619f288f35ce85f52c2a9683"
+      "bytes": 2443,
+      "hash": "495c11a588995bbd6c7bfe04d6b70b49358aa5a4aff5129bb7b5826a75bf558c"
     },
     "EN-Enable-Driver-Monitoring-(Exception).md": {
       "bytes": 1700,
@@ -546,8 +546,8 @@
       "hash": "09544d60c7e79b016234bd653b21ead4aace192b8c266012749fd73593ddefa3"
     },
     "EN-Special-SCC-harness.md": {
-      "bytes": 4430,
-      "hash": "9ece58117f1ae5b4e2c9ca5d633bbe3bc8bcf1d3dacb3ec9220cfc410106788d"
+      "bytes": 4737,
+      "hash": "3461b2e449de186ea7e27b54369e7e513a750e668b378e05bf38e85eb04ded3e"
     },
     "EN-Speed-from-PCM(StockSCC).md": {
       "bytes": 2918,
@@ -1170,8 +1170,8 @@
       "hash": "f8fe1fedd68ff4edc742903555d6c56e260b2d3cde46867ac6b50b2674258ac5"
     },
     "KO-코너레이더-사용(0).md": {
-      "bytes": 2283,
-      "hash": "e57894e8fbd08f45af962729d0f67b60ffacbffadc3e1bbc761d96bea653bd01"
+      "bytes": 2653,
+      "hash": "ef3c48e7d6cac385933dea26f41d8ba07650bc40f55f705c190713ec93e06f98"
     },
     "KO-크루즈ON거리(0cm).md": {
       "bytes": 1846,
@@ -1246,8 +1246,8 @@
       "hash": "d472cc59502ffec55ccf4e742dae0cd47d99595258f3c84e8b88c15212bbcffb"
     },
     "KO-특수-SCC-배선.md": {
-      "bytes": 4682,
-      "hash": "1af957e8f968fe5a686af505daab6c2e938579c1ea82182453286063ce8f5d6b"
+      "bytes": 5024,
+      "hash": "0d9e041b8a0c93d08141e8a8ce520d43a9888cd06a2518d2704dd46fe24357f4"
     },
     "KO-패들시프트모드(0).md": {
       "bytes": 1941,
@@ -1702,8 +1702,8 @@
       "hash": "745c4ffb2873d0f97420fa44cd9972fb3f9f874ef6d8252b4b54cdc2a490888e"
     },
     "ZH-TW-特殊-SCC-線束.md": {
-      "bytes": 4165,
-      "hash": "edd7572c30f62b8742870f3478ae844e0f0d8cec21d9643504553c453e5a96af"
+      "bytes": 4421,
+      "hash": "10b368d9dcfdbdf810914dce71571c62555d36594d7740cfec34501403948a57"
     },
     "ZH-TW-現代-僅配備-LDWS-的車輛-(0).md": {
       "bytes": 1840,
@@ -1914,8 +1914,8 @@
       "hash": "c94de9c8d8ba56dca04931c0ce58f449379fe30e2e842f597427d1335a9fcfc4"
     },
     "ZH-TW-開啟角雷達-(0).md": {
-      "bytes": 1995,
-      "hash": "7d4b363467a00998252910c6af9ecd3d600b6f1b45518ad2fefc3b7c62a4d56e"
+      "bytes": 2236,
+      "hash": "c4e385f4895a2f7331fd19ceaedbfcb1e83ff9785360e84e864497ad12297448"
     },
     "ZH-TW-開啟軟體選單.md": {
       "bytes": 1789,
@@ -2218,8 +2218,8 @@
       "hash": "1412798ebe9d6e40cfbb954c61e59d1c8e799a81fda62c9a003f2a836f6ab72e"
     },
     "ZH-开启角雷达-(0).md": {
-      "bytes": 1170,
-      "hash": "2db92e1726967e6dc5bd023877b6343ac9fe918d834a9d5cf867cb8fc6c1fd48"
+      "bytes": 1505,
+      "hash": "40ca81d2afaf5dca5888848a581e6e4f03efa6dea6eebb6a0bc25a040d38850a"
     },
     "ZH-开启软件菜单.md": {
       "bytes": 1050,
@@ -2374,8 +2374,8 @@
       "hash": "7dac188c861171fd6b594c25ff872e594755165badeb76e2f72c2ebbae7fb7a3"
     },
     "ZH-特殊-SCC-线束.md": {
-      "bytes": 2234,
-      "hash": "c20b8693b52176f05c2f3e066fc3848dcbdbccb26ab533bdf03595689ea436f1"
+      "bytes": 2578,
+      "hash": "a0b04efea9ac9f352156695f20d8c890f4b4e3b75bfb7ab67d0d56976ec72d76"
     },
     "ZH-现代-CAN-FD-线束.md": {
       "bytes": 1242,

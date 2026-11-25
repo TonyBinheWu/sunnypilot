@@ -42,6 +42,8 @@
 
 使用 CAN-FD CameraSCC 及 openpilot 縱向控制時，儀表顯示使用的原廠 SCC MAIN 狀態，會與 Carrot 啟用意圖分開追蹤。轉向啟用遵循 AutoEngage 初始化及既有駕駛按鈕設定。
 
+EV6 HDA2 使用 ADAS ECU 線組並由 openpilot 接管縱向時，送出的 SCC 訊息會保留實體 E-CAN 收到的最新前車欄位。原廠停止發送時，儀表中央可能沒有前車。使用原廠巡航時，這個顯示由原廠 SCC 提供。
+
 <!-- CARROT:SECTION:END BEHAVIOR -->
 
 <!-- CARROT:SECTION:BEGIN USAGE -->

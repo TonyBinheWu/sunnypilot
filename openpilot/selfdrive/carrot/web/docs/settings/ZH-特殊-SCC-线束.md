@@ -29,6 +29,12 @@
 
 <!-- CARROT:MANUAL:BEGIN HyundaiCameraSCC -->
 <!-- CARROT:REVIEW reviewed-for="287a1e4a7254a0c59acf4e381efa7c629c34796276cbd8584241a52c4a779f28" reviewed-at="2026-11-04T12:00:00+09:00" -->
+<!-- CARROT:SECTION:BEGIN BEHAVIOR -->
+### 工作方式
+
+EV6 HDA2 使用 ADAS ECU 线束并由 openpilot 控制纵向时，发出的 SCC 消息保留实体 E-CAN 收到的最新前车字段。原厂停止发送时，仪表中央可能没有前车。使用原厂巡航时，该显示由原厂 SCC 提供。
+
+<!-- CARROT:SECTION:END BEHAVIOR -->
 <!-- CARROT:MANUAL:END HyundaiCameraSCC -->
 
 <!-- CARROT:SETTING:END HyundaiCameraSCC -->
