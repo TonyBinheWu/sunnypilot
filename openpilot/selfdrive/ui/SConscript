@@ -9,7 +9,7 @@ source_files = Glob("#openpilot/selfdrive/assets/fonts/*.ttf") + Glob("#openpilo
 translation_files = Glob("#openpilot/selfdrive/ui/translations/*.po") + [
   File("#openpilot/selfdrive/ui/translations/languages.json"),
 ]
-native_text_files = Glob("#openpilot/sunnypilot/formosalink/*ui.py")
+native_text_files = Glob("#openpilot/sunnypilot/formosalink/*ui.py") + Glob("#openpilot/sunnypilot/formosalink/training_protocol.py")
 output_files = [
   (f"#{Path(f.path).with_suffix('.fnt')}", f"#{Path(f.path).with_suffix('.png')}")
   for f in source_files

@@ -41,7 +41,7 @@ def _char_sets():
 
   # FormosaLink's native UI has its own localized dictionaries rather than PO
   # entries. Include their text too (e.g. 頁 in 遠端 Carrot 網頁).
-  for ui_path in NATIVE_UI_DIR.glob("*ui.py"):
+  for ui_path in (*NATIVE_UI_DIR.glob("*ui.py"), *NATIVE_UI_DIR.glob("training_protocol.py")):
     unifont.update(ui_path.read_text(encoding="utf-8"))
 
   return tuple(sorted(ord(c) for c in base)), tuple(sorted(ord(c) for c in unifont))

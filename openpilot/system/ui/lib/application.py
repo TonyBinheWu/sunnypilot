@@ -1065,7 +1065,7 @@ class GuiApplication:
       for po_path in translations_dir.glob("app_*.po"):
         codepoints.update(map(ord, po_path.read_text(encoding="utf-8")))
       native_ui_dir = FONT_DIR.parents[2] / "sunnypilot" / "formosalink"
-      for ui_path in native_ui_dir.glob("*ui.py"):
+      for ui_path in (*native_ui_dir.glob("*ui.py"), *native_ui_dir.glob("training_protocol.py")):
         codepoints.update(map(ord, ui_path.read_text(encoding="utf-8")))
       codepoints.update(range(0xAC00, 0xD7A4))
       codepoints.update(range(0x1100, 0x1200))

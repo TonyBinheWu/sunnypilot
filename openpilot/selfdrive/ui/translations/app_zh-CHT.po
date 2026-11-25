@@ -2782,3 +2782,9 @@ msgstr "確認操作"
 
 msgid "Delete"
 msgstr "刪字"
+
+msgid "openpilot learns to drive by watching humans, like you, drive.\n\nFirehose Mode allows you to maximize your training data uploads to improve openpilot's driving models. More data means bigger models, which means better Experimental Mode."
+msgstr "openpilot 透過觀察人類駕駛來學習。\n\nFirehose 模式會上傳更多訓練資料，協助改進 openpilot 的駕駛模型。更多資料能用來訓練更大的模型，改善實驗模式。"
+
+msgid "For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n\nFirehose Mode can also work while you're driving if connected to a hotspot or unlimited SIM card."
+msgstr "每週可將裝置帶回室內，接上穩定的 USB-C 電源和 Wi-Fi，方便上傳。\n\n行車時，連上熱點或使用不限流量的 SIM 卡也能使用 Firehose 模式。"

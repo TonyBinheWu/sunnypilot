@@ -31,7 +31,8 @@ def traditional_characters():
 
 def device_characters():
   needed = traditional_characters()
-  for path in (ROOT / 'openpilot/sunnypilot/formosalink').glob('*ui.py'):
+  native_ui = ROOT / 'openpilot/sunnypilot/formosalink'
+  for path in (*native_ui.glob('*ui.py'), native_ui / 'training_protocol.py'):
     for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))):
       if isinstance(node, ast.Constant) and isinstance(node.value, str):
         needed.update(cjk_characters(node.value))
@@ -137,7 +138,10 @@ def test_translation_only_changes_rebuild_font_atlases(tmp_path):
   changed_native = build()
   assert changed_native != changed_catalog, 'native UI dictionaries did not rebuild fonts'
   native_ui.write_text('TEXT = "遠端 Carrot 網頁：關"\n', encoding='utf-8')
-  assert build() != changed_native, 'native UI text changes reused a stale atlas'
+  changed_text = build()
+  assert changed_text != changed_native, 'native UI text changes reused a stale atlas'
+  native_ui.with_name('training_protocol.py').write_text('NOTICE = "教師回溯車牌"\n', encoding='utf-8')
+  assert build() != changed_text, 'training consent notice did not rebuild fonts'
 
 
 @pytest.mark.parametrize('label', ['沒有警示', '外接 GPU', '遠端 Carrot 網頁', '掃描 QR 配對'])
