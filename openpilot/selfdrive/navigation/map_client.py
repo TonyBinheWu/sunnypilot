@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 
-from openpilot.selfdrive.navigation.helpers import navigation_input
+from openpilot.selfdrive.navigation.helpers import navigation_input, route_instruction
 
 
 class MapInput:
@@ -25,15 +25,20 @@ class MapInput:
     now = time.monotonic()
     self.receive(now)
     result = {}
-    if sm.valid['navInstructionCarrot'] and 0 <= now - sm.recv_time['navInstructionCarrot'] < 2:
-      result['navigation'] = navigation_input(sm['navInstructionCarrot'].allManeuvers,
-                                             max(0., speed) * (now - sm.recv_time['navInstructionCarrot']))
+    instruction = route_instruction(sm, int(now * 1e9), speed)
+    if instruction is not None:
+      instruction_time = sm.logMonoTime['navInstructionCarrot']
+      result['navigation'] = navigation_input(instruction.allManeuvers, max(0., speed) * (now - instruction_time * 1e-9))
       if (self.image is not None and 0 <= now - self.image_time < .5
-          and self.route_time != 0 and self.route_time == sm['navRoute'].carrotRouteId and sm.valid['navRoute']):
+          and self.route_time != 0 and self.route_time == sm['navRoute'].carrotRouteId
+          and sm.valid['navRoute'] and len(sm['navRoute'].coordinates) >= 2
+          and 0 < sm['mapRenderState'].matchedSinceMonoTime <= self.image_time_ns):
         result['nav_map'] = self.image
         if note_map is not None:
           note_map((int(self.route_time), self.image_time_ns,
-                    min(self.image_time_ns + 500_000_000, int((sm.recv_time['navInstructionCarrot'] + 2.) * 1e9))))
+                    min(self.image_time_ns + 500_000_000, instruction_time + 2_000_000_000,
+                        sm['mapRenderState'].locationMonoTime + 2_000_000_000,
+                        sm.logMonoTime['mapRenderState'] + 1_500_000_000, sm.logMonoTime['navRoute'] + 5_000_000_000)))
     return result
 
   def receive(self, now):

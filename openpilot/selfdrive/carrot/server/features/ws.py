@@ -100,10 +100,12 @@ async def ws_camera(request: web.Request) -> web.WebSocketResponse:
 async def planner_status(request: web.Request) -> web.Response:
   from openpilot.cereal import messaging
   from openpilot.common.forced_offroad import fresh
+  from openpilot.selfdrive.navigation.helpers import nearby_maneuver
 
   state = request.app["planner_status_reader"]
   if not state:
-    state["sm"] = messaging.SubMaster(["longitudinalPlan", "controlsState", "carControl", "carState"])
+    state["sm"] = messaging.SubMaster(["longitudinalPlan", "controlsState", "carControl", "carState", "navRoute",
+                                       "navInstructionCarrot", "mapRenderState"])
   sm = state["sm"]
   sm.update(0)
   now = time.monotonic()
@@ -124,6 +126,15 @@ async def planner_status(request: web.Request) -> web.Response:
       result["cruiseCeilingKph"] = round(min(ceiling, V_CRUISE_MAX), 1) if result.get("profile") in ("visionE2e", "upstream", "sunny") else round(ceiling, 1)
   if fresh(sm, "controlsState", .5, now):
     result["steering"] = sm["controlsState"].steeringInfluence
+  if fresh(sm, "mapRenderState", 1.5, now) and fresh(sm, "navRoute", 5., now):
+    report, route = sm["mapRenderState"], sm["navRoute"]
+    if (report.carrotRouteId and report.carrotRouteId == route.carrotRouteId and len(route.coordinates) >= 2
+        and report.locationMonoTime and 0 <= now - report.locationMonoTime * 1e-9 < 2. and report.routeMatch != "unavailable"):
+      result["routeCheck"] = str(report.routeMatch)
+      if report.routeMatch == "matched" and fresh(sm, "carState", .5, now) and fresh(sm, "navInstructionCarrot", 2., now):
+        maneuver = nearby_maneuver(sm, int(now * 1e9), sm["carState"].vEgo)
+        if maneuver:
+          result["approachManeuver"] = maneuver
   return web.json_response(result, headers={"Cache-Control": "no-store"})
 
 

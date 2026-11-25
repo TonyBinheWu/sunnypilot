@@ -38,6 +38,36 @@ def test_independent_ceiling_inputs(map_on, limit_on, expected, source):
   assert module.assisted_ceiling(sm, 12., map_on, limit_on) == (12., "cruise")
 
 
+@pytest.mark.parametrize('type_,modifier,name', [('turn', 'right', 'turn right'), ('fork', 'left', 'branch left'),
+                                                 ('roundabout', '', 'roundabout'), ('turn', 'uturn', 'uturn')])
+def test_junction_withholds_only_extra_opening_lead_recovery(monkeypatch, type_, modifier, name):
+  monkeypatch.setattr(module, "Params", lambda: NS(get_bool=lambda _: False))
+  cp = NS(openpilotLongitudinalControl=True, longitudinalActuatorDelay=.2)
+  planner = module.LongitudinalPlanner(cp, init_v=25., sunny=True)
+  sm = inputs()
+  model = sm['modelV2']
+  model.action.desiredAcceleration, model.action.shouldStop, model.orientationRate.z = .15, False, [0.]
+  lead = sm['radarState'].leadOne
+  lead.status = lead.radar = True
+  lead.radarTrackId, lead.vRel, lead.dRel, lead.vLead, lead.vLeadK = 5, 2., 80., 27., 27.
+  lead.aLeadTau = 1.5
+  step = NS(type=type_, modifier=modifier, distance=300.)
+  report = NS(routeMatch='matched', carrotRouteId=1, approachManeuver='', locationMonoTime=0)
+  sm.update(navInstructionCarrot=NS(allManeuvers=[step]), navRoute=NS(carrotRouteId=1, coordinates=[0, 1]), mapRenderState=report)
+  sm.valid = dict.fromkeys(sm, True)
+  for frame in range(130):
+    stamp = 10_000_000_000 + frame * 50_000_000
+    sm.logMonoTime = dict.fromkeys(sm, stamp)
+    report.locationMonoTime = stamp
+    if frame == 60:
+      assert planner.speed_reason == 'openingLead'
+    step.distance, report.approachManeuver = (30., name) if 60 <= frame < 90 else (300., '')
+    planner.update(sm)
+    if 60 <= frame < 110:
+      assert not planner.output_should_stop and planner.output_a_target == pytest.approx(.15)
+  assert planner.speed_reason == 'openingLead'
+
+
 @pytest.mark.parametrize("curve", [False, True])
 def test_blended_model_brakes_with_optional_assists_off(monkeypatch, curve):
   monkeypatch.setattr(module, "Params", lambda: NS(get_bool=lambda key: key == "SunnyVisionCurve" and curve))

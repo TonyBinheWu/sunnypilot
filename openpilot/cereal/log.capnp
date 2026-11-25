@@ -2592,6 +2592,19 @@ struct MapRenderState {
   locationMonoTime @0 :UInt64;
   renderTime @1 :Float32;
   frameId @2: UInt32;
+  carrotRouteId @3 :UInt64;
+  routeMatch @4 :RouteMatch;
+  approachManeuver @5 :Text;  # nearby actionable step checked against this route
+  matchedSinceMonoTime @6 :UInt64;  # start of the current uninterrupted match to this route
+
+  enum RouteMatch {
+    unavailable @0;
+    matched @1;
+    ambiguous @2;
+    headingConflict @3;
+    offRoute @4;
+    instructionConflict @5;
+  }
 }
 
 struct EncodeData {

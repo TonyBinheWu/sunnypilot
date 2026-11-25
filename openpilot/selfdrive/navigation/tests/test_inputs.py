@@ -76,19 +76,91 @@ def test_reject_bad_route_coordinates(lat, lon):
   assert not coordinates([{'latitude': lat, 'longitude': lon}])
 
 
+def nav_streams():
+  class SM(dict):
+    pass
+  sm = SM(navInstructionCarrot=NS(allManeuvers=[NS(type='turn', modifier='right', distance=100)]),
+          navRoute=NS(carrotRouteId=123, coordinates=[0, 1]),
+          mapRenderState=NS(routeMatch='matched', carrotRouteId=123, locationMonoTime=9_800_000_000,
+                            matchedSinceMonoTime=9_700_000_000, approachManeuver=''))
+  sm.valid = dict.fromkeys(sm, True)
+  sm.logMonoTime = dict.fromkeys(sm, 9_900_000_000)
+  return sm
+
+
+@pytest.mark.parametrize('issue', ['offRoute', 'ambiguous', 'headingConflict', 'instructionConflict', 'unavailable',
+                                   'old_fix', 'future_fix', 'stale_route', 'old_report', 'future_report', 'replaced', 'new_turn'])
+def test_route_authority_expires_and_cannot_transfer_to_another_step_or_route(monkeypatch, issue):
+  from openpilot.selfdrive.navigation import map_client
+  monkeypatch.setattr(map_client.time, 'monotonic', lambda: 10.)
+  client = MapInput()
+  client.client = NS(is_connected=lambda: True, recv=lambda _: None)
+  sm = nav_streams()
+  model = NS(views={'nav_map': None})
+  client.image, client.image_time, client.route_time = np.ones((256, 256)), 9.9, 123
+  client.image_time_ns = 9_900_000_000
+  assert set(client.update(model, sm, 10.)) == {'navigation', 'nav_map'}
+  report = sm['mapRenderState']
+  if issue in ('old_fix', 'future_fix'):
+    report.locationMonoTime = 8_000_000_000 if issue == 'old_fix' else 10_000_000_001
+  elif issue == 'stale_route':
+    sm.logMonoTime['navRoute'] = 5_000_000_000
+  elif issue in ('old_report', 'future_report'):
+    sm.logMonoTime['mapRenderState'] = 8_500_000_000 if issue == 'old_report' else 10_000_000_001
+  elif issue == 'replaced':
+    report.carrotRouteId = sm['navRoute'].carrotRouteId = 9_950_000_000
+  elif issue == 'new_turn':
+    sm['navInstructionCarrot'].allManeuvers[0].distance = 20.
+  else:
+    report.routeMatch = issue
+  assert client.update(model, sm, 10.) == {}
+
+
+def test_verified_instruction_without_tiles_and_legacy_tbt_only(monkeypatch):
+  from openpilot.selfdrive.navigation import map_client
+  monkeypatch.setattr(map_client.time, 'monotonic', lambda: 10.)
+  client = MapInput()
+  client.client = NS(is_connected=lambda: True, recv=lambda _: None)
+  sm, model = nav_streams(), NS(views={'nav_map': None})
+  assert set(client.update(model, sm, 10.)) == {'navigation'}
+  sm['navRoute'].coordinates = []
+  sm.valid['mapRenderState'] = False
+  command = client.update(model, sm, 10.)['navigation']
+  assert command[10] and command[-1] == pytest.approx(.99)
+  sm.logMonoTime['navInstructionCarrot'] = 8_000_000_000
+  assert client.update(model, sm, 10.) == {}
+
+
+def test_logged_route_report_round_trips_into_the_model_input_gate():
+  from openpilot.cereal import log, messaging
+  from openpilot.selfdrive.navigation.helpers import nearby_maneuver
+  sm = nav_streams()
+  sm['navInstructionCarrot'].allManeuvers[0].distance = 20.
+  msg = messaging.new_message('mapRenderState', valid=True)
+  msg.mapRenderState.carrotRouteId = 123
+  msg.mapRenderState.routeMatch = 'matched'
+  msg.mapRenderState.approachManeuver = 'turn right'
+  msg.mapRenderState.matchedSinceMonoTime = 9_700_000_000
+  msg.mapRenderState.locationMonoTime = 9_800_000_000
+  with log.Event.from_bytes(msg.to_bytes()) as event:
+    sm['mapRenderState'] = event.mapRenderState
+    assert nearby_maneuver(sm, 10_000_000_000, 10.) == 'turn right'
+    assert event.mapRenderState.matchedSinceMonoTime == 9_700_000_000
+
+
 def test_map_input_rejects_stale_image_wrong_route_and_invalid_tbt(monkeypatch):
   from openpilot.selfdrive.navigation import map_client
   monkeypatch.setattr(map_client.time, 'monotonic', lambda: 10.)
   client = MapInput()
   client.client = NS(is_connected=lambda: True, recv=lambda _: None)
   client.image, client.image_time, client.route_time = np.ones((256, 256), np.uint8), 9.8, 123
-  class SM(dict):
-    pass
-  sm = SM(navInstructionCarrot=NS(allManeuvers=[NS(type='turn', modifier='right', distance=100)]))
-  sm.valid = {'navInstructionCarrot': True, 'navRoute': True}
-  sm.recv_time = {'navInstructionCarrot': 9.9}
-  sm['navRoute'] = NS(carrotRouteId=123)
+  sm = nav_streams()
+  client.image_time_ns = 9_800_000_000
   model = NS(views={'nav_map': None})
+  assert 'nav_map' in client.update(model, sm, 10)
+  sm['mapRenderState'].matchedSinceMonoTime = 9_850_000_000
+  assert set(client.update(model, sm, 10)) == {'navigation'}  # still-fresh bitmap from before reacquisition
+  client.image_time, client.image_time_ns = 9.9, 9_900_000_000
   assert 'nav_map' in client.update(model, sm, 10)
   client.route_time = 122
   assert 'nav_map' not in client.update(model, sm, 10)
@@ -108,12 +180,7 @@ def test_received_invalid_map_revokes_cached_valid_map(monkeypatch, pixels, rout
   client.client = NS(is_connected=lambda: True, recv=lambda _: frame,
                      timestamp_eof=9_900_000_000, timestamp_sof=route_id)
   client.image, client.image_time, client.route_time = np.ones((256, 256), np.uint8), 9.8, 123
-  class SM(dict):
-    pass
-  sm = SM(navInstructionCarrot=NS(allManeuvers=[NS(type='turn', modifier='right', distance=100)]),
-          navRoute=NS(carrotRouteId=123))
-  sm.valid = {'navInstructionCarrot': True, 'navRoute': True}
-  sm.recv_time = {'navInstructionCarrot': 9.9}
+  sm = nav_streams()
   metadata = []
   result = client.update(NS(views={'nav_map': None}, set_nav_metadata=metadata.append), sm, 10)
   assert ('nav_map' in result) == admitted

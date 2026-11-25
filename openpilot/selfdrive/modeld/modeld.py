@@ -32,6 +32,7 @@ from openpilot.selfdrive.modeld.camera_sync import FrameMeta
 from openpilot.selfdrive.modeld.camera_gap import CameraGapTrace
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan
 from openpilot.selfdrive.navigation.map_client import MapInput
+from openpilot.selfdrive.navigation.helpers import route_instruction
 from openpilot.selfdrive.modeld.lane_change_advisory import LaneChangeAdvisory
 from openpilot.selfdrive.modeld.signal_shadow import ShadowClient
 from openpilot.selfdrive.modeld.helpers import (get_tg_input_devices, load_oob, modeld_pkl_path,
@@ -423,7 +424,7 @@ def main(demo=False):
   # messaging
   pm = PubMaster(["modelV2", "drivingModelData", "cameraOdometry"])
   sm = SubMaster(["deviceState", "carState", "roadCameraState", "liveCalibration", "driverMonitoringState", "carControl",
-                  "selfdriveState", "livePose", "liveDelay", "carrotMan", "radarState", "navInstructionCarrot", "navRoute"])
+                  "selfdriveState", "livePose", "liveDelay", "carrotMan", "radarState", "navInstructionCarrot", "navRoute", "mapRenderState"])
 
   publish_state = PublishState()
   params = Params()
@@ -692,8 +693,7 @@ def main(demo=False):
         valid=indicator_valid and DH.lane_change_state == log.LaneChangeState.off,
         lateral_active=sm['carControl'].latActive,
         curvature=sm['carControl'].actuators.curvature,
-        navigation=sm['navInstructionCarrot'] if sm.valid['navInstructionCarrot'] and
-        sm.alive['navInstructionCarrot'] and 0 <= indicator_now-sm.recv_time['navInstructionCarrot'] < 2 else None)
+        navigation=route_instruction(sm, int(indicator_now * 1e9), v_ego))
       if preparation is None:
         preparation = advisory
       if DH.lane_change_state == log.LaneChangeState.preLaneChange and DH.next_lane_change:

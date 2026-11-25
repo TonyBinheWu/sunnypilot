@@ -44,12 +44,13 @@ test('shared tools render both model catalogs without an eGPU and submit the sel
   scene.value = '2';
   await scene.events.change();
   assert.deepEqual(calls, [['/api/driving-models/selection', {field: 'scene', value: 2}]]);
-  const vla = {enabled: true, state: 'idle', last_error: 'too_slow', session: {accepted: 0, expired: 3, last_ms: 1020}};
+  const vla = {enabled: true, state: 'idle', last_error: 'too_slow', session: {accepted: 1, expired: 3, last_ms: 1020, last_scene: 'review_direction'}};
   await renderLibrary({...data, selector: {...selector, vla_observer: vla}});
   const observer = root.querySelectorAll('select').find(e => e.dataset.field === 'vla_observer');
   assert.equal(observer.value, 'on');
   assert.ok(root.children.some(e => e.textContent?.includes('three late results')));
   assert.ok(root.children.some(e => e.textContent?.endsWith('1020 ms')));
+  assert.ok(root.children.some(e => e.textContent?.includes('VLA turn conflicts with navigation')));
   observer.value = 'off';
   await observer.events.change();
   assert.deepEqual(calls.at(-1), ['/api/driving-models/selection', {field: 'vla_observer', value: 'off'}]);

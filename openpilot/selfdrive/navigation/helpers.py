@@ -38,14 +38,79 @@ def navigation_input(maneuvers: Any, traveled: float) -> np.ndarray:
   return navigation
 
 
+def route_instruction(sm, now_ns, speed, *, require_geometry=False):
+  """Return a causal instruction. TBT-only sources can operate without route geometry."""
+  tbt_time = sm.logMonoTime['navInstructionCarrot']
+  if not sm.valid['navInstructionCarrot'] or not tbt_time or not 0 <= now_ns - tbt_time < 2_000_000_000:
+    return None
+  route_time = sm.logMonoTime['navRoute']
+  route = sm['navRoute']
+  if route_time and (not sm.valid['navRoute'] or tbt_time < route.carrotRouteId or route_time > now_ns):
+    return None
+  instruction = sm['navInstructionCarrot']
+  if not route_time or not len(route.coordinates):
+    return None if require_geometry else instruction
+  report = sm['mapRenderState']
+  if (route.carrotRouteId and len(route.coordinates) >= 2 and now_ns - route_time < 5_000_000_000
+      and sm.valid['mapRenderState'] and report.carrotRouteId == route.carrotRouteId and report.routeMatch == 'matched'
+      and 0 <= now_ns - sm.logMonoTime['mapRenderState'] < 1_500_000_000
+      and report.locationMonoTime and 0 <= now_ns - report.locationMonoTime < 2_000_000_000):
+    # Do not pair a new turn with the previous step's approval between mapsd updates.
+    approach = approach_maneuver(instruction.allManeuvers, speed, (now_ns - tbt_time) * 1e-9)
+    if (approach[0] if approach else '') == report.approachManeuver:
+      return instruction
+  return None
+
+
+def approach_maneuver(maneuvers, speed, age):
+  """Use the nearest actionable step, at most 3.5 s ahead (12–90 m)."""
+  if not math.isfinite(speed) or speed < 0. or not 0 <= age < 2.:
+    return None
+  horizon = min(90., max(12., 3.5 * speed))
+  for turn in maneuvers:
+    distance = turn.distance - speed * age
+    if not math.isfinite(distance) or distance < 0.:
+      continue
+    if distance > horizon:
+      return None
+    if turn.type in ('depart', 'notification', 'new name', 'continue') and turn.modifier in ('', 'straight'):
+      continue
+    if turn.type in ('roundabout', 'rotary', 'roundabout turn', 'exit roundabout', 'exit rotary'):
+      return 'roundabout', distance
+    if turn.type in ('turn', 'end of road', 'fork', 'off ramp', 'on ramp', 'merge'):
+      if turn.modifier == 'uturn':
+        return 'uturn', distance
+      side = turn.modifier.split()[-1] if turn.modifier else ''
+      if side in ('left', 'right'):
+        return ('turn ' if turn.type in ('turn', 'end of road') else 'branch ') + side, distance
+    return None
+  return None
+
+
+def nearby_maneuver(sm, now_ns, speed):
+  if not sm.logMonoTime.get('mapRenderState'):
+    return None
+  if route_instruction(sm, now_ns, speed, require_geometry=True) is not None:
+    return sm['mapRenderState'].approachManeuver or None
+  return None
+
+
 def latest_gps_source(sm) -> str | None:
   """The service with the freshest usable GPS fix, or None."""
   now = time.monotonic()
+  now_ns = int(now * 1e9)
   sources = [s for s in ('gpsLocation', 'gpsLocationExternal')
              if sm.valid[s] and sm[s].hasFix and 0 <= now - sm.recv_time[s] < 2
+             and sm.logMonoTime[s] > 0 and 0 <= now_ns - sm.logMonoTime[s] < 2_000_000_000
              and all(math.isfinite(v) for v in (sm[s].latitude, sm[s].longitude, sm[s].bearingDeg, sm[s].speed))
              and abs(sm[s].latitude) <= 85.05112878 and abs(sm[s].longitude) <= 180]
   return max(sources, key=lambda s: sm.logMonoTime[s]) if sources else None
+
+
+def gps_course(gps):
+  if gps.speed >= 3. and 0 < gps.bearingAccuracyDeg <= 25. and 0 <= gps.bearingDeg < 360.:
+    return gps.bearingDeg
+  return None
 
 
 @dataclass(frozen=True)
@@ -56,6 +121,7 @@ class NavigationPosition:
   speed: float
   time: float
   fix_time: float
+  course: float | None = None
 
 
 def navigation_position(sm) -> NavigationPosition | None:
@@ -68,13 +134,23 @@ def navigation_position(sm) -> NavigationPosition | None:
       and 0 <= now - carrot.positionMonoTime / 1e9 < .5
       and all(math.isfinite(v) for v in (carrot.xPosLat, carrot.xPosLon, carrot.xPosAngle, carrot.xPosSpeed))
       and abs(carrot.xPosLat) <= 85.05112878 and abs(carrot.xPosLon) <= 180):
-    return NavigationPosition(carrot.xPosLat, carrot.xPosLon, carrot.xPosAngle, max(0., carrot.xPosSpeed / 3.6),
-                              carrot.positionMonoTime / 1e9, carrot.positionFixMonoTime / 1e9)
+    speed = max(0., carrot.xPosSpeed / 3.6)
+    course = (carrot.xPosAngle if speed >= 3. and getattr(carrot, 'positionHeadingValid', False)
+              and 0 <= carrot.xPosAngle < 360 else None)
+    if course is not None and getattr(carrot, 'positionSource', '') == 'device':
+      # Carrot propagates this device fix without its bearing accuracy. Check the original observation.
+      source = latest_gps_source(sm)
+      measured = gps_course(sm[source]) if source and abs(sm.logMonoTime[source] - carrot.positionFixMonoTime) < 350_000_000 else None
+      if measured is None or abs((course - measured + 180.) % 360. - 180.) > 25.:
+        course = None
+    return NavigationPosition(carrot.xPosLat, carrot.xPosLon, carrot.xPosAngle, speed,
+                              carrot.positionMonoTime / 1e9, carrot.positionFixMonoTime / 1e9, course)
   source = latest_gps_source(sm)
   if source is None:
     return None
   gps = sm[source]
-  return NavigationPosition(gps.latitude, gps.longitude, gps.bearingDeg, max(0., gps.speed), sm.recv_time[source], sm.recv_time[source])
+  fix_time = sm.logMonoTime[source] * 1e-9
+  return NavigationPosition(gps.latitude, gps.longitude, gps.bearingDeg, max(0., gps.speed), fix_time, fix_time, gps_course(gps))
 
 
 class ParkedPosition:

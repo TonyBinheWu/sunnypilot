@@ -8,7 +8,8 @@ from collections import deque
 from multiprocessing.connection import Connection
 from pathlib import Path
 
-from openpilot.selfdrive.modeld.vla_status import TTL_NS, WEIGHTS, camera_clock, compare, write_status
+from openpilot.selfdrive.modeld.vla_status import TTL_NS, WEIGHTS, camera_clock, compare, scene_assessment, write_status
+from openpilot.selfdrive.navigation.helpers import nearby_maneuver
 from openpilot.tools.vla.segment import MotionWindow, primary_action
 
 INPUT_NS = 150_000_000
@@ -80,6 +81,7 @@ def finished(key, requested, primary, action, now):
   if key != requested or not 0 <= now - requested[1] < TTL_NS:
     return {'state': 'expired'}
   return {'state': 'result', 'frame': key[0], 'eof': key[1], 'comparison': compare(primary, action),
+          'scene': scene_assessment(primary, action), 'route_maneuver': primary.get('route_maneuver'),
           'longitudinal': action['longitudinal'], 'lateral': action['lateral']}
 
 
@@ -107,7 +109,8 @@ def main():
   if HARDWARE.get_device_type() != 'mici' or not internal_primary(boot=True):
     write_status('primary_owns_gpu')
   else:
-    sm = messaging.SubMaster(['modelV2', 'carState', 'livePose', 'liveCalibration', 'deviceState'])
+    sm = messaging.SubMaster(['modelV2', 'carState', 'livePose', 'liveCalibration', 'deviceState',
+                              'mapRenderState', 'navRoute', 'navInstructionCarrot'])
     camera = VisionIpcClient('camerad', VisionStreamType.VISION_STREAM_ROAD, True)
     observe(params, sm, camera, check_usbgpu_power)
   # manager reaps and starts exited on-road services. Keep a failed session dormant
@@ -157,7 +160,10 @@ def observe(params, sm, camera, check_power):
           good = False
         last_model = key
         if good:
-          primaries.append((key, primary_action(model)))
+          primary = primary_action(model)
+          if motion.speed is not None and 0 <= key[1] - motion.speed_time < INPUT_NS:
+            primary['route_maneuver'] = nearby_maneuver(sm, key[1], motion.speed)
+          primaries.append((key, primary))
       if not good:
         if worker is not None:
           status = {'state': 'primary_guard'}
@@ -193,6 +199,7 @@ def observe(params, sm, camera, check_power):
               if status['state'] == 'result':
                 session['accepted'] += 1
                 session['last_comparison'] = status['comparison']
+                session['last_scene'] = status['scene']
               else:
                 session['expired'] += 1
             misses = misses + 1 if status['state'] == 'expired' else 0

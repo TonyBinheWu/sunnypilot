@@ -9,6 +9,10 @@
     e2e: '視覺模型', openingLead: '前車拉遠，平順恢復巡航', model: '模型曲率', e2eCurve: '視覺模型與彎道減速',
     hkgCurve: 'HKG 彎道限速', forceDecel: '系統要求減速', softHold: '停車保持',
     signalPrepare: '號誌預備減速', signalHold: '號誌起步等待', modelFilter: '模型曲率平滑',
+    matched: '目前定位符合導航路線', ambiguous: '附近有多段可能路線', offRoute: '車輛偏離路線',
+    headingConflict: '車輛行進方向與路線不一致', instructionConflict: '轉向提示與路線彎向不一致',
+    'turn left': '前方左轉', 'turn right': '前方右轉', 'branch left': '前方靠左分岔', 'branch right': '前方靠右分岔',
+    roundabout: '接近圓環', uturn: '前方迴轉',
     hkgFilter: 'HKG 曲率平滑', laneLines: '車道線規劃', holdCurvature: '維持目前曲率',
   };
   function describe(value) {
@@ -35,6 +39,11 @@
     document.getElementById('visionSetSpeed').textContent = Number.isFinite(ceiling) ? ceiling : '—';
     for (const [id, key] of [['plannerProfile', 'profile'], ['speedConstraint', 'speed'], ['steeringInfluence', 'steering']]) {
       document.getElementById(id).textContent = key === 'profile' ? profile : describe(state[key]);
+    }
+    const routeCheck = document.getElementById('plannerRouteCheck');
+    if (routeCheck) {
+      routeCheck.textContent = [state.routeCheck, state.approachManeuver].filter(Boolean).map(describe).join(' · ');
+      routeCheck.hidden = routeCheck.previousElementSibling.hidden = !state.routeCheck;
     }
   }
   async function poll(current) {

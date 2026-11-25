@@ -28,7 +28,8 @@ def main():
   pm = messaging.PubMaster(['longitudinalPlan', 'driverAssistance', 'lateralPlan'])
   sm = messaging.SubMaster(
     ['carControl', 'carState', 'controlsState', 'liveParameters', 'radarState',
-     'modelV2', 'selfdriveState', 'carrotMan', 'carrotNavi', 'livePose', 'navInstruction'],
+     'modelV2', 'selfdriveState', 'carrotMan', 'carrotNavi', 'livePose', 'navInstruction',
+     'navRoute', 'navInstructionCarrot', 'mapRenderState'],
     poll='modelV2',
     ignore_avg_freq=['radarState'],
   )

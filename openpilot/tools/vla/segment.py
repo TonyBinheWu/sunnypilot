@@ -2,6 +2,8 @@
 from bisect import bisect_right
 import math
 
+from openpilot.selfdrive.navigation.helpers import nearby_maneuver
+
 
 def history_at(eof, times, motion):
   # Vehicle yaw rate is clockwise about down. The VLA's local y axis points left.
@@ -81,16 +83,21 @@ def primary_action(m):
   if not all(map(math.isfinite, (m.action.desiredAcceleration, m.action.desiredCurvature))):
     return None
   return {'compute': str(m.visionCompute), 'desired_acceleration': m.action.desiredAcceleration,
-          'desired_curvature': m.action.desiredCurvature, 'should_stop': m.action.shouldStop}
+          'desired_curvature': m.action.desiredCurvature, 'should_stop': m.action.shouldStop,
+          'visual_lead': any(.7 <= lead.prob <= 1. and lead.x and 1.52 < lead.x[0] <= 120.
+                             for lead in m.leadsV3)}
 
 
 def recorded_pairs(events):
   indexes, primary, motion = {}, {}, MotionWindow()
+  nav_events = []
   for msg in events:
     kind, t = msg.which(), msg.logMonoTime
     if kind in ('liveCalibration', 'carState', 'livePose'):
       motion.observe(kind, t, msg.valid, getattr(msg, kind))
-    elif kind == 'roadEncodeIdx' and msg.valid and msg.roadEncodeIdx.type == 'fullHEVC':
+    if kind in ('navInstructionCarrot', 'navRoute', 'mapRenderState', 'carState'):
+      nav_events.append((t, kind, msg.valid, getattr(msg, kind)))
+    if kind == 'roadEncodeIdx' and msg.valid and msg.roadEncodeIdx.type == 'fullHEVC':
       idx = msg.roadEncodeIdx
       key = (idx.frameId, idx.timestampEof)
       indexes[key] = None if key in indexes else (idx.segmentNum, idx.segmentId)
@@ -102,6 +109,15 @@ def recorded_pairs(events):
   segments = {idx[0] for idx in indexes.values() if idx is not None}
   if len(segments) != 1:
     return
+  class NavSnapshot(dict):
+    """Latest logged observations available at camera exposure, as in SubMaster."""
+    def __init__(self):
+      super().__init__()
+      self.valid = {}
+      self.logMonoTime = dict.fromkeys(('navInstructionCarrot', 'navRoute', 'mapRenderState', 'carState'), 0)
+
+  snapshot = NavSnapshot()
+  cursor = 0
   next_eof = 0
   for frame, eof in sorted(indexes.keys() & primary.keys(), key=lambda pair: pair[1]):
     key = (frame, eof)
@@ -109,8 +125,15 @@ def recorded_pairs(events):
       continue
     history = motion.at(eof)
     if history is not None:
+      while cursor < len(nav_events) and nav_events[cursor][0] <= eof:
+        t, kind, valid, value = nav_events[cursor]
+        snapshot[kind], snapshot.valid[kind], snapshot.logMonoTime[kind] = value, valid, t
+        cursor += 1
+      turn = None
+      if all(snapshot.valid.get(k) for k in snapshot.logMonoTime) and 0 <= eof - snapshot.logMonoTime['carState'] < 150_000_000:
+        turn = nearby_maneuver(snapshot, eof, snapshot['carState'].vEgo)
       yield indexes[key][1], {'frame_id': frame, 'timestamp_eof_ns': eof, 'timestamp_us': eof//1000,
-                              'egomotion': history, 'primary': primary[key]}
+                              'egomotion': history, 'primary': {**primary[key], 'route_maneuver': turn}}
       next_eof = eof + 1_000_000_000
 
 
@@ -133,7 +156,7 @@ def segment_samples(directory):
         data = stream.read()
     else:
       data = source.read()
-  kinds = {'liveCalibration', 'carState', 'livePose', 'roadEncodeIdx', 'modelV2'}
+  kinds = {'liveCalibration', 'carState', 'livePose', 'roadEncodeIdx', 'modelV2', 'navRoute', 'navInstructionCarrot', 'mapRenderState'}
   events = sorted((msg for msg in log.Event.read_multiple_bytes(data) if msg.which() in kinds), key=lambda msg: msg.logMonoTime)
   reader = cv2.VideoCapture(str(video.resolve()))
   index = -1

@@ -7,6 +7,33 @@ const source = await readFile(new URL("../js/pages/navigation_map.js", import.me
 const traditionalSource = await readFile(new URL("../js/pages/navigation_zh_tw.js", import.meta.url), "utf8");
 const settle = () => new Promise((resolve) => setImmediate(resolve));
 
+test("cockpit shows a verified approach and clears the route row after evidence expires", async () => {
+  const script = await readFile(new URL("../js/planner_status.js", import.meta.url), "utf8");
+  const elements = new Map();
+  const get = (id) => {
+    if (!elements.has(id)) elements.set(id, {previousElementSibling: {}});
+    return elements.get(id);
+  };
+  const responses = [{routeCheck: "matched", approachManeuver: "branch right"}, {routeCheck: "instructionConflict"}, {}];
+  let next;
+  const target = {
+    document: {getElementById: get, body: {dataset: {panel: "vision"}}, addEventListener() {}},
+    MutationObserver: class {observe() {}}, AbortSignal, clearTimeout() {},
+    setTimeout(fn) { next = fn; }, fetch: async () => ({ok: true, json: async () => responses.shift()}),
+  };
+  vm.runInNewContext(script, target);
+  await settle();
+  const row = get("plannerRouteCheck");
+  assert.equal(row.textContent, "目前定位符合導航路線 · 前方靠右分岔");
+  assert.equal(row.hidden, false);
+  await next();
+  assert.equal(row.textContent, "轉向提示與路線彎向不一致");
+  await next();
+  assert.equal(row.textContent, "");
+  assert.equal(row.hidden, true);
+  assert.equal(row.previousElementSibling.hidden, true);
+});
+
 async function page(responses, language = "en", handleApi = null, search = "") {
   const elements = new Map(), timers = [], revoked = [];
   let blobs = 0;

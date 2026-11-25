@@ -9,7 +9,7 @@ from openpilot.tools.vla.shared_bench import PERIOD, PrimarySchedule
 
 
 def model(eof=1_000_000_000):
-  return NS(visionCompute='nonUsb', visionCameraInputs='roadWide', frameId=1, timestampEof=eof, frameAge=0, frameDropPerc=.02,
+  return NS(visionCompute='nonUsb', visionCameraInputs='roadWide', frameId=1, timestampEof=eof, frameAge=0, frameDropPerc=.02, leadsV3=[],
             modelExecutionTime=.019, action=NS(desiredAcceleration=0., desiredCurvature=0., shouldStop=True))
 
 
@@ -34,6 +34,23 @@ def test_match_and_age(key, age, state):
                          (True, 'yield', 'inconclusive'), (True, None, 'inconclusive'), (False, 'pass', 'inconclusive')])
 def test_independent_stop_judgments(should_stop, vla, comparison):
   assert vla_status.compare({'should_stop': should_stop}, {'longitudinal': vla}) == comparison
+
+
+@pytest.mark.parametrize('stop,lead,turn,action,lateral,expected', [
+  (True, False, 'turn right', 'stop', 'turn left', 'stop_agreement'),
+  (True, False, None, 'pass', 'keep lane', 'review_stop'),
+  (False, False, None, 'stop', None, 'review_stop'),
+  (False, True, 'turn left', 'yield', 'turn left', 'review_yield'),
+  (False, True, None, 'follow', 'keep lane', 'observed_follow'),
+  (False, False, None, 'follow', 'keep lane', 'insufficient_evidence'),
+  (False, False, 'turn right', 'cruise', 'turn right', 'turn_agreement'),
+  (False, False, 'turn right', 'cruise', 'turn left', 'review_direction'),
+  (False, False, 'branch left', 'pass', 'turn right', 'insufficient_evidence'),
+  (False, False, None, None, 'turn left', 'insufficient_evidence'),
+])
+def test_scene_assessment_requires_specific_corroboration(stop, lead, turn, action, lateral, expected):
+  primary = {'should_stop': stop, 'visual_lead': lead, 'route_maneuver': turn}
+  assert vla_status.scene_assessment(primary, {'longitudinal': action, 'lateral': lateral}) == expected
 
 
 def test_status_expires_actions_but_retains_historical_counts(tmp_path):
@@ -153,3 +170,4 @@ def test_observation_loop_with_aligned_streams(monkeypatch, delay, fault, termin
   else:
     assert states[-1]['session']['accepted'] > 0
     assert any(s.get('comparison') == 'both_stop' for s in states)
+    assert states[-1]['session']['last_scene'] == 'stop_agreement'

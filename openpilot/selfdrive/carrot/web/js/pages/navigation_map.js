@@ -224,6 +224,9 @@
           position: tr("현재 GPS 위치를 기다리는 중입니다.", "Waiting for a current GPS position."),
           instruction: tr("현재 경로의 안내를 기다리는 중입니다.", "Waiting for current route instructions."),
           route_position: tr("현재 위치가 안내 경로에서 벗어나 있습니다.", "Current position is away from the route."),
+          ambiguous: tr("가까운 여러 구간 중 현재 주행 구간을 구분하는 중입니다.", "Waiting to distinguish nearby route segments."),
+          headingConflict: tr("차량의 진행 방향과 경로 방향이 다릅니다.", "Vehicle heading disagrees with the route."),
+          instructionConflict: tr("회전 안내와 경로의 회전 방향이 다릅니다.", "The turn instruction disagrees with the route geometry."),
           slow: tr("지도 로딩 중입니다. 잠시 기다려 주세요.", "Loading map data. Please wait."),
         };
         const reason = response.headers.get("X-Nav-Map-Status");

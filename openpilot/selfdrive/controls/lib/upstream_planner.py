@@ -11,6 +11,7 @@ from openpilot.common.constants import CV
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
+from openpilot.selfdrive.navigation.helpers import nearby_maneuver
 from openpilot.selfdrive.controls.lib.curve_speed import CurveSpeed
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import LongitudinalMpc, LongitudinalPlanSource, STOP_DISTANCE, get_T_FOLLOW
@@ -230,6 +231,9 @@ class LongitudinalPlanner:
         trajectory = zip(model.position.t, model.velocity.x, model.orientationRate.z, strict=False)
         preview = [abs(v * yaw) for t, v, yaw in trajectory if 0. <= t <= 3.]
         eligible = bool(preview) and all(a < 1. for a in preview)
+      if eligible and nearby_maneuver(sm, sm.logMonoTime['modelV2'], v_ego) is not None:
+        # Let the model handle the approach; an opening gap around a junction is not a cue to catch up.
+        eligible = False
       recovery = min(self.opening_lead_boost(sm, eligible), max(0., 0.6 - output_a_target_e2e))
       output_a_target_e2e += recovery
 

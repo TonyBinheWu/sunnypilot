@@ -206,6 +206,7 @@ def main():
   runner = (reference(args.weights, args.server, args.device) if args.backend == 'vulkan'
             else nullcontext(native(args.weights, args.backend)))
   from openpilot.tools.vla.segment import segment_samples
+  from openpilot.selfdrive.modeld.vla_status import scene_assessment
   frames = segment_samples(args.segment) if args.segment else samples(args.manifest)
   count = 0
   with runner as (device, predict):
@@ -214,11 +215,13 @@ def main():
       start = time.perf_counter()
       words = predict(rgb, row['egomotion'])
       elapsed = (time.perf_counter()-start)*1000
-      identity = ({'frame_id': row['frame_id'], 'primary': row['primary'], 'timestamp_eof_ns': row['timestamp_eof_ns']}
+      action = decode(words)
+      identity = ({'frame_id': row['frame_id'], 'primary': row['primary'], 'timestamp_eof_ns': row['timestamp_eof_ns'],
+                   'scene': scene_assessment(row['primary'], action)}
                   if args.segment else {'image': row['image']})
       print(json.dumps({**identity, 'timestamp_us': row['timestamp_us'], 'backend': args.backend, 'device': device,
                         'vla': 'mjf-su/PhysicalAI-reason-VLA', 'weights_revision': REVISION,
-                        'action': decode(words), 'inference_ms': round(elapsed, 2)}), flush=True)
+                        'action': action, 'inference_ms': round(elapsed, 2)}), flush=True)
   if not count:
     raise ValueError('No aligned and valid VLA frames in input')
 

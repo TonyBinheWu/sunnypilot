@@ -67,3 +67,18 @@ def compare(primary, action):
   if primary['should_stop'] and action['longitudinal'] in ('cruise', 'pass'):
     return 'only_primary_stop'
   return 'inconclusive'
+
+
+def scene_assessment(primary, action):
+  """Describe aligned evidence for review. A VLA label does not establish right of way."""
+  longitudinal = action['longitudinal']
+  if primary['should_stop'] or longitudinal == 'stop':
+    return 'stop_agreement' if primary['should_stop'] and longitudinal == 'stop' else 'review_stop'
+  if longitudinal == 'yield':
+    return 'review_yield'
+  turn = primary.get('route_maneuver')
+  if turn in ('turn left', 'turn right') and action['lateral'] in ('turn left', 'turn right'):
+    return 'turn_agreement' if turn == action['lateral'] else 'review_direction'
+  if longitudinal == 'follow' and primary.get('visual_lead'):
+    return 'observed_follow'
+  return 'insufficient_evidence'

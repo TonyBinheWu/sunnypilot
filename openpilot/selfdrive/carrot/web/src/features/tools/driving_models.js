@@ -26,6 +26,14 @@ const EN = {
   session: "Session totals · accepted / late",
   latency: "Last completed inference, camera to result",
   last_comparison: "Last accepted stop comparison",
+  last_scene: "Scene in last accepted frame",
+  stop_agreement: "Both models indicated a stop",
+  review_stop: "Review the stop decision",
+  review_yield: "VLA suggested yielding",
+  observed_follow: "Vision lead and VLA following agree",
+  turn_agreement: "VLA turn agrees with navigation",
+  review_direction: "VLA turn conflicts with navigation",
+  insufficient_evidence: "Insufficient scene evidence",
   both_stop: "Both models indicated stop",
   only_vla_stop: "Only the VLA indicated stop",
   only_primary_stop: "Only the primary indicated stop",
@@ -149,6 +157,7 @@ export async function renderDrivingLibrary(root, library) {
       root.append(element("p", t("session") + " · " + stats.accepted + " / " + stats.expired));
       if (Number.isFinite(stats.last_ms)) root.append(element("p", t("latency") + " · " + stats.last_ms + " ms"));
       if (stats.last_comparison) root.append(element("p", t("last_comparison") + " · " + t(stats.last_comparison)));
+      if (stats.last_scene) root.append(element("p", t("last_scene") + " · " + t(stats.last_scene)));
     }
   }
 }

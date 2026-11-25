@@ -68,7 +68,7 @@ def replay_events(compute):
                                      angularVelocityDevice=NS(valid=True,x=0.,y=0.,z=0.)))]
   eof = times[-1]
   events += [event('roadEncodeIdx', eof+1, NS(type='fullHEVC', frameId=48, timestampEof=eof, segmentNum=7, segmentId=3)),
-             event('modelV2', eof+2, NS(visionCameraInputs='roadWide', visionCompute=compute, timestampEof=eof, frameId=48,
+             event('modelV2', eof+2, NS(visionCameraInputs='roadWide', visionCompute=compute, timestampEof=eof, frameId=48, leadsV3=[],
                                         action=NS(desiredAcceleration=-.5,desiredCurvature=0.,shouldStop=False)))]
   return events
 
@@ -78,6 +78,23 @@ def test_matches_small_and_large_primary_to_recorded_camera(compute):
   (frame,row), = recorded_pairs(replay_events(compute))
   assert frame == 3 and row['frame_id'] == 48 and row['timestamp_eof_ns'] == 3_000_000_000
   assert row['primary']['compute'] == compute and row['egomotion'][0] == pytest.approx([-8.,0.,0.])
+
+
+def test_recorded_scene_uses_only_the_route_available_at_camera_exposure():
+  events = replay_events('usbGpu')
+  eof = events[-1].modelV2.timestampEof
+  events[-1].modelV2.leadsV3 = [NS(prob=.8, x=[22.])]
+  report = NS(carrotRouteId=100, routeMatch='matched', locationMonoTime=eof-30_000_000, approachManeuver='turn right')
+  def instruction(side):
+    return NS(allManeuvers=[NS(distance=10., type='turn', modifier=side)])
+  events.extend([event('navRoute', eof-50_000_000, NS(carrotRouteId=100, coordinates=[0,1])),
+                 event('navInstructionCarrot', eof-40_000_000, instruction('right')), event('mapRenderState', eof-20_000_000, report),
+                 event('navInstructionCarrot', eof+1, instruction('left'))])
+  _, row = next(recorded_pairs(sorted(events, key=lambda e:e.logMonoTime)))
+  assert row['primary']['visual_lead'] and row['primary']['route_maneuver'] == 'turn right'
+  report.routeMatch = 'offRoute'
+  _, row = next(recorded_pairs(sorted(events, key=lambda e:e.logMonoTime)))
+  assert row['primary']['route_maneuver'] is None
 
 
 @pytest.mark.parametrize('problem', ['wrong_eof','wrong_frame','duplicate','wide','bad_pose','old_pose'])

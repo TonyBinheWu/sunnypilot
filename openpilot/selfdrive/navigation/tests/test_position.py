@@ -14,7 +14,7 @@ def sm(monkeypatch):
   monkeypatch.setattr(helpers.time, 'monotonic', lambda: 10.)
   sm = SM(carrotMan=NS(positionFixMonoTime=9_000_000_000, positionMonoTime=9_900_000_000,
                       xPosLat=37., xPosLon=127., xPosAngle=45., xPosSpeed=36.),
-          gpsLocation=NS(latitude=38., longitude=128., bearingDeg=60., speed=9., hasFix=True),
+          gpsLocation=NS(latitude=38., longitude=128., bearingDeg=60., bearingAccuracyDeg=0., speed=9., hasFix=True),
           gpsLocationExternal=NS(hasFix=False))
   sm.valid = dict.fromkeys(sm, True)
   sm.recv_time = dict.fromkeys(sm, 9.9)
@@ -49,6 +49,24 @@ def test_rebroadcast_cannot_renew_stale_or_invalid_fused_position(sm, field, val
 def test_stopped_publisher_expires_even_with_recent_fix(sm):
   sm.recv_time = dict.fromkeys(sm, 7.)
   assert helpers.navigation_position(sm) is None
+
+
+@pytest.mark.parametrize('accuracy,offset,angle,expected', [(4., 0, 55., 55.), (40., 0, 55., None),
+                                                         (4., -400_000_000, 55., None), (4., 0, 180., None)])
+def test_device_course_agrees_with_recent_measured_bearing(sm, accuracy, offset, angle, expected):
+  fused, gps = sm['carrotMan'], sm['gpsLocation']
+  fused.positionSource, fused.positionHeadingValid = 'device', True
+  fused.xPosAngle, gps.bearingAccuracyDeg = angle, accuracy
+  fused.positionFixMonoTime = sm.logMonoTime['gpsLocation'] + offset
+  assert helpers.navigation_position(sm).course == expected
+
+
+def test_future_device_timestamp_cannot_hide_a_good_external_fix(sm):
+  sm.valid['carrotMan'] = False
+  sm['gpsLocationExternal'] = NS(latitude=37., longitude=129., bearingDeg=12., bearingAccuracyDeg=2., speed=8., hasFix=True)
+  sm.logMonoTime['gpsLocation'] = 10_100_000_000
+  fix = helpers.navigation_position(sm)
+  assert (fix.longitude, fix.course) == (129., 12.)
 
 
 @pytest.fixture
