@@ -2054,3 +2054,45 @@ msgstr "주변을 확인하고 직접 방향지시등을 조작하세요"
 #: openpilot/selfdrive/ui/lane_change_notice.py
 msgid "Indicator on; check surrounding traffic"
 msgstr "방향지시등 켜짐 · 주변을 확인하세요"
+
+msgid "Device settings"
+msgstr "기기 설정"
+
+msgid "Device info"
+msgstr "기기 정보"
+
+msgid "Display & units"
+msgstr "화면 및 단위"
+
+msgid "Camera & calibration"
+msgstr "카메라 및 보정"
+
+msgid "Software & power"
+msgstr "소프트웨어 및 전원"
+
+msgid "Models & eGPU"
+msgstr "모델 및 eGPU"
+
+msgid "Speed units"
+msgstr "속도 단위"
+
+msgid "Road updates"
+msgstr "3D 화면 갱신 속도"
+
+msgid "Road brightness"
+msgstr "도로 화면 밝기"
+
+msgid "Dim"
+msgstr "어둡게"
+
+msgid "More settings"
+msgstr "기타 설정"
+
+msgid "Lead distance"
+msgstr "앞차와의 거리"
+
+msgid "Search models"
+msgstr "모델 검색"
+
+msgid "No matching models"
+msgstr "일치하는 모델 없음"

@@ -344,20 +344,18 @@ class DeviceLayoutMici(NavScroller):
     terms_btn = BigButton(tr("terms &\nconditions"), "", gui_app.texture("icons_mici/settings/device/info.png", 64, 64))
     terms_btn.set_click_callback(lambda: gui_app.push_widget(ReviewTermsPage()))
 
+    self.camera_panel = NavScroller()
+    self.camera_panel._scroller.add_widgets([driver_cam_btn, reset_calibration_btn])
+    self.software_panel = NavScroller()
+    self.software_panel._scroller.add_widgets([UpdateOpenpilotBigButton(), reboot_btn, self._power_off_btn, uninstall_openpilot_btn])
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
       offroad_big_toggle(),
       learning_big_button(),
-      UpdateOpenpilotBigButton(),
       PairBigButton(),
       review_training_guide_btn,
-      driver_cam_btn,
       terms_btn,
       regulatory_btn,
-      reset_calibration_btn,
-      uninstall_openpilot_btn,
-      reboot_btn,
-      self._power_off_btn,
     ])
 
   def _on_regulatory(self):

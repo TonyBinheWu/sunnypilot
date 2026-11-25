@@ -6,6 +6,7 @@ from openpilot.cereal import messaging, car, log
 from msgq.visionipc import VisionStreamType
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.selfdrive.ui.render_diagnostics import RenderDiagnostics
+from openpilot.selfdrive.ui.device_design import DrivingViewSelector
 from openpilot.selfdrive.ui.overlay_state import OverlayState
 from openpilot.system.ui.lib import native_draw, native_geometry, native_text
 from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH
@@ -160,6 +161,7 @@ class AugmentedRoadView(CameraView):
     self._content_rect = rl.Rectangle()
     self._last_click_time = 0.0
     self._suppress_camera_for_cluster = False
+    self._selector = DrivingViewSelector(True)
 
     # Bookmark icon with swipe gesture
     self._bookmark_icon = BookmarkIcon(bookmark_callback)
@@ -218,7 +220,13 @@ class AugmentedRoadView(CameraView):
     else:
       self._offroad_label.set_text(tr("start the car to\nuse openpilot"))
 
+  def _handle_mouse_press(self, mouse_pos: MousePos):
+    if not self._selector.begin(mouse_pos):
+      super()._handle_mouse_press(mouse_pos)
+
   def _handle_mouse_release(self, mouse_pos: MousePos):
+    if self._selector.finish(mouse_pos, ui_state, not self._suppress_camera_for_cluster and self._alert_renderer.will_render()[0] is None):
+      return
     # Don't trigger click callback if bookmark was triggered
     if not self._bookmark_icon.interacting():
       super()._handle_mouse_release(mouse_pos)
@@ -263,13 +271,19 @@ class AugmentedRoadView(CameraView):
     else:
       # Render the base camera view
       super()._render(self._content_rect)
+      if ui_state.device_scene_dim:
+        rl.draw_rectangle_rec(self._content_rect, rl.Color(11, 24, 21, 66))
     cam_ms = (time.monotonic() - _t) * 1000.0
 
     self._overlay_state.update(ui_state, self.client, self.stream_type, (self._suppress_camera_for_cluster, road_view_mode))
 
     if reality:
       _t = time.monotonic()
-      timing.call("model", self._reality.draw, self._content_rect, ui_state, view == 2)
+      road = self._content_rect
+      if view == 2 and self._reality.style["scene_style"]:
+        # Leave the detector/source labels clear of the compact speed panel.
+        road = rl.Rectangle(road.x + 116, road.y, road.width - 116, road.height)
+      timing.call("model", self._reality.draw, road, ui_state, view == 2)
       model_ms = (time.monotonic() - _t) * 1000.
     elif not self._suppress_camera_for_cluster and road_view_mode in (0, 2):
       # Draw all UI overlays
@@ -294,6 +308,8 @@ class AugmentedRoadView(CameraView):
     _t = time.monotonic()
     self._hud_renderer.render(self._content_rect)
     self._vision_renderer.render(self._content_rect)
+    self._selector.draw(self._content_rect, view if view >= 0 else (0 if reality else 1),
+                        ui_state.started and not self._suppress_camera_for_cluster and alert_to_render is None)
     hud_ms = (time.monotonic() - _t) * 1000.0
     if ui_state.started:
       _t = time.monotonic()

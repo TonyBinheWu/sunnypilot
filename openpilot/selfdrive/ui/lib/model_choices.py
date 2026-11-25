@@ -11,7 +11,10 @@ class ModelChoices:
   def __init__(self, offroad):
     self.offroad = offroad
     self.items = sunny.model_items()
+    self.query = ""
+    self.visible_models = set()
     self.group = 0
+    self._filter()
     self.busy = False
     self.error = None
     self.next_role = 0.
@@ -43,12 +46,24 @@ class ModelChoices:
 
   def next_group(self):
     self.group = (self.group + 1) % 4
+    self._filter()
+
+  def set_query(self, text):
+    self.query = text.strip()[:64]
+    self._filter()
+
+  def _filter(self):
+    query = self.query.casefold()
+    catalog = sunny.catalog()
+    self.visible_models = {(big, key) for big, key, name in self.items
+                           if (self.group == 0 or self.group == (2 + int(big) if key in catalog else 1))
+                           and (query in name.casefold() or query in key.casefold())}
 
   def group_text(self):
     return (tr("All models"), "carrot-wip", tr("sunnypilot small models"), tr("sunnypilot large models"))[self.group]
 
   def includes(self, big, key):
-    return self.group == 0 or self.group == (2 + int(big) if key in sunny.catalog() else 1)
+    return (big, key) in self.visible_models
 
   def choose(self, big, key):
     if self.busy or not self.offroad():

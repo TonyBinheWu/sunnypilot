@@ -22,7 +22,7 @@ def screen():
   cls.bases = [ast.Name(id="CameraBase", ctx=ast.Load())]
   cls.body = [node for node in cls.body if isinstance(node, ast.FunctionDef)
               and node.name in ("_road_view_mode", "_render", "set_cluster_hud_connected")]
-  state = SimpleNamespace(started=True, driving_scene_view=-1, show_model_view=0, show_brightness_ratio=1.0, started_time=100.0, sm={})
+  state = SimpleNamespace(started=True, driving_scene_view=-1, device_scene_dim=False, show_model_view=0, show_brightness_ratio=1.0, started_time=100.0, sm={})
   rl = Mock()
   rl.Rectangle.side_effect = lambda x, y, width, height: SimpleNamespace(x=x, y=y, width=width, height=height)
   namespace = {
@@ -37,7 +37,7 @@ def screen():
   view = namespace["AugmentedRoadView"]()
   for name in ("camera", "_refresh_plot_mode", "_switch_stream_if_needed", "_update_calibration",
                "_model_renderer", "_hud_renderer", "_vision_renderer", "_alert_renderer", "_driver_state_renderer",
-               "_traffic_light", "_confidence_ball", "_bookmark_icon", "_offroad_label", "_pm", "_overlay_state", "client"):
+               "_traffic_light", "_confidence_ball", "_bookmark_icon", "_offroad_label", "_pm", "_overlay_state", "_selector", "client"):
     setattr(view, name, Mock())
   view._reality = Mock(style={"scene_style": 0})
   view.stream_type = 0
@@ -97,6 +97,7 @@ def test_render_combinations_preserve_alerts_and_cluster_preference(screen, mode
   assert view._model_renderer.render.call_count == int(model and not suppressed)
   assert rl.draw_rectangle_rec.call_count == int(suppressed or not camera)
   view._hud_renderer.render.assert_called_once()
+  assert view._selector.draw.call_args.args[-1] == (not suppressed)
   view._alert_renderer.render.assert_called_once()
   view._driver_state_renderer.draw_onroad.assert_called_once()
 

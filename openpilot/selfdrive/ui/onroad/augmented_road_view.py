@@ -11,6 +11,7 @@ from openpilot.selfdrive.ui.onroad.driver_preview import DriverPreview
 from openpilot.selfdrive.ui.onroad.hud_renderer import HudRenderer
 from openpilot.selfdrive.ui.onroad.model_renderer import ModelRenderer
 from openpilot.selfdrive.ui.render_diagnostics import RenderDiagnostics
+from openpilot.selfdrive.ui.device_design import DrivingViewSelector
 from openpilot.selfdrive.ui.overlay_state import OverlayState
 from openpilot.selfdrive.ui.onroad.cameraview import CameraView
 from openpilot.system.ui.lib.application import gui_app
@@ -49,6 +50,7 @@ class AugmentedRoadView(CameraView):
     self._cached_matrix: np.ndarray | None = None
     self._content_rect = rl.Rectangle()
     self._suppress_camera_for_cluster = False
+    self._selector = DrivingViewSelector(False)
 
     self.model_renderer = ModelRenderer()
     self._render_diagnostics = RenderDiagnostics('ui')
@@ -128,13 +130,19 @@ class AugmentedRoadView(CameraView):
     else:
       # Render the base camera view
       timing.call('camera', super()._render, rect)
+      if ui_state.device_scene_dim:
+        rl.draw_rectangle_rec(self._content_rect, rl.Color(11, 24, 21, 66))
     cam_ms = (time.monotonic() - _t) * 1000.0
 
     self._overlay_state.update(ui_state, self.client, self.stream_type, self._suppress_camera_for_cluster)
 
     if reality:
       _t = time.monotonic()
-      timing.call("model", self._reality.draw, self._content_rect, ui_state, view == 2)
+      road = self._content_rect
+      if self._reality.style["scene_style"]:
+        rail = road.width * .22
+        road = rl.Rectangle(road.x+rail, road.y, road.width-rail, road.height)
+      timing.call("model", self._reality.draw, road, ui_state, view == 2)
       model_ms = (time.monotonic() - _t) * 1000.
     elif view == -1 and not self._suppress_camera_for_cluster:
       # Draw the model overlay only with the camera view
@@ -143,13 +151,15 @@ class AugmentedRoadView(CameraView):
       model_ms = (time.monotonic() - _t) * 1000.0
     _t = time.monotonic()
     timing.call('hud', self._hud_renderer.render, self._content_rect)  # includes plot when enabled
+    alert = self.alert_renderer.get_alert(ui_state.sm)
+    self._selector.draw(self._content_rect, view if view >= 0 else (0 if reality else 1),
+                        ui_state.started and not self._suppress_camera_for_cluster and alert is None)
     hud_ms = (time.monotonic() - _t) * 1000.0
     _t = time.monotonic()
     timing.call('alert', self.alert_renderer.render, self._content_rect)
     alert_ms = (time.monotonic() - _t) * 1000.0
     _t = time.monotonic()
-    timing.call('driver_state', self.driver_state_renderer.draw_onroad, self._content_rect,
-                self.alert_renderer.get_alert(ui_state.sm) is not None)
+    timing.call('driver_state', self.driver_state_renderer.draw_onroad, self._content_rect, alert is not None)
     ds_ms = (time.monotonic() - _t) * 1000.0
 
     # Custom UI extension point - add custom overlays here
@@ -178,7 +188,9 @@ class AugmentedRoadView(CameraView):
     self._pm.send('uiDebug', msg)
     timing.finish()
 
-  def _handle_mouse_press(self, _):
+  def _handle_mouse_press(self, pos):
+    if self._selector.begin(pos):
+      return
     if not self._hud_renderer.user_interacting() and self._click_callback is not None:
       self._click_callback()
 
@@ -189,9 +201,8 @@ class AugmentedRoadView(CameraView):
       preview.close()
     super().close()
 
-  def _handle_mouse_release(self, _):
-    # We only call click callback on press if not interacting with HUD
-    pass
+  def _handle_mouse_release(self, pos):
+    self._selector.finish(pos, ui_state, not self._suppress_camera_for_cluster and self.alert_renderer.get_alert(ui_state.sm) is None)
 
   def _draw_border(self, rect: rl.Rectangle):
     rl.draw_rectangle_lines_ex(rect, UI_BORDER_SIZE, rl.BLACK)

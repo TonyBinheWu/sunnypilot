@@ -1479,3 +1479,45 @@ msgstr "Rainbow Road (SP style)"
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
 msgstr "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
+
+msgid "Device settings"
+msgstr "デバイス設定"
+
+msgid "Device info"
+msgstr "デバイス情報"
+
+msgid "Display & units"
+msgstr "表示と単位"
+
+msgid "Camera & calibration"
+msgstr "カメラとキャリブレーション"
+
+msgid "Software & power"
+msgstr "ソフトウェアと電源"
+
+msgid "Models & eGPU"
+msgstr "モデルと eGPU"
+
+msgid "Speed units"
+msgstr "速度の単位"
+
+msgid "Road updates"
+msgstr "3D 描画更新頻度"
+
+msgid "Road brightness"
+msgstr "道路表示の明るさ"
+
+msgid "Dim"
+msgstr "暗め"
+
+msgid "More settings"
+msgstr "その他の設定"
+
+msgid "Lead distance"
+msgstr "先行車との距離"
+
+msgid "Search models"
+msgstr "モデルを検索"
+
+msgid "No matching models"
+msgstr "一致するモデルがありません"

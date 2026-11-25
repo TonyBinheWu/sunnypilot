@@ -2,6 +2,7 @@ from openpilot.selfdrive.ui.lib.model_choices import ModelChoices
 from openpilot.selfdrive.ui.lib.hardware_status import localize_hardware_status
 from openpilot.system.ui.lib.multilang import tr
 import threading
+import time
 from pathlib import Path
 
 import pyray as rl
@@ -9,7 +10,7 @@ import pyray as rl
 from openpilot.common.file_chunker import get_manifest_path
 from openpilot.selfdrive.modeld.helpers import active_usbgpu_compiled_path
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton
-from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog
+from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog, BigInputDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.hardware.usbgpu import check_usbgpu, get_usbgpu_device, usbgpu_status
 from openpilot.system.ui.lib.application import FontWeight, gui_app
@@ -21,6 +22,7 @@ from openpilot.system.ui.widgets.scroller import NavScroller
 class UsbGpuInfoLayout(Widget):
   def __init__(self):
     super().__init__()
+    self._next_status = 0.
     self.set_rect(rl.Rectangle(0, 0, 360, 180))
     sub_color = rl.Color(255, 255, 255, int(255 * 0.9 * 0.65))
     self._status = UnifiedLabel(tr("status"), 48, max_width=340, font_weight=FontWeight.DISPLAY, wrap_text=False)
@@ -29,6 +31,10 @@ class UsbGpuInfoLayout(Widget):
     self._link_value = UnifiedLabel("", 32, max_width=340, text_color=sub_color, font_weight=FontWeight.ROMAN, wrap_text=False)
 
   def _update_state(self):
+    now = time.monotonic()
+    if now < self._next_status:
+      return
+    self._next_status = now + 1.
     self._status_value.set_text(localize_hardware_status(usbgpu_status(ui_state.usbgpu_compiled, ui_state.usbgpu_loading, ui_state.usbgpu_active,
                                               ui_state.usbgpu_startup_failed,
                                               compile_pending=ui_state.usbgpu_compile_pending)))
@@ -85,6 +91,7 @@ class CheckUsbGpuButton(BigButton):
 class UsbGpuLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
+    self._next_labels = 0.
     compile_button = BigButton(tr("compile model"), tr("keep ignition on"),
                                gui_app.texture("icons_mici/settings/device/reboot.png", 64, 70))
     compile_button.set_visible(lambda: not ui_state.usbgpu_compiled)
@@ -93,6 +100,11 @@ class UsbGpuLayoutMici(NavScroller):
     self.choices = ModelChoices(ui_state.is_offroad)
     self.group_button = BigButton(tr("Model list"), self.choices.group_text(), scroll=True)
     self.group_button.set_click_callback(self.choices.next_group)
+    self.search = BigButton(tr("Search models"), "", scroll=True)
+    self.search.set_click_callback(self._search)
+    empty = BigButton(tr("No matching models"), "")
+    empty.set_enabled(False)
+    empty.set_visible(lambda: not self.choices.visible_models)
     self.role = BigButton(tr("Primary driving model after reboot"), self.choices.primary_text(), scroll=True)
     self.role.set_enabled(ui_state.is_offroad)
     self.role.set_click_callback(self.choices.toggle_primary)
@@ -103,14 +115,24 @@ class UsbGpuLayoutMici(NavScroller):
       button.set_enabled(lambda: ui_state.is_offroad() and not self.choices.busy)
       button.set_click_callback(lambda b=big, k=key: self.choices.choose(b, k))
       self.model_buttons.append((button, big, key))
-    self._scroller.add_widgets([self.group_button, self.role, *(b for b, _, _ in self.model_buttons), UsbGpuInfoLayout(), CheckUsbGpuButton(), compile_button])
+    self._scroller.add_widgets([self.group_button, self.search, empty, self.role, *(b for b, _, _ in self.model_buttons),
+                                UsbGpuInfoLayout(), CheckUsbGpuButton(), compile_button])
+
+  def _search(self):
+    gui_app.push_widget(BigInputDialog(tr("Search models"), self.choices.query, minimum_length=0, confirm_callback=self.choices.set_query))
 
   def _update_state(self):
     super()._update_state()
+    now = time.monotonic()
+    if now < self._next_labels:
+      return
+    self._next_labels = now + .25
     self.group_button.set_value(self.choices.group_text())
+    self.search.set_value(self.choices.query or tr("All models"))
     self.role.set_value(self.choices.primary_text())
     for button, big, key in self.model_buttons:
-      button.set_value((tr("External") if big else tr("Internal")) + " · " + self.choices.status(big, key))
+      if self.choices.includes(big, key):
+        button.set_value((tr("External") if big else tr("Internal")) + " · " + self.choices.status(big, key))
 
   @staticmethod
   def _force_compile():

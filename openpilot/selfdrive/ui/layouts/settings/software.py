@@ -49,7 +49,7 @@ def time_ago(date: datetime.datetime | None) -> str:
 
 
 class SoftwareLayout(Widget):
-  def __init__(self):
+  def __init__(self, power_buttons=None):
     super().__init__()
 
     self._onroad_label = ListItem(lambda: tr("Updates are only downloaded while the car is off."))
@@ -78,6 +78,8 @@ class SoftwareLayout(Widget):
       self._branch_btn,
       button_item(lambda: tr("Uninstall"), lambda: tr("UNINSTALL"), callback=self._on_uninstall),
     ], line_separator=True, spacing=0)
+    if power_buttons is not None:
+      self._scroller.add_widget(power_buttons)
 
   def show_event(self):
     super().show_event()

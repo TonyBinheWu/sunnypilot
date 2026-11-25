@@ -2698,3 +2698,45 @@ msgstr "累積連續影格"
 
 msgid "Late"
 msgstr "推理逾時"
+
+msgid "Device settings"
+msgstr "裝置設定"
+
+msgid "Device info"
+msgstr "裝置資訊"
+
+msgid "Display & units"
+msgstr "顯示與單位"
+
+msgid "Camera & calibration"
+msgstr "相機與校正"
+
+msgid "Software & power"
+msgstr "軟體與電源"
+
+msgid "Models & eGPU"
+msgstr "模型與 eGPU"
+
+msgid "Speed units"
+msgstr "車速單位"
+
+msgid "Road updates"
+msgstr "3D 畫面更新率"
+
+msgid "Road brightness"
+msgstr "道路畫面亮度"
+
+msgid "Dim"
+msgstr "柔和"
+
+msgid "More settings"
+msgstr "更多設定"
+
+msgid "Lead distance"
+msgstr "前車距離"
+
+msgid "Search models"
+msgstr "搜尋模型"
+
+msgid "No matching models"
+msgstr "找不到相符的模型"

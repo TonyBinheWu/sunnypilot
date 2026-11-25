@@ -9,27 +9,14 @@ from openpilot.selfdrive.ui.layouts.settings.firehose import FirehoseLayout
 from openpilot.selfdrive.ui.layouts.settings.software import SoftwareLayout
 from openpilot.selfdrive.ui.layouts.settings.toggles import TogglesLayout
 from openpilot.selfdrive.ui.layouts.settings.usbgpu import UsbGpuLayout
-from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
+from openpilot.selfdrive.ui.device_design import BAR, BASE, INK, MINT, SELECTED, DisplaySettings, TouchMenu, caption, grid_cells, section_label, tile
+from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.multilang import tr, tr_noop
-from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.lib.wifi_manager import WifiManager
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.network import NetworkUI
 
-# Constants
-SIDEBAR_WIDTH = 500
-CLOSE_BTN_SIZE = 200
-CLOSE_ICON_SIZE = 70
 LAYOUT = large_display_layout()
-PANEL_MARGIN = 50
-
-# Colors
-SIDEBAR_COLOR = rl.BLACK
-PANEL_COLOR = rl.Color(41, 41, 41, 255)
-CLOSE_BTN_COLOR = rl.Color(41, 41, 41, 255)
-CLOSE_BTN_PRESSED = rl.Color(59, 59, 59, 255)
-TEXT_NORMAL = rl.Color(128, 128, 128, 255)
-TEXT_SELECTED = rl.WHITE
 
 
 class PanelType(IntEnum):
@@ -40,16 +27,17 @@ class PanelType(IntEnum):
   FIREHOSE = 4
   DEVELOPER = 5
   EGPU = 6
+  DISPLAY = 7
+  CAMERA = 8
 
 
 @dataclass
 class PanelInfo:
   name: str
   instance: Widget
-  button_rect: rl.Rectangle = rl.Rectangle(0, 0, 0, 0)
 
 
-class SettingsLayout(Widget):
+class SettingsLayout(TouchMenu):
   def __init__(self):
     super().__init__()
     self._current_panel = PanelType.DEVICE
@@ -58,112 +46,67 @@ class SettingsLayout(Widget):
     wifi_manager = WifiManager(auto_tethering=True)
     wifi_manager.set_active(False)
 
+    device = DeviceLayout()
+    self._more = False
     self._panels = {
-      PanelType.DEVICE: PanelInfo(tr_noop("Device"), DeviceLayout()),
+      PanelType.DEVICE: PanelInfo(tr_noop("Device info"), device),
       PanelType.NETWORK: PanelInfo(tr_noop("Network"), NetworkUI(wifi_manager)),
       PanelType.TOGGLES: PanelInfo(tr_noop("Toggles"), TogglesLayout()),
-      PanelType.SOFTWARE: PanelInfo(tr_noop("Software"), SoftwareLayout()),
+      PanelType.SOFTWARE: PanelInfo(tr_noop("Software & power"), SoftwareLayout(device.power_buttons)),
       PanelType.FIREHOSE: PanelInfo(tr_noop("Firehose"), FirehoseLayout()),
       PanelType.DEVELOPER: PanelInfo(tr_noop("Developer"), DeveloperLayout()),
-      PanelType.EGPU: PanelInfo(tr_noop("Models"), UsbGpuLayout()),
+      PanelType.EGPU: PanelInfo(tr_noop("Models & eGPU"), UsbGpuLayout()),
+      PanelType.DISPLAY: PanelInfo(tr_noop("Display & units"), DisplaySettings(ui_state)),
+      PanelType.CAMERA: PanelInfo(tr_noop("Camera & calibration"), device.camera_panel),
     }
 
-    self._panels = {PanelType[key.upper()]: self._panels[PanelType[key.upper()]] for key in LAYOUT["order"]}
-    self._font_medium = gui_app.font(FontWeight.MEDIUM)
-    self._close_icon = gui_app.texture("icons/close2.png", CLOSE_ICON_SIZE, CLOSE_ICON_SIZE)
-
-    # Callbacks
+    order = [PanelType[key.upper()] for key in LAYOUT["order"]]
+    self._extra = [p for p in order if p in (PanelType.TOGGLES, PanelType.FIREHOSE, PanelType.DEVELOPER)]
+    self._primary = [p for p in order if p not in self._extra]
+    self._primary.insert(self._primary.index(PanelType.DEVICE) + 1, PanelType.DISPLAY)
+    self._primary.insert(self._primary.index(PanelType.SOFTWARE), PanelType.CAMERA)
     self._close_callback: Callable | None = None
 
   def set_callbacks(self, on_close: Callable):
     self._close_callback = on_close
 
-  def _render(self, rect: rl.Rectangle):
-    # Calculate layout
-    sidebar_rect = rl.Rectangle(rect.x, rect.y, SIDEBAR_WIDTH, rect.height)
-    panel_rect = rl.Rectangle(rect.x + SIDEBAR_WIDTH, rect.y, rect.width - SIDEBAR_WIDTH, rect.height)
+  def _render(self, rect):
+    sidebar = int(rect.width * .26)
+    header = min(140, int(rect.height * .14))
+    rl.draw_rectangle_rec(rect, BASE)
+    rl.draw_rectangle_rec(rl.Rectangle(rect.x, rect.y, sidebar, rect.height), BAR)
+    caption(rl.Rectangle(rect.x + 27, rect.y, sidebar - 54, header), tr("Device settings"), 56)
+    self.targets.clear()
+    panels = self._extra if self._more else self._primary
+    nav_area = rl.Rectangle(rect.x + 20, rect.y + header, sidebar - 40, rect.height - header - 22)
+    for key, box in zip([*panels, "more"], grid_cells(nav_area, len(panels)+1, 1, LAYOUT["menu_spacing"] / 12), strict=True):
+      self.targets[key] = box
+      selected = key == self._current_panel
+      if selected:
+        rl.draw_rectangle_rounded(box, .15, 4, SELECTED)
+      text = tr("Back" if self._more else "More settings") if key == "more" else tr(self._panels[key].name)
+      section_label(rl.Rectangle(box.x+18, box.y, box.width-36, box.height), key.name.lower() if key != "more" else key,
+                    text, int(LAYOUT["menu_font"]*.72), MINT if selected else INK)
 
-    # Draw components
-    self._draw_sidebar(sidebar_rect)
-    self._draw_current_panel(panel_rect)
-
-  def _draw_sidebar(self, rect: rl.Rectangle):
-    rl.draw_rectangle_rec(rect, SIDEBAR_COLOR)
-
-    # Close button
-    close_btn_rect = rl.Rectangle(
-      rect.x + (rect.width - CLOSE_BTN_SIZE) / 2, rect.y + 60, CLOSE_BTN_SIZE, CLOSE_BTN_SIZE
-    )
-
-    pressed = (rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT) and
-               rl.check_collision_point_rec(rl.get_mouse_position(), close_btn_rect))
-    close_color = CLOSE_BTN_PRESSED if pressed else CLOSE_BTN_COLOR
-    rl.draw_rectangle_rounded(close_btn_rect, 1.0, 20, close_color)
-
-    icon_color = rl.Color(255, 255, 255, 255) if not pressed else rl.Color(220, 220, 220, 255)
-    icon_dest = rl.Rectangle(
-      close_btn_rect.x + (close_btn_rect.width - self._close_icon.width) / 2,
-      close_btn_rect.y + (close_btn_rect.height - self._close_icon.height) / 2,
-      self._close_icon.width,
-      self._close_icon.height,
-    )
-    rl.draw_texture_pro(
-      self._close_icon,
-      rl.Rectangle(0, 0, self._close_icon.width, self._close_icon.height),
-      icon_dest,
-      rl.Vector2(0, 0),
-      0,
-      icon_color,
-    )
-
-    # Store close button rect for click detection
-    self._close_btn_rect = close_btn_rect
-
-    # Navigation buttons
-    y = rect.y + 300
-    for panel_type, panel_info in self._panels.items():
-      button_rect = rl.Rectangle(rect.x + 50, y, rect.width - 150, LAYOUT["menu_spacing"])
-
-      # Button styling
-      is_selected = panel_type == self._current_panel
-      text_color = TEXT_SELECTED if is_selected else TEXT_NORMAL
-      # Draw button text (right-aligned)
-      panel_name = tr(panel_info.name)
-      text_size = measure_text_cached(self._font_medium, panel_name, LAYOUT["menu_font"])
-      text_pos = rl.Vector2(
-        button_rect.x + button_rect.width - text_size.x, button_rect.y + (button_rect.height - text_size.y) / 2
-      )
-      rl.draw_text_ex(self._font_medium, panel_name, text_pos, LAYOUT["menu_font"], 0, text_color)
-
-      # Store button rect for click detection
-      panel_info.button_rect = button_rect
-
-      y += LAYOUT["menu_spacing"]
-
-  def _draw_current_panel(self, rect: rl.Rectangle):
-    rl.draw_rectangle_rounded(
-      rl.Rectangle(rect.x + 10, rect.y + 10, rect.width - 20, rect.height - 20), 0.04, 30, PANEL_COLOR
-    )
-    content_rect = rl.Rectangle(rect.x + PANEL_MARGIN, rect.y + 25, rect.width - (PANEL_MARGIN * 2), rect.height - 50)
-    # rl.draw_rectangle_rounded(content_rect, 0.03, 30, PANEL_COLOR)
     panel = self._panels[self._current_panel]
-    if panel.instance:
-      panel.instance.render(content_rect)
+    left = rect.x + sidebar + 32
+    exit_box = rl.Rectangle(rect.x + rect.width - 232, rect.y + 20, 206, header - 40)
+    self.targets["close"] = exit_box
+    tile(exit_box, tr("Close"), 42)
+    caption(rl.Rectangle(left, rect.y, exit_box.x-left-16, header), tr(panel.name), 58)
+    panel.instance.render(rl.Rectangle(left, rect.y+header, rect.x+rect.width-left-32, rect.height-header-22))
 
-  def _handle_mouse_release(self, mouse_pos: MousePos) -> None:
-    # Check close button
-    if rl.check_collision_point_rec(mouse_pos, self._close_btn_rect):
+  def activate(self, key):
+    if key == "close":
       if self._close_callback:
         self._close_callback()
-      return
-
-    # Check navigation buttons
-    for panel_type, panel_info in self._panels.items():
-      if rl.check_collision_point_rec(mouse_pos, panel_info.button_rect):
-        self.set_current_panel(panel_type)
-        return
+    elif key == "more":
+      self.set_current_panel(self._primary[0] if self._more else self._extra[0])
+    else:
+      self.set_current_panel(key)
 
   def set_current_panel(self, panel_type: PanelType):
+    self._more = panel_type in self._extra
     if panel_type != self._current_panel:
       self._panels[self._current_panel].instance.hide_event()
       self._current_panel = panel_type

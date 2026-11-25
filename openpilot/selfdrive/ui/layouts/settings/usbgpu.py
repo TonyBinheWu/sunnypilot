@@ -24,7 +24,10 @@ class UsbGpuLayout(Widget):
     for item, (big, key, _) in zip(model_items, self.choices.items, strict=True):
       item.set_visible(lambda b=big, k=key: self.choices.includes(b,k))
     group = button_item(lambda: tr("Model list"), self.choices.group_text, callback=self.choices.next_group)
-    self._scroller = Scroller([group, button_item(lambda: tr("Primary driving model after reboot"), self.choices.primary_text,
+    search = button_item(lambda: tr("Search models"), lambda: self.choices.query or tr("All models"), callback=self._search)
+    empty = text_item(lambda: tr("No matching models"), "")
+    empty.set_visible(lambda: not self.choices.visible_models)
+    self._scroller = Scroller([group, search, empty, button_item(lambda: tr("Primary driving model after reboot"), self.choices.primary_text,
                   lambda: tr("Choose which selected driving model runs as primary."),
                   callback=self.choices.toggle_primary, enabled=ui_state.is_offroad), *model_items,
       text_item(lambda: tr("eGPU Status"), self._status),
@@ -34,6 +37,16 @@ class UsbGpuLayout(Widget):
                   lambda: tr("Checks USB 5 Gbps, firmware, 12V/PCIe, and GPU execution."),
                   callback=self._start_check, enabled=ui_state.is_offroad),
     ], line_separator=True, spacing=0)
+
+  def _search(self):
+    from openpilot.system.ui.lib.application import gui_app
+    from openpilot.system.ui.widgets import DialogResult
+    from openpilot.system.ui.widgets.keyboard import Keyboard
+    keyboard = Keyboard(max_text_size=64)
+    keyboard.set_title(tr("Search models"))
+    keyboard.set_text(self.choices.query)
+    keyboard.set_callback(lambda result: self.choices.set_query(keyboard.text) if result == DialogResult.CONFIRM else None)
+    gui_app.push_widget(keyboard)
 
   @staticmethod
   def _status() -> str:

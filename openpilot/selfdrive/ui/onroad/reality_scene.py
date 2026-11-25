@@ -5,11 +5,24 @@ from math import cos, hypot, isfinite, sin
 import json
 from pathlib import Path
 import time
+from typing import NamedTuple
 
 from openpilot.selfdrive.carrot.server.config import CARROT_WEB_SETTINGS_PATH, WEB_DIR
 
 import numpy as np
 import pyray as rl
+
+
+class VehicleStamp(NamedTuple):
+  source: rl.Rectangle
+  destination: rl.Rectangle
+  color: rl.Color
+
+
+EGO_ART = {"KIA_EV6": 1, "KIA_EV6_PE": 1, "HYUNDAI_IONIQ_5": 2, "HYUNDAI_IONIQ_5_PE": 2, "HYUNDAI_IONIQ_5_N": 2,
+           "KIA_SPORTAGE_5TH_GEN": 3, "KIA_CARNIVAL_4TH_GEN": 4}
+# Rear lamp centerlines measured in the five unscaled, straight-ahead atlas cells.
+REAR_LAMP_Y = (126, 97, 133, 95, 95)
 
 
 def fresh(state, service, seconds, now):
@@ -110,6 +123,10 @@ class RealityScene:
     self.next_demand = self.image_time = 0
     self.key = None
     self.faces = []
+    self.vehicle_texture = None
+    self.ego_art = 0
+    self.last_geometry = 0.
+    self.geometry_guard = None
     self.objects = self.junction = self.unplaced = ()
     self.next_objects = 0.
     self.opening = None
@@ -152,18 +169,19 @@ class RealityScene:
       self.objects = self.junction = self.unplaced = ()
       self.next_objects = 0.
     self.update_appearance(now)
-    key = (
-      model_only, self.objects, self.junction, car_ok, lamps, rear, self.ego_scale,
-      sm.recv_frame["modelV2"] if model_ok else -1,
-      sm.recv_frame["radarState"] if radar_ok else -1,
-      rect.x,
-      rect.y,
-      rect.width,
-      rect.height,
-    )
-    if key != self.key:
+    if not model_only and self.vehicle_texture is None:
+      from openpilot.system.ui.lib.application import gui_app
+      self.vehicle_texture = gui_app.texture("vehicle_models/road_vehicles.png")
+    self.ego_art = EGO_ART.get(getattr(getattr(state, "CP", None), "carFingerprint", ""), 0)
+    # Drop expired sources and reflect lamp/view/viewport transitions immediately.
+    guard = (model_only, model_ok, radar_ok, car_ok, lamps, self.objects, self.junction, self.ego_art,
+             self.ego_scale, rect.x, rect.y, rect.width, rect.height, state.started_frame, len(rear))
+    key = (sm.recv_frame["modelV2"] if model_ok else -1, sm.recv_frame["radarState"] if radar_ok else -1, rear)
+    period = 1 / (12 if getattr(state, "device_scene_eco", False) else 20)
+    if guard != self.geometry_guard or (key != self.key and now - self.last_geometry >= period):
       self.faces = self.geometry(rect, sm["modelV2"] if model_ok else None, sm["radarState"] if radar_ok else None, car_ok, lamps, rear, self.objects, model_only)
       self.key = key
+      self.geometry_guard, self.last_geometry = guard, now
     night = self.style["scene_style"] == 1
     rl.draw_rectangle_gradient_v(
       int(rect.x),
@@ -173,8 +191,14 @@ class RealityScene:
       tint(0x18232F if night else 0xDAE6EB),
       tint(0x34414D if night else 0x788894),
     )
-    for vertices, color in self.faces:
-      rl.draw_triangle_fan(vertices, len(vertices), color)
+    for item in self.faces:
+      if isinstance(item, VehicleStamp):
+        rl.draw_texture_pro(self.vehicle_texture, item.source, item.destination, rl.Vector2(0, 0), 0, item.color)
+      else:
+        vertices, color = item
+        rl.draw_triangle_fan(vertices, len(vertices), color)
+    if getattr(state, "device_scene_dim", False):
+      rl.draw_rectangle_rec(rect, tint(0x0B1815, alpha=66))
     if model_only:
       face_font = self.font or rl.get_font_default()
 
@@ -346,12 +370,36 @@ class RealityScene:
         face("vehicle", [(x + a * size * width, z + b * size * length, y * size * height) for a, b, y in vertices], color)
 
       body = v["vehicle_color"]
-      panel([(-0.93, 0, 0.16), (0.93, 0, 0.16), (0.94, 0, 0.82), (-0.94, 0, 0.82)], tint(body, 0.75))
-      panel([(-0.94, 0, 0.82), (0.94, 0, 0.82), (0.88, 4, 0.76), (-0.88, 4, 0.76)], tint(body))
-      side = 1 if x < 0 else -1
-      panel([(side * 0.93, 0, 0.16), (side * 0.9, 4, 0.16), (side * 0.88, 4, 0.76), (side * 0.94, 0, 0.82)], tint(body, 0.62))
-      panel([(-0.84, 0.4, 0.83), (0.84, 0.4, 0.83), (0.69, 1.3, 1.45), (-0.69, 1.3, 1.45)], tint(0x304451))
-      panel([(-0.69, 1.3, 1.45), (0.69, 1.3, 1.45), (0.67, 2.7, 1.45), (-0.67, 2.7, 1.45)], tint(body, 0.94))
+      if self.vehicle_texture is not None and self.vehicle_texture.id:
+        is_ego = car_ok and index == ego_index
+        depth = z + 8 + setback
+        s = 740 / depth
+        pose = 0 if x / depth < -.10 else 2 if x / depth > .10 else 1
+        art = self.ego_art if is_ego else 0
+        source = rl.Rectangle(pose * 256, art * 200, 256, 200)
+        px = rect.x + rect.width * ((435 + x*s)/1000 + v["vehicle_x"]/100)
+        ground = rect.y + rect.height * ((118 + 4*s)/450 + v["vehicle_y"]/100)
+        scale = rect.width / 1000 * s * size * (2.6 if pose == 1 else 3.5)
+        w = scale * width
+        h = scale * source.height / source.width * (.75 * height + .25 * length)
+        destination = rl.Rectangle(px - w/2, ground - h, w, h)
+        faces.append(VehicleStamp(source, destination, tint(body)))
+        if is_ego and any(lamps):
+          brake, left, right = lamps
+          lamp_y = REAR_LAMP_Y[art]
+          for active, start, end, color in ((brake, 48, 70, 0xFF3434), (brake, 166, 188, 0xFF3434),
+                                            (left, 39, 49, 0xFFB020), (right, 187, 197, 0xFFB020)):
+            if active:
+              points = [(start, lamp_y-2), (start, lamp_y+3), (end, lamp_y+3), (end, lamp_y-2)]
+              faces.append(([rl.Vector2(destination.x + a*w/256, destination.y + b*h/200) for a,b in points], tint(color)))
+        continue
+      else:
+        panel([(-0.93, 0, 0.16), (0.93, 0, 0.16), (0.94, 0, 0.82), (-0.94, 0, 0.82)], tint(body, 0.75))
+        panel([(-0.94, 0, 0.82), (0.94, 0, 0.82), (0.88, 4, 0.76), (-0.88, 4, 0.76)], tint(body))
+        side = 1 if x < 0 else -1
+        panel([(side * 0.93, 0, 0.16), (side * 0.9, 4, 0.16), (side * 0.88, 4, 0.76), (side * 0.94, 0, 0.82)], tint(body, 0.62))
+        panel([(-0.84, 0.4, 0.83), (0.84, 0.4, 0.83), (0.69, 1.3, 1.45), (-0.69, 1.3, 1.45)], tint(0x304451))
+        panel([(-0.69, 1.3, 1.45), (0.69, 1.3, 1.45), (0.67, 2.7, 1.45), (-0.67, 2.7, 1.45)], tint(body, 0.94))
       if car_ok and index == ego_index:
         brake, left, right = lamps
         for sign, indicator in ((-1, left), (1, right)):
@@ -406,21 +454,46 @@ class RealityScene:
 
 def draw_minimal_hud(rect, state, hud, v):
   now = time.monotonic()
-  if not fresh(state, "carState", 0.5, now) or not isfinite(hud.speed):
-    return
   small = rect.width < 1000
-  unit = "km/h" if state.is_metric else "mph"
+  if small:
+    # The critical steering icon and link diagnostics retain the top row on C4.
+    rail = rl.Rectangle(rect.x+10, rect.y+rect.height*.34, 102, rect.height*.60)
+    rl.draw_rectangle_rounded(rail, .13, 4, tint(0x142120, alpha=230))
+  else:
+    rail = rl.Rectangle(rect.x, rect.y, rect.width*.22, rect.height)
+    rl.draw_rectangle_rec(rail, tint(0x14201F, alpha=245))
 
-  def reading(part, text, label, anchor):
-    x = rect.x + rect.width * anchor + v["hud_x"] + v[part + "_x"]
-    y = rect.y + rect.height * 0.045 + v["hud_y"] + v[part + "_y"]
-    size = v[part + "_font"] * 0.66
-    x = max(rect.x + 3, min(x, rect.x + rect.width - size * 2))
-    y = max(rect.y + 2, min(y, rect.y + rect.height - size * 2))
-    ink = tint(0xEFF5F8 if v["scene_style"] == 1 else 0x142735)
-    rl.draw_text_ex(hud._font_display, text, rl.Vector2(x, y), size, 0, ink)
-    rl.draw_text_ex(hud._font_display, label, rl.Vector2(x, y + size), max(10, size * 0.36), 0, ink)
+  if not fresh(state, "carState", .5, now) or not isfinite(hud.speed):
+    return
 
-  reading("speed", str(round(hud.speed)), unit, 0.035)
-  if fresh(state, "selfdriveState", 0.5, now) and hud._engaged and hud.is_cruise_set and isfinite(hud.set_speed):
-    reading("cruise", str(round(hud.set_speed * (1 if state.is_metric else 0.621371))), "MAX", 0.24 if small else 0.17)
+  def text(value, x, y, size, color):
+    rl.draw_text_ex(hud._font_display, value, rl.Vector2(x, y), max(10, int(size)), 0, tint(color))
+
+  # Keep saved layout adjustments inside the instrument area.
+  def origin(part, fraction, height):
+    x = rail.x + (7 if small else 28) + v["hud_x"] + v[part+"_x"]
+    y = rail.y + rail.height*fraction + v["hud_y"] + v[part+"_y"]
+    return (min(max(x, rail.x+3), rail.x+rail.width*.25),
+            min(max(y, rail.y+2), max(rail.y+2, rail.y+rail.height-height)))
+
+  speed_size = min(v["speed_font"]*(.57 if small else 1.12), rail.width*.49)
+  x, y = origin("speed", .025 if small else .13, speed_size*1.4)
+  text(str(round(hud.speed)), x, y, speed_size, 0xF3F7F5)
+  text("km/h" if state.is_metric else "mph", x, y+speed_size, speed_size*.37, 0xB7C7C1)
+  if fresh(state, "selfdriveState", .5, now) and hud._engaged and hud.is_cruise_set and isfinite(hud.set_speed):
+    cruise = round(hud.set_speed * (1 if state.is_metric else .621371))
+    size = v["cruise_font"] * (.48 if small else .80)
+    x, y = origin("cruise", .69 if small else .50, size*1.55)
+    text("MAX", x, y, size*.53, 0xA5D6BB)
+    text(str(cruise), x, y+size*.57, size, 0xEFF7F2)
+  if not small and fresh(state, "radarState", .5, now):
+    radar = state.sm["radarState"]
+    lead = radar.leadOne
+    if lead.status and isfinite(lead.dRel) and 0 < lead.dRel <= 150 and not any(
+      getattr(radar.radarErrors, name) for name in ("canError", "radarFault", "wrongConfig", "radarUnavailableTemporary")
+    ):
+      from openpilot.selfdrive.ui.device_design import caption
+      from openpilot.system.ui.lib.multilang import tr
+      x, y = origin("cruise", .70, 85)
+      caption(rl.Rectangle(x-4, y, rail.width-(x-rail.x), 34), tr("Lead distance"), 26, tint(0xA5D6BB))
+      text(f"{lead.dRel:.0f} m", x, y+34, 43, 0xEFF7F2)

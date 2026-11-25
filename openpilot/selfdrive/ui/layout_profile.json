@@ -6,10 +6,10 @@
         "device",
         "network",
         "toggles",
+        "egpu",
         "software",
         "firehose",
-        "developer",
-        "egpu"
+        "developer"
       ],
       "menu_font": 65,
       "menu_spacing": 110,

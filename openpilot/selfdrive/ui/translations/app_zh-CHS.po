@@ -1935,3 +1935,45 @@ msgstr "请确认车况并自行操作转向灯"
 #: openpilot/selfdrive/ui/lane_change_notice.py
 msgid "Indicator on; check surrounding traffic"
 msgstr "转向灯已开启，请确认周围车况"
+
+msgid "Device settings"
+msgstr "设备设置"
+
+msgid "Device info"
+msgstr "设备信息"
+
+msgid "Display & units"
+msgstr "显示与单位"
+
+msgid "Camera & calibration"
+msgstr "摄像头与校准"
+
+msgid "Software & power"
+msgstr "软件与电源"
+
+msgid "Models & eGPU"
+msgstr "模型与 eGPU"
+
+msgid "Speed units"
+msgstr "车速单位"
+
+msgid "Road updates"
+msgstr "3D 画面刷新率"
+
+msgid "Road brightness"
+msgstr "道路画面亮度"
+
+msgid "Dim"
+msgstr "柔和"
+
+msgid "More settings"
+msgstr "更多设置"
+
+msgid "Lead distance"
+msgstr "前车距离"
+
+msgid "Search models"
+msgstr "搜索模型"
+
+msgid "No matching models"
+msgstr "没有匹配的模型"

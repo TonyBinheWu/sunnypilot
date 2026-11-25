@@ -1,5 +1,10 @@
 import ast
+import time
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
+
+import pytest
 
 
 UI_DIR = Path(__file__).parents[1]
@@ -14,21 +19,6 @@ def _method(path: Path, class_name: str, method_name: str) -> ast.FunctionDef:
   tree = ast.parse(path.read_text(encoding="utf-8"))
   cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == class_name)
   return next(node for node in cls.body if isinstance(node, ast.FunctionDef) and node.name == method_name)
-
-
-def _is_cluster_camera_suppressed(node: ast.expr, *, negated: bool) -> bool:
-  if negated:
-    return (
-      isinstance(node, ast.UnaryOp)
-      and isinstance(node.op, ast.Not)
-      and _is_cluster_camera_suppressed(node.operand, negated=False)
-    )
-  return (
-    isinstance(node, ast.Attribute)
-    and isinstance(node.value, ast.Name)
-    and node.value.id == "self"
-    and node.attr == "_suppress_camera_for_cluster"
-  )
 
 
 def _calls(node: ast.AST, attr: str) -> bool:
@@ -117,34 +107,38 @@ def test_camera_preference_only_bypasses_connected_render_suppression():
     assert assignment.value.values[1].operand.id == "show_camera"
 
 
-def test_external_hud_skips_camera_and_model_but_retains_device_hud():
-  render = _method(ROAD_VIEW_PATH, "AugmentedRoadView", "_render")
-  connected = [
-    node for node in ast.walk(render)
-    if isinstance(node, ast.If) and _is_cluster_camera_suppressed(node.test, negated=False)
-  ]
-  disconnected = [
-    node for node in ast.walk(render)
-    if isinstance(node, ast.If) and _is_cluster_camera_suppressed(node.test, negated=True)
-  ]
+@pytest.mark.parametrize("view", [-1, 0, 1, 2])
+@pytest.mark.parametrize("suppressed", [True, False])
+@pytest.mark.parametrize("alert", [None, "takeover"])
+def test_c3x_renders_sources_and_preserves_alert_and_cluster_priority(view, suppressed, alert):
+  class Camera:
+    def _render(self, rect):
+      self.camera(rect)
 
-  assert any(_calls(node, "draw_rectangle_rec") and _calls(ast.Module(body=node.orelse), "_render")
-             for node in connected)
-  assert any(_calls(node, "_switch_stream_if_needed") and _calls(node, "_update_calibration")
-             for node in disconnected)
-  assert any(_calls(node, "render") for node in disconnected)
-
-  guarded_nodes = {id(child) for guard in connected + disconnected for child in ast.walk(guard)}
-  retained_renderers = []
-  for node in ast.walk(render):
-    if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
-      continue
-    callback = node.args[1] if node.func.attr == "call" and len(node.args) >= 2 else node.func
-    if not (isinstance(callback, ast.Attribute) and callback.attr in ("render", "draw_onroad")
-            and isinstance(callback.value, ast.Attribute) and isinstance(callback.value.value, ast.Name)
-            and callback.value.value.id == "self"):
-      continue
-    if id(node) not in guarded_nodes:
-      retained_renderers.append(callback.value.attr)
-
-  assert {"_hud_renderer", "alert_renderer", "driver_state_renderer"} <= set(retained_renderers)
+  method = _method(ROAD_VIEW_PATH, "AugmentedRoadView", "_render")
+  tree = ast.parse("class AugmentedRoadView(Camera): pass")
+  tree.body[0].body = [method]
+  state = SimpleNamespace(started=True, driving_scene_view=view, device_scene_dim=False, sm={})
+  rl = Mock()
+  rl.Rectangle.side_effect = lambda x, y, width, height: SimpleNamespace(x=x, y=y, width=width, height=height)
+  ns = dict(Camera=Camera, ui_state=state, UI_BORDER_SIZE=30, gui_app=Mock(), time=time, messaging=Mock(), rl=rl)
+  exec(compile(tree, str(ROAD_VIEW_PATH), "exec"), ns)
+  screen = ns["AugmentedRoadView"]()
+  for key in ("camera", "_refresh_plot_mode", "_switch_stream_if_needed", "_update_calibration", "_overlay_state", "client",
+              "model_renderer", "_hud_renderer", "_selector", "alert_renderer", "driver_state_renderer", "_pm",
+              "_render_diagnostics", "_draw_border_carrot"):
+    setattr(screen, key, Mock())
+  screen._suppress_camera_for_cluster = suppressed
+  screen.stream_type = screen._plot_mode = 0
+  screen._reality = Mock(style={"scene_style": 1})
+  screen.alert_renderer.get_alert.return_value = alert
+  screen._render_diagnostics.call.side_effect = lambda label, callback, *args: callback(*args)
+  screen._render(rl.Rectangle(0, 0, 2160, 1080))
+  assert screen.camera.called == (view == 1 and not suppressed)
+  assert screen._switch_stream_if_needed.called == screen._update_calibration.called == (not suppressed)
+  assert screen._reality.draw.called == (view != 1 and not suppressed)
+  screen.model_renderer.render.assert_not_called()
+  assert screen._selector.draw.call_args.args[-1] == (not suppressed and alert is None)
+  screen._hud_renderer.render.assert_called_once()
+  screen.alert_renderer.render.assert_called_once()
+  screen.driver_state_renderer.draw_onroad.assert_called_once_with(screen._content_rect, alert is not None)

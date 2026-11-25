@@ -111,6 +111,8 @@ class UIState:
     # Brightness and UI options
     self.show_brightness_ratio: float = 1.0
     self.driving_scene_view = -1
+    self.device_scene_eco = False
+    self.device_scene_dim = False
     self.show_model_view: int = 0
     self.rainbow_path: bool = False
     self.share_data: bool = False
@@ -230,6 +232,8 @@ class UIState:
     self.show_brightness_ratio: float = self.params.get_int("ShowCustomBrightness") / 100.0
     view = self.params.get("DrivingSceneView", return_default=True)
     self.driving_scene_view = view if view in (0, 1, 2) else -1
+    self.device_scene_eco = self.params.get_bool("DeviceSceneEco")
+    self.device_scene_dim = self.params.get_bool("DeviceSceneDim")
     self.show_model_view = self.params.get_int("ShowModelView")
     self.rainbow_path = self.params.get_bool("RainbowMode")
     self.share_data = self.params.get_bool("ShareData")
