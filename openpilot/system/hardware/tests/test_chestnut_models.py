@@ -21,21 +21,23 @@ class TestChestnutModels(unittest.TestCase):
     self.params = Params(str(self.root / "params"))
     self.status = ChestnutStatus(self.params)
     self.enterContext(patch.object(stock, "MODELS_DIR", self.root))
+    self.enterContext(patch("openpilot.system.hardware.chestnut.status.MODELS_DIR", self.root))
     self.warps = self.root / "selector"
     self.warps.mkdir()
     self.enterContext(patch.object(artifacts, "MODELS_DIR", self.warps))
     self.enterContext(patch("openpilot.common.hardware.hw.Paths.model_root", return_value=self.tmp))
-    self.enterContext(patch("openpilot.system.hardware.chestnut.status.get_build_metadata", return_value=SimpleNamespace(channel="ccnc-port")))
+    self.build = SimpleNamespace(channel="ccnc-port")
+    self.enterContext(patch("openpilot.system.hardware.chestnut.status.get_build_metadata", return_value=self.build))
     self.enterContext(patch.dict("os.environ", COMBINED_MODEL_PKL=""))
     self.vendor, self.product = CHESTNUT_USB_IDS[0]
     self.pointer = b"version https://git-lfs.github.com/spec/v1\noid sha256:" + b"0" * 64 + b"\nsize 900000\n"
 
-  def warning(self, *, offroad=True, usb=True, fw_product=CHESTNUT_USB_PRODUCT):
+  def warning(self, *, offroad=True, usb=True, fw_product=CHESTNUT_USB_PRODUCT, key="Offroad_ChestnutUncompiled"):
     device = {"vendorId": self.vendor, "productId": self.product, "product": fw_product, "speedMbps": 5000}
     alerts = {}
     self.status.update(offroad, "ccnc-port", [device] if usb else [], False, False, None, None,
                        lambda key, active, *_: alerts.update({key: active}))
-    return alerts["Offroad_ChestnutUncompiled"]
+    return alerts[key]
 
   def install_stock(self):
     opcodes = pickle.dumps({"run": None})
@@ -91,3 +93,12 @@ class TestChestnutModels(unittest.TestCase):
     parts.pop(stock.CHESTNUT_CAMERA_SIZES[0])
     write_bundle(str(path), parts)
     self.assertTrue(self.warning())
+
+  def test_missing_download_on_capable_branch(self):
+    self.build.channel = "release-mici"
+    bundle = {"minimumSelectorVersion": REQUIRED_JSON_VERSION, "runner": "tinygrad", "models": [{"artifact": {"fileName": "missing.pkl"}}]}
+    self.params.put(ACTIVE_BUNDLE_KEYS["chestnut"], bundle, block=True)
+    self.assertTrue(self.warning(key="Offroad_ChestnutBranch"))
+    self.install_stock()
+    self.assertTrue(self.warning())
+    self.assertFalse(self.warning(key="Offroad_ChestnutBranch"))

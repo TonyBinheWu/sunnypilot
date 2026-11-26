@@ -7,6 +7,7 @@ on:
       - '.lfsconfig'
       - 'tinygrad_repo'
       - 'openpilot/selfdrive/modeld/**'
+      - 'openpilot/system/hardware/chestnut/status.py'
       - 'openpilot/system/camerad/cameras/nv12_info.py'
       - 'tools/diagnostics/check_chestnut_package.py'
       - '.github/workflows/chestnut-package.yml'

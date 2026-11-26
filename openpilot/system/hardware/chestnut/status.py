@@ -3,7 +3,7 @@ import time
 from openpilot.common.hardware.usb import CHESTNUT_USB_PRODUCT, is_chestnut_usb_id
 from openpilot.common.params import Params
 from openpilot.common.version import get_build_metadata, CHESTNUT_BRANCHES
-from openpilot.selfdrive.modeld.helpers import MODELS_DIR
+from openpilot.selfdrive.modeld.helpers import MODELS_DIR, chestnut_compiled
 from openpilot.sunnypilot.models.helpers import chestnut_model_available
 
 
@@ -87,8 +87,8 @@ class ChestnutStatus:
     current_channel = get_build_metadata().channel
     chestnut_target = CHESTNUT_BRANCHES.get(current_channel)
     compiled = len(devices) == 1 and (offroad or chestnut_target is not None) and chestnut_model_available(self.params)
-    big_model_available = compiled or (MODELS_DIR / 'big_driving_supercombo.onnx').is_file()
-    chestnut_needs_switch = len(devices) == 1 and not big_model_available and chestnut_target is not None
+    chestnut_needs_switch = (len(devices) == 1 and chestnut_target is not None and not compiled
+                             and not (MODELS_DIR / 'big_driving_supercombo.onnx').is_file() and not chestnut_compiled())
     set_alert("Offroad_ChestnutBranch", chestnut_needs_switch, chestnut_target if chestnut_needs_switch else None)
     set_alert("Offroad_ChestnutNotDetected", missing)
     set_alert("Offroad_ChestnutOverheated", self.overheated, f"{state.tempC:.0f} °C" if state is not None else None)
