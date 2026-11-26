@@ -40,21 +40,11 @@ test('shared tools render both model catalogs without an eGPU and submit the sel
   assert.deepEqual([small.value, large.value, primary.value, scene.value], ['sunny-s', 'n16', 'auto', -1]);
   assert.deepEqual(small.children.map(e => e.label), ['carrot-wip (1)', 'sunnypilot (1)']);
   assert.deepEqual(large.children.map(e => e.children[0].value), ['n16', 'sunny-b']);
-  assert.ok(root.children.some(e => e.textContent?.includes('PhysicalAI-reason-VLA 4B')));
-  assert.equal(root.querySelectorAll('select').some(e => e.dataset.field === 'vla'), false);
+  assert.ok(root.children.every(e => !e.textContent?.includes('PhysicalAI-reason-VLA')));
+  assert.deepEqual(root.querySelectorAll('select').map(e => e.dataset.field), ['small', 'large', 'primary', 'scene']);
   scene.value = '2';
   await scene.events.change();
   assert.deepEqual(calls, [['/api/driving-models/selection', {field: 'scene', value: 2}]]);
-  const vla = {enabled: true, state: 'idle', last_error: 'too_slow', session: {accepted: 1, expired: 3, last_ms: 1020, last_scene: 'review_direction'}};
-  await renderLibrary({...data, selector: {...selector, vla_observer: vla}});
-  const observer = root.querySelectorAll('select').find(e => e.dataset.field === 'vla_observer');
-  assert.equal(observer.value, 'on');
-  assert.ok(root.children.some(e => e.textContent?.includes('three late results')));
-  assert.ok(root.children.some(e => e.textContent?.endsWith('1020 ms')));
-  assert.ok(root.children.some(e => e.textContent?.includes('VLA turn conflicts with navigation')));
-  observer.value = 'off';
-  await observer.events.change();
-  assert.deepEqual(calls.at(-1), ['/api/driving-models/selection', {field: 'vla_observer', value: 'off'}]);
   async function progress(received, total, phase = 'downloading') {
     await renderLibrary({...data, selector: {...selector, job: {state: 'preparing', model: 'sunny-b', progress: {phase, file: 'model.pkl', received, total}}}});
   }

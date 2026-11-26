@@ -10,7 +10,7 @@
 
 [下載與安裝](#下載與安裝) · [中文語音](#繁體中文語音指令) · [介面語言](#繁體中文介面) · [手機功能](#手機操作功能) · [車機安裝](#安裝與發行策略) · [Jetson](#jetson-連接與安裝) · [車輛支援](#車輛支援範圍) · [法律聲明](#法律聲明)
 
-手機瀏覽器與 CarrotAssist 可在「工具 → sunnypilot 駕駛模型選擇器」選擇內建小模型、eGPU 大模型及 C3X／C4 本機駕駛畫面。C4 另提供 Chestnut RX 9060 上的 VLA 決策比對。Formosa 座艙從「應用程式 → 工具／診斷」開啟。[模型清單、VLA 與駕駛畫面說明](docs/SUNNYPILOT_MODELS_AND_SCENE.zh-TW.md)
+手機瀏覽器與 CarrotAssist 可在「工具 → sunnypilot 駕駛模型選擇器」選擇內建小模型、eGPU 大模型及 C3X／C4 本機駕駛畫面。Formosa 座艙從「應用程式 → 工具／診斷」開啟。[模型清單與駕駛畫面說明](docs/SUNNYPILOT_MODELS_AND_SCENE.zh-TW.md)
 
 ## 上游合併（2026-11-14）
 

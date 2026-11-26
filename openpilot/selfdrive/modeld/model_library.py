@@ -8,6 +8,10 @@ import time
 from openpilot.common import big_model_catalog as C
 
 
+RETIRED_OBSERVER_DIR = Path('/data/vla-weights')
+RETIRED_OBSERVER_WEIGHTS = ('PhysicalAI-reason-VLA.Q4_K_M.gguf', 'PhysicalAI-reason-VLA.mmproj-Q8_0.gguf')
+
+
 @contextmanager
 def delivery_lock():
   # Same lock as launch/background delivery; never remove a file being installed.
@@ -77,6 +81,17 @@ def reconcile_retired(params):
     return params.get_bool('IsOffroad') and not params.get_bool('IsOnroad')
   if not offroad():
     return []
+  directory = RETIRED_OBSERVER_DIR
+  if directory.is_dir() and directory.resolve() == directory.absolute():
+    for name in RETIRED_OBSERVER_WEIGHTS:
+      if not offroad() or any(params.get_bool(key) for key in ('IsEngaged', 'ForceOffroad', 'ForceOffroadActive')):
+        break
+      path = directory / name
+      if not path.is_symlink() and path.is_file():
+        try:
+          path.unlink(missing_ok=True)
+        except OSError:
+          continue  # Retry on a later offroad maintenance pass.
   removed = []
   for key, entry in C.catalog().items():
     if entry.get('retired') is not True:

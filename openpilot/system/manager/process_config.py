@@ -4,7 +4,7 @@ import importlib.util
 
 from openpilot.cereal import car
 from openpilot.common.params import Params
-from openpilot.system.hardware import HARDWARE, PC, TICI
+from openpilot.system.hardware import PC, TICI
 from openpilot.system.manager.process import PythonProcess, NativeProcess, DaemonProcess
 
 try:
@@ -184,9 +184,6 @@ procs = [
   PythonProcess("navd", "openpilot.selfdrive.navd.navd", only_onroad),
   PythonProcess("sceneobjectd", "openpilot.selfdrive.ui.onroad.scene_objects",
                 lambda started, params, CP: started and params.get_int("DrivingSceneView") == 2, enabled=TICI, spawn=True),
-  PythonProcess("vlaobserverd", "openpilot.selfdrive.modeld.vla_observer",
-                lambda started, params, CP: started and params.get_bool("C4VlaObserve") and HARDWARE.get_device_type() == 'mici',
-                enabled=TICI, spawn=True),
   PythonProcess("mapsd", "openpilot.selfdrive.navigation.mapsd", only_onroad),
   PythonProcess("pandad", "openpilot.selfdrive.pandad.pandad", always_run),
   PythonProcess("paramsd", "openpilot.selfdrive.locationd.paramsd", only_onroad),
