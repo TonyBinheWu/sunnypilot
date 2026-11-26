@@ -1,5 +1,6 @@
 """Owner-requested live streams from existing camera IPC; no control writes."""
 import base64
+from contextlib import closing
 import json
 import logging
 import os
@@ -47,20 +48,16 @@ def save_lease(cameras, seconds=15):
       Path(name).unlink(missing_ok=True)
 
 
-def encode_nv12(frame):
-  import numpy as np
+def encode_nv12(frame, lines=()):
   import ffmpeg
-  width, height, stride = frame.width, frame.height, frame.stride
-  if not (0 < width <= 4096 and 0 < height <= 2160 and width%2 == height%2 == 0 and width <= stride <= 8192):
-    raise ValueError("invalid native camera layout")
-  # Strip each plane's padding. Never modify the shared camera buffer.
-  y = np.frombuffer(frame.data, dtype=np.uint8, count=stride*height).reshape(height,stride)[:,:width]
-  uv = np.frombuffer(frame.data, dtype=np.uint8, count=stride*(height//2), offset=frame.uv_offset).reshape(height//2,stride)[:,:width]
+  from openpilot.sunnypilot.formosalink.stream_encoder import nv12_bytes
+  width, height = frame.width, frame.height
+  data = nv12_bytes(frame, lines)
   command = [str(Path(ffmpeg.BIN_DIR)/"ffmpeg"), "-hide_banner", "-loglevel", "error", "-threads", "1",
              "-f", "rawvideo", "-pix_fmt", "nv12", "-s", f"{width}x{height}", "-i", "pipe:0",
              "-frames:v", "1", "-vf", "scale=640:360:force_original_aspect_ratio=decrease:force_divisible_by=2",
              "-filter_threads", "1", "-threads", "1", "-q:v", "6", "-f", "image2", "-update", "1", "-vcodec", "mjpeg", "pipe:1"]
-  return subprocess.run(command, input=y.tobytes()+uv.tobytes(), capture_output=True, check=True, timeout=2).stdout
+  return subprocess.run(command, input=data, capture_output=True, check=True, timeout=2).stdout
 
 
 class NativeCamera:
@@ -74,8 +71,9 @@ class NativeCamera:
     self.overlay = overlay
 
   def close(self):
-    if hasattr(self.encoder, 'close'):
-      self.encoder.close()
+    close = getattr(self.encoder, "close", None)
+    if callable(close):
+      close()
 
   def __call__(self):
     if not self.client.is_connected() and not self.client.connect(False):
@@ -96,14 +94,17 @@ def stream_camera(identity, private, camera, stop):
   import websocket
   from openpilot.sunnypilot.formosalink.stream_encoder import StreamEncoder
   from openpilot.sunnypilot.formosalink.media_protocol import jpeg_size, validate_frame
-  from openpilot.sunnypilot.formosalink.road_overlay import RoadOverlay
-  source = NativeCamera(camera, encoder=StreamEncoder(), overlay=RoadOverlay() if camera == "wide-road" else None)
+  overlay = None
+  if camera == "wide-road":
+    from openpilot.sunnypilot.formosalink.road_overlay import RoadOverlay
+    overlay = RoadOverlay()
+  source = NativeCamera(camera, encoder=StreamEncoder(), overlay=overlay)
   url = identity['origin'].replace('https://', 'wss://', 1).replace('http://', 'ws://', 1)+'/api/v1/agent/media/stream'
   try:
     while not stop.is_set():
       try:
         # TLS certificate checks stay enabled. The signed handshake never enters a URL.
-        with websocket.create_connection(url, timeout=2, suppress_origin=True) as socket:
+        with closing(websocket.create_connection(url, timeout=2, suppress_origin=True)) as socket:
           socket.send(json.dumps(sign(private, identity['device_id'], 'media-stream', {'camera':camera})))
           ready = json.loads(socket.recv())
           if ready != {'type':'ready', 'fps':8, 'transport':'wss-mjpeg-v1'}:

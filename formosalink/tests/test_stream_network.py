@@ -1,22 +1,26 @@
 """Real loopback sockets, not TestClient: validate Uvicorn limits and stream flow."""
+from datetime import UTC, datetime
 import json
 import socket
 import threading
 import time
 
 import httpx
+import pytest
 import uvicorn
 from websockets.sync.client import connect
 
 from formosalink.server.app import create_app, COOKIE
 from formosalink.server.config import initialize
-from formosalink.tests.test_media import frame
+from formosalink.tests.test_media import JPEG, frame
 from formosalink.tests.test_platform import PASSWORD
 from openpilot.sunnypilot.formosalink.identity import create
+from openpilot.sunnypilot.formosalink import cameras
 from openpilot.sunnypilot.formosalink.protocol import fingerprint, sign
 
 
-def test_real_network_stream_two_cameras_ack_and_probe(tmp_path):
+@pytest.fixture
+def stream_server(tmp_path):
   listener = socket.socket()
   listener.bind(('127.0.0.1', 0))
   port = listener.getsockname()[1]
@@ -38,30 +42,65 @@ def test_real_network_stream_two_cameras_ack_and_probe(tmp_path):
     with httpx.Client(base_url=origin) as client:
       assert client.post('/api/v1/login', json={'password':PASSWORD}, headers={'Origin':origin}).status_code == 200
       cookie = COOKIE+'='+client.cookies[COOKIE]
-    base = origin.replace('http://', 'ws://')
-    with connect(base+'/api/v1/media/probe', compression=None) as probe:
-      assert json.loads(probe.recv())['transport'] == 'wss-mjpeg-v1'
-    for camera in ('wide-road', 'driver'):
-      path = f'/api/v1/devices/{identity["device_id"]}/media/stream?camera={camera}'
-      with connect(base+path, origin=origin, additional_headers={'Cookie':cookie}, compression=None) as viewer:
-        with connect(base+'/api/v1/agent/media/stream', compression=None) as agent:
-          agent.send(json.dumps(sign(private, identity['device_id'], 'media-stream', {'camera':camera})))
-          assert json.loads(agent.recv())['type'] == 'ready'
-          value = frame();value['source'] = camera
-          # Larger than the old telemetry WS limit; the real server must accept it.
-          assert len(json.dumps(value)) > 16384
-          for sequence in range(8):
-            started = time.monotonic()
-            value.update(sequence=sequence, sampled_at=time.time())
-            agent.send(json.dumps(value))
-            assert json.loads(agent.recv()) == {'type':'ack', 'sequence':sequence}
-            result = json.loads(viewer.recv())
-            assert result['type'] == 'frame' and result['frame']['sequence'] == sequence
-            assert result['frame']['source'] == camera
-            viewer.send(json.dumps({'type':'ack'}))
-            time.sleep(max(0, .125-(time.monotonic()-started)))
+    yield origin, cookie, identity, private
   finally:
     server.should_exit = True
     thread.join(timeout=10)
     listener.close()
   assert not thread.is_alive()
+
+
+def test_real_network_stream_two_cameras_ack_and_probe(stream_server):
+  origin, cookie, identity, private = stream_server
+  base = origin.replace('http://', 'ws://')
+  with connect(base+'/api/v1/media/probe', compression=None) as probe:
+    assert json.loads(probe.recv())['transport'] == 'wss-mjpeg-v1'
+  for camera in ('wide-road', 'driver'):
+    path = f'/api/v1/devices/{identity["device_id"]}/media/stream?camera={camera}'
+    with connect(base+path, origin=origin, additional_headers={'Cookie':cookie}, compression=None) as viewer:
+      with connect(base+'/api/v1/agent/media/stream', compression=None) as agent:
+        agent.send(json.dumps(sign(private, identity['device_id'], 'media-stream', {'camera':camera})))
+        assert json.loads(agent.recv())['type'] == 'ready'
+        value = frame()
+        value['source'] = camera
+        # Larger than the old telemetry WS limit; the real server must accept it.
+        assert len(json.dumps(value)) > 16384
+        for sequence in range(8):
+          started = time.monotonic()
+          value.update(sequence=sequence, sampled_at=time.time())
+          agent.send(json.dumps(value))
+          assert json.loads(agent.recv()) == {'type':'ack', 'sequence':sequence}
+          result = json.loads(viewer.recv())
+          assert result['type'] == 'frame' and result['frame']['sequence'] == sequence
+          assert result['frame']['source'] == camera
+          viewer.send(json.dumps({'type':'ack'}))
+          time.sleep(max(0, .125-(time.monotonic()-started)))
+
+
+def test_device_camera_publisher_delivers_frames_and_closes(stream_server, monkeypatch):
+  origin, cookie, identity, private = stream_server
+  stop = threading.Event()
+  closed = threading.Event()
+
+  class CameraFixture:
+    def __call__(self):
+      return JPEG, datetime.now(UTC).timestamp(), {'speed_kph':None, 'engaged':None}
+
+    def close(self):
+      closed.set()
+
+  monkeypatch.setattr(cameras, 'NativeCamera', lambda camera, encoder, overlay: CameraFixture())
+  path = f'/api/v1/devices/{identity["device_id"]}/media/stream?camera=driver'
+  with connect(origin.replace('http://', 'ws://')+path, origin=origin, additional_headers={'Cookie':cookie}, compression=None) as viewer:
+    publisher = threading.Thread(target=cameras.stream_camera, args=(identity, private, 'driver', stop), daemon=True)
+    publisher.start()
+    try:
+      for sequence in range(2):
+        message = json.loads(viewer.recv(timeout=5))
+        assert message['type'] == 'frame'
+        assert message['frame']['source'] == 'driver' and message['frame']['sequence'] == sequence
+        viewer.send(json.dumps({'type':'ack'}))
+    finally:
+      stop.set()
+      publisher.join(timeout=5)
+  assert closed.is_set() and not publisher.is_alive()

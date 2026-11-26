@@ -332,7 +332,7 @@ class TestProcessArtifact(ManagerDownloadTestBase):
     for ref, error, result in (("model", None, "downloaded"), ("model", manager_module.DownloadCancelled(), "cancelled"),
                                ("model", ValueError("hash mismatch"), "failed"), ("removed-model", None, "failed")):
       with self.subTest(ref=ref, result=result):
-        store = {"ModelManager_DownloadRef": ref}
+        store: dict[str, Any] = {"ModelManager_DownloadRef": ref}
         self.params.get.side_effect = store.get
         self.params.remove.side_effect = store.pop
         self.params.put.side_effect = lambda key, value, target=store, **kwargs: target.update({key: value})
