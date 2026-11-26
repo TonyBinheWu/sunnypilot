@@ -66,6 +66,7 @@ const appCarPickerClose = document.getElementById("appCarPickerClose");
 // Page container + page elements
 const swipeContainer = document.getElementById("swipeContainer");
 const PAGE_ELEMENTS = {
+  overview: document.getElementById("pageOverview"),
   setting: document.getElementById("pageSetting"),
   car: document.getElementById("pageCar"),
   tools: document.getElementById("pageTools"),

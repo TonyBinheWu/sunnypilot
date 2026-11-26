@@ -6,7 +6,11 @@
 //   2. initial page show on first load
 
 window.addEventListener("popstate", async (ev) => {
-  const st = ev.state || { page: "carrot" };
+  const st = ev.state || { page: window.CarrotManagement?.startPage() || "carrot" };
+  if (st.page === "overview" && window.CarrotManagement) {
+    showPage("overview", false);
+    return;
+  }
 
   if (settingSearchPanel && !settingSearchPanel.hidden && !st.search) {
     closeSettingSearchPanel({ clear: false, fromHistory: true });

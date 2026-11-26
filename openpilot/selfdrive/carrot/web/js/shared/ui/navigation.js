@@ -299,6 +299,7 @@ function syncSettingSplitLayoutClass(enabled = shouldUseSettingSplitLayout()) {
 }
 
 function getPageHistoryState(page) {
+  if (page === "overview") return { page };
   if (page === "setting") {
     return shouldUseSettingSplitLayout("setting")
       ? { page: "setting", screen: "items", group: CURRENT_GROUP || null }
@@ -318,6 +319,8 @@ function resolveWebStartPage() {
   // FormosaLink's settings entry is a per-tab navigation hint, not a saved
   // device preference or a grant. The normal introduction gate still applies.
   if (window.FormosaCarrotRemote?.startPage === "setting" && PAGE_ELEMENTS.setting) return "setting";
+  const managementStart = window.CarrotManagement?.startPage();
+  if (managementStart) return managementStart;
   const fallback = "carrot";
   let page = fallback;
   try {
@@ -461,8 +464,9 @@ function commitPageChange(page, prevPage, pushHistory, options = {}) {
   }
 
   const state = getPageHistoryState(page);
-  if (pushHistory) history.pushState(state, "");
-  else history.replaceState(state, "");
+  const url = window.CarrotManagement?.pageUrl(page);
+  if (pushHistory) history.pushState(state, "", url);
+  else history.replaceState(state, "", url);
 }
 
 function applySwipeDrag(frame, dx, direction, withResistance = false, options = {}) {

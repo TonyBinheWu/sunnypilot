@@ -69,14 +69,14 @@
       "kind": "bundle",
       "source": "src/entries/tools.js",
       "path": "js/generated/tools.js",
-      "hash": "c51c38238672727ae3f913c89e713a323f1c7056dd797c44a2b8f0791778258f"
+      "hash": "a1c0b91691ad100c44eb104942d03d34757f4298916530cac0224d3a0a90bcb8"
     },
     {
       "id": "logs.runtime",
       "kind": "bundle",
       "source": "src/entries/logs.js",
       "path": "js/generated/logs.js",
-      "hash": "d246d5ab01c8de0d519c19b0e558d1122aa2f106fd7d38fa7c1776e3c7aa8fc2"
+      "hash": "e2d65ef62f5959c654be77d12648bc9e63a8b45add910a75c318a6b41c862b96"
     },
     {
       "id": "terminal.runtime",

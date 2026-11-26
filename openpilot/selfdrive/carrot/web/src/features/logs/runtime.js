@@ -1001,6 +1001,7 @@ const CarrotLogsRuntime = Object.freeze({
   init: initLogsPage,
   activateTab: activateLogsTab,
   dashcam: Object.freeze({
+    openPlayer: openDashcamPlayer,
     load: loadDashcamRoutes,
     render: renderDashcamRoutes,
   }),

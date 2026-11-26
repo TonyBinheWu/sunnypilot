@@ -16,6 +16,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-visual" />
   <title>CarrotPilot</title>
   <link rel="icon" type="image/png" href="/assets/img_chffr_wheel.png?v=2604-01" />
+  <script src="/js/shared/management_route.js"></script>
   <script>
     (function () {
       var primaryPages = { carrot: 1, setting: 1, tools: 1, logs: 1, terminal: 1 };
@@ -35,7 +36,7 @@
           startPage = primaryPages[setting] ? setting : "carrot";
         }
       } catch (e) {}
-      document.documentElement.dataset.carrotStartPage = startPage;
+      document.documentElement.dataset.carrotStartPage = window.CarrotManagementRoute?.startPage() || startPage;
     })();
   </script>
   <script>
@@ -148,10 +149,36 @@
   <link rel="stylesheet" href="/css/generated/intro.css" />
   <link rel="stylesheet" href="/css/vendor/plyr.css?v=3.7.8" />
   <link rel="stylesheet" href="/css/bootstrap-flat.css" />
+  <link rel="stylesheet" href="/css/management.css" />
 </head>
 
 <body class="notranslate carrot-flat" translate="no">
   <div class="wrap swipe-container" id="swipeContainer">
+    <section id="pageOverview" class="page manager-page" hidden aria-labelledby="overviewTitle">
+      <h1 id="overviewTitle" data-manager-text="overview"></h1>
+      <div class="manager-hero">
+        <div class="manager-hero-copy"><h2 id="managerCar">—</h2>
+          <div class="manager-actions"><button type="button" data-manager-page="carrot" data-manager-text="vision"></button>
+            <a href="/remote-screen.html" data-manager-text="remote"></a></div>
+        </div>
+        <canvas id="managerVehicle" width="520" height="210" aria-hidden="true"></canvas>
+        <dl class="manager-facts">
+          <div><dt data-manager-text="branch"></dt><dd id="managerBranch">—</dd></div>
+          <div><dt data-manager-text="device"></dt><dd id="managerDevice">—</dd></div>
+          <div><dt data-manager-text="model"></dt><dd id="managerModel">—</dd></div>
+        </dl>
+      </div>
+      <section class="manager-block"><div class="manager-section-head"><h2 data-manager-text="hardware"></h2><a href="/task-manager.html" data-manager-text="resources"></a></div>
+        <div class="manager-metrics" id="managerMetrics"></div>
+      </section>
+      <div class="manager-columns">
+        <section class="manager-block"><div class="manager-section-head"><h2 data-manager-text="shortcuts"></h2><button type="button" data-manager-page="tools" data-manager-text="all"></button></div>
+          <div class="manager-list"><a href="/remote-screen.html" data-manager-text="remote"></a><button type="button" data-manager-page="models" data-manager-text="models"></button></div></section>
+        <section class="manager-block"><div class="manager-section-head"><h2 data-manager-text="recent"></h2><button type="button" data-manager-page="logs" data-manager-text="all"></button></div>
+          <div class="manager-list" id="managerTrips"></div></section>
+      </div>
+    </section>
+
     <!-- ════════════ CAR SELECT ════════════ -->
     <div id="pageCar" class="page page--bounded" hidden style="display:none;">
       <div class="page-header">
@@ -873,6 +900,8 @@
 
   <!-- Main navigation -->
   <nav class="topbar nav">
+    <span class="manager-brand" hidden><i class="manager-icon manager-icon-sign-turn-right-fill" aria-hidden="true"></i>CarrotPilot</span>
+    <button id="btnOverview" type="button" class="nav-btn nav-link" hidden><span class="nav-icon manager-icon manager-icon-grid-1x2" aria-hidden="true"></span><span data-manager-text="overview"></span></button>
     <button id="btnHome" class="nav-btn nav-link active">
       <span id="navHomeStatusBadges" class="nav-status-badges" aria-hidden="true">
         <span id="navRecordStatusBadge" class="nav-status-badge nav-status-badge--record" hidden>REC</span>
