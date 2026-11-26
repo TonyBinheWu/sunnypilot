@@ -29,7 +29,9 @@ def main():
   ensure_ui_sched_other()
   scheduler.update(False, force=True)
 
+  from openpilot.selfdrive.ui.device_screen import DeviceScreen
   gui_app.init_window("UI")
+  gui_app.remote_screen = DeviceScreen()
   if BIG_UI:
     MainLayout()
   else:

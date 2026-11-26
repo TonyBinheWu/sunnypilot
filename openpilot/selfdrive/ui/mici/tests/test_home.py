@@ -36,14 +36,13 @@ def test_read_network_address(network_address, expected):
 def test_carrot_web_icon_routes_tap_without_opening_settings():
   calls = []
   layout = object.__new__(MiciHomeLayout)
-  layout._carrot_web_icon = SimpleNamespace(rect=rl.Rectangle(100, 100, 48, 48))
+  layout.home = SimpleNamespace(hit=lambda pos: "web" if 100 <= pos.x < 148 else "settings", pressed=None)
   layout._on_carrot_web_click = lambda: calls.append("carrot_web")
   layout._on_settings_click = lambda: calls.append("settings")
   layout._did_long_press = False
-  layout._carrot_web_pressed = False
 
   layout._handle_mouse_press(MousePos(120, 120))
   layout._handle_mouse_release(MousePos(120, 120))
 
   assert calls == ["carrot_web"]
-  assert not layout._carrot_web_pressed
+  assert layout.home.pressed is None

@@ -6,7 +6,7 @@ from openpilot.cereal import log
 from opendbc.can import CANPacker, CANParser
 from opendbc.car import structs
 from opendbc.car.hyundai import hyundaicanfd as fd
-from opendbc.car.hyundai.cluster_indicators import executing_indicators
+from opendbc.car.hyundai.cluster_indicators import navigation_cruise_active
 from opendbc.car.hyundai.cluster_radar import EV6ClusterCorners, EV6DisplayCorner180
 from opendbc.car.hyundai.tests.test_ev6_cluster_radar import STAMP, lanes
 
@@ -36,7 +36,7 @@ def test_selected_maneuver_and_navigation_only(phase, side, direction, source, a
   sm, cs, cc = driving()
   sm["modelV2"].meta.laneChangeState, sm["modelV2"].meta.laneChangeDirection = phase, side
   sm["longitudinalPlan"].speedConstraint = source
-  assert executing_indicators(sm, cs, cc, STAMP) == (direction if phase in ("laneChangeStarting", "laneChangeFinishing") else 0, active)
+  assert navigation_cruise_active(sm, cs, cc, STAMP) is active
 
 
 @pytest.mark.parametrize("case,expected", [
@@ -68,16 +68,16 @@ def test_status_veto(case, expected):
   if case == "future_panda": sm.logMonoTime["pandaStates"] += 1
   if case == "invalid_panda_rx": sm["pandaStates"][0].safetyRxChecksInvalid = True
   if case == "nonfinite_speed": cs.vEgo = float("inf")
-  assert executing_indicators(sm, cs, cc, STAMP) == expected
+  assert navigation_cruise_active(sm, cs, cc, STAMP) is expected[1]
 
 
 def test_only_the_panda_connected_to_the_display_bus_authorizes_feedback():
   sm, cs, cc = driving()
-  assert executing_indicators(sm, cs, cc, STAMP, 1) == (0, False)
+  assert navigation_cruise_active(sm, cs, cc, STAMP, 1) is False
   sm["pandaStates"].append(log.PandaState.new_message(controlsAllowed=False, safetyModel="hyundaiCanfd"))
-  assert executing_indicators(sm, cs, cc, STAMP, 1) == (0, False)
+  assert navigation_cruise_active(sm, cs, cc, STAMP, 1) is False
   sm["pandaStates"][1].controlsAllowed = True
-  assert executing_indicators(sm, cs, cc, STAMP, 1) == (3, True)
+  assert navigation_cruise_active(sm, cs, cc, STAMP, 1) is True
 
 
 @pytest.mark.parametrize("state,age,blocked", [("never", 0, False), ("off", 0, True), ("off", 999_999_999, True),
@@ -95,7 +95,7 @@ def test_packed_fallback_only_after_loss(state, age, blocked):
 
   def packets(active):
     packer = CANPacker(dbc)
-    lane, = fd._ev6_three_lane_message(packer, 1, parser, STAMP+age, None, changing=3 if active else 0)
+    lane, = fd._ev6_three_lane_message(packer, 1, parser, STAMP+age, None)
     scc, _ = fd.create_acc_control(packer, NS(ECAN=1), True, 0., .1, False, False, 72., cc.hudControl,
                                    1., 1., car, ev6_display=True, now_nanos=STAMP+age, nav_active=active)
     decoder = CANParser(dbc, [("ADRV_0x1ea", 20), ("SCC_CONTROL", 50)], 1)
@@ -104,7 +104,6 @@ def test_packed_fallback_only_after_loss(state, age, blocked):
   baseline = packets(False)
   updated = packets(True)
   if not blocked:
-    baseline[0].update(HDA_MODE2=3, LANE_CHANGING=3)
     baseline[1].update(NSCCOper=2, NSCCOnOff=2)
   for old, new in zip(baseline, updated, strict=True):
     del old["CHECKSUM"], new["CHECKSUM"]

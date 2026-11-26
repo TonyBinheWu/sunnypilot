@@ -252,7 +252,7 @@ class CarController(CarControllerBase):
                              and CP.openpilotLongitudinalControl)
     self.cluster_corners = EV6ClusterCorners() if self.ev6_adas_display else None
     self.ev6_mode0_display = bool(self.ev6_adas_display and not CP.flags & HyundaiFlags.CAMERA_SCC and self.CAN.ECAN == self.CAN.offset + 1)
-    self.ev6_indicator_tick = (0, 0, False)
+    self.ev6_indicator_tick = (0, False)
     self.raw_display_corners = None
     pedal_interceptor_params = get_pedal_interceptor_params(CP)
     self.pedal_interceptor = (PedalInterceptor(CANPacker(dbc_names[Bus.party]), pedal_interceptor_params)
@@ -718,9 +718,9 @@ class CarController(CarControllerBase):
       if self.CP.openpilotLongitudinalControl:
         hud_lateral = self.display_lead_lateral.update(getattr(CS, "radarState", None), getattr(CS, "modelV2", None))
         corners = (self.raw_display_corners or self.cluster_corners) if self.enable_corner_radar > 0 and CS.out.canValid else None
-        tick, changing, nav_active = self.ev6_indicator_tick
+        tick, nav_active = self.ev6_indicator_tick
         if not self.ev6_mode0_display or tick != now_nanos or not CC.enabled or not CS.out.canValid:
-          changing, nav_active = 0, False
+          nav_active = False
         self.hyundai_jerk.make_jerk(self.CP, CS, accel, actuators, hud_control)
         self.hyundai_jerk.check_carrot_cruise(CC, CS, hud_control, stopping, accel, actuators.aTarget)
 
@@ -734,7 +734,7 @@ class CarController(CarControllerBase):
           if hda2:
             can_sends.extend(hyundaicanfd.create_adrv_messages(self.CP, self.packer, self.CAN, self.frame,
                                                               CS.cp if self.ev6_adas_display and CS.out.canValid else None, now_nanos=now_nanos,
-                                                              corners=corners, changing=changing if CC.latActive else 0))
+                                                              corners=corners))
           else:
             can_sends.extend(hyundaicanfd.create_fca_warning_light(self.CP, self.packer, self.CAN, self.frame))
         if self.frame % 2 == 0:

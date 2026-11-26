@@ -115,6 +115,7 @@ class MainLayout(Widget):
                                 on_carrot_web=lambda: gui_app.push_widget(CarrotWebDialog()),
                                 open_settings=lambda: self.open_settings(PanelType.TOGGLES))
     self._layouts[MainState.HOME]._setup_widget.set_open_settings_callback(lambda: self.open_settings(PanelType.FIREHOSE))
+    self._layouts[MainState.HOME].device_settings = self._on_settings_clicked
     self._layouts[MainState.HOME].set_settings_callback(lambda: self.open_settings(PanelType.TOGGLES))
     self._layouts[MainState.SETTINGS].set_callbacks(on_close=self._set_mode_for_state)
     self._layouts[MainState.ONROAD].set_click_callback(self._on_onroad_clicked)

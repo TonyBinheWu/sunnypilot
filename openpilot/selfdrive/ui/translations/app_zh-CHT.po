@@ -2788,3 +2788,42 @@ msgstr "openpilot 透過觀察人類駕駛來學習。\n\nFirehose 模式會上�
 
 msgid "For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.\n\nFirehose Mode can also work while you're driving if connected to a hotspot or unlimited SIM card."
 msgstr "每週可將裝置帶回室內，接上穩定的 USB-C 電源和 Wi-Fi，方便上傳。\n\n行車時，連上熱點或使用不限流量的 SIM 卡也能使用 Firehose 模式。"
+
+msgid "Device Settings"
+msgstr "裝置設定"
+
+msgid "Remote screen"
+msgstr "遠端螢幕"
+
+msgid "Pair browser"
+msgstr "配對瀏覽器"
+
+msgid "Driving mode"
+msgstr "駕駛模式"
+
+msgid "Experimental mode"
+msgstr "實驗模式"
+
+msgid "Standard mode"
+msgstr "標準模式"
+
+msgid "Hold driving mode to change"
+msgstr "長按駕駛模式以切換"
+
+msgid "Device services"
+msgstr "裝置服務"
+
+msgid "Setup and driving mode"
+msgstr "設定引導與駕駛模式"
+
+msgid "Device home"
+msgstr "裝置首頁"
+
+msgid "Enter this code in Carrot Web"
+msgstr "請在 Carrot 網頁輸入配對碼"
+
+msgid "Touch device to stop sharing"
+msgstr "觸碰車機即可停止分享"
+
+msgid "Available when parked with ignition off"
+msgstr "請停車熄火後配對"

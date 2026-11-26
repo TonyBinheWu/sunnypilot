@@ -2022,3 +2022,42 @@ msgstr "确认操作"
 
 msgid "Delete"
 msgstr "退格"
+
+msgid "Device Settings"
+msgstr "设备设置"
+
+msgid "Remote screen"
+msgstr "远程屏幕"
+
+msgid "Pair browser"
+msgstr "配对浏览器"
+
+msgid "Driving mode"
+msgstr "驾驶模式"
+
+msgid "Experimental mode"
+msgstr "实验模式"
+
+msgid "Standard mode"
+msgstr "标准模式"
+
+msgid "Hold driving mode to change"
+msgstr "长按驾驶模式进行切换"
+
+msgid "Device services"
+msgstr "设备服务"
+
+msgid "Setup and driving mode"
+msgstr "设置向导与驾驶模式"
+
+msgid "Device home"
+msgstr "设备主页"
+
+msgid "Enter this code in Carrot Web"
+msgstr "请在 Carrot 网页输入配对码"
+
+msgid "Touch device to stop sharing"
+msgstr "触摸设备即可停止共享"
+
+msgid "Available when parked with ignition off"
+msgstr "请停车熄火后配对"

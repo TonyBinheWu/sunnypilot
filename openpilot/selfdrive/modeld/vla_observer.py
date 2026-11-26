@@ -36,11 +36,15 @@ def gpu_worker(channel, parent):
     claim_gpu_owner()
     from tinygrad import Device
     require_target(Device['AMD'])
+    from openpilot.selfdrive.modeld.gpu_workload import GpuWorkload
+    workload = GpuWorkload(Device['AMD'], 'PhysicalAI-reason-VLA 4B', 'vla')
     _, predict = load_native(WEIGHTS, 'AMD')
     channel.send(('ready', None))
     while True:
       key, rgb, history = channel.recv()
+      started = time.monotonic()
       channel.send((key, decode(predict(rgb, history))))
+      workload.completed(started, time.monotonic())
   except (EOFError, BrokenPipeError):
     pass
   except Exception:

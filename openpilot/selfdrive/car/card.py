@@ -20,7 +20,7 @@ from opendbc.car.can_definitions import CanData, CanRecvCallable, CanSendCallabl
 from opendbc.car.carlog import carlog
 from opendbc.car.fw_versions import ObdCallback
 from opendbc.car.car_helpers import get_car
-from opendbc.car.hyundai.cluster_indicators import executing_indicators
+from opendbc.car.hyundai.cluster_indicators import navigation_cruise_active
 from opendbc.car.hyundai.cluster_radar import EV6DisplayCorner180
 from opendbc.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.pandad import can_capnp_to_list, can_list_to_can_capnp
@@ -471,7 +471,7 @@ class Car:
         CC = CC.as_reader()
       if self.ev6_mode0_display:
         panda_index = self.CI.CC.CAN.offset // 4
-        self.CI.CC.ev6_indicator_tick = (now_nanos, *executing_indicators(self.sm, CS, CC, now_nanos, panda_index))
+        self.CI.CC.ev6_indicator_tick = (now_nanos, navigation_cruise_active(self.sm, CS, CC, now_nanos, panda_index))
       self.last_actuators_output, can_sends = self.CI.apply(CC, now_nanos, model_v2, radar_state)
       if self.tesla_signals.configured:
         fresh = all(self.sm.seen[s] and self.sm.alive[s] and self.sm.valid[s] and

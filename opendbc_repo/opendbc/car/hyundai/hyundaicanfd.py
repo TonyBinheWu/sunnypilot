@@ -661,7 +661,7 @@ def create_acc_control(packer, CAN, enabled, accel_last, accel, stopping, gas_ov
     stock = _fresh_ev6_cluster_rx(parser, "SCC_CONTROL", 0x1A0, now_nanos) if CS.out.canValid else {}
     _copy_ev6_scc_display(values, stock)
     if (nav_active and not stock and values["ACCMode"] == 1 and not values["StopReq"] and CS.out.canValid
-        and _ev6_indicator_fallback_allowed(parser, "SCC_CONTROL", now_nanos)):
+        and _ev6_nav_fallback_allowed(parser, now_nanos)):
       values.update(NSCCOper=2, NSCCOnOff=2)
   return packer.make_can_msg("SCC_CONTROL", CAN.ECAN, values), values["aReqValue"]
 
@@ -759,7 +759,8 @@ def _copy_ev6_scc_display(values, stock, *, braking_object=False):
                   ACC_ObjRelSpd=stock.get("ACC_ObjRelSpd", 239.4), ACC_ObjLatPos=stock.get("ACC_ObjLatPos", 0.))
 
 
-def _ev6_indicator_fallback_allowed(parser, name, now):
+def _ev6_nav_fallback_allowed(parser, now):
+  name = "SCC_CONTROL"
   if parser is None:
     return False
   stamp = parser.ts_nanos.get(name, {}).get("COUNTER", 0)
@@ -768,13 +769,11 @@ def _ev6_indicator_fallback_allowed(parser, name, now):
   if now - stamp < 1_000_000_000:
     return False
   last = parser.vl[name]
-  if name == "SCC_CONTROL":
-    return (last["NSCCOper"] != 3 and last["NSCCOnOff"] in (0, 2) and
+  return (last["NSCCOper"] != 3 and last["NSCCOnOff"] in (0, 2) and
             not (last["SysFailState"] or last["TakeOverReq"] or last["DriverAlert"]))
-  return last["HDA_MODE2"] in (0, 1, 2, 3) and not last["AUTOLANECHANGE_MSG"]
 
 
-def _ev6_three_lane_message(packer, bus, parser, now, corners, *, hold=None, camera=False, changing=0):
+def _ev6_three_lane_message(packer, bus, parser, now, corners, *, hold=None, camera=False):
   # The DBC loader imports this module to register Hyundai's checksum.
   from opendbc.can.packer import set_value
   from opendbc.can.parser import get_raw_value
@@ -791,8 +790,6 @@ def _ev6_three_lane_message(packer, bus, parser, now, corners, *, hold=None, cam
   # camera wiring, and keep both released on the ADAS-generated frame.
   edits.update(LEFT_BLINK_HOLD=int(hold == 3), RIGHT_BLINK_HOLD=int(hold == 4))
   if not stock:
-    if not camera and changing in (3, 4) and _ev6_indicator_fallback_allowed(parser, name, now):
-      edits.update(HDA_MODE2=3, LANE_CHANGING=changing)
     return [packer.make_can_msg(name, bus, {"SET_ME_FF": 0xff, **edits})]
 
   # Start with the validated wire image so unknown bits, HDA_MODE2 (including
@@ -881,7 +878,7 @@ def _add_ev6_vision_neighbor(values, model, now_nanos, *, center=False):
       values[f"{side}_DETECT_LATERAL"] = abs(y)
 
 
-def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, now_nanos=0, corners=None, changing=0):
+def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, now_nanos=0, corners=None):
   # messages needed to car happy after disabling
   # the ADAS Driving ECU to do longitudinal control
 
@@ -903,7 +900,7 @@ def create_adrv_messages(CP, packer, CAN, frame, corner_parser=None, *, now_nano
         #'DATA32': 5,  #5
       }
       if CP.carFingerprint == CAR.KIA_EV6 and CP.flags & HyundaiFlags.CANFD_HDA2:
-        ret.extend(_ev6_three_lane_message(packer, CAN.ECAN, corner_parser, now_nanos, corners, changing=changing))
+        ret.extend(_ev6_three_lane_message(packer, CAN.ECAN, corner_parser, now_nanos, corners))
       else:
         ret.append(packer.make_can_msg("ADRV_0x1ea", CAN.ECAN, values))
 

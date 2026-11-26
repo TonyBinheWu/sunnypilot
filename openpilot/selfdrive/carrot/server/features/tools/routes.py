@@ -1,4 +1,5 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import time
 import uuid
 
@@ -132,7 +133,32 @@ async def api_tools_device_info(_request: web.Request) -> web.Response:
   return web.json_response({"ok": True, "info": await asyncio.to_thread(get_tools_device_info)})
 
 
+async def task_manager_context(app):
+  from ...services.task_manager import TaskManager
+  pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="carrot-resources")
+  monitor = TaskManager()
+  pending = None
+  async def sample():
+    nonlocal pending
+    if pending is None or pending.done():
+      pending = asyncio.get_running_loop().run_in_executor(pool, monitor.snapshot)
+    return await asyncio.shield(pending)
+  app["task_manager_sample"] = sample
+  try:
+    yield
+  finally:
+    pool.shutdown(wait=False, cancel_futures=True)
+
+
+async def api_task_manager(request):
+  return web.json_response(await request.app["task_manager_sample"](), headers={"Cache-Control": "no-store"})
+
+
 def register(app: web.Application) -> None:
+  from .remote_screen import screen_socket
+  app.cleanup_ctx.append(task_manager_context)
+  app.router.add_get("/api/tools/resources", api_task_manager)
+  app.router.add_get("/ws/device-screen", screen_socket)
   jobs.load_persisted()
   app.router.add_post("/api/tools", api_tools)
   app.router.add_post("/api/tools/start", api_tools_start)

@@ -148,6 +148,8 @@ def main():
       control.flush()
       progress.mark('idle')
       diagnostics = RuntimeDiagnostics('precompiled_worker', cloudlog.event)
+      from openpilot.selfdrive.modeld.gpu_workload import GpuWorkload
+      workload = GpuWorkload(Device[device], manifest.get('model_id') or metadata['model_checkpoint'])
       while command := sys.stdin.buffer.read(1):
         if command == b'q':
           break
@@ -185,6 +187,7 @@ def main():
         progress.mark('idle')
         # Timings include transfers/synchronization; these are not pure GPU
         # kernel durations. Keep the pipe protocol and the compiled graph intact.
+        workload.completed(started, finished)
         diagnostics.record(context={'gpu_arch': manifest['gpu_arch'], 'format': manifest['format'],
                                     'camera_width': width, 'camera_height': height, 'input_bytes': input_bytes,
                                     'warp_backend': 'qcom' if generic and isinstance(adapter, LocalWarpRuntime) else 'amd',

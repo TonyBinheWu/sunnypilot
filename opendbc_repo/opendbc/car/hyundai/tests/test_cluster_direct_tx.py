@@ -101,7 +101,7 @@ def test_ev6_mode0_apply_display(configuration, monkeypatch, age):
   from opendbc.can import CANParser
   from opendbc.car import Bus
   from opendbc.car.hyundai import carcontroller
-  from opendbc.car.hyundai.cluster_indicators import executing_indicators
+  from opendbc.car.hyundai.cluster_indicators import navigation_cruise_active
   from opendbc.car.hyundai.cluster_radar import EV6DisplayCorner180
   from opendbc.car.hyundai.tests.test_ev6_mode0_display import STAMP, driving, scan
   values, make = configuration
@@ -118,14 +118,14 @@ def test_ev6_mode0_apply_display(configuration, monkeypatch, age):
     sm["modelV2"].timestampEof = t
     reader.update([(t, scan(1, counter, 12.))], sm["modelV2"], cs.out, t)
   controller.raw_display_corners = reader
-  controller.ev6_indicator_tick = (STAMP, *executing_indicators(sm, cs.out, cc, STAMP))
+  controller.ev6_indicator_tick = (STAMP, navigation_cruise_active(sm, cs.out, cc, STAMP))
   _, packets = controller.update(cc.as_reader(), cs, STAMP + age)
   decoder = CANParser("hyundai_canfd_generated", [("SCC_CONTROL", 50), ("ADRV_0x1ea", 20)], 1)
   assert decoder.update([STAMP + age, packets]) >= {0x1a0, 0x1ea}
   lanes, scc = decoder.vl["ADRV_0x1ea"], decoder.vl["SCC_CONTROL"]
   assert (lanes["LF_DETECT"], lanes["RF_DETECT"], lanes["LR_DETECT"], lanes["RR_DETECT"]) == (1, 1, 0, 0)
   assert (lanes["LEFT_BLINK_HOLD"], lanes["RIGHT_BLINK_HOLD"]) == (0, 0)
-  assert (lanes["HDA_MODE2"], lanes["LANE_CHANGING"], scc["NSCCOper"]) == ((3, 3, 2) if age == 0 else (0, 0, 0))
+  assert (lanes["HDA_MODE2"], lanes["LANE_CHANGING"], scc["NSCCOper"]) == ((0, 0, 2) if age == 0 else (0, 0, 0))
 
 
 @pytest.mark.parametrize("candidate", [c for c in CANFD_CAR if c in interfaces_module.get_torque_params()])

@@ -333,6 +333,7 @@ class GuiApplication:
     self._nav_stack_widgets_to_render = 1 if self.big_ui() else 2
 
     self._mouse = MouseState(self._scale)
+    self.remote_screen = None
     self._mouse_events: list[MouseEvent] = []
     self._last_mouse_event: MouseEvent = MouseEvent(MousePos(0, 0), 0, False, False, False, 0.0)
 
@@ -842,6 +843,8 @@ class GuiApplication:
     if getattr(self, '_closing', False) or not rl.is_window_ready():
       return
     self._closing = True
+    if self.remote_screen is not None:
+      self.remote_screen.shutdown()
 
     # EGL imports are not owned by the window's GL context. Widget reference
     # cycles can keep their destructors from running before CloseWindow.
@@ -900,6 +903,8 @@ class GuiApplication:
 
         # Store all mouse events for the current frame
         self._mouse_events = self._mouse.get_events()
+        if self.remote_screen is not None:
+          self._mouse_events = self.remote_screen.inputs(self._mouse_events)
         if len(self._mouse_events) > 0:
           self._last_mouse_event = self._mouse_events[-1]
 
@@ -965,6 +970,8 @@ class GuiApplication:
         if self._grid_size > 0:
           self._draw_grid()
 
+        if self.remote_screen is not None:
+          self.remote_screen.paint()
         rl.end_drawing()
 
         if (RECORD or self._record_enabled) and render_texture is not None:

@@ -145,6 +145,11 @@ class ModelState:
 
     self.prev_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
     self.usbgpu = usbgpu
+    self.workload = None
+    if usbgpu:
+      from tinygrad import Device
+      from openpilot.selfdrive.modeld.gpu_workload import GpuWorkload
+      self.workload = GpuWorkload(Device[self.QUEUE_DEV], metadata.get("model_checkpoint") or "USB driving model")
 
     self.frame_skip = ModelConstants.MODEL_RUN_FREQ // ModelConstants.MODEL_CONTEXT_FREQ
     self.input_queues, self.npy = make_input_queues(self.input_shapes, self.frame_skip, device=self.QUEUE_DEV)
@@ -171,6 +176,7 @@ class ModelState:
 
   def run(self, bufs: dict[str, VisionBuf], transforms: dict[str, np.ndarray],
           inputs: dict[str, np.ndarray], prepare_only: bool) -> dict[str, np.ndarray] | None:
+    workload_start = time.monotonic() if self.workload else 0.
     for key in bufs.keys():
       stride, y_height, uv_height, yuv_size = self.frame_buf_params[key]
       frame_data = np.frombuffer(bufs[key].data, dtype=np.uint8)
@@ -231,6 +237,8 @@ class ModelState:
       outputs_dict['raw_pred'] = model_output.copy()
     if shadow_payload is not None:
       outputs_dict['_signal_shadow'] = shadow_payload
+    if self.workload:
+      self.workload.completed(workload_start, time.monotonic())
     return outputs_dict
 
 

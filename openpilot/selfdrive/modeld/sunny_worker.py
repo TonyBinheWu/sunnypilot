@@ -55,6 +55,8 @@ def main():
     import numpy as np
     engine = load_engine(key, int(w), int(h))
     from tinygrad import Device
+    from openpilot.selfdrive.modeld.gpu_workload import GpuWorkload
+    workload = GpuWorkload(Device["AMD"], key) if engine.chestnut else None
     adapter = engine.adapter
     shared = mmap.mmap(int(file_fd), 0)
     size = len(shared) // 2
@@ -72,10 +74,13 @@ def main():
         engine.reset()
         conn.send((True, None))
       else:
+        started = time.monotonic()
         output = engine.run(frames, *cmd)
         if engine.chestnut and Device['AMD'].error_state.host.view(fmt='q')[0]:
           raise RuntimeError('AMD runtime error')
         conn.send((True, output))
+        if workload:
+          workload.completed(started, time.monotonic())
   except (EOFError, BrokenPipeError):
     pass
   except Exception as exc:

@@ -3,6 +3,9 @@ import pyray as rl
 from collections.abc import Callable
 from enum import IntEnum
 from openpilot.common.params import Params
+from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.widgets.device_home import DeviceHome
+from openpilot.selfdrive.ui.widgets.carrot_web_dialog import CarrotWebDialog
 from openpilot.selfdrive.ui.widgets.offroad_alerts import UpdateAlert, OffroadAlert
 from openpilot.selfdrive.ui.widgets.exp_mode_button import ExperimentalModeButton
 from openpilot.selfdrive.ui.widgets.prime import PrimeWidget
@@ -25,12 +28,16 @@ class HomeLayoutState(IntEnum):
   HOME = 0
   UPDATE = 1
   ALERTS = 2
+  SERVICES = 3
 
 
 class HomeLayout(Widget):
   def __init__(self):
     super().__init__()
     self.params = Params()
+    self.home = DeviceHome(False)
+    self.device_settings = None
+    self.branch = self.address = "—"
 
     self.update_alert = UpdateAlert()
     self.offroad_alert = OffroadAlert()
@@ -94,10 +101,13 @@ class HomeLayout(Widget):
       self._refresh()
       self.last_refresh = current_time
 
-    self._render_header()
+    if self.current_state != HomeLayoutState.HOME or self.update_available or self.alert_count:
+      self._render_header()
 
     # Render content based on current state
     if self.current_state == HomeLayoutState.HOME:
+      self.home.render(self.content_rect if self.update_available or self.alert_count else rect, self.branch, self.address)
+    elif self.current_state == HomeLayoutState.SERVICES:
       self._render_home_content()
     elif self.current_state == HomeLayoutState.UPDATE:
       self._render_update_view()
@@ -131,15 +141,33 @@ class HomeLayout(Widget):
     self.alert_notif_rect.x = notif_x
     self.alert_notif_rect.y = self.header_rect.y + (self.header_rect.height - 60) // 2
 
+  def _handle_mouse_press(self, mouse_pos: MousePos):
+    self.home.pressed = self.home.hit(mouse_pos) if self.current_state == HomeLayoutState.HOME else None
+
   def _handle_mouse_release(self, mouse_pos: MousePos):
     super()._handle_mouse_release(mouse_pos)
 
-    if self.update_available and rl.check_collision_point_rec(mouse_pos, self.update_notif_rect):
+    target = self.home.hit(mouse_pos)
+    if self.current_state == HomeLayoutState.SERVICES and rl.check_collision_point_rec(mouse_pos, self.header_rect):
+      self._set_state(HomeLayoutState.HOME)
+    elif self.current_state == HomeLayoutState.HOME and target and target == self.home.pressed:
+      if target == "settings" and self.device_settings:
+        self.device_settings()
+      elif target == "web":
+        gui_app.push_widget(CarrotWebDialog())
+      elif target == "remote" and gui_app.remote_screen:
+        gui_app.remote_screen.arm()
+      elif target == "more":
+        self._set_state(HomeLayoutState.SERVICES)
+    elif self.update_available and rl.check_collision_point_rec(mouse_pos, self.update_notif_rect):
       self._set_state(HomeLayoutState.UPDATE)
     elif self.alert_count > 0 and rl.check_collision_point_rec(mouse_pos, self.alert_notif_rect):
       self._set_state(HomeLayoutState.ALERTS)
 
   def _render_header(self):
+    if self.current_state == HomeLayoutState.SERVICES:
+      gui_label(self.header_rect, "‹  " + tr("Back"), 48)
+      return
     font = gui_app.font(FontWeight.MEDIUM)
 
     version_text_width = self.header_rect.width
@@ -210,12 +238,14 @@ class HomeLayout(Widget):
 
   def _refresh(self):
     self._version_text = self._get_version_text()
+    self.branch = " · ".join(filter(None, (self.params.get("GitBranch"), (self.params.get("GitCommit") or "")[:7]))) or "—"
+    self.address = ui_state.params_memory.get("NetworkAddress") or tr("Offline")
     update_available = self.update_alert.refresh()
     alert_count = self.offroad_alert.refresh()
     alerts_present = alert_count > 0
 
     # Show panels on transition from no alert/update to any alerts/update
-    if not update_available and not alerts_present:
+    if not update_available and not alerts_present and self.current_state != HomeLayoutState.SERVICES:
       self._set_state(HomeLayoutState.HOME)
     elif update_available and ((not self._prev_update_available) or (not alerts_present and self.current_state == HomeLayoutState.ALERTS)):
       self._set_state(HomeLayoutState.UPDATE)
