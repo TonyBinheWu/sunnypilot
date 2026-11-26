@@ -6,6 +6,7 @@ from openpilot.sunnypilot.formosalink.protocol import canonical
 from openpilot.sunnypilot.formosalink.setting_labels import localize
 
 LOCAL_ONLY = {
+  "FormosaLinkTripConsent", "FormosaLinkTripJournal",
   "GsmDataEnabled",
   "AdbEnabled", "SshEnabled", "GithubUsername", "GithubSshKeys", "EnableGithubRunner", "EnableCopyparty",
   "JoystickDebugMode", "LateralManeuverMode", "LongitudinalManeuverMode", "OffroadMode", "DeviceBootMode",
@@ -86,7 +87,7 @@ def native_items(schema):
       yield from visit(child, group, conditions, remote)
   for panel in schema.get("panels", []):
     group = panel.get("label", panel.get("id", "Settings"))
-    remote = panel.get("remote_configurable") is True
+    remote = panel.get("remote_configurable") is True or panel.get("id") == "models"
     for section in [panel, *panel.get("sections", [])]:
       parents = panel.get("visibility", []) + panel.get("enablement", [])
       if section is not panel:

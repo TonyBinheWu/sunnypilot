@@ -325,6 +325,23 @@ class TestManagerDownload(ManagerDownloadTestBase):
 
 
 class TestProcessArtifact(ManagerDownloadTestBase):
+  def test_queue_reports_terminal_results(self):
+    self.make_artifact()
+    self._bundle.ref = "model"
+    self.manager.source_models = {s: [self._bundle] for s in ACTIVE_BUNDLE_KEYS}
+    for ref, error, result in (("model", None, "downloaded"), ("model", manager_module.DownloadCancelled(), "cancelled"),
+                               ("model", ValueError("hash mismatch"), "failed"), ("removed-model", None, "failed")):
+      with self.subTest(ref=ref, result=result):
+        store = {"ModelManager_DownloadRef": ref}
+        self.params.get.side_effect = store.get
+        self.params.remove.side_effect = store.pop
+        self.params.put.side_effect = lambda key, value, target=store, **kwargs: target.update({key: value})
+        with mock.patch.object(self.manager, "download", side_effect=error) as download:
+          self.manager._process_download_requests()
+        assert download.called == (ref == "model")
+        assert "ModelManager_DownloadRef" not in store
+        assert store["ModelManager_LastDownload"]["status"] == result and store["ModelManager_LastDownload"]["ref"] == ref
+
   def test_download_writes_only_its_slot(self):
     ds = custom.ModelManagerSP.DownloadStatus
     for source, other in (("qcom", "chestnut"), ("chestnut", "qcom")): # bernoulli

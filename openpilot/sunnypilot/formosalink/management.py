@@ -82,11 +82,13 @@ def run_management(directory, stop):
   import requests
   from openpilot.sunnypilot.formosalink.device_settings import NativeSettingsProvider
   provider = None
+  device_id = None
   while not stop.is_set():
     try:
       identity, private, _ = read(directory)
-      if provider is None:
-        provider = NativeSettingsProvider()
+      if device_id != identity["device_id"]:
+        provider = NativeSettingsProvider(identity["device_id"])
+        device_id = identity["device_id"]
       client = ManagementClient(identity,private,provider,directory)
       with requests.Session() as session:
         while not stop.is_set():

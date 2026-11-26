@@ -64,13 +64,14 @@ def encode_nv12(frame):
 
 
 class NativeCamera:
-  def __init__(self, camera, name="camerad", encoder=encode_nv12):
+  def __init__(self, camera, name="camerad", encoder=encode_nv12, overlay=None):
     from msgq.visionipc import VisionIpcClient
     from openpilot.cereal.visionipc import VisionStreamType
     stream = VisionStreamType.VISION_STREAM_WIDE_ROAD if camera == "wide-road" else VisionStreamType.VISION_STREAM_CABIN
     self._client_args = (name, stream, True)
     self.client = VisionIpcClient(*self._client_args)
     self.encoder = encoder
+    self.overlay = overlay
 
   def close(self):
     if hasattr(self.encoder, 'close'):
@@ -86,15 +87,17 @@ class NativeCamera:
       from msgq.visionipc import VisionIpcClient
       self.client = VisionIpcClient(*self._client_args)
       raise ValueError("camera frame unavailable")
-    data = self.encoder(frame)
-    return data, time.time()-(time.monotonic()-captured), {"speed_kph":None, "engaged":None}
+    hud, lines = self.overlay.sample(captured, frame.width, frame.height) if self.overlay else ({"speed_kph":None, "engaged":None}, [])
+    data = self.encoder(frame, lines) if lines else self.encoder(frame)
+    return data, time.time()-(time.monotonic()-captured), hud
 
 
 def stream_camera(identity, private, camera, stop):
   import websocket
   from openpilot.sunnypilot.formosalink.stream_encoder import StreamEncoder
   from openpilot.sunnypilot.formosalink.media_protocol import jpeg_size, validate_frame
-  source = NativeCamera(camera, encoder=StreamEncoder())
+  from openpilot.sunnypilot.formosalink.road_overlay import RoadOverlay
+  source = NativeCamera(camera, encoder=StreamEncoder(), overlay=RoadOverlay() if camera == "wide-road" else None)
   url = identity['origin'].replace('https://', 'wss://', 1).replace('http://', 'ws://', 1)+'/api/v1/agent/media/stream'
   try:
     while not stop.is_set():

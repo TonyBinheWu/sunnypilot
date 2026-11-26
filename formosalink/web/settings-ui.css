@@ -19,3 +19,8 @@ html[data-theme=dark] .settings-workspace .setting-sync[data-state=applied]{colo
   width: 100%; min-width: 0; max-width: none; min-height: 44px; font-size: 1rem;
 }
 .vehicle-picker output { overflow-wrap: anywhere; font-size: 0.875rem; }
+.model-status progress { display:block; width:min(100%,24rem); margin-top:.5rem; }
+.trip-panel { border-top:1px solid var(--line); margin-top:1rem; padding-top:1rem; }
+.trip-panel select { max-width:100%; min-height:44px; font:inherit; }
+.trip-panel canvas { display:block; width:min(100%,32.5rem); height:auto; border-radius:8px; }
+.trip-panel canvas[hidden] { display:none; }

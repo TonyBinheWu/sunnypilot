@@ -1,6 +1,25 @@
 import test from 'node:test';
 import './settings-edits.test.mjs';
 import './media.test.mjs';
+import {hudText, plotPoints, tripRecords} from '../web/drive-view.js';
+import {isModelSlot} from '../web/model-picker.js';
+
+test('model search matches native model names across pages',()=>{
+  const entry={key:'DrivingModelSmallPage2',title:{en:'Small model'},options:[{value:'a',label:{en:'Dragonfruit'}}]};
+  assert.ok(isModelSlot(entry.key));
+  assert.deepEqual(filterEntries([entry],'display','dragon'),[entry]);
+  assert.deepEqual(filterEntries([entry],'display','missing'),[]);
+});
+
+test('trip routes handle the date line and HUD distinguishes zero from missing data',()=>{
+  const points=[[25,179.99],[25,-179.99]];
+  const trip={route:'r',start:1,last:10,m:55,points:[...points,[91,0]]};
+  assert.deepEqual(tripRecords(['bad',JSON.stringify(trip)])[0].points,points);
+  const [start,end]=plotPoints(points,240,110);
+  assert.ok(start[0]<end[0] && start[0]>=0 && end[0]<=240);
+  assert.equal(hudText({speed_kph:0,engaged:false},k=>k),'0 km/h · hudInactive');
+  assert.equal(hudText({speed_kph:null,engaged:null},k=>k),'');
+});
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {translations} from '../web/i18n.js';

@@ -2,6 +2,7 @@
 import queue
 import threading
 import time
+from pathlib import Path
 
 import pyray as rl
 
@@ -35,11 +36,19 @@ TEXT["ja"].update(intro="QR を読み取って登録します。停車中の遠�
 TEXT["zh-TW"].update(remote_on="遠端設定：開", remote_off="遠端設定：關", compact_intro="掃描 QR，登入 GitHub 配對。", pending="手機掃描 QR 配對。")
 TEXT["en"].update(remote_on="Settings: on", remote_off="Settings: off", compact_intro="Scan QR. Sign in with GitHub.", pending="Scan QR to pair.")
 TEXT["ja"].update(remote_on="遠隔設定：オン", remote_off="遠隔設定：オフ", compact_intro="QR と GitHub で登録。", pending="QR を読み取って登録。")
+TEXT["zh-TW"]["paired"] = "已配對。新增手機時，用同一個 GitHub 帳號登入 FormosaLink 即可。"
+TEXT["en"]["paired"] = "Paired. On another phone, sign in to FormosaLink with the same GitHub account."
+TEXT["ja"]["paired"] = "登録済み。他のスマホは同じ GitHub でログイン。"
 
 
 def language():
   code = multilang.language
   return "zh-TW" if code in ("zh-CHT", "zh-TW", "zh-Hant") else "ja" if code == "ja" else "en"
+
+
+for locale, on, off in (("zh-TW", "行程與定位：開", "行程與定位：關"), ("en", "Trips & GPS: on", "Trips & GPS: off"),
+                        ("ja", "走行履歴と位置：オン", "走行履歴と位置：オフ")):
+  TEXT[locale].update(trips_on=on, trips_off=off)
 
 
 def text(key):
@@ -92,7 +101,7 @@ class FormosaConnectionCard(Widget):
 class FormosaPairingDialog(Widget):
   def __init__(self, directory=None, embedded=False):
     super().__init__()
-    self.directory = directory or default_directory()
+    self.directory = Path(directory or default_directory())
     self.embedded = embedded
     self._events = queue.SimpleQueue()
     self._generation = 0
@@ -110,6 +119,9 @@ class FormosaPairingDialog(Widget):
     self._remote = Button(lambda: text("remote_on" if ui_state.params.get_bool("FormosaLinkRemoteSettings") else "remote_off"), self._toggle_remote,
                           font_size=34 if big else 11, text_padding=padding)
     self._remote.set_enabled(ui_state.is_offroad)
+    self._trips = Button(lambda: text("trips_on" if ui_state.params.get("FormosaLinkTripConsent") else "trips_off"), self._toggle_trips,
+                         font_size=34 if big else 11, text_padding=padding)
+    self._trips.set_enabled(lambda: ui_state.is_offroad() and (self.directory / "identity.json").is_file())
 
   def show_event(self):
     super().show_event()
@@ -122,6 +134,21 @@ class FormosaPairingDialog(Widget):
   def _toggle_remote(self):
     if ui_state.is_offroad():
       ui_state.params.put_bool("FormosaLinkRemoteSettings", not ui_state.params.get_bool("FormosaLinkRemoteSettings"), block=True)
+
+  def _toggle_trips(self):
+    if not ui_state.is_offroad():
+      return
+    from uuid import uuid4
+    from openpilot.sunnypilot.formosalink.identity import read
+    from openpilot.sunnypilot.formosalink.trips import CONSENT, clear_sharing
+    if ui_state.params.get(CONSENT):
+      clear_sharing(ui_state.params)
+    else:
+      try:
+        identity, _, _ = read(self.directory)
+      except (OSError, ValueError):
+        return
+      ui_state.params.put(CONSENT, f"{identity['device_id']}/{uuid4()}", block=True)
 
   def _clear_qr(self):
     if self._qr_texture is not None:
@@ -167,6 +194,8 @@ class FormosaPairingDialog(Widget):
     self._expires = 0
     ui_state.params.put_bool("FormosaLinkEnabled", False)
     ui_state.params.put_bool("FormosaLinkRemoteSettings", False, block=True)
+    from openpilot.sunnypilot.formosalink.trips import clear_sharing
+    clear_sharing(ui_state.params)
 
   def _update_state(self):
     if not ui_state.is_offroad():
@@ -192,6 +221,8 @@ class FormosaPairingDialog(Widget):
         self._state = "paired"
         ui_state.params.put_bool("FormosaLinkEnabled", True)
       elif result["state"] == "revoked":
+        from openpilot.sunnypilot.formosalink.trips import clear_sharing
+        clear_sharing(ui_state.params)
         self._clear_qr()
         self._expires = 0
         self._state = "revoked"
@@ -227,7 +258,7 @@ class FormosaPairingDialog(Widget):
     body_font = gui_app.font(FontWeight.NORMAL)
     message = text("compact_intro" if self._state == "intro" else self._state)
     if multilang.requires_font_fallback():
-      gui_app.fallback_font(message + text("close") + text("start") + text("remote_on") + text("remote_off"))
+      gui_app.fallback_font(message + text("close") + text("start") + text("remote_on") + text("remote_off") + text("trips_on") + text("trips_off"))
     rl.draw_rectangle_rec(rect, rl.Color(15, 20, 36, 255))
     rl.draw_text_ex(font, "FormosaLink", rl.Vector2(rect.x+margin, rect.y+12*scale), 27*scale, 0, rl.WHITE)
     self._close._label.set_font_size(17*scale)
@@ -251,6 +282,9 @@ class FormosaPairingDialog(Widget):
     for index, button in enumerate((self._start, self._remote)):
       button._label.set_font_size(24*scale)
       button.render(rl.Rectangle(rect.x+margin, bottom-index*(button_height+gap), left_width, button_height))
+    if self._qr_texture is None:
+      self._trips._label.set_font_size(21*scale)
+      self._trips.render(rl.Rectangle(rect.x+2*margin+left_width, bottom, rect.width-3*margin-left_width, button_height))
     self._last_qr_rect = None
     if self._qr_texture is not None:
       available = min(rect.width*.44-margin, rect.height-60*scale)

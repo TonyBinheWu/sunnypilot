@@ -189,7 +189,6 @@ export const translations = {
     "availableSettings": "可用設定",
     "noSearchResults": "找不到符合的設定。",
     "noSectionSettings": "裝置尚未回報此分類的可用設定。",
-    "featureUnavailable": "此功能尚未開放。目前可從其他分類調整裝置已支援的設定。",
     "theme_system": "自動",
     "theme_light": "淺色",
     "theme_dark": "暗色",
@@ -283,8 +282,6 @@ export const translations = {
     "mediaPip": "子母畫面",
     "mediaUnsupported": "此瀏覽器不支援這項功能。",
     "mediaRecordingNote": "錄影只保留於此分頁，每段上限 60 秒；離開頁面前請下載。最多保留三段。背景、斷線或畫面過期時停止錄影，不上傳錄影檔。",
-    "mediaNextTitle": "後續整合",
-    "mediaNext": "待完成：實車道路影像、完整道路疊圖、錄影庫、行程統計、位置與停車位置、對外直播。",
     "mediaPaused": "分頁在背景，暫停觀看。",
     "mediaWaiting": "尚無新鮮影像。需先在來源端明確啟動發送。",
     "mediaDemo": "測試畫面・不是實車",
@@ -491,7 +488,6 @@ export const translations = {
     "availableSettings": "Available settings",
     "noSearchResults": "No matching settings.",
     "noSectionSettings": "No available settings reported for this category.",
-    "featureUnavailable": "This feature is not available yet. Supported device settings are available in the other categories.",
     "theme_system": "Auto",
     "theme_light": "Light",
     "theme_dark": "Dark",
@@ -585,8 +581,6 @@ export const translations = {
     "mediaPip": "Picture in picture",
     "mediaUnsupported": "This browser does not support this feature.",
     "mediaRecordingNote": "Clips stay in this tab, up to 60 seconds each and three clips. Download before leaving. Recording stops in the background, on disconnect or stale frames. Clips are not uploaded.",
-    "mediaNextTitle": "Next stages",
-    "mediaNext": "Pending: native road video, full driving overlays, recording library, trip statistics, live/parked location and outbound broadcasting.",
     "mediaPaused": "Background tab; viewing paused.",
     "mediaWaiting": "No fresh image. Explicitly start the publisher on the source first.",
     "mediaDemo": "Test image · not a vehicle",
@@ -793,7 +787,6 @@ export const translations = {
     "availableSettings": "利用可能な設定",
     "noSearchResults": "一致する設定はありません。",
     "noSectionSettings": "この分類の設定はまだ報告されていません。",
-    "featureUnavailable": "この機能は未対応です。他の分類から対応する設定を変更できます。",
     "theme_system": "自動",
     "theme_light": "ライト",
     "theme_dark": "ダーク",
@@ -887,8 +880,6 @@ export const translations = {
     "mediaPip": "ピクチャーインピクチャー",
     "mediaUnsupported": "このブラウザーは、この機能に対応していません。",
     "mediaRecordingNote": "動画はこのタブのみで保持し、各60秒・最大3件です。離れる前に保存してください。バックグラウンド、切断、画像の期限切れで録画を停止し、動画をアップロードしません。",
-    "mediaNextTitle": "今後の統合",
-    "mediaNext": "未実装：実機の道路映像、道路オーバーレイ、録画ライブラリー、走行統計、現在地と駐車位置、外部配信。",
     "mediaPaused": "バックグラウンドのため視聴を一時停止しています。",
     "mediaWaiting": "新しい画像がありません。送信元で明示的に送信を開始してください。",
     "mediaDemo": "テスト画像・実車ではありません",
@@ -912,11 +903,11 @@ Object.assign(translations.en,{settingReadOnly:'This item is read-only or must b
 Object.assign(translations.ja,{settingReadOnly:'表示専用、または本体での設定が必要です。',settingUnknownCondition:'車種または必要な設定情報を待っています。本体の同期をお待ちください。',settingCapabilityRequired:'現在の車種または制御モードはこの設定に対応していません。',settingDependencyRequired:'必要な機能を有効にするか、競合する設定を無効にしてください。'});
 
 for(const [locale,labels] of Object.entries({
- 'zh-TW':['鏡頭','超廣角鏡頭','車內鏡頭','道路／測試預覽','即時鏡頭預覽。觀看時由裝置背景傳送，停止觀看後自動停止傳送。','尚未提供的功能','完整行車疊圖、行程與定位仍在開發中。'],
- en:['Camera','Ultra-wide camera','Cabin camera','Road / demo preview','Live camera previews. The background service uploads only while an owner is watching.','Upcoming features','Full driving overlays, trips and location are still in development.'],
- ja:['カメラ','超広角カメラ','車内カメラ','道路／テストプレビュー','所有者が視聴中のみ、バックグラウンドで画像を送信します。','今後の機能','走行の詳細オーバーレイ・走行履歴・位置情報は開発中です。']
+ 'zh-TW':['鏡頭','超廣角鏡頭','車內鏡頭','道路／測試預覽','即時鏡頭預覽。觀看時由裝置背景傳送，停止觀看後自動停止傳送。'],
+ en:['Camera','Ultra-wide camera','Cabin camera','Road / demo preview','Live camera previews. The background service uploads only while an owner is watching.'],
+ ja:['カメラ','超広角カメラ','車内カメラ','道路／テストプレビュー','所有者が視聴中のみ、バックグラウンドで画像を送信します。']
 })){
- Object.assign(translations[locale],Object.fromEntries(['mediaCamera','mediaWide','mediaDriver','mediaLegacy','mediaPhase','mediaNextTitle','mediaNext'].map((key,index)=>[key,labels[index]])));
+ Object.assign(translations[locale],Object.fromEntries(['mediaCamera','mediaWide','mediaDriver','mediaLegacy','mediaPhase'].map((key,index)=>[key,labels[index]])));
 }
 
 Object.assign(translations['zh-TW'],{mediaWaiting:'等待裝置鏡頭影像。請確認裝置已更新且在線。',mediaTitle:'遠端鏡頭'});
@@ -948,4 +939,62 @@ Object.assign(translations.ja, {
   vehicleSearch:'車種・年式・プラットフォーム ID で検索', vehicleChoice:'車種を選択', vehicleAutomatic:'自動識別',
   vehicleUpgrade:'このデバイスから車種一覧が届いていません。本体の FormosaPilot を更新して再接続してください。',
   sorentoHevLabel:'Kia Sorento 2024–25（HDA II 非搭載、2025年式 HEV を含む）',
+});
+
+Object.assign(translations['zh-TW'], {
+  modelConfigured:'車機已設定的模型', modelSmall:'內建小模型', modelBig:'Chestnut 大模型', modelChoose:'選擇模型',
+  modelSearch:'搜尋模型名稱或日期', modelMatches:'符合的選項', modelProgress:'模型下載進度',
+  modelChestnutHardware:'這台車機目前使用內建處理器。接上 Chestnut 後才能執行大模型。',
+  modelState_cancelling:'正在取消下載', modelState_default_restored:'車機已還原預設模型',
+  modelUpgrade:'這台車機尚未回報模型清單。請在車機更新 ccnc-port、重新啟動，並開啟 FormosaLink 的「遠端設定」。',
+  modelNoCatalog:'目前只有預設模型。請讓車機連網，在下方「模型管理」重新取得清單。',
+  modelState_idle:'等待選擇模型', modelState_queued:'已送交車機，等待下載', modelState_downloading:'下載中',
+  modelState_verifying:'正在驗證檔案', modelState_downloaded:'下載完成，車機已驗證', modelState_failed:'下載失敗，可重新選擇並儲存',
+  modelState_cancelled:'已取消下載', modelState_clearing:'正在清理快取', modelState_cleared:'快取清理請求已處理',
+  modelState_refreshing:'正在更新清單', modelState_refreshed:'模型清單已更新', modelState_refresh_failed:'清單更新逾時，請檢查車機網路後重試',
+  tripTitle:'行程與定位', tripLocation:'車機目前位置', tripRecent:'最近 12 趟行程', tripOpenMap:'在 OpenStreetMap 開啟位置',
+  tripNoFix:'等待車機取得有效 GPS 定位。', tripEmpty:'開啟分享後，接下來的行程會顯示在這裡。',
+  tripLastFix:'上次行程的最後定位', tripOffline:'車機已離線，以下是上次同步的行程。',
+  tripDistanceUnknown:'尚無里程資料',
+  tripOptIn:'如要分享，請在停車時到車機的 FormosaLink 開啟「行程與定位」。關閉會清除已分享的行程記錄。',
+  tripUpgrade:'請將車機更新至支援行程與定位的版本，再於車機開啟分享。', tripTrack:'行程軌跡，北方朝上',
+  hudActive:'駕駛輔助啟用', hudInactive:'駕駛輔助待命',
+});
+Object.assign(translations.en, {
+  modelConfigured:'Configured on the device', modelSmall:'Onboard small model', modelBig:'Chestnut big model', modelChoose:'Choose a model',
+  modelSearch:'Search model name or date', modelMatches:'Matching options', modelProgress:'Model download progress',
+  modelChestnutHardware:'This device currently uses the onboard processor. A Chestnut is required to run the big model.',
+  modelState_cancelling:'Cancelling download', modelState_default_restored:'Default restored on the device',
+  modelUpgrade:'This device has not reported a model list. Update ccnc-port on the device, restart, and enable remote settings in FormosaLink.',
+  modelNoCatalog:'Only defaults are available. Connect the device to the internet and refresh the lists under Model maintenance.',
+  modelState_idle:'Ready for a selection', modelState_queued:'Waiting for the device to start the download', modelState_downloading:'Downloading',
+  modelState_verifying:'Verifying files', modelState_downloaded:'Download verified by device', modelState_failed:'Download failed. Select the model and save to retry.',
+  modelState_cancelled:'Download cancelled', modelState_clearing:'Clearing cache', modelState_cleared:'Cache cleanup request processed',
+  modelState_refreshing:'Refreshing lists', modelState_refreshed:'Model lists updated', modelState_refresh_failed:'List refresh timed out. Check the device connection and retry.',
+  tripTitle:'Trips and location', tripLocation:'Current device location', tripRecent:'Last 12 trips', tripOpenMap:'Open location in OpenStreetMap',
+  tripNoFix:'Waiting for a valid GPS fix.', tripEmpty:'Trips will appear here after sharing is enabled.',
+  tripLastFix:'Last recorded trip location', tripOffline:'Device offline. Showing the last synced trips.',
+  tripDistanceUnknown:'Distance unavailable',
+  tripOptIn:'While parked, turn on Trips & GPS in FormosaLink on the device to share. Turning it off clears the shared trip history.',
+  tripUpgrade:'Update the device to a version with trip sharing, then enable Trips & GPS on the device.', tripTrack:'Trip track, north up',
+  hudActive:'Assist active', hudInactive:'Assist standby',
+});
+Object.assign(translations.ja, {
+  modelConfigured:'本体で設定済みのモデル', modelSmall:'内蔵小型モデル', modelBig:'Chestnut 大型モデル', modelChoose:'モデルを選択',
+  modelSearch:'モデル名または日付で検索', modelMatches:'該当する選択肢', modelProgress:'モデルのダウンロード進捗',
+  modelChestnutHardware:'現在は内蔵プロセッサを使用しています。大型モデルの実行には Chestnut が必要です。',
+  modelState_cancelling:'ダウンロードを中止しています', modelState_default_restored:'本体を標準モデルに戻しました',
+  modelUpgrade:'本体からモデル一覧が届いていません。ccnc-port を更新して再起動し、FormosaLink で遠隔設定を有効にしてください。',
+  modelNoCatalog:'標準モデルのみ利用できます。本体をネットに接続し、モデル管理から一覧を更新してください。',
+  modelState_idle:'モデルを選択できます', modelState_queued:'ダウンロード開始待ち', modelState_downloading:'ダウンロード中',
+  modelState_verifying:'ファイルを検証中', modelState_downloaded:'本体でダウンロード・検証完了', modelState_failed:'失敗しました。再度選択して保存してください。',
+  modelState_cancelled:'ダウンロード中止', modelState_clearing:'キャッシュ削除中', modelState_cleared:'キャッシュ削除要求を処理しました',
+  modelState_refreshing:'一覧を更新中', modelState_refreshed:'一覧を更新しました', modelState_refresh_failed:'一覧の更新がタイムアウトしました。接続を確認してください。',
+  tripTitle:'走行履歴と位置', tripLocation:'現在の本体位置', tripRecent:'最近の走行 12 件', tripOpenMap:'OpenStreetMap で位置を開く',
+  tripNoFix:'有効な GPS 測位を待っています。', tripEmpty:'共有を有効にした後の走行が表示されます。',
+  tripLastFix:'直近の走行での最終測位', tripOffline:'本体はオフラインです。前回同期した走行履歴を表示しています。',
+  tripDistanceUnknown:'走行距離未取得',
+  tripOptIn:'停車中に本体の FormosaLink で「走行履歴と位置」をオンにしてください。オフにすると共有した走行履歴は消去されます。',
+  tripUpgrade:'対応版に本体を更新してから走行履歴と位置の共有を有効にしてください。', tripTrack:'走行軌跡（北が上）',
+  hudActive:'運転支援作動中', hudInactive:'運転支援待機中',
 });

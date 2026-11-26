@@ -34,6 +34,8 @@ def main():
     from openpilot.common.params import Params
     params = Params()
     params.put_bool("FormosaLinkRemoteSettings", False, block=True)
+    from openpilot.sunnypilot.formosalink.trips import clear_sharing
+    clear_sharing(params)
     params.put_bool("FormosaLinkEnabled", False, block=True)
     print(t("disabled"))
     return

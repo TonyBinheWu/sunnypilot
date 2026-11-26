@@ -19,6 +19,19 @@ from openpilot.system.ui.lib.application import gui_app
 class FakeParams:
   def __init__(self):
     self.enabled = False
+    self.trip_params = {}
+
+  def get(self, key):
+    assert key in ("FormosaLinkTripConsent", "FormosaLinkTripJournal")
+    return self.trip_params.get(key)
+
+  def put(self, key, value, block=False):
+    assert key == "FormosaLinkTripConsent"
+    self.trip_params[key] = value
+
+  def remove(self, key):
+    assert key in ("FormosaLinkTripConsent", "FormosaLinkTripJournal")
+    self.trip_params.pop(key, None)
 
   def get_bool(self, key):
     return self.enabled if key == "FormosaLinkEnabled" else False
@@ -143,6 +156,19 @@ class TestQRScreen(unittest.TestCase):
     dialog._events.put((0,"enroll",{"state":"paired"}))
     dialog._update_state()
     self.assertFalse(self.params.enabled)
+
+  def test_trip_sharing_requires_parked_local_action_and_clears_history(self):
+    dialog = ui.FormosaPairingDialog()
+    with patch("openpilot.sunnypilot.formosalink.identity.read", return_value=({"device_id":"test-device"}, None, None)):
+      self.offroad.return_value = False
+      dialog._toggle_trips()
+      self.assertIsNone(self.params.get("FormosaLinkTripConsent"))
+      self.offroad.return_value = True
+      dialog._toggle_trips()
+      self.assertTrue(self.params.get("FormosaLinkTripConsent").startswith("test-device/"))
+      self.params.trip_params["FormosaLinkTripJournal"] = {"routes":[]}
+      dialog._toggle_trips()
+      self.assertEqual(self.params.trip_params, {})
 
   def test_embedded_panel_can_be_opened_again_without_accepting_old_results(self):
     dialog = ui.FormosaPairingDialog(embedded=True)

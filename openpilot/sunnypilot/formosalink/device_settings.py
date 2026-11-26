@@ -9,11 +9,12 @@ from openpilot.sunnypilot.formosalink import vehicle_selection
 
 class SettingsProvider:
   """Injected I/O permits testing the same apply path without native device access."""
-  def __init__(self, params, schema, capabilities, guard, info=dict, translate=None, navigation=False, vehicles=None):
+  def __init__(self, params, schema, capabilities, guard, info=dict, translate=None, navigation=False, vehicles=None, models=None):
     self.params, self.schema, self.capabilities, self.guard, self.info = params, schema, capabilities, guard, info
     self.translate = translate
     self.navigation = navigation
     self.vehicles = vehicles
+    self.models = models
     self.session = str(uuid.uuid4())
     self._offroad = False
 
@@ -63,12 +64,17 @@ class SettingsProvider:
       from openpilot.sunnypilot.formosalink.navigation import entry,encode
       values["NavDestination"]=encode(self.params.get("NavDestination")) if self.allowed() else ""
       entries.append(entry(bool(offroad and self.allowed() and self.params.get_bool("NavigationEnabled"))))
+    info = self.info()
+    if self.models:
+      model_entries, model_values, info["model_manager"] = self.models.capture(offroad)
+      entries = model_entries + entries
+      values.update(model_values)
     published = {item["key"]:values[item["key"]] for item in entries}
     catalog_hash = revision(entries)
     return {"version":1,"session":self.session,"sampled_at":time.time(),"offroad":offroad,  # noqa: TID251 - wire UTC timestamp
             "remote_enabled":self.allowed(), "catalog":entries,
             "catalog_revision":catalog_hash,"values":published,
-            "revision":revision({"catalog":catalog_hash,"values":published}),"info":self.info(),"receipts":[]}
+            "revision":revision({"catalog":catalog_hash,"values":published}),"info":info,"receipts":[]}
 
   def apply(self, command, device_id, deadline):
     receipt = {"id":command.get("id", ""),"status":"rejected","reason":"setting_unavailable"}
@@ -106,6 +112,11 @@ class SettingsProvider:
         raise ValueError("expired")
       from openpilot.sunnypilot.formosalink.navigation import destination, encode
       key = command["key"]
+      if self.models and self.models.handles(key):
+        from openpilot.sunnypilot.formosalink.model_settings import ACTION
+        maintenance = next(item for item in state["catalog"] if item["key"] == ACTION)
+        self.models.apply(key, value, state["values"][key], maintenance["pending_ref"])
+        return {**receipt, "status":"applied", "reason":"applied"}
       current = self.params.get(key, return_default=True)
       if key == vehicle_selection.KEY:
         current = vehicle_selection.selected_name(current, self.vehicles)
@@ -143,19 +154,26 @@ class SettingsProvider:
 
 
 class NativeSettingsProvider(SettingsProvider):
-  def __init__(self):
+  def __init__(self, device_id=None):
     from openpilot.cereal import messaging
     from openpilot.common.params import Params
     from openpilot.sunnypilot.sunnylink.capabilities import generate_capabilities
     from openpilot.sunnypilot.sunnylink.tools.generate_settings_schema import generate_schema
     from openpilot.sunnypilot.formosalink.device_info import DeviceInformation, NativeTranslations
-    self.sm = messaging.SubMaster(["deviceState", "pandaStates", "carState", "chestnutGpuState"])
+    from openpilot.sunnypilot.formosalink.model_settings import ModelSettings
+    from openpilot.sunnypilot.formosalink.telemetry import source_valid
+    from openpilot.sunnypilot.formosalink.trips import shared_trips
+    from openpilot.sunnypilot.models.helpers import REQUIRED_JSON_VERSION
+    self.sm = messaging.SubMaster(["deviceState", "pandaStates", "carState", "chestnutGpuState", "modelManagerSP", "gpsLocation", "gpsLocationExternal"])
     params = Params()
     information = DeviceInformation(self.sm, params)
+    models = ModelSettings(params, REQUIRED_JSON_VERSION,
+                           lambda: self.sm["modelManagerSP"].selectedBundle if source_valid(self.sm, "modelManagerSP", 5) else None)
     self._settings_guard = "waiting_device_state"
     super().__init__(params, generate_schema(), lambda: generate_capabilities(params), self.parked,
-                     lambda: {**information.capture(), "settings_guard": self._settings_guard}, NativeTranslations(), navigation=True,
-                     vehicles=vehicle_selection.load_vehicles())
+                     lambda: {**information.capture(), **shared_trips(params, device_id, self.sm), "settings_guard": self._settings_guard},
+                     NativeTranslations(), navigation=True,
+                     vehicles=vehicle_selection.load_vehicles(), models=models)
 
   def parked(self):
     from openpilot.sunnypilot.formosalink.telemetry import source_valid

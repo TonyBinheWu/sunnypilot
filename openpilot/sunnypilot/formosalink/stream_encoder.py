@@ -8,13 +8,17 @@ import time
 from openpilot.sunnypilot.formosalink.media_protocol import MAX_JPEG_BYTES
 
 
-def nv12_bytes(frame):
+def nv12_bytes(frame, lines=()):
   import numpy as np
   width, height, stride = frame.width, frame.height, frame.stride
   if not (0 < width <= 4096 and 0 < height <= 2160 and width % 2 == height % 2 == 0 and width <= stride <= 8192):
     raise ValueError('invalid native camera layout')
   y = np.frombuffer(frame.data, dtype=np.uint8, count=stride*height).reshape(height, stride)[:, :width]
   uv = np.frombuffer(frame.data, dtype=np.uint8, count=stride*(height//2), offset=frame.uv_offset).reshape(height//2, stride)[:, :width]
+  if lines:
+    from openpilot.sunnypilot.formosalink.road_overlay import paint
+    y, uv = y.copy(), uv.copy()
+    paint(y, uv, lines)
   return y.tobytes()+uv.tobytes()
 
 
@@ -35,10 +39,10 @@ class StreamEncoder:
       process.stdin.close()
       process.stdout.close()
 
-  def __call__(self, frame):
+  def __call__(self, frame, lines=()):
     import ffmpeg
     layout = (frame.width, frame.height)
-    data = nv12_bytes(frame)
+    data = nv12_bytes(frame, lines)
     if self.process is None or self.process.poll() is not None or layout != self.layout:
       self.close()
       # nice affects this encoder only; never lower priority of camera/model/control processes.

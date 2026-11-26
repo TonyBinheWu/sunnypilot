@@ -147,6 +147,13 @@ class ModelManagerSP:
       self.params.remove("ModelManager_DownloadRef")
     self._download_ref = None
 
+  def _finish_download(self, ref: str, status: str) -> None:
+    try:
+      self.params.put("ModelManager_LastDownload", {"ref": ref, "status": status, "finished": time.monotonic_ns()}, block=True)
+    finally:
+      self._release_download_ref()
+      self.selected_bundle = None
+
   def _sync_artifact_progress(self, source_artifact) -> None:
     if not self.selected_bundle:
       return
@@ -355,16 +362,22 @@ class ModelManagerSP:
       last_ref = ref_to_download
       resolved = resolve_bundle_by_ref(ref_to_download, self.source_models)
       if not resolved:
+        if all(self.source_models.get(source) for source in ACTIVE_BUNDLE_KEYS):
+          self._download_ref = ref_to_download
+          self._finish_download(ref_to_download, "failed")
         return
       model_to_download, source = resolved
       self._download_ref = ref_to_download
+      result = "downloaded"
       try:
         self.download(model_to_download, Paths.model_root(), source)
+      except DownloadCancelled:
+        result = "cancelled"
       except Exception as e:
+        result = "failed"
         cloudlog.exception(e)
       finally:
-        self._release_download_ref()
-        self.selected_bundle = None
+        self._finish_download(model_to_download.ref, result)
 
   def main_thread(self) -> None:
     """Main thread for model management"""
