@@ -155,7 +155,10 @@ def validate_setting(entry, value):
       raise ValueError("invalid_type")
   else:
     raise ValueError("unsupported_type")
-  if "options" in entry:
+  if entry["key"] == "CarPlatformBundle":
+    if not entry.get("vehicles") or value != "" and value not in entry["vehicles"]:
+      raise ValueError("invalid_option")
+  elif "options" in entry:
     if not any(option["enabled"] and type(option["value"]) is not bool and option["value"] == value for option in entry["options"]):
       raise ValueError("invalid_option")
   elif kind in ("INT", "FLOAT"):

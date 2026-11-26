@@ -1,7 +1,8 @@
 import {initTheme} from './theme.js?v=0.6.0';
+import {initTextSize} from './text-size.js';
 import {healthValue} from './health-ui.js?v=0.6.0';
-import {deviceSettings} from './device-settings.js?v=0.9.1';
-import {translations} from './i18n.js?v=0.9.1';
+import {deviceSettings} from './device-settings.js?v=0.9.2';
+import {translations} from './i18n.js?v=0.9.2';
 import {parsePairingFragment,validatePairing,readPending,savePending,clearPending} from './pairing.js?v=0.6.0';
 const $ = id => document.getElementById(id);
 let language = 'zh-TW';
@@ -25,6 +26,7 @@ function consumePairingHash(){
 consumePairingHash();
 const t = key => translations[language][key] || key;
 const applyTheme=initTheme(t);
+initTextSize();
 const date = seconds => seconds ? new Intl.DateTimeFormat(language,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date(seconds*1000)) : '—';
 
 function notify(key, error=false) { $('message').textContent=t(key); $('message').dataset.key=key; $('message').hidden=false; $('message').classList.toggle('error',error); }

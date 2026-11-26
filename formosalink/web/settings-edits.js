@@ -19,6 +19,9 @@ export function controlValue(entry, raw) {
     }catch{return undefined;}
   }
   if (entry.type==='BOOL') return typeof raw==='boolean' ? raw : undefined;
+  if (entry.key === 'CarPlatformBundle') {
+    return entry.vehicles && typeof raw === 'string' && (raw === '' || Object.hasOwn(entry.vehicles, raw)) ? raw : undefined;
+  }
   if (entry.options) {
     const option=entry.options.find(o=>o.enabled && sameValue(o.value,raw));
     return option?.value;

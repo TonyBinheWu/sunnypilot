@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from formosalink.tests.test_platform import client, pair, ORIGIN
+from formosalink.tests.test_platform import client as client, pair, ORIGIN
 from openpilot.sunnypilot.formosalink.device_settings import SettingsProvider
 from openpilot.sunnypilot.formosalink.management_protocol import validate_snapshot
 from openpilot.sunnypilot.formosalink.protocol import sign
@@ -40,6 +40,9 @@ class Params:
     self.values[key]=value
     self.writes.append((key,value))
 
+  def remove(self, key):
+    self.values.pop(key, None)
+
 
 def provider():
   params=Params()
@@ -65,6 +68,57 @@ def test_apply_reads_back_and_refresh_stamp():
   assert params.values["QuietMode"] is True
   assert params.values["ParamsVersion"]==1 and params.values["FormosaLinkSettingsVersion"]
   assert source.capture()["revision"]!=state["revision"]
+
+
+def test_vehicle_selection_round_trip_from_unrecognized_to_manual_then_automatic(client):
+  device, private, _ = pair(client)
+  source, params, guard = provider()
+  name = "Kia Sorento (without HDA II) 2024-25"
+  native = {"platform": "KIA_SORENTO_2024", "make": "Kia", "brand": "hyundai", "model": "Sorento (without HDA II)",
+            "year": ["2024", "2025"], "package": "Smart Cruise Control (SCC)"}
+  source.vehicles = {name: native}
+  path = f"/api/v1/devices/{device}/settings"
+  key = "CarPlatformBundle"
+  for previous, choice in (("", name), (name, "")):
+    state = source.capture()
+    assert state["values"][key] == previous
+    assert sync(client, device, private, state).status_code == 200
+    body = {"key": key, "value": choice, "expected_revision": state["revision"], "session": state["session"]}
+    for invalid in ("KIA_SORENTO_2024", "arbitrary model", {"platform": "KIA_SORENTO_2024"}):
+      assert client.post(path, json={**body, "value": invalid}, headers={"Origin": ORIGIN}).status_code == 409
+    assert client.post(path, json=body, headers={"Origin": ORIGIN}).status_code == 200
+    cmd = sync(client, device, private, source.capture()).json()["command"]
+    receipt = source.apply(cmd, device, time.monotonic()+10)
+    assert receipt["status"] == "applied"
+    assert params.get(key) == ({**native, "name": name} if choice else None)
+    updated = source.capture()
+    updated["receipts"] = [receipt]
+    assert sync(client, device, private, updated).json()["acknowledged"] == [cmd["id"]]
+    assert client.get(path).json()["snapshot"]["values"][key] == choice
+
+  cmd = command(source.capture(), key, name, device)
+  guard.parked = False
+  assert source.apply(cmd, device, time.monotonic()+5)["reason"] == "offroad_required"
+  guard.parked = True
+  params.values["FormosaLinkRemoteSettings"] = False
+  assert source.apply(cmd, device, time.monotonic()+5)["reason"] == "local_disabled"
+  assert params.get(key) is None
+
+
+def test_vehicle_bundle_must_match_device_readback():
+  source, params, _ = provider()
+  source.vehicles = {"Model": {"platform": "PLATFORM", "brand": "test"}}
+  cmd = command(source.capture(), "CarPlatformBundle", "Model")
+  params.put = lambda key, value, block: params.values.update({key: {"name": "Model", "platform": "WRONG"}})
+  assert source.apply(cmd, cmd["device_id"], time.monotonic()+5)["reason"] == "write_failed"
+
+
+def test_legacy_vehicle_bundles_resolve_without_guessing_a_trim():
+  from openpilot.sunnypilot.formosalink.vehicle_selection import selected_name
+  vehicles = {"Trim A": {"platform": "P", "model": "A"}, "Trim B": {"platform": "P", "model": "B"}}
+  assert selected_name({"platform": "P", "model": "B"}, vehicles) == "Trim B"
+  assert selected_name({"platform": "P"}, vehicles) == "P"
+  assert selected_name({"name": "Trim B", "platform": "OLD"}, vehicles) == "OLD"
 
 
 def test_write_without_matching_device_readback_is_not_applied():

@@ -930,3 +930,22 @@ Object.assign(translations.ja,{mediaTitle:'ライブ映像',sectionDesc_live:'�
 Object.assign(translations['zh-TW'],{settingsStateWaiting:"正在等待裝置確認 offroad 狀態，暫時僅供檢視。"});
 Object.assign(translations.en,{settingsStateWaiting:"Waiting for the device to confirm offroad state. Settings are temporarily read-only."});
 Object.assign(translations.ja,{settingsStateWaiting:"本体の offroad 状態の確認を待っています。現在は表示のみです。"});
+
+Object.assign(translations['zh-TW'], {
+  textSize:'字級', textSmaller:'縮小文字', textLarger:'放大文字', textSizeReset:'還原為 100%',
+  vehicleSearch:'搜尋車型、年份或平台代號', vehicleChoice:'選擇車型', vehicleAutomatic:'自動辨識',
+  vehicleUpgrade:'這台裝置尚未回報選車清單。請更新裝置上的 FormosaPilot 並重新連線。',
+  sorentoHevLabel:'Kia Sorento 2024–25（無 HDA II，含 2025 HEV 油電）',
+});
+Object.assign(translations.en, {
+  textSize:'Text size', textSmaller:'Decrease text size', textLarger:'Increase text size', textSizeReset:'Reset to 100%',
+  vehicleSearch:'Search model, year or platform ID', vehicleChoice:'Select vehicle', vehicleAutomatic:'Automatic identification',
+  vehicleUpgrade:'This device has not sent its vehicle list. Update FormosaPilot on the device and reconnect.',
+  sorentoHevLabel:'Kia Sorento 2024–25 (without HDA II, including 2025 HEV)',
+});
+Object.assign(translations.ja, {
+  textSize:'文字サイズ', textSmaller:'文字を小さくする', textLarger:'文字を大きくする', textSizeReset:'100% に戻す',
+  vehicleSearch:'車種・年式・プラットフォーム ID で検索', vehicleChoice:'車種を選択', vehicleAutomatic:'自動識別',
+  vehicleUpgrade:'このデバイスから車種一覧が届いていません。本体の FormosaPilot を更新して再接続してください。',
+  sorentoHevLabel:'Kia Sorento 2024–25（HDA II 非搭載、2025年式 HEV を含む）',
+});

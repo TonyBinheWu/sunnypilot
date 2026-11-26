@@ -60,6 +60,23 @@ class TestSettingsProfile(unittest.TestCase):
       self.assertEqual(source.apply(cmd,cmd["device_id"],time.monotonic()+5)["status"],"applied")
       self.assertEqual(params.get("NavDestination")["latitude"],25.03)
 
+  def test_installed_vehicle_catalog_and_native_bundle(self):
+    from openpilot.sunnypilot.formosalink.management_protocol import validate_snapshot
+    from openpilot.sunnypilot.formosalink.vehicle_selection import KEY, load_vehicles
+    with tempfile.TemporaryDirectory() as directory:
+      params = Params(directory)
+      for key in ("FormosaLinkEnabled", "FormosaLinkRemoteSettings"):
+        params.put_bool(key, True, block=True)
+      vehicles = load_vehicles()
+      name = "Kia Sorento (without HDA II) 2024-25"
+      self.assertEqual(vehicles[name]["platform"], "KIA_SORENTO_2024")
+      source = SettingsProvider(params, {}, dict, lambda: True, vehicles=vehicles)
+      for choice in (name, ""):
+        cmd = command(validate_snapshot(source.capture()), "00000000-0000-0000-0000-000000000001")
+        cmd.update(key=KEY, value=choice)
+        self.assertEqual(source.apply(cmd, cmd["device_id"], time.monotonic()+5)["status"], "applied")
+        self.assertEqual(params.get(KEY), {**vehicles[name], "name": name} if choice else None)
+
   def test_all_hyundai_kia_profiles_and_native_dbc(self):
     import json,os
     from opendbc.car import Bus

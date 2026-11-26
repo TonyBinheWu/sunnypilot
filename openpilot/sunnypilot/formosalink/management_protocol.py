@@ -46,6 +46,12 @@ def validate_snapshot(data):
         raise ValueError("invalid catalog key")
       if item.get("type") not in ("BOOL", "INT", "FLOAT", "STRING") or item.get("widget") not in ("toggle", "option", "multiple_button", "info", "navigation") or type(item.get("enabled")) is not bool:
         raise ValueError("invalid catalog type")
+      if item["key"] == "CarPlatformBundle":
+        vehicles = item.get("vehicles")
+        if (item["type"] != "STRING" or item["widget"] != "option" or not isinstance(vehicles, dict) or not 1 <= len(vehicles) <= 1024
+            or any(not isinstance(name, str) or not 1 <= len(name) <= 256 or not name.isprintable()
+                   or not isinstance(platform, str) or not 1 <= len(platform) <= 128 for name, platform in vehicles.items())):
+          raise ValueError("invalid vehicle catalog")
       for name in ("title", "description", "group"):
         labels = item.get(name)
         if not isinstance(labels, dict) or set(labels) != {"zh-TW", "en", "ja"} or any(not isinstance(v, str) or len(v) > 4096 for v in labels.values()):

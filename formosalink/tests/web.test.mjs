@@ -80,6 +80,30 @@ test('device workspace routes and category search preserve native identities',()
 });
 import {healthValue} from '../web/health-ui.js';
 import {themePreference} from '../web/theme.js';
+import {textSizePreference} from '../web/text-size.js';
+import {matchingVehicles} from '../web/vehicle-picker.js';
+import {controlValue} from '../web/settings-edits.js';
+
+test('text size restores a supported percentage or the browser default',()=>{
+  for (const value of [75, 137, 200, 250]) assert.equal(textSizePreference({getItem:()=>String(value)}),value);
+  for (const raw of [null,'','NaN','999','0','-1','100.5']) assert.equal(textSizePreference({getItem:()=>raw}),100);
+  assert.equal(textSizePreference({getItem(){throw Error();}}),100);
+});
+
+test('searching the vehicle catalog retains the installed bundle name and HDA qualifier',()=>{
+  const name='Kia Sorento (without HDA II) 2024-25', older='Kia Sorento Hybrid 2021-23';
+  const vehicles={[older]:'KIA_SORENTO_HEV_4TH_GEN',[name]:'KIA_SORENTO_2024'};
+  const entry={key:'CarPlatformBundle',type:'STRING',vehicles,group:{en:'Vehicle'},title:{en:'Select vehicle'}};
+  for(const query of ['sorento hev 2025','2025 Kia Sorento Hybrid','2025 油電','KIA_SORENTO_2024']){
+    assert.deepEqual(matchingVehicles(vehicles,query),[name]);
+    assert.deepEqual(filterEntries([entry],'home',query),[entry]);
+  }
+  assert.deepEqual(matchingVehicles(vehicles,'2022 HEV'),[older]);
+  assert.deepEqual(matchingVehicles({[older]:vehicles[older]},'2025 Sorento HEV'),[]);
+  assert.equal(controlValue(entry,name),name);
+  assert.equal(controlValue(entry,''),'');
+  for(const raw of ['KIA_SORENTO_2024','Kia Sorento Hybrid 2025','__proto__',{}])assert.equal(controlValue(entry,raw),undefined);
+});
 test('health and theme keep unknown readings distinct from real zero',()=>{
  assert.equal(healthValue(0,' %'),'0 %');assert.equal(healthValue(null,' %'),'—');assert.equal(healthValue(NaN),'—');
  assert.equal(themePreference({getItem:()=> 'dark'}),'dark');assert.equal(themePreference({getItem:()=> 'invalid'}),'system');assert.equal(themePreference({getItem:()=>{throw Error();}}),'system');
