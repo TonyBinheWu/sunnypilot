@@ -4,11 +4,13 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pyray as rl
 
-from openpilot.common.remote_screen import ScreenSession
+from openpilot.common.remote_screen import MAX_FRAME, ScreenSession
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app, MouseEvent, MousePos
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets.label import gui_label
+
+MAX_TOUCH_FRAME_AGE = 1.4
 
 
 def parked():
@@ -31,9 +33,16 @@ def parked():
 
 def compress_frame(width, height, rgba):
   from PIL import Image
-  image = Image.frombytes("RGBA", (width, height), rgba)
+  image = Image.frombytes("RGBA", (width, height), rgba).convert("RGB")
+  if image.getbbox() is None:
+    return b""
   stream = io.BytesIO()
   image.save(stream, format="PNG", compress_level=1)
+  if stream.tell() > MAX_FRAME - 4:
+    # High-entropy camera frames can exceed the socket limit at the parked C3X resolution.
+    stream.seek(0)
+    stream.truncate()
+    image.reduce(2).save(stream, format="PNG", compress_level=1)
   return stream.getvalue()
 
 
@@ -46,6 +55,17 @@ class DeviceScreen(ScreenSession):
     self.encoder = None
     self.encoding = None
     self.session_id = 0
+    self.visible_at = None
+
+  def invalidate_frame(self):
+    if self.visible_at is not None:
+      self.epoch += 4
+    self.visible_at = None
+    self.down = False
+
+  def close_peer(self):
+    super().close_peer()
+    self.invalidate_frame()
 
   def arm(self):
     if not self.listener:
@@ -75,25 +95,30 @@ class DeviceScreen(ScreenSession):
 
     mode = self.input_mode()
     changed = mode != self.mode
+    now = time.monotonic()
     if changed:
       # Inputs from the previous screen state cannot finish a gesture in the new one.
       self.epoch = (self.epoch // 4 + 1) * 4 + {"park": 0, "road": 1, "waiting": 2}[mode]
       self.down = False
+      self.visible_at = None
       self.mode = mode
+    elif self.visible_at is not None and now - self.visible_at > MAX_TOUCH_FRAME_AGE:
+      self.invalidate_frame()
 
     local_press = any(event.left_pressed for event in physical)
     pairing_overlay = bool(self.pin)
     remote = self.tick(local_press)
     now = time.monotonic()
     events = []
-    if self.touch_active and (changed or not self.auth or local_press):
+    if self.touch_active and (self.visible_at is None or not self.auth or local_press):
       events.append(MouseEvent(MousePos(-1, -1), 0, False, True, False, now))
       self.touch_active = False
 
     # The first physical tap dismisses the PIN screen. Once paired, local input takes priority.
     if not pairing_overlay:
       events.extend(physical)
-    if not self.auth or mode == "waiting" or local_press:
+    if self.visible_at is None or not self.auth or mode == "waiting" or local_press:
+      self.down = False
       return events
 
     for action, x, y in remote:
@@ -118,12 +143,22 @@ class DeviceScreen(ScreenSession):
       completed, self.encoding = self.encoding, None
       try:
         if self.auth and self.encoding_key == (self.session_id, self.epoch):
-          self.frame(completed.result())
+          png = completed.result()
+          if png and time.monotonic() - self.captured_at <= MAX_TOUCH_FRAME_AGE:
+            self.visible_at = self.captured_at
+            self.frame(png)
+          else:
+            self.invalidate_frame()
+            self.frame(b"")
       except (OSError, ValueError):
-        self.close()
+        self.invalidate_frame()
+        self.frame(b"")
     onroad = self.mode == "road" or ui_state.started
     if self.encoding is None and self.wants_frame() and (not onroad or time.monotonic()-self.last_frame >= .4):
       self.last_frame = time.monotonic()
+      # EndDrawing normally flushes raylib's queued UI (or the recording texture
+      # blit). Capture before the private overlay, after submitting that batch.
+      rl.rl_draw_render_batch_active()
       img = rl.load_image_from_screen()
       try:
         limit = 640 if onroad else 864
@@ -135,7 +170,11 @@ class DeviceScreen(ScreenSession):
           if self.encoder is None:
             self.encoder = ThreadPoolExecutor(max_workers=1, thread_name_prefix="screen-png")
           self.encoding_key = (self.session_id, self.epoch)
+          self.captured_at = self.last_frame
           self.encoding = self.encoder.submit(compress_frame, img.width, img.height, rgba)
+        else:
+          self.invalidate_frame()
+          self.frame(b"")
       finally:
         rl.unload_image(img)
     if onroad or (not self.listener and time.monotonic() >= self.notice_until):

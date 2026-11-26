@@ -39,7 +39,7 @@ def recording():
   cls = methods('application.py', 'GuiApplication', ['render', '_release_unused_render_texture'], scope)
   app = cls()
   app.__dict__.update(_profile_render_frames=0, _window_close_requested=False, _mouse=SimpleNamespace(get_events=list),
-    _should_render=True, _render_texture=None, _record_enabled=False, _scale=1., _nav_stack_ticks=[], _nav_stack=[],
+    remote_screen=None, _should_render=True, _render_texture=None, _record_enabled=False, _scale=1., _nav_stack_ticks=[], _nav_stack=[],
     _nav_stack_widgets_to_render=1, _show_fps=False, _show_touches=False, _grid_size=0, _record_frame_idx=2,
     _record_every_n=3, _ffmpeg_queue=queue.Queue(maxsize=1), _record_t0=0, _record_max_sec=60, _frame=0,
     width=100, height=50, _scaled_width=100, _scaled_height=50, _monitor_fps=lambda: None,

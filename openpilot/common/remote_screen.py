@@ -130,6 +130,7 @@ class ScreenSession:
     return self.auth and not self.output and time.monotonic()-self.last_frame >= .2
 
   def frame(self, image):
-    if self.auth and 0 < len(image) <= MAX_FRAME-4:
+    # An epoch with no image is a temporary capture outage. Keep the session alive.
+    if self.auth and not self.output and len(image) <= MAX_FRAME-4:
       self.output = struct.pack(">II", len(image)+4, self.epoch) + image
       self.last_frame = time.monotonic()

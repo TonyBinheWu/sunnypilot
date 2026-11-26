@@ -54,7 +54,7 @@ def test_camera_and_both_layers_survive_every_window_frame(monkeypatch, width, h
   app = scope['GuiApplication']()
   app.__dict__.update(
     _profile_render_frames=0, _window_close_requested=False, _mouse=SimpleNamespace(get_events=list),
-    _should_render=True, _render_texture=rl.load_render_texture(width, height) if recording else None,
+    remote_screen=None, _should_render=True, _render_texture=rl.load_render_texture(width, height) if recording else None,
     _record_enabled=recording, _scale=1., _nav_stack_ticks=[], _nav_stack=[], _nav_stack_widgets_to_render=1,
     _show_fps=False, _show_touches=False, _grid_size=0, _record_frame_idx=0, _record_every_n=1000,
     _ffmpeg_queue=queue.Queue(maxsize=1), _record_t0=time.monotonic(), _record_max_sec=600, _frame=0,

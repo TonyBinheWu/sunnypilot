@@ -80,3 +80,19 @@ def test_discard_input_from_previous_mode(connection):
     assert not s.tick() and not s.down
   message(client,dict(type="down",epoch=5,x=.2,y=.3))
   assert s.tick()==[("down",.2,.3)]
+
+
+def test_empty_capture_notice_keeps_stream_framed_and_paired(connection):
+  s, client, _ = connection
+  pair(s, client)
+  s.frame(b"image")
+  s.frame(b"")
+  s.tick()
+  assert client.recv(13) == struct.pack(">II", 9, 0) + b"image"
+  s.epoch = 4
+  s.frame(b"")
+  s.tick()
+  assert client.recv(8) == struct.pack(">II", 4, 4) and s.auth
+  s.frame(b"new")
+  s.tick()
+  assert client.recv(11) == struct.pack(">II", 7, 4) + b"new"
