@@ -79,6 +79,12 @@ def test_cruise_and_gap_tuning_is_removed(settings):
   categories = build_menu_categories(settings, by_name)
   assert all(group["id"] != "CRUISE" for category in categories for group in category["groups"])
   assert "SunnyAutoLongitudinal" in by_name
+  daily = next(section for category in categories for group in category["groups"]
+               for section in group["sections"] if "SunnyAutoLongitudinal" in section["items"])
+  assert "DynamicExperimentalControl" in daily["items"]
+  dec = by_name["DynamicExperimentalControl"]
+  assert (dec["default"], dec["control"]) == (0, "toggle")
+  assert '{"DynamicExperimentalControl", {PERSISTENT, BOOL, "0"}}' in PARAMS_KEYS_PATH.read_text(encoding="utf8")
 
 
 def test_removed_speed_and_longitudinal_panels(settings, params):

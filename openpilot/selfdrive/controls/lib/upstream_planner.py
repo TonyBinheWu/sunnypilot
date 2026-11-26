@@ -14,6 +14,7 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.navigation.helpers import nearby_maneuver
 from openpilot.selfdrive.controls.lib.curve_speed import CurveSpeed
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
+from openpilot.selfdrive.controls.lib.sunny_longitudinal import DynamicExperimentalControl, ModelAccelBoost, acc_comfort_limit
 from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import LongitudinalMpc, LongitudinalPlanSource, STOP_DISTANCE, get_T_FOLLOW
 from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, smooth_value
@@ -41,11 +42,15 @@ def get_accel_from_plan(speeds, accels, times, action_t):
   return 2 * (np.interp(delay, times, speeds) - speeds[0]) / delay - accels[0]
 
 
-def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt):
-  target_accel = smooth_value(v_cruise - v_ego, a_cruise_prev, tau=1.0, dt=dt)
+def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt, *, sunny=False):
+  target_accel = v_cruise - v_ego
+  previous_lower = a_cruise_prev
+  if not sunny:
+    target_accel = smooth_value(target_accel, a_cruise_prev, tau=1.0, dt=dt)
+    previous_lower = min(a_cruise_prev, a_target_prev)
   target_accel = np.clip(target_accel, A_CRUISE_MIN, ACCEL_MAX)
   j_cruise = np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS)
-  target_accel = float(np.clip(target_accel, min(a_cruise_prev, a_target_prev) - j_cruise * dt, a_cruise_prev + j_cruise * dt))
+  target_accel = float(np.clip(target_accel, previous_lower - j_cruise * dt, a_cruise_prev + j_cruise * dt))
 
   return target_accel
 
@@ -101,6 +106,12 @@ class LongitudinalPlanner:
       self.vision_curve = settings.get_bool("SunnyVisionCurve")
       self.map_curve = settings.get_bool("SunnyMapCurve")
       self.speed_limit = settings.get_bool("SunnySpeedLimit")
+      self.dec_enabled = settings.get_bool("DynamicExperimentalControl")
+      self.dec = None
+      self.model_boost = ModelAccelBoost()
+      self.previous_model_stamp = 0
+    self.longitudinal_mode = ''
+    self.acc_ceiling = None
     self.CP = CP
     self.mpc = LongitudinalMpc(dt=dt)
     self.fcw = False
@@ -139,6 +150,68 @@ class LongitudinalPlanner:
     seconds = (stamp - self.opening_since) * 1e-9
     return min(0.35, 0.2 * lead.vRel, 0.2 * max(0., seconds - 1.))
 
+  def sunny_model_adjustment(self, sm, v_cruise, model_accel, curve_offset, personality, reset_state):
+    cs = sm['carState']
+    v_ego, model = cs.vEgo, sm['modelV2']
+    stamp = sm.logMonoTime['modelV2']
+    maneuver = nearby_maneuver(sm, stamp, v_ego)
+    preview = [abs(v * yaw) for t, v, yaw in zip(model.position.t, model.velocity.x, model.orientationRate.z, strict=False)
+               if 0. <= t <= 3.]
+    # A new lead can appear one solve before the MPC reacts. Withhold discretionary acceleration on that frame.
+    clear_gap = all(not lead.status or (math.isfinite(lead.dRel) and math.isfinite(lead.vRel) and math.isfinite(lead.aLeadK)
+                    and lead.dRel > STOP_DISTANCE + self.t_follow * v_ego and lead.vRel >= -.5 and lead.aLeadK >= -.2)
+                    for lead in (self.leads.leadOne, self.leads.leadTwo))
+    direct = self.CP.openpilotLongitudinalControl and sm['selfdriveState'].enabled and not reset_state
+    eligible = (direct and
+                v_ego > 5. and v_cruise - v_ego > 2. and not sm['controlsState'].forceDecel and
+                0. < model_accel < 0.6 and not model.action.shouldStop and
+                curve_offset == 0. and abs(model.action.desiredCurvature) * v_ego**2 < 1. and
+                not cs.standstill and not cs.gasPressed and not cs.brakePressed and not self.fcw)
+    eligible = eligible and clear_gap and maneuver is None and bool(preview) and all(a < 1. for a in preview)
+    recovery = min(self.opening_lead_boost(sm, eligible), max(0., 0.6 - model_accel))
+
+    healthy = (direct and self.previous_model_stamp > 0 and 0 < stamp - self.previous_model_stamp < 150_000_000
+               and sm.all_checks(['radarState', 'controlsState', 'selfdriveState'])
+               and all(abs(stamp - sm.logMonoTime[k]) < 150_000_000 for k in ('radarState', 'controlsState', 'carState'))
+               and self.mpc.solution_status == 0)
+    self.previous_model_stamp = stamp
+    self.longitudinal_mode = ('decBlended' if self.dec_enabled else 'blended') if direct else ''
+    trajectory_ok = healthy and DynamicExperimentalControl.valid_trajectory(model)
+    urgency = DynamicExperimentalControl.slowdown_urgency(v_ego, model.position.x[-1]) if trajectory_ok else 1.
+    if self.dec_enabled and trajectory_ok:
+      if self.dec is None:
+        self.dec = DynamicExperimentalControl(not self.CP.radarUnavailable)
+      selected = self.dec.update(cs, urgency, self.leads.leadOne, self.mpc.crash_cnt)
+      if selected == 'acc' and self.dec.duration >= 10:
+        self.longitudinal_mode = 'decAcc'
+    else:
+      self.dec = None
+
+    # Retain model braking, navigation turns and curve anticipation even in DEC's ACC phase.
+    open_path = (clear_gap and urgency <= .24 and bool(preview) and all(a < 1.5 for a in preview)
+                 and abs(model.action.desiredCurvature) * v_ego**2 < 1.5 and maneuver is None
+                 and not (cs.standstill or cs.gasPressed or cs.brakePressed or sm['controlsState'].forceDecel
+                          or self.mpc.crash_cnt or model.action.shouldStop or curve_offset < 0.))
+    brake_probs = model.meta.disengagePredictions.brakePressProbs
+    gas_probs = model.meta.disengagePredictions.gasPressProbs
+    allow_recovery = (open_path and model_accel >= -.2 and len(brake_probs) >= 2 and 0. <= brake_probs[1] < .3)
+    if self.dec_enabled:
+      allow_recovery = allow_recovery and len(gas_probs) >= 2 and .4 < gas_probs[1] <= 1.
+    self.acc_ceiling = None
+    if self.longitudinal_mode == 'decAcc':
+      if allow_recovery:
+        self.acc_ceiling = acc_comfort_limit(self.CP, v_ego, cs.steeringAngleDeg - sm['liveParameters'].angleOffsetDeg)
+      if self.acc_ceiling is None:
+        self.longitudinal_mode = 'decBlended'
+    if allow_recovery and v_ego < v_cruise and self.longitudinal_mode != 'decAcc':
+      model_boost = self.model_boost.update(model, v_ego, model_accel, personality, self.dt)
+    else:
+      self.model_boost.boost = 0.
+      model_boost = 0.
+    if model_boost > recovery:
+      return model_boost, 'e2eBoost'
+    return recovery, 'openingLead' if recovery > 0. else ''
+
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     if self.vision_only or self.sunny:
@@ -148,6 +221,11 @@ class LongitudinalPlanner:
         model.action.desiredCurvature)))
       if not self.camera_input_valid:
         self.opening_track = None
+        if self.sunny:
+          self.dec = None
+          self.model_boost.boost = 0.
+          self.previous_model_stamp = 0
+          self.longitudinal_mode = ''
         return
     personality = sm['selfdriveState'].personality.raw
     if personality == log.LongitudinalPersonality.moreRelaxed:
@@ -208,38 +286,29 @@ class LongitudinalPlanner:
     output_should_stop_mpc = should_stop(v_ego, output_a_target_mpc)
     curve_offset = self.curve_speed.update(sm['modelV2'], sm['liveParameters'].roll) if not self.sunny or self.vision_curve else 0.
     output_a_target_e2e = sm['modelV2'].action.desiredAcceleration + curve_offset
-    speed_scale = np.interp(v_ego, [5.0, 10.0], [0.0, 1.0])
-    accel_scale = np.interp(output_a_target_e2e, [-1.0, -0.5], [0.0, 1.0])
     if not self.sunny:
+      speed_scale = np.interp(v_ego, [5.0, 10.0], [0.0, 1.0])
+      accel_scale = np.interp(output_a_target_e2e, [-1.0, -0.5], [0.0, 1.0])
       output_a_target_e2e += ACCEL_BOOST[personality] * speed_scale * accel_scale
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt)
+    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt, sunny=self.sunny)
+    if self.sunny and (sm['controlsState'].forceDecel or v_ego >= v_cruise):
+      self.a_cruise = min(self.a_cruise, 0.)
     if not self.ceiling_available:
       self.a_cruise = min(self.a_cruise, 0.)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
-    recovery = 0.
+    previous_mode = self.longitudinal_mode
+    model_adjustment = ''
     if self.sunny:
-      cs = sm['carState']
-      eligible = (self.CP.openpilotLongitudinalControl and not reset_state and
-                  v_ego > 5. and v_cruise - v_ego > 2. and not sm['controlsState'].forceDecel and
-                  0. < output_a_target_e2e < 0.6 and not output_should_stop_e2e and
-                  curve_offset == 0. and abs(model.action.desiredCurvature) * v_ego**2 < 1. and
-                  not cs.standstill and not cs.gasPressed and not cs.brakePressed and not self.fcw)
-      if eligible:
-        trajectory = zip(model.position.t, model.velocity.x, model.orientationRate.z, strict=False)
-        preview = [abs(v * yaw) for t, v, yaw in trajectory if 0. <= t <= 3.]
-        eligible = bool(preview) and all(a < 1. for a in preview)
-      if eligible and nearby_maneuver(sm, sm.logMonoTime['modelV2'], v_ego) is not None:
-        # Let the model handle the approach; an opening gap around a junction is not a cue to catch up.
-        eligible = False
-      recovery = min(self.opening_lead_boost(sm, eligible), max(0., 0.6 - output_a_target_e2e))
-      output_a_target_e2e += recovery
+      boost, model_adjustment = self.sunny_model_adjustment(sm, v_cruise, output_a_target_e2e, curve_offset, personality, reset_state)
+      output_a_target_e2e += boost
 
     candidates = [(output_a_target_mpc, self.mpc.source, output_should_stop_mpc),
-                  (self.a_cruise, LongitudinalPlanSource.cruise, cruise_should_stop),
-                  (output_a_target_e2e, LongitudinalPlanSource.e2e, output_should_stop_e2e)]
+                  (self.a_cruise, LongitudinalPlanSource.cruise, cruise_should_stop)]
+    if self.longitudinal_mode != 'decAcc':
+      candidates.append((output_a_target_e2e, LongitudinalPlanSource.e2e, output_should_stop_e2e))
 
     output_a_target, self.mpc.source, _ = min(candidates, key=lambda c: c[0])
     self.speed_reason = {LongitudinalPlanSource.lead0: 'lead0', LongitudinalPlanSource.lead1: 'lead1',
@@ -248,8 +317,8 @@ class LongitudinalPlanner:
       self.speed_reason = 'forceDecel'
     elif self.speed_reason == 'cruise' and self.a_cruise < output_a_target_mpc:
       self.speed_reason = ceiling_reason
-    elif self.mpc.source == LongitudinalPlanSource.e2e and recovery > 0.:
-      self.speed_reason = 'openingLead'
+    elif self.mpc.source == LongitudinalPlanSource.e2e and model_adjustment:
+      self.speed_reason = model_adjustment
     elif self.mpc.source == LongitudinalPlanSource.e2e and curve_offset < 0:
       self.speed_reason = 'e2eCurve'
     elif self.speed_reason in ('lead0', 'lead1'):
@@ -259,6 +328,15 @@ class LongitudinalPlanner:
       elif self.vision_only:
         self.speed_reason = 'visionLead'
     self.output_should_stop = any(should_stop for _, _, should_stop in candidates)
+    if self.longitudinal_mode == 'decAcc' and output_a_target > self.acc_ceiling:
+      output_a_target = self.acc_ceiling
+      self.speed_reason = 'accComfort'
+    if self.longitudinal_mode == 'decAcc' or (previous_mode == 'decAcc' and self.longitudinal_mode == 'decBlended'):
+      # Cruise may have built up while the model was limiting speed. Slew only increases at handover.
+      ramp_limit = a_prev + np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS) * self.dt
+      if output_a_target > ramp_limit:
+        output_a_target = ramp_limit
+        self.speed_reason = 'cruiseRamp'
     self.output_a_target = np.clip(output_a_target, ACCEL_MIN, ACCEL_MAX)
 
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.output_a_target + a_prev) / 2.0
@@ -299,6 +377,7 @@ class LongitudinalPlanner:
     if self.vision_only or self.sunny:
       longitudinalPlan.visionPlannerSetup = getattr(self.CP, "visionPlannerSetup", "")
     longitudinalPlan.speedConstraint = self.speed_reason if self.CP.openpilotLongitudinalControl else 'stockLong'
+    longitudinalPlan.longitudinalMode = self.longitudinal_mode
     longitudinalPlan.allowThrottle = self.ceiling_available
     longitudinalPlan.vTargetNow = float(max(0., sm['carState'].vEgo + self.output_a_target * self.dt))
     longitudinalPlan.jTargetNow = float(self.j_desired_trajectory[0])

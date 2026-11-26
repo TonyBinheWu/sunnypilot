@@ -160,3 +160,182 @@ def test_opening_lead_recovery_requires_continuous_eligible_observations(monkeyp
   assert planner.output_a_target <= model.action.desiredAcceleration
   if interrupt == "stop":
     assert planner.output_should_stop
+
+
+def highway_inputs():
+  sm = inputs()
+  model = sm["modelV2"]
+  times = module.ModelConstants.T_IDXS
+  model.position.t = times
+  model.position.x = [25. * t for t in times]
+  model.velocity.x = [25.] * len(times)
+  model.orientation.x = model.orientationRate.z = [0.] * len(times)
+  model.action.desiredAcceleration, model.action.shouldStop = -.04, False
+  model.meta.disengagePredictions.brakePressProbs = [.01, .01]
+  model.meta.disengagePredictions.gasPressProbs = [.9, .9]
+  sm["carState"].steeringAngleDeg = sm["liveParameters"].angleOffsetDeg = 0.
+  return sm
+
+
+def sunny_planner(monkeypatch, *, dec, radar=True, direct=True, assist=None):
+  keys = {"DynamicExperimentalControl": dec, assist: True}
+  monkeypatch.setattr(module, "Params", lambda: NS(get_bool=lambda key: keys.get(key, False)))
+  cp = NS(openpilotLongitudinalControl=direct, radarUnavailable=not radar, longitudinalActuatorDelay=.5,
+          wheelbase=2.9, steerRatio=14.3, visionPlannerSetup="native" if direct else "stock")
+  return module.LongitudinalPlanner(cp, init_v=25., sunny=True)
+
+
+def tick(planner, sm):
+  sm.logMonoTime = dict.fromkeys(sm, sm.logMonoTime["modelV2"] + 50_000_000)
+  planner.update(sm)
+
+
+@pytest.mark.parametrize("dec,mode,expected_accel", [(False, "blended", .21), (True, "decAcc", .8)])
+@pytest.mark.parametrize("radar", [True, False])
+def test_empty_road_recovers_below_ceiling(monkeypatch, dec, mode, expected_accel, radar):
+  sm = highway_inputs()
+  planner = sunny_planner(monkeypatch, dec=dec, radar=radar)
+  for i in range(80):
+    before = planner.output_a_target
+    tick(planner, sm)
+    if i > 0 and planner.longitudinal_mode == "decAcc":
+      assert planner.output_a_target <= before + .8 * planner.dt + 1e-6
+  assert planner.longitudinal_mode == mode
+  assert planner.output_a_target == pytest.approx(expected_accel, abs=1e-5)
+  assert planner.speed_reason == ("accComfort" if dec else "e2eBoost")
+  out = {}
+  planner.publish(sm, NS(send=out.__setitem__))
+  assert out["longitudinalPlan"].longitudinalPlan.longitudinalMode == mode
+  sm["carState"].vCruise = 90.  # 25 m/s
+  tick(planner, sm)
+  assert planner.output_a_target <= 0.
+
+
+@pytest.mark.parametrize("hazard", ["stop", "braking", "brakeProbability", "coast", "steering", "curve", "shortPath",
+                                    "standstill", "brakePedal", "forceDecel", "noTrajectory", "noPedals", "stale", "junction"])
+def test_dec_gives_model_priority_immediately(monkeypatch, hazard):
+  sm = highway_inputs()
+  planner = sunny_planner(monkeypatch, dec=True)
+  for _ in range(35):
+    tick(planner, sm)
+  assert planner.longitudinal_mode == "decAcc" and planner.output_a_target > .5
+  model = sm["modelV2"]
+  if hazard == "stop":
+    model.action.shouldStop = True
+  elif hazard == "braking":
+    model.action.desiredAcceleration = -1.5
+  elif hazard == "brakeProbability":
+    model.meta.disengagePredictions.brakePressProbs = [.5, .8]
+  elif hazard == "coast":
+    model.meta.disengagePredictions.gasPressProbs = [.1, .1]
+  elif hazard == "steering":
+    model.action.desiredCurvature = .01
+  elif hazard == "curve":
+    model.orientationRate.z = [.25] * len(model.position.t)
+  elif hazard == "shortPath":
+    model.position.x = [t * 2. for t in model.position.t]
+  elif hazard == "standstill":
+    sm["carState"].standstill, sm["carState"].vEgo = True, 0.
+  elif hazard == "brakePedal":
+    sm["carState"].brakePressed = True
+  elif hazard == "forceDecel":
+    sm["controlsState"].forceDecel = True
+  elif hazard == "noTrajectory":
+    model.position.x = []
+  elif hazard == "noPedals":
+    model.meta.disengagePredictions.gasPressProbs = []
+  elif hazard == "stale":
+    sm.logMonoTime["modelV2"] += 300_000_000
+  elif hazard == "junction":
+    monkeypatch.setattr(module, "nearby_maneuver", lambda *args: "turn right")
+  tick(planner, sm)
+  assert planner.longitudinal_mode == "decBlended"
+  assert planner.output_a_target <= model.action.desiredAcceleration + 1e-6
+  if hazard == "stop":
+    assert planner.output_should_stop
+
+
+@pytest.mark.parametrize("dec", [True, False])
+@pytest.mark.parametrize("lead_field,reason", [("leadOne", "lead0"), ("leadTwo", "lead1")])
+def test_closing_lead_keeps_its_braking_authority(monkeypatch, dec, lead_field, reason):
+  sm = highway_inputs()
+  planner = sunny_planner(monkeypatch, dec=dec)
+  for _ in range(60):
+    tick(planner, sm)
+  lead = getattr(sm["radarState"], lead_field)
+  lead.status, lead.dRel, lead.vLead, lead.vLeadK, lead.vRel, lead.aLeadTau = True, 20., 7., 7., -18., 1.5
+  tick(planner, sm)
+  # The first RTI solve can still reflect the old open road. The model's braking already applies.
+  assert planner.output_a_target <= sm["modelV2"].action.desiredAcceleration + 1e-6
+  tick(planner, sm)
+  assert planner.speed_reason == reason
+  assert planner.output_a_target < -1.
+
+
+@pytest.mark.parametrize("assist,source", [("SunnyMapCurve", "mapCurve"), ("SunnySpeedLimit", "speedLimit")])
+def test_dec_respects_optional_speed_assists(monkeypatch, assist, source):
+  sm = highway_inputs()
+  planner = sunny_planner(monkeypatch, dec=True, assist=assist)
+  for _ in range(40):
+    sm["carrotMan"].positionFixMonoTime = sm.logMonoTime["modelV2"]
+    tick(planner, sm)
+  assert planner.longitudinal_mode == "decAcc"
+  assert planner.output_a_target < 0. and planner.speed_reason == source
+
+
+def test_stock_and_disengaged_never_report_active_dec(monkeypatch):
+  sm = highway_inputs()
+  planner = sunny_planner(monkeypatch, dec=True, direct=False)
+  for _ in range(20):
+    tick(planner, sm)
+  out = {}
+  planner.publish(sm, NS(send=out.__setitem__))
+  plan = out["longitudinalPlan"].longitudinalPlan
+  assert plan.speedConstraint == "stockLong" and not plan.longitudinalMode
+  planner = sunny_planner(monkeypatch, dec=True)
+  sm["controlsState"].longControlState = module.LongCtrlState.off
+  tick(planner, sm)
+  assert not planner.longitudinal_mode
+
+
+def test_dec_restarts_after_an_unsuccessful_solve(monkeypatch):
+  sm = highway_inputs()
+  planner = sunny_planner(monkeypatch, dec=True)
+  for _ in range(30):
+    tick(planner, sm)
+  assert planner.longitudinal_mode == "decAcc"
+  solver = planner.mpc.solver
+
+  class FailedSolve:
+    def solve(self):
+      return 1
+
+    def __getattr__(self, name):
+      return getattr(solver, name)
+
+  planner.mpc.solver = FailedSolve()
+  tick(planner, sm)
+  assert planner.mpc.solution_status == 1 and planner.longitudinal_mode == "decBlended"
+  assert planner.output_a_target <= 0.
+  planner.mpc.solver = solver
+  tick(planner, sm)
+  assert planner.mpc.solution_status == 0 and planner.longitudinal_mode == "decBlended"
+  for _ in range(15):
+    tick(planner, sm)
+  assert planner.longitudinal_mode == "decAcc"
+
+
+@pytest.mark.parametrize("dec", [True, False])
+def test_clear_road_converges_to_cruise_ceiling(monkeypatch, dec):
+  sm = highway_inputs()
+  planner = sunny_planner(monkeypatch, dec=dec)
+  cs, model = sm["carState"], sm["modelV2"]
+  cs.vCruise = 120.
+  for _ in range(1000):  # straight, level, ideal acceleration tracking for 50 seconds
+    model.position.x = [cs.vEgo * t for t in model.position.t]
+    model.velocity.x = [cs.vEgo] * len(model.position.t)
+    tick(planner, sm)
+    cs.aEgo = float(planner.output_a_target)
+    cs.vEgo += cs.aEgo * planner.dt
+    assert cs.vEgo * 3.6 <= cs.vCruise + 1e-5
+  assert cs.vEgo * 3.6 == pytest.approx(cs.vCruise, abs=.1)

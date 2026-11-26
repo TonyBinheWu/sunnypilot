@@ -14,7 +14,8 @@ test("cockpit shows a verified approach and clears the route row after evidence 
     if (!elements.has(id)) elements.set(id, {previousElementSibling: {}});
     return elements.get(id);
   };
-  const responses = [{routeCheck: "matched", approachManeuver: "branch right"}, {routeCheck: "instructionConflict"}, {}];
+  const responses = [{routeCheck: "matched", approachManeuver: "branch right", longitudinalMode: "decAcc", speed: "accComfort"},
+                     {routeCheck: "instructionConflict", longitudinalMode: "decBlended", speed: "lead0"}, {}];
   let next;
   const target = {
     document: {getElementById: get, body: {dataset: {panel: "vision"}}, addEventListener() {}},
@@ -26,12 +27,20 @@ test("cockpit shows a verified approach and clears the route row after evidence 
   const row = get("plannerRouteCheck");
   assert.equal(row.textContent, "目前定位符合導航路線 · 前方靠右分岔");
   assert.equal(row.hidden, false);
+  const mode = get("longitudinalMode");
+  assert.equal(mode.textContent, "DEC · 巡航跟車");
+  assert.equal(get("speedConstraint").textContent, "巡航加速度上限");
   await next();
   assert.equal(row.textContent, "轉向提示與路線彎向不一致");
+  assert.equal(mode.textContent, "DEC · 模型協同");
+  assert.equal(get("speedConstraint").textContent, "第一跟車目標");
   await next();
   assert.equal(row.textContent, "");
   assert.equal(row.hidden, true);
   assert.equal(row.previousElementSibling.hidden, true);
+  assert.equal(mode.textContent, "");
+  assert.equal(mode.hidden, true);
+  assert.equal(mode.previousElementSibling.hidden, true);
 });
 
 async function page(responses, language = "en", handleApi = null, search = "") {

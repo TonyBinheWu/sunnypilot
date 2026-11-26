@@ -20,6 +20,7 @@
               "zh": "日常驾驶",
               "params": [
                 "SunnyAutoLongitudinal",
+                "DynamicExperimentalControl",
                 "AlwaysLateral",
                 "SunnyCruiseOnly",
                 "LaneChangeNeedTorque",
@@ -3324,6 +3325,26 @@
       "unit": 1,
       "control": "toggle",
       "risk": "high"
+    },
+    {
+      "group": "차량간격",
+      "name": "DynamicExperimentalControl",
+      "title": "동적 실험 모드 (DEC)",
+      "descr": "openpilot 종방향 제어에서 다음 주행부터 적용합니다. 켜면 도로 상황에 따라 ACC와 모델 협조 모드를 전환합니다. 끄면 모델, 차간거리, 설정 속도를 계속 비교합니다.",
+      "egroup": "FDIST",
+      "etitle": "Dynamic Experimental Control (DEC)",
+      "edescr": "Applies next drive with openpilot longitudinal control. Switch between ACC and blended planning according to the scene. When off, continuously compare model, following and cruise targets.",
+      "cgroup": "跟车距离",
+      "ctitle": "动态实验模式控制（DEC）",
+      "cdescr": "使用 openpilot 纵向控制时，下次行程生效。开启后依路况切换巡航跟车与模型协同。关闭时持续比较模型、跟车与巡航上限。",
+      "tgroup": "跟車距離",
+      "ttitle": "動態實驗模式控制（DEC）",
+      "tdescr": "使用 openpilot 縱向控制時，下次行程生效。開啟後依路況切換巡航跟車與模型協同。關閉時持續比較模型、跟車與巡航上限。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1,
+      "control": "toggle"
     },
     {
       "group": "차량간격",

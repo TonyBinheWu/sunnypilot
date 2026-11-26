@@ -22,12 +22,16 @@ def test_status_uses_fresh_active_planner_and_control_messages():
     return json.loads(asyncio.run(planner_status(request)).text)
 
   assert read() == {"profile": "upstream", "speed": "e2e", "steering": "model+limit"}
+  sm["longitudinalPlan"].longitudinalMode = "decAcc"
+  assert read()["longitudinalMode"] == "decAcc"
   sm["longitudinalPlan"].visionPlannerSetup = "stock"
   assert read()["setup"] == "stock"
   sm["carControl"].longActive = False
   assert read()["speed"] == "inactive"
+  assert "longitudinalMode" not in read()
   sm["longitudinalPlan"].speedConstraint = "stockLong"
   assert read()["speed"] == "stockLong"
+  assert "longitudinalMode" not in read()
   sm["longitudinalPlan"].speedConstraint = "e2e"
   sm["carState"] = SimpleNamespace(vCruise=110.)
   sm.valid["carState"] = True
@@ -37,6 +41,7 @@ def test_status_uses_fresh_active_planner_and_control_messages():
   assert "cruiseCeilingKph" not in read()
   sm.logMonoTime["carControl"] = 0
   assert "speed" not in read()
+  assert "longitudinalMode" not in read()
   stamp = time.monotonic_ns()
   sm["navRoute"] = SimpleNamespace(carrotRouteId=91, coordinates=[0, 1])
   sm["mapRenderState"] = SimpleNamespace(carrotRouteId=91, locationMonoTime=stamp, routeMatch="ambiguous")

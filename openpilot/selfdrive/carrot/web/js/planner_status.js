@@ -7,6 +7,8 @@
     carrot: 'CarrotPlanner', upstream: 'openpilot Autospeed', inactive: '控制未介入',
     mpc: '縱向 MPC', lead0: '第一跟車目標', lead1: '第二跟車目標', lead2: '第三跟車目標', cruise: '巡航設定',
     e2e: '視覺模型', openingLead: '前車拉遠，平順恢復巡航', model: '模型曲率', e2eCurve: '視覺模型與彎道減速',
+    blended: '持續比較模型、跟車與巡航', decAcc: 'DEC · 巡航跟車', decBlended: 'DEC · 模型協同',
+    e2eBoost: '視覺模型 · 回速補償', cruiseRamp: '平順恢復加速', accComfort: '巡航加速度上限',
     hkgCurve: 'HKG 彎道限速', forceDecel: '系統要求減速', softHold: '停車保持',
     signalPrepare: '號誌預備減速', signalHold: '號誌起步等待', modelFilter: '模型曲率平滑',
     matched: '目前定位符合導航路線', ambiguous: '附近有多段可能路線', offRoute: '車輛偏離路線',
@@ -34,6 +36,11 @@
     let profile = describe(state.profile);
     if (state.profile === 'sunny' && providers[state.setup]) profile += ' · ' + providers[state.setup];
     if (state.profile === 'visionE2e' && setup[state.setup]) profile = '純視覺自動適配 · ' + setup[state.setup];
+    const mode = document.getElementById('longitudinalMode');
+    if (mode) {
+      mode.textContent = state.longitudinalMode ? describe(state.longitudinalMode) : '';
+      mode.hidden = mode.previousElementSibling.hidden = !state.longitudinalMode;
+    }
     const ceiling = state.cruiseCeilingKph;
     document.getElementById('plannerCeiling').textContent = Number.isFinite(ceiling) ? ceiling + ' km/h' : '—';
     document.getElementById('visionSetSpeed').textContent = Number.isFinite(ceiling) ? ceiling : '—';
