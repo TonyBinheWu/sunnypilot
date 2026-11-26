@@ -998,3 +998,25 @@ Object.assign(translations.ja, {
   tripUpgrade:'対応版に本体を更新してから走行履歴と位置の共有を有効にしてください。', tripTrack:'走行軌跡（北が上）',
   hudActive:'運転支援作動中', hudInactive:'運転支援待機中',
 });
+
+Object.assign(translations['zh-TW'], {
+  section_profiles:'設定檔', sectionDesc_profiles:'備份設定，或將已儲存的偏好套用到這台車機。', profileHelp:'匯出車機的設定值。匯入時先核對差異，停車後才會逐項套用。',
+  apkDownload:'下載 ccNC 區網版 Android APK', profileExport:'匯出 JSON', profileImport:'匯入設定檔', profileApply:'套用差異', profileReview:'即將變更的項目', profileNoChanges:'沒有可立即套用的差異。',
+  profile_unsupported:'此車機不支援此值', profile_locked:'目前條件未開放', profileInvalid:'無法讀取這個設定檔，請選擇 FormosaLink 匯出的 JSON。',
+  profileOn:'開啟',profileOff:'關閉',profileWorking:'正在套用', profileApplied:'車機已確認', profileSkipped:'略過', profileBusy:'請等目前操作完成，再套用設定檔。',
+  profileStopped:'匯入已停止。請確認連線與停車狀態，重新匯入可繼續尚未套用的項目。'
+});
+Object.assign(translations.en, {
+  section_profiles:'Settings files', sectionDesc_profiles:'Back up preferences or restore them on this device.', profileHelp:'Export device preferences. Review changes before applying them one at a time while parked.',
+  apkDownload:'Download ccNC Android app for Wi-Fi', profileExport:'Export JSON', profileImport:'Import settings', profileApply:'Apply changes', profileReview:'Changes to apply', profileNoChanges:'No changes ready to apply.',
+  profile_unsupported:'Unsupported on this device',profile_locked:'Currently unavailable',profileInvalid:'Choose a valid FormosaLink settings JSON file.',
+  profileOn:'On',profileOff:'Off',profileWorking:'Applying',profileApplied:'Confirmed by device',profileSkipped:'Skipped',profileBusy:'Wait for the current operation before importing.',
+  profileStopped:'Import stopped. Check connection and parked status. Import again to continue remaining changes.'
+});
+Object.assign(translations.ja, {
+  section_profiles:'設定ファイル',sectionDesc_profiles:'設定を保存して、この端末に復元します。',profileHelp:'端末の設定を保存します。変更内容を確認し、停車中に一件ずつ適用します。',
+  apkDownload:'ccNC Wi-Fi 版 Android APK をダウンロード',profileExport:'JSON を書き出す',profileImport:'設定を読み込む',profileApply:'変更を適用',profileReview:'変更する項目',profileNoChanges:'現在適用できる変更はありません。',
+  profile_unsupported:'この端末では未対応',profile_locked:'現在使用できません',profileInvalid:'FormosaLink の設定 JSON を選択してください。',
+  profileOn:'オン',profileOff:'オフ',profileWorking:'適用中',profileApplied:'端末が確認済み',profileSkipped:'スキップ',profileBusy:'現在の操作が終わるまでお待ちください。',
+  profileStopped:'読み込みを停止しました。接続と停車状態を確認し、再読み込みで続行してください。'
+});

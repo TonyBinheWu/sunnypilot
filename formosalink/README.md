@@ -1,4 +1,6 @@
-# FormosaPilot / FormosaLink 0.8.0
+# FormosaPilot / FormosaLink 0.11.0
+
+Android 區網操作、手機配對與設定檔備份請見[使用說明](docs/CCNC_COMPANION.md)。
 
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 

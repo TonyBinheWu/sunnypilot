@@ -21,17 +21,25 @@ def lease_path():
   return Path(os.environ.get("FORMOSALINK_CAMERA_LEASE", "/dev/shm/formosalink-camera.json"))
 
 
-def camera_requested():
+def lan_lease_path():
+  return lease_path().with_name("formosalink-lan-camera.json")
+
+
+def valid_lease(path):
   try:
-    value = json.loads(lease_path().read_text())
+    value = json.loads(path.read_text())
     remaining = value["until"]-time.monotonic()
     return bool(0 < remaining <= 16 and value["cameras"] and set(value["cameras"]) <= set(CAMERAS))
   except (OSError, ValueError, KeyError, TypeError):
     return False
 
 
-def save_lease(cameras, seconds=15):
-  path = lease_path()
+def camera_requested():
+  return valid_lease(lease_path())
+
+
+def save_lease(cameras, seconds=15, *, path=None):
+  path = path or lease_path()
   if not cameras:
     path.unlink(missing_ok=True)
     return

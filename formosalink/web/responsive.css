@@ -1,0 +1,106 @@
+/* Device console. Layout thresholds use the reader's actual root font size. */
+:root {
+  --shell-bg:#f4f6f1; --surface:#fff; --ink:#152b28; --secondary:#445f5b;
+  --stroke:#cddad3; --brand:#075c50; --wash:#def0e7; --rail:#112f2c; --rail-ink:#f1faf5;
+}
+html[data-theme=dark] {
+  --shell-bg:#101c1b; --surface:#1a2927; --ink:#edf5ef; --secondary:#aec4ba;
+  --stroke:#38504b; --brand:#87d5b7; --wash:#233e35; --rail:#0c201e;
+}
+body, html[data-theme] body.settings-open { background:var(--shell-bg); color:var(--ink); }
+[hidden]:not([hidden="until-found"]) {display:none !important;}
+html[data-theme] .settings-workspace {
+  background:var(--shell-bg); color:var(--ink); --line:var(--stroke); --text:var(--ink);
+  --muted:var(--secondary); --accent:var(--brand); grid-template-columns:minmax(14rem,17rem) minmax(0,1fr);
+  line-height:1.55;
+}
+.settings-workspace *, .dashboard-shell *, dialog * { min-inline-size:0; }
+.settings-workspace :is(h1,h2,p,dt,dd,label,button,summary,strong,small),
+.dashboard-shell :is(h1,h2,h3,p,button,dd),dialog { overflow-wrap:anywhere; }
+html[data-theme] .workspace-sidebar { background:var(--rail);color:var(--rail-ink);border:0;padding:.45rem; }
+html[data-theme] .workspace-brand { padding:1.15rem .85rem .8rem;min-height:0; }
+html[data-theme] .workspace-brand a { color:var(--rail-ink);font-size:1.28rem;letter-spacing:-.035em;white-space:normal; }
+.workspace-brand img { inline-size:2.25rem;height:auto; }
+.workspace-sidebar nav {padding:.45rem;overscroll-behavior:contain;}
+html[data-theme] .workspace-sidebar nav button, html[data-theme] .workspace-theme button,
+html[data-theme] .workspace-account summary,html[data-theme] #settings-menu-close { color:var(--rail-ink);background:transparent;white-space:normal;text-align:start; }
+html[data-theme] .workspace-sidebar nav button {padding:.52rem .7rem;min-height:44px;border-radius:.6rem;}
+html[data-theme] .workspace-sidebar nav button.active, html[data-theme] .workspace-sidebar nav button:hover {background:#285248;color:#fff;}
+.workspace-sidebar svg {flex:none;}
+html[data-theme] .workspace-account,.workspace-nav-label {color:#c5dcd0;}
+.workspace-account {flex-wrap:wrap;padding:.7rem;}
+html[data-theme] .workspace-topbar {background:var(--surface);height:auto;min-height:3.8rem;gap:.65rem;padding:.55rem clamp(12px,2.4vw,44px);flex-wrap:wrap;border-color:var(--stroke);}
+.workspace-topbar > * {max-inline-size:100%;}
+html[data-theme] .workspace-search {flex:1 1 12rem;width:auto;max-width:36rem;margin-inline:0 auto;background:var(--shell-bg);border-color:var(--stroke);}
+html[data-theme] .workspace-search input {width:100%;color:var(--ink);font:inherit;}
+html[data-theme] .workspace-topbar :is(button,summary) {color:var(--ink);white-space:normal;min-height:44px;height:auto;}
+html[data-theme] .workspace-connection {background:var(--wash);color:var(--brand);border-color:var(--stroke);white-space:normal;}
+.workspace-topbar details > div,.workspace-account details > div {max-inline-size:min(90vw,26rem);overflow:auto;max-block-size:60dvh;}
+.workspace-content {inline-size:min(100%,74rem);max-width:none;margin-inline:auto;padding:clamp(16px,3vw,48px);}
+html[data-theme] .workspace-page-heading {padding:0 0 1.1rem;border-bottom:1px solid var(--stroke);margin-bottom:1.05rem;}
+html[data-theme] .workspace-page-heading h1 {color:var(--ink);font-size:2.05rem;line-height:1.12;letter-spacing:-.045em;margin:0;}
+html[data-theme] .workspace-page-heading>p {color:var(--secondary);margin:.4rem 0 0;}
+html[data-theme] .workspace-card,html[data-theme] :is(.login-panel,.device-card,dialog) {
+  background:var(--surface);color:var(--ink);border:1px solid var(--stroke);border-radius:1rem;
+  padding:clamp(12px,2.5vw,32px);box-shadow:0 5px 18px #122d2508;
+}
+html[data-theme] .workspace-card h2,html[data-theme] .settings-workspace .setting-label strong,
+html[data-theme] .settings-workspace .device-details dd {color:var(--ink);}
+html[data-theme] :is(.workspace-banner,.health-card-heading,.page-heading,.dialog-heading) {flex-wrap:wrap;gap:.6rem;height:auto;}
+html[data-theme] .workspace-banner.is-ready {background:var(--wash);border-color:var(--stroke);color:var(--brand);}
+html[data-theme] :is(.workspace-save,.profile-actions button,.login-panel .primary) {background:var(--brand);color:var(--surface);border-color:transparent;white-space:normal;}
+html[data-theme] .settings-workspace .setting-row { grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); }
+.settings-workspace .setting-editor,.settings-workspace .setting-controls {min-width:0;max-width:100%;flex-wrap:wrap;}
+.settings-workspace .setting-row :is(input,select,button) {max-inline-size:100%;height:auto;min-height:44px;}
+.settings-workspace .setting-label strong,.workspace-muted,.setting-sync,.workspace-account summary {white-space:normal;}
+.settings-workspace .setting-stepper {max-width:100%;display:flex;}
+.settings-workspace .setting-stepper input {min-width:2ch;flex:1 1 3ch;}
+.profile-actions,.text-size-actions {display:flex;flex-wrap:wrap;gap:.6rem;}
+.profile-diff,.settings-workspace .device-details {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:.45rem 1rem;}
+.profile-diff dt {font-weight:650;} .profile-diff dd {margin:0;}
+.profile-diff {grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);}
+.profile-message {color:var(--brand);font-weight:600;}
+.apk-download {display:inline-block;margin-block:.6rem;padding:.6rem .1rem;color:var(--brand);font-weight:650;overflow-wrap:anywhere;}
+html[data-theme] dialog {max-height:86dvh;max-width:min(calc(100vw - 22px),32rem);overflow:auto;}
+html[data-theme] .login-screen {align-content:center;min-height:60dvh;}
+html[data-theme] .login-panel {border-top:.28rem solid var(--brand);max-width:min(100%,34rem);}
+html[data-theme] .topbar {background:var(--surface);color:var(--ink);height:auto;flex-wrap:wrap;gap:.55rem;}
+html[data-theme] .topbar :is(a,button,summary) {color:var(--ink);white-space:normal;}
+.header-actions,.public-nav {flex-wrap:wrap;min-width:0;}
+html[data-theme] :is(.device-grid,.metrics-grid,.health-grid) {grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));}
+:focus-visible {outline:3px solid #e39837;outline-offset:2px;}
+html[data-compact] .settings-workspace {display:block;}
+html[data-compact] .workspace-sidebar {
+  position:fixed;inset:0 auto 0 0;height:100dvh;max-height:100dvh;width:min(90vw,18rem);z-index:22;
+  transform:translateX(-110%);visibility:hidden;overflow:auto;padding-bottom:max(.4rem,env(safe-area-inset-bottom));
+}
+html[data-compact] .menu-open .workspace-sidebar {transform:none;visibility:visible;}
+html[data-compact] #settings-menu,html[data-compact] #settings-menu-close {display:inline-flex;align-items:center;justify-content:center;}
+html[data-compact] .menu-open .workspace-scrim {display:block;position:fixed;inset:0;z-index:21;background:#071b17a8;}
+html[data-compact] .workspace-sidebar nav {min-height:3rem;flex:1 1 auto;}
+html[data-compact] .workspace-content {padding:clamp(10px,3.5vw,24px);}
+html[data-compact] .workspace-topbar {position:relative;display:flex;flex-wrap:wrap;justify-content:flex-start;padding:.45rem min(3vw,20px);}
+html[data-compact] .workspace-search {order:8;flex:1 0 100%;max-width:none;}
+html[data-compact] .workspace-search kbd {display:none;}
+html[data-compact] .workspace-main,html[data-compact] .dashboard-main {margin:0;}
+html[data-compact] .dashboard-shell {display:block;}
+html[data-compact] .dashboard-sidebar {display:flex;flex-direction:row;flex-wrap:wrap;height:auto;width:auto;}
+html[data-compact] :is(.workspace-banner,.page-heading,.setting-row) {align-items:flex-start;}
+html[data-compact] .settings-workspace .setting-row {display:flex;flex-direction:column;gap:.65rem;}
+html[data-compact] .settings-workspace :is(.setting-controls,.setting-label,.setting-editor){justify-content:flex-start;width:100%;}
+html[data-compact] .workspace-connection {margin-inline-start:0;}
+html[data-narrow] :is(.workspace-topbar,.topbar) {position:static;}
+html[data-narrow] .workspace-page-heading h1 {font-size:1.6rem;}
+html[data-narrow] .profile-diff,html[data-narrow] .settings-workspace .device-details {grid-template-columns:minmax(0,1fr);}
+html[data-narrow] :is(.workspace-brand,.workspace-account,.workspace-theme){padding:.25rem;}
+html[data-narrow] .workspace-connection {font-size:.7rem;}
+html[data-narrow] .device-details dd {margin-inline:0;}
+html[data-compact] #settings-device-label {max-width:none;white-space:normal;text-overflow:clip;overflow-wrap:anywhere;}
+html[data-tight] .workspace-topbar {display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,auto);align-items:center;gap:.25rem .3rem;}
+html[data-tight] .workspace-topbar > :is(.workspace-search,#settings-device-picker) {grid-column:1 / -1;width:100%;margin:0;}
+html[data-tight] .workspace-topbar .workspace-connection {grid-row:1;grid-column:3;justify-self:end;font-size:.65rem;}
+html[data-tight] .workspace-topbar [data-text-size] {grid-row:1;grid-column:2;justify-self:start;padding:.1rem .2rem;}
+html[data-tight] #settings-device-picker summary {justify-content:flex-start;line-height:1.25;}
+html[data-tight] .workspace-search {order:initial;grid-row:3;}
+html[data-tight] .workspace-topbar #settings-menu {grid-row:1;grid-column:1;}
+html[data-narrow] .sidebar-bottom,html[data-narrow] .workspace-search kbd {display:none;}

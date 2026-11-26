@@ -27,8 +27,8 @@ def formosalink_enabled(started: bool, params: Params, CP: car.CarParams) -> boo
 
 
 def formosalink_cameras(started: bool, params: Params, CP: car.CarParams) -> bool:
-  from openpilot.sunnypilot.formosalink.cameras import camera_requested
-  return params.get_bool("FormosaLinkEnabled") and camera_requested()
+  from openpilot.sunnypilot.formosalink.cameras import camera_requested, lan_lease_path, valid_lease
+  return (params.get_bool("FormosaLinkEnabled") and camera_requested()) or (valid_lease(lan_lease_path()) and bool(params.get("FormosaLanAccess")))
 
 
 def iscar(started: bool, params: Params, CP: car.CarParams) -> bool:
@@ -175,6 +175,7 @@ procs = [
 
   # Optional FormosaPilot companion; telemetry only, independent of sunnylink.
   PythonProcess("formosalink", "openpilot.sunnypilot.formosalink.agent", formosalink_enabled),
+  PythonProcess("formosalan", "openpilot.sunnypilot.formosalink.lan", lambda started, params, CP: bool(params.get("FormosaLanAccess"))),
 
   # sunnylink <3
   DaemonProcess("manage_sunnylinkd", "openpilot.sunnypilot.sunnylink.athena.manage_sunnylinkd", "SunnylinkdPid"),

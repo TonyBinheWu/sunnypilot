@@ -1,11 +1,12 @@
-import {mediaViewer} from './media-view.js?v=0.10.0';
+import {mediaViewer} from './media-view.js?v=0.11.0';
 import {isModelSlot,modelPicker,modelStatus} from './model-picker.js?v=0.10.0';
 import {parseCoordinates} from './navigation-input.js?v=0.6.0';
 import {deviceHealth} from './health-ui.js?v=0.6.0';
 import {SettingsEdits,pendingEdit,controlValue,sameValue,sameSettingValue} from './settings-edits.js?v=0.9.2';
 import {matchingVehicles,vehiclePicker} from './vehicle-picker.js';
+import {profileView} from './settings-profile.js?v=0.11.0';
 // Full-page, owner-scoped device workspace. Only device receipts confirm writes.
-export const sections=['home','live','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer'];
+export const sections=['home','live','device','toggles','models','steering','cruise','visuals','display','navigation','vehicle','software','developer','profiles'];
 export function category(entry){const group=entry.group?.en?.toLowerCase();return sections.includes(group)?group:'device';}
 export function settingBlockReason(state,entry){
   const snapshot=state?.snapshot;
@@ -27,13 +28,14 @@ export function filterEntries(catalog,section,query=''){
 const paths={home:'m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z',devices:'M8 2h8v20H8z M11 18h2',device:'m4 8 2-4h12l2 4v10H4Z M4 11h16 M8 15h1m6 0h1',toggles:'M8 7h8a5 5 0 0 1 0 10H8A5 5 0 0 1 8 7Z M8 10v4',models:'M5 8h14v12H5Z M9 8V5h6v3 M9 12v4m6-4v4 M10 2h4',steering:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z M4 9h16 M12 10v11 M8 7h8',cruise:'M3 7h12a3 3 0 1 0-3-3 M3 12h16a3 3 0 1 1-3 3 M3 17h6',visuals:'M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 1-4 2 2 0 0 1 1-4h2a3 3 0 0 0 3-3c0-4-4-7-9-7Z M7 9h.01M11 6h.01M16 7h.01M6 14h.01',display:'M3 3h18v14H3Z M12 17v4 M8 21h8',maps:'m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z M9 3v16 M15 5v16',vehicle:'m5 8 2-4h10l2 4 2 3v7H3v-7Z M3 11h18 M6 18v3m12-3v3 M6 14h2m8 0h2',software:'m12 2 9 5v10l-9 5-9-5V7Z M3 7l9 5 9-5 M12 12v10 M7 4l10 6',developer:'m14 6 4 4 3-3a6 6 0 0 1-8 8l-7 7-4-4 7-7a6 6 0 0 1 8-8Z',search:'M16 10a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z m-2 4 7 7',switch:'M3 7h17l-4-4 M21 17H4l4 4',pair:'M12 4v16 M4 12h16',menu:'M4 6h16 M4 12h16 M4 18h16',retry:'M20 7v6h-6 M20 12a8 8 0 1 0-2 6',close:'m5 5 14 14 M19 5 5 19'};
 function icon(name){const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),path=document.createElementNS(ns,'path');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.6');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');path.setAttribute('d',paths[name==='navigation'?'maps':name]||paths.device);svg.append(path);return svg;}
 
-export function deviceSettings({api,t,language,element:el,date,notify,getDevices,getAccount,onPair}) {
+export function deviceSettings({api,t,language,element:el,date,notify,getDevices,getAccount,onPair,localFrame}) {
   const workspace=document.getElementById('settings-workspace'),$=id=>document.getElementById(id),body=$('settings-body');
   let selected=null,state=null,timer=null,epoch=0,writing=false,section='device',query='',previousFocus=null;
   let vehicleQuery = null;
   const modelFilters = new Map();
+  let profile = {};
   const edits=new SettingsEdits();
-  const viewer=mediaViewer({api,t,el});
+  const viewer=mediaViewer({api,t,el,localFrame});
   const label=value=>value?.[language()]||value?.en||'';
   const setRoute=()=>{const hash=routeFor(selected.id,section);if(location.hash!==hash)history.pushState(null,'',hash);};
   function close(updateRoute=true){viewer.close();selected=null;state=null;epoch++;clearTimeout(timer);body.replaceChildren();workspace.hidden=true;document.body.classList.remove('settings-open');workspace.classList.remove('menu-open');if(updateRoute&&parseRoute(location.hash))history.pushState(null,'','#dashboard');if(previousFocus?.isConnected)previousFocus.focus();}
@@ -42,7 +44,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
   function nav(){
     const links=$('settings-nav');links.replaceChildren();
     links.append(button('section_home','home',()=>selectSection('home')),button('myDevices','devices',()=>close()),el('div',t('deviceSettingsNav'),'workspace-nav-label'));
-    for(const item of sections.filter(x=>x!=='home')){const b=button('section_'+item,item,()=>selectSection(item));b.dataset.section=item;b.classList.toggle('active',section===item);b.setAttribute('aria-current',section===item?'page':'false');links.append(b);}
+    for(const item of sections.filter(x=>x!=='home')){const b=button('section_'+item,item==='profiles'?'devices':item,()=>selectSection(item));b.dataset.section=item;b.classList.toggle('active',section===item);b.setAttribute('aria-current',section===item?'page':'false');links.append(b);}
     links.append(el('div',undefined,'workspace-nav-divider'),button('pairDevice','pair',onPair));
     const account=getAccount();$('settings-account').textContent=account?.github_login||account?.name||'FormosaLink';
     $('settings-device-label').textContent=selected.name;
@@ -102,8 +104,20 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     $('settings-banner-text').textContent=t(status);$('settings-last-seen').textContent=`${t('received')} ${date(state?.received_at)}`;$('settings-retry-label').textContent=t('refresh');
     if(!query&&section==='home'){$('settings-banner-text').textContent=t('fleetHealthNote');$('settings-banner').classList.remove('is-ready');deviceHealth(body,{devices:getDevices(),t,el,date,onOpen:d=>open(d,'device')});return;}
     if(!snapshot){body.append(el('div',t('settingsWaiting'),'workspace-card workspace-empty'));return;}
+    if (!query && section==='profiles') {
+      const deviceId=selected.id, current=profile;
+      current.redraw=draw;
+      profileView(body,{getState:()=>state,api,path:'/devices/'+encodeURIComponent(deviceId)+'/settings',
+        active:()=>selected?.id===deviceId && profile===current && section==='profiles',model:current,t,el,label});
+      return;
+    }
     if(!query&&['device','home'].includes(section))info(snapshot);
     if(!query&&section==='models')modelStatus(body,snapshot,{el,t});
+    if (!query && section==='software' && !window.CcncDevice) {
+      const link=el('a',t('apkDownload'),'apk-download');
+      link.href='/downloads/FormosaLink-ccNC-1.0.0.apk'; link.download='';
+      body.append(link);
+    }
     if(!query&&section==='navigation'){navigation(snapshot);return;}
     if (!query && section === 'vehicle' && !snapshot.catalog?.some(item => item.key === 'CarPlatformBundle' && item.vehicles)) {
       body.append(el('p',t('vehicleUpgrade'),'workspace-card'));
@@ -205,6 +219,7 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     if(selected)timer=setTimeout(poll,3000);
   }
   function open(device,next='device',updateRoute=true){
+    profile={};
     modelFilters.clear();
     edits.scope(getAccount()?.id);
     vehicleQuery = null;

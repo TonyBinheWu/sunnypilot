@@ -135,3 +135,4 @@ test('navigation accepts explicit coordinates without opening external URLs',()=
  assert.deepEqual(parseCoordinates('https://www.openstreetmap.org/#map=16/25.03/121.56'),{latitude:25.03,longitude:121.56});
  assert.equal(parseCoordinates('https://maps.app.goo.gl/short'),null);assert.equal(parseCoordinates('91,181'),null);assert.equal(parseCoordinates('javascript:alert(1)'),null);
 });
+import './settings-profile.test.mjs';

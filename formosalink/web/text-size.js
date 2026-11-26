@@ -17,10 +17,19 @@ export function initTextSize() {
   const smaller = document.getElementById('text-smaller'), larger = document.getElementById('text-larger');
   let storage;
   try { storage = localStorage; } catch {}
+  function reflow() {
+    const root = document.documentElement;
+    const columns = root.clientWidth / parseFloat(getComputedStyle(root).fontSize);
+    root.toggleAttribute('data-compact', columns < 58);
+    root.toggleAttribute('data-narrow', columns < 25);
+    root.toggleAttribute('data-tight', columns < 19);
+  }
+  window.addEventListener('resize', reflow);
 
   function apply(value, save = false) {
     value = Math.max(minimum, Math.min(maximum, value));
     document.documentElement.style.fontSize = value + '%';
+    reflow();
     slider.value = String(value);
     output.value = value + '%';
     slider.setAttribute('aria-valuetext', output.value);

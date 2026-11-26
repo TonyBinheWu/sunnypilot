@@ -17,20 +17,22 @@ from openpilot.system.ui.lib.application import gui_app
 
 
 class FakeParams:
+  lan_keys = {"FormosaLanAccess", "FormosaLanPairRequest", "FormosaLanPairInfo"}
+
   def __init__(self):
     self.enabled = False
     self.trip_params = {}
 
   def get(self, key):
-    assert key in ("FormosaLinkTripConsent", "FormosaLinkTripJournal")
+    assert key in self.lan_keys or key in ("FormosaLinkTripConsent", "FormosaLinkTripJournal")
     return self.trip_params.get(key)
 
   def put(self, key, value, block=False):
-    assert key == "FormosaLinkTripConsent"
+    assert key in self.lan_keys or key == "FormosaLinkTripConsent"
     self.trip_params[key] = value
 
   def remove(self, key):
-    assert key in ("FormosaLinkTripConsent", "FormosaLinkTripJournal")
+    assert key in self.lan_keys or key in ("FormosaLinkTripConsent", "FormosaLinkTripJournal")
     self.trip_params.pop(key, None)
 
   def get_bool(self, key):
@@ -67,6 +69,31 @@ class TestQRScreen(unittest.TestCase):
     dialog._update_state()
     self.addCleanup(dialog.hide_event)
     return result["url"]
+
+  def test_local_phone_pairing_is_available_without_cloud_enrollment(self):
+    for code in ("zh-CHT", "en", "ja"):
+      with self.subTest(language=code), patch.object(ui.multilang, "_language", code):
+        dialog = ui.LanPairingDialog()
+        self.offroad.return_value = False
+        dialog._new()
+        self.assertIsNone(dialog.request)
+        self.offroad.return_value = True
+        dialog._new()
+        grant = self.params.get("FormosaLanAccess")
+        first = dialog.request
+        dialog._new()
+        self.assertNotEqual(dialog.request, first)
+        self.assertEqual(self.params.get("FormosaLanAccess"), grant)
+        self.params.put("FormosaLanPairInfo", {"request":dialog.request, "until":time.monotonic()+110,
+                        "address":"192.168.1.20", "pin":"a"*64, "code":"123456"})
+        rl.begin_drawing()
+        try:
+          dialog.render(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
+        finally:
+          rl.end_drawing()
+        dialog._disable()
+        self.assertIsNone(self.params.get("FormosaLanAccess"))
+        self.assertFalse(self.params.get_bool("FormosaLinkEnabled"))
 
   def test_native_qr_decodes_on_all_three_languages(self):
     output = Path(os.environ.get("FORMOSALINK_QR_OUTPUT","build/formosalink-qr-native"))

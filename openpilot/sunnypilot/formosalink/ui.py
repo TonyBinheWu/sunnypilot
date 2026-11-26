@@ -122,6 +122,9 @@ class FormosaPairingDialog(Widget):
     self._trips = Button(lambda: text("trips_on" if ui_state.params.get("FormosaLinkTripConsent") else "trips_off"), self._toggle_trips,
                          font_size=34 if big else 11, text_padding=padding)
     self._trips.set_enabled(lambda: ui_state.is_offroad() and (self.directory / "identity.json").is_file())
+    self._lan = Button(lambda: {"zh-TW":"區網 APK","en":"LAN app","ja":"LAN アプリ"}[language()],
+                       lambda: gui_app.push_widget(LanPairingDialog()), font_size=24 if big else 13, text_padding=padding)
+    self._lan.set_enabled(ui_state.is_offroad)
 
   def show_event(self):
     super().show_event()
@@ -283,6 +286,8 @@ class FormosaPairingDialog(Widget):
       button._label.set_font_size(24*scale)
       button.render(rl.Rectangle(rect.x+margin, bottom-index*(button_height+gap), left_width, button_height))
     if self._qr_texture is None:
+      self._lan._label.set_font_size(21*scale)
+      self._lan.render(rl.Rectangle(rect.x+2*margin+left_width, bottom-button_height-gap, rect.width-3*margin-left_width, button_height))
       self._trips._label.set_font_size(21*scale)
       self._trips.render(rl.Rectangle(rect.x+2*margin+left_width, bottom, rect.width-3*margin-left_width, button_height))
     self._last_qr_rect = None
@@ -294,5 +299,102 @@ class FormosaPairingDialog(Widget):
       target = rl.Rectangle(rect.x+rect.width-margin-qr_size,
                             rect.y+48*scale+(rect.height-60*scale-qr_size)/2, qr_size, qr_size)
       self._last_qr_rect = target
-      rl.draw_texture_pro(self._qr_texture, rl.Rectangle(0,0,self._qr_texture.width,self._qr_texture.height), target, rl.Vector2(0,0), 0, rl.WHITE)
+      rl.draw_texture_pro(self._qr_texture, rl.Rectangle(0, 0, self._qr_texture.width, self._qr_texture.height), target, rl.Vector2(0, 0), 0, rl.WHITE)
+    return -1
+
+
+class LanPairingDialog(Widget):
+  def __init__(self):
+    super().__init__()
+    self.request = None
+    self._words = {
+      "zh-TW": (
+        "區網 APK",
+        "手機與車機連同一個 Wi-Fi。在 APK 輸入以下資料。",
+        "產生配對碼",
+        "停用並解除配對",
+        "車機位址",
+        "憑證碼",
+        "配對碼",
+        "正在等候區網連線或產生配對碼。",
+        "啟用後可在區網操作停車設定與查看車機。",
+        "區網已啟用。要新增手機，請按「產生配對碼」。",
+        "手機已配對。可再產生配對碼加入另一支手機。",
+        "配對碼已逾時，請重新產生。",
+      ),
+      "en": (
+        "LAN app",
+        "Join the same Wi-Fi and enter these details in the app.",
+        "Pair a phone",
+        "Disable & unpair",
+        "Device IP",
+        "Certificate",
+        "Pairing code",
+        "Waiting for LAN or pairing code.",
+        "Enable local access to device status and parked settings.",
+        "LAN access is on. Choose Pair a phone to add a device.",
+        "Phone paired. Choose Pair a phone to add another.",
+        "Code expired. Choose Pair a phone for a new code.",
+      ),
+      "ja": (
+        "LAN アプリ",
+        "同じ Wi-Fi に接続し、アプリに入力します。",
+        "ペアリング",
+        "停止・登録解除",
+        "端末 IP",
+        "証明書",
+        "登録コード",
+        "LAN 接続またはコードを待っています。",
+        "LAN で端末の状態と停車時の設定を利用できます。",
+        "LAN は有効です。スマートフォンを追加できます。",
+        "登録済みです。続けて別のスマートフォンを追加できます。",
+        "コードの有効期限が切れました。再発行してください。",
+      ),
+    }[language()]
+    self._close = Button(lambda: text("close"), gui_app.pop_widget, font_size=18)
+    self._pair = Button(self._words[2], self._new, font_size=18, button_style=ButtonStyle.PRIMARY)
+    self._off = Button(self._words[3], self._disable, font_size=18)
+    self._pair.set_enabled(ui_state.is_offroad)
+    self._off.set_enabled(lambda: ui_state.is_offroad() and bool(ui_state.params.get("FormosaLanAccess")))
+
+  def _new(self):
+    from uuid import uuid4
+
+    if ui_state.is_offroad():
+      if not ui_state.params.get("FormosaLanAccess"):
+        ui_state.params.put("FormosaLanAccess", str(uuid4()), block=True)
+      self.request = str(uuid4())
+      ui_state.params.put("FormosaLanPairRequest", self.request, block=True)
+
+  def _disable(self):
+    if ui_state.is_offroad():
+      for key in ("FormosaLanAccess", "FormosaLanPairRequest", "FormosaLanPairInfo"):
+        ui_state.params.remove(key)
+      self.request = None
+
+  def _render(self, rect):
+    scale = min(rect.width / 536, rect.height / 240)
+    x, y = rect.x + 12 * scale, rect.y + 8 * scale
+    font = gui_app.font(FontWeight.NORMAL)
+    words = self._words
+    rl.draw_rectangle_rec(rect, rl.Color(15, 32, 32, 255))
+    rl.draw_text_ex(gui_app.font(FontWeight.BOLD), words[0], rl.Vector2(x, y), 24 * scale, 0, rl.WHITE)
+    enabled = bool(ui_state.params.get("FormosaLanAccess"))
+    info = ui_state.params.get("FormosaLanPairInfo") or {}
+    lines = [words[9] if enabled else words[8]]
+    if ui_state.is_offroad() and enabled and self.request:
+      if not ui_state.params.get("FormosaLanPairRequest"):
+        lines = [words[10]]
+      elif info.get("request") != self.request:
+        lines = [words[7]]
+      elif info.get("until", 0) <= time.monotonic():
+        lines = [words[11]]
+      else:
+        pin = info["pin"][:12].upper()
+        lines = [words[1], f'{words[4]}  {info["address"]}', f'{words[5]}  {pin[:4]}-{pin[4:8]}-{pin[8:]}', f'{words[6]}  {info["code"]}']
+    for i, line in enumerate(lines):
+      rl.draw_text_ex(font, line, rl.Vector2(x, y + (39 + i * 28) * scale), (14 if i == 0 else 21) * scale, 0, rl.WHITE)
+    for i, b in enumerate((self._pair, self._off, self._close)):
+      b._label.set_font_size(16 * scale)
+      b.render(rl.Rectangle(x + i * (rect.width - 24 * scale) / 3, rect.y + rect.height - 51 * scale, (rect.width - 30 * scale) / 3, 42 * scale))
     return -1

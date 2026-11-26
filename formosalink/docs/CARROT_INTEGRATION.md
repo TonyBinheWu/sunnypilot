@@ -1,6 +1,12 @@
-# FormosaPilot 0.9.0 instrument display / 儀表顯示 / メーター表示
+# FormosaPilot instrument display / 儀表顯示 / メーター表示
 
-## 繁體中文
+## Sorento HEV 2025 與 ccNC
+
+0.11.0 為已辨識為 `KIA_SORENTO_2024` 的相機 SCC 車型增加儀表呈現。開啟下方的儀表開關並重啟後，車道位置、彎曲、變換方向、巡航背景、導航圖示和車距會隨可用狀態更新。前車和第二輛車使用有效的原廠資料或近期雷達／模型觀測，側後方圖示使用原廠物件距離。原廠警示、音效和交通標誌繼續由車輛提供。
+
+車主提供的行程包含 `0x161`、`0x162`、`0x1E0` 和 `0x200`。其中可核對前車和距離。側後方車位在該段全程為空，`0x1EA` 亦未出現。不同儀表版本與配備仍需各自實車核對。
+
+## 各支援車型共用的 0.9.0 基礎功能
 
 第一階段參考 [Carrot carrot-wip](https://github.com/ajouatom/openpilot/tree/bc8eb4c2e1aac3023c99f3914e657ed9638beab7)，以獨立、預設關閉的儀表顯示功能整合，保留兩分支既有轉向、煞車、駕駛監控與接線選擇。
 
@@ -39,6 +45,8 @@ Host tests and native UI profiles are simulated checks, not physical vehicle val
 
 ## English
 
+With 0.11.0, the camera-SCC `KIA_SORENTO_2024` platform also displays observed objects, lane geometry, cruise, navigation and following distance. Its `0x200` gap display uses the three TauGapSet bits. The following describes the original 0.9.0 features common to supported platforms.
+
 This first integration adds an optional OEM cluster overlay inspired by the pinned Carrot revision above. It is off by default and requires a restart. Existing steering, braking, driver monitoring and harness selection remain in place.
 
 Eligibility requires Hyundai/Kia camera-SCC CAN-FD without LKA steering, with actual 32-byte `0x161` and `0x162` reception on the camera bus during fingerprinting. Vehicle names alone do not prove compatibility. Enable in Vehicle → Hyundai while parked, then restart. Remote writes also require existing settings permission and device readback; a saved setting is distinct from the active mode after restart.
@@ -48,6 +56,8 @@ Eligibility requires Hyundai/Kia camera-SCC CAN-FD without LKA steering, with ac
 This does not add the rewired ADAS control topology or new driving abilities, and cannot supply geometry absent from OEM traffic. Physical cluster behavior, flashing and road performance remain unverified. Both main code and the pinned Panda/opendbc dependencies must be updated together. Tests cover CRC, forwarding, protected bits, expiry, counter wrap, relay faults, existing controls and C3X/C4 native settings; both H7 firmware configurations are built. IIS continues using the device-owned catalog and readback protocol without changing accounts or pairings.
 
 ## 日本語
+
+0.11.0 のカメラ SCC 仕様 `KIA_SORENTO_2024` は、観測した車両、車線形状、クルーズ、ナビ、車間表示にも対応します。`0x200` の車間表示には TauGapSet の 3 ビットを使います。以下は対応車種共通の 0.9.0 時点の説明です。
 
 上記の Carrot リビジョンを参考に、純正メーター表示を補助する独立した機能を追加します。初期値はオフで、変更後は再起動が必要です。既存の操舵、制動、ドライバー監視、ハーネス設定を維持します。
 

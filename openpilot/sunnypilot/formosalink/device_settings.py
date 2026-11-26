@@ -154,6 +154,15 @@ class SettingsProvider:
 
 
 class NativeSettingsProvider(SettingsProvider):
+  def apply(self, command, device_id, deadline):
+    import fcntl
+    from pathlib import Path
+    # Cloud and LAN have separate workers. Recheck the revision after acquiring the same device lock.
+    lock = Path(self.params.get_param_path()).parent / ".formosalink-writes"
+    with lock.open("a") as handle:
+      fcntl.flock(handle, fcntl.LOCK_EX)
+      return super().apply(command, device_id, deadline)
+
   def __init__(self, device_id=None):
     from openpilot.cereal import messaging
     from openpilot.common.params import Params

@@ -12,7 +12,7 @@ export function recordingMime(recorder){
 export function mediaCursor(frame){return frame.stream+':'+frame.sequence;}
 export function validPreview(frame){return frame&&['demo','road-preview','wide-road','driver'].includes(frame.source)&&Number.isSafeInteger(frame.sequence)&&frame.sequence>=0&&Number.isInteger(frame.width)&&frame.width>0&&frame.width<=1280&&Number.isInteger(frame.height)&&frame.height>0&&frame.height<=720&&typeof frame.jpeg==='string'&&frame.jpeg.length<=240004;}
 
-export function mediaViewer({api,t,el}){
+export function mediaViewer({api,t,el,localFrame}){
  let drives=null;
  const translated=(tag,key,cls)=>{const node=el(tag,t(key),cls);node.dataset.mediaI18n=key;return node;};
  function say(key){if(status){status.dataset.mediaI18n=key;status.textContent=t(key);}}
@@ -51,6 +51,17 @@ export function mediaViewer({api,t,el}){
      if(urls.length>3){URL.revokeObjectURL(urls.shift());ownedClips.firstElementChild?.remove();}
      const item=el('article'),player=el('video');player.controls=true;player.src=url;player.playsInline=true;
      const download=translated('a','mediaDownload','workspace-save');download.href=url;download.download='FormosaLink-'+new Date().toISOString().replace(/[:.]/g,'-')+(recorder.mimeType.includes('mp4')?'.mp4':'.webm');item.append(player,download);ownedClips.append(item);
+     if(window.CcncFiles)download.addEventListener('click',async event=>{
+       event.preventDefault();
+       if(!window.CcncFiles.beginClip(recorder.mimeType.includes('mp4'),blob.size))return;
+       try{
+         for(let offset=0;offset<blob.size;offset+=32768){
+           const bytes=new Uint8Array(await blob.slice(offset,offset+32768).arrayBuffer());
+           if(!window.CcncFiles.appendClip(btoa(String.fromCharCode(...bytes))))throw Error();
+         }
+         window.CcncFiles.saveClip();
+       }catch{window.CcncFiles.cancelClip();say('mediaUnsupported');}
+     });
     };
     recorder.onerror=()=>{say('mediaUnsupported');stopRecording();};
     recorder.start(1000);recButton.dataset.mediaI18n='mediaFinish';recButton.textContent=t('mediaFinish');recordTimer=setTimeout(stopRecording,clipLimit*1000);
@@ -65,9 +76,29 @@ export function mediaViewer({api,t,el}){
   drives=driveView(root,{el,t});
   freshness=setInterval(()=>{if(active&&last&&performance.now()-last>3000){last=0;clearPicture();stopRecording();say('stale');}},250);
  }
+ async function drawFrame(frame,mine,localRequestTime){
+   const stale=localRequestTime===undefined ? Math.abs(Date.now()/1000-frame.sampled_at)>3 : performance.now()-localRequestTime>2000;
+   if(!validPreview(frame)||frame.source!==camera||stale)throw Error();
+   const received=performance.now(),image=new Image();image.src='data:image/jpeg;base64,'+frame.jpeg;
+   await image.decode();if(generation!==mine||!active)return;
+   if(performance.now()-received>1000)throw Error();
+   if(canvas.width!==frame.width||canvas.height!==frame.height){canvas.width=frame.width;canvas.height=frame.height;}
+   ctx.drawImage(image,0,0);ctx.fillStyle='#000a';ctx.fillRect(0,0,canvas.width,48);ctx.font='20px sans-serif';ctx.fillStyle='#fff';
+   ctx.fillText(t(frame.source==='wide-road'?'mediaWide':'mediaDriver')+' · LIVE',14,30);
+   const hud=frame.source==='wide-road'?hudText(frame.hud,t):'';
+   if(hud){ctx.textAlign='right';ctx.fillText(hud,canvas.width-12,30,canvas.width*.54);ctx.textAlign='left';}
+   last=performance.now();cursor=mediaCursor(frame);say('mediaLive');
+ }
  function poll(mine){
   if(!active||generation!==mine||!root?.isConnected)return;
   if(document.hidden){stopRecording();clearPicture();say('mediaPaused');timer=setTimeout(()=>poll(mine),1000);return;}
+  if(localFrame){
+    const requested=performance.now();
+    localFrame(camera).then(frame=>drawFrame(frame,mine,requested)).catch(()=>{
+      if(active&&generation===mine){clearPicture();say('mediaWaiting');}
+    }).finally(()=>{if(active&&generation===mine)timer=setTimeout(()=>poll(mine),180);});
+    return;
+  }
   const ws=new WebSocket(streamUrl(location.origin,device,camera));socket=ws;
   ws.onmessage=async event=>{
    if(generation!==mine||!active)return;
@@ -76,16 +107,7 @@ export function mediaViewer({api,t,el}){
     const data=JSON.parse(event.data);
     if(data.type==='waiting'){if(!last)say('mediaWaiting');}
     else if(data.type==='frame'){
-     const frame=data.frame;if(!validPreview(frame)||frame.source!==camera||Math.abs(Date.now()/1000-frame.sampled_at)>3)throw Error();
-     const received=performance.now(),image=new Image();image.src='data:image/jpeg;base64,'+frame.jpeg;
-     await image.decode();if(generation!==mine||!active)return;
-     if(performance.now()-received>1000)throw Error();
-     if(canvas.width!==frame.width||canvas.height!==frame.height){canvas.width=frame.width;canvas.height=frame.height;}
-     ctx.drawImage(image,0,0);ctx.fillStyle='#000a';ctx.fillRect(0,0,canvas.width,48);ctx.font='20px sans-serif';ctx.fillStyle='#fff';
-     ctx.fillText(t(frame.source==='wide-road'?'mediaWide':'mediaDriver')+' · LIVE',14,30);
-     const hud=frame.source==='wide-road'?hudText(frame.hud,t):'';
-     if(hud){ctx.textAlign='right';ctx.fillText(hud,canvas.width-12,30,canvas.width*.54);ctx.textAlign='left';}
-     last=performance.now();cursor=mediaCursor(frame);say('mediaLive');
+     await drawFrame(data.frame,mine);
     }else throw Error();
     if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'ack'}));
    }catch{clearPicture();stopRecording();ws.close();}
