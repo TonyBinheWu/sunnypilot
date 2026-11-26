@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 from pathlib import Path
@@ -6,6 +7,7 @@ from openpilot.common.hardware import AGNOS
 from openpilot.common.hardware.usb import CHESTNUT_USB_PRODUCT, USB_DEVICES_PATH, is_chestnut_usb_id
 
 MODELS_DIR = Path(__file__).resolve().parent / 'models'
+CHESTNUT_CAMERA_SIZES = ((1344, 760), (1928, 1208))
 
 
 def modeld_pkl_path(chestnut: bool):
@@ -38,7 +40,25 @@ def wait_for_chestnut(timeout: float = 10.) -> None:
       raise TimeoutError("chestnut did not enumerate")
     time.sleep(0.1)
 
+def _has_pickle(path: Path, *, out_of_band: bool = False) -> bool:
+  try:
+    with path.open('rb') as f:
+      if out_of_band:
+        # The stock model starts with an opcode length, followed by the pickle and weights.
+        length = int.from_bytes(f.read(8), 'little')
+        if not 0 < length < os.fstat(f.fileno()).st_size - 8:
+          return False
+      if f.read(1) != b'\x80':
+        return False
+      if out_of_band:
+        f.seek(8 + length - 1)
+      else:
+        f.seek(-1, os.SEEK_END)
+      return f.read(1) == b'.'  # STOP opcode
+  except OSError:
+    return False
+
+
 def chestnut_compiled() -> bool:
-  path = modeld_pkl_path(chestnut=True)
-  return path.is_file() and all(
-    (MODELS_DIR / f'big_driving_warp_{size}_tinygrad.pkl').is_file() for size in ('1344x760', '1928x1208'))
+  return _has_pickle(modeld_pkl_path(chestnut=True), out_of_band=True) and all(
+    _has_pickle(MODELS_DIR / f'big_driving_warp_{w}x{h}_tinygrad.pkl') for w, h in CHESTNUT_CAMERA_SIZES)

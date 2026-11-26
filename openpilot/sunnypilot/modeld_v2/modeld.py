@@ -45,6 +45,7 @@ from openpilot.sunnypilot.modeld_v2.camera_offset_helper import CameraOffsetHelp
 from openpilot.sunnypilot.livedelay.helpers import get_lat_delay
 from openpilot.sunnypilot.modeld_v2.modeld_base import ModelStateBase
 from openpilot.sunnypilot.modeld_v2.helpers import load_model
+from openpilot.sunnypilot.modeld_v2.artifacts import find_driving_pkl as _find_driving_pkl
 from openpilot.sunnypilot.modeld_v2.frame_fusion import fused_with_warp
 from openpilot.sunnypilot.modeld_v2.model_adapters import get_model_adapter
 from openpilot.sunnypilot.models.helpers import get_active_bundle
@@ -52,25 +53,6 @@ from openpilot.sunnypilot.selfdrive.controls.lib.relc import RoadEdgeLaneChangeC
 
 PROCESS_NAME = "openpilot.selfdrive.modeld.modeld_tinygrad"
 BIG_MODEL_TIMEOUT = 60
-
-
-def _pkl_exists(path):
-  return os.path.exists(path)
-
-
-def _find_driving_pkl(bundle):
-  if (override := os.environ.get('COMBINED_MODEL_PKL')) and _pkl_exists(override):
-    return override
-  if bundle is None or not bundle.models:
-    return None
-  from openpilot.common.hardware.hw import Paths
-  model_root = Paths.model_root()
-
-  pkl_name = bundle.models[0].artifact.fileName
-  pkl_path = os.path.join(model_root, pkl_name)
-  if _pkl_exists(pkl_path):
-    return pkl_path
-  return None
 
 
 def _load_qcom_fallback(cam_w: int, cam_h: int, big_model_ready: bool):

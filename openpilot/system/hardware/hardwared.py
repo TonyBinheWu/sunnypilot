@@ -245,7 +245,7 @@ def hardware_thread(end_event, hw_queue) -> None:
 
   fan_controller = FanController(int(1./DT_HW))
   chestnut = Chestnut()
-  chestnut_status = ChestnutStatus()
+  chestnut_status = ChestnutStatus(params)
   branch = get_short_branch()
 
   while not end_event.is_set():

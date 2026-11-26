@@ -20,7 +20,8 @@ import os
 import pickle
 import struct
 
-MAGIC = b"SPTGPLN1"
+from openpilot.sunnypilot.modeld_v2.artifacts import MAGIC
+
 ALIGNMENT = 256
 METADATA_TYPES = ("slice", "tuple", "list", "dict", "set", "frozenset", "complex")
 RUNTIME_ENVIRONMENT = ("GMMU", "AMD_AQL", "AMD_DISABLE_SDMA", "GRAPH_ONE_KERNEL")
