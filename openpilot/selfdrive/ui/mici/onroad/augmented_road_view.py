@@ -13,6 +13,7 @@ from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH
 from openpilot.selfdrive.ui.mici.onroad.alert_renderer import AlertRenderer
 from openpilot.selfdrive.ui.onroad.driver_preview import DriverPreview
 from openpilot.selfdrive.ui.mici.onroad.hud_renderer import HudRenderer
+from openpilot.selfdrive.ui.alpamayo_caption import AlpamayoCaption
 from openpilot.selfdrive.ui.mici.onroad.model_renderer import ModelRenderer
 from openpilot.selfdrive.ui.mici.onroad.vision_renderer import VisionRenderer
 from openpilot.selfdrive.ui.mici.onroad.confidence_ball import ConfidenceBall
@@ -171,6 +172,7 @@ class AugmentedRoadView(CameraView):
     from openpilot.selfdrive.ui.onroad.reality_scene import RealityScene
     self._reality = RealityScene(device_layout("c4"), font=gui_app.font(FontWeight.DISPLAY), translate=tr)
     self._hud_renderer = HudRenderer()
+    self._alpamayo_caption = AlpamayoCaption()
     self._overlay_state = OverlayState()
     self._model_renderer._overlay_state = self._overlay_state
     self._hud_renderer._overlay_state = self._overlay_state
@@ -311,6 +313,8 @@ class AugmentedRoadView(CameraView):
     _t = time.monotonic()
     self._hud_renderer.render(self._content_rect)
     self._vision_renderer.render(self._content_rect)
+    if ui_state.started and alert_to_render is None and not self._suppress_camera_for_cluster:
+      self._alpamayo_caption.draw(self._content_rect, ui_state)
     self._selector.draw(self._content_rect, view if view >= 0 else (0 if reality else 1),
                         ui_state.started and not self._suppress_camera_for_cluster and alert_to_render is None)
     hud_ms = (time.monotonic() - _t) * 1000.0
@@ -369,6 +373,7 @@ class AugmentedRoadView(CameraView):
     timing.finish()
 
   def close(self):
+    self._alpamayo_caption.close()
     self._model_renderer._overlay.close()
     self._hud_renderer._overlay.close()
     if preview := getattr(self, '_driver_state_renderer', None):

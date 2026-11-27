@@ -10,6 +10,7 @@ from openpilot.selfdrive.ui.onroad.alert_renderer import AlertRenderer
 from openpilot.selfdrive.ui.widgets.body_eyes import horizontal_swipe, is_tap
 from openpilot.selfdrive.ui.onroad.driver_preview import DriverPreview
 from openpilot.selfdrive.ui.onroad.hud_renderer import HudRenderer
+from openpilot.selfdrive.ui.alpamayo_caption import AlpamayoCaption
 from openpilot.selfdrive.ui.onroad.model_renderer import ModelRenderer
 from openpilot.selfdrive.ui.render_diagnostics import RenderDiagnostics
 from openpilot.selfdrive.ui.device_design import DrivingViewSelector
@@ -61,6 +62,7 @@ class AugmentedRoadView(CameraView):
     from openpilot.selfdrive.ui.onroad.reality_scene import RealityScene
     self._reality = RealityScene(large_display_layout(), font=gui_app.font(), translate=tr)
     self._hud_renderer = HudRenderer()
+    self._alpamayo_caption = AlpamayoCaption()
     self._overlay_state = OverlayState()
     self.model_renderer._overlay_state = self._overlay_state
     self._hud_renderer._overlay_state = self._overlay_state
@@ -155,6 +157,8 @@ class AugmentedRoadView(CameraView):
     _t = time.monotonic()
     timing.call('hud', self._hud_renderer.render, self._content_rect)  # includes plot when enabled
     alert = self.alert_renderer.get_alert(ui_state.sm)
+    if ui_state.started and alert is None and not self._suppress_camera_for_cluster:
+      self._alpamayo_caption.draw(self._content_rect, ui_state)
     self._selector.draw(self._content_rect, view if view >= 0 else (0 if reality else 1),
                         ui_state.started and not self._suppress_camera_for_cluster and alert is None)
     hud_ms = (time.monotonic() - _t) * 1000.0
@@ -195,6 +199,7 @@ class AugmentedRoadView(CameraView):
     self._press_start = None if self._selector.begin(pos) or self._hud_renderer.user_interacting() else pos
 
   def close(self):
+    self._alpamayo_caption.close()
     self.model_renderer._overlay.close()
     self._hud_renderer._overlay.close()
     if preview := getattr(self, 'driver_state_renderer', None):

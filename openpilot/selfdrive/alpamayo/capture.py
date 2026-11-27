@@ -40,9 +40,10 @@ def state_value(kind, msg):
   if kind == 'deviceMotion':
     value = [[float(getattr(msg.orientationNED, a)) for a in 'xyz'], [float(getattr(msg.velocityDevice, a)) for a in 'xyz']]
     return value, bool(msg.inputsOK and msg.sensorsOK and msg.posenetOK and msg.orientationNED.valid and msg.velocityDevice.valid and msg.timestamp > 0)
-  if kind == 'navInstruction':
+  if kind == 'navInstructionCarrot':
     value = {k: str(getattr(msg, k)) for k in ('maneuverPrimaryText', 'maneuverSecondaryText', 'maneuverType', 'maneuverModifier')}
-    return dict(value, maneuverDistance=float(msg.maneuverDistance)), True
+    return dict(value, maneuverDistance=float(msg.maneuverDistance), carrotSource=str(msg.carrotSource),
+                carrotSourceMonoTime=int(msg.carrotSourceMonoTime)), True
   if kind == 'modelV2':
     value = msg.to_dict()
     if value.get('alpamayoQueryMonoTime'):

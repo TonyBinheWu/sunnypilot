@@ -9,7 +9,7 @@ import sys
 import numpy as np
 
 from openpilot.selfdrive.alpamayo.capture import SERVICES, state_value
-from openpilot.selfdrive.alpamayo.frontend import (CAMERAS, FRAME_SLACK_NS, FRAME_TOLERANCE_NS, OFFSETS_NS, Frame,
+from openpilot.selfdrive.alpamayo.frontend import (CAMERAS, FRAME_SLACK_NS, FRAME_TOLERANCE_NS, OFFSETS_NS, STATE_LIMITS, Frame,
                                                   Preparer, Selection, State, Unavailable)
 from openpilot.selfdrive.alpamayo import install
 
@@ -23,7 +23,7 @@ def recorded_windows(directory, config, needed):
   from openpilot.selfdrive.alpamayo.history import measured_history
   import zstandard
   from openpilot.cereal import log
-  sources = {SERVICES.get(k, k): k for k in ('deviceMotion', 'extrinsicsCalibration', 'vehicleParameters', 'carState', 'carParams', 'navInstruction')}
+  sources = {SERVICES.get(k, k): k for k in STATE_LIMITS}
   states = {k: [] for k in sources.values()}
   cameras = {k: {} for k in CAMERAS}
   indexes = {k: {} for k in CAMERAS}

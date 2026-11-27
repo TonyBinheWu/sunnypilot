@@ -1063,6 +1063,7 @@ struct ModelDataV2 {
   visionCompute @28 :Compute;
   alpamayoQueryMonoTime @29 :UInt64;  # Nonzero only on frames using this planner's action.
   localAction @30 :Action;  # Independent small-model action when running lat2v.
+  alpamayoReasoning @31 :Text;  # Caption for this accepted action only.
   enum CameraInputs { unknown @0; road @1; wide @2; roadWide @3; }
   enum Compute { unknown @0; nonUsb @1; usbGpu @2; }
 
@@ -2556,6 +2557,15 @@ struct NavInstruction {
 
   allManeuvers @12 :List(Maneuver);
 
+  # Set by the Carrot HUD instruction publisher. Older recordings leave both fields at their defaults.
+  carrotSource @13 :CarrotSource;
+  carrotSourceMonoTime @14 :UInt64;  # original navd event or external guidance distance update
+  enum CarrotSource {
+    unknown @0;
+    native @1;
+    external @2;
+  }
+
   struct Lane {
     directions @0 :List(Direction);
     active @1 :Bool;
@@ -2787,7 +2797,7 @@ struct Event {
     carrotNavi @108 :Custom.CarrotNaviState;
     carrotNaviMedia @109 :Custom.CarrotNaviMedia;
     alpamayoPlan @110 :Custom.AlpamayoPlan;
-    customReserved4 @111 :Custom.CustomReserved4;
+    alpamayoSubtitle @111 :Custom.AlpamayoSubtitle;
     customReserved5 @112 :Custom.CustomReserved5;
     customReserved6 @113 :Custom.CustomReserved6;
     customReserved7 @114 :Custom.CustomReserved7;

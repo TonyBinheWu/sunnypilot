@@ -216,6 +216,7 @@ class CarrotServ:
     self.carrot_navi_traffic_active = False
     self.carrot_navi_control = None
 
+    self.last_external_instruction_ns = 0
     self.debugText = ""
 
     # 默认语言，稍后在 update_params 中从 Params 读取覆盖，
@@ -1564,15 +1565,28 @@ class CarrotServ:
     msg.carrotMan.leftSec = int(self.carrot_left_sec)
     pm.send('carrotMan', msg)
 
+    self.send_nav_instruction(sm, pm)
+
+  def send_nav_instruction(self, sm, pm):
     inst = messaging.new_message('navInstructionCarrot', valid=False)
+    external = self._external_navigation_connected()
+    if external:
+      self.last_external_instruction_ns = inst.logMonoTime
     if self.active_carrot > 1 and self.active_kisa_count <= 0:
       inst.valid = True
 
       instruction = inst.navInstructionCarrot
+      instruction.carrotSource = 'external'
+      instruction.carrotSourceMonoTime = inst.logMonoTime
       instruction.distanceRemaining = self.nGoPosDist
       instruction.timeRemaining = self.nGoPosTime
       instruction.speedLimit = self.nRoadLimitSpeed / 3.6 if self.nRoadLimitSpeed > 0 else 0
       instruction.maneuverDistance = float(self.nTBTDist)
+      # The HUD counts down between external packets using traveled distance.
+      # Codes without a tracked HUD maneuver retain the provider's distance.
+      if self.nTBTDist > 0 and self.navType not in ('invalid', '', -1):
+        remaining = min(self.nTBTDist, self.xDistToTurn)
+        instruction.maneuverDistance = float(int(remaining) if remaining >= 0 else remaining)
       instruction.maneuverSecondaryText = self.szNearDirName
       if self.szFarDirName and len(self.szFarDirName):
         instruction.maneuverSecondaryText += "[{}]".format(self.szFarDirName)
@@ -1604,9 +1618,13 @@ class CarrotServ:
           maneuvers.append(maneuver)
 
       instruction.allManeuvers = maneuvers
-    elif not self._external_navigation_connected() and sm.alive['navInstruction'] and sm.valid['navInstruction']:
-      inst.valid = True
-      inst.navInstructionCarrot = sm['navInstruction']
+    elif not external and sm.alive['navInstruction'] and sm.valid['navInstruction']:
+      stamp = sm.logMonoTime['navInstruction']
+      if self.last_external_instruction_ns < stamp <= inst.logMonoTime and inst.logMonoTime - stamp < 2_000_000_000:
+        inst.valid = True
+        inst.navInstructionCarrot = sm['navInstruction']
+        inst.navInstructionCarrot.carrotSource = 'native'
+        inst.navInstructionCarrot.carrotSourceMonoTime = stamp
 
     pm.send('navInstructionCarrot', inst)
 

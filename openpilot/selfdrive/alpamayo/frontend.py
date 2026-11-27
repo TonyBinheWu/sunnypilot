@@ -45,7 +45,7 @@ STATE_SAMPLE_OFFSETS_NS = np.arange(-38, 1, dtype=np.int64)*50_000_000  # car st
 STATE_HISTORY_NS = 2_100_000_000  # the oldest state time any consumer reads: the -1.9 s history sample minus its tolerance
 STATE_LIMITS = {'extrinsicsCalibration': 1_000_000_000, 'carState': 150_000_000,
                 'vehicleParameters': 1_000_000_000, 'carParams': 120_000_000_000,
-                'deviceMotion': 100_000_000, 'navInstruction': 2_000_000_000}
+                'deviceMotion': 100_000_000, 'navInstructionCarrot': 2_000_000_000}
 
 
 class Unavailable(ValueError):
@@ -251,15 +251,19 @@ def route_navigation(rows, query):
   if rows and not rows[-1].valid:
     return '', {'source': 'unavailable', 'log_mono_time': rows[-1].stamp}
   try:
-    value, stamp = required(rows, query, STATE_LIMITS['navInstruction'])
+    value, stamp = required(rows, query, STATE_LIMITS['navInstructionCarrot'])
   except Unavailable:
     return '', {'source': 'unavailable', 'log_mono_time': None}
   secondary = ' '.join(value.get('maneuverSecondaryText', '').split())
   kind, modifier = value.get('maneuverType', ''), value.get('maneuverModifier', '')
   distance = value['maneuverDistance']
-  if (not np.isfinite(distance) or distance < 0 or
+  # Legacy HUD messages have no provider timestamp. A fresh relay of old native guidance must not extend its life.
+  source_stamp = value.get('carrotSourceMonoTime', 0) if value.get('carrotSource', 'unknown') != 'unknown' else stamp
+  if (not 0 < source_stamp <= stamp or query - source_stamp >= STATE_LIMITS['navInstructionCarrot'] or
+      not np.isfinite(distance) or distance < 0 or
       any(not row.valid or any(row.value.get(key) != value.get(key) for key in
-          ('routeRevision', 'maneuverPrimaryText', 'maneuverSecondaryText', 'maneuverType', 'maneuverModifier'))
+          ('carrotSource', 'routeRevision', 'maneuverPrimaryText', 'maneuverSecondaryText', 'maneuverType', 'maneuverModifier'))
+          or not np.isfinite(row.value['maneuverDistance']) or row.value['maneuverDistance'] < 0
           for row in rows if row.stamp > stamp)):
     return '', {'source': 'unavailable', 'log_mono_time': stamp}
   direction = {'left': 'left', 'right': 'right', 'slight left': 'slightly left', 'slight right': 'slightly right',
@@ -284,7 +288,7 @@ def route_navigation(rows, query):
   if not text:
     return '', {'source': 'unavailable', 'log_mono_time': stamp}
   text = f'{text} in {round(distance)}m'
-  return text, {'source': 'navInstruction', 'log_mono_time': stamp, 'instruction': value, 'model_instruction': text}
+  return text, {'source': 'navInstructionCarrot', 'log_mono_time': stamp, 'instruction': value, 'model_instruction': text}
 
 
 class Preparer:
@@ -407,7 +411,7 @@ class Preparer:
                                             'values': copy.deepcopy(parameters),
                                             'applied_stiffness_factor': max(parameters['stiffnessFactor'], .1),
                                             'applied_steer_ratio': max(parameters['steerRatio'], .1)})
-    nav, nav_meta = navigation(states['navInstruction'], query, self.default_navigation, self.navigation_within_m)
+    nav, nav_meta = navigation(states.get('navInstructionCarrot', ()), query, self.default_navigation, self.navigation_within_m)
     return cal, cal_ns, xyz, rot, history, nav, nav_meta
 
   def older(self, opening, query):

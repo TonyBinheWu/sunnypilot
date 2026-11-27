@@ -236,7 +236,11 @@ struct AlpamayoPlan @0xda96579883444c35 {
   reasoning @6 :Text;
 }
 
-struct CustomReserved4 @0x80ae746ee2596b11 {
+struct AlpamayoSubtitle @0x80ae746ee2596b11 {
+  queryMonoTime @0 :UInt64;
+  original @1 :Text;
+  simplified @2 :Text;
+  traditional @3 :Text;
 }
 
 struct CustomReserved5 @0xa5cd762cd951a455 {

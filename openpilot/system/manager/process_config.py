@@ -35,6 +35,13 @@ def lat2v_enabled(started: bool, params: Params, CP: car.CarParams) -> bool:
   return HARDWARE.get_device_type() == 'mici' and bridge is not None and bridge.speed_mbps >= 5000 and ready()
 
 
+def lat2v_chinese_subtitles(started: bool, params: Params, CP: car.CarParams) -> bool:
+  if not started or params.get("LanguageSetting") not in ("main_zh-CHT", "zh-CHT", "main_zh-CHS", "zh-CHS"):
+    return False
+  from openpilot.selfdrive.alpamayo.install import subtitles_ready
+  return lat2v_enabled(started, params, CP) and subtitles_ready()
+
+
 def car_state_observer(started: bool, params: Params, CP: car.CarParams) -> bool:
   # A forced-offroad session still needs current Park/speed data to unlock the
   # UI and to cancel the mode when the driver selects another gear.
@@ -176,6 +183,7 @@ procs = [
   PythonProcess("timed", "openpilot.system.timed", always_run, enabled=not PC),
 
   PythonProcess("alpamayod", "openpilot.selfdrive.alpamayo.shadowd", lat2v_enabled, enabled=TICI, spawn=True),
+  PythonProcess("alpamayosubtitled", "openpilot.selfdrive.alpamayo.subtitles", lat2v_chinese_subtitles, enabled=TICI, spawn=True),
   PythonProcess("modeld", "openpilot.selfdrive.modeld.modeld", only_onroad),
   PythonProcess("signalcolord", "openpilot.selfdrive.modeld.signal_color_shadow", signal_color_observer, spawn=True),
   PythonProcess("jetlinkd", "openpilot.selfdrive.modeld.jetlink.daemon", always_run, enabled=TICI, restart_if_crash=True),

@@ -77,6 +77,13 @@ def prepare_selection(offroad, progress=None):
     install.ROOT.mkdir(parents=True, exist_ok=True)
     install.status('prepare', 'Preparing pinned lat2v runtime and model')
     guarded([sys.executable, '-m', 'openpilot.selfdrive.alpamayo.install'], parked, progress)
+  if not install.subtitles_ready():
+    try:
+      guarded([sys.executable, '-m', 'openpilot.selfdrive.alpamayo.install', '--subtitles'], parked, progress)
+    except ValueError:
+      if not parked():
+        raise
+      install.status('subtitles', 'Chinese subtitles unavailable; using original model text')
   bridge = get_usbgpu_device()
   if bridge is None or bridge.speed_mbps < 5000:
     raise ValueError('lat2v downloaded; connect a powered 5 Gbps Chestnut to verify')
@@ -130,6 +137,7 @@ class CarrotPlan:
     if self.state.update(now*1e-9, candidate is not None, engaged):
       m.action = candidate
       m.alpamayoQueryMonoTime = self.selector.query
+      m.alpamayoReasoning = self.selector.reasoning
     if self.state.state != old:
       active = self.state.state == BigModelState.ACTIVE
       self.params.put_bool('UsbGpuActive', active)

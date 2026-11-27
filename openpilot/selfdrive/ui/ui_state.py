@@ -40,6 +40,7 @@ class UIState:
     self.sm = messaging.SubMaster(
       [
         "modelV2",
+        "alpamayoSubtitle",
         "controlsState",
         "onroadEvents",
         "liveCalibration",

@@ -4,6 +4,17 @@
   "repository": "karelnagel/alpamayo2-edge-lat2v",
   "revision": "34c8c070b1557c8df79ebf3688ed0ff840f339a0",
   "prefix": "openpilot/",
+  "subtitles": {
+    "repository": "jiangzhuo9357/opus-mt-en-zh-ct2",
+    "revision": "06fb49e2f6cb0485043ae703a4c2afddd4e700d7",
+    "files": {
+      "config.json": {"bytes": 223, "sha256": "8f6496adfc930cbfecbe8281112197705c488fab47d34b4829b06d7f478909af"},
+      "model.bin": {"bytes": 79567635, "sha256": "327584c20bb83c7e89d595bcfa30b6ef3771c10816f707e892c4bbb1f808a8fb"},
+      "shared_vocabulary.json": {"bytes": 1303887, "sha256": "37314a6abb25ed8f8497498aeeb31fcea98de892bf00ff7c2e8c966b26fe0b82"},
+      "source.spm": {"bytes": 806435, "sha256": "5775ddc9e3ff2fae91554da56468ad35ff56edaba870fea74447bc7234bfdaa8"},
+      "target.spm": {"bytes": 804600, "sha256": "81dc94efa84e4025ef38d25d5d07429fe41e3eb29d44003f1db6fe98487b0052"}
+    }
+  },
   "files": {
     "checkpoint/LICENSE": {
       "sha256": "2ab44b68365473c112f5092211a38f231cb23e50de68b75a13369adbd76a74df",

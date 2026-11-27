@@ -31,7 +31,7 @@ def identity():
   """Invalidate previously accepted packages when the Carrot adapter or pinned release changes."""
   digest = hashlib.sha256()
   repo = HERE.parents[2]
-  files = [RELEASE, HERE/'extras.txt', HERE/'selected/assets/manifest.json',
+  files = [RELEASE, HERE/'extras.txt', HERE/'subtitle-wheels.txt', HERE/'selected/assets/manifest.json',
            repo/'openpilot/selfdrive/modeld/modeld.py', repo/'openpilot/cereal/log.capnp',
            repo/'openpilot/cereal/custom.capnp', repo/'opendbc_repo/opendbc/car/vehicle_model.py']
   for path in sorted(files + list(HERE.glob('*.py')) + list((HERE/'selected').rglob('*.py'))):
@@ -191,13 +191,41 @@ def install_runtime(root):
   uv_cache = root/'uv-cache'
   # The device puts wrapper scripts for system-wide installs before the real tools: /usr/comma/shims/uv remounts the root
   # filesystem and runs a system uv. Use the real uv, and keep openpilot's own environment settings away from it.
+  install_dependencies(root/'nvidia', dict(uv_environment(), UV_CACHE_DIR=str(uv_cache), UV_LINK_MODE='copy'))
+  shutil.rmtree(uv_cache, ignore_errors=True)
+  write(marker, wanted+'\n')
+
+
+def uv_environment():
   environment = {k: v for k, v in os.environ.items() if k not in ('VIRTUAL_ENV', 'PYTHONPATH') and not k.startswith('UV_')}
   environment['PATH'] = os.pathsep.join(d for d in os.environ.get('PATH', os.defpath).split(os.pathsep) if not d.endswith('/shims'))
   if shutil.which('uv', path=environment['PATH']) is None:
     raise RuntimeError('uv is not installed')
-  install_dependencies(root/'nvidia', dict(environment, UV_CACHE_DIR=str(uv_cache), UV_LINK_MODE='copy'))
-  shutil.rmtree(uv_cache, ignore_errors=True)
-  write(marker, wanted+'\n')
+  return environment
+
+
+@functools.lru_cache(maxsize=1)
+def subtitle_version():
+  pin = json.loads(RELEASE.read_bytes())['subtitles']
+  return hashlib.sha256(json.dumps(pin, sort_keys=True).encode() + (HERE/'subtitle-wheels.txt').read_bytes()).hexdigest()
+
+
+def subtitles_ready():
+  try:
+    return (ROOT/'subtitles/installed').read_text().strip() == subtitle_version()
+  except OSError:
+    return False
+
+
+def install_subtitles(pin):
+  root = ROOT/'subtitles'
+  for name, artifact in pin['files'].items():
+    url = f'https://huggingface.co/{pin["repository"]}/resolve/{pin["revision"]}/{name}'
+    download(url, root/name, artifact['sha256'], artifact['bytes'], 'Chinese subtitles: '+name)
+  packages = HERE/'subtitle-wheels.txt'
+  subprocess.run(['uv', 'pip', 'install', '--python', sys.executable, '--target', str(root/'packages'), '--no-deps',
+                  '--only-binary=:all:', '--require-hashes', '-r', str(packages)], env=uv_environment(), check=True)
+  write(root/'installed', subtitle_version()+'\n')
 
 
 def install_model(release, model):
@@ -310,4 +338,8 @@ def install():
 
 
 if __name__ == '__main__':
-  install()
+  if sys.argv[1:] == ['--subtitles']:
+    status('subtitles', 'Preparing offline Chinese subtitles')
+    install_subtitles(json.loads(RELEASE.read_bytes())['subtitles'])
+  else:
+    install()

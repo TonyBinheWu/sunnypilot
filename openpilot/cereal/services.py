@@ -40,6 +40,7 @@ _services: dict[str, tuple] = {
   "controlsState": (True, 100., 10, QueueSize.MEDIUM),
   "selfdriveState": (True, 100., 10),
   "alpamayoPlan": (True, 5., 1),
+  "alpamayoSubtitle": (False, 0., 1),
   "pandaStates": (True, 10., 1),
   "peripheralState": (True, 2., 1),
   "radarState": (True, 20., 5),

@@ -1,0 +1,12 @@
+# CPython 3.12 Linux ARM64 and x86_64. Installed only in the subtitle worker's private path.
+ctranslate2==4.9.1 \
+    --hash=sha256:34a7b77c60929fd2b0c9bdec461ad40ce0a91ba5120503c6859f253c9a5fda29 \
+    --hash=sha256:18fe1f6a241265b1269ad087f613d7b0fc0d8aac44b3e6eeb36285339918e336
+sentencepiece==0.2.3 \
+    --hash=sha256:a6b735a8027b998c163e540fdde66ac0bb95fc471f6f4165c8df35fb45385116 \
+    --hash=sha256:cc3189b79c1ffda767f71b04238c27ac746f3b7abc263eab9a41c4cf46aee49e
+opencc-python-reimplemented==0.1.7 \
+    --hash=sha256:41b3b92943c7bed291f448e9c7fad4b577c8c2eae30fcfe5a74edf8818493aa6
+PyYAML==6.0.4 \
+    --hash=sha256:45e37dd647db9d67b757444c74060c064ace5fdaa08f42bf4fda3812275d423e \
+    --hash=sha256:93bfb2459195406a518e2f487a9bbf01df240175f31e06f5a252ac6734c7bbf0

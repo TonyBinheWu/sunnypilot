@@ -95,6 +95,7 @@ class PlanSelector:
     # farther ahead, so the lookahead grows to straight_lookahead_s as the plan's 3 s heading change falls below 0.05 rad.
     self.straight_lookahead_s = straight_lookahead_s
     self.query = self.ready = self.streak = 0
+    self.reasoning = ''
     self.curve = self.path = None
     self.odometry = deque()  # (ns, x, y, heading) of the vehicle; heading is the device yaw, left positive
     self.last_curvature = 0.
@@ -187,6 +188,7 @@ class PlanSelector:
     self.path = x, y, yaw
     self.streak = self.streak+1 if 0 < q-self.query <= CONSECUTIVE_GAP else 1
     self.query, self.ready = q, r
+    self.reasoning = str(plan.reasoning)[:512]
 
   def candidate_action(self, now, v_ego, lat_delay, long_delay, v_ego_stopping):
     """Time-align the GPU plan without consulting any other model's path or action."""
