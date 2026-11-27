@@ -116,7 +116,9 @@ class TestQRScreen(unittest.TestCase):
         menu = SettingsLayoutSP()
         shortcuts = [item for item in menu._scroller._items if getattr(item, "text", None) == ui.lan_label()]
         self.assertEqual(len(shortcuts), 1)
-        shortcuts[0]._click_callback()
+        callback = shortcuts[0]._click_callback
+        assert callback is not None
+        callback()
         self.assertIsInstance(push.call_args.args[0], ui.LanPairingDialog)
     dialog = ui.FormosaPairingDialog()
     self.pending(dialog)
