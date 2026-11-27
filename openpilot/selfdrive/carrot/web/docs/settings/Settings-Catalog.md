@@ -98,6 +98,7 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 
 ##### 조향감
 
+- [저속 근접 레이더 보조](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A0%80%EC%86%8D-%EA%B7%BC%EC%A0%91-%EB%A0%88%EC%9D%B4%EB%8D%94-%EB%B3%B4%EC%A1%B0) — `LowSpeedRadarGuard`
 - [현대·기아 4차종 조향·커브 보조](https://github.com/ajouatom/openpilot/wiki/KO-%ED%98%84%EB%8C%80%C2%B7%EA%B8%B0%EC%95%84-4%EC%B0%A8%EC%A2%85-%EC%A1%B0%ED%96%A5%C2%B7%EC%BB%A4%EB%B8%8C-%EB%B3%B4%EC%A1%B0) — `HkgPhase1Assist`
 - [SteerActuatorDelay(30)](https://github.com/ajouatom/openpilot/wiki/KO-SteerActuatorDelay%2830%29) — `SteerActuatorDelay`
 - [무게중심 비율](https://github.com/ajouatom/openpilot/wiki/KO-%EB%AC%B4%EA%B2%8C%EC%A4%91%EC%8B%AC-%EB%B9%84%EC%9C%A8) — `CenterToFrontRatio`
@@ -385,6 +386,7 @@ Per-setting pages generated from the current settings catalog.
 
 ##### Steering Feel
 
+- [Low-speed radar guard](https://github.com/ajouatom/openpilot/wiki/EN-Low-speed-radar-guard) — `LowSpeedRadarGuard`
 - [Hyundai Kia four-family steering and curve assist](https://github.com/ajouatom/openpilot/wiki/EN-Hyundai-Kia-four-family-steering-and-curve-assist) — `HkgPhase1Assist`
 - [SteerActuatorDelay(30)](https://github.com/ajouatom/openpilot/wiki/EN-SteerActuatorDelay%2830%29) — `SteerActuatorDelay`
 - [Center of gravity ratio](https://github.com/ajouatom/openpilot/wiki/EN-Center-of-gravity-ratio) — `CenterToFrontRatio`
@@ -672,6 +674,7 @@ Per-setting pages generated from the current settings catalog.
 
 ##### 转向手感
 
+- [低速近距雷达辅助](https://github.com/ajouatom/openpilot/wiki/ZH-%E4%BD%8E%E9%80%9F%E8%BF%91%E8%B7%9D%E9%9B%B7%E8%BE%BE%E8%BE%85%E5%8A%A9) — `LowSpeedRadarGuard`
 - [现代起亚四车系转向与弯道辅助](https://github.com/ajouatom/openpilot/wiki/ZH-%E7%8E%B0%E4%BB%A3%E8%B5%B7%E4%BA%9A%E5%9B%9B%E8%BD%A6%E7%B3%BB%E8%BD%AC%E5%90%91%E4%B8%8E%E5%BC%AF%E9%81%93%E8%BE%85%E5%8A%A9) — `HkgPhase1Assist`
 - [转向执行器延迟(30)](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%BD%AC%E5%90%91%E6%89%A7%E8%A1%8C%E5%99%A8%E5%BB%B6%E8%BF%9F%2830%29) — `SteerActuatorDelay`
 - [重心位置比例](https://github.com/ajouatom/openpilot/wiki/ZH-%E9%87%8D%E5%BF%83%E4%BD%8D%E7%BD%AE%E6%AF%94%E4%BE%8B) — `CenterToFrontRatio`
@@ -959,6 +962,7 @@ Per-setting pages generated from the current settings catalog.
 
 ##### 轉向手感
 
+- [低速近距雷達輔助](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%BD%8E%E9%80%9F%E8%BF%91%E8%B7%9D%E9%9B%B7%E9%81%94%E8%BC%94%E5%8A%A9) — `LowSpeedRadarGuard`
 - [現代起亞四車系轉向與彎道輔助](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E7%8F%BE%E4%BB%A3%E8%B5%B7%E4%BA%9E%E5%9B%9B%E8%BB%8A%E7%B3%BB%E8%BD%89%E5%90%91%E8%88%87%E5%BD%8E%E9%81%93%E8%BC%94%E5%8A%A9) — `HkgPhase1Assist`
 - [轉向執行器延遲(30)](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%BD%89%E5%90%91%E5%9F%B7%E8%A1%8C%E5%99%A8%E5%BB%B6%E9%81%B2%2830%29) — `SteerActuatorDelay`
 - [重心位置比例](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E9%87%8D%E5%BF%83%E4%BD%8D%E7%BD%AE%E6%AF%94%E4%BE%8B) — `CenterToFrontRatio`

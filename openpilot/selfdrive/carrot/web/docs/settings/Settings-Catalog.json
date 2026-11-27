@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "b411a3678abef5d13736f6d2491cf7ee0d73ee2a",
-  "contentHash": "8c76256d0fef619723f55a0b418c330e0985764ba72c30a7c383259969d1df30",
-  "generatedAt": "2026-11-27T04:38:47Z",
+  "catalogCommit": "4d37a7d4d62c5831099bd244caf9986fb76ff31a",
+  "contentHash": "93fad536e4aa1efdb6f343df65f3a35e5328ec8955a7720ac8d5ea7148f0dbff",
+  "generatedAt": "2026-11-27T14:30:00Z",
   "locales": [
     "ko",
     "en",
@@ -376,6 +376,10 @@
     "EN-Low-speed-demand-follow-and-response-records.md": {
       "bytes": 4900,
       "hash": "c894b0bda66bf7ca8902559cc541e968f399b3462cc964cda6a77bc86a9632ea"
+    },
+    "EN-Low-speed-radar-guard.md": {
+      "bytes": 1982,
+      "hash": "4cc1d6c7f274dce0a36ea947e2e5c6bbbb3060d2ad9911d7375c41fb6de40b98"
     },
     "EN-Low-speed-signaled-turns.md": {
       "bytes": 1231,
@@ -1109,6 +1113,10 @@
       "bytes": 1903,
       "hash": "98010b69e61dd9d2fbc9f2f47b201082a5939619975f340c58247746f20f193a"
     },
+    "KO-저속-근접-레이더-보조.md": {
+      "bytes": 2064,
+      "hash": "bc4ebedacb3a1348d275d2f752247646dd69ccc30585028fa512af2c2f42c8cd"
+    },
     "KO-저속-방향지시등-회전.md": {
       "bytes": 1246,
       "hash": "49ade38502d4501fab686986808c79ed95fed0a93696ddfcd0971589bae5e681"
@@ -1306,8 +1314,8 @@
       "hash": "cf252cd5e267e23e89b3ed9a3beb8339cca6e3f5708b9d9e9da208a15c8d423f"
     },
     "Settings-Catalog.md": {
-      "bytes": 106958,
-      "hash": "3e1dfb7917098844470d88deb65861f00be356ae97b06a29031e942fc3c35128"
+      "bytes": 107621,
+      "hash": "45f9d8923425627540a814f4171b738652b103751be841f335068f38216a83bc"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -1468,6 +1476,10 @@
     "ZH-TW-低速方向燈轉彎.md": {
       "bytes": 1223,
       "hash": "d84c247fac7bef146e75aa2bc7903bf56b0d61bdfc09b4eafcca81a3ccc1667e"
+    },
+    "ZH-TW-低速近距雷達輔助.md": {
+      "bytes": 1974,
+      "hash": "11a6550bd3951f40f243590eccb3e3cbe116eb3d55db4583d3f9cab2d1ea2ced"
     },
     "ZH-TW-低速需求跟隨與反應記錄.md": {
       "bytes": 4754,
@@ -2049,6 +2061,10 @@
       "bytes": 1211,
       "hash": "7ae9dfbb5db587e0e74b97b1e7cafa0034d32614ee6bad7fab2db4633eac59c3"
     },
+    "ZH-低速近距雷达辅助.md": {
+      "bytes": 1902,
+      "hash": "2fb14c6eee6180088b18602887e4b79df40a04f69edd73fd115952e611ce7cee"
+    },
     "ZH-低速需求跟随与反应记录.md": {
       "bytes": 4743,
       "hash": "f85a8d6963cab813ea23d5eaaa71af1c68c9f379c407aa41f0836c48ff675b7f"
@@ -2607,7 +2623,7 @@
     }
   },
   "review": {
-    "current": 26,
+    "current": 27,
     "needs_review": 136
   },
   "schemaVersion": 1,
@@ -5556,6 +5572,37 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "9c4b44838ae0dcff4397e38c706817d14778d81d616a5617a32fbc5b2d88e8ff"
+    },
+    "LowSpeedRadarGuard": {
+      "group": "STEER_FEEL",
+      "locales": {
+        "en": {
+          "anchor": "LowSpeedRadarGuard",
+          "factsHash": "20f0cd195d38b70e1bebecdc380dd0450e2bd69b49ffe718a3990ee25e272164",
+          "page": "EN-Low-speed-radar-guard.md",
+          "reviewStatus": "current"
+        },
+        "ko": {
+          "anchor": "LowSpeedRadarGuard",
+          "factsHash": "ce709578268a9bcccd3ac5cc176a64afb8de07d75c8390561b151ad922293665",
+          "page": "KO-저속-근접-레이더-보조.md",
+          "reviewStatus": "current"
+        },
+        "zh": {
+          "anchor": "LowSpeedRadarGuard",
+          "factsHash": "4233324b0966f0a82e9652be767ce96e1f03b1c379d93046d195b81c472bb659",
+          "page": "ZH-低速近距雷达辅助.md",
+          "reviewStatus": "current"
+        },
+        "zh-tw": {
+          "anchor": "LowSpeedRadarGuard",
+          "factsHash": "ba33e5f02f52899378fa55742cc19a01d200cf20b6b9ad994bb3f4f76577a055",
+          "page": "ZH-TW-低速近距雷達輔助.md",
+          "reviewStatus": "current"
+        }
+      },
+      "reviewStatus": "current",
+      "semanticHash": "2daf7c8d9946d5aba8152c1a68abb9c8ea0a70692d3a23d8a390eb3222389f13"
     },
     "LowSpeedSteerReserve": {
       "group": "STEER_TORQUE_LIMIT",
