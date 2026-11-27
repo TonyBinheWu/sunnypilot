@@ -113,6 +113,8 @@ def planner_factory(native, monkeypatch):
                   controlsState=log.ControlsState.new_message(longControlState="pid"),
                   selfdriveState=log.SelfdriveState.new_message(enabled=True, active=True, experimentalMode=mode == "blended"),
                   carControl=car.CarControl.new_message(longActive=True))
+    sm['liveParameters'] = log.LiveParametersData.new_message()
+    sm.valid = dict.fromkeys(sm, True)
     sm['selfdriveState'].personality = "standard"
 
     def update(t, *, light="red", distance=30.):
