@@ -10,7 +10,7 @@
   border-radius: 18px;
   background:
     radial-gradient(circle at 12% 0%, rgba(181, 140, 255, 0.22), transparent 45%),
-    linear-gradient(135deg, color-mix(in srgb, var(--md-surface-container) 92%, #311f52), var(--md-surface-container));
+    linear-gradient(135deg, color-mix(in srgb, var(--md-surface-cont) 92%, #311f52), var(--md-surface-cont));
   box-shadow: 0 12px 34px rgba(14, 8, 28, 0.24);
 }
 
@@ -66,20 +66,20 @@
   flex: 0 0 auto;
   padding: 4px 9px;
   border-radius: 999px;
-  color: color-mix(in srgb, #d9c8ff 88%, white);
-  background: rgba(164, 116, 255, 0.15);
+  color: var(--md-info);
+  background: var(--md-info-cont);
   font-size: 11px;
   font-weight: 750;
 }
 
 .egpu-model-card[data-state="compiled"] .egpu-model-card__state {
-  color: #9ff1c7;
-  background: rgba(61, 190, 126, 0.14);
+  color: var(--md-success);
+  background: var(--md-success-cont);
 }
 
 .egpu-model-card[data-state="error"] .egpu-model-card__state {
-  color: #ffbaa9;
-  background: rgba(235, 91, 59, 0.14);
+  color: var(--md-error);
+  background: var(--md-danger-cont);
 }
 
 .egpu-model-card__detail {
@@ -93,7 +93,7 @@
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.09);
+  background: color-mix(in srgb, var(--md-outline) 30%, var(--md-surface-cont));
 }
 
 .egpu-model-card__track span {
@@ -156,7 +156,7 @@
   }
 }
 
-.model-library { margin-bottom: 16px; padding: 18px; border: 1px solid var(--md-outline-var); border-radius: 18px; background: var(--md-surface-container); }
+.model-library { margin-bottom: 16px; padding: 18px; border: 1px solid var(--md-outline-var); border-radius: 18px; background: var(--md-surface-cont); }
 .model-library[hidden] { display: none; }
 .model-library h3 { margin: 0 0 8px; }
 .model-library p { font-size: 13px; line-height: 1.55; opacity: .85; }

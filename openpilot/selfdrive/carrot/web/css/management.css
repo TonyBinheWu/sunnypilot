@@ -121,6 +121,7 @@
 }
 
 .carrot-manager {
+  --manager-scheme:light;
   --manager-bg:#f6f7f8;
   --manager-paper:#fff;
   --manager-line:#dce1e5;
@@ -129,9 +130,16 @@
   --manager-accent:#ad411a;
   --manager-soft:#fff0e8;
   --manager-hover:#f2f5f6;
+  --manager-on-accent:#fff;
+  --manager-outline:#78848d;
+  --manager-info:#225d86;
+  --manager-success:#17633f;
+  --manager-warning:#785000;
+  --manager-error:#a12f24;
 }
 
 .carrot-manager[data-manager-theme=dark] {
+  --manager-scheme:dark;
   --manager-bg:#15191d;
   --manager-paper:#20262b;
   --manager-line:#3b444d;
@@ -140,6 +148,12 @@
   --manager-accent:#ff9b72;
   --manager-soft:#3d2c26;
   --manager-hover:#30373e;
+  --manager-on-accent:#301308;
+  --manager-outline:#87959e;
+  --manager-info:#8bd5f8;
+  --manager-success:#91d9a8;
+  --manager-warning:#f6c763;
+  --manager-error:#ffa39a;
 }
 
 .carrot-manager #pageTools > .page-header, .carrot-manager #pageTools > .tools-progress[hidden] {
@@ -339,6 +353,9 @@
 
 .carrot-manager #pageTools .model-library select {
   max-width: 100%;
+  appearance: auto;
+  background-image: none;
+  padding-inline-end: 12px;
 }
 
 .carrot-manager #pageTools .directory-section .tools-console-dock {
@@ -760,19 +777,44 @@
     grid-column: 1/-1;
   }
 }
-/* Use the same surface tokens in the native settings, logs and device dialogs. */
-.carrot-manager[data-manager-theme=light] body:is([data-page=overview], [data-page=tools], [data-page=setting], [data-page=logs], [data-page=car], [data-page=branch]) {
+/* Popup and status colors are composed on :root. Apply the page palette there
+   so dialogs, menus and native form controls resolve the same colors. */
+.carrot-manager:is([data-page=overview], [data-page=tools], [data-page=setting], [data-page=logs], [data-page=car], [data-page=branch]) {
+  color-scheme:var(--manager-scheme);
   --md-surface:var(--manager-bg);
   --md-surface-cont:var(--manager-paper);
   --md-surface-cont-l:var(--manager-paper);
   --md-surface-cont-h:var(--manager-hover);
-  --md-surface-cont-hest:var(--manager-hover);
+  --md-surface-cont-hh:var(--manager-hover);
   --md-on-surface:var(--manager-text);
   --md-on-surface-var:var(--manager-muted);
+  --md-outline:var(--manager-outline);
   --md-outline-var:var(--manager-line);
+  --md-stroke-soft:var(--manager-line);
+  --md-stroke-strong:var(--manager-outline);
   --md-primary:var(--manager-accent);
+  --md-on-primary:var(--manager-on-accent);
+  --md-action-filled:var(--manager-accent);
+  --md-on-action-filled:var(--manager-on-accent);
   --md-primary-state:var(--manager-soft);
   --md-primary-state-soft:var(--manager-soft);
+  --md-success:var(--manager-success);
+  --md-warning:var(--manager-warning);
+  --md-info:var(--manager-info);
+  --md-error:var(--manager-error);
+  --md-danger:var(--manager-error);
+  --popup-bg:var(--manager-paper);
+  --popup-item-border:var(--manager-outline);
+  --popup-item-active-border:var(--manager-accent);
+}
+
+.carrot-manager :is(.app-dialog, .ui-dropdown-menu__panel, .ui-popover__panel) :is(button, input, select, textarea, a[href]):focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: -3px;
+}
+
+.carrot-manager #appDialogConfirm.btn--filled:focus-visible {
+  outline-color: var(--md-on-action-filled);
 }
 
 .manager-metrics canvas {
