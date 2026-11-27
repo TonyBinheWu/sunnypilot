@@ -126,11 +126,6 @@ def test_page_buttons_queue_and_reverse_without_waiting_for_animation(drawing):
 
 @pytest.mark.parametrize("device", ["c4", "c3x"])
 def test_master_switch_only_persists_a_confirmed_disable(device, drawing, monkeypatch):
-  from openpilot.selfdrive.ui.layouts.settings import common, toggles
-  from openpilot.selfdrive.ui.mici.layouts.settings import toggles as mici
-  from openpilot.selfdrive.ui.mici.widgets import button
-  from openpilot.system.ui.widgets import DialogResult
-
   key = "OpenpilotEnabledToggle"
   values = {key: True}
   params = Mock()
@@ -138,6 +133,14 @@ def test_master_switch_only_persists_a_confirmed_disable(device, drawing, monkey
   params.get.return_value = 0
   params.put_bool.side_effect = values.__setitem__
   state = SimpleNamespace(params=params, engaged=False, add_engaged_transition_callback=Mock())
+  # The fresh-install suite exercises the real widgets before native Params and IPC are built.
+  monkeypatch.setitem(sys.modules, "openpilot.common.params", SimpleNamespace(Params=lambda: params, UnknownKeyName=KeyError))
+  monkeypatch.setitem(sys.modules, "openpilot.selfdrive.ui.ui_state", SimpleNamespace(ui_state=state))
+  from openpilot.selfdrive.ui.layouts.settings import common, toggles
+  from openpilot.selfdrive.ui.mici.layouts.settings import toggles as mici
+  from openpilot.selfdrive.ui.mici.widgets import button
+  from openpilot.system.ui.widgets import DialogResult
+
   for module in (common, toggles, mici):
     monkeypatch.setattr(module, "ui_state", state)
   if device == "c4":

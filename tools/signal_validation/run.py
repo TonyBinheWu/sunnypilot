@@ -26,6 +26,7 @@ def blocked(*args, **kwargs):
 def main():
   params = types.ModuleType('openpilot.common.params')
   params.Params = IsolatedParams
+  params.UnknownKeyName = KeyError
   sys.modules[params.__name__] = params
   messaging = types.ModuleType('openpilot.cereal.messaging')
   for name in ('sub_sock', 'pub_sock', 'drain_sock', 'drain_sock_raw', 'SubMaster', 'PubMaster'):

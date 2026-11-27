@@ -98,6 +98,7 @@ def hud_module(monkeypatch):
       ui_state=fake_ui_state,
       UIStatus=SimpleNamespace(ENGAGED=1, DISENGAGED=2, OVERRIDE=3),
     ),
+    "openpilot.system.hardware": SimpleNamespace(PC=True, HARDWARE=None),
     "openpilot.system.ui.lib.application": SimpleNamespace(
       gui_app=gui_app,
       FontWeight=SimpleNamespace(SEMI_BOLD=1, BOLD=2, MEDIUM=3, DISPLAY=4),
@@ -594,6 +595,7 @@ def test_date_text_formats_only_when_minute_key_changes(hud_module, monkeypatch)
 @pytest.mark.parametrize("reuse", (False, True))
 def test_render_keeps_sampling_and_interactions_live(hud_module, monkeypatch, reuse):
   module, _ = hud_module
+  monkeypatch.setitem(module.HUD_LAYOUT, "scene_style", 0)
   renderer = object.__new__(module.HudRenderer)
   renderer.is_cruise_available = False
   renderer._show_plot_mode = 6
