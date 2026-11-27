@@ -114,6 +114,14 @@ if external_pythonpath := os.environ.get("PYTHONPATH"):
     if path and path not in scons_python_paths
   ]
 
+# The compilation database is for development tools. A minimal in-car build
+# still supports requesting it explicitly without regenerating it every boot.
+build_tools = ["default", "cython"]
+compile_db = arch != "larch64" or GetOption("extras") or any(os.path.basename(t) == "compile_commands.json" for t in COMMAND_LINE_TARGETS)
+if compile_db:
+  build_tools.append("compilation_db")
+build_tools.append("rednose_filter")
+
 env = Environment(
   ENV={
     "PATH": os.environ['PATH'],
@@ -159,7 +167,7 @@ env = Environment(
   CYTHONCFILESUFFIX=".cpp",
   COMPILATIONDB_USE_ABSPATH=True,
   REDNOSE_ROOT="#",
-  tools=["default", "cython", "compilation_db", "rednose_filter"],
+  tools=build_tools,
   toolpath=["#site_scons/site_tools", "#rednose_repo/site_scons/site_tools"],
 )
 # SCons' Darwin linker tool does not expand RPATH by default.
@@ -256,6 +264,16 @@ Clean(["."], cache_dir)
 
 # ********** start building stuff **********
 
+# The model flags are needed after the native build rules have been read.
+# Probe in a disposable child while SCons reads those rules. The child must
+# exit before model compilation to release any accelerator handles.
+model_compiler_probe = subprocess.Popen(
+  [sys.executable, File("#openpilot/selfdrive/modeld/build_backend.py").abspath],
+  stdout=subprocess.PIPE, text=True,
+)
+atexit.register(model_compiler_probe.wait)
+Export("model_compiler_probe")
+
 # Build common module
 SConscript(['openpilot/common/SConscript'])
 Import('_common')
@@ -322,5 +340,5 @@ if arch != "larch64":
 
 # Compilation database generation can end a clean without removing outputs.
 # Skip this build-only step when cleaning.
-if not GetOption('clean'):
+if compile_db and not GetOption('clean'):
   env.CompilationDatabase('compile_commands.json')

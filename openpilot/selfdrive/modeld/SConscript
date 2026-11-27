@@ -1,7 +1,7 @@
 import glob
 import json
 import os
-import sys, subprocess
+import subprocess
 from SCons.Script import Action, Value
 from openpilot.common.file_chunker import chunk_file, get_chunk_targets, get_existing_chunks
 from openpilot.common.transformations.camera import _ar_ox_fisheye, _os_fisheye
@@ -16,7 +16,7 @@ CAMERA_CONFIGS = [
   (_os_fisheye.width, _os_fisheye.height),        # mici: 1344x760
 ]
 
-Import('env', 'arch')
+Import('env', 'arch', 'model_compiler_probe')
 chunker_file = File("#openpilot/common/file_chunker.py")
 lenv = env.Clone()
 
@@ -29,10 +29,10 @@ def estimate_pickle_max_size(onnx_size):
   # the ONNX size. Overestimating only adds an empty trailing chunk.
   return 2.0 * onnx_size + 10 * 1024 * 1024
 
-# Probe only the backends this build can select. Release device handles before
-# evaluating the build graph; the external AMD model has its own readiness test.
-probe = File("build_backend.py").abspath
-available = subprocess.check_output([sys.executable, probe], text=True).splitlines()
+probe_output, _ = model_compiler_probe.communicate()
+if model_compiler_probe.returncode:
+  raise subprocess.CalledProcessError(model_compiler_probe.returncode, model_compiler_probe.args)
+available = probe_output.splitlines()
 if 'CUDA' in available:
   tg_backend = 'CUDA'
   tg_flags = f'DEV={tg_backend}'
