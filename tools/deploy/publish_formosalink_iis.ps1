@@ -23,8 +23,11 @@ Get-ChildItem -LiteralPath (Join-Path $repoRoot 'formosalink\docs') -Filter '*.m
   $files['App_Data\docs\' + $_.Name] = $_.FullName
 }
 $packagePrefix = 'App_Data\server-package\'
-foreach ($relative in @('formosalink\__init__.py','formosalink\requirements.txt')) {
+foreach ($relative in @('formosalink\__init__.py','formosalink\requirements.txt',
+    'openpilot\cereal\log.capnp','openpilot\cereal\custom.capnp','openpilot\cereal\deprecated.capnp','openpilot\cereal\include\c++.capnp',
+    'opendbc_repo\opendbc\car\car.capnp','opendbc_repo\opendbc\sunnypilot\car\car_list.json')) {
   $files[$packagePrefix + $relative] = Join-Path $repoRoot $relative
+  if (-not (Test-Path -LiteralPath $files[$packagePrefix + $relative] -PathType Leaf)) { throw "Missing deployment source: $relative" }
 }
 foreach ($sourceDir in @('formosalink\server','openpilot\sunnypilot\formosalink')) {
   $sourceRoot = Join-Path $repoRoot $sourceDir

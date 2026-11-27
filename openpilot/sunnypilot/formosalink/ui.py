@@ -81,6 +81,28 @@ def lan_pair_button():
   return button_item_sp(lan_label, "FormosaLink", callback=open_lan_pairing, enabled=ui_state.is_offroad)
 
 
+def diagnostic_words():
+  return {
+    "zh-TW": ("匿名錯誤回報", "啟用回報", "關閉回報", "停車連上 Wi-Fi 或有線網路時，將最近 24 小時及之後的錯誤傳給 FormosaLink。"
+              "包含車型、版本與故障狀態，排除帳號、車身號碼、位置與影像。連線時伺服器可見 IP。", "已開啟 · 等待故障紀錄與網路", "最近回報碼", "目前關閉"),
+    "en": ("Anonymous reports", "Enable reports", "Turn off", "While parked on Wi-Fi or Ethernet, send faults from the past 24 hours and future drives "
+           "to FormosaLink. Includes platform, build and fault states. Excludes accounts, VIN, GPS and images. The server sees the connection IP.",
+           "On · waiting for faults and a network", "Last report", "Currently off"),
+    "ja": ("匿名エラー報告", "有効にする", "停止する", "過去24時間と今後の異常を、停車中に Wi-Fi または有線で FormosaLink に送ります。"
+           "車種、版、異常状態を含み、アカウント、車両ID、位置、画像は除外します。接続時にサーバーはIPを認識します。", "有効 · 異常記録と接続を待機中", "直近の報告番号", "現在は無効"),
+  }[language()]
+
+
+def open_diagnostics():
+  if ui_state.is_offroad():
+    gui_app.push_widget(DiagnosticDialog())
+
+
+def diagnostic_button():
+  from openpilot.system.ui.sunnypilot.widgets.list_view import button_item_sp
+  return button_item_sp(lambda: diagnostic_words()[0], "FormosaLink", callback=open_diagnostics, enabled=ui_state.is_offroad)
+
+
 def add_mici_pair_button(scroller):
   from openpilot.selfdrive.ui.mici.widgets.button import BigButton
   class PairButton(BigButton):
@@ -94,6 +116,18 @@ def add_mici_pair_button(scroller):
   button.set_enabled(ui_state.is_offroad)
   scroller.add_widget(button)
   scroller.add_widget(mici_lan_button())
+  class DiagnosticButton(BigButton):
+    def _get_label_font_size(self):
+      return 39
+
+    def _update_state(self):
+      if self.text != diagnostic_words()[0]:
+        self.set_text(diagnostic_words()[0])
+
+  diagnostics = DiagnosticButton(diagnostic_words()[0], "FormosaLink")
+  diagnostics.set_click_callback(open_diagnostics)
+  diagnostics.set_enabled(ui_state.is_offroad)
+  scroller.add_widget(diagnostics)
 
 
 def mici_lan_button():
@@ -335,6 +369,50 @@ class FormosaPairingDialog(Widget):
                             rect.y+48*scale+(rect.height-60*scale-qr_size)/2, qr_size, qr_size)
       self._last_qr_rect = target
       rl.draw_texture_pro(self._qr_texture, rl.Rectangle(0, 0, self._qr_texture.width, self._qr_texture.height), target, rl.Vector2(0, 0), 0, rl.WHITE)
+    return -1
+
+
+class DiagnosticDialog(Widget):
+  def __init__(self):
+    super().__init__()
+    from openpilot.sunnypilot.formosalink.diagnostic_upload import CONSENT, RECEIPT
+    self.consent_key, self.receipt_key = CONSENT, RECEIPT
+    self._toggle = Button(lambda: diagnostic_words()[2 if ui_state.params.get(self.consent_key) else 1],
+                          self._change, font_size=18, button_style=ButtonStyle.PRIMARY)
+    self._toggle.set_enabled(ui_state.is_offroad)
+    self._close = Button(lambda: text("close"), gui_app.pop_widget, font_size=18)
+
+  def _change(self):
+    from openpilot.sunnypilot.formosalink.diagnostic_upload import set_consent
+    if ui_state.is_offroad():
+      set_consent(ui_state.params, not ui_state.params.get(self.consent_key))
+
+  def _render(self, rect):
+    words = diagnostic_words()
+    if multilang.requires_font_fallback():
+      gui_app.fallback_font("".join(words))
+    scale = min(rect.width / 536, rect.height / 240)
+    x, y = rect.x + 14 * scale, rect.y + 8 * scale
+    width = rect.width - 28 * scale
+    font = gui_app.font(FontWeight.NORMAL)
+    consent = ui_state.params.get(self.consent_key)
+    receipt = ui_state.params.get(self.receipt_key) or {}
+    status = words[4] if consent else words[6]
+    if consent and receipt.get("consent") == consent:
+      status = f'{words[5]}  {receipt["code"]}'
+    rl.draw_rectangle_rec(rect, rl.Color(15, 32, 32, 255))
+    rl.draw_text_ex(gui_app.font(FontWeight.BOLD), words[0], rl.Vector2(x, y), 25 * scale, 0, rl.WHITE)
+    size = 18 * scale
+    while True:
+      copy = "\n".join(wrap_text(font, words[3], size, int(width)))
+      if measure_text_cached(font, copy, size).y <= 96 * scale or size <= 14 * scale:
+        break
+      size -= scale
+    rl.draw_text_ex(font, copy, rl.Vector2(x, y + 38 * scale), size, 0, rl.WHITE)
+    rl.draw_text_ex(font, status, rl.Vector2(x, rect.y + rect.height - 86 * scale), 17 * scale, 0, rl.Color(171, 220, 205, 255))
+    for i, button in enumerate((self._toggle, self._close)):
+      button._label.set_font_size(19 * scale)
+      button.render(rl.Rectangle(x + i * (width + 8 * scale) / 2, rect.y + rect.height - 53 * scale, (width - 8 * scale) / 2, 44 * scale))
     return -1
 
 

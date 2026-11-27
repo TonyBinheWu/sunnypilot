@@ -175,6 +175,8 @@ procs = [
 
   # Optional FormosaPilot companion; telemetry only, independent of sunnylink.
   PythonProcess("formosalink", "openpilot.sunnypilot.formosalink.agent", formosalink_enabled),
+  PythonProcess("formosadiagnostics", "openpilot.sunnypilot.formosalink.diagnostic_upload",
+                lambda started, params, CP: not started and bool(params.get("FormosaLinkDiagnosticConsent"))),
   PythonProcess("formosalan", "openpilot.sunnypilot.formosalink.lan", lambda started, params, CP: not started or bool(params.get("FormosaLanAccess"))),
 
   # sunnylink <3

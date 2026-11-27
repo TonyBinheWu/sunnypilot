@@ -95,6 +95,33 @@ class TestQRScreen(unittest.TestCase):
         self.assertIsNone(self.params.get("FormosaLanAccess"))
         self.assertFalse(self.params.get_bool("FormosaLinkEnabled"))
 
+  def test_anonymous_reporting_requires_parked_local_consent(self):
+    from tempfile import TemporaryDirectory
+    from openpilot.common.params import Params
+    from openpilot.sunnypilot.formosalink.diagnostic_upload import CONSENT, RECEIPT
+
+    with TemporaryDirectory() as folder, patch.object(ui.ui_state, "params", Params(folder)), patch.dict(os.environ, FORMOSALINK_STATE_DIR=folder):
+      for locale in ("zh-CHT", "en", "ja"):
+        with self.subTest(locale=locale), patch.object(ui.multilang, "_language", locale):
+          dialog = ui.DiagnosticDialog()
+          self.assertFalse(ui.ui_state.params.get(CONSENT))
+          self.offroad.return_value = False
+          dialog._change()
+          self.assertFalse(ui.ui_state.params.get(CONSENT))
+          self.offroad.return_value = True
+          dialog._change()
+          consent = ui.ui_state.params.get(CONSENT)
+          self.assertTrue(consent)
+          ui.ui_state.params.put(RECEIPT, {"code": "ab12cd34ef56", "consent": consent}, block=True)
+          rl.begin_drawing()
+          try:
+            dialog.render(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
+          finally:
+            rl.end_drawing()
+          dialog._change()
+          self.assertFalse(ui.ui_state.params.get(CONSENT))
+          self.assertFalse(ui.ui_state.params.get(RECEIPT))
+
   def test_direct_lan_entry_starts_physical_pairing_even_with_cloud_qr(self):
     with patch.object(ui.gui_app, "push_widget") as push:
       self.offroad.return_value = False

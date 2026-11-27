@@ -38,6 +38,8 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"FormosaLinkSettingsVersion", {PERSISTENT, STRING, ""}},
     {"FormosaLinkRemoteSettings", {PERSISTENT, BOOL, "0"}},
     {"FormosaLinkTripConsent", {PERSISTENT | DONT_LOG, STRING}},
+    {"FormosaLinkDiagnosticConsent", {PERSISTENT | DONT_LOG, STRING}},
+    {"FormosaLinkDiagnosticReceipt", {PERSISTENT | DONT_LOG, JSON}},
     {"FormosaLinkTripJournal", {PERSISTENT | DONT_LOG, JSON}},
     {"FormosaClusterDisplay", {PERSISTENT | BACKUP, BOOL, "0"}},
     {"FormosaLanAccess", {PERSISTENT | DONT_LOG, STRING}},

@@ -1,5 +1,6 @@
 export const translations = {
   "zh-TW": {
+    "diagnosticInbox": "匿名錯誤回報",
     "language": "語言",
     "logout": "登出",
     "welcome": "FormosaLink",
@@ -299,6 +300,7 @@ export const translations = {
     "cellularState_unknown": "數據機狀態未知或過期"
   },
   "en": {
+    "diagnosticInbox": "Anonymous error reports",
     "language": "Language",
     "logout": "Sign out",
     "welcome": "FormosaLink",
@@ -598,6 +600,7 @@ export const translations = {
     "cellularState_unknown": "Modem state unknown or stale"
   },
   "ja": {
+    "diagnosticInbox": "匿名エラー報告",
     "language": "言語",
     "logout": "ログアウト",
     "welcome": "FormosaLink",

@@ -81,6 +81,8 @@ async function refresh(){
     if(epoch!==authEpoch)return;
     if(account?.id!==auth.user?.id){settings.reset(!!account);devices=[];lastRefresh=null;$('device-grid').replaceChildren();}
     account=auth.user;githubEnabled=auth.github_enabled;
+    const inbox=$('diagnostic-inbox');
+    if(inbox)inbox.hidden=auth.anonymous_rlogs!==true;
     $('github-login').disabled=!githubEnabled;
     $('github-note').textContent=t(githubEnabled===null?'waiting':githubEnabled?(pendingPair?'qrLoginFirst':'githubReady'):'githubUnavailable');
     $('github-link').hidden=!githubEnabled||account?.id!=='local-admin'||!!account?.github_login;

@@ -2,6 +2,8 @@
 
 Android 區網操作、手機配對與設定檔備份請見[使用說明](docs/CCNC_COMPANION.md)。
 
+ccNC 車機可在停車時開啟[匿名錯誤回報](docs/ANONYMOUS_RLOGS.md)。管理者可依回報碼找到對應的故障 rlog。
+
 [繁體中文部署說明](docs/DEPLOY.zh-TW.md) · [English deployment guide](docs/DEPLOY.en.md) · [日本語の導入手順](docs/DEPLOY.ja.md)
 
 [QR 配對 / QR pairing / QR 登録](docs/QR_PAIRING.md)：裝置設定顯示短效 QR，手機以 GitHub 登入並確認；網頁不再顯示管理者密碼及手動配對輸入。

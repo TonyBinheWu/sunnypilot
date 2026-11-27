@@ -17,6 +17,8 @@ from openpilot.sunnypilot.formosalink.protocol import MAX_FRAME_BYTES, ONLINE_SE
 from formosalink.server.config import load, password_hash
 from formosalink.server.store import Store
 from formosalink.server import oauth
+from formosalink.server import diagnostics
+from openpilot.sunnypilot.formosalink.diagnostic_rlog import MAX_WIRE, UPLOAD_PATH
 from typing import Any
 from openpilot.sunnypilot.formosalink.media_protocol import MAX_MEDIA_BYTES
 from openpilot.sunnypilot.formosalink.management_protocol import MAX_MANAGEMENT_BYTES, validate_snapshot as validate_management
@@ -92,7 +94,7 @@ def create_app(data_dir, web_dir=None):
     if request.url.path.startswith("/api/"):
       if request.headers.get("host", "").lower() != urlparse(config["origin"]).netloc.lower():
         return Response(status_code=400)
-      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media", "/api/v1/agent/media/watch"):
+      if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path not in ("/api/v1/agent/enroll", "/api/v1/agent/telemetry", "/api/v1/agent/status", "/api/v1/agent/sync", "/api/v1/agent/media", "/api/v1/agent/media/watch", UPLOAD_PATH):
         if request.headers.get("origin") != config["origin"]:
           return Response(status_code=403)
       try:
@@ -100,6 +102,8 @@ def create_app(data_dir, web_dir=None):
       except ValueError:
         return Response(status_code=400)
       limit = MAX_MEDIA_BYTES if request.url.path == "/api/v1/agent/media" else MAX_MANAGEMENT_BYTES if request.url.path == "/api/v1/agent/sync" else MAX_FRAME_BYTES
+      if request.url.path == UPLOAD_PATH:
+        limit = MAX_WIRE
       if length > limit:
         return Response(status_code=413)
       # Bound streamed/chunked requests as well as declared Content-Length.
@@ -120,11 +124,15 @@ def create_app(data_dir, web_dir=None):
 
   @app.get("/api/v1/health")
   def health():
-    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1", "live-camera-stream-v1"], "database_version": 3}
+    return {"service": "FormosaLink", "version": VERSION, "features": ["device-pairing", "signed-https-telemetry", "github-oauth", "device-ownership", "qr-pairing", "offroad-settings", "device-health", "navigation-destination", "media-preview-v1", "native-camera-preview-v1", "live-camera-stream-v1", "anonymous-rlog-v1"], "database_version": 3}
 
   @app.get("/api/v1/auth/me")
   def me(request: Request):
-    return {"user": store.principal(request.cookies.get(COOKIE)), "github_enabled": github is not None}
+    user = store.principal(request.cookies.get(COOKIE))
+    status = {"user": user, "github_enabled": github is not None}
+    if user and user["id"] == "local-admin":
+      status["anonymous_rlogs"] = True
+    return status
 
   def begin_oauth(request, link=False):
     rate(request, "oauth", 12)
@@ -384,6 +392,7 @@ def create_app(data_dir, web_dir=None):
   register_media(app, store, owner, rate)
   from formosalink.server.streaming import register as register_streaming
   register_streaming(app, store, owner, rate, config['origin'], app.state.media)
+  diagnostics.register(app, directory, owner, rate)
   web = Path(web_dir) if web_dir else Path(__file__).resolve().parents[1] / "web"
   if web.is_dir():
     app.mount("/", StaticFiles(directory=web, html=True), name="web")

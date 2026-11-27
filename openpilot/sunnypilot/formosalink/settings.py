@@ -8,6 +8,7 @@ from openpilot.sunnypilot.formosalink.setting_labels import localize
 LOCAL_ONLY = {
   "FormosaLanAccess", "FormosaLanPairRequest", "FormosaLanPairInfo",
   "FormosaLinkTripConsent", "FormosaLinkTripJournal",
+  "FormosaLinkDiagnosticConsent", "FormosaLinkDiagnosticReceipt",
   "GsmDataEnabled",
   "AdbEnabled", "SshEnabled", "GithubUsername", "GithubSshKeys", "EnableGithubRunner", "EnableCopyparty",
   "JoystickDebugMode", "LateralManeuverMode", "LongitudinalManeuverMode", "OffroadMode", "DeviceBootMode",
