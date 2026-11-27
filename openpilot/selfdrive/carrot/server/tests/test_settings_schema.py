@@ -82,6 +82,10 @@ def test_cruise_and_gap_tuning_is_removed(settings):
   daily = next(section for category in categories for group in category["groups"]
                for section in group["sections"] if "SunnyAutoLongitudinal" in section["items"])
   assert "DynamicExperimentalControl" in daily["items"]
+  cruise = by_name["SunnyCruisePlanner"]
+  assert "SunnyCruisePlanner" in daily["items"]
+  assert (cruise["min"], cruise["max"], cruise["default"], cruise["control"]) == (0, 2, 0, "select")
+  assert all(len(options) == 3 for options in cruise["options"].values())
   dec = by_name["DynamicExperimentalControl"]
   assert (dec["default"], dec["control"]) == (0, "toggle")
   assert '{"DynamicExperimentalControl", {PERSISTENT, BOOL, "0"}}' in PARAMS_KEYS_PATH.read_text(encoding="utf8")

@@ -21,6 +21,7 @@
               "params": [
                 "SunnyAutoLongitudinal",
                 "DynamicExperimentalControl",
+                "SunnyCruisePlanner",
                 "AlwaysLateral",
                 "SunnyCruiseOnly",
                 "LaneChangeNeedTorque",
@@ -3345,6 +3346,32 @@
       "default": 0,
       "unit": 1,
       "control": "toggle"
+    },
+    {
+      "group": "차량간격",
+      "name": "SunnyCruisePlanner",
+      "title": "순항 속도 계획",
+      "descr": "다음 주행부터 적용. 0은 기존 계획기, 1은 sunnypilot 순항과 레이더·카메라 선행차, 2는 같은 순항과 카메라 선행차만 사용합니다. DEC를 켜면 실험 모드에서 주행 상황에 따라 전환합니다.",
+      "egroup": "FDIST",
+      "etitle": "Cruise speed planner",
+      "edescr": "Applies next drive with openpilot longitudinal control. 0 keeps the current planner. 1 uses sunnypilot cruise with the vehicle's radar and vision lead estimates. 2 uses the same planner with camera leads only. Enable DEC for scene-based switching in Experimental Mode.",
+      "cgroup": "跟车距离",
+      "ctitle": "巡航速度规划器",
+      "cdescr": "下次行程生效。0 为原规划器，1 用 sunnypilot 巡航与车辆提供的雷达和视觉前车，2 用同一规划器且跟车只用摄像头。开启 DEC 后可在实验模式下依路况切换。",
+      "tgroup": "跟車距離",
+      "ttitle": "巡航速度規劃器",
+      "tdescr": "下次行程生效。0 保留原規劃器，1 使用 sunnypilot 巡航與車機提供的雷達及視覺前車，2 使用相同巡航規劃且跟車只看攝影機。在實驗模式開啟 DEC 可依路況切換。",
+      "min": 0,
+      "max": 2,
+      "default": 0,
+      "unit": 1,
+      "control": "select",
+      "options": {
+        "ko": ["기존 계획기", "sunnypilot · 차량 센서", "sunnypilot · 카메라 선행차"],
+        "en": ["Current planner", "sunnypilot · vehicle sensors", "sunnypilot · camera leads"],
+        "zh": ["原规划器", "sunnypilot · 车辆传感器", "sunnypilot · 摄像头跟车"],
+        "zh-tw": ["原規劃器", "sunnypilot · 車輛感測器", "sunnypilot · 攝影機跟車"]
+      }
     },
     {
       "group": "차량간격",

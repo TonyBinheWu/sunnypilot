@@ -1,30 +1,22 @@
 #!/usr/bin/env python3
-import time
+from types import SimpleNamespace
 import numpy as np
 
 from openpilot.cereal import log
 import openpilot.cereal.messaging as messaging
-from openpilot.common.realtime import Ratekeeper, DT_MDL
-from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
+from openpilot.common.driving_planner import selected_sunny_mode
+from openpilot.common.realtime import Ratekeeper, DT_CTRL, DT_MDL
+from openpilot.selfdrive.controls.lib.longcontrol import LongControl, LongCtrlState
 from openpilot.selfdrive.modeld.constants import ModelConstants
-from openpilot.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlanner
-from openpilot.selfdrive.controls.radar_constants import LEAD_ACCEL_TAU
+from openpilot.selfdrive.controls.lib.sunny_cruise_planner import make_longitudinal_planner
+from openpilot.selfdrive.controls.radar_constants import LEAD_ACCEL_TAU, RADAR_TO_CAMERA
 
 
 class Plant:
-  messaging_initialized = False
-
   def __init__(self, lead_relevancy=False, speed=0.0, distance_lead=2.0,
-               enabled=True, only_lead2=False, only_radar=False, e2e=False, personality=0, force_decel=False):
+               enabled=True, only_lead2=False, only_radar=False, e2e=False, personality=0, force_decel=False,
+               cruise_planner=0, ideal_accel=False):
     self.rate = 1. / DT_MDL
-
-    if not Plant.messaging_initialized:
-      Plant.radar = messaging.pub_sock('radarState')
-      Plant.controls_state = messaging.pub_sock('controlsState')
-      Plant.selfdrive_state = messaging.pub_sock('selfdriveState')
-      Plant.car_state = messaging.pub_sock('carState')
-      Plant.plan = messaging.sub_sock('longitudinalPlan')
-      Plant.messaging_initialized = True
 
     self.v_lead_prev = 0.0
 
@@ -42,16 +34,23 @@ class Plant:
     self.e2e = e2e
     self.personality = personality
     self.force_decel = force_decel
+    self.ideal_accel = ideal_accel
 
     self.rk = Ratekeeper(self.rate, print_delay_threshold=100.0)
     self.ts = 1. / self.rate
-    time.sleep(0.1)
-    self.sm = messaging.SubMaster(['longitudinalPlan'])
+    self.sm = messaging.SubMaster(['modelV2', 'radarState', 'carState', 'carControl', 'controlsState',
+                                   'selfdriveState', 'liveParameters'], poll='modelV2')
 
     from opendbc.car.honda.values import CAR
     from opendbc.car.honda.interface import CarInterface
 
-    self.planner = LongitudinalPlanner(CarInterface.get_non_essential_params(CAR.HONDA_CIVIC), init_v=self.speed)
+    cp = CarInterface.get_non_essential_params(CAR.HONDA_CIVIC)
+    cp.drivingPlannerMode = selected_sunny_mode(cp, cruise_planner)
+    self.planner = make_longitudinal_planner(cp, init_v=self.speed)
+    self.controller = LongControl(cp)
+    self.get_accel_limits = CarInterface.get_pid_accel_limits
+    self.plans = {}
+    self.plan_sink = SimpleNamespace(send=self.plans.__setitem__)
 
   @property
   def current_time(self):
@@ -106,7 +105,12 @@ class Plant:
     # does not predict slowdown in e2e mode
     position = log.XYZTData.new_message()
     position.x = [float(x) for x in (self.speed + 0.5) * np.array(ModelConstants.T_IDXS)]
+    position.t = ModelConstants.T_IDXS
     model.modelV2.position = position
+    model.modelV2.orientation.x = model.modelV2.orientationRate.z = [0.] * len(position.t)
+    for i, obs in enumerate(model.modelV2.init('leadsV3', 2)):
+      obs.prob = float(prob_lead) if self.lead_relevancy and (i == 1 or not self.only_lead2) else 0.
+      obs.x, obs.y, obs.v, obs.a = [float(d_rel + RADAR_TO_CAMERA)], [0.], [float(v_lead)], [float(a_lead)]
     model.modelV2.action.desiredAcceleration = float(self.acceleration + 0.1)
     velocity = log.XYZTData.new_message()
     velocity.x = [float(x) for x in (self.speed + 0.5) * np.ones_like(ModelConstants.T_IDXS)]
@@ -116,37 +120,49 @@ class Plant:
     acceleration.x = [float(x) for x in np.zeros_like(ModelConstants.T_IDXS)]
     model.modelV2.acceleration = acceleration
     model.modelV2.meta.disengagePredictions.gasPressProbs = [float(prob_throttle) for _ in range(6)]
+    model.modelV2.meta.disengagePredictions.brakePressProbs = [0., 0.]
 
-    control.controlsState.longControlState = LongCtrlState.pid if self.enabled else LongCtrlState.off
+    control.controlsState.longControlState = self.controller.long_control_state
     ss.selfdriveState.experimentalMode = self.e2e
+    ss.selfdriveState.enabled = self.enabled
     ss.selfdriveState.personality = self.personality
     control.controlsState.forceDecel = self.force_decel
     car_state.carState.vEgo = float(self.speed)
+    car_state.carState.aEgo = float(self.acceleration)
+    car_state.carState.canValid = True
     car_state.carState.standstill = bool(self.speed < 0.01)
     car_state.carState.vCruise = float(v_cruise * 3.6)
     car_control.carControl.orientationNED = [0., float(pitch), 0.]
 
     # ******** get controlsState messages for plotting ***
-    sm = {'radarState': radar.radarState,
-          'carState': car_state.carState,
-          'carControl': car_control.carControl,
-          'controlsState': control.controlsState,
-          'selfdriveState': ss.selfdriveState,
-          'liveParameters': lp.liveParameters,
-          'modelV2': model.modelV2}
-    self.planner.update(sm)
-    self.acceleration = self.planner.output_a_target
-    self.speed = self.speed + self.acceleration * self.ts
-    self.should_stop = self.planner.output_should_stop
+    sim_time = 10. + self.current_time
+    stamp = round(sim_time * 1e9)
+    model.modelV2.timestampEof = radar.radarState.mdMonoTime = stamp - 50_000_000
+    messages = [model, radar, car_state, car_control, control, ss, lp]
+    for msg in messages:
+      msg.valid, msg.logMonoTime = True, stamp
+    self.sm.update_msgs(sim_time, messages)
+    self.planner.update(self.sm)
+    self.planner.publish(self.sm, self.plan_sink)
+    event = self.plans['longitudinalPlan']
+    plan = event.longitudinalPlan
+    self.should_stop = plan.shouldStop
     fcw = self.planner.fcw
     self.distance_lead = self.distance_lead + v_lead * self.ts
 
-    # ******** run the car ********
-    #print(self.distance, speed)
-    if self.speed <= 0:
-      self.speed = 0
-      self.acceleration = 0
-    self.distance = self.distance + self.speed * self.ts
+    # Apply the published stop/hold intent at the control rate, even when the MPC's feedforward approaches zero.
+    for tick in range(round(self.ts / DT_CTRL)):
+      cs = car_state.carState
+      cs.vEgo, cs.aEgo = float(self.speed), float(self.acceleration)
+      limits = self.get_accel_limits(self.planner.CP, self.speed, v_cruise if np.isfinite(v_cruise) else self.speed)
+      self.acceleration, _, _ = self.controller.update(self.enabled and event.valid, cs, plan, limits,
+                                                       tick * DT_CTRL, radar.radarState)
+      if self.ideal_accel and self.controller.long_control_state == LongCtrlState.pid:
+        self.acceleration = plan.aTarget
+      self.speed = max(0., self.speed + self.acceleration * DT_CTRL)
+      if self.speed == 0.:
+        self.acceleration = 0.
+      self.distance += self.speed * DT_CTRL
 
     # *** radar model ***
     if self.lead_relevancy:
@@ -169,6 +185,7 @@ class Plant:
       "distance": self.distance,
       "speed": self.speed,
       "acceleration": self.acceleration,
+      "requested_acceleration": plan.aTarget,
       "should_stop": self.should_stop,
       "distance_lead": self.distance_lead,
       "fcw": fcw,

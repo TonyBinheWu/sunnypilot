@@ -4,6 +4,8 @@
 
 ## C3X and C4 driving controls
 
+**Driving → Start & Auto → Daily driving → Cruise speed planner** takes effect on the next drive with openpilot longitudinal control. Use **0** for the existing planner, **1** for sunnypilot release-mici cruise with the vehicle's radar/vision lead estimates, or **2** for the same cruise planner with camera leads. The factory radar remains available for display in mode 2. Modes 1 and 2 plan the set speed and both leads together. In Experimental Mode, DEC selects cruise following on a clear road and blends in the camera model when a scene calls for slowing. With DEC off, Experimental Mode continuously considers model braking. A distant slower vehicle can still constrain speed. **Vehicle details → Driving plan** shows the active profile, mode and speed constraint.
+
 In **Settings → Toggles → Enable openpilot**, turning assistance off asks for confirmation. On C4, slide to confirm or tap **Back** to keep it enabled. On C3X and in the cockpit, select **Turn off openpilot** or **Cancel**. Turning it on takes one tap and makes assistance available for the next drive.
 
 Under **Driving → Start & Auto → Daily driving**, **Dynamic Experimental Control (DEC)** applies on the next drive with openpilot longitudinal control. With DEC off (default), the model sets acceleration within the cruise ceiling once fresh sensor data confirms a clear road. The following planner continues to protect against vehicles ahead. With DEC on, open-road ACC follows the cruise ceiling and traffic. The planner returns to blended control for model stops, braking, curves and upcoming navigation turns. In the cockpit, **Vehicle details → Driving plan** shows the active mode and the current speed constraint separately.

@@ -12,7 +12,7 @@ ButtonEvent = car.CarState.ButtonEvent
 ButtonType = car.CarState.ButtonEvent.Type
 
 
-def run_cruise_simulation(cruise, e2e, personality, t_end=20.):
+def run_cruise_simulation(cruise, e2e, personality, t_end=20., cruise_planner=0):
   from openpilot.selfdrive.test.longitudinal_maneuvers.maneuver import Maneuver
   man = Maneuver(
     '',
@@ -25,22 +25,24 @@ def run_cruise_simulation(cruise, e2e, personality, t_end=20.):
     breakpoints=[0.],
     e2e=e2e,
     personality=personality,
+    cruise_planner=cruise_planner,
+    ideal_accel=True,  # isolate planner convergence from the test Honda's actuator PID
   )
   valid, output = man.evaluate()
   assert valid
   return output[-1, 3]
 
 
-@parameterized_class(("e2e", "personality", "speed"), itertools.product(
+@parameterized_class(("e2e", "personality", "speed", "cruise_planner"), itertools.product(
                       [True, False], # e2e
                       log.LongitudinalPersonality.schema.enumerants, # personality
-                      [5,35])) # speed
+                      [5,35], [0,1])) # speed, existing or sunnypilot release planner
 class TestCruiseSpeed:
   def test_cruise_speed(self):
     print(f'Testing {self.speed} m/s')
     cruise_speed = float(self.speed)
 
-    simulation_steady_state = run_cruise_simulation(cruise_speed, self.e2e, self.personality)
+    simulation_steady_state = run_cruise_simulation(cruise_speed, self.e2e, self.personality, cruise_planner=self.cruise_planner)
     assert simulation_steady_state == pytest.approx(cruise_speed, abs=.01), f'Did not reach {self.speed} m/s'
 
 

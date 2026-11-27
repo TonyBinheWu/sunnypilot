@@ -6,7 +6,7 @@ from numbers import Number
 from openpilot.cereal import car, log
 import openpilot.cereal.messaging as messaging
 from openpilot.common.constants import CV
-from openpilot.common.driving_planner import SUNNY_BLENDED, active_planner_mode, camera_only
+from openpilot.common.driving_planner import SUNNY_PROFILES, active_planner_mode, camera_only
 from openpilot.common.params import Params
 from openpilot.common.pid import MultiplicativeUnwindPID
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
@@ -68,7 +68,7 @@ class Controls:
 
     mode = active_planner_mode(self.CP, self.params)
     self.vision_profile_requested = camera_only(mode)
-    self.sunny_profile = mode == SUNNY_BLENDED
+    self.sunny_profile = SUNNY_PROFILES.get(mode)
     self.lane_center = self.sunny_profile and self.params.get_bool("SunnyLaneCenter")
     self.steering_selected = not (self.sunny_profile and self.params.get_bool("SunnyCruiseOnly"))
     self.blinker_pause_speed = self.params.get_int("SunnyBlinkerPauseKph") * CV.KPH_TO_MS if self.sunny_profile else 0.
@@ -180,7 +180,8 @@ class Controls:
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
     if self.sunny_profile:
       CC.latActive &= self.sm.all_checks(['modelV2']) and math.isfinite(model_v2.action.desiredCurvature)
-      CC.longActive &= (long_plan.plannerProfile == 'sunny' and self.sm.all_checks(['longitudinalPlan'])
+      CC.longActive &= (long_plan.plannerProfile == self.sunny_profile and self.sm.all_checks(['longitudinalPlan'])
+                        and 0 <= time.monotonic() - self.sm.recv_time['longitudinalPlan'] <= .25
                         and math.isfinite(long_plan.aTarget))
     if self.vision_profile_requested or long_plan.plannerProfile == 'visionE2e':
       fresh_plan = (long_plan.plannerProfile == 'visionE2e' and self.sm.all_checks(['longitudinalPlan', 'modelV2'])
@@ -208,7 +209,7 @@ class Controls:
     # accel PID loop
     pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, CS.vCruise * CV.KPH_TO_MS)
     t_since_plan = (self.sm.frame - self.sm.recv_frame['longitudinalPlan']) * DT_CTRL
-    vision_only = long_plan.plannerProfile == 'visionE2e'
+    vision_only = long_plan.plannerProfile in ('visionE2e', 'sunnyVision')
     control_leads = long_plan.cameraLeadState if vision_only else self.sm['radarState']
     accel, aTarget, jerk = self.LoC.update(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan, control_leads)
     actuators.longControlState = self.LoC.long_control_state
@@ -431,7 +432,7 @@ class Controls:
       hudControl.setSpeed = setSpeed if lp.xState == 3 else float(desired_kph * CV.KPH_TO_MS)
     hudControl.speedVisible = CC.enabled
     hudControl.lanesVisible = CC.enabled
-    hudControl.leadVisible = self.sm['longitudinalPlan'].hasLead
+    hudControl.leadVisible = self.sm['radarState'].leadOne.status if lp.plannerProfile == 'sunnyVision' else lp.hasLead
     hudControl.leadDistanceBars = self.sm['selfdriveState'].personality.raw + 1
     hudControl.visualAlert = self.sm['selfdriveState'].alertHudVisual
     hudControl.driverMonitoringAlert = driver_monitoring_hud_alert(self.sm)

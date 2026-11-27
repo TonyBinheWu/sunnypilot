@@ -23,7 +23,7 @@ EXPORT_DIR = os.path.join(LONG_MPC_DIR, "c_generated_code")
 JSON_FILE = os.path.join(LONG_MPC_DIR, "acados_ocp_upstream_long.json")
 
 LongitudinalPlanSource = log.LongitudinalPlan.LongitudinalPlanSource
-MPC_SOURCES = (LongitudinalPlanSource.lead0, LongitudinalPlanSource.lead1)
+MPC_SOURCES = (LongitudinalPlanSource.lead0, LongitudinalPlanSource.lead1, LongitudinalPlanSource.cruise)
 
 X_DIM = 3
 PARAM_DIM = 6
@@ -55,6 +55,8 @@ T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 COMFORT_BRAKE = 2.5
 STOP_DISTANCE = 6.0
 MIN_X_LEAD_FACTOR = 0.5
+CRUISE_MIN_ACCEL = -1.2
+CRUISE_MAX_ACCEL = 1.6
 
 def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
   if personality==log.LongitudinalPersonality.relaxed:
@@ -67,7 +69,9 @@ def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
     raise NotImplementedError("Longitudinal personality not supported")
 
 
-def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
+def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard, *, cruise_obstacle=False):
+  if cruise_obstacle and personality == log.LongitudinalPersonality.relaxed:
+    return 1.75
   if personality in (log.LongitudinalPersonality.relaxed, log.LongitudinalPersonality.standard):
     return 1.45
   elif personality==log.LongitudinalPersonality.aggressive:
@@ -304,8 +308,8 @@ class LongitudinalMpc:
     lead_xv = self.extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau)
     return lead_xv
 
-  def update(self, radarstate, personality=log.LongitudinalPersonality.standard):
-    t_follow = get_T_FOLLOW(personality)
+  def update(self, radarstate, personality=log.LongitudinalPersonality.standard, *, v_cruise=None):
+    t_follow = get_T_FOLLOW(personality, cruise_obstacle=v_cruise is not None)
 
     lead_xv_0 = self.process_lead(radarstate.leadOne)
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
@@ -316,7 +320,13 @@ class LongitudinalMpc:
     lead_0_obstacle = lead_xv_0[:,0] + get_stopped_equivalence_factor(lead_xv_0[:,1])
     lead_1_obstacle = lead_xv_1[:,0] + get_stopped_equivalence_factor(lead_xv_1[:,1])
 
-    x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle])
+    obstacles = [lead_0_obstacle, lead_1_obstacle]
+    if v_cruise is not None:
+      # sunnypilot release-mici plans the driver's set speed on the same horizon as both leads.
+      v_ego = self.x0[1]
+      cruise_speed = np.clip(v_cruise, v_ego + T_IDXS * CRUISE_MIN_ACCEL * 1.05, v_ego + T_IDXS * CRUISE_MAX_ACCEL * 1.05)
+      obstacles.append(np.cumsum(T_DIFFS * cruise_speed) + get_safe_obstacle_distance(cruise_speed, t_follow))
+    x_obstacles = np.column_stack(obstacles)
     self.source = MPC_SOURCES[np.argmin(x_obstacles[0])]
 
     self.yref[:,:] = 0.0

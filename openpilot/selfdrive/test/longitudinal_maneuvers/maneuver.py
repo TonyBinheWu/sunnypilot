@@ -24,6 +24,8 @@ class Maneuver:
     self.e2e = kwargs.get("e2e", False)
     self.personality = kwargs.get("personality", 0)
     self.force_decel = kwargs.get("force_decel", False)
+    self.cruise_planner = kwargs.get("cruise_planner", 0)
+    self.ideal_accel = kwargs.get("ideal_accel", False)
 
     self.duration = duration
     self.title = title
@@ -39,10 +41,13 @@ class Maneuver:
       e2e=self.e2e,
       personality=self.personality,
       force_decel=self.force_decel,
+      cruise_planner=self.cruise_planner,
+      ideal_accel=self.ideal_accel,
     )
 
     valid = True
     logs = []
+    lead_departure = None
     while plant.current_time < self.duration:
       speed_lead = np.interp(plant.current_time, self.breakpoints, self.speed_lead_values)
       prob_lead = np.interp(plant.current_time, self.breakpoints, self.prob_lead_values)
@@ -63,19 +68,28 @@ class Maneuver:
                             log['acceleration'],
                             log['d_rel']]))
 
+      if not self.enabled and (abs(log['acceleration']) > 1e-3 or abs(log['speed'] - self.speed) > 1e-3):
+        print('Disabled longitudinal control changed vehicle speed')
+        valid = False
+
       if d_rel < .4 and (self.only_radar or prob_lead > 0.5):
         print("Crashed!!!!")
         valid = False
 
-      if self.ensure_start and log['v_rel'] > 0 and log['acceleration'] < 1e-3:
-        print('LongitudinalPlanner not starting!')
-        valid = False
+      if self.ensure_start and speed_lead > 0.:
+        if lead_departure is None:
+          lead_departure = plant.current_time
+        # The controller holds the brake until the planner releases its stop request.
+        if ((not log['should_stop'] and v_rel > 0. and log['requested_acceleration'] < 1e-3)
+            or (plant.current_time - lead_departure > 2. and log['speed'] < .01)):
+          print('LongitudinalPlanner not starting!')
+          valid = False
 
     if self.ensure_slowdown and log['speed'] > 5.5:
       print('LongitudinalPlanner not slowing down!')
       valid = False
 
-    if self.force_decel and log['speed'] > 1e-1 and log['acceleration'] > -0.04:
+    if self.enabled and self.force_decel and log['speed'] > 1e-1 and log['acceleration'] > -0.04:
       print('Not stopping with force decel')
       valid = False
 

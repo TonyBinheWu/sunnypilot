@@ -9,7 +9,7 @@ from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
 from openpilot.selfdrive.controls.lib.ldw import LaneDepartureWarning
 from openpilot.selfdrive.controls.lib.lateral_planner import LateralPlanner
 import openpilot.cereal.messaging as messaging
-from openpilot.selfdrive.controls.lib.upstream_planner import LongitudinalPlanner
+from openpilot.selfdrive.controls.lib.sunny_cruise_planner import make_longitudinal_planner
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
   cloudlog.info("plannerd got CarParams: %s", CP.brand)
 
   ldw = LaneDepartureWarning()
-  longitudinal_planner = LongitudinalPlanner(CP, sunny=True)
+  longitudinal_planner = make_longitudinal_planner(CP)
   lateral_planner = LateralPlanner(CP, debug=False)
   pm = messaging.PubMaster(['longitudinalPlan', 'driverAssistance', 'lateralPlan'])
   sm = messaging.SubMaster(

@@ -14,8 +14,8 @@ test("cockpit shows a verified approach and clears the route row after evidence 
     if (!elements.has(id)) elements.set(id, {previousElementSibling: {}});
     return elements.get(id);
   };
-  const responses = [{routeCheck: "matched", approachManeuver: "branch right", longitudinalMode: "decAcc", speed: "accComfort"},
-                     {routeCheck: "instructionConflict", longitudinalMode: "decBlended", speed: "lead0"}, {}];
+  const responses = [{routeCheck: "matched", approachManeuver: "branch right", longitudinalMode: "decAcc", speed: "accComfort", profile: "sunnyRelease"},
+                     {routeCheck: "instructionConflict", longitudinalMode: "decBlended", speed: "lead0", profile: "sunnyVision"}, {}];
   let next;
   const target = {
     document: {getElementById: get, body: {dataset: {panel: "vision"}}, addEventListener() {}},
@@ -29,10 +29,12 @@ test("cockpit shows a verified approach and clears the route row after evidence 
   assert.equal(row.hidden, false);
   const mode = get("longitudinalMode");
   assert.equal(mode.textContent, "DEC · 巡航跟車");
+  assert.equal(get("plannerProfile").textContent, "sunnypilot 巡航（車輛感測器）");
   assert.equal(get("speedConstraint").textContent, "巡航加速度上限");
   await next();
   assert.equal(row.textContent, "轉向提示與路線彎向不一致");
   assert.equal(mode.textContent, "DEC · 模型協同");
+  assert.equal(get("plannerProfile").textContent, "sunnypilot 巡航（攝影機前車）");
   assert.equal(get("speedConstraint").textContent, "第一跟車目標");
   await next();
   assert.equal(row.textContent, "");

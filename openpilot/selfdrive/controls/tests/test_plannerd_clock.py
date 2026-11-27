@@ -77,7 +77,7 @@ def run_planner_events(mocker, brand, configured_mode, radar_period_ms, *, stopp
     'config_realtime_process': mocker.Mock(),
     'cloudlog': mocker.Mock(),
     'RuntimeDiagnostics': RuntimeDiagnostics,
-    'LongitudinalPlanner': mocker.Mock(return_value=planner),
+    'make_longitudinal_planner': mocker.Mock(return_value=planner),
     'LateralPlanner': mocker.Mock(),
     'LaneDepartureWarning': mocker.Mock(),
     'messaging': SimpleNamespace(
@@ -95,7 +95,7 @@ def run_planner_events(mocker, brand, configured_mode, radar_period_ms, *, stopp
   exec(compile(tree, str(path), 'exec'), namespace)
   with pytest.raises(EndOfInputs):
     namespace['main']()
-  namespace['LongitudinalPlanner'].assert_called_once_with(cp, sunny=True)
+  namespace['make_longitudinal_planner'].assert_called_once_with(cp)
   assert planner.update.call_count == len(calls)
   return calls, sub_master_factory.call_args.kwargs['poll'], planner
 

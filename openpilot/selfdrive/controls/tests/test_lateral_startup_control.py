@@ -215,14 +215,34 @@ def test_sunny_lateral_selection_does_not_toggle_longitudinal(selected, speed, l
   cp = control.CP.as_builder()
   cp.openpilotLongitudinalControl = True
   control.CP = cp
-  control.sunny_profile = True
+  control.sunny_profile = 'sunny'
   control.steering_selected = selected
   control.blinker_pause_speed = 20 * CV.KPH_TO_MS
   sm = control.sm
   sm.valid["longitudinalPlan"] = sm.alive["longitudinalPlan"] = sm.freq_ok["longitudinalPlan"] = True
   sm["longitudinalPlan"].plannerProfile = "sunny"
+  sm.recv_time["longitudinalPlan"] = time.monotonic()
   sm["carState"].vEgo, sm["carState"].leftBlinker, sm["carState"].rightBlinker = speed, left, right
   sm["selfdriveState"].enabled = sm["selfdriveState"].active = True
   cc, _ = step()
   assert cc.latActive == expected
   assert cc.longActive
+
+
+@pytest.mark.parametrize('expected,received,stale,allowed', [
+  ('sunnyRelease', 'sunnyRelease', False, True), ('sunnyVision', 'sunnyVision', False, True),
+  ('sunnyVision', 'sunnyRelease', False, False), ('sunnyRelease', 'sunny', False, False),
+  ('sunnyVision', 'sunnyVision', True, False),
+])
+def test_reference_longitudinal_requires_current_selected_profile(expected, received, stale, allowed):
+  control, step = control_fixture()
+  cp = control.CP.as_builder()
+  cp.openpilotLongitudinalControl = True
+  control.CP, control.sunny_profile = cp, expected
+  sm = control.sm
+  sm.valid['longitudinalPlan'] = sm.alive['longitudinalPlan'] = sm.freq_ok['longitudinalPlan'] = True
+  sm.recv_time['longitudinalPlan'] = time.monotonic() - float(stale)
+  sm['longitudinalPlan'].plannerProfile = received
+  sm['selfdriveState'].enabled = sm['selfdriveState'].active = True
+  cc, _ = step()
+  assert cc.longActive == allowed

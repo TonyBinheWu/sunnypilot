@@ -156,7 +156,7 @@ class VCruiseHelper:
 
 
 
-from openpilot.common.driving_planner import SUNNY_BLENDED, active_planner_mode, camera_only
+from openpilot.common.driving_planner import SUNNY_PROFILES, SUNNY_RELEASE_VISION, active_planner_mode, camera_only
 from openpilot.common.params import Params
 #from openpilot.selfdrive.selfdrived.events import Events
 #EventName = log.OnroadEvent.EventName
@@ -171,8 +171,8 @@ class VCruiseCarrot:
     self.params_memory = Params("/dev/shm/params")
     self.params = Params()
     mode = active_planner_mode(CP, self.params)
-    self.vision_only = camera_only(mode)
-    self.sunny = mode == SUNNY_BLENDED
+    self.vision_only = camera_only(mode) or mode == SUNNY_RELEASE_VISION
+    self.sunny = mode in SUNNY_PROFILES
     self.periodic_settings = None
     self.cruise_stage_ms = {}
     if cached_settings:
@@ -370,7 +370,7 @@ class VCruiseCarrot:
       # Never carry a stale lead into resume or automatic cruise-speed logic.
       self.d_rel = self.v_rel = self.v_lead_kph = 0.
       use_lead = (sm.alive['longitudinalPlan'] and sm.valid['longitudinalPlan']
-                  and lp.plannerProfile == 'visionE2e')
+                  and lp.plannerProfile in ('visionE2e', 'sunnyVision'))
     else:
       use_lead = sm.alive['radarState']
     if use_lead:

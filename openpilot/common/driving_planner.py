@@ -2,6 +2,18 @@
 CAMERA_ONLY = 2
 CAMERA_ONLY_AUTO = 3
 SUNNY_BLENDED = 4
+SUNNY_RELEASE = 5
+SUNNY_RELEASE_VISION = 6
+SUNNY_PROFILES = {SUNNY_BLENDED: 'sunny', SUNNY_RELEASE: 'sunnyRelease', SUNNY_RELEASE_VISION: 'sunnyVision'}
+
+
+def selected_sunny_mode(cp, selection):
+  if cp.openpilotLongitudinalControl and not cp.passive and not cp.dashcamOnly:
+    if selection == 1:
+      return SUNNY_RELEASE_VISION if cp.radarUnavailable else SUNNY_RELEASE
+    if selection == 2:
+      return SUNNY_RELEASE_VISION
+  return SUNNY_BLENDED
 
 
 def automatic_longitudinal(mode):
@@ -14,6 +26,9 @@ def camera_only(mode):
 
 def active_planner_mode(cp, params):
   # Historical CarParams and saved settings can contain retired planner profiles.
+  mode = getattr(cp, 'drivingPlannerMode', 0)
+  if mode in (SUNNY_RELEASE, SUNNY_RELEASE_VISION):
+    return mode
   return SUNNY_BLENDED
 
 

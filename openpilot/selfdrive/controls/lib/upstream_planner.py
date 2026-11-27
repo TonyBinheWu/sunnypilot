@@ -15,6 +15,7 @@ from openpilot.selfdrive.navigation.helpers import nearby_maneuver
 from openpilot.selfdrive.controls.lib.cruise_coasting import no_coasting_lead
 from openpilot.selfdrive.controls.lib.curve_speed import CurveSpeed
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
+from openpilot.selfdrive.controls.radar_constants import RADAR_TO_CAMERA
 from openpilot.selfdrive.controls.lib.sunny_longitudinal import DynamicExperimentalControl, acc_comfort_limit
 from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import LongitudinalMpc, LongitudinalPlanSource, STOP_DISTANCE, get_T_FOLLOW
 from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import T_IDXS as T_IDXS_MPC
@@ -58,6 +59,16 @@ def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt, *, dec=F
   return target_accel
 
 
+def model_throttle_limit(sm, v_ego, probability, upper):
+  if probability > .4 or v_ego <= 2.5:
+    return True, upper
+  pose_stamp = sm.logMonoTime.get('carControl', 0)
+  pose = (sm['carControl'].orientationNED if pose_stamp and abs(sm.logMonoTime['modelV2'] - pose_stamp) <= 150_000_000
+          and sm.all_checks(['carControl']) else ())
+  coast = math.sin(pose[1]) * -5.65 - .3 if len(pose) == 3 and math.isfinite(pose[1]) else 0.
+  return False, min(upper, np.interp(v_ego, [2.5, 5.], [upper, max(ACCEL_MIN, coast)]))
+
+
 def assisted_ceiling(sm, cruise, map_curve, speed_limit):
   reason = 'cruise'
   stamp = sm.logMonoTime['modelV2']
@@ -74,7 +85,7 @@ def assisted_ceiling(sm, cruise, map_curve, speed_limit):
   return cruise, reason
 
 
-def camera_leads(model, v_ego):
+def camera_leads(model, v_ego, prob_filters=None):
   """Build the MPC's two lead observations from the current camera frame."""
   state = log.RadarState.new_message()
   if not model.velocity.x or not math.isfinite(model.velocity.x[0]):
@@ -85,12 +96,19 @@ def camera_leads(model, v_ego):
     if not all((observation.x, observation.y, observation.v, observation.a)):
       continue
     x, y, v, a = (values[0] for values in (observation.x, observation.y, observation.v, observation.a))
-    if not all(map(math.isfinite, (x, y, v, a, observation.prob, v_ego))) or observation.prob <= .5 or x <= 1.52:
+    prob = observation.prob
+    if not all(map(math.isfinite, (x, y, v, a, prob, v_ego))):
+      continue
+    if prob_filters is not None:
+      filt = prob_filters[i]
+      filt.x = max(prob, filt.update(prob))
+      prob = filt.x
+    if prob <= .5 or (prob_filters is None and x <= RADAR_TO_CAMERA):
       continue
     lead = state.leadOne if i == 0 else state.leadTwo
     lead.status = True
-    lead.modelProb = observation.prob
-    lead.dRel = x - 1.52  # camera-to-bumper offset used by upstream RadarD
+    lead.modelProb = prob
+    lead.dRel = max(0., x - RADAR_TO_CAMERA)
     lead.yRel = -y
     lead.vRel = v - model.velocity.x[0]
     lead.vLead = lead.vLeadK = v_ego + lead.vRel
@@ -104,6 +122,8 @@ class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL, *, vision_only=False, sunny=False):
     self.vision_only = vision_only
     self.sunny = sunny
+    self.planner_profile = 'visionE2e' if vision_only else 'sunny' if sunny else 'upstream'
+    self.allow_throttle = True
     self.dec_enabled = False
     if sunny:
       settings = Params()
@@ -351,7 +371,13 @@ class LongitudinalPlanner:
       rise_limit = a_prev + np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS) * self.dt
       if output_a_target > rise_limit:
         output_a_target, self.speed_reason = rise_limit, 'cruiseRamp'
-    self.output_a_target = np.clip(output_a_target, ACCEL_MIN, ACCEL_MAX)
+    upper = ACCEL_MAX
+    if self.sunny:
+      gas = model.meta.disengagePredictions.gasPressProbs
+      self.allow_throttle, upper = model_throttle_limit(sm, v_ego, gas[1] if len(gas) > 1 else 1., upper)
+      if output_a_target > upper and not self.allow_throttle:
+        self.speed_reason = 'modelCoast'
+    self.output_a_target = np.clip(output_a_target, ACCEL_MIN, upper)
 
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.output_a_target + a_prev) / 2.0
 
@@ -360,7 +386,7 @@ class LongitudinalPlanner:
 
     if (self.vision_only or self.sunny) and not self.camera_input_valid:
       plan_send.valid = False
-      plan_send.longitudinalPlan.plannerProfile = 'sunny' if self.sunny else 'visionE2e'
+      plan_send.longitudinalPlan.plannerProfile = self.planner_profile
       pm.send('longitudinalPlan', plan_send)
       return
     required = ['carState', 'controlsState', 'selfdriveState', 'modelV2', 'liveParameters']
@@ -387,12 +413,12 @@ class LongitudinalPlanner:
     longitudinalPlan.shouldStop = bool(self.output_should_stop)
     longitudinalPlan.allowBrake = True
 
-    longitudinalPlan.plannerProfile = 'visionE2e' if self.vision_only else 'sunny' if self.sunny else 'upstream'
+    longitudinalPlan.plannerProfile = self.planner_profile
     if self.vision_only or self.sunny:
       longitudinalPlan.visionPlannerSetup = getattr(self.CP, "visionPlannerSetup", "")
     longitudinalPlan.speedConstraint = self.speed_reason if self.CP.openpilotLongitudinalControl else 'stockLong'
     longitudinalPlan.longitudinalMode = self.longitudinal_mode
-    longitudinalPlan.allowThrottle = self.ceiling_available
+    longitudinalPlan.allowThrottle = self.ceiling_available and self.allow_throttle
     longitudinalPlan.vTargetNow = float(max(0., sm['carState'].vEgo + self.output_a_target * self.dt))
     longitudinalPlan.jTargetNow = float(self.j_desired_trajectory[0])
     longitudinalPlan.cruiseTarget = self.cruise_target

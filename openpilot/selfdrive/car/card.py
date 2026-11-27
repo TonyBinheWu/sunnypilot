@@ -8,8 +8,8 @@ import openpilot.cereal.messaging as messaging
 
 from openpilot.cereal import car, log
 
-from openpilot.common.driving_planner import SUNNY_BLENDED
-from openpilot.common.params import Params
+from openpilot.common.driving_planner import selected_sunny_mode
+from openpilot.common.params import Params, UnknownKeyName
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
 from openpilot.common.runtime_diagnostics import RuntimeDiagnostics
 from opendbc.can.native import BACKEND as CAN_BACKEND
@@ -136,11 +136,17 @@ class Car:
     else:
       self.CI, self.CP = CI, CI.CP
 
-    self.CP.drivingPlannerMode = SUNNY_BLENDED
     self.CP.alternativeExperience = get_alternative_experience(self.params.get_bool("DisengageOnAccelerator"))
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
     controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
     self.CP.passive = not controller_available or self.CP.dashcamOnly
+    try:
+      cruise_planner = self.params.get_int("SunnyCruisePlanner")
+    except UnknownKeyName:
+      # A staged update can briefly run new Python with the previous native parameter registry.
+      cruise_planner = 0
+      cloudlog.warning("Cruise planner selection awaits the updated parameter registry")
+    self.CP.drivingPlannerMode = selected_sunny_mode(self.CP, cruise_planner)
     self.cluster_corners = getattr(self.CI.CC, 'cluster_corners', None)
     self.cluster_corner_sock = None
     self.ev6_mode0_display = not self.CP.passive and getattr(self.CI.CC, 'ev6_mode0_display', False)
