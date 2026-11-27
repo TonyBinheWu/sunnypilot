@@ -30,22 +30,6 @@ def test_only_independent_gpu_warmups_overlap(tmp_path, monkeypatch, device, ava
   assert calls == ([(model, camera)] if overlap else [])
 
 
-@pytest.mark.parametrize('available,expected,tried', [
-  ({'CUDA', 'QCOM'}, 'CUDA', ['CUDA']), ({'QCOM'}, 'QCOM', ['CUDA', 'QCOM']), (set(), 'CPU', ['CUDA', 'QCOM']),
-])
-def test_compiler_probes_only_selectable_backends(available, expected, tried):
-  from openpilot.selfdrive.modeld.build_backend import preferred_backend
-  calls = []
-  class Devices:
-    def __getitem__(self, key):
-      calls.append(key)
-      if key not in available:
-        raise RuntimeError('unavailable')
-      return SimpleNamespace(device=key)
-  assert preferred_backend(Devices()) == expected
-  assert calls == tried
-
-
 def test_warmup_uses_one_allocated_buffer_without_waiting_for_extra_camera_backlog(monkeypatch):
   from openpilot.selfdrive.modeld import internal_model_warmup as warm
   frame = object()

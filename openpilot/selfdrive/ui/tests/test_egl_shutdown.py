@@ -84,7 +84,8 @@ def test_failed_import_closes_its_duplicate_without_entering_ledger(egl):
     os.close(source); os.close(writer)
 
 
-def test_actual_application_close_releases_import_before_display(monkeypatch, egl):
+@pytest.mark.parametrize('sharing', [False, True])
+def test_actual_application_close_releases_import_before_display(monkeypatch, egl, sharing):
   value = image(egl)
   fd = value.fd
   calls = []
@@ -103,8 +104,9 @@ def test_actual_application_close_releases_import_before_display(monkeypatch, eg
   code = ast.Module(body=[close], type_ignores=[])
   env = {'rl': NS(is_window_ready=lambda: ready[0], close_window=window_close), 'PC': True}
   exec(compile(code, 'actual_application_close', 'exec'), env)
-  app = NS(_textures={}, _fonts={}, _render_texture=None, _burn_in_shader=None,
+  screen = NS(shutdown=lambda: calls.append('screen')) if sharing else None
+  app = NS(_textures={}, _fonts={}, _render_texture=None, _burn_in_shader=None, remote_screen=screen,
            close_ffmpeg=lambda: None, stop_recording=lambda: None)
   env['close'](app)
   env['close'](app)
-  assert calls == ['window']
+  assert calls == (['screen', 'window'] if sharing else ['window'])
