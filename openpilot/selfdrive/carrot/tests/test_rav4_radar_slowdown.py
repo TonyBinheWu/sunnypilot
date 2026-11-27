@@ -11,7 +11,7 @@ Params·통신 모듈을 대체하거나 차량 설정을 변경하지 않는다
 """
 
 import ast
-from functools import lru_cache
+from functools import lru_cache, partial
 from pathlib import Path
 import time
 from types import SimpleNamespace as NS
@@ -33,6 +33,7 @@ from openpilot.selfdrive.carrot.carrot_man_input import get_carrot_man
 from openpilot.selfdrive.carrot.curve_speed import curve_speed
 from openpilot.selfdrive.carrot.radar_motion.controller import DPathRadarController
 from openpilot.selfdrive.controls.lib.cutin_predecel import apply_cutin_predecel_accel_limit, get_cutin_predecel_accel_limit
+from openpilot.selfdrive.controls.lib.hkg_phase1 import CurveSpeedEnvelope
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.turn_accel import get_future_curvature, limit_accel_in_turns
 from openpilot.selfdrive.modeld.constants import ModelConstants
@@ -74,7 +75,8 @@ def functions():
                'RESET_DECEL_RAMP_TIME': source_literal(planner_path, 'RESET_DECEL_RAMP_TIME'),
                'N': source_literal('openpilot/selfdrive/controls/lib/longitudinal_mpc_lib/long_mpc.py', 'N')}
   update = source_function(planner_path, 'update', namespace, 'LongitudinalPlanner')
-  return gate, nav, update
+  update_curve = source_function(planner_path, 'update_hkg_curve_speed', {'time': time}, 'LongitudinalPlanner')
+  return gate, nav, update, update_curve
 
 
 def model(curvature=0., speed=15.):
@@ -118,12 +120,15 @@ def planner_input(brand, cap=80., curvature=0., risk=None, gas=False, inactive=F
   carrot = NS(update=lambda *args: consume_cap(cap), mode='acc', soft_hold_active=False,
               get_carrot_accel=lambda _: 1.6, leadAccelResponse=5, lane_change_active=False)
   planner = NS(CP=NS(brand=brand, openpilotLongitudinalControl=True),
+               hkg_phase1_enabled=False, hkg_curve=CurveSpeedEnvelope(),
                mpc=NS(set_accel_limits=capture, set_cur_state=stop), coasting_param_time=0., dt=DT_MDL,
                a_desired=0., reset_decel_timer=0, output_should_stop=False,
                v_desired_filter=NS(update=lambda value: value), parse_model=lambda _: (0., 0., 0., 0., 1.),
                update_lead_tracks=lambda _: (0, 0), vCluRatio=1.)
+  _, _, update, update_curve = functions()
+  planner.update_hkg_curve_speed = partial(update_curve, planner)
   with pytest.raises(StopBeforeSolver):
-    functions()[2](planner, sm, carrot)
+    update(planner, sm, carrot)
   captured['v_cruise_kph'] = planner.v_cruise_kph
   return captured
 

@@ -55,6 +55,7 @@ def test_ui_updates_onroad_policy_even_without_a_render(big_ui, device_type):
     return SimpleNamespace(update=lambda onroad, **kw: calls.append(onroad))
   main = load_function("openpilot/selfdrive/ui/ui.py", "main", {
     "TICI": True, "BIG_UI": big_ui, "DisplayScheduler": scheduler,
+    "C4_DISPLAY": device_type == 'mici', "OFFSCREEN": True, "RECORD": False,
     "HARDWARE": SimpleNamespace(get_device_type=lambda: device_type),
     "gc": SimpleNamespace(disable=lambda: events.append("gc_disabled")),
     "set_core_affinity": lambda cores: events.append(tuple(cores)),
