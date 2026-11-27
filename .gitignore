@@ -45,6 +45,9 @@ __pycache__/
 config.json
 clcache
 compile_commands.json
+.carrot_boot_build.json
+.carrot_boot_repair
+.carrot-boot-*.tmp
 compare_runtime*.html
 
 persist

@@ -226,7 +226,31 @@ def progress_function(node):
   global node_count
   node_count += node_interval
   sys.stderr.write("progress: %d\n" % node_count)
-if os.environ.get('SCONS_PROGRESS'):
+if capture_path := os.environ.get('CARROT_BUILD_TARGETS'):
+  # Progress is called for up-to-date nodes too. Capture every output of a
+  # multi-target action (in particular all pieces of each compiled model).
+  from SCons.Node.FS import File as FileNode
+  import atexit
+  capture = open(capture_path, 'w', encoding='utf-8')
+  atexit.register(capture.close)
+  capture_root = Dir('#').abspath + os.sep
+  captured = set()
+  def capture_progress(node):
+    global node_count
+    if isinstance(node, FileNode) and node.has_builder() and node.abspath.startswith(capture_root):
+      name = node.abspath[len(capture_root):]
+      # The build rule uses the tracked rednose alias. Ship its canonical
+      # repository path so the installer never writes through a symlink.
+      if name.startswith('rednose/'):
+        name = 'rednose_repo/rednose/' + name.removeprefix('rednose/')
+      if name not in captured and not name.endswith(('.a', '.o', '.os')):
+        capture.write(name + '\n')
+        captured.add(name)
+    node_count += 1
+    if os.environ.get('SCONS_PROGRESS') and node_count % node_interval == 0:
+      sys.stderr.write("progress: %d\n" % node_count)
+  Progress(capture_progress)
+elif os.environ.get('SCONS_PROGRESS'):
   Progress(progress_function, interval=node_interval)
 
 # ********** Cython build environment **********
@@ -342,3 +366,13 @@ if arch != "larch64":
 # Skip this build-only step when cleaning.
 if compile_db and not GetOption('clean'):
   env.CompilationDatabase('compile_commands.json')
+
+# A changed output need not have any changed *inputs*. Explicitly rebuild
+# affected derived targets when the previous boot's integrity check failed.
+if repair_path := os.environ.get('CARROT_BUILD_REPAIR'):
+  for name in Path(repair_path).read_text().splitlines():
+    if name.startswith('rednose_repo/rednose/'):
+      name = 'rednose/' + name.removeprefix('rednose_repo/rednose/')
+    target = File('#' + name)
+    if target.has_builder():
+      AlwaysBuild(target)

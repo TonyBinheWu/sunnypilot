@@ -88,10 +88,12 @@ def test_post_build_check_blocks_manager_if_native_registry_stays_stale(native_r
   if bash is None:
     pytest.skip('bash is needed to execute the vehicle launcher guard')
   launcher = (Path(__file__).resolve().parents[3] / 'launch_chffrplus.sh').read_text(encoding='utf-8')
-  guard = launcher.split('  # Never start driving services', 1)[1].split('  start_big_model_update', 1)[0]
+  guard = launcher.split('  # Never start driving services', 1)[1].split('  # Compile an offroad-selected internal model', 1)[0]
   guard = guard[guard.index('\n'):]
   script = f'''
 python3() {{ return {native_result}; }}
+run_startup_command() {{ "$@"; }}
+show_startup_failure() {{ exit 1; }}
 launch_test() {{{guard}
 echo manager_started
 }}

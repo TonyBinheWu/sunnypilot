@@ -2,6 +2,18 @@
 
 ## Carrot device release branch
 
+A C3X/C4 source release can carry its compiled programs and bundled QCOM
+driving and driver-monitoring models on the same Git branch. On a clean
+offroad AGNOS builder, run `bash release/prepare_boot_build.sh` before
+publishing and include the resulting `prebuilt_assets/` directory in the
+release commit. Git transfers changed compressed objects with the update.
+The dated release command below also runs this preparation on current trees.
+Both camera resolutions are built. The source tree, AGNOS, kernel, Python
+ABI, SoC and GPU must match on the receiving device. Staged updates expand
+the verified files before activation. Direct Git updates install them at
+startup. A source-only revision runs the normal build once and records its
+outputs locally. Rebuild All still explicitly requests a native build.
+
 `build_carrot.sh` creates a dated prebuilt branch from the current device tree.
 Before changing anything, it copies the complete `/data/openpilot` directory to
 `/data/openpilot_bak` with `cp -a`. The original tree is restored automatically

@@ -324,6 +324,10 @@ function invalidate_modeld_build_if_needed {
   fi
 
   old_stamp="$(cat "$stamp_path" 2>/dev/null || true)"
+  if [ "${BOOT_RUNTIME_VERIFIED:-0}" = 1 ] && [ "$MODEL_BUILD_STAMP_VALUE" != "$old_stamp" ]; then
+    printf %s "$MODEL_BUILD_STAMP_VALUE" > "$stamp_path.tmp" && mv -f "$stamp_path.tmp" "$stamp_path"
+    old_stamp="$MODEL_BUILD_STAMP_VALUE"
+  fi
   if [ "$MODEL_BUILD_STAMP_VALUE" != "$old_stamp" ] || [ ! -f "$tg_devices_path" ] || { [ ! -f "$driving_pkl_path" ] && [ ! -f "$driving_pkl_path.chunkmanifest" ]; }; then
     echo "Model/tinygrad inputs changed or artifacts are missing; revalidating with SCons."
     # Keep generated artifacts. SCons tracks the compiler, tinygrad and model
@@ -454,10 +458,10 @@ function remove_build_state {
   local target
   # The cache is disposable. One created by another user (e.g. `sudo scons`)
   # cannot be removed as this user, so fall back to sudo before giving up.
-  if ! rm -rf "$DIR/.sconsign.dblite" "$DIR/prebuilt" "$SCONS_CACHE"; then
-    sudo -n rm -rf "$DIR/.sconsign.dblite" "$DIR/prebuilt" "$SCONS_CACHE"
+  if ! rm -rf "$DIR/.sconsign.dblite" "$DIR/prebuilt" "$DIR/.carrot_boot_build.json" "$SCONS_CACHE"; then
+    sudo -n rm -rf "$DIR/.sconsign.dblite" "$DIR/prebuilt" "$DIR/.carrot_boot_build.json" "$SCONS_CACHE"
   fi
-  for target in "$DIR/.sconsign.dblite" "$SCONS_CACHE" "$DIR/prebuilt"; do
+  for target in "$DIR/.sconsign.dblite" "$SCONS_CACHE" "$DIR/prebuilt" "$DIR/.carrot_boot_build.json"; do
     if [ -e "$target" ] || [ -L "$target" ]; then
       echo "Build state cleanup incomplete: $target remains" >&2
       return 1
@@ -672,8 +676,20 @@ function launch {
     return 1
   fi
 
+  BOOT_RUNTIME_VERIFIED=0
+  BOOT_PREBUILT_DEVICE=0
+  unset CARROT_NATIVE_PREBUILT
+  if [ -f /AGNOS ] && [ -r /sys/firmware/devicetree/base/model ]; then
+    case "$(tr -d '\000' < /sys/firmware/devicetree/base/model)" in
+      "comma tizi"|"comma mici") BOOT_PREBUILT_DEVICE=1 ;;
+    esac
+  fi
+  if [ "$BOOT_PREBUILT_DEVICE" = 1 ] && [ "$BUILD_STATE_RESET" != 1 ] && with_cache_guard python3 "$DIR/openpilot/system/manager/boot_prebuilt.py" prepare; then
+    BOOT_RUNTIME_VERIFIED=1
+  fi
+
   # Build Params before any long-running carrot service imports it.
-  if ! CARROT_STARTUP_STAGE="Building settings registry" run_startup_command bash "$DIR/scripts/ensure_params_build.sh"; then
+  if ! CARROT_BOOT_PARAMS_VERIFIED="${BOOT_RUNTIME_VERIFIED:-0}" CARROT_STARTUP_STAGE="Building settings registry" run_startup_command bash "$DIR/scripts/ensure_params_build.sh"; then
     echo "Params registry build failed, not starting openpilot."
     show_startup_failure "Params registry build failed"
   fi
@@ -715,11 +731,15 @@ function launch {
 
   # start manager
   cd openpilot/system/manager
-  if [ "$FORCE_REBUILD" = "1" ] || [ ! -f $DIR/prebuilt ]; then
+  if [ "$BOOT_PREBUILT_DEVICE" = 1 ] || [ "$FORCE_REBUILD" = "1" ] || [ ! -f "$DIR/prebuilt" ]; then
+    if [ "$BOOT_RUNTIME_VERIFIED" = 1 ] && [ "$FORCE_REBUILD" = 0 ]; then
+      export CARROT_NATIVE_PREBUILT=1
+    fi
     if ! run_startup_command ./build.py; then
       echo "openpilot build failed, not starting manager."
       show_startup_failure "openpilot build failed"
     fi
+    unset CARROT_NATIVE_PREBUILT
     if [ "$FORCE_REBUILD" = "1" ]; then
       mkdir -p "$DIR/openpilot/selfdrive/modeld/models"
       echo -n "$MODEL_BUILD_STAMP_VALUE" > "$DIR/openpilot/selfdrive/modeld/models/.build_stamp"

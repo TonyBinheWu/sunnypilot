@@ -107,7 +107,7 @@ def finalize_namespace(interrupt=False):
   def noop(*args, **kwargs):
     pass
 
-  ns = {"os": SimpleNamespace(path=SimpleNamespace(exists=lambda _: False)),
+  ns = {"Path": Path, "AGNOS": False, "os": SimpleNamespace(path=SimpleNamespace(exists=lambda _: False)),
         "shutil": SimpleNamespace(copytree=noop),
         "cloudlog": SimpleNamespace(info=noop, event=noop, exception=noop),
         "time": time, "subprocess": subprocess, "FINALIZED": "finalized", "OVERLAY_MERGED": "merged",
@@ -131,3 +131,17 @@ def test_interrupted_finalization_never_marks_update_ready():
   with pytest.raises(KeyboardInterrupt):
     ns["finalize_update"]()
   assert ns["flags"] == [False]
+
+
+def test_prebuilt_is_prepared_in_inactive_checkout_before_marking_ready(tmp_path):
+  ns = finalize_namespace()
+  tool = tmp_path / "openpilot/system/manager/boot_prebuilt.py"
+  manifest = tmp_path / "prebuilt_assets/manifest.json"
+  for file in (tool, manifest):
+    file.parent.mkdir(parents=True)
+    file.touch()
+  sequence = []
+  ns.update(AGNOS=True, FINALIZED=str(tmp_path), set_consistent_flag=sequence.append,
+            run=lambda cmd, cwd: sequence.append((cmd, cwd)))
+  ns["finalize_update"]()
+  assert sequence[-2:] == [(["python3", str(tool), "prepare"], str(tmp_path)), True]

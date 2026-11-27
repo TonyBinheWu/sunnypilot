@@ -315,14 +315,22 @@ cd "$SOURCE_DIR"
 BUILD_BRANCH="release-build/${VERSION}-$(date +%s)-$$"
 git switch -c "$BUILD_BRANCH" "$SOURCE_COMMIT"
 
-log "Cleaning build-only files"
-find . -type f \( -name '*.a' -o -name '*.o' -o -name '*.os' -o -name '*.pyc' -o -name 'moc_*' \) -delete
-find . -type d -name '__pycache__' -prune -exec rm -rf -- {} +
-rm -rf -- .sconsign.dblite Jenkinsfile release/
-rm -f -- openpilot/selfdrive/modeld/models/*.onnx
-touch prebuilt
+if [[ -f release/prepare_boot_build.sh ]]; then
+  log "Building and packaging verified native programs and both camera models"
+  bash release/prepare_boot_build.sh
+  RELEASE_SCOPE=(prebuilt_assets)
+else
+  # Older source trees used the legacy dated-branch layout.
+  RELEASE_SCOPE=(.)
+  log "Cleaning build-only files"
+  find . -type f \( -name '*.a' -o -name '*.o' -o -name '*.os' -o -name '*.pyc' -o -name 'moc_*' \) -delete
+  find . -type d -name '__pycache__' -prune -exec rm -rf -- {} +
+  rm -rf -- .sconsign.dblite Jenkinsfile release/
+  rm -f -- openpilot/selfdrive/modeld/models/*.onnx
+  touch prebuilt
+fi
 
-BIG_FILES="$(find . -type f -not -path './.git/*' -size +95M -print)"
+BIG_FILES="$(find "${RELEASE_SCOPE[@]}" -type f -not -path './.git/*' -size +95M -print)"
 [[ -z "$BIG_FILES" ]] || die "files exceeding the GitHub size limit were found:\n$BIG_FILES"
 
 REMOTE_SHA="$PREFLIGHT_SHA"
@@ -376,7 +384,9 @@ commit_release_batch() {
 
   BATCH_INDEX=$((BATCH_INDEX + 1))
   git commit -m "$VERSION build batch $BATCH_INDEX"
-  push_release_head "release batch $BATCH_INDEX"
+  # The verified source-preserving format publishes the complete catalog and
+  # its blobs together. Older large dated releases retain their batch transfer.
+  if [[ "${RELEASE_SCOPE[0]}" = "." ]]; then push_release_head "release batch $BATCH_INDEX"; fi
 }
 
 # Stage build products in bounded batches. Each intermediate push seeds the
@@ -384,10 +394,14 @@ commit_release_batch() {
 # commits are squashed below, so the final release branch still has one commit.
 mapfile -d '' -t RELEASE_PATHS < <(
   {
-    git diff --name-only -z
-    git ls-files --others -z
+    git diff --name-only -z -- "${RELEASE_SCOPE[@]}"
+    git ls-files --others -z -- "${RELEASE_SCOPE[@]}"
   } | sort -zu
 )
+if (( ${#RELEASE_PATHS[@]} == 0 )) && [[ "${RELEASE_SCOPE[0]}" = "prebuilt_assets" ]]; then
+  push_release_head "verified release"
+  exit 0
+fi
 ((${#RELEASE_PATHS[@]} > 0)) || die "release cleanup produced no changes"
 
 for path in "${RELEASE_PATHS[@]}"; do
@@ -405,11 +419,11 @@ done
 commit_release_batch
 
 # Catch files created or changed while the batches were being committed.
-git add -f -A
+git add -f -A -- "${RELEASE_SCOPE[@]}"
 if ! git diff --cached --quiet; then
   BATCH_INDEX=$((BATCH_INDEX + 1))
   git commit -m "$VERSION build batch $BATCH_INDEX"
-  push_release_head "release batch $BATCH_INDEX"
+  if [[ "${RELEASE_SCOPE[0]}" = "." ]]; then push_release_head "release batch $BATCH_INDEX"; fi
 fi
 
 # Replace the temporary batch history with the original single release commit.

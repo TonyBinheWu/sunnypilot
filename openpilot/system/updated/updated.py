@@ -198,6 +198,15 @@ def finalize_update() -> None:
   except subprocess.CalledProcessError:
     cloudlog.exception(f"Failed LFS cleanup, took {time.monotonic() - t:.3f} s")
 
+  # Expand the new revision's verified runtime in the inactive checkout.
+  # A source-only or incompatible release still has the normal boot build.
+  prepare = Path(FINALIZED) / "openpilot/system/manager/boot_prebuilt.py"
+  if AGNOS and prepare.is_file() and (Path(FINALIZED) / "prebuilt_assets/manifest.json").is_file():
+    try:
+      cloudlog.info(run(["python3", str(prepare), "prepare"], FINALIZED))
+    except subprocess.CalledProcessError as e:
+      cloudlog.info(f"Prebuilt unavailable in staging; using boot build: {e.output}")
+
   set_consistent_flag(True)
   cloudlog.info("done finalizing overlay")
 

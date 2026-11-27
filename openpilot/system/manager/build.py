@@ -3,6 +3,7 @@ import os
 import selectors
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -227,10 +228,15 @@ def build_usbgpu_model(spinner: Spinner) -> bool:
   write_big_model_status(model_cache_dir(), "error", detail="compile failed; using internal model", **status_values)
   return False
 
-def build(spinner: Spinner, dirty: bool = False, minimal: bool = False) -> None:
+def build(spinner: Spinner, dirty: bool = False, minimal: bool = False, targets: Path | None = None) -> None:
   env = os.environ.copy()
   env['SCONS_PROGRESS'] = "1"
   env['PYTHONUNBUFFERED'] = "1"
+  if targets is not None:
+    env['CARROT_BUILD_TARGETS'] = str(targets)
+    repair = Path(BASEDIR) / '.carrot_boot_repair'
+    if repair.is_file():
+      env['CARROT_BUILD_REPAIR'] = str(repair)
   nproc = os.cpu_count()
   if nproc is None:
     nproc = 2
@@ -336,6 +342,20 @@ def prune_cache(cache_dir: Path) -> None:
 if __name__ == "__main__":
   with Spinner() as spinner:
     spinner.update_progress(0, 100)
-    build_metadata = get_build_metadata()
-    build(spinner, build_metadata.openpilot.is_dirty, minimal = AGNOS)
+    if AGNOS and os.environ.get('CARROT_NATIVE_PREBUILT') == '1':
+      print('Verified native programs and QCOM models; skipping SCons', flush=True)
+    elif AGNOS and HARDWARE.get_device_type() in ('tizi', 'mici'):
+      from openpilot.system.manager import boot_prebuilt
+      root = Path(BASEDIR)
+      (root / boot_prebuilt.RECEIPT).unlink(missing_ok=True)
+      with tempfile.TemporaryDirectory() as tmp:
+        targets = Path(tmp) / 'targets'
+        build(spinner, minimal=True, targets=targets)
+        try:
+          with acquire_cache_lock(CACHE_DIR):
+            boot_prebuilt.record(root, targets)
+        except (OSError, ValueError, KeyError, TypeError, RuntimeError, subprocess.CalledProcessError) as exc:
+          print(f'Keeping normal source build on next boot: {exc}', flush=True)
+    else:
+      build(spinner, get_build_metadata().openpilot.is_dirty, minimal=AGNOS)
     build_usbgpu_model(spinner)

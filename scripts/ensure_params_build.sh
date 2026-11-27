@@ -48,6 +48,13 @@ if [ "$HEADER_HASH" = "$BUILT_HASH" ] && [ -f "$MODULE" ]; then
   exit 0
 fi
 
+if [ "${CARROT_BOOT_PARAMS_VERIFIED:-0}" = 1 ] &&
+   PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/openpilot/system/manager/params_check.py"; then
+  printf '%s\n' "$HEADER_HASH" > "$STAMP.tmp"
+  mv -f "$STAMP.tmp" "$STAMP"
+  exit 0
+fi
+
 echo "Params registry changed; rebuilding params_pyx.so."
 rm -f \
   "$ROOT/openpilot/common/params.o" \
