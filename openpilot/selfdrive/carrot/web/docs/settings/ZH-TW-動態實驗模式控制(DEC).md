@@ -13,10 +13,10 @@
 
 `DynamicExperimentalControl`
 
-使用 openpilot 縱向控制時，下次行程生效。開啟後依路況切換巡航跟車與模型協同。關閉時持續比較模型、跟車與巡航上限。
+使用 openpilot 縱向控制時，下次行程生效。預設關閉，確認前方淨空後由模型在巡航上限內決定加速度。開啟後依路況切換巡航跟車與模型協同。
 
 <!-- CARROT:AUTO:BEGIN DynamicExperimentalControl -->
-<!-- CARROT:AUTO:SOURCE facts="e1fa2834f46d509051790ed7797d5ee341c738c86e27eba43a8775717e513cd7" semantic="a7a764b20cbe66993b48c48e82db9071065d70108e424f5ae323dde2cf4d87d8" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="58afbd2185e72aa4dbfaa37e44509bc368af3379e065904e623d932a69e51636" semantic="812cd842d2e82c6f1efab61b169f7a27f6ca8a20c4399a0143bf5fb7f7405fcd" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **型別:** 開關
 - **預設值:** `0`

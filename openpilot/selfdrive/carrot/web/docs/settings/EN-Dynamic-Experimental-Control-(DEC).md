@@ -13,10 +13,10 @@
 
 `DynamicExperimentalControl`
 
-Applies next drive with openpilot longitudinal control. Switch between ACC and blended planning according to the scene. When off, continuously compare model, following and cruise targets.
+Applies next drive with openpilot longitudinal control. Off by default. Once the road is confirmed clear, the model sets acceleration within the cruise ceiling. Turn on to switch between ACC and blended planning as conditions change.
 
 <!-- CARROT:AUTO:BEGIN DynamicExperimentalControl -->
-<!-- CARROT:AUTO:SOURCE facts="db5040462c7df2aca8ff09f62f8d985cf0cafc1fa0ca28595c660613d05d5f73" semantic="a7a764b20cbe66993b48c48e82db9071065d70108e424f5ae323dde2cf4d87d8" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="ce542b8cc097167113af480aab1cb1382a6e96bdcd7e9baf471e7d83c5c9bf35" semantic="812cd842d2e82c6f1efab61b169f7a27f6ca8a20c4399a0143bf5fb7f7405fcd" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **Type:** Toggle
 - **Default:** `0`

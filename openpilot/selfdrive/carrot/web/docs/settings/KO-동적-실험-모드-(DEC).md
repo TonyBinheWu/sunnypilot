@@ -13,10 +13,10 @@
 
 `DynamicExperimentalControl`
 
-openpilot 종방향 제어에서 다음 주행부터 적용합니다. 켜면 도로 상황에 따라 ACC와 모델 협조 모드를 전환합니다. 끄면 모델, 차간거리, 설정 속도를 계속 비교합니다.
+openpilot 종방향 제어에서 다음 주행부터 적용합니다. 기본값은 꺼짐입니다. 전방에 차가 없음을 확인하면 설정 속도 한도 내에서 모델이 가속도를 결정합니다. 켜면 도로 상황에 따라 ACC와 모델 협조 모드를 전환합니다.
 
 <!-- CARROT:AUTO:BEGIN DynamicExperimentalControl -->
-<!-- CARROT:AUTO:SOURCE facts="a49769cad7abd299dc353987cab727ac5f30fcbcefa11d73cf1434822a68bb96" semantic="a7a764b20cbe66993b48c48e82db9071065d70108e424f5ae323dde2cf4d87d8" review="needs_review" -->
+<!-- CARROT:AUTO:SOURCE facts="782337a54519004d16ed04b564f1e68f7fb77a0b01ac45fcfec00fe03e3ebf51" semantic="812cd842d2e82c6f1efab61b169f7a27f6ca8a20c4399a0143bf5fb7f7405fcd" review="needs_review" -->
 <!-- CARROT:SECTION:BEGIN OVERVIEW -->
 - **종류:** 토글
 - **기본값:** `0`

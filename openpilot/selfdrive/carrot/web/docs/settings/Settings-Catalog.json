@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "28dd9ce82bbcfa01cb488629e0fdfe87f30894ce",
-  "contentHash": "a941bd4b3e998307d0f7f6b1c97614e09c08158081140052c593eb30c1e4ecf4",
-  "generatedAt": "2026-11-26T00:00:00+08:00",
+  "catalogCommit": "20da537fa1d3850ab165f4f5ff92f81a1a00c1a3",
+  "contentHash": "eaf7e977c3e00d009c9744d4bc80818399170e299a48beac786179b70a395d96",
+  "generatedAt": "2026-11-27T10:20:23+08:00",
   "locales": [
     "ko",
     "en",
@@ -198,8 +198,8 @@
       "hash": "726d37796f98ef0198a6cc5353a3eca7c83be8b2403e72c81d24d1a125f2f8d3"
     },
     "EN-Dynamic-Experimental-Control-(DEC).md": {
-      "bytes": 1420,
-      "hash": "468d774cfcbbadfebc09226181c55213229a68c6b98aa97d76e41931298e862f"
+      "bytes": 1466,
+      "hash": "686ff62d2d2a224293e639798adb54ab02d7f13fc0d51475bd79beaa61a452af"
     },
     "EN-Enable-Carrot-Vision.md": {
       "bytes": 2512,
@@ -894,8 +894,8 @@
       "hash": "cb6685d31d62a36d02ce2b69430e67b81750b7abf8859619b3be224775d70685"
     },
     "KO-동적-실험-모드-(DEC).md": {
-      "bytes": 1460,
-      "hash": "11070153beefcaa9ef1eef155d7cd58a68cfde382fdde1a4d28a0380edb2048a"
+      "bytes": 1531,
+      "hash": "a2f7fbf98df7b0c2ccf435f161ee2f8ed7e06c7f30476db86893ce661822e541"
     },
     "KO-디바이스정보-표시.md": {
       "bytes": 1701,
@@ -1494,8 +1494,8 @@
       "hash": "ddbdc5060df1b2524089a37ce1241dcd9209ac7f539ccb74844bc4eca3408b58"
     },
     "ZH-TW-動態實驗模式控制(DEC).md": {
-      "bytes": 1419,
-      "hash": "015a9d3c47d3524251c31fd9987feae283dcae0d779fb61f1320ff4899fe9b24"
+      "bytes": 1446,
+      "hash": "e29473c5c613d3d9fa5e730ec4157a4f2f84f20e77360d5c82383f9f69a22695"
     },
     "ZH-TW-取消後允許軟駐車(0).md": {
       "bytes": 1242,
@@ -2058,8 +2058,8 @@
       "hash": "281c5ab3c2285a01489fe261ccc3806ecb5c18ea5b2a1af99ed6f1b0ac750f41"
     },
     "ZH-动态实验模式控制(DEC).md": {
-      "bytes": 1416,
-      "hash": "96784c233b259123d6061a88caf30cf0be75975a6b27231fe36cd915dbafcc39"
+      "bytes": 1443,
+      "hash": "c7581810882553fca61bf04df12fa41e1358611d6dd2789b57c73f7f6750c82a"
     },
     "ZH-单触变道请求等待-5-次闪烁.md": {
       "bytes": 1516,
@@ -4523,31 +4523,31 @@
       "locales": {
         "en": {
           "anchor": "DynamicExperimentalControl",
-          "factsHash": "db5040462c7df2aca8ff09f62f8d985cf0cafc1fa0ca28595c660613d05d5f73",
+          "factsHash": "ce542b8cc097167113af480aab1cb1382a6e96bdcd7e9baf471e7d83c5c9bf35",
           "page": "EN-Dynamic-Experimental-Control-(DEC).md",
           "reviewStatus": "needs_review"
         },
         "ko": {
           "anchor": "DynamicExperimentalControl",
-          "factsHash": "a49769cad7abd299dc353987cab727ac5f30fcbcefa11d73cf1434822a68bb96",
+          "factsHash": "782337a54519004d16ed04b564f1e68f7fb77a0b01ac45fcfec00fe03e3ebf51",
           "page": "KO-동적-실험-모드-(DEC).md",
           "reviewStatus": "needs_review"
         },
         "zh": {
           "anchor": "DynamicExperimentalControl",
-          "factsHash": "b939b88eef11c4f711e57306101e2cc685062f8dea71174634dc1efa2c41de2f",
+          "factsHash": "3ba642a647ee45f1e9a2d617fca928e4dfc801ddfcf25bbcec61255761ba0a3f",
           "page": "ZH-动态实验模式控制(DEC).md",
           "reviewStatus": "needs_review"
         },
         "zh-tw": {
           "anchor": "DynamicExperimentalControl",
-          "factsHash": "e1fa2834f46d509051790ed7797d5ee341c738c86e27eba43a8775717e513cd7",
+          "factsHash": "58afbd2185e72aa4dbfaa37e44509bc368af3379e065904e623d932a69e51636",
           "page": "ZH-TW-動態實驗模式控制(DEC).md",
           "reviewStatus": "needs_review"
         }
       },
       "reviewStatus": "needs_review",
-      "semanticHash": "a7a764b20cbe66993b48c48e82db9071065d70108e424f5ae323dde2cf4d87d8"
+      "semanticHash": "812cd842d2e82c6f1efab61b169f7a27f6ca8a20c4399a0143bf5fb7f7405fcd"
     },
     "EnableCornerRadar": {
       "group": "VEH_RADAR",
