@@ -134,6 +134,8 @@ def download(url, path, sha256, size, label):
           if time.monotonic()-shown > 5:
             shown = time.monotonic()
             status('download', label, phase='downloading', received=done, total=size)
+  if done < size:
+    raise OSError(f'{label} transfer interrupted at {done} of {size} bytes; partial download retained')
   if done != size or digest.hexdigest() != sha256:
     part.unlink(missing_ok=True)
     raise RuntimeError(f'{label} differs from its pinned SHA-256')

@@ -16,7 +16,7 @@ def healthy(sm, now):
   return (sm.all_checks(['radarState', 'carState']) and sm['carState'].canValid and
           str(sm['carState'].gearShifter) == 'drive' and 0 < sm['carState'].vEgo <= MAX_SPEED and
           all(0 < t <= now and now-t <= FRESH_NS for t in
-              (sm.logMonoTime['radarState'], sm.logMonoTime['carState'], radar.mdMonoTime, radar.carStateMonoTime)) and
+              (sm.logMonoTime['radarState'], sm.logMonoTime['carState'], radar.mdMonoTime, radar.carStateMonoTime, radar.liveTracksMonoTime)) and
           not (err.canError or err.radarFault or err.wrongConfig or err.radarUnavailableTemporary))
 
 
@@ -49,7 +49,7 @@ class ClosingLead:
     if not healthy(sm, now):
       self.reset()
       return False
-    stamp = sm.logMonoTime['radarState']
+    stamp = sm['radarState'].liveTracksMonoTime
     lead = sm['radarState'].leadOne
     if not near_track(lead, 7.) or lead.vRel >= -.5 or lead.dRel > -2.*lead.vRel:
       self.reset()

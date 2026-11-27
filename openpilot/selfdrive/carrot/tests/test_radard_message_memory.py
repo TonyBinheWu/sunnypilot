@@ -89,6 +89,7 @@ def test_publication_replaces_lists_leads_errors_and_validity():
     sm.valid = frame % 2 == 0
     sm.logMonoTime['modelV2'] += 50_000_000
     rr.errors.canError = bool(count)
+    rr.cornerScanMonoTime = sm.logMonoTime['liveTracks']-10_000_000 if count else 0
     lead = dict(empty_lead(), status=True, dRel=float(frame + 10), radarTrackId=frame)
     for field in LIST_FIELDS.values():
       setattr(output, field, [lead] * count)
@@ -101,6 +102,8 @@ def test_publication_replaces_lists_leads_errors_and_validity():
       assert event.radarState.mdMonoTime == sm.logMonoTime['modelV2']
       assert event.radarState.carStateMonoTime == sm.logMonoTime['carState']
       assert event.radarState.radarErrors.to_dict() == rr.errors.to_dict()
+      assert event.radarState.cornerScanMonoTime == rr.cornerScanMonoTime
+      assert event.radarState.liveTracksMonoTime == sm.logMonoTime['liveTracks']
       for field in LIST_FIELDS:
         assert len(getattr(event.radarState, field)) == count
         assert all(item.dRel == lead['dRel'] for item in getattr(event.radarState, field))

@@ -29,7 +29,7 @@ def observations():
 
 def advance(sm, stamp):
   sm.logMonoTime.update(carState=stamp, radarState=stamp)
-  sm['radarState'].cornerScanMonoTime = stamp
+  sm['radarState'].liveTracksMonoTime = sm['radarState'].cornerScanMonoTime = stamp
   sm['radarState'].carStateMonoTime = sm['radarState'].mdMonoTime = stamp
   return stamp
 
@@ -69,6 +69,11 @@ def test_duplicate_radar_samples_never_qualify():
   guard = ClosingLead()
   now = advance(sm, 1_000_000_000)
   assert not any(guard.update(sm, now+i) for i in range(10))
+  for i in range(1, 5):
+    # New model/fusion results can all use one held physical track message.
+    stamp = advance(sm, now+i*25_000_000)
+    sm['radarState'].liveTracksMonoTime = now
+    assert not guard.update(sm, stamp)
 
 
 @pytest.mark.parametrize('side', ['left', 'right'])
