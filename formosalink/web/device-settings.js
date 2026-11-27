@@ -102,6 +102,11 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     const status=settingBlockReason(state)||'settingsReady';
     $('settings-banner').classList.toggle('is-ready',fresh&&snapshot?.offroad&&snapshot?.remote_enabled);
     $('settings-banner-text').textContent=t(status);$('settings-last-seen').textContent=`${t('received')} ${date(state?.received_at)}`;$('settings-retry-label').textContent=t('refresh');
+    if (!query && ['home','software'].includes(section) && !window.CcncDevice) {
+      const link=el('a',t('apkDownload'),'apk-download');
+      link.href='/downloads/FormosaLink-ccNC-1.1.0.apk'; link.download='FormosaLink-ccNC-1.1.0.apk';
+      body.append(link);
+    }
     if(!query&&section==='home'){$('settings-banner-text').textContent=t('fleetHealthNote');$('settings-banner').classList.remove('is-ready');deviceHealth(body,{devices:getDevices(),t,el,date,onOpen:d=>open(d,'device')});return;}
     if(!snapshot){body.append(el('div',t('settingsWaiting'),'workspace-card workspace-empty'));return;}
     if (!query && section==='profiles') {
@@ -113,11 +118,6 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     }
     if(!query&&['device','home'].includes(section))info(snapshot);
     if(!query&&section==='models')modelStatus(body,snapshot,{el,t});
-    if (!query && ['home','software'].includes(section) && !window.CcncDevice) {
-      const link=el('a',t('apkDownload'),'apk-download');
-      link.href='/downloads/FormosaLink-ccNC-1.1.0.apk'; link.download='FormosaLink-ccNC-1.1.0.apk';
-      body.append(link);
-    }
     if(!query&&section==='navigation'){navigation(snapshot);return;}
     if (!query && section === 'vehicle' && !snapshot.catalog?.some(item => item.key === 'CarPlatformBundle' && item.vehicles)) {
       body.append(el('p',t('vehicleUpgrade'),'workspace-card'));
