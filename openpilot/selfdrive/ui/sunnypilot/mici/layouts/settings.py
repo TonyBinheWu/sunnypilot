@@ -11,7 +11,7 @@ from openpilot.selfdrive.ui.mici.layouts.settings.device import DeviceLayoutMici
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton
 from openpilot.selfdrive.ui.mici.widgets.button import BigCircleButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog, BigDialog
-from openpilot.sunnypilot.formosalink.ui import open_pairing
+from openpilot.sunnypilot.formosalink.ui import mici_lan_button, open_pairing
 from openpilot.selfdrive.ui.sunnypilot.mici.layouts.models import ModelsLayoutMici
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app, FontWeight
@@ -121,6 +121,7 @@ class SettingsLayoutSP(OP.SettingsLayout):
     items.insert(5, formosalink_btn)
 
     items.insert(0, formosa_btn)
+    items.insert(1, mici_lan_button())
 
     # front slots (only one ever visible at a time): exit-always-offroad, then enable-onroad
     items.insert(0, self._enable_offroad_btn_onroad)

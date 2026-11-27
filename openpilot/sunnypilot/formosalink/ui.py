@@ -93,6 +93,12 @@ def add_mici_pair_button(scroller):
   button.set_click_callback(open_pairing)
   button.set_enabled(ui_state.is_offroad)
   scroller.add_widget(button)
+  scroller.add_widget(mici_lan_button())
+
+
+def mici_lan_button():
+  from openpilot.selfdrive.ui.mici.widgets.button import BigButton
+
   class LanButton(BigButton):
     def _get_label_font_size(self):
       return 39
@@ -104,7 +110,7 @@ def add_mici_pair_button(scroller):
   lan = LanButton(lan_label(), "FormosaLink", gui_app.texture("icons_mici/settings/device/pair.png", 33, 60))
   lan.set_click_callback(open_lan_pairing)
   lan.set_enabled(ui_state.is_offroad)
-  scroller.add_widget(lan)
+  return lan
 
 
 class FormosaConnectionCard(Widget):

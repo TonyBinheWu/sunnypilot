@@ -109,6 +109,15 @@ class TestQRScreen(unittest.TestCase):
       entries = []
       ui.add_mici_pair_button(SimpleNamespace(add_widget=entries.append))
       self.assertEqual(entries[1].text, ui.lan_label())
+      from tempfile import TemporaryDirectory
+      from openpilot.common.params import Params
+      from openpilot.selfdrive.ui.sunnypilot.mici.layouts.settings import SettingsLayoutSP
+      with TemporaryDirectory() as folder, patch.object(ui.ui_state, "params", Params(folder)), patch.object(ui.gui_app, "push_widget") as push:
+        menu = SettingsLayoutSP()
+        shortcuts = [item for item in menu._scroller._items if getattr(item, "text", None) == ui.lan_label()]
+        self.assertEqual(len(shortcuts), 1)
+        shortcuts[0]._click_callback()
+        self.assertIsInstance(push.call_args.args[0], ui.LanPairingDialog)
     dialog = ui.FormosaPairingDialog()
     self.pending(dialog)
     with patch.object(dialog._lan, "render") as lan:
