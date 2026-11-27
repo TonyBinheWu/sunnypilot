@@ -167,17 +167,22 @@ def test_modeld_passes_validated_pose_and_hold_permission_to_actual_desire_updat
   sm.valid['radarState'] = sm.alive['radarState'] = True
   sm.recv_time['radarState'] = 10.
   received = []
-  namespace = {"DH": NS(tesla_auto_signals=True, update=lambda *args, **kwargs: received.append(kwargs)), "sm": sm,
+  namespace = {"DH": NS(tesla_auto_signals=True, update=lambda *args, **kwargs: received.append(kwargs)), "sm": sm, "vision_only": False,
                "indicator_now": 10., "indicator_valid": True, "turn_signal_context": turn_signal_context,
                "params": NS(get_bool=lambda name: False), "time": NS(clock_gettime_ns=lambda clock: N, CLOCK_MONOTONIC=1),
                "modelv2_send": NS(modelV2=log.ModelDataV2.new_message()), "lane_change_prob": .5}
   block = next(node.body for node in ast.walk(tree) if isinstance(getattr(node, 'body', None), list) and init in node.body)
-  code = compile(ast.Module(body=block[block.index(init):block.index(call) + 1], type_ignores=[]), str(path), "exec")
+  dispatch = next(statement for statement in block if call in ast.walk(statement))
+  code = compile(ast.Module(body=block[block.index(init):block.index(dispatch) + 1], type_ignores=[]), str(path), "exec")
   exec(code, namespace)
   assert received[-1]["turn_hold_allowed"]
   assert received[-1]["turn_pose"] == (N, .5)
   assert received[-1]["assistant_valid"]
   assert received[-1]['indicator_yaw_rate'] == pytest.approx(-.2)
+  namespace['vision_only'] = True
+  exec(code, namespace)
+  assert len(received) == 1
+  namespace['vision_only'] = False
   sm.recv_time['radarState'] -= .4
   exec(code, namespace)
   assert not received[-1]["assistant_valid"]

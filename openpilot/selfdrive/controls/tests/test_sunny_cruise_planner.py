@@ -55,7 +55,7 @@ def test_converges_to_cruise_setting(monkeypatch, set_speed, personality, experi
 
 
 @pytest.mark.parametrize('camera', [False, True])
-@pytest.mark.parametrize('scene', ['empty', 'distant', 'slowing'])
+@pytest.mark.parametrize('scene', ['empty', 'distant', 'slower_ahead', 'slowing'])
 def test_highway_recovery_and_braking_closed_loop(monkeypatch, camera, scene):
   p, sm = setup_planner(monkeypatch, camera=camera)
   cs = sm['carState']
@@ -64,7 +64,10 @@ def test_highway_recovery_and_braking_closed_loop(monkeypatch, camera, scene):
   for frame in range(900):
     advance(sm)
     if scene != 'empty':
-      lead_speed = 120. / 3.6 if scene == 'distant' else max(10., 25. - 2. * max(0., frame * .05 - 5.))
+      if scene == 'slowing':
+        lead_speed = max(10., 25. - 2. * max(0., frame * .05 - 5.))
+      else:
+        lead_speed = (100. if scene == 'slower_ahead' else 120.) / 3.6
       lead = sm['radarState'].leadOne
       lead.status, lead.modelProb, lead.aLeadTau = True, .98, .3
       lead.dRel, lead.vLead, lead.vRel = gap, lead_speed, lead_speed - cs.vEgo
@@ -78,11 +81,14 @@ def test_highway_recovery_and_braking_closed_loop(monkeypatch, camera, scene):
     cs.vEgo += cs.aEgo * .05
     peak_speed = max(peak_speed, cs.vEgo)
     min_command = min(min_command, cs.aEgo)
-    if frame == 399 and scene != 'slowing':
+    if frame == 399 and scene in ('empty', 'distant'):
       assert 119. <= cs.vEgo * 3.6 <= 120.01
   assert peak_speed * 3.6 <= 120.01
   if scene == 'slowing':
     assert min_command < -1. and 34. <= cs.vEgo * 3.6 <= 38. and 15. < gap < 28.
+  elif scene == 'slower_ahead':
+    assert peak_speed * 3.6 > 105.
+    assert 99. < cs.vEgo * 3.6 < 105. and 40. < gap < 65.
   else:
     assert cs.vEgo * 3.6 == pytest.approx(120., abs=.05)
 
