@@ -1,10 +1,15 @@
 package tw.formosapilot.ccnc;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
+import android.net.Network;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -25,8 +30,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.json.JSONObject;
 
 public final class MainActivity extends Activity {
@@ -35,9 +43,18 @@ public final class MainActivity extends Activity {
   private SharedPreferences prefs;
   private DeviceConnection connection;
   private WebView browser;
-  private EditText hostInput, pinInput, codeInput;
+  private final ExecutorService searchWorker = Executors.newSingleThreadExecutor();
+  private final Handler handler = new Handler(Looper.getMainLooper());
+  private final Map<String, Button> devices = new HashMap<>();
+  private LinearLayout deviceList;
+  private TextView discoveryStatus;
+  private boolean resumed, connecting, autoReconnect = true;
+  private long searchUntil;
+  private int searchGeneration;
+  private Future<?> pendingSearch;
+  private final Runnable searchAgain = this::search;
   private TextView status;
-  private Button connect;
+  private Button rescan;
   private String selectedId, pendingExport;
   private int generation;
   private final Files fileBridge = new Files();
@@ -90,6 +107,7 @@ public final class MainActivity extends Activity {
   }
   private void form() {
     generation++;
+    cancelSearch();
     connection = null;
     pendingExport = null;
     if (browser != null) {
@@ -106,30 +124,27 @@ public final class MainActivity extends Activity {
     scroll.addView(panel);
     display(scroll);
     label(panel, "FormosaLink ccNC", 30);
-    label(panel,
-        tr("將手機與車機連上同一個 Wi-Fi。停車後，在車機的 FormosaLink 開啟「區網 "
-           + "APK」，按「產生配對碼」。",
-            "Join the device Wi-Fi. While parked, open FormosaLink → LAN app on the device and "
-            + "choose Pair a phone."),
-        17);
-    hostInput = field(panel, tr("車機位址", "Device IP"), "192.168.1.20",
-        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-    hostInput.setText(prefs.getString("host", ""));
-    pinInput = field(panel, tr("車機顯示的憑證碼", "Certificate code on device"), "ABCD-EF01-2345",
-        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
-            | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-    codeInput = field(
-        panel, tr("一次性配對碼", "One-time pairing code"), "123456", InputType.TYPE_CLASS_NUMBER);
-    connect = new Button(this);
-    connect.setText(tr("連線", "Connect"));
-    connect.setMinHeight(dp(52));
-    panel.addView(connect);
-    connect.setOnClickListener(v -> connectDevice());
+    label(panel, tr("附近的車機", "Nearby devices"), 23);
+    label(panel, tr("手機和車機連上同一個 Wi-Fi。首次配對時，在停車的車機上點「設定 → 區網手機配對」。",
+        "Join the same Wi-Fi as your device. To add a phone, open Settings → Pair local phone on the parked device."), 17);
+    discoveryStatus = label(panel, "", 16);
+    discoveryStatus.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+    deviceList = new LinearLayout(this);
+    deviceList.setOrientation(LinearLayout.VERTICAL);
+    panel.addView(deviceList);
+    devices.clear();
+    connecting = false;
+    rescan = action(panel, tr("重新搜尋", "Search again"), v -> beginSearch());
     status = label(panel, "", 16);
     status.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
-    if (prefs.contains("token"))
-      status.setText(tr("此手機已配對。再次連線可留空憑證碼與配對碼。",
-          "Already paired. Leave both codes empty to reconnect."));
+    if (prefs.contains("token")) {
+      action(panel, tr("連線上次配對的車機", "Connect to last paired device"), v ->
+          connectDevice(prefs.getString("host", ""), prefs.getString("pin", ""), "", null, true));
+    }
+    action(panel, tr("手動連線（舊版車機）", "Manual connection (older devices)"), v -> {
+      autoReconnect = false;
+      pairingDialog("", "", null);
+    });
     if (prefs.contains("token")) {
       Button forget = new Button(this);
       forget.setText(tr("忘記此車機", "Forget this device"));
@@ -139,27 +154,125 @@ public final class MainActivity extends Activity {
         form();
       });
     }
+    if (resumed) beginSearch();
   }
-  private void connectDevice() {
-    final String host = hostInput.getText().toString().trim(),
-                 pin = pinInput.getText().toString().trim(),
-                 code = codeInput.getText().toString().trim();
-    final boolean existing = pin.isEmpty() && code.isEmpty() && prefs.contains("token");
+  private Button action(LinearLayout panel, String title, View.OnClickListener click) {
+    Button b = new Button(this);
+    b.setText(title);
+    b.setAllCaps(false);
+    b.setMinHeight(dp(48));
+    b.setOnClickListener(click);
+    panel.addView(b);
+    return b;
+  }
+
+  private static String shortPin(String pin) {
+    String s = pin.substring(0, 12).toUpperCase(Locale.ROOT);
+    return s.substring(0, 4) + "-" + s.substring(4, 8) + "-" + s.substring(8);
+  }
+
+  private void pairingDialog(String host, String pin, Network network) {
+    boolean manual = host.isEmpty();
+    LinearLayout box = new LinearLayout(this);
+    box.setPadding(dp(22), dp(10), dp(22), dp(8));
+    box.setOrientation(LinearLayout.VERTICAL);
+    ScrollView fields = new ScrollView(this);
+    fields.addView(box);
+    EditText ip = manual ? field(box, tr("車機位址", "Device IP"), "", InputType.TYPE_CLASS_TEXT) : null;
+    EditText cert = manual ? field(box, tr("車機識別碼", "Certificate code"), "", InputType.TYPE_CLASS_TEXT) : null;
+    if (manual) ip.setText(prefs.getString("host", ""));
+    else {
+      label(box, shortPin(pin), 25);
+      label(box, tr("確認這組識別碼與車機畫面相同，再輸入車機顯示的六位數配對碼。",
+          "Match this ID with the one on the device, then enter its six-digit pairing code."), 16);
+    }
+    EditText code = field(box, tr("六位數配對碼", "Six-digit pairing code"), "", InputType.TYPE_CLASS_NUMBER);
+    code.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(6)});
+    AlertDialog dialog = new AlertDialog.Builder(this)
+        .setTitle(tr("配對車機", "Pair device")).setView(fields)
+        .setNegativeButton(android.R.string.cancel, null)
+        .setPositiveButton(tr("配對", "Pair"), null).create();
+    dialog.show();
+    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+      String entered = code.getText().toString();
+      if (!entered.matches("[0-9]{6}")) {
+        code.setError(tr("請輸入六位數", "Enter six digits"));
+        return;
+      }
+      autoReconnect = false;
+      dialog.dismiss();
+      connectDevice(manual ? ip.getText().toString().trim() : host,
+          manual ? cert.getText().toString().trim() : pin, entered, network, false);
+    });
+  }
+
+  private void beginSearch() {
+    cancelSearch();
+    devices.clear();
+    deviceList.removeAllViews();
+    searchUntil = SystemClock.elapsedRealtime() + 60000;
+    discoveryStatus.setText(tr("正在搜尋同一個區網的車機…", "Searching your local network…"));
+    search();
+  }
+
+  private void cancelSearch() {
+    searchGeneration++;
+    handler.removeCallbacks(searchAgain);
+    if (pendingSearch != null) pendingSearch.cancel(true);
+  }
+
+  private void search() {
+    if (!resumed || browser != null || connecting) return;
+    int epoch = searchGeneration;
+    rescan.setEnabled(false);
+    pendingSearch = searchWorker.submit(() -> {
+      try {
+        LanDiscovery.search(this, (host, pin, network) -> runOnUiThread(() -> {
+          if (epoch != searchGeneration || !resumed || browser != null || connecting) return;
+          boolean known = prefs.contains("token") && pin.equals(prefs.getString("pin", ""));
+          String key = pin + "/" + host;
+          if (!devices.containsKey(key) && devices.size() < 12) {
+            String title = (known ? tr("已配對", "Paired") : "FormosaLink") + "  " + shortPin(pin);
+            devices.put(key, action(deviceList, title, v -> {
+              if (known) connectDevice(host, pin, "", network, true);
+              else { autoReconnect = false; pairingDialog(host, pin, network); }
+            }));
+          }
+          discoveryStatus.setText(tr("請選擇車機", "Select your device"));
+          if (known && autoReconnect) {
+            autoReconnect = false;
+            connectDevice(host, pin, "", network, true);
+          }
+        }));
+      } catch (IOException | RuntimeException ignored) { /* Wi-Fi may be switching. */ }
+      runOnUiThread(() -> {
+        if (epoch != searchGeneration || !resumed || browser != null) return;
+        rescan.setEnabled(true);
+        if (devices.isEmpty()) discoveryStatus.setText(tr("尚未找到車機。請確認同一個 Wi-Fi、車機已更新並開機。",
+            "No device found. Check that it is updated, powered on and on the same Wi-Fi."));
+        if (SystemClock.elapsedRealtime() < searchUntil) handler.postDelayed(searchAgain, 3000);
+      });
+    });
+  }
+
+  private void connectDevice(String host, String pin, String code, Network network, boolean existing) {
+    if (connecting) return;
     if (!existing && !code.matches("[0-9]{6}")) {
       status.setText(tr("請輸入六位數配對碼。", "Enter the six-digit code."));
       return;
     }
     final DeviceConnection first;
     try {
-      first = new DeviceConnection(host, existing ? prefs.getString("pin", "") : pin,
-          existing ? prefs.getString("token", "") : "");
+      first = new DeviceConnection(host, pin, existing ? prefs.getString("token", "") : "", network);
     } catch (Exception e) {
       status.setText(tr("請核對區網 IP 與 12 碼憑證碼。",
           "Check the LAN IPv4 address and 12-character certificate code."));
       return;
     }
     int epoch = ++generation;
-    connect.setEnabled(false);
+    cancelSearch();
+    connecting = true;
+    rescan.setEnabled(false);
     status.setText(tr("連線中…", "Connecting…"));
     io.execute(() -> {
       try {
@@ -170,9 +283,19 @@ public final class MainActivity extends Activity {
           if (paired.status != 200)
             throw new IllegalArgumentException("pair");
           client = new DeviceConnection(
-              host, first.verifiedPin, new JSONObject(paired.data).getString("token"));
+              host, first.verifiedPin, new JSONObject(paired.data).getString("token"), network);
         }
         DeviceConnection.Reply res = client.call("/v1/state", "");
+        if (res.status == 401 && existing) {
+          runOnUiThread(() -> {
+            if (generation != epoch || isFinishing()) return;
+            prefs.edit().clear().apply();
+            autoReconnect = false;
+            form();
+            status.setText(tr("車機已解除配對。請在車機產生新的配對碼。", "Pairing was revoked. Request a new code on the device."));
+          });
+          return;
+        }
         if (res.status != 200)
           throw new IllegalArgumentException("auth");
         JSONObject state = new JSONObject(res.data);
@@ -188,6 +311,8 @@ public final class MainActivity extends Activity {
               .putString("pin", verified.verifiedPin)
               .putString("token", verified.token)
               .apply();
+          connecting = false;
+          autoReconnect = false;
           connection = verified;
           selectedId = id;
           workspace();
@@ -196,9 +321,10 @@ public final class MainActivity extends Activity {
         runOnUiThread(() -> {
           if (generation != epoch)
             return;
-          connect.setEnabled(true);
+          connecting = false;
+          rescan.setEnabled(true);
           status.setText(
-              tr("連線失敗。請確認同一個 Wi-Fi、車機位址與憑證碼；配對碼逾時可在車機重新產生。",
+              tr("無法連線。請重新搜尋車機；配對碼過期或手機已解除配對時，請在車機新增配對碼。",
                   "Connection failed. Check Wi-Fi, address and certificate. Request a fresh "
                   + "pairing code if it expired."));
         });
@@ -492,8 +618,22 @@ public final class MainActivity extends Activity {
       super.onBackPressed();
   }
   @Override
+  protected void onResume() {
+    super.onResume();
+    resumed = true;
+    if (browser == null && !connecting) beginSearch();
+  }
+  @Override
+  protected void onPause() {
+    resumed = false;
+    cancelSearch();
+    super.onPause();
+  }
+  @Override
   protected void onDestroy() {
     generation++;
+    cancelSearch();
+    searchWorker.shutdownNow();
     io.shutdownNow();
     fileBridge.cancelClip();
     if (browser != null)

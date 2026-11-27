@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import base64
+from contextlib import ExitStack
 from datetime import UTC, datetime, timedelta
 import hashlib
 import hmac
@@ -9,7 +10,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import ipaddress
 import json
 import os
+import re
 import secrets
+import select
 import socket
 import ssl
 import struct
@@ -17,13 +20,16 @@ import time
 import uuid
 
 PORT = 8787
+DISCOVERY_GROUP = "239.255.87.87"
+DISCOVERY_QUERY = re.compile(rb"FormosaLink-ccNC/1 FIND ([0-9a-f]{32})")
+IP_PKTINFO = getattr(socket, "IP_PKTINFO", 8)  # Linux in_pktinfo
 GRANT = "FormosaLanAccess"
 REQUEST = "FormosaLanPairRequest"
 INFO = "FormosaLanPairInfo"
 NETWORKS = tuple(map(ipaddress.ip_network, ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16")))
 
 
-def lan_address():
+def lan_interface():
   import fcntl
 
   with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
@@ -31,13 +37,44 @@ def lan_address():
       if not name.startswith(("wl", "ap", "eth", "en", "br")):
         continue
       try:
-        raw = fcntl.ioctl(sock.fileno(), 0x8915, struct.pack("256s", name.encode()[:15]))
-        addr = ipaddress.IPv4Address(raw[20:24])
+        interface = struct.pack("256s", name.encode()[:15])
+        addr = ipaddress.IPv4Address(fcntl.ioctl(sock.fileno(), 0x8915, interface)[20:24])
         if any(addr in net for net in NETWORKS):
-          return str(addr)
+          mask = socket.inet_ntoa(fcntl.ioctl(sock.fileno(), 0x891b, interface)[20:24])
+          return socket.if_nametoindex(name), ipaddress.IPv4Interface((str(addr), mask))
       except OSError:
         continue
   return None
+
+
+def discovery_socket(link, port=PORT):
+  index, interface = link
+  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  try:
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.setsockopt(socket.IPPROTO_IP, IP_PKTINFO, 1)
+    sock.bind(("", port))
+    membership = struct.pack("=4s4si", socket.inet_aton(DISCOVERY_GROUP), interface.ip.packed, index)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, membership)
+    sock.setblocking(False)
+    return sock
+  except OSError:
+    sock.close()
+    raise
+
+
+def answer_discovery(sock, link, pin):
+  index, interface = link
+  data, metadata, flags, peer = sock.recvmsg(96, socket.CMSG_SPACE(12))
+  query = DISCOVERY_QUERY.fullmatch(data)
+  if not query or flags & socket.MSG_TRUNC or ipaddress.IPv4Address(peer[0]) not in interface.network:
+    return
+  for level, kind, value in metadata:
+    if level == socket.IPPROTO_IP and kind == IP_PKTINFO and len(value) == 12 and struct.unpack_from("=i", value)[0] == index:
+      # Return only the public TLS identity, on the same link as the request.
+      route = struct.pack("=i4s4s", index, interface.ip.packed, bytes(4))
+      sock.sendmsg([b"FormosaLink-ccNC/1 HERE " + query[1] + b" " + pin.encode("ascii")], [(level, kind, route)], 0, peer)
+      break
 
 
 def atomic_file(path, data):
@@ -118,7 +155,8 @@ class LanDevice:
     )
 
   def pair(self, code):
-    if self.params.get(GRANT) != self.grant or not self.provider.guard() or not self.code or time.monotonic() >= self.until or self.attempts >= 5:
+    if (self.params.get(GRANT) != self.grant or not self.provider.guard() or self.params.get(REQUEST) != self.request
+        or not self.code or time.monotonic() >= self.until or self.attempts >= 5):
       return None
     self.attempts += 1
     if not isinstance(code, str) or not hmac.compare_digest(code, self.code):
@@ -260,9 +298,6 @@ def main():
   params = Params()
   directory = default_directory() / "lan"
   tls, pin = certificate(directory)
-  grant = params.get(GRANT)
-  if not grant:
-    return
   device_id = str(uuid.uuid5(uuid.NAMESPACE_URL, "formosa-lan:" + pin))
   try:
     cloud_id = read(directory.parent)[0]["device_id"]
@@ -270,28 +305,51 @@ def main():
     cloud_id = None
 
   class LocalSettings(NativeSettingsProvider):
-    def allowed(self):
-      return self.params.get(GRANT) == grant
+    def __init__(self, access):
+      super().__init__(cloud_id)
+      self.access = access
 
-  provider = LocalSettings(cloud_id)
-  device = LanDevice(directory, params, grant, provider, device_id)
-  try:
-    while params.get(GRANT) == grant:
-      address = lan_address()
-      if not address:
-        time.sleep(0.5)
-        continue
-      try:
-        with Server((address, PORT), Handler) as server:
-          server.device, server.tls, server.timeout = device, tls, 0.35
-          while params.get(GRANT) == grant and lan_address() == address:
+    def allowed(self):
+      return self.params.get(GRANT) == self.access
+
+  while True:
+    link = lan_interface()
+    grant = params.get(GRANT)
+    if not link:
+      time.sleep(0.5)
+      continue
+    address = str(link[1].ip)
+    try:
+      with ExitStack() as stack:
+        server = device = None
+        if grant:
+          device = LanDevice(directory, params, grant, LocalSettings(grant), device_id)
+          stack.callback(params.remove, INFO)
+          stack.callback(device.close)
+          server = stack.enter_context(Server((address, PORT), Handler))
+          server.device, server.tls, server.timeout = device, tls, 0
+        discovery = None
+        next_try = 0.0
+        while params.get(GRANT) == grant and lan_interface() == link:
+          if discovery is None and time.monotonic() >= next_try:
+            next_try = time.monotonic() + 5
+            try:
+              discovery = stack.enter_context(discovery_socket(link))
+            except OSError:
+              pass
+          if device is not None:
             device.refresh(address, pin)
+          readers = [s for s in (server, discovery) if s is not None]
+          ready, _, _ = select.select(readers, [], [], 0.35)
+          if discovery is not None and discovery in ready:
+            try:
+              answer_discovery(discovery, link, pin)
+            except OSError:
+              pass
+          if server is not None and server in ready:
             server.handle_request()
-      except OSError:
-        time.sleep(1)
-  finally:
-    device.close()
-    params.remove(INFO)
+    except OSError:
+      time.sleep(1)
 
 
 if __name__ == "__main__":

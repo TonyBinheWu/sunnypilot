@@ -175,7 +175,7 @@ procs = [
 
   # Optional FormosaPilot companion; telemetry only, independent of sunnylink.
   PythonProcess("formosalink", "openpilot.sunnypilot.formosalink.agent", formosalink_enabled),
-  PythonProcess("formosalan", "openpilot.sunnypilot.formosalink.lan", lambda started, params, CP: bool(params.get("FormosaLanAccess"))),
+  PythonProcess("formosalan", "openpilot.sunnypilot.formosalink.lan", lambda started, params, CP: not started or bool(params.get("FormosaLanAccess"))),
 
   # sunnylink <3
   DaemonProcess("manage_sunnylinkd", "openpilot.sunnypilot.sunnylink.athena.manage_sunnylinkd", "SunnylinkdPid"),

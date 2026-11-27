@@ -113,9 +113,9 @@ export function deviceSettings({api,t,language,element:el,date,notify,getDevices
     }
     if(!query&&['device','home'].includes(section))info(snapshot);
     if(!query&&section==='models')modelStatus(body,snapshot,{el,t});
-    if (!query && section==='software' && !window.CcncDevice) {
+    if (!query && ['home','software'].includes(section) && !window.CcncDevice) {
       const link=el('a',t('apkDownload'),'apk-download');
-      link.href='/downloads/FormosaLink-ccNC-1.0.0.apk'; link.download='';
+      link.href='/downloads/FormosaLink-ccNC-1.1.0.apk'; link.download='FormosaLink-ccNC-1.1.0.apk';
       body.append(link);
     }
     if(!query&&section==='navigation'){navigation(snapshot);return;}

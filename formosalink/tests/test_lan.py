@@ -1,8 +1,36 @@
 import uuid
+import ipaddress
+import socket
+import sys
 from unittest.mock import patch
 
+import pytest
+
 from formosalink.tests.test_model_settings import configured
-from openpilot.sunnypilot.formosalink.lan import GRANT, REQUEST, LanDevice, certificate
+from openpilot.sunnypilot.formosalink.lan import GRANT, REQUEST, LanDevice, answer_discovery, certificate, discovery_socket
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Device discovery uses Linux IP_PKTINFO")
+def test_find_returns_only_the_public_pin_to_the_requesting_link():
+  link = socket.if_nametoindex("lo"), ipaddress.IPv4Interface("127.0.0.1/8")
+  pin = "f" * 64
+  nonce = b"12ab" * 8
+  with discovery_socket(link, 0) as listener, socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client:
+    client.settimeout(.15)
+    dest = "127.0.0.1", listener.getsockname()[1]
+    for query, allowed in ((b"FormosaLink-ccNC/1 FIND " + nonce, True), (b"FormosaLink-ccNC/1 FIND wrong", False), (b"other", False)):
+      client.sendto(query, dest)
+      answer_discovery(listener, link, pin)
+      if allowed:
+        reply, peer = client.recvfrom(160)
+        assert peer == dest and reply == b"FormosaLink-ccNC/1 HERE " + nonce + b" " + pin.encode("ascii")
+      else:
+        with pytest.raises(TimeoutError):
+          client.recvfrom(160)
+    client.sendto(b"FormosaLink-ccNC/1 FIND " + nonce, dest)
+    answer_discovery(listener, (link[0] + 1, link[1]), pin)
+    with pytest.raises(TimeoutError):
+      client.recvfrom(160)
 
 
 def test_local_pairing_lifecycle_and_guarded_settings(tmp_path):

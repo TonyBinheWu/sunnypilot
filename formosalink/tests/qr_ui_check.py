@@ -95,6 +95,30 @@ class TestQRScreen(unittest.TestCase):
         self.assertIsNone(self.params.get("FormosaLanAccess"))
         self.assertFalse(self.params.get_bool("FormosaLinkEnabled"))
 
+  def test_direct_lan_entry_starts_physical_pairing_even_with_cloud_qr(self):
+    with patch.object(ui.gui_app, "push_widget") as push:
+      self.offroad.return_value = False
+      ui.open_lan_pairing()
+      push.assert_not_called()
+      self.offroad.return_value = True
+      ui.open_lan_pairing()
+      self.assertEqual(self.params.get("FormosaLanPairRequest"), push.call_args.args[0].request)
+    if gui_app.big_ui():
+      self.assertIsNotNone(ui.lan_pair_button())
+    else:
+      entries = []
+      ui.add_mici_pair_button(SimpleNamespace(add_widget=entries.append))
+      self.assertEqual(entries[1].text, ui.lan_label())
+    dialog = ui.FormosaPairingDialog()
+    self.pending(dialog)
+    with patch.object(dialog._lan, "render") as lan:
+      rl.begin_drawing()
+      try:
+        dialog.render(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
+      finally:
+        rl.end_drawing()
+      lan.assert_called_once()
+
   def test_native_qr_decodes_on_all_three_languages(self):
     output = Path(os.environ.get("FORMOSALINK_QR_OUTPUT","build/formosalink-qr-native"))
     output.mkdir(parents=True,exist_ok=True)

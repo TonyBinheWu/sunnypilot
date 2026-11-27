@@ -1,4 +1,4 @@
-import {deviceSettings} from './device-settings.js?v=0.11.0';
+import {deviceSettings} from './device-settings.js?v=0.11.1';
 import {translations} from './i18n.js?v=0.11.0';
 import {initTextSize} from './text-size.js?v=0.11.0';
 import {initTheme} from './theme.js?v=0.6.0';

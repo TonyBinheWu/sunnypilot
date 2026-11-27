@@ -6,7 +6,7 @@
   <title>FormosaLink · FormosaPilot</title>
   <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/assets/formosapilot-logo.png">
   <link rel="apple-touch-icon" href="/assets/formosapilot-logo.png"><link rel="stylesheet" href="/style.css?v=0.9.2"><link rel="stylesheet" href="/settings-ui.css?v=0.10.0">
-  <script type="module" src="/app.js?v=0.11.0"></script>
+  <script type="module" src="/app.js?v=0.11.1"></script>
   <link rel="stylesheet" href="/media.css?v=0.9.2">
   <link rel="stylesheet" href="/responsive.css?v=0.11.0">
 </head>
@@ -23,7 +23,7 @@
         <h1 data-i18n="signin"></h1><p data-i18n="dashboardIntro"></p>
         <button id="github-login" class="primary" type="button" disabled data-i18n="githubLogin"></button>
         <p id="github-note" class="caption" data-i18n="waiting"></p>
-        <a class="apk-download" download href="/downloads/FormosaLink-ccNC-1.0.0.apk" data-i18n="apkDownload"></a>
+        <a class="apk-download" download="FormosaLink-ccNC-1.1.0.apk" href="/downloads/FormosaLink-ccNC-1.1.0.apk" data-i18n="apkDownload"></a>
       </section>
     </div>
     <section id="dashboard" hidden>
@@ -31,6 +31,7 @@
         <aside class="dashboard-sidebar"><div class="sidebar-title">FORMOSALINK</div><a class="sidebar-item active" href="#dashboard"><span aria-hidden="true">▦</span><span data-i18n="dashboard"></span></a><button id="sidebar-pair" class="sidebar-item" type="button"><span aria-hidden="true">＋</span><span data-i18n="pairDevice"></span></button><div class="sidebar-bottom"><span class="tiny-dot"></span><span data-i18n="privateSpace"></span><small>FORMOSA · 23.5° N</small></div></aside>
         <div class="dashboard-main">
           <div class="page-heading"><div><span class="eyebrow" data-i18n="companion"></span><h1 data-i18n="dashboard"></h1><p class="lead" data-i18n="dashboardIntro"></p></div><button id="open-pair" class="primary"><span aria-hidden="true">＋</span><span data-i18n="pairDevice"></span></button></div>
+          <a class="apk-download" download="FormosaLink-ccNC-1.1.0.apk" href="/downloads/FormosaLink-ccNC-1.1.0.apk" data-i18n="apkDownload"></a>
           <div class="account"><span class="account-avatar" aria-hidden="true">◈</span><span id="account-name"></span><button id="github-link" class="quiet" hidden data-i18n="githubLink"></button><span class="account-security" data-i18n="accountPrivate"></span></div>
           <div class="overview"><div class="stat-card"><span class="stat-label" data-i18n="devices"></span><strong id="device-count">—</strong><span class="stat-icon" aria-hidden="true">▦</span></div><div class="stat-card"><span class="stat-label" data-i18n="online"></span><strong id="online-count">—</strong><span class="stat-icon online-icon" aria-hidden="true">⌁</span></div><div class="refresh-info"><span class="tiny-dot"></span><span id="refresh-label" data-i18n="waiting"></span><button id="refresh" class="quiet" data-i18n="refresh"></button></div></div>
           <div id="empty" class="panel empty" hidden><img src="/assets/formosapilot-logo.png" alt=""><h2 data-i18n="noDevices"></h2><p data-i18n="emptyHelp"></p><button class="primary" id="empty-pair" data-i18n="pairDevice"></button></div>

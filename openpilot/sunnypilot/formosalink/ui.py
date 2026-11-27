@@ -60,9 +60,25 @@ def open_pairing():
     gui_app.push_widget(FormosaPairingDialog())
 
 
+def lan_label():
+  return {"zh-TW": "區網手機配對", "en": "Pair local phone", "ja": "LAN スマホ登録"}[language()]
+
+
+def open_lan_pairing():
+  if ui_state.is_offroad():
+    dialog = LanPairingDialog()
+    dialog._new()
+    gui_app.push_widget(dialog)
+
+
 def formosalink_button():
   from openpilot.system.ui.sunnypilot.widgets.list_view import button_item_sp
   return button_item_sp("FormosaLink", lambda: text("scan"), callback=open_pairing, enabled=ui_state.is_offroad)
+
+
+def lan_pair_button():
+  from openpilot.system.ui.sunnypilot.widgets.list_view import button_item_sp
+  return button_item_sp(lan_label, "FormosaLink", callback=open_lan_pairing, enabled=ui_state.is_offroad)
 
 
 def add_mici_pair_button(scroller):
@@ -77,6 +93,18 @@ def add_mici_pair_button(scroller):
   button.set_click_callback(open_pairing)
   button.set_enabled(ui_state.is_offroad)
   scroller.add_widget(button)
+  class LanButton(BigButton):
+    def _get_label_font_size(self):
+      return 39
+
+    def _update_state(self):
+      if self.text != lan_label():
+        self.set_text(lan_label())
+
+  lan = LanButton(lan_label(), "FormosaLink", gui_app.texture("icons_mici/settings/device/pair.png", 33, 60))
+  lan.set_click_callback(open_lan_pairing)
+  lan.set_enabled(ui_state.is_offroad)
+  scroller.add_widget(lan)
 
 
 class FormosaConnectionCard(Widget):
@@ -122,8 +150,7 @@ class FormosaPairingDialog(Widget):
     self._trips = Button(lambda: text("trips_on" if ui_state.params.get("FormosaLinkTripConsent") else "trips_off"), self._toggle_trips,
                          font_size=34 if big else 11, text_padding=padding)
     self._trips.set_enabled(lambda: ui_state.is_offroad() and (self.directory / "identity.json").is_file())
-    self._lan = Button(lambda: {"zh-TW":"區網 APK","en":"LAN app","ja":"LAN アプリ"}[language()],
-                       lambda: gui_app.push_widget(LanPairingDialog()), font_size=24 if big else 13, text_padding=padding)
+    self._lan = Button(lan_label, open_lan_pairing, font_size=24 if big else 13, text_padding=padding)
     self._lan.set_enabled(ui_state.is_offroad)
 
   def show_event(self):
@@ -292,6 +319,8 @@ class FormosaPairingDialog(Widget):
       self._trips.render(rl.Rectangle(rect.x+2*margin+left_width, bottom, rect.width-3*margin-left_width, button_height))
     self._last_qr_rect = None
     if self._qr_texture is not None:
+      self._lan._label.set_font_size(16*scale)
+      self._lan.render(rl.Rectangle(rect.x+174*scale, rect.y+5*scale, 139*scale, 38*scale))
       available = min(rect.width*.44-margin, rect.height-60*scale)
       # Use whole QR modules, including the quiet zone, on either screen profile.
       modules = self._qr_texture.width//10
@@ -309,12 +338,12 @@ class LanPairingDialog(Widget):
     self.request = None
     self._words = {
       "zh-TW": (
-        "區網 APK",
-        "手機與車機連同一個 Wi-Fi。在 APK 輸入以下資料。",
+        "區網手機配對",
+        "開啟手機 App，選擇相同識別碼的車機，再輸入配對碼。",
         "產生配對碼",
         "停用並解除配對",
         "車機位址",
-        "憑證碼",
+        "車機識別碼",
         "配對碼",
         "正在等候區網連線或產生配對碼。",
         "啟用後可在區網操作停車設定與查看車機。",
@@ -324,11 +353,11 @@ class LanPairingDialog(Widget):
       ),
       "en": (
         "LAN app",
-        "Join the same Wi-Fi and enter these details in the app.",
+        "Select the matching device ID in the app, then enter the pairing code.",
         "Pair a phone",
         "Disable & unpair",
         "Device IP",
-        "Certificate",
+        "Device ID",
         "Pairing code",
         "Waiting for LAN or pairing code.",
         "Enable local access to device status and parked settings.",
@@ -338,11 +367,11 @@ class LanPairingDialog(Widget):
       ),
       "ja": (
         "LAN アプリ",
-        "同じ Wi-Fi に接続し、アプリに入力します。",
+        "アプリで同じ端末 ID を選び、登録コードを入力します。",
         "ペアリング",
         "停止・登録解除",
         "端末 IP",
-        "証明書",
+        "端末 ID",
         "登録コード",
         "LAN 接続またはコードを待っています。",
         "LAN で端末の状態と停車時の設定を利用できます。",
@@ -391,9 +420,10 @@ class LanPairingDialog(Widget):
         lines = [words[11]]
       else:
         pin = info["pin"][:12].upper()
-        lines = [words[1], f'{words[4]}  {info["address"]}', f'{words[5]}  {pin[:4]}-{pin[4:8]}-{pin[8:]}', f'{words[6]}  {info["code"]}']
+        lines = [words[1], f'{words[6]}  {info["code"]}', f'{words[5]}  {pin[:4]}-{pin[4:8]}-{pin[8:]}', f'{words[4]}  {info["address"]}']
     for i, line in enumerate(lines):
-      rl.draw_text_ex(font, line, rl.Vector2(x, y + (39 + i * 28) * scale), (14 if i == 0 else 21) * scale, 0, rl.WHITE)
+      size = (15, 26, 20, 16)[i]
+      rl.draw_text_ex(font, line, rl.Vector2(x, y + (39 + i * 30) * scale), size * scale, 0, rl.WHITE)
     for i, b in enumerate((self._pair, self._off, self._close)):
       b._label.set_font_size(16 * scale)
       b.render(rl.Rectangle(x + i * (rect.width - 24 * scale) / 3, rect.y + rect.height - 51 * scale, (rect.width - 30 * scale) / 3, 42 * scale))

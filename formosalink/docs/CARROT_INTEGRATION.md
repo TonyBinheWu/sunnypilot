@@ -2,7 +2,7 @@
 
 ## Sorento HEV 2025 與 ccNC
 
-0.11.0 為已辨識為 `KIA_SORENTO_2024` 的相機 SCC 車型增加儀表呈現。開啟下方的儀表開關並重啟後，車道位置、彎曲、變換方向、巡航背景、導航圖示和車距會隨可用狀態更新。前車和第二輛車使用有效的原廠資料或近期雷達／模型觀測，側後方圖示使用原廠物件距離。原廠警示、音效和交通標誌繼續由車輛提供。
+2025 Sorento HEV 的相機 SCC 平台使用原廠 ACC。攝影機直接接收動力方向盤狀態，原廠跟車、緊急介入與故障訊息沿用原車路徑。這個配置會停用 openpilot 實驗縱向控制，包括先前已開啟的設定。儀表開關關閉時，原廠顯示訊息逐筆直通；開啟時，兩種顯示訊息可呈現車道形狀和追蹤到的物件。未確認的車道線使用灰色，方向箭頭跟隨實際方向燈。
 
 車主提供的行程包含 `0x161`、`0x162`、`0x1E0` 和 `0x200`。其中可核對前車和距離。側後方車位在該段全程為空，`0x1EA` 亦未出現。不同儀表版本與配備仍需各自實車核對。
 
@@ -45,7 +45,7 @@ Host tests and native UI profiles are simulated checks, not physical vehicle val
 
 ## English
 
-With 0.11.0, the camera-SCC `KIA_SORENTO_2024` platform also displays observed objects, lane geometry, cruise, navigation and following distance. Its `0x200` gap display uses the three TauGapSet bits. The following describes the original 0.9.0 features common to supported platforms.
+On the camera-SCC Sorento, factory SCC owns following and emergency intervention. The optional overlay edits only the two HUD messages. With the overlay off, OEM cluster traffic passes through intact.
 
 This first integration adds an optional OEM cluster overlay inspired by the pinned Carrot revision above. It is off by default and requires a restart. Existing steering, braking, driver monitoring and harness selection remain in place.
 
@@ -57,7 +57,7 @@ This does not add the rewired ADAS control topology or new driving abilities, an
 
 ## 日本語
 
-0.11.0 のカメラ SCC 仕様 `KIA_SORENTO_2024` は、観測した車両、車線形状、クルーズ、ナビ、車間表示にも対応します。`0x200` の車間表示には TauGapSet の 3 ビットを使います。以下は対応車種共通の 0.9.0 時点の説明です。
+相機 SCC 仕様の Sorento は純正 ACC を使用します。実験用の縦制御は無効です。メーター表示を有効にした場合のみ、2 種の表示メッセージに車線と車両を描画します。
 
 上記の Carrot リビジョンを参考に、純正メーター表示を補助する独立した機能を追加します。初期値はオフで、変更後は再起動が必要です。既存の操舵、制動、ドライバー監視、ハーネス設定を維持します。
 

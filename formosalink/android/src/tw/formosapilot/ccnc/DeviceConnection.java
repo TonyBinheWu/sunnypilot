@@ -1,5 +1,6 @@
 package tw.formosapilot.ccnc;
 
+import android.net.Network;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,9 +18,11 @@ import javax.net.ssl.X509TrustManager;
 
 final class DeviceConnection {
   final String host, expectedPin, token;
+  final Network network;
   volatile String verifiedPin = "";
 
-  DeviceConnection(String host, String pin, String token) {
+  DeviceConnection(String host, String pin, String token, Network network) {
+    this.network = network;
     this.host = host.trim();
     String[] parts = this.host.split("\\.", -1);
     if (parts.length != 4)
@@ -34,7 +37,7 @@ final class DeviceConnection {
             || octets[0] == 169 && octets[1] == 254))
       throw new IllegalArgumentException("IP");
     expectedPin = pin.replace("-", "").replace(" ", "").toLowerCase(Locale.ROOT);
-    if (!expectedPin.matches(token.isEmpty() ? "[a-f0-9]{12}" : "[a-f0-9]{64}"))
+    if (!expectedPin.matches("[a-f0-9]{64}") && !(token.isEmpty() && expectedPin.matches("[a-f0-9]{12}")))
       throw new IllegalArgumentException("pin");
     this.token = token;
   }
@@ -78,8 +81,8 @@ final class DeviceConnection {
   }
 }
 },null);
-HttpsURLConnection conn =
-    (HttpsURLConnection) new URL("https://" + host + ":8787" + path).openConnection(Proxy.NO_PROXY);
+URL url = new URL("https://" + host + ":8787" + path);
+HttpsURLConnection conn = (HttpsURLConnection) (network == null ? url.openConnection(Proxy.NO_PROXY) : network.openConnection(url, Proxy.NO_PROXY));
 conn.setSSLSocketFactory(context.getSocketFactory());
 conn.setHostnameVerifier((name, session) -> name.equals(host) && !verifiedPin.isEmpty());
 conn.setInstanceFollowRedirects(false);
