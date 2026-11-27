@@ -77,7 +77,10 @@ class HardwareComma(HardwareBase):
   def get_modem_state(self) -> dict:
     try:
       with open(MODEM_STATE_PATH) as f:
-        return json.load(f)
+        state = json.load(f)
+      from openpilot.sunnypilot.formosalink.cellular_link import sample_link
+      state.update(sample_link())
+      return state
     except (FileNotFoundError, json.JSONDecodeError):
       return {}
 

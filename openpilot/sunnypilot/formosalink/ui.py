@@ -1,0 +1,514 @@
+"""Offroad-only FormosaLink QR pairing, shared by C3X and C4 layouts."""
+import queue
+import threading
+import time
+from pathlib import Path
+
+import pyray as rl
+
+from openpilot.common.qrcode import make_texture
+from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.sunnypilot.formosalink.identity import default_directory
+from openpilot.sunnypilot.formosalink.pairing import request_pairing, pairing_status
+from openpilot.system.ui.lib.application import FontWeight, gui_app
+from openpilot.system.ui.lib.multilang import multilang
+from openpilot.system.ui.lib.wrap_text import wrap_text
+from openpilot.system.ui.lib.text_measure import measure_text_cached
+from openpilot.system.ui.widgets import Widget
+from openpilot.system.ui.widgets.button import Button, ButtonStyle
+
+TEXT = {
+  "zh-TW": {"scan":"掃描 QR 配對", "intro":"用手機相機掃描 QR Code，透過 GitHub 登入並確認。僅啟用唯讀狀態回報，不提供遠端行車控制。", "start":"產生配對 QR", "disable":"停用監看", "close":"關閉", "loading":"正在安全連線…", "pending":"請用手機掃描，再確認配對。", "paired":"已配對・唯讀監看已啟用", "error":"無法連線。請檢查網路與時間後重試。", "expired":"QR 已過期，請重新產生。", "revoked":"配對已撤銷，請在本機明確建立新身分。", "offroad":"請停車後再操作。", "disabled":"唯讀監看已停用。"},
+  "en": {"scan":"Scan QR to pair", "intro":"Scan with your phone camera, sign in with GitHub and confirm. Only read-only status reporting is enabled. No remote driving controls.", "start":"Show pairing QR", "disable":"Disable monitoring", "close":"Close", "loading":"Connecting securely…", "pending":"Scan with your phone, then confirm pairing.", "paired":"Paired · read-only monitoring enabled", "error":"Cannot connect. Check network and device clock, then retry.", "expired":"QR expired. Generate a new one.", "revoked":"Pairing revoked. Explicitly create a new local identity to reconnect.", "offroad":"Park before pairing.", "disabled":"Read-only monitoring disabled."},
+  "ja": {"scan":"QR で登録", "intro":"スマートフォンで QR を読み取り、GitHub でログインして確認します。状態の読み取り専用送信のみ有効にします。遠隔運転操作はありません。", "start":"登録用 QR を表示", "disable":"監視を停止", "close":"閉じる", "loading":"安全に接続中…", "pending":"スマートフォンで読み取り、登録を確認してください。", "paired":"登録済み・読み取り専用監視が有効", "error":"接続できません。ネットワークと時刻を確認してください。", "expired":"QR の期限切れです。再発行してください。", "revoked":"登録解除済みです。本体で新しい ID を明示的に作成してください。", "offroad":"停車してから操作してください。", "disabled":"読み取り専用監視を停止しました。"},
+}
+TEXT["zh-TW"]["compact_intro"] = "手機掃描 QR，登入 GitHub 後確認。\n僅開啟唯讀監看。"
+TEXT["en"]["compact_intro"] = "Scan with your phone.\nSign in with GitHub and confirm.\nRead-only monitoring."
+TEXT["ja"]["compact_intro"] = "スマートフォンで QR を読み取り、\nGitHub でログインして確認。\n読み取り専用の監視です。"
+
+for locale, on, off in (("zh-TW", "停車遠端設定：開", "停車遠端設定：關"), ("en", "Parked settings: on", "Parked settings: off"), ("ja", "停車中の遠隔設定：オン", "停車中の遠隔設定：オフ")):
+  TEXT[locale].update(remote_on=on, remote_off=off)
+TEXT["zh-TW"].update(intro="掃描 QR 配對。可在此允許停車時從網頁修改設定。", compact_intro="掃描 QR 配對。\n遠端設定限停車時使用。", paired="已配對", disabled="監看已停用。")
+TEXT["en"].update(intro="Scan to pair. Enable parked settings below to edit from the web.", compact_intro="Scan to pair.\nRemote settings while parked.", paired="Paired", disabled="Monitoring disabled.")
+TEXT["ja"].update(intro="QR を読み取って登録します。停車中の遠隔設定を下で許可できます。", compact_intro="QR で登録。\n遠隔設定は停車中のみ。", paired="登録済み", disabled="監視を停止しました。")
+
+
+TEXT["zh-TW"].update(remote_on="遠端設定：開", remote_off="遠端設定：關", compact_intro="掃描 QR，登入 GitHub 配對。", pending="手機掃描 QR 配對。")
+TEXT["en"].update(remote_on="Settings: on", remote_off="Settings: off", compact_intro="Scan QR. Sign in with GitHub.", pending="Scan QR to pair.")
+TEXT["ja"].update(remote_on="遠隔設定：オン", remote_off="遠隔設定：オフ", compact_intro="QR と GitHub で登録。", pending="QR を読み取って登録。")
+TEXT["zh-TW"]["paired"] = "已配對。新增手機時，用同一個 GitHub 帳號登入 FormosaLink 即可。"
+TEXT["en"]["paired"] = "Paired. On another phone, sign in to FormosaLink with the same GitHub account."
+TEXT["ja"]["paired"] = "登録済み。他のスマホは同じ GitHub でログイン。"
+
+
+def language():
+  code = multilang.language
+  return "zh-TW" if code in ("zh-CHT", "zh-TW", "zh-Hant") else "ja" if code == "ja" else "en"
+
+
+for locale, on, off in (("zh-TW", "行程與定位：開", "行程與定位：關"), ("en", "Trips & GPS: on", "Trips & GPS: off"),
+                        ("ja", "走行履歴と位置：オン", "走行履歴と位置：オフ")):
+  TEXT[locale].update(trips_on=on, trips_off=off)
+
+
+def text(key):
+  return TEXT[language()][key]
+
+
+def open_pairing():
+  if ui_state.is_offroad():
+    gui_app.push_widget(FormosaPairingDialog())
+
+
+def lan_label():
+  return {"zh-TW": "區網手機配對", "en": "Pair local phone", "ja": "LAN スマホ登録"}[language()]
+
+
+def open_lan_pairing():
+  if ui_state.is_offroad():
+    dialog = LanPairingDialog()
+    dialog._new()
+    gui_app.push_widget(dialog)
+
+
+def formosalink_button():
+  from openpilot.system.ui.sunnypilot.widgets.list_view import button_item_sp
+  return button_item_sp("FormosaLink", lambda: text("scan"), callback=open_pairing, enabled=ui_state.is_offroad)
+
+
+def lan_pair_button():
+  from openpilot.system.ui.sunnypilot.widgets.list_view import button_item_sp
+  return button_item_sp(lan_label, "FormosaLink", callback=open_lan_pairing, enabled=ui_state.is_offroad)
+
+
+def diagnostic_words():
+  return {
+    "zh-TW": ("匿名錯誤回報", "啟用回報", "關閉回報", "停車連上 Wi-Fi 或有線網路時，將最近 24 小時及之後的錯誤傳給 FormosaLink。"
+              "包含車型、版本與故障狀態，排除帳號、車身號碼、位置與影像。連線時伺服器可見 IP。", "已開啟 · 等待故障紀錄與網路", "最近回報碼", "目前關閉"),
+    "en": ("Anonymous reports", "Enable reports", "Turn off", "While parked on Wi-Fi or Ethernet, send faults from the past 24 hours and future drives "
+           "to FormosaLink. Includes platform, build and fault states. Excludes accounts, VIN, GPS and images. The server sees the connection IP.",
+           "On · waiting for faults and a network", "Last report", "Currently off"),
+    "ja": ("匿名エラー報告", "有効にする", "停止する", "過去24時間と今後の異常を、停車中に Wi-Fi または有線で FormosaLink に送ります。"
+           "車種、版、異常状態を含み、アカウント、車両ID、位置、画像は除外します。接続時にサーバーはIPを認識します。", "有効 · 異常記録と接続を待機中", "直近の報告番号", "現在は無効"),
+  }[language()]
+
+
+def open_diagnostics():
+  if ui_state.is_offroad():
+    gui_app.push_widget(DiagnosticDialog())
+
+
+def diagnostic_button():
+  from openpilot.system.ui.sunnypilot.widgets.list_view import button_item_sp
+  return button_item_sp(lambda: diagnostic_words()[0], "FormosaLink", callback=open_diagnostics, enabled=ui_state.is_offroad)
+
+
+def add_mici_pair_button(scroller):
+  from openpilot.selfdrive.ui.mici.widgets.button import BigButton
+  class PairButton(BigButton):
+    def _get_label_font_size(self):
+      return 56
+
+    def _update_state(self):
+      self.set_value(text("scan"))
+  button = PairButton("FormosaLink", text("scan"), gui_app.texture("icons_mici/settings/device/pair.png", 33, 60))
+  button.set_click_callback(open_pairing)
+  button.set_enabled(ui_state.is_offroad)
+  scroller.add_widget(button)
+  scroller.add_widget(mici_lan_button())
+  class DiagnosticButton(BigButton):
+    def _get_label_font_size(self):
+      return 39
+
+    def _update_state(self):
+      if self.text != diagnostic_words()[0]:
+        self.set_text(diagnostic_words()[0])
+
+  diagnostics = DiagnosticButton(diagnostic_words()[0], "FormosaLink")
+  diagnostics.set_click_callback(open_diagnostics)
+  diagnostics.set_enabled(ui_state.is_offroad)
+  scroller.add_widget(diagnostics)
+
+
+def mici_lan_button():
+  from openpilot.selfdrive.ui.mici.widgets.button import BigButton
+
+  class LanButton(BigButton):
+    def _get_label_font_size(self):
+      return 39
+
+    def _update_state(self):
+      if self.text != lan_label():
+        self.set_text(lan_label())
+
+  lan = LanButton(lan_label(), "FormosaLink", gui_app.texture("icons_mici/settings/device/pair.png", 33, 60))
+  lan.set_click_callback(open_lan_pairing)
+  lan.set_enabled(ui_state.is_offroad)
+  return lan
+
+
+class FormosaConnectionCard(Widget):
+  """The offroad home card opens only independent FormosaLink pairing."""
+  def __init__(self):
+    super().__init__()
+    self._logo = gui_app.texture("../../sunnypilot/formosalink/assets/formosapilot-logo.png", 100, 100)
+    self._pair = Button(lambda: text("scan"), open_pairing, font_size=48, button_style=ButtonStyle.PRIMARY)
+    self._pair.set_enabled(ui_state.is_offroad)
+
+  def _render(self, rect):
+    scale = min(rect.width/600, rect.height/400)
+    margin = 30*scale
+    rl.draw_rectangle_rounded(rect, .08, 8, rl.Color(15, 20, 36, 255))
+    rl.draw_texture_ex(self._logo, rl.Vector2(rect.x+margin, rect.y+margin), 0, scale, rl.WHITE)
+    rl.draw_text_ex(gui_app.font(FontWeight.BOLD), "FormosaLink", rl.Vector2(rect.x+margin, rect.y+150*scale), 52*scale, 0, rl.WHITE)
+    rl.draw_text_ex(gui_app.font(FontWeight.NORMAL), "formosapilot.dinglu-t.com", rl.Vector2(rect.x+margin, rect.y+230*scale), 28*scale, 0, rl.Color(165, 177, 202, 255))
+    self._pair._label.set_font_size(38*scale)
+    self._pair.render(rl.Rectangle(rect.x+margin, rect.y+rect.height-margin-70*scale, rect.width-2*margin, 70*scale))
+
+
+class FormosaPairingDialog(Widget):
+  def __init__(self, directory=None, embedded=False):
+    super().__init__()
+    self.directory = Path(directory or default_directory())
+    self.embedded = embedded
+    self._events = queue.SimpleQueue()
+    self._generation = 0
+    self._active = True
+    self._busy = False
+    self._next_poll = 0.0
+    self._expires = 0.0
+    self._state = "intro"
+    self._qr_texture = None
+    big = gui_app.big_ui()
+    padding = 20 if big else 8
+    self._close = Button(lambda: text("close"), self._close_dialog, font_size=40 if big else 14, text_padding=padding, button_style=ButtonStyle.NORMAL)
+    self._start = Button(lambda: text("start"), self._request, font_size=40 if big else 14, text_padding=padding, button_style=ButtonStyle.PRIMARY)
+    self._start.set_enabled(lambda: not self._busy and ui_state.is_offroad())
+    self._remote = Button(lambda: text("remote_on" if ui_state.params.get_bool("FormosaLinkRemoteSettings") else "remote_off"), self._toggle_remote,
+                          font_size=34 if big else 11, text_padding=padding)
+    self._remote.set_enabled(ui_state.is_offroad)
+    self._trips = Button(lambda: text("trips_on" if ui_state.params.get("FormosaLinkTripConsent") else "trips_off"), self._toggle_trips,
+                         font_size=34 if big else 11, text_padding=padding)
+    self._trips.set_enabled(lambda: ui_state.is_offroad() and (self.directory / "identity.json").is_file())
+    self._lan = Button(lan_label, open_lan_pairing, font_size=24 if big else 13, text_padding=padding)
+    self._lan.set_enabled(ui_state.is_offroad)
+
+  def show_event(self):
+    super().show_event()
+    self._active = True
+    self._busy = False
+    self._generation += 1
+    self._state = "intro"
+    self._expires = 0
+
+  def _toggle_remote(self):
+    if ui_state.is_offroad():
+      ui_state.params.put_bool("FormosaLinkRemoteSettings", not ui_state.params.get_bool("FormosaLinkRemoteSettings"), block=True)
+
+  def _toggle_trips(self):
+    if not ui_state.is_offroad():
+      return
+    from uuid import uuid4
+    from openpilot.sunnypilot.formosalink.identity import read
+    from openpilot.sunnypilot.formosalink.trips import CONSENT, clear_sharing
+    if ui_state.params.get(CONSENT):
+      clear_sharing(ui_state.params)
+    else:
+      try:
+        identity, _, _ = read(self.directory)
+      except (OSError, ValueError):
+        return
+      ui_state.params.put(CONSENT, f"{identity['device_id']}/{uuid4()}", block=True)
+
+  def _clear_qr(self):
+    if self._qr_texture is not None:
+      rl.unload_texture(self._qr_texture)
+      self._qr_texture = None
+
+  def _close_dialog(self):
+    gui_app.pop_widget()
+
+  def hide_event(self):
+    super().hide_event()
+    self._active = False
+    self._generation += 1
+    self._clear_qr()
+
+  def _worker(self, kind):
+    if self._busy or not self._active or not ui_state.is_offroad():
+      return
+    self._busy = True
+    generation = self._generation
+    def work():
+      try:
+        result = request_pairing(self.directory) if kind == "enroll" else pairing_status(self.directory)
+      except Exception:
+        # Do not log identity material, signed frames or QR credentials.
+        result = {"error": True}
+      self._events.put((generation, kind, result))
+    threading.Thread(target=work, name="formosalink-pair", daemon=True).start()
+
+  def _request(self):
+    if ui_state.is_offroad() and not self._busy:
+      self._clear_qr()
+      self._state = "loading"
+      self._worker("enroll")
+
+  def _disable_monitoring(self):
+    if not ui_state.is_offroad():
+      return
+    self._generation += 1
+    self._busy = False
+    self._clear_qr()
+    self._state = "disabled"
+    self._expires = 0
+    ui_state.params.put_bool("FormosaLinkEnabled", False)
+    ui_state.params.put_bool("FormosaLinkRemoteSettings", False, block=True)
+    from openpilot.sunnypilot.formosalink.trips import clear_sharing
+    clear_sharing(ui_state.params)
+
+  def _update_state(self):
+    if not ui_state.is_offroad():
+      if self._state != "offroad":
+        self._generation += 1
+      self._busy = False
+      self._clear_qr()
+      self._state = "offroad"
+      self._expires = 0
+      return
+    while not self._events.empty():
+      generation, kind, result = self._events.get()
+      if generation != self._generation or not self._active:
+        continue
+      self._busy = False
+      self._next_poll = time.monotonic()+5
+      if result.get("error"):
+        self._state = "error"
+        self._next_poll += 5
+      elif result["state"] == "paired":
+        self._clear_qr()
+        self._expires = 0
+        self._state = "paired"
+        ui_state.params.put_bool("FormosaLinkEnabled", True)
+      elif result["state"] == "revoked":
+        from openpilot.sunnypilot.formosalink.trips import clear_sharing
+        clear_sharing(ui_state.params)
+        self._clear_qr()
+        self._expires = 0
+        self._state = "revoked"
+        ui_state.params.put_bool("FormosaLinkEnabled", False)
+      elif kind == "enroll":
+        self._clear_qr()
+        self._qr_texture = make_texture(result["url"])
+        rl.set_texture_filter(self._qr_texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
+        self._expires = result["expires_at"]
+        self._state = "pending"
+        # Explicit local opt-in; the agent cannot send telemetry until the server
+        # confirms ownership. It can continue after this QR screen is closed.
+        ui_state.params.put_bool("FormosaLinkEnabled", True)
+      else:
+        self._state = "pending"
+    if self._expires and time.time() >= self._expires:
+      self._clear_qr()
+      self._expires = 0
+      self._state = "expired"
+    if self._expires and time.monotonic() >= self._next_poll:
+      self._worker("status")
+
+  def _render(self, rect):
+    # Use the native compact screen as the reference, rather than shrinking the
+    # desktop-sized layout (including its fonts) onto C4. Both entry points push
+    # this same full-screen widget; all geometry also respects nonzero origins.
+    scale = min(rect.width / 536, rect.height / 240)
+    margin, gap = 12*scale, 5*scale
+    left_width = rect.width*.54 - 2*margin
+    button_height = 50*scale
+    bottom = rect.y + rect.height - margin - button_height
+    font = gui_app.font(FontWeight.BOLD)
+    body_font = gui_app.font(FontWeight.NORMAL)
+    message = text("compact_intro" if self._state == "intro" else self._state)
+    if multilang.requires_font_fallback():
+      gui_app.fallback_font(message + text("close") + text("start") + text("remote_on") + text("remote_off") + text("trips_on") + text("trips_off"))
+    rl.draw_rectangle_rec(rect, rl.Color(15, 20, 36, 255))
+    rl.draw_text_ex(font, "FormosaLink", rl.Vector2(rect.x+margin, rect.y+12*scale), 27*scale, 0, rl.WHITE)
+    self._close._label.set_font_size(17*scale)
+    if not self.embedded:
+      self._close.render(rl.Rectangle(rect.x+rect.width-margin-80*scale, rect.y+8*scale, 80*scale, button_height))
+
+    body_top = rect.y + 54*scale
+    body_bottom = bottom - (button_height+gap) - 6*scale
+    text_width = left_width if self._qr_texture is not None else rect.width-2*margin
+    body_size = 18*scale
+    while True:
+      lines = wrap_text(body_font, message, body_size, int(text_width))
+      content = "\n".join(lines)
+      measured = measure_text_cached(body_font, content, body_size)
+      if measured.y <= body_bottom-body_top or body_size <= 14*scale:
+        break
+      body_size -= scale
+    self._last_status_rect = rl.Rectangle(rect.x+margin, body_top, measured.x, measured.y)
+    rl.draw_text_ex(body_font, content, rl.Vector2(rect.x+margin, body_top), body_size, 0,
+                    rl.Color(165, 177, 202, 255) if self._state == "intro" else rl.Color(185, 170, 255, 255))
+    for index, button in enumerate((self._start, self._remote)):
+      button._label.set_font_size(24*scale)
+      button.render(rl.Rectangle(rect.x+margin, bottom-index*(button_height+gap), left_width, button_height))
+    if self._qr_texture is None:
+      self._lan._label.set_font_size(21*scale)
+      self._lan.render(rl.Rectangle(rect.x+2*margin+left_width, bottom-button_height-gap, rect.width-3*margin-left_width, button_height))
+      self._trips._label.set_font_size(21*scale)
+      self._trips.render(rl.Rectangle(rect.x+2*margin+left_width, bottom, rect.width-3*margin-left_width, button_height))
+    self._last_qr_rect = None
+    if self._qr_texture is not None:
+      self._lan._label.set_font_size(16*scale)
+      self._lan.render(rl.Rectangle(rect.x+174*scale, rect.y+5*scale, 139*scale, 38*scale))
+      available = min(rect.width*.44-margin, rect.height-60*scale)
+      # Use whole QR modules, including the quiet zone, on either screen profile.
+      modules = self._qr_texture.width//10
+      qr_size = max(modules, int(available/modules)*modules)
+      target = rl.Rectangle(rect.x+rect.width-margin-qr_size,
+                            rect.y+48*scale+(rect.height-60*scale-qr_size)/2, qr_size, qr_size)
+      self._last_qr_rect = target
+      rl.draw_texture_pro(self._qr_texture, rl.Rectangle(0, 0, self._qr_texture.width, self._qr_texture.height), target, rl.Vector2(0, 0), 0, rl.WHITE)
+    return -1
+
+
+class DiagnosticDialog(Widget):
+  def __init__(self):
+    super().__init__()
+    from openpilot.sunnypilot.formosalink.diagnostic_upload import CONSENT, RECEIPT
+    self.consent_key, self.receipt_key = CONSENT, RECEIPT
+    self._toggle = Button(lambda: diagnostic_words()[2 if ui_state.params.get(self.consent_key) else 1],
+                          self._change, font_size=18, button_style=ButtonStyle.PRIMARY)
+    self._toggle.set_enabled(ui_state.is_offroad)
+    self._close = Button(lambda: text("close"), gui_app.pop_widget, font_size=18)
+
+  def _change(self):
+    from openpilot.sunnypilot.formosalink.diagnostic_upload import set_consent
+    if ui_state.is_offroad():
+      set_consent(ui_state.params, not ui_state.params.get(self.consent_key))
+
+  def _render(self, rect):
+    words = diagnostic_words()
+    if multilang.requires_font_fallback():
+      gui_app.fallback_font("".join(words))
+    scale = min(rect.width / 536, rect.height / 240)
+    x, y = rect.x + 14 * scale, rect.y + 8 * scale
+    width = rect.width - 28 * scale
+    font = gui_app.font(FontWeight.NORMAL)
+    consent = ui_state.params.get(self.consent_key)
+    receipt = ui_state.params.get(self.receipt_key) or {}
+    status = words[4] if consent else words[6]
+    if consent and receipt.get("consent") == consent:
+      status = f'{words[5]}  {receipt["code"]}'
+    rl.draw_rectangle_rec(rect, rl.Color(15, 32, 32, 255))
+    rl.draw_text_ex(gui_app.font(FontWeight.BOLD), words[0], rl.Vector2(x, y), 25 * scale, 0, rl.WHITE)
+    size = 18 * scale
+    while True:
+      copy = "\n".join(wrap_text(font, words[3], size, int(width)))
+      if measure_text_cached(font, copy, size).y <= 96 * scale or size <= 14 * scale:
+        break
+      size -= scale
+    rl.draw_text_ex(font, copy, rl.Vector2(x, y + 38 * scale), size, 0, rl.WHITE)
+    rl.draw_text_ex(font, status, rl.Vector2(x, rect.y + rect.height - 86 * scale), 17 * scale, 0, rl.Color(171, 220, 205, 255))
+    for i, button in enumerate((self._toggle, self._close)):
+      button._label.set_font_size(19 * scale)
+      button.render(rl.Rectangle(x + i * (width + 8 * scale) / 2, rect.y + rect.height - 53 * scale, (width - 8 * scale) / 2, 44 * scale))
+    return -1
+
+
+class LanPairingDialog(Widget):
+  def __init__(self):
+    super().__init__()
+    self.request = None
+    self._words = {
+      "zh-TW": (
+        "區網手機配對",
+        "開啟手機 App，選擇相同識別碼的車機，再輸入配對碼。",
+        "產生配對碼",
+        "停用並解除配對",
+        "車機位址",
+        "車機識別碼",
+        "配對碼",
+        "正在等候區網連線或產生配對碼。",
+        "啟用後可在區網操作停車設定與查看車機。",
+        "區網已啟用。要新增手機，請按「產生配對碼」。",
+        "手機已配對。可再產生配對碼加入另一支手機。",
+        "配對碼已逾時，請重新產生。",
+      ),
+      "en": (
+        "LAN app",
+        "Select the matching device ID in the app, then enter the pairing code.",
+        "Pair a phone",
+        "Disable & unpair",
+        "Device IP",
+        "Device ID",
+        "Pairing code",
+        "Waiting for LAN or pairing code.",
+        "Enable local access to device status and parked settings.",
+        "LAN access is on. Choose Pair a phone to add a device.",
+        "Phone paired. Choose Pair a phone to add another.",
+        "Code expired. Choose Pair a phone for a new code.",
+      ),
+      "ja": (
+        "LAN アプリ",
+        "アプリで同じ端末 ID を選び、登録コードを入力します。",
+        "ペアリング",
+        "停止・登録解除",
+        "端末 IP",
+        "端末 ID",
+        "登録コード",
+        "LAN 接続またはコードを待っています。",
+        "LAN で端末の状態と停車時の設定を利用できます。",
+        "LAN は有効です。スマートフォンを追加できます。",
+        "登録済みです。続けて別のスマートフォンを追加できます。",
+        "コードの有効期限が切れました。再発行してください。",
+      ),
+    }[language()]
+    self._close = Button(lambda: text("close"), gui_app.pop_widget, font_size=18)
+    self._pair = Button(self._words[2], self._new, font_size=18, button_style=ButtonStyle.PRIMARY)
+    self._off = Button(self._words[3], self._disable, font_size=18)
+    self._pair.set_enabled(ui_state.is_offroad)
+    self._off.set_enabled(lambda: ui_state.is_offroad() and bool(ui_state.params.get("FormosaLanAccess")))
+
+  def _new(self):
+    from uuid import uuid4
+
+    if ui_state.is_offroad():
+      if not ui_state.params.get("FormosaLanAccess"):
+        ui_state.params.put("FormosaLanAccess", str(uuid4()), block=True)
+      self.request = str(uuid4())
+      ui_state.params.put("FormosaLanPairRequest", self.request, block=True)
+
+  def _disable(self):
+    if ui_state.is_offroad():
+      for key in ("FormosaLanAccess", "FormosaLanPairRequest", "FormosaLanPairInfo"):
+        ui_state.params.remove(key)
+      self.request = None
+
+  def _render(self, rect):
+    scale = min(rect.width / 536, rect.height / 240)
+    x, y = rect.x + 12 * scale, rect.y + 8 * scale
+    font = gui_app.font(FontWeight.NORMAL)
+    words = self._words
+    rl.draw_rectangle_rec(rect, rl.Color(15, 32, 32, 255))
+    rl.draw_text_ex(gui_app.font(FontWeight.BOLD), words[0], rl.Vector2(x, y), 24 * scale, 0, rl.WHITE)
+    enabled = bool(ui_state.params.get("FormosaLanAccess"))
+    info = ui_state.params.get("FormosaLanPairInfo") or {}
+    lines = [words[9] if enabled else words[8]]
+    if ui_state.is_offroad() and enabled and self.request:
+      if not ui_state.params.get("FormosaLanPairRequest"):
+        lines = [words[10]]
+      elif info.get("request") != self.request:
+        lines = [words[7]]
+      elif info.get("until", 0) <= time.monotonic():
+        lines = [words[11]]
+      else:
+        pin = info["pin"][:12].upper()
+        lines = [words[1], f'{words[6]}  {info["code"]}', f'{words[5]}  {pin[:4]}-{pin[4:8]}-{pin[8:]}', f'{words[4]}  {info["address"]}']
+    for i, line in enumerate(lines):
+      size = (15, 26, 20, 16)[i]
+      rl.draw_text_ex(font, line, rl.Vector2(x, y + (39 + i * 30) * scale), size * scale, 0, rl.WHITE)
+    for i, b in enumerate((self._pair, self._off, self._close)):
+      b._label.set_font_size(16 * scale)
+      b.render(rl.Rectangle(x + i * (rect.width - 24 * scale) / 3, rect.y + rect.height - 51 * scale, (rect.width - 30 * scale) / 3, 42 * scale))
+    return -1

@@ -1,0 +1,43 @@
+name: Chestnut stock model package
+on:
+  push:
+    branches: [ccnc-port]
+    paths: &package_paths
+      - '.gitattributes'
+      - '.lfsconfig'
+      - 'tinygrad_repo'
+      - 'openpilot/selfdrive/modeld/**'
+      - 'openpilot/system/hardware/chestnut/status.py'
+      - 'openpilot/system/camerad/cameras/nv12_info.py'
+      - 'tools/diagnostics/check_chestnut_package.py'
+      - '.github/workflows/chestnut-package.yml'
+  pull_request:
+    branches: [ccnc-port]
+    paths: *package_paths
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  load-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch the stock package and pinned runtime
+        run: |
+          git submodule update --init --depth 1 tinygrad_repo
+          git lfs pull --include='openpilot/selfdrive/modeld/models/big_*_tinygrad.pkl' --exclude=''
+          python -m pip install 'numpy==2.2.6'
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang llvm
+      - name: Load the native model and verify both camera warps on emulated Chestnut
+        env:
+          DEV: 'MOCKUSB+AMD:LLVM'
+          GMMU: '0'
+          PYTHONPATH: ${{ github.workspace }}/tinygrad_repo:${{ github.workspace }}
+        run: python tools/diagnostics/check_chestnut_package.py

@@ -108,6 +108,10 @@ def initialize_params(params) -> list[dict[str, Any]]:
   # hyundai
   keys.extend([
     "HyundaiLongitudinalTuning",
+    "FormosaClusterDisplay",
+    # Must be included before get_car() constructs CarController and Panda safety
+    # configs. The steering UI toggle alone does not change the active limits.
+    "HkgLowSpeedTorque",
   ])
 
   # subaru

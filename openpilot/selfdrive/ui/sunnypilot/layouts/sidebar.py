@@ -10,7 +10,8 @@ import pyray as rl
 import time
 from dataclasses import dataclass
 from openpilot.selfdrive.ui.ui_state import ui_state, ChestnutState
-from openpilot.sunnypilot.sunnylink.api import UNREGISTERED_SUNNYLINK_DONGLE_ID
+from openpilot.sunnypilot.formosalink.connection_status import is_online
+from openpilot.sunnypilot.formosalink.identity import read, default_directory
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.multilang import tr_noop
 
@@ -58,34 +59,25 @@ class MetricData:
 
 class SidebarSP:
   def __init__(self):
-    self._sunnylink_status = MetricData(tr_noop("SUNNYLINK"), tr_noop("OFFLINE"), Colors.WARNING)
+    self._sunnylink_status = MetricData("FormosaLink", tr_noop("OFFLINE"), Colors.WARNING)
     self._chestnut_green_img = gui_app.texture("icons_mici/chestnut_green.png", CHESTNUT_ICON_WIDTH, CHESTNUT_ICON_HEIGHT)
     self._chestnut_default_img = gui_app.texture("icons_mici/chestnut.png", CHESTNUT_ICON_WIDTH, CHESTNUT_ICON_HEIGHT)
     self._chestnut_orange_img = gui_app.texture("icons_mici/chestnut_orange.png", CHESTNUT_ICON_WIDTH, CHESTNUT_ICON_HEIGHT)
 
   def _update_sunnylink_status(self):
-    if not ui_state.params.get_bool("SunnylinkEnabled"):
-      self._sunnylink_status.update(tr_noop("SUNNYLINK"), tr_noop("DISABLED"), Colors.DISABLED)
-      return
-
-    last_ping = ui_state.params.get("LastSunnylinkPingTime") or 0
-    dongle_id = ui_state.params.get("SunnylinkDongleId")
-
-    is_online = last_ping and (time.monotonic_ns() - last_ping) < PING_TIMEOUT_NS
-    is_temp_fault = ui_state.params.get_bool("SunnylinkTempFault")
-    is_registering = not is_temp_fault and dongle_id in (None, "", UNREGISTERED_SUNNYLINK_DONGLE_ID)
-
-    # Determine status/color pair based on priority
-    if last_ping:
-      status, color = (tr_noop("ONLINE"), Colors.GOOD) if is_online else (tr_noop("ERROR"), Colors.DANGER)
-    elif is_temp_fault:
-      status, color = (tr_noop("FAULT"), Colors.WARNING)
-    elif is_registering:
-      status, color = (tr_noop("REGIST..."), Colors.PROGRESS)
+    if not ui_state.params.get_bool("FormosaLinkEnabled"):
+      status, color = tr_noop("DISABLED"), Colors.DISABLED
     else:
-      status, color = (tr_noop("OFFLINE"), Colors.DANGER)
-
-    self._sunnylink_status.update(tr_noop("SUNNYLINK"), status, color)
+      now = time.monotonic()
+      if now >= getattr(self, "_formosalink_check_at", 0):
+        self._formosalink_check_at = now + 1
+        try:
+          identity, _, _ = read(default_directory())
+          self._formosalink_online = is_online(identity["origin"])
+        except (OSError, ValueError, KeyError, TypeError):
+          self._formosalink_online = False
+      status, color = (tr_noop("ONLINE"), Colors.GOOD) if self._formosalink_online else (tr_noop("OFFLINE"), Colors.WARNING)
+    self._sunnylink_status.update("FormosaLink", status, color)
 
   def _get_home_icon(self, default_img: rl.Texture) -> tuple[rl.Texture, rl.Vector2, float]:
     default_pos = rl.Vector2(HOME_BTN.x, HOME_BTN.y)

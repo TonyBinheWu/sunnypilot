@@ -67,9 +67,6 @@ class DeviceLayout(Widget):
                   self._on_review_training_guide, enabled=ui_state.is_offroad),
       button_item(lambda: tr("Regulatory"), lambda: tr("VIEW"), callback=self._on_regulatory, enabled=ui_state.is_offroad),
       button_item(lambda: tr("Change Language"), lambda: tr("CHANGE"), callback=self._show_language_dialog),
-      # ASCII label remains discoverable before the Traditional Chinese font is loaded.
-      button_item(lambda: "Traditional Chinese (Taiwan) / 繁體中文（台灣）", lambda: tr("CHANGE"),
-                  callback=self._enable_traditional_chinese, enabled=ui_state.is_offroad),
       self._power_off_btn,
     ]
     return items
@@ -83,12 +80,6 @@ class DeviceLayout(Widget):
 
   def _render(self, rect):
     self._scroller.render(rect)
-
-  def _enable_traditional_chinese(self):
-    if not ui_state.is_offroad():
-      return
-    multilang.change_language("zh-CHT")
-    self._update_calib_description()
 
   def _show_language_dialog(self):
     def handle_language_selection(result: DialogResult):

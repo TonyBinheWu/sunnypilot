@@ -18,7 +18,6 @@ from openpilot.selfdrive.ui.ui_state import ui_state, device
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationCircleButton
 from openpilot.selfdrive.ui.mici.onroad.driver_state import DriverStateRenderer
 from openpilot.selfdrive.ui.mici.onroad.cabin_camera_dialog import BaseCabinCameraDialog
-from openpilot.selfdrive.ui.sunnypilot.mici.layouts.onboarding import SunnylinkConsentPage
 
 
 class DriverCameraSetupDialog(BaseCabinCameraDialog):
@@ -328,9 +327,7 @@ class OnboardingWindow(Widget):
     self._accepted_terms: bool = (ui_state.params.get("HasAcceptedTerms") == terms_version and
                                   ui_state.params.get("HasAcceptedTermsSP") == terms_version_sp)
     self._training_done: bool = ui_state.params.get("CompletedTrainingVersion") == training_version
-    self._sunnylink_consent_done: bool = ui_state.params.get("CompletedSunnylinkConsentVersion") in {
-      sunnylink_consent_version, sunnylink_consent_declined
-    }
+    self._sunnylink_consent_done: bool = True  # FormosaLink pairing is optional and independent.
 
     self.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
 
@@ -338,10 +335,7 @@ class OnboardingWindow(Widget):
     self._terms = TermsPage(on_accept=self._on_terms_accepted, on_decline=self._on_uninstall)
     self._terms.set_enabled(lambda: self.enabled)  # for nav stack
 
-    self._sunnylink_consent = SunnylinkConsentPage(
-      on_accept=self._on_sunnylink_accepted,
-      on_decline=self._on_sunnylink_declined,
-    )
+    self._sunnylink_consent = None
 
     self._training_guide = TrainingGuide(completed_callback=self._on_completed_training)
     self._training_guide.set_enabled(lambda: self.enabled)  # for nav stack
@@ -384,7 +378,7 @@ class OnboardingWindow(Widget):
 
   def _on_sunnylink_accepted(self):
     ui_state.params.put("CompletedSunnylinkConsentVersion", sunnylink_consent_version, block=True)
-    ui_state.params.put_bool("SunnylinkEnabled", True)
+    ui_state.params.put_bool("SunnylinkEnabled", False)
     self._sunnylink_consent_done = True
     if not self._training_done:
       gui_app.push_widget(self._training_guide)

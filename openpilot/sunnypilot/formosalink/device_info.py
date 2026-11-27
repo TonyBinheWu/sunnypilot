@@ -1,0 +1,81 @@
+"""Explicit device information allowlist; never export arbitrary Params."""
+from pathlib import Path
+import time
+
+
+class DeviceInformation:
+  def __init__(self, sm, params):
+    self.sm, self.params = sm, params
+    from openpilot.sunnypilot.formosalink.hyundai_soc import NativeSocObserver
+    self.soc=NativeSocObserver(params)
+
+  def capture(self):
+    from openpilot.common.hardware import HARDWARE
+    result = {}
+    from openpilot.common.version import get_version
+    from openpilot.common.git import get_branch, get_commit
+    result.update(version=get_version(),branch=get_branch(),commit=get_commit())
+    if HARDWARE.get_device_type() in ("tici", "tizi", "mici"):
+      result["cellular_data_enabled"] = self.params.get("GsmDataEnabled", return_default=True) is not False
+      result["cellular_data_state"] = "unknown"
+      try:
+        from openpilot.system.ui.lib.cellular_data import modem_data_state
+        result["cellular_data_state"] = modem_data_state(result["cellular_data_enabled"], HARDWARE.get_modem_state(), time.monotonic())
+      except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    for key, method in (("serial", "get_serial"), ("os_version", "get_os_version"), ("hardware", "get_device_type")):
+      try:
+        result[key] = str(getattr(HARDWARE, method)())[:160]
+      except Exception:
+        pass
+    for key, param in (("vehicle_vin", "CarVin"),):
+      try:
+        value = self.params.get(param)
+        if value is not None:
+          result[key] = str(value)[:160]
+      except Exception:
+        pass
+    try:
+      bundle = self.params.get("CarPlatformBundle") or {}
+      for key in ("brand","platform"):
+        if isinstance(bundle.get(key),str):
+          result["vehicle_"+key] = bundle[key][:160]
+    except Exception:
+      pass
+    from openpilot.sunnypilot.formosalink.device_health import collect_health
+    result.update(collect_health(self.sm,result.get("vehicle_brand")))
+    try:
+      result.update(self.soc.capture())
+    except Exception:
+      result.update(aux_soc_status="unknown",aux_soc_percent=None,aux_battery_voltage=None)
+    try:
+      result["uptime_seconds"] = int(float(Path("/proc/uptime").read_text().split()[0]))
+    except (OSError,ValueError):
+      pass
+    try:
+      if not result["health_valid"]:
+        return result
+      state = self.sm["deviceState"]
+      for key, field in (("network_type", "networkType"), ("network_strength", "networkStrength"),
+                         ("thermal_status", "thermalStatus"), ("memory_percent", "memoryUsagePercent"),
+                         ("free_space_percent", "freeSpacePercent"), ("power_watts", "powerDrawW"),
+                         ("fan_percent", "fanSpeedPercentDesired"), ("screen_brightness", "screenBrightnessPercent")):
+        result[key] = str(getattr(state, field))[:160]
+    except Exception:
+      pass
+    return result
+
+
+class NativeTranslations:
+  def __init__(self):
+    from openpilot.system.ui.lib.multilang import load_translations
+    root = Path(__file__).resolve().parents[2] / "selfdrive/ui/translations"
+    self.translations = {}
+    for language, filename in (("zh-TW", "app_zh-CHT.po"), ("ja", "app_ja.po")):
+      try:
+        self.translations[language] = load_translations(root / filename)[0]
+      except Exception:
+        self.translations[language] = {}
+
+  def __call__(self, text):
+    return {"en": text, **{lang: values.get(text) or text for lang, values in self.translations.items()}}

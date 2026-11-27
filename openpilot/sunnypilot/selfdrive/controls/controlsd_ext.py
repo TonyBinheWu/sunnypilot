@@ -32,6 +32,10 @@ class ControlsExt(ModelStateBase):
     cloudlog.info("controlsd_ext got CarParamsSP")
 
     self.sm_services_ext = ['radarState', 'selfdriveStateSP']
+    from opendbc.car.hyundai.formosa_cluster import sorento_display
+    self.cluster_display = sorento_display(CP)
+    if self.cluster_display:
+      self.sm_services_ext.append('navInstruction')
     self.pm_services_ext = ['carControlSP']
 
   def initialize_lateral_control(self, lac, CI, dt):
@@ -90,6 +94,23 @@ class ControlsExt(ModelStateBase):
 
     self.get_lead_data(CC_SP.leadOne, sm['radarState'].leadOne)
     self.get_lead_data(CC_SP.leadTwo, sm['radarState'].leadTwo)
+    if self.cluster_display:
+      hud = CC_SP.clusterHud
+      model = sm['modelV2']
+      if sm.valid['modelV2'] and len(model.laneLineProbs) >= 3 and len(model.laneLines) >= 3:
+        hud.modelTime = sm.logMonoTime['modelV2']
+        left, right = model.laneLines[1], model.laneLines[2]
+        if model.laneLineProbs[1] >= .5 and len(left.y):
+          hud.leftLine = left.y[0]
+        if model.laneLineProbs[2] >= .5 and len(right.y):
+          hud.rightLine = right.y[0]
+        if str(model.meta.laneChangeState) in ('laneChangeStarting', 'laneChangeFinishing'):
+          hud.changing = {'left': -1, 'right': 1}.get(str(model.meta.laneChangeDirection), 0)
+      if sm.valid['radarState']:
+        hud.radarTime = sm.logMonoTime['radarState']
+      if sm.valid['navInstruction']:
+        hud.navTime = sm.logMonoTime['navInstruction']
+        hud.navigating = sm['navInstruction'].distanceRemaining > 0
 
     # MADS state
     mads_src = sm['selfdriveStateSP'].mads

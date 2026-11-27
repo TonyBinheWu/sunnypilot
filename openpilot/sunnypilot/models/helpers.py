@@ -13,10 +13,11 @@ from openpilot.cereal import custom
 from openpilot.common.params import Params
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware.hw import Paths
-from openpilot.selfdrive.modeld.helpers import chestnut_present
+from openpilot.selfdrive.modeld.helpers import chestnut_compiled, chestnut_present
+from openpilot.sunnypilot.modeld_v2.artifacts import chestnut_bundle_available
 
 # SET ME TO THE EXACT JSON VERSION WE SET IN SUNNYPILOT_MODELS REPO
-REQUIRED_JSON_VERSION = 20
+REQUIRED_JSON_VERSION = 21
 
 CUSTOM_MODEL_PATH = Paths.model_root()
 ModelManager = custom.ModelManagerSP
@@ -120,6 +121,13 @@ def _parse_active_bundle(raw_bundle) -> "custom.ModelManagerSP.ModelBundle | Non
 def get_selected_bundle(params: Params | None = None, source: str = "qcom") -> "custom.ModelManagerSP.ModelBundle | None":
   params = params or Params()
   return _parse_active_bundle(params.get(ACTIVE_BUNDLE_KEYS[source]))
+
+
+def chestnut_model_available(params: Params) -> bool:
+  bundle = get_selected_bundle(params, "chestnut")
+  if bundle is None or bundle.runner == ModelManager.Runner.stock:
+    return chestnut_compiled()
+  return bundle.runner == ModelManager.Runner.tinygrad and chestnut_bundle_available(bundle)
 
 
 def get_active_source(chestnut: bool | None = None, chestnut_active: bool | None = None,

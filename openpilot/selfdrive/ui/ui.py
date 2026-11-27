@@ -28,6 +28,8 @@ def main():
   for should_render, frame_time, cpu_time in gui_app.render():
     extra_start = time.monotonic()
     ui_state.update()
+    from openpilot.sunnypilot.formosalink.ui_sync import tick as formosalink_ui_tick
+    formosalink_ui_tick()
 
     if should_render:
       # reaffine after power save offlines our core

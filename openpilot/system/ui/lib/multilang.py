@@ -1,3 +1,4 @@
+from openpilot.system.ui.lib.branding import display_text
 from importlib.resources import files
 import json
 import os
@@ -18,6 +19,22 @@ SYSTEM_UI_DIR = os.path.join(BASEDIR, "openpilot/system", "ui")
 UI_DIR = files("openpilot.selfdrive.ui")
 TRANSLATIONS_DIR = UI_DIR.joinpath("translations")
 LANGUAGES_FILE = TRANSLATIONS_DIR.joinpath("languages.json")
+
+
+def fallback_font_glyphs(language_code: str, extra_chars: str = "") -> set[str]:
+  """Reserve glyphs for translated UI strings and native language names.
+
+  The comma 4 language picker contains names that may be absent from the
+  currently active .po file. Without those glyphs, Noto renders '?'.
+  """
+  glyphs = set(map(chr, range(32, 127))) | set(extra_chars)
+  glyphs.update(TRANSLATIONS_DIR.joinpath(f"app_{language_code}.po").read_text(encoding="utf-8"))
+  with LANGUAGES_FILE.open(encoding="utf-8") as f:
+    language_labels = json.load(f)
+  for label in language_labels:
+    glyphs.update(label)
+  return glyphs
+
 
 LANGUAGE_CODE_ALIASES = {
   "zh-TW": "zh-CHT",
@@ -193,15 +210,15 @@ class Multilang:
     self.setup()
 
   def tr(self, text: str) -> str:
-    return self._translations.get(text, text) or text
+    return display_text(self._translations.get(text, text) or text)
 
   def trn(self, singular: str, plural: str, n: int) -> str:
     if singular in self._plurals:
       idx = self._plural_selector(n)
       forms = self._plurals[singular]
       if idx < len(forms) and forms[idx]:
-        return forms[idx]
-    return singular if n == 1 else plural
+        return display_text(forms[idx])
+    return display_text(singular if n == 1 else plural)
 
   def _load_languages(self):
     with LANGUAGES_FILE.open(encoding='utf-8') as f:

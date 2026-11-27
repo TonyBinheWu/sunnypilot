@@ -61,16 +61,16 @@ class SunnylinkLayoutMici(NavScroller):
 
     self._sunnylink_info = SunnylinkInfo()
 
-    self._sunnylink_toggle = BigToggle(text=tr("enable sunnylink"),
+    self._sunnylink_toggle = BigToggle(text="enable sunnylink",
                                        initial_state=self._sunnylink_enabled,
                                        toggle_callback=self._sunnylink_toggle_callback)
     self._sunnylink_sponsor_button = SunnylinkPairBigButton(sponsor_pairing=False)
     self._sunnylink_pair_button = SunnylinkPairBigButton(sponsor_pairing=True)
-    self._backup_btn = BigButton(tr("backup settings"), "")
+    self._backup_btn = BigButton("backup settings", "")
     self._backup_btn.set_click_callback(lambda: self._handle_backup_restore_btn(restore=False))
-    self._restore_btn = BigButton(tr("restore settings"), "")
+    self._restore_btn = BigButton("restore settings", "")
     self._restore_btn.set_click_callback(lambda: self._handle_backup_restore_btn(restore=True))
-    self._sunnylink_uploader_toggle = BigToggle(text=tr("sunnylink uploader"), initial_state=False,
+    self._sunnylink_uploader_toggle = BigToggle(text="sunnylink uploader", initial_state=False,
                                                 toggle_callback=self._sunnylink_uploader_callback)
 
     self._scroller.add_widgets([

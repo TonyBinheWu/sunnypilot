@@ -34,7 +34,7 @@
     "severity": 0
   },
   "Offroad_ChestnutUncompiled": {
-    "text": "Chestnut model not compiled. Keep ignition on and reboot the comma.",
+    "text": "Chestnut model files are missing or incomplete. Connect to Wi-Fi and finish the software update. If you selected a downloaded Chestnut model, download it again.",
     "severity": 0
   },
   "Offroad_ChestnutUpdateFailed": {
@@ -50,7 +50,7 @@
     "severity": 1
   },
   "Offroad_CarUnrecognized": {
-    "text": "sunnypilot was unable to identify your car. Your car is either unsupported or its ECUs are not recognized. Please select your vehicle manually at https://www.sunnylink.ai/. Need help? Visit https://community.sunnypilot.ai/",
+    "text": "Vehicle not recognized. While parked, open your paired device in FormosaLink and go to Vehicle > Select vehicle. Choose the exact model year and equipment if listed.",
     "severity": 0
   },
   "Offroad_Recalibration": {

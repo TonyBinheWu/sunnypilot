@@ -1,6 +1,9 @@
+import time
 import pyray as rl
 
+from openpilot.common.params import Params
 from openpilot.cereal import log
+from openpilot.system.ui.lib.cellular_data import CellularDataPreference, connection_status, label as cellular_label
 from openpilot.selfdrive.ui.mici.layouts.settings.network.wifi_ui import WifiIcon
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton
 from openpilot.common.hardware import HARDWARE
@@ -15,6 +18,7 @@ NetworkType = log.DeviceState.NetworkType
 class EsimNetworkButton(BigButton):
   def __init__(self, cellular_manager: CellularManager, *, description: str = ""):
     self._cellular_manager = cellular_manager
+    self._data_preference = CellularDataPreference(Params(), lambda: False)
     self._cell_icons = {
       NetworkStrength.unknown: gui_app.texture("icons_mici/settings/network/cell_strength_none.png", 64, 47),
       NetworkStrength.poor: gui_app.texture("icons_mici/settings/network/cell_strength_low.png", 64, 47),
@@ -35,17 +39,19 @@ class EsimNetworkButton(BigButton):
   def _compute_state(self):
     cm = self._cellular_manager
     none_icon = self._cell_icons[NetworkStrength.unknown]
-    ip = cm.modem_state.get("ip_address") or "connecting..."
+    state = connection_status(self._data_preference.enabled, cm.modem_state, time.monotonic())
+    value = cellular_label(state)
     if cm.is_euicc is False:
       iccid = cm.modem_state.get("iccid") or ""
-      if not iccid:
+      if not iccid and state not in ("disabled", "stopping"):
         return "sim", "no sim", none_icon
-      return f"sim (...{iccid[-4:]})", ip, self._cell_icon()
+      title = f"sim (...{iccid[-4:]})" if iccid else "sim"
+      return title, value, self._cell_icon() if state == "connected" else none_icon
 
     active = cm.active_profile
     if active is None:
-      return "esim", "loading...", none_icon
-    return active.display_name, ip, self._cell_icon()
+      return "esim", value, none_icon
+    return active.display_name, value, self._cell_icon() if state == "connected" else none_icon
 
   def _cell_icon(self):
     # read directly from HARDWARE so it reflects modem state even when wifi is the active connection

@@ -1,0 +1,1 @@
+"""FormosaLink self-hosted platform."""

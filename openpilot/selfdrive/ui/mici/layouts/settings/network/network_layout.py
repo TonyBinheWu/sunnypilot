@@ -1,3 +1,4 @@
+import time
 from openpilot.selfdrive.ui.mici.layouts.settings.network import EsimNetworkButton, WifiNetworkButton
 from openpilot.selfdrive.ui.mici.layouts.settings.network.esim_ui import EsimUI
 from openpilot.selfdrive.ui.mici.layouts.settings.network.wifi_ui import WifiUIMici
@@ -6,6 +7,7 @@ from openpilot.selfdrive.ui.mici.widgets.dialog import BigInputDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.cellular_manager import CellularManager
+from openpilot.system.ui.lib.cellular_data import CellularDataPreference, connection_status, label as cellular_label
 from openpilot.system.ui.lib.wifi_manager import WifiManager, Network, MeteredType
 from openpilot.system.ui.widgets.scroller import NavScroller
 
@@ -78,6 +80,10 @@ class NetworkLayoutMici(NavScroller):
     self._esim_button.set_click_callback(lambda: gui_app.push_widget(self._esim_ui))
 
     # ******** Advanced settings ********
+    self._cellular_data = CellularDataPreference(ui_state.params, ui_state.is_offroad)
+    self._cellular_data_btn = BigToggle(cellular_label("title"), initial_state=self._cellular_data.enabled,
+                                       toggle_callback=self._toggle_cellular_data, description=cellular_label("description"))
+    self._cellular_data_btn.set_enabled(ui_state.is_offroad)
     # ******** Roaming toggle ********
     self._roaming_btn = BigParamControl("enable roaming", "GsmRoaming", description="Allow cellular data roaming.")
 
@@ -93,6 +99,7 @@ class NetworkLayoutMici(NavScroller):
     self._scroller.add_widgets([
       self._wifi_button,
       self._esim_button,
+      self._cellular_data_btn,
       self._network_metered_btn,
       self._tethering_toggle_btn,
       self._tethering_password_btn,
@@ -105,6 +112,9 @@ class NetworkLayoutMici(NavScroller):
 
   def _update_state(self):
     super()._update_state()
+    self._cellular_data_btn.set_checked(self._cellular_data.enabled)
+    self._cellular_data_btn.set_text(cellular_label("title"))
+    self._cellular_data_btn.set_value(cellular_label(connection_status(self._cellular_data.enabled, self._cellular_manager.modem_state, time.monotonic())))
 
     show_cell_settings = not ui_state.prime_state.is_full_prime()
     self._wifi_manager.set_ipv4_forward(show_cell_settings)
@@ -119,6 +129,10 @@ class NetworkLayoutMici(NavScroller):
     # Process wifi and esim callbacks while at any point in the nav stack
     gui_app.add_nav_stack_tick(self._wifi_manager.process_callbacks)
     gui_app.add_nav_stack_tick(self._cellular_manager.process_callbacks)
+
+  def _toggle_cellular_data(self, enabled):
+    self._cellular_data.set_enabled(enabled)
+    self._cellular_data_btn.set_checked(self._cellular_data.enabled)
 
   def hide_event(self):
     super().hide_event()

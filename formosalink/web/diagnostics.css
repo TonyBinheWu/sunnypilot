@@ -1,0 +1,7 @@
+html { color-scheme: light dark; font: 112.5%/1.55 system-ui, sans-serif; }
+main { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; overflow-wrap: anywhere; }
+ul { list-style: none; padding: 0; }
+li { border-block-start: 1px solid GrayText; padding: 1rem 0; }
+li p { margin: .25rem 0; }
+input, button { font: inherit; max-width: 100%; }
+code { margin-inline-end: 1rem; }

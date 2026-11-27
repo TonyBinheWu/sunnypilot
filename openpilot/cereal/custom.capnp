@@ -138,6 +138,9 @@ struct ModelManagerSP @0xaedffd8f31e7b55d {
     status @0 :DownloadStatus;
     progress @1 :Float32;
     eta @2 :UInt32;
+    speed @3 :Float32;
+    canceling @4 :Bool;
+    resuming @5 :Bool;
   }
 
   struct Chunk {
@@ -386,6 +389,17 @@ struct CarControlSP @0xa5cd762cd951a455 {
   leadOne @2 :LeadData;
   leadTwo @3 :LeadData;
   intelligentCruiseButtonManagement @4 :IntelligentCruiseButtonManagement;
+  clusterHud @5 :ClusterHud;
+
+  struct ClusterHud {
+    modelTime @0 :UInt64;
+    radarTime @1 :UInt64;
+    navTime @2 :UInt64;
+    leftLine @3 :Float32;
+    rightLine @4 :Float32;
+    changing @5 :Int8;
+    navigating @6 :Bool;
+  }
 
   struct Param {
     key @0 :Text;
