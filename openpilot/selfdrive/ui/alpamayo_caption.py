@@ -1,5 +1,6 @@
 """Render the admitted plan's explanation. No caption data is used by controls."""
 from functools import lru_cache
+from math import ceil
 from pathlib import Path
 import re
 import time
@@ -19,15 +20,14 @@ def caption(sm, now_ns, language, started_frame):
   traditional = language == 'zh-CHT'
   chinese = traditional or language == 'zh-CHS'
   if raw == '<NOMINAL>':
-    return ('lat2v 模型判讀', '一般行駛') if traditional else (
-      ('lat2v 模型判断', '常规行驶') if chinese else ('lat2v model', 'Nominal driving'))
+    return '一般行駛' if traditional else '常规行驶' if chinese else 'Nominal driving'
   if chinese and sm.valid['alpamayoSubtitle'] and sm.recv_frame['alpamayoSubtitle'] >= started_frame:
     sub = sm['alpamayoSubtitle']
     if 0 < sub.queryMonoTime <= query and sub.original == raw:
       translated = sub.traditional if traditional else sub.simplified
       if translated:
-        return ('lat2v 模型判讀 · 機器翻譯' if traditional else 'lat2v 模型判断 · 机器翻译', translated)
-  return ('lat2v 模型判讀 · 原文' if traditional else 'lat2v 模型判断 · 原文' if chinese else 'lat2v model', raw)
+        return translated
+  return raw
 
 
 @lru_cache(maxsize=6)
@@ -36,14 +36,11 @@ def subtitle_font(size):
   return ImageFont.truetype(str(FONT), size)
 
 
-def render_caption(title, text, width, size):
+def render_caption(text, width, size):
   from PIL import Image, ImageDraw
   # The fixed UI glyph atlas contains only UI vocabulary; rasterize free text with the full source font.
   font = subtitle_font(size)
-  padding = size//2
-  image = Image.new('RGBA', (width, size*4), (12, 19, 27, 220))
-  draw = ImageDraw.Draw(image)
-  draw.text((padding, 2), title, font=subtitle_font(max(12, size-2)), fill=(170, 216, 236))
+  padding = size//3
   lines = ['']
   words = re.findall(r"[A-Za-z0-9'-]+|[^\s]|\s+", ' '.join(text[:512].split()))
   tokens = []
@@ -62,14 +59,20 @@ def render_caption(title, text, width, size):
         lines[-1] = lines[-1][:-1]
       lines[-1] = lines[-1].rstrip()+'…'
       break
+  lines = [line.rstrip() for line in lines]
+  text_width = ceil(max(font.getlength(line) for line in lines))
+  line_height = sum(font.getmetrics())
+  inset_y = max(2, size//8)
+  image = Image.new('RGBA', (min(width, text_width+2*padding), len(lines)*line_height+2*inset_y), (12, 19, 27, 220))
+  draw = ImageDraw.Draw(image)
   for i, line in enumerate(lines):
-    draw.text((padding, size*(1.25+i*1.18)), line, font=font, fill='white')
+    draw.text((padding, inset_y+i*line_height), line, font=font, fill='white')
   return image
 
 
 class AlpamayoCaption:
   def __init__(self):
-    self.key = self.texture = None
+    self.key = self.texture = self.source = None
 
   def draw(self, rect, ui):
     import pyray as rl
@@ -78,22 +81,24 @@ class AlpamayoCaption:
     if value is None:
       return
     width, size = int(rect.width*.55), max(14, min(30, int(rect.width/46)))
-    key = (*value, width, size)
+    key = (value, width, size)
     if key != self.key:
       image = render_caption(*key)
-      if self.texture is None or self.texture.width != width or self.texture.height != image.height:
+      if self.texture is None or self.texture.width != width or self.texture.height < image.height:
         self.close()
         blank = rl.gen_image_color(width, image.height, rl.BLANK)
         self.texture = rl.load_texture_from_image(blank)
         rl.unload_image(blank)
       pixels = image.tobytes()
-      rl.update_texture(self.texture, rl.ffi.cast('void *', rl.ffi.from_buffer(pixels)))
+      self.source = rl.Rectangle(0, 0, image.width, image.height)
+      rl.update_texture_rec(self.texture, self.source, rl.ffi.cast('void *', rl.ffi.from_buffer(pixels)))
       self.key = key
-    y = min(rect.height*.76, rect.height-self.texture.height-4)
-    rl.draw_texture(self.texture, int(rect.x+(rect.width-width)/2), int(rect.y+y), rl.WHITE)
+    y = min(rect.height*.76, rect.height-self.source.height-4)
+    pos = rl.Vector2(int(rect.x+(rect.width-self.source.width)/2), int(rect.y+y))
+    rl.draw_texture_rec(self.texture, self.source, pos, rl.WHITE)
 
   def close(self):
     if self.texture is not None:
       import pyray as rl
       rl.unload_texture(self.texture)
-      self.texture = self.key = None
+      self.texture = self.key = self.source = None

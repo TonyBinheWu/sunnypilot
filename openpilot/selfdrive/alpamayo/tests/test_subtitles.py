@@ -21,7 +21,7 @@ class Messages(dict):
 
 @pytest.mark.parametrize('language,expected', [('zh-CHT','不要左轉。'), ('main_zh-CHS','不要左转。'), ('en','Do not turn left.')])
 def test_current_plan_caption(language, expected):
-  assert caption(Messages(), NOW, language, 12)[1] == expected
+  assert caption(Messages(), NOW, language, 12) == expected
 
 
 @pytest.mark.parametrize('reason', ['fallback', 'stale_plan', 'future_plan', 'stale_model', 'invalid_model', 'prior_drive', 'empty'])
@@ -44,14 +44,21 @@ def test_translation_falls_back_to_current_original(reason):
   elif reason == 'later_query': sm['alpamayoSubtitle'].queryMonoTime = NOW
   elif reason == 'older_drive': sm.recv_frame['alpamayoSubtitle'] = 0
   else: sm.valid['alpamayoSubtitle'] = False
-  assert caption(sm, NOW, 'zh-CHT', 12) == ('lat2v 模型判讀 · 原文', 'Do not turn left.')
+  assert caption(sm, NOW, 'zh-CHT', 12) == 'Do not turn left.'
 
 
-def test_nominal_tag_and_full_font():
+def test_nominal_tag():
   sm = Messages()
   sm['modelV2'].alpamayoReasoning = '<NOMINAL>'
-  assert caption(sm, NOW, 'zh-CHT', 12) == ('lat2v 模型判讀', '一般行駛')
-  for width, size in [(294, 14), (1056, 30)]:
-    image = render_caption('lat2v 模型判讀 · 機器翻譯', '等待行人穿越馬路。'*20, width, size)
-    assert image.size == (width, size*4)
-    assert image.crop((0, size, width, size*4)).convert('L').getextrema()[1] > 220
+  assert caption(sm, NOW, 'zh-CHT', 12) == '一般行駛'
+
+
+@pytest.mark.parametrize('width,size', [(294, 14), (1188, 30)])
+def test_short_caption_hugs_text_and_long_caption_uses_two_lines(width, size):
+  short = render_caption('準備右轉', width, size)
+  long = render_caption('等待行人穿越馬路。'*20, width, size)
+  assert short.width < width//3 and short.height <= 2*size
+  assert short.convert('L').getextrema()[1] > 220
+  assert short.width < long.width <= width
+  assert short.height < long.height <= 2*short.height
+  assert long.crop((0, short.height, long.width, long.height)).convert('L').getextrema()[1] > 220
