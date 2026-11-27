@@ -2,9 +2,11 @@
 
 ## Sorento HEV 2025 與 ccNC
 
-2025 Sorento HEV 的相機 SCC 平台使用原廠 ACC。攝影機直接接收動力方向盤狀態，原廠跟車、緊急介入與故障訊息沿用原車路徑。這個配置會停用 openpilot 實驗縱向控制，包括先前已開啟的設定。儀表開關關閉時，原廠顯示訊息逐筆直通；開啟時，兩種顯示訊息可呈現車道形狀和追蹤到的物件。未確認的車道線使用灰色，方向箭頭跟隨實際方向燈。
+FormosaLink 選擇「Kia Sorento 2024–25（無 HDA II，含 2025 HEV 油電）」後，車機使用 `KIA_SORENTO_2024`。車機依啟動時收到的訊息判斷接線。相機側同時收到 LFA 和 SCC 時，會依車主舊版 Carrot 的格式讀取 SCC 前車資料和攝影機警告。動力匯流排提供變速箱檔位時，優先讀取該訊息。轉向訊息中的 FCA 系統警示及車道警示取自攝影機，原車 SCC 回報的故障會顯示為 ACC 異常。[車主使用的 Carrot 版本](https://github.com/ajouatom/openpilot/tree/f902de981be199150b86d0201b39e80071576c49)
 
-車主提供的行程包含 `0x161`、`0x162`、`0x1E0` 和 `0x200`。其中可核對前車和距離。側後方車位在該段全程為空，`0x1EA` 亦未出現。不同儀表版本與配備仍需各自實車核對。
+A-CAN 有完整的 32 組前雷達訊息時，車機逐次解析物件的距離、左右位置和相對速度，同時讀取攝影機的前車資料。收到不完整或校驗錯誤的雷達掃描時會回報資料異常。若啟動時只辨識到攝影機 SCC，則使用攝影機目標。開啟選用的儀表顯示後，車道、前車和 LFA 圖示隨原車的三種儀表訊息更新，HDA 狀態、故障彈窗和警示音由原車提供。
+
+目前跟車仍由原廠 ACC 負責。車主提供的 Carrot 行程可核對 1,199 次前雷達掃描，共 16,952 筆物件資料。該段沒有記錄到 AEB 作動，原廠 ACC 和 AEB 的實車功能仍待確認。
 
 ## 各支援車型共用的 0.9.0 基礎功能
 
@@ -45,7 +47,7 @@ Host tests and native UI profiles are simulated checks, not physical vehicle val
 
 ## English
 
-On the camera-SCC Sorento, factory SCC owns following and emergency intervention. The optional overlay edits only the two HUD messages. With the overlay off, OEM cluster traffic passes through intact.
+On the 2024–25 camera-SCC Sorento, the device detects the Carrot camera layout from live traffic. It reads the transmission gear and uses the 32-slot front radar when a complete bank is present on A-CAN. The camera supplies the SCC lead, its fault state and the warnings carried in LFA. The optional cluster overlay uses three OEM message streams and preserves the factory HDA state, popups and chimes. Following uses factory ACC. The supplied Carrot segment contained no AEB event.
 
 This first integration adds an optional OEM cluster overlay inspired by the pinned Carrot revision above. It is off by default and requires a restart. Existing steering, braking, driver monitoring and harness selection remain in place.
 
@@ -57,7 +59,7 @@ This does not add the rewired ADAS control topology or new driving abilities, an
 
 ## 日本語
 
-相機 SCC 仕様の Sorento は純正 ACC を使用します。実験用の縦制御は無効です。メーター表示を有効にした場合のみ、2 種の表示メッセージに車線と車両を描画します。
+2024–25 年式のカメラ SCC 仕様の Sorento は、実際の受信データから Carrot 仕様を判別します。A-CAN に全 32 枠の前方レーダーデータがあれば、カメラの先行車情報と併せて読み取ります。追従は純正 ACC が担当します。メーター表示を有効にすると、純正の 3 種のメッセージに車線、先行車、LFA アイコンを表示します。純正の警告と警告音はそのまま表示されます。提供された走行記録には AEB の作動例がありません。
 
 上記の Carrot リビジョンを参考に、純正メーター表示を補助する独立した機能を追加します。初期値はオフで、変更後は再起動が必要です。既存の操舵、制動、ドライバー監視、ハーネス設定を維持します。
 
