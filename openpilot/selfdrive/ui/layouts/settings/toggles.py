@@ -8,6 +8,7 @@ from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.multilang import tr, tr_noop
 from openpilot.system.ui.widgets import DialogResult
 from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.layouts.settings.common import set_openpilot_enabled
 
 PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 
@@ -245,6 +246,22 @@ class TogglesLayout(Widget):
       self._params.put_bool("ExperimentalMode", state)
 
   def _toggle_callback(self, state: bool, param: str):
+    if param == "OpenpilotEnabledToggle":
+      switch = self._toggles[param].action_item
+      current = self._params.get_bool(param)
+      switch.set_state(current)
+      if ui_state.engaged or state == current:
+        return
+      if state:
+        switch.set_state(set_openpilot_enabled(True))
+      else:
+        def confirm(result):
+          if result == DialogResult.CONFIRM:
+            switch.set_state(set_openpilot_enabled(False))
+
+        gui_app.push_widget(ConfirmDialog(tr("Turn off openpilot and switch to dashcam mode?"),
+                                          tr("Turn off openpilot"), callback=confirm))
+      return
     if param == "ExperimentalMode":
       self._handle_experimental_mode_toggle(state)
       return

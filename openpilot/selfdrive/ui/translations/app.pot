@@ -1526,3 +1526,15 @@ msgstr ""
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Show an animated rainbow on the predicted path while lateral control is active. Display only; changes apply without restarting."
 msgstr ""
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/toggles.py
+msgid "Slide to turn off openpilot"
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Turn off openpilot and switch to dashcam mode?"
+msgstr ""
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Turn off openpilot"
+msgstr ""

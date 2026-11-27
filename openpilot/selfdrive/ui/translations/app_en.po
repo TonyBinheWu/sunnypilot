@@ -1807,3 +1807,15 @@ msgstr "Check traffic and operate the indicator yourself"
 #: openpilot/selfdrive/ui/lane_change_notice.py
 msgid "Indicator on; check surrounding traffic"
 msgstr "Indicator on; check surrounding traffic"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/toggles.py
+msgid "Slide to turn off openpilot"
+msgstr "Slide to turn off openpilot"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Turn off openpilot and switch to dashcam mode?"
+msgstr "Turn off openpilot and switch to dashcam mode?"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Turn off openpilot"
+msgstr "Turn off openpilot"

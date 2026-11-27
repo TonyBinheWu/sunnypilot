@@ -131,10 +131,18 @@ class _Scroller(Widget):
     # FIXME: the padding correction doesn't seem correct
     scroll_offset = self.scroll_panel.get_offset() - pos
     if smooth:
-      self._scrolling_to_filter.x = self.scroll_panel.get_offset()
-      self._scrolling_to = scroll_offset, block_interrupt, block_widget_interaction
+      self.animate_to_offset(scroll_offset, block_interrupt, block_widget_interaction)
     else:
       self.scroll_panel.set_offset(scroll_offset)
+
+  def animate_to_offset(self, offset, block_interrupt=False, block_widget_interaction=False):
+    self._scrolling_to_filter.x = self.scroll_panel.get_offset()
+    self._scrolling_to = offset, block_interrupt, block_widget_interaction
+
+  @property
+  def target_offset(self):
+    target = self._scrolling_to[0]
+    return self.scroll_panel.get_offset() if target is None else target
 
   @property
   def is_auto_scrolling(self) -> bool:
@@ -457,7 +465,7 @@ class Scroller(Widget):
   def _page_distance(self, direction):
     scroller = self._scroller
     width = scroller.rect.width
-    offset = scroller.scroll_panel.get_offset()
+    offset = scroller.target_offset
     if width <= 0:
       return 0
     # After a drag, advance to the next aligned card in the requested direction.
@@ -469,7 +477,9 @@ class Scroller(Widget):
     return abs(self._page_distance(direction)) >= 1
 
   def page_by(self, direction):
-    self._scroller.scroll_to(self._page_distance(direction), smooth=True, block_widget_interaction=True)
+    distance = self._page_distance(direction)
+    if abs(distance) >= 1:
+      self._scroller.animate_to_offset(self._scroller.target_offset - distance, block_widget_interaction=True)
 
   def _render(self, rect):
     if self._header is None:

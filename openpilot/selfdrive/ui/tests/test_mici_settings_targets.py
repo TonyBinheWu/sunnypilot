@@ -84,3 +84,102 @@ def test_detail_toolbar_edges_and_aligned_paging_after_a_drag(drawing):
     assert ("previous" in bar.targets) == bool(previous)
     assert ("next" in bar.targets) == bool(following)
     assert all(box.height >= 50 for box in bar.targets.values())
+
+
+def test_pager_accepts_edge_taps_and_small_jitter_but_cancels_a_drag(drawing):
+  following, previous = Mock(), Mock()
+  bar = navigation.SettingsToolbar(lambda: "Settings", Mock(), previous, following)
+  bar._render(rl.Rectangle(0, 0, 536, 58))
+  next_box = bar.targets["next"]
+  edge = rl.Vector2(535, 1)
+  bar._handle_mouse_press(edge)
+  bar._handle_mouse_release(edge)
+  following.assert_called_once()
+  start = rl.Vector2(next_box.x+1, 22)
+  for excursion in (4, 30):
+    bar._handle_mouse_press(start)
+    bar._handle_mouse_event(SimpleNamespace(left_down=True, pos=rl.Vector2(next_box.x-excursion, 22)))
+    bar._handle_mouse_release(start)
+  bar._handle_mouse_press(start)
+  bar._handle_mouse_release(rl.Vector2(next_box.x-2, 22))
+  assert following.call_count == 2
+  previous.assert_not_called()
+
+
+def test_page_buttons_queue_and_reverse_without_waiting_for_animation(drawing):
+  page = Scroller()
+  body = page._scroller
+  body.set_rect(rl.Rectangle(0, 58, 536, 182))
+  body._content_size = 3 * 536
+  page.page_by(1)
+  page.page_by(-1)
+  assert body.target_offset == 0
+  page.page_by(1)
+  page.page_by(1)
+  assert body.target_offset == -1072
+  assert not page.can_page(1)
+  page.page_by(1)
+  assert body.target_offset == -1072
+  page.page_by(-1)
+  assert body.target_offset == -536
+
+
+@pytest.mark.parametrize("device", ["c4", "c3x"])
+def test_master_switch_only_persists_a_confirmed_disable(device, drawing, monkeypatch):
+  from openpilot.selfdrive.ui.layouts.settings import common, toggles
+  from openpilot.selfdrive.ui.mici.layouts.settings import toggles as mici
+  from openpilot.selfdrive.ui.mici.widgets import button
+  from openpilot.system.ui.widgets import DialogResult
+
+  key = "OpenpilotEnabledToggle"
+  values = {key: True}
+  params = Mock()
+  params.get_bool.side_effect = lambda name, *args: bool(values.get(name))
+  params.get.return_value = 0
+  params.put_bool.side_effect = values.__setitem__
+  state = SimpleNamespace(params=params, engaged=False, add_engaged_transition_callback=Mock())
+  for module in (common, toggles, mici):
+    monkeypatch.setattr(module, "ui_state", state)
+  if device == "c4":
+    monkeypatch.setattr(button, "Params", lambda: params)
+    monkeypatch.setattr(button, "UnifiedLabel", Mock())
+    page = mici.TogglesLayoutMici()
+    page._enable_openpilot.set_checked(True)
+    dialog = Mock()
+    monkeypatch.setattr(mici, "BigConfirmationDialog", dialog)
+
+    def tap(value):
+      assert page._enable_openpilot._checked != value
+      page._enable_openpilot._handle_mouse_release(rl.Vector2(0, 0))
+
+    def confirm():
+      dialog.call_args.args[2]()
+  else:
+    page = SimpleNamespace(_params=params, _toggles={key: SimpleNamespace(action_item=Mock())})
+    dialog = Mock()
+    monkeypatch.setattr(toggles, "ConfirmDialog", dialog)
+
+    def tap(value):
+      toggles.TogglesLayout._toggle_callback(page, value, key)
+
+    def confirm():
+      dialog.call_args.kwargs["callback"](DialogResult.CONFIRM)
+
+  tap(False)
+  dialog.assert_called_once()
+  if device == "c3x":
+    dialog.call_args.kwargs["callback"](DialogResult.CANCEL)
+  params.put_bool.assert_not_called()
+  tap(False)
+  state.engaged = True
+  confirm()
+  params.put_bool.assert_not_called()
+  state.engaged = False
+  tap(False)
+  confirm()
+  assert [entry.args for entry in params.put_bool.call_args_list] == [(key, False), ("OnroadCycleRequested", True)]
+  dialog.reset_mock()
+  params.put_bool.reset_mock()
+  tap(True)
+  dialog.assert_not_called()
+  assert [entry.args for entry in params.put_bool.call_args_list] == [(key, True), ("OnroadCycleRequested", True)]

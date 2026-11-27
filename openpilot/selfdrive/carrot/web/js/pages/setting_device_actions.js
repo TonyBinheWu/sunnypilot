@@ -46,6 +46,10 @@ function bindDeviceToggleRows(container) {
       const toggle = event.target.closest(".device-toggle");
       const param = toggle?.dataset.param;
       if (!param) return;
+      if (param === "OpenpilotEnabledToggle") {
+        await changeOpenpilotSwitch(input);
+        return;
+      }
       const confirmKey = toggle?.dataset.confirmKey || "";
       const confirmedParam = toggle?.dataset.confirmedParam || "";
       const alreadyConfirmed = toggle?.dataset.confirmed === "1";
@@ -77,6 +81,31 @@ function bindDeviceToggleRows(container) {
       }
     });
   });
+}
+
+async function changeOpenpilotSwitch(input) {
+  if (input.disabled) return;
+  const requested = input.checked;
+  input.checked = !requested;
+  input.disabled = true;
+  try {
+    if (!requested) {
+      const accepted = await appConfirm(
+        getUIText("disable_openpilot_message", "The device will switch to dashcam mode on the next drive."),
+        {
+          title: getUIText("disable_openpilot_title", "Turn off openpilot?"),
+          confirmLabel: getUIText("disable_openpilot_action", "Turn off openpilot"),
+        },
+      );
+      if (!accepted) return;
+    }
+    await setParam("OpenpilotEnabledToggle", requested ? 1 : 0);
+    input.checked = requested;
+  } catch (err) {
+    showAppToast(err.message || getUIText("failed", "Failed"), { tone: "error" });
+  } finally {
+    input.disabled = false;
+  }
 }
 
 function bindDevicePersonality(container) {

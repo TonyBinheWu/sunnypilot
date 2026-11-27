@@ -16,6 +16,16 @@ class DeviceTouchMenu(TouchMenu):
 class SettingsToolbar(DeviceTouchMenu):
   background = BASE
 
+  def _handle_mouse_event(self, event):
+    # A finger can drift across the edge and settle back before release.
+    # TouchMenu still requires the release to be on the original button.
+    if event.left_down and self._pressed_target is not None:
+      box = self.targets.get(self._pressed_target)
+      slop = 8
+      if box is None or not (box.x-slop <= event.pos.x < box.x+box.width+slop and
+                             box.y-slop <= event.pos.y < box.y+box.height+slop):
+        self._pressed_target = None
+
   def __init__(self, title, back, previous=None, following=None, can_page=None):
     super().__init__()
     self.title, self.back = title, back
@@ -28,21 +38,22 @@ class SettingsToolbar(DeviceTouchMenu):
   def _render(self, rect):
     rl.draw_rectangle_rec(rect, BAR)
     self.targets.clear()
+    self.targets["back"] = rl.Rectangle(rect.x, rect.y, 103, rect.height)
     box = rl.Rectangle(rect.x+6, rect.y+4, 94, rect.height-8)
-    self.targets["back"] = box
     rl.draw_rectangle_rounded(box, .25, 5, SELECTED if self._pressed_target == "back" else TILE)
     caption(box, tr("Back"), 22, centered=True)
-    right = rect.x + rect.width - 6
+    right = rect.x + rect.width
     if self.following is not None:
+      width = min(116, rect.width * .22)
       for key, sign in (("next", 1), ("previous", -1)):
-        box = rl.Rectangle(right-87, rect.y+4, 87, rect.height-8)
+        right -= width
+        box = rl.Rectangle(right+3, rect.y+4, width-6, rect.height-8)
         active = self.can_page is None or self.can_page(sign)
         if active:
-          self.targets[key] = box
+          self.targets[key] = rl.Rectangle(right, rect.y, width, rect.height)
         rl.draw_rectangle_rounded(box, .25, 5, SELECTED if self._pressed_target == key else TILE)
         ink = MINT if active else (103, 121, 110, 255)
         caption(box, tr("Next page" if sign == 1 else "Previous page"), 19, ink, centered=True)
-        right = box.x-6
     left = rect.x+112
     caption(rl.Rectangle(left, rect.y, right-left, rect.height), self.title(), 22, INK)
 

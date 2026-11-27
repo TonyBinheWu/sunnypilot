@@ -2141,3 +2141,15 @@ msgstr "작업 확인"
 
 msgid "Delete"
 msgstr "지우기"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/toggles.py
+msgid "Slide to turn off openpilot"
+msgstr "밀어서 오픈파일럿 끄기"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Turn off openpilot and switch to dashcam mode?"
+msgstr "오픈파일럿을 끄고 블랙박스 모드로 전환할까요?"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Turn off openpilot"
+msgstr "오픈파일럿 끄기"

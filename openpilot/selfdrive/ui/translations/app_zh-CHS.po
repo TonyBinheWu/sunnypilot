@@ -2061,3 +2061,15 @@ msgstr "触摸设备即可停止共享"
 
 msgid "Available when parked with ignition off"
 msgstr "请停车熄火后配对"
+
+#: openpilot/selfdrive/ui/mici/layouts/settings/toggles.py
+msgid "Slide to turn off openpilot"
+msgstr "滑动以关闭 openpilot"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Turn off openpilot and switch to dashcam mode?"
+msgstr "要关闭 openpilot 并切换到行车记录仪模式吗？"
+
+#: openpilot/selfdrive/ui/layouts/settings/toggles.py
+msgid "Turn off openpilot"
+msgstr "关闭 openpilot"

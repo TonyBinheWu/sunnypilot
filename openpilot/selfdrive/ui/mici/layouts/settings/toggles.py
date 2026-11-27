@@ -2,9 +2,10 @@ from openpilot.system.ui.lib.multilang import tr
 from openpilot.cereal import log
 
 from openpilot.system.ui.widgets.scroller import NavScroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle
+from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle, BigToggle
+from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog
 from openpilot.system.ui.lib.application import gui_app
-from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
+from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback, set_openpilot_enabled
 from openpilot.selfdrive.ui.ui_state import ui_state
 
 PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
@@ -23,7 +24,7 @@ class TogglesLayoutMici(NavScroller):
     always_on_dm_toggle = BigParamControl(tr("always-on driver monitor"), "AlwaysOnDM")
     record_front = BigParamControl(tr("record & upload driver camera"), "RecordFront", toggle_callback=restart_needed_callback)
     record_mic = BigParamControl(tr("record & upload mic audio"), "RecordAudio", toggle_callback=restart_needed_callback)
-    enable_openpilot = BigParamControl(tr("enable openpilot"), "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
+    self._enable_openpilot = BigToggle(tr("enable openpilot"), "", toggle_callback=self._toggle_openpilot)
 
     self._scene_view = BigMultiToggle(tr("Driving view"), [tr("3D scene"), tr("Camera"), tr("3D model")],
                                      select_callback=lambda value: ui_state.params.put("DrivingSceneView", self._scene_view._options.index(value)))
@@ -40,7 +41,7 @@ class TogglesLayoutMici(NavScroller):
       always_on_dm_toggle,
       record_front,
       record_mic,
-      enable_openpilot,
+      self._enable_openpilot,
     ])
 
     # Toggle lists
@@ -53,10 +54,10 @@ class TogglesLayoutMici(NavScroller):
       ("AlwaysOnDM", always_on_dm_toggle),
       ("RecordFront", record_front),
       ("RecordAudio", record_mic),
-      ("OpenpilotEnabledToggle", enable_openpilot),
+      ("OpenpilotEnabledToggle", self._enable_openpilot),
     )
 
-    enable_openpilot.set_enabled(lambda: not ui_state.engaged)
+    self._enable_openpilot.set_enabled(lambda: not ui_state.engaged)
     record_front.set_enabled(False if ui_state.params.get_bool("RecordFrontLock") else (lambda: not ui_state.engaged))
     record_mic.set_enabled(lambda: not ui_state.engaged)
 
@@ -65,6 +66,18 @@ class TogglesLayoutMici(NavScroller):
       gui_app.set_show_fps(True)
 
     ui_state.add_engaged_transition_callback(self._update_toggles)
+
+  def _toggle_openpilot(self, enabled: bool):
+    current = ui_state.params.get_bool("OpenpilotEnabledToggle")
+    self._enable_openpilot.set_checked(current)
+    if ui_state.engaged or enabled == current:
+      return
+    if enabled:
+      self._enable_openpilot.set_checked(set_openpilot_enabled(True))
+    else:
+      icon = gui_app.texture("icons_mici/settings/device/power.png", 64, 64)
+      gui_app.push_widget(BigConfirmationDialog(tr("Slide to turn off openpilot"), icon,
+                                                lambda: self._enable_openpilot.set_checked(set_openpilot_enabled(False)), red=True))
 
   def _update_state(self):
     super()._update_state()
