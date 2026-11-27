@@ -358,8 +358,7 @@ if __name__ == '__main__':
     # reuses such an ID for a thread of this worker, which does not use msgq, the default action killed the worker
     # mid-drive (exit -12, Karel 2026-11-22). Ignore it; compiler child processes inherit the setting.
     signal.signal(signal.SIGUSR2, signal.SIG_IGN)
-    # Startup mask; runtime.worker moves per-slot threads to cores 5 and 7 once the onroad policy brings them online
-    # (core 4 runs the real-time control loop; modeld moves to core 6).
+    # runtime.worker moves per-slot threads to cores 5 and 7 once the onroad policy brings them online.
     os.sched_setaffinity(0, set(range(6)))
     from openpilot.selfdrive.alpamayo.runtime import worker
     worker(json.loads(Path(sys.argv[1]).read_text()), sys.argv[2], sys.argv[3])

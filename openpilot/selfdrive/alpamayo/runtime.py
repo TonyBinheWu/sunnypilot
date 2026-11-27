@@ -556,8 +556,7 @@ def worker(config, directory, handoff):
   # Per-slot CPU work (projection, patch packing, dispatch) takes ~2.5x longer on the A55 cores 0-3.
   # Run this thread and the threads it creates on the fast cores whenever they are online (onroad policy).
   def pin_big_cores():
-    # Prime core 7 and big core 5: core 4 runs card, selfdrived and controlsd at real-time priority and would preempt
-    # every slot; in planner mode modeld and dmonitoringmodeld move to core 6 with camerad.
+    # Use cores 5 and 7 at the worker's normal priority. Carrot's real-time radar and local model keep their placement.
     big = {5, 7} if all(Path(f'/sys/devices/system/cpu/cpu{c}/online').read_text().strip() == '1' for c in (5, 7)) else set()
     if big and os.sched_getaffinity(0) != big:
       # Every existing thread (patch pool, early projection, tinygrad helpers); threads created later inherit the mask.

@@ -296,7 +296,7 @@ def main(demo=False):
     queue_usbgpu_error_tmux(params, "USB present but eGPU model unavailable at startup")
   use_wide_camera = bool(params.get("UseWideCamera", return_default=True))
 
-  config_realtime_process(6 if lat2v is not None else 7, 54)
+  config_realtime_process(7, 54)
 
   # visionipc clients
   while True:
