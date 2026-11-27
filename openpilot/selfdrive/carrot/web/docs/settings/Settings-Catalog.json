@@ -1,7 +1,7 @@
 {
-  "catalogCommit": "20da537fa1d3850ab165f4f5ff92f81a1a00c1a3",
-  "contentHash": "eaf7e977c3e00d009c9744d4bc80818399170e299a48beac786179b70a395d96",
-  "generatedAt": "2026-11-27T10:20:23+08:00",
+  "catalogCommit": "b411a3678abef5d13736f6d2491cf7ee0d73ee2a",
+  "contentHash": "8c76256d0fef619723f55a0b418c330e0985764ba72c30a7c383259969d1df30",
+  "generatedAt": "2026-11-27T04:38:47Z",
   "locales": [
     "ko",
     "en",
@@ -172,6 +172,10 @@
     "EN-Cruise-only.md": {
       "bytes": 1204,
       "hash": "bcb0a00ac280d7e56064261ec17012ed8606a64847b3acf7aa0145fd28b96c87"
+    },
+    "EN-Cruise-speed-planner.md": {
+      "bytes": 1584,
+      "hash": "54b133a512eadce30cb5624c42457b67e78456e3858220cb2ac60b6582907377"
     },
     "EN-CruiseOnDist(0cm).md": {
       "bytes": 1767,
@@ -997,6 +1001,10 @@
       "bytes": 1289,
       "hash": "8aa9b4488e779206e4f88124c4e3b7b0af0c634f337793cc56d564156b3bf95b"
     },
+    "KO-순항-속도-계획.md": {
+      "bytes": 1612,
+      "hash": "edc58b25d66935ece93c6d64d42043e3a37c3aab06853a2c54f12701be41acb2"
+    },
     "KO-시간정보표시.md": {
       "bytes": 1668,
       "hash": "c272aa56dc0f1de37b33d14b9c9f0f62bf32dc52f1f056b2637d7a9b1f4f0778"
@@ -1298,8 +1306,8 @@
       "hash": "cf252cd5e267e23e89b3ed9a3beb8339cca6e3f5708b9d9e9da208a15c8d423f"
     },
     "Settings-Catalog.md": {
-      "bytes": 106359,
-      "hash": "4ee0fe047cc27adbdfaa702028818d5116fd867d7c5274ed1df8022501085a6a"
+      "bytes": 106958,
+      "hash": "3e1dfb7917098844470d88deb65861f00be356ae97b06a29031e942fc3c35128"
     },
     "ZH-ATC-自动转向控制.md": {
       "bytes": 2106,
@@ -1632,6 +1640,10 @@
     "ZH-TW-巡航速度單位擴充套件(10).md": {
       "bytes": 2122,
       "hash": "13be34fe616aacc4c91850b24d3629f8a1a082ccc16e2a61ecc59b96ebb14471"
+    },
+    "ZH-TW-巡航速度規劃器.md": {
+      "bytes": 1552,
+      "hash": "9679c08d67125007a32c44abd8f6decf179c9fbd1bc416a893469411d12fd83b"
     },
     "ZH-TW-巡航開啟距離(0cm).md": {
       "bytes": 1649,
@@ -2229,6 +2241,10 @@
       "bytes": 1249,
       "hash": "cf5046d47aee5daa383d23149fbb13f8451682a401273da629db855db8e47ee4"
     },
+    "ZH-巡航速度规划器.md": {
+      "bytes": 1543,
+      "hash": "d1ea9776860e7e2a21cff2eeb6a4c16ca91f69c6241e54075e0a4fe58d9cfa91"
+    },
     "ZH-开启热点-(0).md": {
       "bytes": 2240,
       "hash": "1412798ebe9d6e40cfbb954c61e59d1c8e799a81fda62c9a003f2a836f6ab72e"
@@ -2592,7 +2608,7 @@
   },
   "review": {
     "current": 26,
-    "needs_review": 135
+    "needs_review": 136
   },
   "schemaVersion": 1,
   "settings": {
@@ -7152,6 +7168,37 @@
       },
       "reviewStatus": "needs_review",
       "semanticHash": "224e07da8312b2baa85daa50eac23e50ac7912fd7c1b95fc7b793a98ee56225e"
+    },
+    "SunnyCruisePlanner": {
+      "group": "DAILY_DRIVING",
+      "locales": {
+        "en": {
+          "anchor": "SunnyCruisePlanner",
+          "factsHash": "bd0365b9c49739f447106a0ecf4c7a5df051a474d10e7a346f76574c0c7d32c9",
+          "page": "EN-Cruise-speed-planner.md",
+          "reviewStatus": "needs_review"
+        },
+        "ko": {
+          "anchor": "SunnyCruisePlanner",
+          "factsHash": "1419c37468a0f8ace8e80c3f81b745306cae37bd3a6422ff5c1984c73418141a",
+          "page": "KO-순항-속도-계획.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh": {
+          "anchor": "SunnyCruisePlanner",
+          "factsHash": "4abcf8959707881904fda4850ed8952af462057457449b67c9117d87c6e6712b",
+          "page": "ZH-巡航速度规划器.md",
+          "reviewStatus": "needs_review"
+        },
+        "zh-tw": {
+          "anchor": "SunnyCruisePlanner",
+          "factsHash": "1ddc4aa837f981affba9756f31ff6b8771be1694c701d92196a23b42bbc9bec3",
+          "page": "ZH-TW-巡航速度規劃器.md",
+          "reviewStatus": "needs_review"
+        }
+      },
+      "reviewStatus": "needs_review",
+      "semanticHash": "c38bc552088c099ef8b690307d86f5d076d3fce258662e3c4042e827d3a7bd3d"
     },
     "SunnyLaneCenter": {
       "group": "DAILY_DRIVING",

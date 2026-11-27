@@ -15,6 +15,7 @@ Generated from `openpilot/selfdrive/carrot_settings.json`.
 
 - [Alpha 종방향 자동 설정](https://github.com/ajouatom/openpilot/wiki/KO-Alpha-%EC%A2%85%EB%B0%A9%ED%96%A5-%EC%9E%90%EB%8F%99-%EC%84%A4%EC%A0%95) — `SunnyAutoLongitudinal`
 - [동적 실험 모드 (DEC)](https://github.com/ajouatom/openpilot/wiki/KO-%EB%8F%99%EC%A0%81-%EC%8B%A4%ED%97%98-%EB%AA%A8%EB%93%9C-%28DEC%29) — `DynamicExperimentalControl`
+- [순항 속도 계획](https://github.com/ajouatom/openpilot/wiki/KO-%EC%88%9C%ED%95%AD-%EC%86%8D%EB%8F%84-%EA%B3%84%ED%9A%8D) — `SunnyCruisePlanner`
 - [비전 커브 감속](https://github.com/ajouatom/openpilot/wiki/KO-%EB%B9%84%EC%A0%84-%EC%BB%A4%EB%B8%8C-%EA%B0%90%EC%86%8D) — `SunnyVisionCurve`
 - [지도 커브 감속](https://github.com/ajouatom/openpilot/wiki/KO-%EC%A7%80%EB%8F%84-%EC%BB%A4%EB%B8%8C-%EA%B0%90%EC%86%8D) — `SunnyMapCurve`
 - [내비게이션 제한속도 보조](https://github.com/ajouatom/openpilot/wiki/KO-%EB%82%B4%EB%B9%84%EA%B2%8C%EC%9D%B4%EC%85%98-%EC%A0%9C%ED%95%9C%EC%86%8D%EB%8F%84-%EB%B3%B4%EC%A1%B0) — `SunnySpeedLimit`
@@ -301,6 +302,7 @@ Per-setting pages generated from the current settings catalog.
 
 - [Automatic Alpha longitudinal setup](https://github.com/ajouatom/openpilot/wiki/EN-Automatic-Alpha-longitudinal-setup) — `SunnyAutoLongitudinal`
 - [Dynamic Experimental Control (DEC)](https://github.com/ajouatom/openpilot/wiki/EN-Dynamic-Experimental-Control-%28DEC%29) — `DynamicExperimentalControl`
+- [Cruise speed planner](https://github.com/ajouatom/openpilot/wiki/EN-Cruise-speed-planner) — `SunnyCruisePlanner`
 - [Vision curve assist](https://github.com/ajouatom/openpilot/wiki/EN-Vision-curve-assist) — `SunnyVisionCurve`
 - [Map curve assist](https://github.com/ajouatom/openpilot/wiki/EN-Map-curve-assist) — `SunnyMapCurve`
 - [Navigation speed limit assist](https://github.com/ajouatom/openpilot/wiki/EN-Navigation-speed-limit-assist) — `SunnySpeedLimit`
@@ -587,6 +589,7 @@ Per-setting pages generated from the current settings catalog.
 
 - [自动适配 Alpha 纵向控制](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%87%AA%E5%8A%A8%E9%80%82%E9%85%8D-Alpha-%E7%BA%B5%E5%90%91%E6%8E%A7%E5%88%B6) — `SunnyAutoLongitudinal`
 - [动态实验模式控制（DEC）](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%8A%A8%E6%80%81%E5%AE%9E%E9%AA%8C%E6%A8%A1%E5%BC%8F%E6%8E%A7%E5%88%B6%28DEC%29) — `DynamicExperimentalControl`
+- [巡航速度规划器](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%B7%A1%E8%88%AA%E9%80%9F%E5%BA%A6%E8%A7%84%E5%88%92%E5%99%A8) — `SunnyCruisePlanner`
 - [视觉弯速辅助](https://github.com/ajouatom/openpilot/wiki/ZH-%E8%A7%86%E8%A7%89%E5%BC%AF%E9%80%9F%E8%BE%85%E5%8A%A9) — `SunnyVisionCurve`
 - [地图弯速辅助](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%9C%B0%E5%9B%BE%E5%BC%AF%E9%80%9F%E8%BE%85%E5%8A%A9) — `SunnyMapCurve`
 - [导航道路限速辅助](https://github.com/ajouatom/openpilot/wiki/ZH-%E5%AF%BC%E8%88%AA%E9%81%93%E8%B7%AF%E9%99%90%E9%80%9F%E8%BE%85%E5%8A%A9) — `SunnySpeedLimit`
@@ -873,6 +876,7 @@ Per-setting pages generated from the current settings catalog.
 
 - [依車型自動適配 Alpha 縱向控制](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E4%BE%9D%E8%BB%8A%E5%9E%8B%E8%87%AA%E5%8B%95%E9%81%A9%E9%85%8D-Alpha-%E7%B8%B1%E5%90%91%E6%8E%A7%E5%88%B6) — `SunnyAutoLongitudinal`
 - [動態實驗模式控制（DEC）](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%8B%95%E6%85%8B%E5%AF%A6%E9%A9%97%E6%A8%A1%E5%BC%8F%E6%8E%A7%E5%88%B6%28DEC%29) — `DynamicExperimentalControl`
+- [巡航速度規劃器](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B7%A1%E8%88%AA%E9%80%9F%E5%BA%A6%E8%A6%8F%E5%8A%83%E5%99%A8) — `SunnyCruisePlanner`
 - [視覺彎速輔助](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E8%A6%96%E8%A6%BA%E5%BD%8E%E9%80%9F%E8%BC%94%E5%8A%A9) — `SunnyVisionCurve`
 - [地圖彎速輔助](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%9C%B0%E5%9C%96%E5%BD%8E%E9%80%9F%E8%BC%94%E5%8A%A9) — `SunnyMapCurve`
 - [導航道路速限輔助](https://github.com/ajouatom/openpilot/wiki/ZH-TW-%E5%B0%8E%E8%88%AA%E9%81%93%E8%B7%AF%E9%80%9F%E9%99%90%E8%BC%94%E5%8A%A9) — `SunnySpeedLimit`
