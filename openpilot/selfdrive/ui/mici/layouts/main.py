@@ -33,7 +33,7 @@ class MiciMainLayout(Scroller):
     self._alerts_layout = MiciOffroadAlerts()
     self._settings_layout = SettingsLayout()
     self._onroad_layout = AugmentedRoadView(bookmark_callback=self._on_bookmark_clicked)
-    self._debug_layout = DebugPlot()
+    self._debug_layout = DebugPlot(self._onroad_layout.render_alert)
     self._show_plot_mode = 0
     self._in_plot_mode = False
 

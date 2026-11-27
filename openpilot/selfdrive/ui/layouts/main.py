@@ -10,6 +10,7 @@ from openpilot.selfdrive.ui.carrot_param_cache import TimedSnapshotCache, read_s
 from openpilot.selfdrive.ui.ui_state import device, ui_state
 from openpilot.selfdrive.ui.b1_badge import draw as draw_b1_badge
 from openpilot.selfdrive.ui.widgets.carrot_web_dialog import CarrotWebDialog
+from openpilot.selfdrive.ui.widgets.body_eyes import BodyEyesPage
 from openpilot.system.ui.widgets import Widget
 from openpilot.selfdrive.ui.layouts.onboarding import OnboardingWindow
 
@@ -18,6 +19,7 @@ class MainState(IntEnum):
   HOME = 0
   SETTINGS = 1
   ONROAD = 2
+  BODY_EYES = 3
 
 
 class MainLayout(Widget):
@@ -29,7 +31,12 @@ class MainLayout(Widget):
     self._prev_onroad = False
 
     # Initialize layouts
-    self._layouts = {MainState.HOME: HomeLayout(), MainState.SETTINGS: SettingsLayout(), MainState.ONROAD: AugmentedRoadView()}
+    self._layouts = {
+      MainState.HOME: HomeLayout(on_swipe_left=self._show_body_eyes),
+      MainState.SETTINGS: SettingsLayout(),
+      MainState.ONROAD: AugmentedRoadView(on_swipe_left=self._show_body_eyes),
+      MainState.BODY_EYES: BodyEyesPage(),
+    }
 
     self._sidebar_rect = rl.Rectangle(0, 0, 0, 0)
     self._content_rect = rl.Rectangle(0, 0, 0, 0)
@@ -105,6 +112,8 @@ class MainLayout(Widget):
         cluster_hud_connected,
         ui_state.show_camera_with_cluster,
       )
+      if self._current_mode == MainState.BODY_EYES and self._layouts[MainState.ONROAD].alert_renderer.get_alert(ui_state.sm) is not None:
+        self._set_mode_for_state()
     self._render_main_content()
     if self._current_mode in (MainState.HOME, MainState.ONROAD):
       draw_b1_badge(self._content_rect if self._sidebar.is_visible else self._rect)
@@ -119,6 +128,7 @@ class MainLayout(Widget):
     self._layouts[MainState.HOME].set_settings_callback(lambda: self.open_settings(PanelType.TOGGLES))
     self._layouts[MainState.SETTINGS].set_callbacks(on_close=self._set_mode_for_state)
     self._layouts[MainState.ONROAD].set_click_callback(self._on_onroad_clicked)
+    self._layouts[MainState.BODY_EYES].set_click_callback(self._set_mode_for_state)
     device.add_interactive_timeout_callback(self._set_mode_for_state)
 
   def _update_layout_rects(self):
@@ -160,7 +170,14 @@ class MainLayout(Widget):
   def _on_onroad_clicked(self):
     self._sidebar.set_visible(not self._sidebar.is_visible)
 
+  def _show_body_eyes(self):
+    if not ui_state.started or self._layouts[MainState.ONROAD].alert_renderer.get_alert(ui_state.sm) is None:
+      self._set_current_layout(MainState.BODY_EYES)
+
   def _render_main_content(self):
+    if self._current_mode == MainState.BODY_EYES:
+      self._layouts[MainState.BODY_EYES].render(self._rect)
+      return
     # Render sidebar
     if self._sidebar.is_visible:
       self._sidebar.render(self._sidebar_rect)

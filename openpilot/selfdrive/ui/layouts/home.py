@@ -5,6 +5,7 @@ from enum import IntEnum
 from openpilot.common.params import Params
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.selfdrive.ui.widgets.device_home import DeviceHome
+from openpilot.selfdrive.ui.widgets.body_eyes import horizontal_swipe
 from openpilot.selfdrive.ui.widgets.carrot_web_dialog import CarrotWebDialog
 from openpilot.selfdrive.ui.widgets.offroad_alerts import UpdateAlert, OffroadAlert
 from openpilot.selfdrive.ui.widgets.exp_mode_button import ExperimentalModeButton
@@ -32,8 +33,10 @@ class HomeLayoutState(IntEnum):
 
 
 class HomeLayout(Widget):
-  def __init__(self):
+  def __init__(self, on_swipe_left=None):
     super().__init__()
+    self._on_swipe_left = on_swipe_left
+    self._press_start = None
     self.params = Params()
     self.home = DeviceHome(False)
     self.device_settings = None
@@ -142,9 +145,16 @@ class HomeLayout(Widget):
     self.alert_notif_rect.y = self.header_rect.y + (self.header_rect.height - 60) // 2
 
   def _handle_mouse_press(self, mouse_pos: MousePos):
+    self._press_start = mouse_pos
     self.home.pressed = self.home.hit(mouse_pos) if self.current_state == HomeLayoutState.HOME else None
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
+    start, self._press_start = self._press_start, None
+    if (self.current_state == HomeLayoutState.HOME and self._on_swipe_left is not None
+        and horizontal_swipe(start, mouse_pos, self.rect.width) == -1):
+      self.home.pressed = None
+      self._on_swipe_left()
+      return
     super()._handle_mouse_release(mouse_pos)
 
     target = self.home.hit(mouse_pos)

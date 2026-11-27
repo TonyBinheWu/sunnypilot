@@ -7,6 +7,7 @@ from openpilot.selfdrive.ui import UI_BORDER_SIZE
 from openpilot.selfdrive.ui.carrot_param_cache import BorderParamSnapshot, TimedSnapshotCache, read_border_params
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.selfdrive.ui.onroad.alert_renderer import AlertRenderer
+from openpilot.selfdrive.ui.widgets.body_eyes import horizontal_swipe, is_tap
 from openpilot.selfdrive.ui.onroad.driver_preview import DriverPreview
 from openpilot.selfdrive.ui.onroad.hud_renderer import HudRenderer
 from openpilot.selfdrive.ui.onroad.model_renderer import ModelRenderer
@@ -38,8 +39,10 @@ INF_POINT = np.array([1000.0, 0.0, 0.0])
 
 
 class AugmentedRoadView(CameraView):
-  def __init__(self, stream_type: VisionStreamType = VisionStreamType.VISION_STREAM_ROAD):
+  def __init__(self, stream_type: VisionStreamType = VisionStreamType.VISION_STREAM_ROAD, *, on_swipe_left=None):
     super().__init__("camerad", stream_type)
+    self._on_swipe_left = on_swipe_left
+    self._press_start = None
     self._set_placeholder_color(BORDER_COLORS[UIStatus.DISENGAGED])
 
     self.device_camera: DeviceCameraConfig | None = None
@@ -189,10 +192,7 @@ class AugmentedRoadView(CameraView):
     timing.finish()
 
   def _handle_mouse_press(self, pos):
-    if self._selector.begin(pos):
-      return
-    if not self._hud_renderer.user_interacting() and self._click_callback is not None:
-      self._click_callback()
+    self._press_start = None if self._selector.begin(pos) or self._hud_renderer.user_interacting() else pos
 
   def close(self):
     self.model_renderer._overlay.close()
@@ -202,7 +202,13 @@ class AugmentedRoadView(CameraView):
     super().close()
 
   def _handle_mouse_release(self, pos):
-    self._selector.finish(pos, ui_state, not self._suppress_camera_for_cluster and self.alert_renderer.get_alert(ui_state.sm) is None)
+    start, self._press_start = self._press_start, None
+    if self._selector.finish(pos, ui_state, not self._suppress_camera_for_cluster and self.alert_renderer.get_alert(ui_state.sm) is None):
+      return
+    if self._on_swipe_left is not None and horizontal_swipe(start, pos, self.rect.width) == -1:
+      self._on_swipe_left()
+    elif is_tap(start, pos) and self._click_callback is not None:
+      self._click_callback()
 
   def _draw_border(self, rect: rl.Rectangle):
     rl.draw_rectangle_lines_ex(rect, UI_BORDER_SIZE, rl.BLACK)

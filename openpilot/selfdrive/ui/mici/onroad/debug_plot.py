@@ -8,6 +8,7 @@ from openpilot.common.params import Params
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.widgets.body_eyes import render_body_eyes
 
 
 PLOT_MAX = 300
@@ -62,8 +63,9 @@ class _SlidingMinMax:
 
 
 class DebugPlot(Widget):
-  def __init__(self):
+  def __init__(self, render_alert):
     super().__init__()
+    self._render_alert = render_alert
     self.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
 
     self.params = Params()
@@ -285,6 +287,7 @@ class DebugPlot(Widget):
   def _render(self, rect: rl.Rectangle):
     show_plot_mode = int(self.params.get_int("ShowPlotMode"))
     if show_plot_mode == 0:
+      render_body_eyes(rect, self._render_alert)
       return
 
     sm = ui_state.sm
