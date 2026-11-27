@@ -4,16 +4,29 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+import zstandard
 
 from openpilot.cereal import log
 from openpilot.selfdrive.alpamayo.capture import state_value
 from openpilot.selfdrive.alpamayo.frontend import CAMERAS, OFFSETS_NS, Frame, Preparer, State, Store, navigation
+from openpilot.selfdrive.alpamayo.qualify import recorded_windows
 from openpilot.selfdrive.alpamayo.runtime import validate_input
 from openpilot.selfdrive.carrot import carrot_serv
 
 HUD = 'navInstructionCarrot'
 NOW = 5_000_000_000
 DEFAULT = 'Continue straight.'
+
+
+def test_recorded_windows_reads_c4_navigation_without_camera_coverage(tmp_path):
+  device = log.Event.new_message(logMonoTime=NOW, valid=True)
+  device.init('deviceState').deviceType = 'mici'
+  hud = log.Event.new_message(logMonoTime=NOW+1, valid=True)
+  nav = hud.init(HUD)
+  nav.maneuverType, nav.maneuverModifier, nav.maneuverDistance = 'turn', 'right', 93
+  (tmp_path/'rlog.zst').write_bytes(zstandard.compress(device.to_bytes()+hud.to_bytes()))
+  cfg = json.loads((Path(__file__).parents[1]/'release.json').read_text())['config']
+  assert list(recorded_windows(tmp_path, cfg, {'right'})) == []
 
 
 @pytest.fixture

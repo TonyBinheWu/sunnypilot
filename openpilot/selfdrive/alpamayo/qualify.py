@@ -10,7 +10,7 @@ import numpy as np
 
 from openpilot.selfdrive.alpamayo.capture import SERVICES, state_value
 from openpilot.selfdrive.alpamayo.frontend import (CAMERAS, FRAME_SLACK_NS, FRAME_TOLERANCE_NS, OFFSETS_NS, STATE_LIMITS, Frame,
-                                                  Preparer, Selection, State, Unavailable)
+                                                  Preparer, Selection, State, Unavailable, required)
 from openpilot.selfdrive.alpamayo import install
 
 # Keep the replay entirely local. Match encoded display indices to original camera EOF
@@ -103,7 +103,6 @@ def recorded_windows(directory, config, needed):
       if scenario not in pending:
         raise Unavailable('Scenario already covered')
       for f, _ in frames:
-        from openpilot.selfdrive.alpamayo.frontend import STATE_LIMITS, required
         required(history['extrinsicsCalibration'], f.sof_ns, STATE_LIMITS['extrinsicsCalibration'])
     except Unavailable:
       selections.clear()
