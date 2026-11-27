@@ -167,7 +167,7 @@ def test_modeld_passes_validated_pose_and_hold_permission_to_actual_desire_updat
   sm.valid['radarState'] = sm.alive['radarState'] = True
   sm.recv_time['radarState'] = 10.
   received = []
-  namespace = {"DH": NS(tesla_auto_signals=True, update=lambda *args, **kwargs: received.append(kwargs)), "sm": sm, "vision_only": False,
+  namespace = {"DH": NS(tesla_auto_signals=True, near_radar_enabled=False, update=lambda *args, **kwargs: received.append(kwargs)), "sm": sm, "vision_only": False,
                "indicator_now": 10., "indicator_valid": True, "turn_signal_context": turn_signal_context,
                "params": NS(get_bool=lambda name: False), "time": NS(clock_gettime_ns=lambda clock: N, CLOCK_MONOTONIC=1),
                "modelv2_send": NS(modelV2=log.ModelDataV2.new_message()), "lane_change_prob": .5}

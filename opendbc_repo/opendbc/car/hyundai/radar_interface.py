@@ -177,6 +177,13 @@ def deduplicate_corner_candidates(candidates):
   return objects
 
 
+def corner_scan_time(parser, first, count, signal):
+  if parser is None or not parser.can_valid:
+    return 0
+  times = getattr(parser, 'ts_nanos', {})
+  return min(times.get(addr, {}).get(signal, 0) for addr in range(first, first+count))
+
+
 def corner_object_position_valid(d_rel: float, y_rel: float) -> bool:
   normal_object = 0.2 < d_rel < 180.0
   clipped_side_object = (
@@ -892,6 +899,9 @@ class RadarInterface(RadarInterfaceBase):
         (self.rcp_corner_objects_180 is not None and not self.rcp_corner_objects_180.can_valid) or
         (self.rcp_corner_objects_430 is not None and not self.rcp_corner_objects_430.can_valid)):
       ret.errors.canError = True
+    ret.cornerScanMonoTime = max(
+      corner_scan_time(self.rcp_corner_objects, CORNER_OBJECT_235_START_ADDR, CORNER_OBJECT_235_MSG_COUNT, 'OBJ_QUAL_LEVEL'),
+      corner_scan_time(self.rcp_corner_objects_180, CORNER_OBJECT_180_START_ADDR, CORNER_OBJECT_180_MSG_COUNT, 'SLOT1_QUAL_LEVEL'))
     ret.points = [point for point in self.pts.values() if point.measured]
     return ret
 

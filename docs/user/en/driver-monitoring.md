@@ -125,3 +125,5 @@ The new lane-change progress card yields to existing onroad alerts, including dr
 ## Driving views on C3X and C4
 
 All three driving views keep the driver monitor and takeover alerts on screen. The 3D model view uses the road-facing camera for its labeled road users.
+
+With **lat2v (Nvidia)** selected, the driver-facing monitoring process continues to evaluate attention while the external GPU plans from the forward cameras. A hardware replay result or a radar observation does not establish driver readiness. Respond to driver-monitoring alerts and take over when the road or a narrow turn requires it.

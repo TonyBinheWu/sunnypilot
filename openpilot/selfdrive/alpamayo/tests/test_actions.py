@@ -61,3 +61,14 @@ def test_longitudinal_guard_preserves_stronger_deceleration():
   planner.output_a_target = .3
   ns['apply_near_radar'](planner, sm, False)
   assert planner.output_a_target == .3 and planner.near_radar.count == 0
+
+
+def test_complete_corner_scan_requires_every_slot_and_parser_health():
+  from opendbc.car.hyundai.radar_interface import corner_scan_time
+  parser = SimpleNamespace(can_valid=True, ts_nanos={})
+  for addr in range(0x180, 0x184):
+    parser.ts_nanos[addr] = {'SLOT1_QUAL_LEVEL': 1000+addr}
+  assert not corner_scan_time(parser, 0x180, 5, 'SLOT1_QUAL_LEVEL')
+  assert corner_scan_time(parser, 0x180, 4, 'SLOT1_QUAL_LEVEL') == 1000+0x180
+  parser.can_valid = False
+  assert not corner_scan_time(parser, 0x180, 4, 'SLOT1_QUAL_LEVEL')

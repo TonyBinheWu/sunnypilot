@@ -31,7 +31,10 @@ def occupied_side(sm, side, now):
     return None
   cs, radar = sm['carState'], sm['radarState']
   leads = radar.leadsLeft if side == 'left' else radar.leadsRight
-  return bool(getattr(cs, side+'Blindspot') or any(near_track(p, 6.) and abs(p.yRel) <= 3. for p in leads))
+  if getattr(cs, side+'Blindspot') or any(near_track(p, 6.) and abs(p.yRel) <= 3. for p in leads):
+    return True
+  stamp = radar.cornerScanMonoTime
+  return False if 0 < stamp <= now and now-stamp <= FRESH_NS else None
 
 
 class ClosingLead:

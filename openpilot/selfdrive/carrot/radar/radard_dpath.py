@@ -130,6 +130,7 @@ class DPathRadarD:
     self.radar_state.mdMonoTime = sm.logMonoTime["modelV2"]
     self.radar_state.carStateMonoTime = sm.logMonoTime["carState"]
     self.radar_state.radarErrors = rr.errors
+    self.radar_state.cornerScanMonoTime = rr.cornerScanMonoTime
 
     model_time_s = _model_measurement_time_s(sm)
     radar_time_s = float(sm.logMonoTime["liveTracks"]) * 1e-9

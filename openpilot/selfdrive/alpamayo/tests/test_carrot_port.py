@@ -29,6 +29,7 @@ def observations():
 
 def advance(sm, stamp):
   sm.logMonoTime.update(carState=stamp, radarState=stamp)
+  sm['radarState'].cornerScanMonoTime = stamp
   sm['radarState'].carStateMonoTime = sm['radarState'].mdMonoTime = stamp
   return stamp
 
@@ -83,6 +84,8 @@ def test_side_range_validity_and_oem_lamp(side):
   assert occupied_side(sm, side, now) is True
   assert occupied_side(sm, other, now) is False
   setattr(sm['radarState'], field, [])
+  sm['radarState'].cornerScanMonoTime = 0
+  assert occupied_side(sm, side, now) is None
   setattr(sm['carState'], side+'Blindspot', True)
   assert occupied_side(sm, side, now) is True
   assert occupied_side(sm, side, now+300_000_000) is None

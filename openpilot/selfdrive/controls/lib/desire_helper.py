@@ -60,7 +60,7 @@ class DesireHelper:
 
     self.desire = log.Desire.none
     self.turn_direction = TurnDirection.none
-    self.near_radar_enabled = False
+    self.near_radar_enabled = self.params.get_bool('LowSpeedRadarGuard')
     self.sunny_lane_turn = self.params.get_bool("SunnyLaneTurn")
     self.enable_turn_desires = True
     self.turn_desire_state = False

@@ -434,6 +434,7 @@ struct CarState {
 struct RadarData @0x888ad6581cf0aacb {
   errors @3 :Error;
   points @1 :List(RadarPoint);
+  cornerScanMonoTime @7 :UInt64; # oldest received CAN message in a complete enabled corner-object scan, zero when unavailable
   radarTrackFlipped @4 :Bool; # frontRadar yRel/yvRel already inverted by RadarTrackFlip
   displayPoints @5 :List(RadarPoint); # 제어 points와 분리한 전체 표시용 객체
   hasDisplayData @6 :Bool; # 표시 스트림 지원 표지: 빈 목록·시작·오류에도 유지
