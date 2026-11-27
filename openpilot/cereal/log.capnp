@@ -1288,6 +1288,7 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
   plannerProfile @67 :Text;
   speedConstraint @68 :Text;
   visionPlannerSetup @70 :Text; # resolved native/alpha/stock/passive provider
+  longitudinalMode @71 :Text; # blended, decAcc or decBlended when openpilot controls speed
   cameraLeadState @69 :RadarState; # camera-only observations used by the experimental planner
   signalAssistAction @66 :UInt8; # actual helper action: 0 none, 1 departure veto, 2 preparation, 3 confirmed green transition
 

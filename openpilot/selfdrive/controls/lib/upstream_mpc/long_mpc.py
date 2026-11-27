@@ -363,7 +363,9 @@ class LongitudinalMpc:
       if t > self.last_cloudlog_t + 5.0:
         self.last_cloudlog_t = t
         cloudlog.warning(f"Long mpc reset, solution_status: {self.solution_status}")
+      failed_status = self.solution_status
       self.reset()
+      self.solution_status = failed_status  # expose this cycle's failure until the next solve
 
 
 if __name__ == "__main__":

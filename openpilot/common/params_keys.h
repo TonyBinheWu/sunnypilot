@@ -357,6 +357,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"SunnyLaneCenter", {PERSISTENT, BOOL, "0"}},
     {"SunnyLaneTurn", {PERSISTENT, BOOL, "0"}},
     {"SunnyVisionCurve", {PERSISTENT, BOOL, "0"}},
+    {"DynamicExperimentalControl", {PERSISTENT, BOOL, "0"}},
     {"SunnyMapCurve", {PERSISTENT, BOOL, "0"}},
     {"SunnySpeedLimit", {PERSISTENT, BOOL, "0"}},
     {"SunnyCruiseOnly", {PERSISTENT, BOOL, "0"}},

@@ -119,6 +119,9 @@ async def planner_status(request: web.Request) -> web.Response:
       result["speed"] = "stockLong"
     elif fresh(sm, "carControl", .5, now):
       result["speed"] = plan.speedConstraint if sm["carControl"].longActive else "inactive"
+      mode = getattr(plan, "longitudinalMode", "")
+      if sm["carControl"].longActive and mode:
+        result["longitudinalMode"] = mode
   if fresh(sm, "carState", .5, now):
     from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
     ceiling = sm["carState"].vCruise

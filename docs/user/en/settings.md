@@ -4,6 +4,8 @@
 
 ## C3X and C4 driving controls
 
+Under **Driving → Start & Auto → Daily driving**, **Dynamic Experimental Control (DEC)** applies on the next drive with openpilot longitudinal control. With DEC off (default), the model sets acceleration within the cruise ceiling once fresh sensor data confirms a clear road. The following planner continues to protect against vehicles ahead. With DEC on, open-road ACC follows the cruise ceiling and traffic. The planner returns to blended control for model stops, braking, curves and upcoming navigation turns. In the cockpit, **Vehicle details → Driving plan** shows the active mode and the current speed constraint separately.
+
 Under **Settings → Toggles → Driving view**, choose the configured 3D scene, road camera or 3D model view. The last view draws observed model boundaries, path and leads. Labeled people and vehicles come from the separate ROAD camera detector. A “Possible junction” marker appears when both observed road edges widen and narrow again. It identifies a geometric pattern, and can also appear at other road openings.
 
 Enable **Lane centering** to blend toward the midpoint of two reliable lane lines. A blinker, driver steering or missing lane observations returns control to the model path. **Low-speed signaled turns** requests a left or right turn from the model at up to 20 mph with one indicator. Both settings take effect on the next drive. A road map can assist navigation-enabled models when a fresh route and position are available.

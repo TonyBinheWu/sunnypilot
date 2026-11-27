@@ -29,9 +29,9 @@ def test_planner_uses_current_mpc_or_model_stop_without_early_override(mode, mpc
   path = Path(__file__).resolve().parents[1] / 'lib/longitudinal_planner.py'
   tree = ast.parse(path.read_text(encoding='utf-8'))
   update = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == 'update')
-  start = next(i for i, n in enumerate(update.body) if isinstance(n, ast.If)
-               and any(isinstance(x, ast.Assign) and any(ast.unparse(t) == 'self.output_should_stop' for t in x.targets)
-                       for x in n.body))
+  selection = next(n for n in ast.walk(update) if isinstance(n, ast.If)
+                   and any(isinstance(x, ast.Assign) and any(ast.unparse(t) == 'self.output_should_stop' for t in x.targets)
+                           for x in n.body))
   state = SimpleNamespace(mpc=SimpleNamespace(mode=mode), tesla_traffic_blended=tesla_blended)
   ns = {'self': state, 'output_should_stop_mpc': mpc_stop, 'output_should_stop_e2e': model_stop,
         'output_a_target_mpc': -.3, 'output_a_target_e2e': -.5, 'output_a_target_base': -.3,
@@ -39,7 +39,7 @@ def test_planner_uses_current_mpc_or_model_stop_without_early_override(mode, mpc
   # This unit boundary is the MPC/model selection itself. The remaining update
   # contains independently tested signal/coasting/departure hooks and requires
   # a complete planner fixture; do not execute an unbounded suffix of update.
-  exec(compile(ast.Module(body=[update.body[start]], type_ignores=[]), str(path), 'exec'), ns)
+  exec(compile(ast.Module(body=[selection], type_ignores=[]), str(path), 'exec'), ns)
   direct_mpc = mode == 'acc' and not tesla_blended
   assert state.output_should_stop == (mpc_stop if direct_mpc else mpc_stop or model_stop)
   assert ns['output_a_target'] == (-.3 if direct_mpc else -.5)
@@ -62,7 +62,7 @@ def test_controlsd_publishes_new_longitudinal_state_in_same_cycle():
     return -.5, -.5, 0.
   control.update = update
   actuators = SimpleNamespace(longControlState='pid')
-  ns = {'self': SimpleNamespace(LoC=control, sm={'radarState': None}), 'CC': SimpleNamespace(longActive=True),
+  ns = {'self': SimpleNamespace(LoC=control), 'CC': SimpleNamespace(longActive=True), 'control_leads': None,
         'CS': None, 'long_plan': None, 'pid_accel_limits': None, 't_since_plan': 0., 'actuators': actuators}
   exec(compile(ast.Module(body=method.body[start:end+1], type_ignores=[]), str(path), 'exec'), ns)
   assert actuators.longControlState == 'stopping'

@@ -15,6 +15,7 @@ from openpilot.selfdrive.navigation.helpers import nearby_maneuver
 from openpilot.selfdrive.controls.lib.cruise_coasting import no_coasting_lead
 from openpilot.selfdrive.controls.lib.curve_speed import CurveSpeed
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
+from openpilot.selfdrive.controls.lib.sunny_longitudinal import DynamicExperimentalControl, acc_comfort_limit
 from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import LongitudinalMpc, LongitudinalPlanSource, STOP_DISTANCE, get_T_FOLLOW
 from openpilot.selfdrive.controls.lib.upstream_mpc.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, smooth_value
@@ -44,11 +45,15 @@ def get_accel_from_plan(speeds, accels, times, action_t):
   return 2 * (np.interp(delay, times, speeds) - speeds[0]) / delay - accels[0]
 
 
-def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt):
-  target_accel = smooth_value(v_cruise - v_ego, a_cruise_prev, tau=1.0, dt=dt)
+def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt, *, dec=False):
+  target_accel = v_cruise - v_ego
+  lower = a_cruise_prev
+  if not dec:
+    target_accel = smooth_value(target_accel, a_cruise_prev, tau=1.0, dt=dt)
+    lower = min(a_cruise_prev, a_target_prev)
   target_accel = np.clip(target_accel, A_CRUISE_MIN, ACCEL_MAX)
   j_cruise = np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS)
-  target_accel = float(np.clip(target_accel, min(a_cruise_prev, a_target_prev) - j_cruise * dt, a_cruise_prev + j_cruise * dt))
+  target_accel = float(np.clip(target_accel, lower - j_cruise * dt, a_cruise_prev + j_cruise * dt))
 
   return target_accel
 
@@ -99,11 +104,16 @@ class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL, *, vision_only=False, sunny=False):
     self.vision_only = vision_only
     self.sunny = sunny
+    self.dec_enabled = False
     if sunny:
       settings = Params()
+      self.dec_enabled = settings.get_bool("DynamicExperimentalControl")
       self.vision_curve = settings.get_bool("SunnyVisionCurve")
       self.map_curve = settings.get_bool("SunnyMapCurve")
       self.speed_limit = settings.get_bool("SunnySpeedLimit")
+    self.dec = None
+    self.previous_model_stamp = 0
+    self.longitudinal_mode = ''
     self.CP = CP
     self.mpc = LongitudinalMpc(dt=dt)
     self.fcw = False
@@ -151,6 +161,43 @@ class LongitudinalPlanner:
     self.last_clear_sample_ns = stamp
     return stamp - self.clear_since_ns >= CLEAR_ROAD_CONFIRM_NS
 
+  def dec_acc_limit(self, sm, eligible, clear_road, curve_offset):
+    """Return the ACC comfort limit only while the current frame permits cruise following."""
+    model, cs = sm['modelV2'], sm['carState']
+    stamp = sm.logMonoTime['modelV2']
+    previous_stamp, self.previous_model_stamp = self.previous_model_stamp, stamp
+    leads = (self.leads.leadOne, self.leads.leadTwo)
+    if not (eligible and self.mpc.solution_status == 0 and not self.leads.leadCutInRisk.status
+            and (clear_road or any(lead.status for lead in leads))
+            and previous_stamp > 0 and 0 < stamp - previous_stamp < MAX_RADAR_AGE_NS
+            and all(abs(stamp - sm.logMonoTime[k]) < MAX_RADAR_AGE_NS for k in ('radarState', 'controlsState', 'carState'))
+            and DynamicExperimentalControl.valid_trajectory(model)):
+      self.dec = None
+      return None
+
+    if self.dec is None:
+      self.dec = DynamicExperimentalControl(not self.CP.radarUnavailable)
+    urgency = self.dec.slowdown_urgency(cs.vEgo, model.position.x[-1])
+    selected = self.dec.update(cs, urgency, leads[0], self.mpc.crash_cnt)
+    if selected != 'acc' or self.dec.duration < 10 or urgency > .24 or self.mpc.crash_cnt:
+      return None
+    # A cut-in or a closing lead can appear one frame before the MPC starts braking.
+    if any(lead.status and not (math.isfinite(lead.dRel) and math.isfinite(lead.vRel) and math.isfinite(lead.aLeadK)
+                                and lead.dRel > STOP_DISTANCE + self.t_follow * cs.vEgo and lead.vRel >= -.5 and lead.aLeadK >= -.2)
+           for lead in leads):
+      return None
+    brake = model.meta.disengagePredictions.brakePressProbs
+    gas = model.meta.disengagePredictions.gasPressProbs
+    if not (len(brake) >= 2 and 0. <= brake[1] < .3 and len(gas) >= 2 and .4 < gas[1] <= 1.
+            and model.action.desiredAcceleration >= -.2 and curve_offset >= 0.
+            and abs(model.action.desiredCurvature) * cs.vEgo**2 < 1.5):
+      return None
+    preview = [abs(v * yaw) for t, v, yaw in zip(model.position.t, model.velocity.x, model.orientationRate.z, strict=True)
+               if 0. <= t <= 3.]
+    if not preview or not all(a < 1.5 for a in preview) or nearby_maneuver(sm, stamp, cs.vEgo) is not None:
+      return None
+    return acc_comfort_limit(self.CP, cs.vEgo, cs.steeringAngleDeg - sm['liveParameters'].angleOffsetDeg)
+
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     if self.vision_only or self.sunny:
@@ -161,6 +208,9 @@ class LongitudinalPlanner:
       if not self.camera_input_valid:
         self.opening_track = None
         self.clear_since_ns = self.last_clear_sample_ns = 0
+        self.dec = None
+        self.previous_model_stamp = 0
+        self.longitudinal_mode = ''
         return
     personality = sm['selfdriveState'].personality.raw
     if personality == log.LongitudinalPersonality.moreRelaxed:
@@ -227,18 +277,22 @@ class LongitudinalPlanner:
       output_a_target_e2e += ACCEL_BOOST[personality] * speed_scale * accel_scale
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt)
-    if not self.ceiling_available:
+    direct = self.CP.openpilotLongitudinalControl and sm['selfdriveState'].enabled and not reset_state
+    dec_active = self.dec_enabled and direct
+    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt, dec=dec_active)
+    if not self.ceiling_available or (dec_active and (v_ego >= v_cruise or sm['controlsState'].forceDecel)):
       self.a_cruise = min(self.a_cruise, 0.)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
     clear_road = False
     recovery = 0.
+    previous_mode = self.longitudinal_mode
+    acc_limit = None
     if self.sunny:
       cs = sm['carState']
       errors = self.leads.radarErrors
       stamp = self.leads.mdMonoTime
-      eligible = (self.CP.openpilotLongitudinalControl and sm['selfdriveState'].enabled and not reset_state
+      eligible = (direct
                   and cs.canValid and not cs.canTimeout and not (cs.standstill or cs.cruiseState.standstill or cs.softHoldActive)
                   and not (cs.brakePressed or cs.gasPressed or sm['controlsState'].forceDecel)
                   and not (self.fcw or output_should_stop_mpc or output_should_stop_e2e)
@@ -247,6 +301,11 @@ class LongitudinalPlanner:
                   and 0 <= sm.logMonoTime['modelV2'] - stamp < MAX_RADAR_AGE_NS
                   and not (errors.canError or errors.radarFault or errors.wrongConfig or errors.radarUnavailableTemporary))
       clear_road = self.confirmed_clear_road(eligible)
+      self.longitudinal_mode = 'blended' if direct else ''
+      if self.dec_enabled:
+        acc_limit = self.dec_acc_limit(sm, eligible, clear_road, curve_offset)
+        if direct:
+          self.longitudinal_mode = 'decAcc' if acc_limit is not None else 'decBlended'
       opening = (eligible and self.leads.leadOne.status and v_ego > 5. and v_cruise - v_ego > 2.
                  and 0. < output_a_target_e2e < 0.6 and curve_offset == 0.
                  and abs(model.action.desiredCurvature) * v_ego**2 < 1.)
@@ -262,8 +321,9 @@ class LongitudinalPlanner:
         # Use the existing cruise ramp when releasing a previous limit; braking stays immediate.
         rise = np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS) * self.dt
         output_a_target_e2e = min(output_a_target_e2e, a_prev + rise)
-    candidates = [(self.a_cruise, LongitudinalPlanSource.cruise, cruise_should_stop),
-                  (output_a_target_e2e, LongitudinalPlanSource.e2e, output_should_stop_e2e)]
+    candidates = [(self.a_cruise, LongitudinalPlanSource.cruise, cruise_should_stop)]
+    if acc_limit is None:
+      candidates.append((output_a_target_e2e, LongitudinalPlanSource.e2e, output_should_stop_e2e))
     if not clear_road:
       candidates.insert(0, (output_a_target_mpc, self.mpc.source, output_should_stop_mpc))
 
@@ -285,6 +345,12 @@ class LongitudinalPlanner:
       elif self.vision_only:
         self.speed_reason = 'visionLead'
     self.output_should_stop = any(should_stop for _, _, should_stop in candidates)
+    if acc_limit is not None and output_a_target > acc_limit:
+      output_a_target, self.speed_reason = acc_limit, 'accComfort'
+    if acc_limit is not None or (previous_mode == 'decAcc' and self.longitudinal_mode == 'decBlended'):
+      rise_limit = a_prev + np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS) * self.dt
+      if output_a_target > rise_limit:
+        output_a_target, self.speed_reason = rise_limit, 'cruiseRamp'
     self.output_a_target = np.clip(output_a_target, ACCEL_MIN, ACCEL_MAX)
 
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.output_a_target + a_prev) / 2.0
@@ -325,6 +391,7 @@ class LongitudinalPlanner:
     if self.vision_only or self.sunny:
       longitudinalPlan.visionPlannerSetup = getattr(self.CP, "visionPlannerSetup", "")
     longitudinalPlan.speedConstraint = self.speed_reason if self.CP.openpilotLongitudinalControl else 'stockLong'
+    longitudinalPlan.longitudinalMode = self.longitudinal_mode
     longitudinalPlan.allowThrottle = self.ceiling_available
     longitudinalPlan.vTargetNow = float(max(0., sm['carState'].vEgo + self.output_a_target * self.dt))
     longitudinalPlan.jTargetNow = float(self.j_desired_trajectory[0])
