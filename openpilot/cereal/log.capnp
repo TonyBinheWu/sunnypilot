@@ -1059,6 +1059,8 @@ struct ModelDataV2 {
   # Provenance of the published inference, for display and diagnostics.
   visionCameraInputs @27 :CameraInputs;
   visionCompute @28 :Compute;
+  alpamayoQueryMonoTime @29 :UInt64;  # Nonzero only on frames using this planner's action.
+  localAction @30 :Action;  # Independent small-model action when running lat2v.
   enum CameraInputs { unknown @0; road @1; wide @2; roadWide @3; }
   enum Compute { unknown @0; nonUsb @1; usbGpu @2; }
 
@@ -2782,7 +2784,7 @@ struct Event {
     carrotMan @107 :Custom.CarrotMan;
     carrotNavi @108 :Custom.CarrotNaviState;
     carrotNaviMedia @109 :Custom.CarrotNaviMedia;
-    customReserved3 @110 :Custom.CustomReserved3;
+    alpamayoPlan @110 :Custom.AlpamayoPlan;
     customReserved4 @111 :Custom.CustomReserved4;
     customReserved5 @112 :Custom.CustomReserved5;
     customReserved6 @113 :Custom.CustomReserved6;

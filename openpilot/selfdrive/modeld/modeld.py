@@ -255,8 +255,14 @@ def main(demo=False):
   from openpilot.selfdrive.modeld.sunny_runner import SunnyModelState
   sunny_small, sunny_big = sunny_models.key_for(False, True), sunny_models.key_for(True, True)
   internal_primary = sunny_models.internal_primary(boot=True)
+  lat2v_requested = sunny_big == sunny_models.LAT2V and not internal_primary
   usbgpu_pkl_path = usbgpu_compiled_path()
-  _compiled = bool(sunny_big or usbgpu_pkl_path is not None)
+  if lat2v_requested:
+    from openpilot.selfdrive.alpamayo.install import ready
+    lat2v_qualified = ready()
+  else:
+    lat2v_qualified = False
+  _compiled = lat2v_qualified if lat2v_requested else bool(sunny_big or usbgpu_pkl_path is not None)
   _hardware_seen = params.get_bool("UsbGpuHardwareSeen")
   _present = usbgpu_present()
   if not internal_primary and not _present and _compiled and _hardware_seen:
@@ -269,19 +275,28 @@ def main(demo=False):
     else:
       cloudlog.warning("eGPU USB still absent after startup grace period; using internal model")
   _startup_failed = params.get_bool("UsbGpuStartupFailed")
-  USBGPU = _present and _compiled and not _startup_failed and not internal_primary
+  lat2v = None
+  if lat2v_requested:
+    _startup_failed = not (_present and lat2v_qualified)
+    params.put_bool("UsbGpuStartupFailed", _startup_failed)
+    if not _startup_failed:
+      from openpilot.selfdrive.alpamayo.carrot import CarrotPlan
+      lat2v = CarrotPlan(messaging, params)
+    else:
+      sunny_models.mark_load(True, sunny_models.LAT2V)
+  USBGPU = _present and _compiled and not _startup_failed and not internal_primary and not lat2v_requested
   cloudlog.warning(f"usbgpu present: {_present}, compiled: {_compiled}, startup_failed: {_startup_failed}, requested: {USBGPU}")
   params.put_bool("UsbGpuPresent", _present)
   if _present or _compiled:
     params.put_bool("UsbGpuHardwareSeen", True)
   params.put_bool("UsbGpuCompiled", _compiled)
-  params.put_bool("UsbGpuLoading", USBGPU)
+  params.put_bool("UsbGpuLoading", USBGPU or lat2v is not None)
   params.put_bool("UsbGpuActive", False)
   if _present and (not _compiled or _startup_failed):
     queue_usbgpu_error_tmux(params, "USB present but eGPU model unavailable at startup")
   use_wide_camera = bool(params.get("UseWideCamera", return_default=True))
 
-  config_realtime_process(7, 54)
+  config_realtime_process(6 if lat2v is not None else 7, 54)
 
   # visionipc clients
   while True:
@@ -418,7 +433,7 @@ def main(demo=False):
     model = small_model
   # Keep the existing eGPU selection unchanged. A separate USB owner handles
   # external computers and late server startup through the selected Jetlink model.
-  if not USBGPU and not internal_primary and os.path.isfile('/AGNOS'):
+  if not USBGPU and not internal_primary and not lat2v_requested and os.path.isfile('/AGNOS'):
     phase_start = time.monotonic()
     adapter_ready = False
     try:
@@ -441,7 +456,7 @@ def main(demo=False):
       egpu_recovery = EgpuRecovery(usbgpu_pkl_path, vipc_client_main.width, vipc_client_main.height)
     except Exception:
       cloudlog.exception('eGPU background recovery unavailable')
-  if not usbgpu_startup_pending:
+  if not usbgpu_startup_pending and lat2v is None:
     params.put_bool("UsbGpuLoading", False)
   cloudlog.warning(f"models loaded in {time.monotonic() - st:.1f}s, modeld starting")
 
@@ -513,7 +528,7 @@ def main(demo=False):
       params.put_bool_nonblocking("UsbGpuPresent", usbgpu_present_now)
       if usbgpu_present_now:
         params.put_bool_nonblocking("UsbGpuHardwareSeen", True)
-      params.put_bool_nonblocking("UsbGpuCompiled", bool(sunny_big or usbgpu_compiled_path() is not None))
+      params.put_bool_nonblocking("UsbGpuCompiled", lat2v_qualified if lat2v_requested else bool(sunny_big or usbgpu_compiled_path() is not None))
 
     frames = camera_gap.receive(vipc_client_main, vipc_client_extra if use_extra_client else None)
     if frames is None:
@@ -655,6 +670,9 @@ def main(demo=False):
                      publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id,
                      frame_drop_ratio, meta_main.timestamp_eof, model_execution_time, live_calib_seen)
 
+      if lat2v is not None:
+        lat2v.update(sm, modelv2_send, action, policy_lat_delay + action_delay,
+                     long_delay + action_delay, vEgoStopping, DH.near_radar_enabled)
       modelv2_send.modelV2.visionCameraInputs = vision_camera_inputs(bufs, main_wide_camera, use_extra_client)
       modelv2_send.modelV2.visionCompute = 'usbGpu' if inference_usbgpu else 'nonUsb'
 
@@ -678,13 +696,18 @@ def main(demo=False):
           time.clock_gettime_ns(getattr(time, "CLOCK_BOOTTIME", time.CLOCK_MONOTONIC)),
           not sm['carControl'].latActive and params.get_bool("AlwaysLateral"))
         turn_hold_allowed &= indicator_valid
+      radar_turn_sides = None
+      if not vision_only and DH.near_radar_enabled and 0 < v_ego <= 15/3.6:
+        from openpilot.selfdrive.controls.lib.near_radar import boot_time_ns, occupied_side
+        radar_now = boot_time_ns()
+        radar_turn_sides = {s: occupied_side(sm, s, radar_now) for s in ('left', 'right')}
       if not vision_only:
         DH.update(sm['carState'], modelv2_send.modelV2, sm['carControl'].latActive, lane_change_prob, sm['carrotMan'], sm['radarState'],
                   indicator_valid=indicator_valid, indicator_curvature=sm['carControl'].actuators.curvature,
                   indicator_yaw_rate=indicator_yaw_rate,
                   assistant_valid=indicator_valid and sm.valid['radarState'] and sm.alive['radarState'] and
                   0 <= indicator_now-sm.recv_time['radarState'] < .35,
-                  turn_hold_allowed=turn_hold_allowed, turn_pose=turn_pose)
+                  turn_hold_allowed=turn_hold_allowed, turn_pose=turn_pose, radar_turn_sides=radar_turn_sides)
       modelv2_send.modelV2.meta.laneChangeState = DH.lane_change_state
       modelv2_send.modelV2.meta.laneChangeDirection = DH.lane_change_direction
       modelv2_send.modelV2.meta.desireLog = DH.desireLog #carrot

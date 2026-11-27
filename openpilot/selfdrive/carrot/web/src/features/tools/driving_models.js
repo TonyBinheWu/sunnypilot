@@ -160,7 +160,7 @@ export async function renderDrivingLibrary(root, library) {
   addSelect("primary", state.next.primary, [["", [["internal", t("internal")], ["auto", t("auto")]]]]);
   addSelect("scene", state.scene, [["", ["legacy", "dynamic", "camera", "perception"].map((label, i) => [i - 1, t(label)])]]);
   if (job?.state === "failed" || (job?.state === "saved" && [state.next.small, state.next.large].includes(job.model))) {
-    const note = element("p", name(job.model) + " · " + t(job.state));
+    const note = element("p", name(job.model) + " · " + (job.detail || t(job.state)));
     note.setAttribute("role", "status");
     root.append(note);
   }

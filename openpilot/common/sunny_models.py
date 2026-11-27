@@ -16,6 +16,9 @@ from openpilot.common.model_download import copy_download, notify
 
 # Plain kernels retain their build metadata. The loader uses the tinygrad submodule
 # paired with sunnypilot modeld_v2 at abada631, which reads both catalog generations.
+LAT2V = 'lat2v'
+LAT2V_NAME = 'lat2v (Nvidia)'
+
 RUNTIME_REF = '92b742f711c7d216fd3ed7a46a30a959e3c43bd4'
 RUNTIME_SHA = 'b51c8befd2a9ee06e9e500531ef99da379c7f4b368f406d7d44e2e05e6efd7e6'
 WARPS = {
@@ -113,6 +116,8 @@ def prefs(boot=False):
 
 def key_for(big, boot=False):
   key = prefs(boot).get('big' if big else 'small')
+  if big and key == LAT2V:
+    return key
   return key if isinstance(key, str) and catalog().get(key, {}).get('big') is big else None
 
 
@@ -174,6 +179,7 @@ def model_items():
   from openpilot.common import internal_models as internal
   return ([(False, key, model[0]) for key, model in internal.MODELS.items()]
           + [(True, key, model['name']) for key, model in library.available().items()]
+          + [(True, LAT2V, LAT2V_NAME)]
           + [(row['big'], key, row['name']) for key, row in reversed(catalog().items())])
 
 
@@ -182,7 +188,15 @@ def choose_model(big, key, offroad, progress=None):
   with choice_lock():
     if not offroad():
       raise ValueError('Park before selecting a model')
-    if key in catalog():
+    if key == LAT2V:
+      if not big:
+        raise ValueError('lat2v requires the external GPU')
+      from openpilot.selfdrive.alpamayo.carrot import prepare_selection
+      prepare_selection(offroad, progress)
+      if not offroad():
+        raise ValueError('Park before selecting a model')
+      save('big', key)
+    elif key in catalog():
       select(big, key, offroad, progress)
     else:
       if big:

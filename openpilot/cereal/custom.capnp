@@ -225,7 +225,15 @@ struct CarrotNaviMedia @0xf35cc4560bbf6ec2 {
 	payload @14 :Data;
 }
 
-struct CustomReserved3 @0xda96579883444c35 {
+struct AlpamayoPlan @0xda96579883444c35 {
+  queryMonoTime @0 :UInt64;
+  readyMonoTime @1 :UInt64;
+  slotDeadline @2 :UInt64;
+  # Forward/left metres and left-positive yaw, sampled at 0.1..6.4 seconds.
+  x @3 :List(Float32);
+  y @4 :List(Float32);
+  yaw @5 :List(Float32);
+  reasoning @6 :Text;
 }
 
 struct CustomReserved4 @0x80ae746ee2596b11 {

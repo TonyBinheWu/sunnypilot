@@ -30,6 +30,17 @@ def build_status_payload(params: Any | None = None) -> dict[str, Any]:
   if not hardware_seen:
     return {"ok": True, "available": False}
 
+  from openpilot.common import sunny_models
+  if sunny_models.key_for(True, True) == sunny_models.LAT2V and not sunny_models.internal_primary(True):
+    from openpilot.selfdrive.alpamayo.install import ready
+    compiled = ready()
+    active = compiled and _params_bool(params, 'UsbGpuActive') and not _params_bool(params, 'UsbGpuLoading')
+    failed = _params_bool(params, 'UsbGpuStartupFailed') or not compiled
+    return dict(ok=True, available=True, display_name=sunny_models.LAT2V_NAME, model_id=sunny_models.LAT2V,
+                state='error' if failed else 'compiling' if _params_bool(params, 'UsbGpuLoading') else 'installed',
+                compiled=compiled, active=active, can_restart=False, engaged=_params_bool(params, 'IsEngaged'),
+                error_code='runtime' if failed else None, recovery={}, rejection={})
+
   status = read_big_model_status(model_cache_dir()) or {}
   manifest = active_manifest()
   # Status describes the model being updated; active_manifest can still refer

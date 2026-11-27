@@ -8,6 +8,7 @@ on:
       - 'openpilot/selfdrive/car/**'
       - 'openpilot/selfdrive/controls/**'
       - 'openpilot/selfdrive/modeld/modeld.py'
+      - 'openpilot/selfdrive/alpamayo/**'
       - 'openpilot/selfdrive/modeld/lane_change_advisory.py'
       - 'openpilot/selfdrive/modeld/tests/test_lane_change_advisory.py'
       - 'openpilot/common/lane_change_notice.py'
@@ -64,6 +65,7 @@ jobs:
             openpilot/selfdrive/controls/tests/test_tesla_turn_journey.py \
             openpilot/selfdrive/controls/tests/test_tesla_traffic_stop.py \
             openpilot/selfdrive/controls/tests/test_desire_helper_stalk.py \
+            openpilot/selfdrive/alpamayo/tests \
             openpilot/selfdrive/controls/tests/test_lane_change_takeover.py \
             openpilot/selfdrive/controls/tests/test_lane_change_completion.py \
             openpilot/selfdrive/modeld/tests/test_lane_change_advisory.py \

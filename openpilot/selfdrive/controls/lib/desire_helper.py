@@ -60,6 +60,7 @@ class DesireHelper:
 
     self.desire = log.Desire.none
     self.turn_direction = TurnDirection.none
+    self.near_radar_enabled = False
     self.sunny_lane_turn = self.params.get_bool("SunnyLaneTurn")
     self.enable_turn_desires = True
     self.turn_desire_state = False
@@ -159,6 +160,7 @@ class DesireHelper:
       self.laneLineCheck = self.params.get_int("LaneLineCheck")
       self.laneChangeDelay = self.params.get_float("LaneChangeDelay") * 0.1
       self.blinkerLatchedTurn = self.params.get_int("BlinkerLatchedTurn") * CV.KPH_TO_MS
+      self.near_radar_enabled = self.params.get_bool("LowSpeedRadarGuard")
       self.laneChangeLeverWait = self.params.get_bool("LaneChangeLeverWait")
 
   def _check_desire_state(self, modeldata, carstate, maneuver_type):
@@ -389,7 +391,7 @@ class DesireHelper:
   # ─────────────────────────────────────────────
   def update(self, carstate, modeldata, lateral_active, lane_change_prob, carrotMan, radarState, *,
              indicator_valid=False, indicator_curvature=None, assistant_valid=False, turn_hold_allowed=False, turn_pose=None,
-             indicator_yaw_rate=None):
+             indicator_yaw_rate=None, radar_turn_sides=None):
     self.frame += 1
     self._update_params_periodic()
     if self.boundary_indicator_supported:
@@ -618,6 +620,11 @@ class DesireHelper:
       elif self.sunny_lane_turn and driver_enabled and new_type == "turn":
         new_type = "lane_change"
         lever_decided_turn = False
+
+      if (self.near_radar_enabled and new_type == "turn" and self.turn_direction == TurnDirection.none
+          and not driver_enabled and side is not None and 0 < v_ego <= 15/3.6
+          and (radar_turn_sides or {}).get(side.name) is not False):
+        new_type = "none"
 
       if trailer_maneuver_blocked and new_type in ("lane_change", "turn"):
         new_type = "none"

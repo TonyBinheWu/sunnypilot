@@ -1,0 +1,23 @@
+{
+  "GMMU": "0",
+  "PROFILE": "0",
+  "AM_PERF_LEVEL": "high",
+  "AM_POWER_LIMIT": "144",
+  "PARALLEL": "32",
+  "CCACHE": "1",
+  "BEAM": "0",
+  "NOOPT": "0",
+  "EMULATED_DTYPES": "",
+  "TC": "1",
+  "IMAGE": "0",
+  "DISABLE_FAST_IDIV": "1",
+  "TRANSCENDENTAL": "1",
+  "ALLOW_TF32": "0",
+  "DEFAULT_FLOAT": "float32",
+  "DEFAULT_INT": "int32",
+  "TC_SELECT": "-1",
+  "TC_OPT": "2",
+  "TC_MIN_GLOBALS": "0",
+  "SPEC": "1",
+  "DEBUG": "0"
+}

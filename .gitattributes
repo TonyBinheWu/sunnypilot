@@ -26,3 +26,8 @@ openpilot/system/hardware/tici/updater -diff -merge -text
 
 # Pinned PEAK source hashes must be identical on Windows and Linux.
 tools/jetlink/peak_usb/* text eol=lf
+
+# The Alpamayo runtime verifies exact source, GPU objects and graph-cache identities.
+openpilot/selfdrive/alpamayo/selected/** -filter -text
+openpilot/selfdrive/alpamayo/model.py -filter -text
+openpilot/selfdrive/alpamayo/amd_attention.py -filter -text

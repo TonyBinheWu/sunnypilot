@@ -52,8 +52,10 @@ class ModelPreparation:
       await asyncio.to_thread(sunny_models.choose_model, field == 'large', key,
                               lambda: not self.closing.is_set() and offroad(params), self.progress)
       self.job = {'state': 'saved', 'model': key}
-    except Exception:
+    except Exception as exc:
       self.job = {'state': 'failed', 'model': key}
+      if key == sunny_models.LAT2V and isinstance(exc, ValueError):
+        self.job['detail'] = str(exc)
 
 
 PREPARATION = web.AppKey('driving_model_preparation', ModelPreparation)

@@ -16,7 +16,7 @@ class ModelChoices:
     self.group = 0
     self._filter()
     self.busy = False
-    self.error = None
+    self.error = self.error_detail = None
     self.next_role = 0.
     self.role_value = ""
     self.next_refresh = 0.
@@ -31,7 +31,7 @@ class ModelChoices:
       self.pending = tuple(sunny.key_for(bool(b)) or default for b, default in enumerate((internal.pending(), external.preferences()['selected'])))
       self.failed = bool(internal.state().get('failed'))
     if self.error == (big, key):
-      return tr("Selection failed")
+      return self.error_detail or tr("Selection failed")
     if self.busy == (big, key):
       return tr("Preparing…")
     if not big and self.failed and self.pending[0] == key and self.active[0] != key:
@@ -68,11 +68,12 @@ class ModelChoices:
   def choose(self, big, key):
     if self.busy or not self.offroad():
       return
-    self.busy, self.error = (big, key), None
+    self.busy, self.error, self.error_detail = (big, key), None, None
     def run():
       try:
         sunny.choose_model(big, key, self.offroad)
-      except Exception:
+      except Exception as exc:
+        self.error_detail = str(exc) if key == sunny.LAT2V and isinstance(exc, ValueError) else None
         self.error = (big, key)
       finally:
         self.next_refresh = 0.

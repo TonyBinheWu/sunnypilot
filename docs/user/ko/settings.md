@@ -621,3 +621,7 @@ CarrotAssist TW 0.2.13의 번체 중국어 직접 음성은 카탈로그 이름 
 C3X는 장치 → FormosaLink, C4는 설정 → FormosaLink에서 독립 QR 등록을 합니다. `FormosaLinkEnabled`는 기본 켜짐이지만 등록이 필요합니다. `FormosaLinkRemoteWeb`은 전체 Carrot 웹(기존 도구·터미널 포함)에 대한 별도의 로컬 권한이며 기본 꺼짐입니다. 최신 정차·시동 꺼짐 상태가 필요하고 권한·소유권·상태가 유효하지 않으면 연결을 종료합니다. `FormosaLinkRemoteSettings`가 전체 웹 권한을 부여하지 않습니다. Carrot 어댑터는 상태를 보고하며 설정 변경은 Carrot 웹의 기존 검증을 사용합니다. Live에서는 소유자 임대가 유효한 동안 광각·실내 MJPEG 영상을 볼 수 있습니다. 장치와 IIS를 함께 업데이트하세요. [배포와 제한](../../../formosalink/docs/CARROT_REMOTE.md).
 
 Reality 3D는 최신 모델 차선과 경로, 차량 추정값 및 현재 경로의 mapsd 지도를 표시합니다. 개발용 미리보기에는 예시 데이터가 사용됩니다. 편집기 실행 시 `--publish --c4 user@host --identity key` 또는 `--c3x user@host`를 지정하고 배치를 내보낸 후 기기에 적용하세요. 기기는 오프로드 상태이며 carrot-wip 브랜치에 로컬 변경이 없어야 합니다. 다음 UI 시작 때 적용됩니다. 확인 후 편집기에서 carrot-wip로 푸시하세요.
+
+## 저속 레이더 및 lat2v
+
+LowSpeedRadarGuard는 [레이더 안내](radar.md)의 저속 가속 및 자동 회전 제한을 적용합니다. 대형 모델 목록의 **lat2v (Nvidia)**는 8 GiB gfx1200 Chestnut을 연결한 comma four용 두 카메라 모델입니다. 주차 상태에서 기기 재생 검증을 통과해야 다음 부팅 모델로 저장됩니다. [이식 및 검증 절차](../../../openpilot/selfdrive/alpamayo/README.md)를 참고하세요.

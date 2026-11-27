@@ -1,0 +1,10 @@
+# Linux x86_64/aarch64 CPython 3.12 wheels. NVIDIA dependencies use its pinned uv.lock.
+av==19.0.1 \
+    --hash=sha256:437d4c0d5a7d771f2c3af84cd28e6aac6e173851116c60b53e81dbf1eebe4eab \
+    --hash=sha256:1bea5b6134209305199bce7627ac3d33964de2cf2b09c77d08e7f67cf8bd4170
+pycapnp==2.1.0 \
+    --hash=sha256:568e79268ba7c02a71fe558a8aec1ae3c0f0e6aff809ff618a46afe4964957d2 \
+    --hash=sha256:48938e0436ab1be615fc0a41434119a2065490a6212b9a5e56949e89b0588b76
+zstandard==0.25.0 \
+    --hash=sha256:6dffecc361d079bb48d7caef5d673c88c8988d3d33fb74ab95b7ee6da42652ea \
+    --hash=sha256:5a56ba0db2d244117ed744dfa8f6f5b366e14148e00de44723413b2f3938a902

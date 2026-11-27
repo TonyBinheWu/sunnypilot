@@ -188,6 +188,7 @@
               "zh": "转向手感",
               "params": [
                 "HkgPhase1Assist",
+                "LowSpeedRadarGuard",
                 "SteerActuatorDelay",
                 "CenterToFrontRatio",
                 "LatSmoothSec",
@@ -889,6 +890,25 @@
       "tgroup": "轉向",
       "ttitle": "自定義最大轉向力矩(0)",
       "tdescr": "最大轉向力矩 — 在 270/384/409 中選擇不報錯的最大值 使用 ADAS ECU 的 EV6 HDA2 扭矩轉向在低於 11 m/s 時採用 384，達到 11 m/s 時採用 330。較低的正值可限制兩段輸出。"
+    },
+    {
+      "group": "조향",
+      "name": "LowSpeedRadarGuard",
+      "title": "저속 근접 레이더 보조",
+      "descr": "15 km/h 이하에서 접근 중인 전방 레이더 차량이 연속 확인되면 양의 가속을 제한하고, 점유된 쪽으로 새 자동 회전 요청을 보류합니다. 벽 거리나 사각 전체를 측정하지 않습니다.",
+      "egroup": "LAT",
+      "etitle": "Low-speed radar guard",
+      "edescr": "Up to 15 km/h, a confirmed closing radar lead can inhibit positive acceleration under openpilot longitudinal control. An occupied side or unavailable radar holds a new automatic turn request. A clear road and wall clearance cannot be determined from these signals.",
+      "cgroup": "转向",
+      "ctitle": "低速近距雷达辅助",
+      "cdescr": "15 km/h 以下，前方雷达连续确认接近目标时限制正加速度。侧方占用或雷达失效时暂缓新的自动转弯请求。无法量测墙面净距。",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "unit": 1,
+      "tgroup": "轉向",
+      "ttitle": "低速近距雷達輔助",
+      "tdescr": "時速 15 公里以下，前方雷達連續確認接近目標時，限制 openpilot 縱向控制的正加速度。側方有目標或雷達失效時，暫緩新的自動轉彎請求。這些訊號無法量測牆面淨距。"
     },
     {
       "group": "조향",

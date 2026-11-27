@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "checkpoint_config_sha256": "784fc20f67294d7a4805e860033a88339cd81b7c0f9bd99d1dc95564fe159dc7",
+  "checkpoint_weight_index_sha256": "0e922b870e530b52a3b92c7b8d3abd3e7eb14714c310b32069bf1ab8e59c1390",
+  "fp8_index_sha256": "c4366c5b7e92b4cd5e2d826881b99b9a80361ec171ebd4a50d51b0f718dffa3e",
+  "fp8_weights_sha256": "dd6b716a2ade3646eff71d874bef676926422d9aca39358fd3f8b4fe75755052",
+  "fp8_bytes": 2929010944,
+  "prefill_calibration_sha256": "a8522fab229a3e19574f5faafbe84a51479ce9a5b81f09458e237a911393ffbb",
+  "compact_checkpoint": {
+    "index_sha256": "8abd3fb434eb67039bff84257102e841ad65f3348a7cc683b7caf3f05177dae3",
+    "shards": {
+      "selected-bf16.safetensors": "a0dcb081369afb88ac5bcb82824803e5a99dd8981b8814a046bfdb583c8267a4"
+    }
+  },
+  "checkpoint_shards": {
+    "00000.safetensors": "d13c1a427218baf7b7d365098c0f5496c0e5e6a6bf662836b8eebbe7eb7cfe7f",
+    "00001.safetensors": "cfe424a7320ce729cd927b5ceaab4323a62443b50f461a2f5c0dd0b10634e0b5"
+  },
+  "fp8_finetunes": {
+    "lat2v": {
+      "fp8_index_sha256": "3dc1c00c5b5f8272e863616400eb2011a7e453457abd8f91dabebeb520dc7d67",
+      "fp8_weights_sha256": "0945a7197441d232064849a7b2cefc5114f57d3bf6a5fa8a6c0478f35a3e646c",
+      "views": "120/30",
+      "compact_checkpoint": {
+        "index_sha256": "8abd3fb434eb67039bff84257102e841ad65f3348a7cc683b7caf3f05177dae3",
+        "shards": {
+          "selected-bf16.safetensors": "9954d4c74c9f8bc25fb394fb308d9c5a3e237cd39629fb789b6fcb71ebb23a2d"
+        }
+      },
+      "merged_shards": {
+        "00000.safetensors": "828246bd6d1c111a16a7ae6d71dbce8aa13d4a94fc60a03afa9d5d53a9634c41",
+        "00001.safetensors": "13b20d708021afdfdae6e5cc21864381aac9bf10218c5a0255cbcbd4e1594072"
+      }
+    }
+  },
+  "fp8_finetunes_changed": "Expert fine-tunes change only expert.expert.layers.N.{self_attn.q_proj,k_proj,v_proj,o_proj,mlp.fc1,fc2}.weight and their scales. A fine-tune with `compact_checkpoint` also changes VLM language and vision weights and runs only with that compact checkpoint."
+}

@@ -22,6 +22,19 @@ def formosalink_enabled(started: bool, params: Params, CP: car.CarParams) -> boo
   return params.get_bool("FormosaLinkEnabled")
 
 
+def lat2v_enabled(started: bool, params: Params, CP: car.CarParams) -> bool:
+  if not started or CP.notCar:
+    return False
+  from openpilot.common import sunny_models
+  if sunny_models.key_for(True, True) != sunny_models.LAT2V or sunny_models.internal_primary(True):
+    return False
+  from openpilot.system.hardware import HARDWARE
+  from openpilot.selfdrive.alpamayo.install import ready
+  from openpilot.system.hardware.usbgpu import get_usbgpu_device
+  bridge = get_usbgpu_device()
+  return HARDWARE.get_device_type() == 'mici' and bridge is not None and bridge.speed_mbps >= 5000 and ready()
+
+
 def car_state_observer(started: bool, params: Params, CP: car.CarParams) -> bool:
   # A forced-offroad session still needs current Park/speed data to unlock the
   # UI and to cancel the mode when the driver selects another gear.
@@ -162,6 +175,7 @@ procs = [
   PythonProcess("micd", "openpilot.system.micd", iscar),
   PythonProcess("timed", "openpilot.system.timed", always_run, enabled=not PC),
 
+  PythonProcess("alpamayod", "openpilot.selfdrive.alpamayo.shadowd", lat2v_enabled, enabled=TICI, spawn=True),
   PythonProcess("modeld", "openpilot.selfdrive.modeld.modeld", only_onroad),
   PythonProcess("signalcolord", "openpilot.selfdrive.modeld.signal_color_shadow", signal_color_observer, spawn=True),
   PythonProcess("jetlinkd", "openpilot.selfdrive.modeld.jetlink.daemon", always_run, enabled=TICI, restart_if_crash=True),

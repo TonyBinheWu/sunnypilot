@@ -243,3 +243,7 @@ A confirmed moving front lead that is leaving the path can receive bounded futur
 ## Hyundai steering harness
 
 Choose automatic detection, the camera bus or the ADAS ECU bus in the vehicle wizard. Automatic detection checks the steering message and its payload length on the connected CAN-FD harness. The standard control preset uses the vehicle’s configured longitudinal controller. Special SCC wiring presets are under **Other wiring and factory cruise**.
+
+## Low-speed radar guard
+
+Enable LowSpeedRadarGuard in Steering Feel to use the vehicle's supported radar while driving forward at up to 15 km/h. With openpilot longitudinal control active, three distinct updates of the same closing radar lead within 7 m and two seconds to contact can inhibit positive acceleration. Stronger braking requests still take precedence. A nearby target or blind-spot warning on the proposed side holds a new automatic turn request. Missing or faulty radar also holds that request. The driver retains steering control. The function defaults off and cannot measure wall clearance or establish that a narrow turn is clear.

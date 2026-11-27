@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "model": "lat2v",
+  "repository": "karelnagel/alpamayo2-edge-lat2v",
+  "revision": "34c8c070b1557c8df79ebf3688ed0ff840f339a0",
+  "prefix": "openpilot/",
+  "files": {
+    "checkpoint/LICENSE": {
+      "sha256": "2ab44b68365473c112f5092211a38f231cb23e50de68b75a13369adbd76a74df",
+      "bytes": 2619
+    },
+    "checkpoint/chat_template.jinja": {
+      "sha256": "7120ee6666468d4e9b2dc11e133ac5c2fa765fa5907706bf0f906270aa5510c8",
+      "bytes": 12158
+    },
+    "checkpoint/config.json": {
+      "sha256": "784fc20f67294d7a4805e860033a88339cd81b7c0f9bd99d1dc95564fe159dc7",
+      "bytes": 8175
+    },
+    "checkpoint/generation_config.json": {
+      "sha256": "09348f5c6c3c065e0a2a3f12c8292ddeae64bd45671cc464e2015f01517a50c4",
+      "bytes": 192
+    },
+    "checkpoint/model.safetensors.index.json": {
+      "sha256": "8abd3fb434eb67039bff84257102e841ad65f3348a7cc683b7caf3f05177dae3",
+      "bytes": 3894
+    },
+    "checkpoint/processor_config.json": {
+      "sha256": "a948fca6731cde35e0e0a011a2450745fb7084bbfbbf90da4152fff76a90bdc7",
+      "bytes": 1158
+    },
+    "checkpoint/selected-bf16.safetensors": {
+      "sha256": "9954d4c74c9f8bc25fb394fb308d9c5a3e237cd39629fb789b6fcb71ebb23a2d",
+      "bytes": 102193332
+    },
+    "checkpoint/tokenizer.json": {
+      "sha256": "06a854e66144d6675e604d22ccb5a39c35645d5caf651dee9ec78f5aa28ff615",
+      "bytes": 17818214
+    },
+    "checkpoint/tokenizer_config.json": {
+      "sha256": "d58bf4bcb16c6e7815bfb8a0d2055f669d2142f64f38cf2935a3e3a3b334b308",
+      "bytes": 481
+    },
+    "fp8-cache/index.json": {
+      "sha256": "3dc1c00c5b5f8272e863616400eb2011a7e453457abd8f91dabebeb520dc7d67",
+      "bytes": 308917
+    },
+    "fp8-cache/weights.bin": {
+      "sha256": "0945a7197441d232064849a7b2cefc5114f57d3bf6a5fa8a6c0478f35a3e646c",
+      "bytes": 2929010944
+    },
+    "prefill-scales.json": {
+      "sha256": "a8522fab229a3e19574f5faafbe84a51479ce9a5b81f09458e237a911393ffbb",
+      "bytes": 21682
+    }
+  },
+  "graph_cache": {
+    "gfx1200": {
+      "path": "graph-cache/gfx1200-5d5a73ce17a23ea083dc04ad.tar.gz",
+      "sha256": "bc51be5c3a8714b313d42d21fc373bee08ff42dfa5fb04c9b11f093675f2b532",
+      "bytes": 3983392
+    }
+  },
+  "firmware": {
+    "url": "https://gitlab.com/kernel-firmware/linux-firmware/-/raw/0a6871b19abf5d6e024b5d208b101ae53e7fa0de/amdgpu/",
+    "files": {
+      "psp_14_0_2_sos.bin": "7b538448b57d4f9dd06b2eea90d4f86a16e65e3027cdecee8db71c2c5f1fa243",
+      "smu_14_0_2.bin": "1b2054e3f710d1ab8dbdf6ff35914ad376b51caa6337831260c955add874b2ee",
+      "sdma_7_0_0.bin": "beaafb53993a106edd392392d5896245ae2a957c6d0f495d0002eec72ad8ad38",
+      "gc_12_0_0_pfp.bin": "d1b043c60920e509e5c8f9677221fb78ff7985f68b605e8f39a04a57333a9366",
+      "gc_12_0_0_me.bin": "fb10cb3535ae4a6a8fb3e78166cf30c5b717341b1f20cde73065c62b642adfed",
+      "gc_12_0_0_mec.bin": "9c7602d6ebf1f7e6ec7a5d1ceefded18f35fa1c08fbea1e3e1a0d78d519db8e8",
+      "gc_12_0_0_imu.bin": "aa15e5b3156bffc45e0c50bccbcd364fbd3f958531b695b7487a803d780b8328",
+      "gc_12_0_0_rlc.bin": "6436b582734a413456fff3d3c7195e71cc9e78a7ed31ee21c83ffd6fae1ad186"
+    }
+  },
+  "config": {
+    "period_ms": 100,
+    "retained_cpu_inputs": true,
+    "default_navigation": "Continue straight.",
+    "navigation_within_m": 150,
+    "output_limit_gb": 2,
+    "geometry": {
+      "method": "Nominal source lens models; not a measured distortion calibration",
+      "cameras": {
+        "1": {
+          "lens_mm": 1.7,
+          "projection": "equidistant",
+          "prepared_size": [
+            768,
+            432
+          ],
+          "content_box": [
+            2,
+            0,
+            766,
+            432
+          ],
+          "principal_point": [
+            383.5,
+            215.5
+          ],
+          "focal_pixels": [
+            241.734375,
+            241.72105263157894
+          ]
+        },
+        "6": {
+          "lens_mm": 4.6,
+          "projection": "pinhole",
+          "prepared_size": [
+            768,
+            432
+          ],
+          "content_box": [
+            2,
+            0,
+            766,
+            432
+          ],
+          "principal_point": [
+            383.5,
+            215.5
+          ],
+          "focal_pixels": [
+            648.8883928571429,
+            648.8526315789474
+          ]
+        }
+      }
+    },
+    "inference": {
+      "native_fresh_patches": true,
+      "diffusion_steps": 2,
+      "power_limit_w": 100
+    }
+  }
+}

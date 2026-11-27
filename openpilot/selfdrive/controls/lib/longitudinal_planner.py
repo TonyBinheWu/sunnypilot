@@ -14,6 +14,7 @@ from openpilot.selfdrive.controls.lib.autospeed import Autospeed
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, N
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan, is_volkswagen_meb
+from openpilot.selfdrive.controls.lib.near_radar import ClosingLead, boot_time_ns
 from openpilot.selfdrive.controls.lib.cutin_predecel import (
   apply_cutin_predecel_accel_limit,
   get_cutin_predecel_accel_limit,
@@ -94,6 +95,8 @@ class LongitudinalPlanner:
     self.v_cruise_kph = 0.0
 
     self.params = Params()
+    self.near_radar = ClosingLead()
+    self.near_radar_enabled = False
     self.hkg_curve = CurveSpeedEnvelope()
     self.hkg_curve_ceiling = None
     self.hkg_phase1_enabled = False
@@ -193,6 +196,7 @@ class LongitudinalPlanner:
     self.coasting_param_time += self.dt
     if self.coasting_param_time >= 1.0:
       self.coasting_param_time = 0.0
+      self.near_radar_enabled = self.params.get_bool("LowSpeedRadarGuard")
       self.coasting_percent = coasting_percent(self.params.get_int('CruiseCoastingPercent'))
       self.hkg_phase1_enabled = phase1_enabled(self.CP, self.params)
     self.mpc.mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
@@ -474,6 +478,25 @@ class LongitudinalPlanner:
     self.apply_signal_start_guard(carrot, v_ego)
     if getattr(self, 'tesla_traffic_decision', None) is not None:
       self.apply_tesla_traffic_stop()
+    if self.near_radar_enabled:
+      self.apply_near_radar(sm, reset_state)
+    else:
+      self.near_radar.reset()
+
+  def apply_near_radar(self, sm, reset_state):
+    cs = sm['carState']
+    if (reset_state or not self.CP.openpilotLongitudinalControl or not sm.all_checks(['carControl', 'selfdriveState'])
+        or not sm['carControl'].longActive or not sm['selfdriveState'].enabled or cs.gasPressed or cs.brakePressed):
+      self.near_radar.reset()
+      return
+    if self.near_radar.update(sm, boot_time_ns()):
+      if self.output_a_target > 0:
+        self.signal_constraint = 'nearRadar'
+      self.output_a_target = min(self.output_a_target, 0.)
+      self.output_v_target_now = min(self.output_v_target_now, cs.vEgo)
+      self.output_j_target_now = min(self.output_j_target_now, 0.)
+      self.coasting_target = 0.
+      self.coasting.reset()
 
   def apply_signal_stop_prepare(self, sm, carrot, reset_state, now=None):
     from openpilot.selfdrive.carrot.signal_stop_prepare import prepare_lead_blocked
