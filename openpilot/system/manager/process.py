@@ -186,7 +186,9 @@ class PythonProcess(ManagerProcess):
     self.restart_if_crash = restart_if_crash
 
   def prepare(self) -> None:
-    if self.enabled:
+    # Only forked children inherit the manager's imports. A spawned daemon
+    # starts with a fresh interpreter and imports its own module in launcher().
+    if self.enabled and (self.process_factory is Process or os.getenv("PREPAREONLY") is not None):
       cloudlog.info(f"preimporting {self.module}")
       try:
         importlib.import_module(self.module)

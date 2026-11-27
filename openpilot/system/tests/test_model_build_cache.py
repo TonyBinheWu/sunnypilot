@@ -13,6 +13,26 @@ import pytest
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.file_chunker import get_manifest_path
 from openpilot.selfdrive.modeld import big_model, big_model_status, helpers, precompiled_model, precompiled_validation
+from openpilot.selfdrive.modeld.build_backend import preferred_backend
+
+
+@pytest.mark.parametrize('present, expected, probes', [
+  ({'CUDA', 'QCOM'}, 'CUDA', ['CUDA']),
+  ({'QCOM'}, 'QCOM', ['CUDA', 'QCOM']),
+  (set(), 'CPU', ['CUDA', 'QCOM']),
+])
+def test_internal_compiler_probes_only_selectable_backends(present, expected, probes):
+  attempted = []
+
+  class Devices:
+    def __getitem__(self, name):
+      attempted.append(name)
+      if name not in present:
+        raise RuntimeError('device unavailable')
+      return SimpleNamespace(device=name)
+
+  assert preferred_backend(Devices()) == expected
+  assert attempted == probes
 
 
 @pytest.mark.parametrize('artifact_ready, expected_rebuild', [(True, '0'), (False, '1')])

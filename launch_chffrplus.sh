@@ -113,50 +113,67 @@ function ensure_python_package {
 }
 
 function bootstrap_runtime_dependencies {
-  if ! ensure_python_package serial pyserial 1 || \
-     ! ensure_python_package msgpack msgpack 1 || \
-     ! ensure_python_package aiohttp aiohttp 1 1 || \
-     ! ensure_python_package "aiortc; import av; import pylibsrtp" "aiortc==1.14.0" 1 1 || \
-     ! ensure_python_package psutil psutil 1 || \
-     ! ensure_python_package crcmod crcmod-plus 1 || \
-     ! ensure_python_package jsonrpc json-rpc 1 || \
-     ! ensure_python_package qrcode qrcode 1; then
+  local checks
+  checks="$(runtime_packages package_import)" || return 1
+  if python3 -c "$checks" >/dev/null 2>&1; then
+    echo "Runtime packages verified."
+    return 0
+  fi
+  # Repair missing or incompatible wheels in dependency order, with a fresh
+  # interpreter after each installation.
+  runtime_packages ensure_python_package
+}
+
+function package_import {
+  printf 'import %s\n' "$1"
+}
+
+function runtime_packages {
+  local check="$1"
+  if ! "$check" serial pyserial 1 || \
+     ! "$check" msgpack msgpack 1 || \
+     ! "$check" aiohttp aiohttp 1 1 || \
+     ! "$check" "aiortc; import av; import pylibsrtp" "aiortc==1.14.0" 1 1 || \
+     ! "$check" psutil psutil 1 || \
+     ! "$check" crcmod crcmod-plus 1 || \
+     ! "$check" jsonrpc json-rpc 1 || \
+     ! "$check" qrcode qrcode 1; then
     return 1
   fi
 
-  ensure_python_package brotli brotli 0
-  ensure_python_package usb pyusb 0
+  "$check" brotli brotli 0
+  "$check" usb pyusb 0
 
   # Xiaoge lane/BSD inference uses a pinned, bundled OpenCV wheel. Keep NumPy
   # from AGNOS and install only into pydeps, never the read-only system venv.
   # Prepare it even when ShareData is off so the settings toggle works offline.
-  ensure_python_package "cv2; assert cv2.__version__ == '4.13.0'; assert hasattr(cv2.dnn, 'readNetFromONNX')" \
+  "$check" "cv2; assert cv2.__version__ == '4.13.0'; assert hasattr(cv2.dnn, 'readNetFromONNX')" \
     "opencv-python-headless==4.13.0.92" 0
 
   # AGNOS 19 follows current comma, which no longer includes the legacy Eigen
   # and libjpeg wrappers used by this branch's rednose and JPEG encoder. Keep
   # those native headers/libraries available from official offline wheels.
   if { [ -f /TICI ] || [ -f /AGNOS ]; } && \
-     { ! ensure_python_package eigen eigen 1 || ! ensure_python_package libjpeg libjpeg 1; }; then
+     { ! "$check" eigen eigen 1 || ! "$check" libjpeg libjpeg 1; }; then
     return 1
   fi
 
   # MPC headers, templates, native libraries and CasADi now come from one wheel.
-  if ! ensure_python_package "acados; from acados.acados_template import AcadosOcpSolver; from casadi import SX" \
+  if ! "$check" "acados; from acados.acados_template import AcadosOcpSolver; from casadi import SX" \
       "comma-deps-acados==0.2.2.post103" 1; then
     return 1
   fi
 
-  if ! ensure_python_package json11 "comma-deps-json11==20170411.0.post103" 1; then
+  if ! "$check" json11 "comma-deps-json11==20170411.0.post103" 1; then
     return 1
   fi
 
   # Development checkouts build C++ tests by default, matching SConstruct extras.
-  if [ -f "$DIR/.gitattributes" ] && ! ensure_python_package catch2 "comma-deps-catch2==2.13.10.post96" 1; then
+  if [ -f "$DIR/.gitattributes" ] && ! "$check" catch2 "comma-deps-catch2==2.13.10.post96" 1; then
     return 1
   fi
 
-  ensure_python_package shapely shapely 0
+  "$check" shapely shapely 0
 }
 
 function show_agnos_update_failure {
@@ -328,13 +345,14 @@ function prepare_big_model_if_needed {
   BIG_MODEL_SHA=""
   unset CARROT_BIG_MODEL_STARTUP_FAILED
 
-  # With an attached eGPU, install this checkout's selection before building or
-  # starting modeld. Offline delivery retries here instead of running an old model.
+  # Try this checkout's selection before building. A competing delivery or a
+  # network failure leaves this boot on the internal model; the updater retries
+  # in the background without holding up ignition.
   if ! python3 -c 'from openpilot.selfdrive.modeld.helpers import usbgpu_present; raise SystemExit(0 if usbgpu_present() else 1)' 2>/dev/null; then
     return
   fi
 
-  if ! flock /tmp/big_model_update.lock python3 -m openpilot.selfdrive.modeld.big_model --prepare-for-startup --retry-network; then
+  if ! flock -n /tmp/big_model_update.lock python3 -m openpilot.selfdrive.modeld.big_model --prepare-for-startup; then
     echo "Selected eGPU model preparation failed; using the internal model this boot."
     export CARROT_BIG_MODEL_STARTUP_FAILED=1
     return

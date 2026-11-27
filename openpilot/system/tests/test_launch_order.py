@@ -31,13 +31,13 @@ python3() {
     test -f delivery-finished
     echo selected-sha
   else
-    test "$*" = '-m openpilot.selfdrive.modeld.big_model --prepare-for-startup --retry-network'
+    test "$*" = '-m openpilot.selfdrive.modeld.big_model --prepare-for-startup'
     sleep 0.1
     touch delivery-finished
     return "$DELIVERY_RC"
   fi
 }
-flock() { test "$1" = /tmp/big_model_update.lock; shift; "$@"; }
+flock() { test "$1 $2" = '-n /tmp/big_model_update.lock'; shift 2; "$@"; }
 ''' + prepare + '''
 prepare_big_model_if_needed
 echo "sha=$BIG_MODEL_SHA"

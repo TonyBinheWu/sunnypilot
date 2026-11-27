@@ -136,7 +136,7 @@ def test_carrot_aiohttp_runtime_is_available_offline() -> None:
     "multidict": "6.7.1",
     "propcache": "0.4.1",
     "yarl": "1.23.0",
-    "idna": "3.11",
+    "idna": "3.19",
     "typing_extensions": "4.15.0",
   }
 
@@ -159,24 +159,24 @@ def test_remaining_legacy_runtime_dependencies_are_available_offline() -> None:
 def test_launcher_bootstraps_from_local_wheels_first() -> None:
   launcher = (Path(BASEDIR) / "launch_chffrplus.sh").read_text(encoding="utf-8")
 
-  assert "ensure_python_package serial pyserial 1" in launcher
-  assert "ensure_python_package msgpack msgpack 1" in launcher
-  assert "ensure_python_package aiohttp aiohttp 1 1" in launcher
-  assert "ensure_python_package psutil psutil 1" in launcher
-  assert "ensure_python_package crcmod crcmod-plus 1" in launcher
-  assert "ensure_python_package jsonrpc json-rpc 1" in launcher
-  assert "ensure_python_package qrcode qrcode 1" in launcher
-  assert "ensure_python_package brotli brotli 0" in launcher
-  assert "ensure_python_package usb pyusb 0" in launcher
-  assert "ensure_python_package \"cv2; assert cv2.__version__ == '4.13.0'" in launcher
+  assert "\"$check\" serial pyserial 1" in launcher
+  assert "\"$check\" msgpack msgpack 1" in launcher
+  assert "\"$check\" aiohttp aiohttp 1 1" in launcher
+  assert "\"$check\" psutil psutil 1" in launcher
+  assert "\"$check\" crcmod crcmod-plus 1" in launcher
+  assert "\"$check\" jsonrpc json-rpc 1" in launcher
+  assert "\"$check\" qrcode qrcode 1" in launcher
+  assert "\"$check\" brotli brotli 0" in launcher
+  assert "\"$check\" usb pyusb 0" in launcher
+  assert "\"$check\" \"cv2; assert cv2.__version__ == '4.13.0'" in launcher
   assert '"opencv-python-headless==4.13.0.92" 0' in launcher
-  assert "ensure_python_package eigen eigen 1" in launcher
-  assert "ensure_python_package libjpeg libjpeg 1" in launcher
+  assert "\"$check\" eigen eigen 1" in launcher
+  assert "\"$check\" libjpeg libjpeg 1" in launcher
   assert '"comma-deps-acados==0.2.2.post103" 1' in launcher
-  assert 'ensure_python_package json11 "comma-deps-json11==20170411.0.post103" 1' in launcher
-  assert 'if [ -f "$DIR/.gitattributes" ] && ! ensure_python_package catch2 "comma-deps-catch2==2.13.10.post96" 1' in launcher
+  assert '"$check" json11 "comma-deps-json11==20170411.0.post103" 1' in launcher
+  assert 'if [ -f "$DIR/.gitattributes" ] && ! "$check" catch2 "comma-deps-catch2==2.13.10.post96" 1' in launcher
   assert "[ -f /TICI ] || [ -f /AGNOS ]" in launcher
-  assert "ensure_python_package shapely shapely 0" in launcher
+  assert "\"$check\" shapely shapely 0" in launcher
   assert "pip install shapely" not in launcher
   assert "--no-index --no-deps" in launcher
 

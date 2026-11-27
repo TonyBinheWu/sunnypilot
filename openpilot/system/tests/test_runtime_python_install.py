@@ -79,6 +79,30 @@ def test_existing_package_needs_no_installer(tmp_path):
   assert "ENSUREPIP" not in result.stdout
 
 
+@pytest.mark.parametrize('probe_ok,repair_ok', [(True, True), (False, True), (False, False)])
+def test_boot_probes_one_interpreter_then_repairs_in_order(tmp_path, probe_ok, repair_ok):
+  source = (Path(BASEDIR) / 'launch_chffrplus.sh').read_text()
+  bootstrap = source[source.index('function bootstrap_runtime_dependencies {'):source.index('function show_agnos_update_failure {')]
+  command = bootstrap + r'''
+python3() { printf '%s\n' "$2" > all_imports; return "$PROBE_RC"; }
+ensure_python_package() { echo "$1" >> repaired; test "$1" != msgpack || return "$REPAIR_RC"; }
+bootstrap_runtime_dependencies
+'''
+  env = dict(os.environ, DIR=str(tmp_path), PROBE_RC=str(int(not probe_ok)), REPAIR_RC=str(int(not repair_ok)))
+  result = subprocess.run([_bash(), '-c', command], cwd=tmp_path, env=env, timeout=10)
+  assert result.returncode == int(not (probe_ok or repair_ok))
+  probes = (tmp_path / 'all_imports').read_text().splitlines()
+  assert probes[0] == 'import serial' and probes[-1] == 'import shapely'
+  assert "import cv2; assert cv2.__version__ == '4.13.0'; assert hasattr(cv2.dnn, 'readNetFromONNX')" in probes
+  repaired = tmp_path / 'repaired'
+  if probe_ok:
+    assert not repaired.exists()
+  else:
+    names = repaired.read_text().splitlines()
+    assert names[:2] == ['serial', 'msgpack']
+    assert names[-1] == ('shapely' if repair_ok else 'msgpack')
+
+
 @pytest.mark.parametrize("installer", ["pip", "uv", "ensurepip"])
 def test_missing_package_installs_from_wheel(tmp_path, installer):
   result = _install(tmp_path, installer=installer)

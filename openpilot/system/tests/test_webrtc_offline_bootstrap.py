@@ -9,15 +9,15 @@ WEBRTC_WHEELS = {
   "aioice": "0.10.2",
   "aiortc": "1.14.0",
   "av": "16.1.0",
-  "cffi": "2.0.0",
-  "cryptography": "46.0.5",
+  "cffi": "2.1.1",
+  "cryptography": "50.0.1",
   "dnspython": "2.8.0",
   "google_crc32c": "1.8.0",
   "ifaddr": "0.2.0",
   "pycparser": "3.0",
   "pyee": "13.0.1",
   "pylibsrtp": "1.0.0",
-  "pyopenssl": "26.0.0",
+  "pyopenssl": "26.4.0",
   "typing_extensions": "4.15.0",
 }
 

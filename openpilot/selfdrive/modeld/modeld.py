@@ -159,7 +159,12 @@ class ModelState:
     self.frame_buf_params = {k: get_nv12_info(cam_w, cam_h) for k in ('img', 'big_img')}
     self.run_policy = jits['run_policy']
     self.warp = jits[(cam_w,cam_h)]
-    self.signal_shadow = ShadowClient.optional(modeld_pkl_path(False).parent / 'driving_supercombo.onnx') if enable_shadow and not usbgpu else None
+    self.signal_shadow = None
+    if enable_shadow and not usbgpu:
+      self.enable_signal_shadow()
+
+  def enable_signal_shadow(self):
+    self.signal_shadow = ShadowClient.optional(modeld_pkl_path(False).parent / 'driving_supercombo.onnx')
 
   def slice_outputs(self, model_outputs: np.ndarray, output_slices: dict[str, slice]) -> dict[str, np.ndarray]:
     parsed_model_outputs = {k: model_outputs[np.newaxis, v] for k,v in output_slices.items()}
@@ -307,6 +312,9 @@ def main(demo=False):
 
   st = time.monotonic()
   cloudlog.warning("loading model")
+  from openpilot.common import internal_models
+  from openpilot.selfdrive.modeld.internal_model_warmup import prepare_c4_stock_standby, warm_internal_model_from_camera
+  prepared_standby = None
   model = None
   usbgpu_model_loaded = False
   if USBGPU:
@@ -340,8 +348,16 @@ def main(demo=False):
           return
 
     loader = threading.Thread(target=load_usbgpu_model, name="usbgpu-model-loader", daemon=True)
+    deadline = time.monotonic() + USBGPU_MODEL_LOAD_TIMEOUT
     loader.start()
-    loader.join(USBGPU_MODEL_LOAD_TIMEOUT)
+    if precompiled and not sunny_small and internal_models.active() == 'cd210':
+      try:
+        prepared_standby = prepare_c4_stock_standby(vipc_client_main, usbgpu_pkl_path, ModelState)
+        if prepared_standby is not None:
+          cloudlog.warning("C4 internal standby ready during eGPU load at %.3fs", time.monotonic() - st)
+      except Exception:
+        cloudlog.exception("C4 standby preparation deferred until external load completes")
+    loader.join(max(0., deadline - time.monotonic()))
     if loader.is_alive():
       cloudlog.error(f"eGPU model load timed out after {USBGPU_MODEL_LOAD_TIMEOUT}s")
       queue_usbgpu_error_tmux(params, "model load timed out")
@@ -365,15 +381,14 @@ def main(demo=False):
   # A standby model must not spawn a separate experimental ONNX observer that
   # receives no live samples. Keep standby inference/warmup and fallback intact;
   # optional comparison remains available when internal inference starts active.
-  from openpilot.common import internal_models
-  small_model = stock_standby = None
-  if model is None or USBGPU:
+  stock_standby = None
+  small_model = prepared_standby
+  if small_model is None:
     choice = internal_models.active()
     if sunny_small:
       stock_standby = ModelState(vipc_client_main.width, vipc_client_main.height, False, enable_shadow=False)
       try:
         small_model = SunnyModelState(vipc_client_main.width, vipc_client_main.height, sunny_small)
-        from openpilot.selfdrive.modeld.internal_model_warmup import warm_internal_model_from_camera
         warm_internal_model_from_camera(stock_standby, vipc_client_main)
         sunny_models.mark_load(False, None)
       except Exception:
@@ -394,8 +409,9 @@ def main(demo=False):
           cloudlog.exception('Unable to save internal model fallback status')
     if small_model is None:
       small_model = ModelState(vipc_client_main.width, vipc_client_main.height, False, enable_shadow=not usbgpu_model_loaded)
-  if usbgpu_model_loaded:
-    from openpilot.selfdrive.modeld.internal_model_warmup import warm_internal_model_from_camera
+  elif not usbgpu_model_loaded:
+    small_model.enable_signal_shadow()
+  if usbgpu_model_loaded and prepared_standby is None:
     warm_internal_model_from_camera(small_model, vipc_client_main)
   cloudlog.warning("model startup internal model: %.3fs, loaded=%s", time.monotonic() - phase_start, small_model is not None)
   if model is None:

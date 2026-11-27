@@ -40,6 +40,21 @@ def test_start_uses_selected_context_and_does_not_duplicate_child(factories, spa
     ns['get_context'].assert_not_called()
 
 
+@pytest.mark.parametrize('spawn,prepare_only,expected', [(False, False, True), (True, False, False), (True, True, True)])
+def test_manager_preimports_only_when_the_child_can_reuse_it_or_preparing(factories, monkeypatch, spawn, prepare_only, expected):
+  ns, _, _ = factories
+  imports = Mock()
+  ns.update(os=os, importlib=SimpleNamespace(import_module=imports))
+  monkeypatch.delenv('PREPAREONLY', raising=False)
+  if prepare_only:
+    monkeypatch.setenv('PREPAREONLY', '1')
+  ns['PythonProcess']('worker', 'worker.module', lambda *_: True, spawn=spawn).prepare()
+  if expected:
+    imports.assert_called_once_with('worker.module')
+  else:
+    imports.assert_not_called()
+
+
 def test_deferred_and_restart_sensitive_services_select_spawn():
   path = Path(__file__).parents[1] / 'process_config.py'
   calls = [n for n in ast.walk(ast.parse(path.read_text(encoding='utf-8')))

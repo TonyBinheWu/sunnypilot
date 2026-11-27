@@ -46,3 +46,18 @@ def test_rechunk_with_smaller_model_keeps_valid_chunk_count(tmp_path: Path, monk
   path.write_bytes(b'new')
   file_chunker.chunk_file(path, targets)
   assert file_chunker.read_file_chunked(path) == b'new'
+
+
+def test_buffer_reads_cross_empty_and_nonempty_chunks_without_full_chunk_copies(tmp_path):
+  base = tmp_path / 'model'
+  chunks = [b'abcd', b'', b'efgh', b'']
+  for i, chunk in enumerate(chunks):
+    Path(file_chunker.get_chunk_name(base, i, len(chunks))).write_bytes(chunk)
+  Path(file_chunker.get_manifest_path(base)).write_text(str(len(chunks)))
+  base.write_bytes(b'old unsplit model')
+  dest = bytearray(6)
+  with file_chunker.open_file_chunked(base) as stream:
+    assert stream.read(1) == b'a'
+    assert stream.readinto(dest) == 6 and dest == b'bcdefg'
+    assert stream.read(10) == b'h'
+    assert stream.readinto(dest) == 0

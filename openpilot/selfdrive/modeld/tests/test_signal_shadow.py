@@ -104,7 +104,8 @@ def test_modeld_keeps_original_artifact_and_output():
 def test_standby_preserves_internal_model_without_spawning_comparison(external_ready, external_requested):
   tree = ast.parse((Path(__file__).parents[1] / 'modeld.py').read_text())
   statement = next(n for n in ast.walk(tree) if isinstance(n, ast.Assign)
-                   and any(isinstance(t, ast.Name) and t.id == 'small_model' for t in n.targets))
+                   and any(isinstance(t, ast.Name) and t.id == 'small_model' for t in n.targets)
+                   and isinstance(n.value, ast.Call) and any(k.arg == 'enable_shadow' for k in n.value.keywords))
   calls = []
   def model_state(*args, **kwargs):
     calls.append((args, kwargs))
@@ -120,8 +121,11 @@ def test_standby_preserves_internal_model_without_spawning_comparison(external_r
 @pytest.mark.parametrize('enable_shadow,usbgpu', [(False, False), (False, True), (True, True), (True, False)])
 def test_comparison_gate_skips_artifact_io_and_worker_start(enable_shadow, usbgpu):
   tree = ast.parse((Path(__file__).parents[1] / 'modeld.py').read_text())
-  statement = next(n for n in ast.walk(tree) if isinstance(n, ast.Assign)
-                   and any(isinstance(t, ast.Attribute) and t.attr == 'signal_shadow' for t in n.targets))
+  state = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == 'ModelState')
+  constructor = next(n for n in state.body if isinstance(n, ast.FunctionDef) and n.name == '__init__')
+  init = next(i for i, n in enumerate(constructor.body) if isinstance(n, ast.Assign)
+              and any(isinstance(t, ast.Attribute) and t.attr == 'signal_shadow' for t in n.targets))
+  enable = next(n for n in state.body if isinstance(n, ast.FunctionDef) and n.name == 'enable_signal_shadow')
   reads, calls = [], []
   def model_path(external):
     reads.append(external)
@@ -132,7 +136,9 @@ def test_comparison_gate_skips_artifact_io_and_worker_start(enable_shadow, usbgp
   model = SimpleNamespace()
   scope = {'self': model, 'enable_shadow': enable_shadow, 'usbgpu': usbgpu,
            'modeld_pkl_path': model_path, 'ShadowClient': SimpleNamespace(optional=optional)}
-  exec(compile(ast.fix_missing_locations(ast.Module(body=[statement], type_ignores=[])), '<shadow gate>', 'exec'), scope)
+  exec(compile(ast.Module(body=[enable], type_ignores=[]), '<shadow setup>', 'exec'), scope)
+  model.enable_signal_shadow = lambda: scope['enable_signal_shadow'](model)
+  exec(compile(ast.Module(body=constructor.body[init:init+2], type_ignores=[]), '<shadow gate>', 'exec'), scope)
   active = enable_shadow and not usbgpu
   assert model.signal_shadow == ('observer' if active else None)
   assert reads == ([False] if active else [])

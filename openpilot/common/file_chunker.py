@@ -47,26 +47,34 @@ def read_file_chunked(path):
 class ChunkStream(io.RawIOBase):
   def __init__(self, paths):
     self._paths = iter(paths)
-    self._buf = memoryview(b'')
+    self._file = None
 
   def readable(self):
     return True
 
   def readinto(self, b):
+    if self.closed:
+      raise ValueError("read from closed chunk stream")
+    view = memoryview(b).cast('B')
     n = 0
-    while n < len(b):
-      if not self._buf:
+    while n < len(view):
+      if self._file is None:
         p = next(self._paths, None)
         if p is None:
           break
-        with open(p, 'rb') as f:
-          self._buf = memoryview(f.read())
-        continue
-      take = min(len(b) - n, len(self._buf))
-      b[n:n + take] = self._buf[:take]
-      self._buf = self._buf[take:]
-      n += take
+        self._file = open(p, 'rb', buffering=0)
+      count = self._file.readinto(view[n:])
+      if count == 0:
+        self._file.close()
+        self._file = None
+      n += count
     return n
+
+  def close(self):
+    if self._file is not None:
+      self._file.close()
+      self._file = None
+    super().close()
 
 def open_file_chunked(path):
   manifest_path = get_manifest_path(path)
@@ -74,7 +82,7 @@ def open_file_chunked(path):
     num_chunks = int(Path(manifest_path).read_text().strip())
     paths = [get_chunk_name(path, i, num_chunks) for i in range(num_chunks)]
   elif os.path.isfile(path):
-    paths = [path]
+    return open(path, 'rb')
   else:
     raise FileNotFoundError(path)
   return io.BufferedReader(ChunkStream(paths))

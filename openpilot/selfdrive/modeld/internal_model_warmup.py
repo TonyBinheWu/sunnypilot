@@ -1,6 +1,25 @@
 """Prepare the standby model before live eGPU publication, without publishing."""
+import json
 import numpy as np
+import psutil
 import time
+
+from openpilot.selfdrive.modeld.local_gpu_warp import vehicle_device_type
+
+
+def prepare_c4_stock_standby(camera, model_path, model_factory):
+  if vehicle_device_type() != 'mici':
+    return None
+  # The generic C4 worker uses AMD for warp and inference. Other runtimes can
+  # initialize QCOM themselves. Leave headroom for both the worker and camerad.
+  if psutil.virtual_memory().available < model_path.stat().st_size + 1024**3:
+    return None
+  manifest = json.loads((model_path.parent / 'installed.json').read_text())
+  if manifest['format'] != 'comma-generic-onnx':
+    return None
+  standby = model_factory(camera.width, camera.height, False, enable_shadow=False)
+  warm_internal_model_from_camera(standby, camera)
+  return standby
 
 
 def warm_internal_model_from_camera(model, camera):
