@@ -23,7 +23,8 @@ test('shared tools render both model catalogs without an eGPU and submit the sel
   globalThis.document = {getElementById: () => root, createElement: tag => new Element(tag)};
   const choices = [
     ['cd210', 'CD210', 'small', 'carrot-wip'], ['sunny-s', 'SP small', 'small', 'sunnypilot'],
-    ['n16', 'N16', 'large', 'carrot-wip'], ['sunny-b', 'SP large', 'large', 'sunnypilot'],
+    ['n16', 'N16', 'large', 'carrot-wip'], ['lat2v', 'lat2v (Nvidia)', 'large', 'carrot-wip'],
+    ['sunny-b', 'SP large', 'large', 'sunnypilot'],
   ];
   let loads = 0;
   globalThis.getJson = async url => {
@@ -62,6 +63,18 @@ test('shared tools render both model catalogs without an eGPU and submit the sel
   assert.equal(root.querySelectorAll('small').at(-1).hidden, true);
   await renderLibrary({...data, selector: {...selector, offroad: false}});
   assert.ok(root.querySelectorAll('select').every(e => e.disabled));
+  const failed = {state: 'failed', model: 'lat2v', park_block: 'forced_offroad'};
+  await renderLibrary({...data, selector: {...selector, lat2v_park_block: 'forced_offroad', job: failed}});
+  assert.ok(root.querySelectorAll('option').find(e => e.value === 'lat2v').disabled);
+  assert.match(root.querySelectorAll('p').map(e => e.textContent).join(' '), /Forced offroad is active/);
+  assert.ok(root.querySelector('button').disabled);
+  await renderLibrary({...data, selector: {...selector, lat2v_park_block: null, job: failed}});
+  assert.ok(!root.querySelectorAll('option').find(e => e.value === 'lat2v').disabled);
+  assert.doesNotMatch(root.querySelectorAll('p').map(e => e.textContent).join(' '), /Forced offroad is active/);
+  assert.equal(root.querySelector('select').dataset.field, 'small');
+  assert.equal(root.querySelectorAll('select').find(e => e.dataset.field === 'large').value, 'n16');
+  await root.querySelector('button').events.click();
+  assert.deepEqual(calls.at(-1), ['/api/driving-models/selection', {field: 'large', value: 'lat2v'}]);
   assert.equal(loads, 1);
 });
 test('model choice distinguishes current/pending/NOO and preserves in-flight choice across polls', t => {

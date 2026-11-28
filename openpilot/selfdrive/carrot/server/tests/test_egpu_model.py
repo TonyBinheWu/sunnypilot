@@ -378,6 +378,15 @@ def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
       assert (await change('vla_observer', 'on')).status == 409
       assert 'vla_observer' not in await state()
       assert app[driving_models.PREPARATION].task is None
+      for flag, block in (('ForceOffroad', 'forced_offroad'), ('ForceOffroadActive', 'forced_offroad'),
+                          ('IsEngaged', 'engaged'), ('IsOnroad', 'offroad')):
+        flags[flag] = True
+        assert (await state())['lat2v_park_block'] == block
+        result = await change('large', sunny.LAT2V)
+        assert result.status == 409 and (await result.json())['park_block'] == block
+        assert app[driving_models.PREPARATION].task is None
+        flags[flag] = False
+      assert (await state())['lat2v_park_block'] is None
       assert (await change('large', groups['large'][0])).status == 202
       assert await asyncio.to_thread(entered.wait, 5)
       try:
@@ -400,4 +409,18 @@ def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
       assert (await change('large', 'flip-flop')).status == 202
       await app[driving_models.PREPARATION].task
       assert (await state())['next'] == {'primary': 'internal', 'small': groups['small'][0], 'large': 'flip-flop'}
+      from openpilot.selfdrive.alpamayo import carrot
+      monkeypatch.setattr(carrot, 'prepare_selection', lambda parked, progress: flags.update(ForceOffroadActive=True))
+      assert (await change('large', sunny.LAT2V)).status == 202
+      await app[driving_models.PREPARATION].task
+      failed = await state()
+      assert failed['job'] == {'state': 'failed', 'model': 'lat2v', 'park_block': 'forced_offroad'}
+      assert failed['next']['large'] == 'flip-flop'
+      flags['ForceOffroadActive'] = False
+      monkeypatch.setattr(carrot, 'prepare_selection', lambda parked, progress: None)
+      assert (await change('large', sunny.LAT2V)).status == 202
+      await app[driving_models.PREPARATION].task
+      saved = await state()
+      assert saved['job']['state'] == 'saved' and saved['next']['large'] == 'lat2v'
+      assert saved['boot']['large'] == 'n16' and saved['next']['primary'] == 'internal'
   asyncio.run(run())

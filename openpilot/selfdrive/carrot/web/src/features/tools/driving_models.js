@@ -9,6 +9,11 @@ const EN = {
   receiving: "received",
   failed: "Preparation failed. Check the connection and free space, then select the model again.",
   load_failed: "Model failed to load this boot", saved: "Saved for next boot", jetson: "Jetson model",
+  lat2v_forced_offroad: "Forced offroad is active. Turn the ignition off.",
+  lat2v_engaged: "Disengage assistance and turn the ignition off.",
+  lat2v_offroad: "Wait for ignition-off offroad mode.",
+  lat2v_unsaved: "Preparation stopped before the choice was saved.",
+  lat2v_retry: "Prepare lat2v again",
 };
 const t = key => typeof getUIText === "function" ? getUIText("driving_models_" + key, EN[key]) : EN[key];
 function element(tag, value) {
@@ -94,7 +99,7 @@ export async function renderDrivingLibrary(root, library) {
   const state = library.selector;
   const job = state.job;
   const name = id => models.find(model => model.id === id)?.name || id;
-  const signature = JSON.stringify([{...state, job: [job?.state, job?.model]}, library.selected, t("title")]);
+  const signature = JSON.stringify([{...state, job: [job?.state, job?.model, job?.park_block, job?.detail]}, library.selected, t("title")]);
   if (root.dataset.signature === signature) {
     updateTransfer(root, job, name(job?.model), state.connection_lost);
     return;
@@ -110,6 +115,27 @@ export async function renderDrivingLibrary(root, library) {
   boot.className = "model-boot";
   root.append(boot);
   if (!state.offroad) root.append(element("p", t("parked")));
+  const lat2vBlock = state.lat2v_park_block;
+  if (lat2vBlock && (state.offroad || lat2vBlock !== "offroad") && !state.connection_lost)
+    root.append(element("p", name("lat2v") + " · " + t("lat2v_" + lat2vBlock)));
+
+  async function submit(field, value) {
+    if (writing || !state.offroad || (value === "lat2v" && lat2vBlock)) return;
+    writing = true;
+    for (const input of root.querySelectorAll("select")) input.disabled = true;
+    try {
+      const reply = await postJson("/api/driving-models/selection", {field, value});
+      if (reply.job) latest = {...latest, selector: {...latest.selector, job: reply.job}};
+    } catch (error) {
+      const reason = error.payload?.park_block;
+      if (typeof showAppToast === "function") showAppToast(reason ? t("lat2v_" + reason) : error.message || String(error), {tone: "error"});
+    } finally {
+      await globalThis.CarrotEgpuModel?.refresh();
+      writing = false;
+      delete root.dataset.signature;
+      await renderDrivingLibrary(root, latest);
+    }
+  }
   function addSelect(field, value, groups) {
     const label = element("label", t(field));
     const select = document.createElement("select");
@@ -125,27 +151,12 @@ export async function renderDrivingLibrary(root, library) {
       for (const [id, title] of options) {
         const option = element("option", title);
         option.value = id;
+        if (id === "lat2v" && lat2vBlock) option.disabled = true;
         list.append(option);
       }
     }
     select.value = value ?? "";
-    select.addEventListener("change", async () => {
-      if (writing) return;
-      writing = true;
-      for (const input of root.querySelectorAll("select")) input.disabled = true;
-      try {
-        const value = field === "scene" ? Number(select.value) : select.value;
-        const reply = await postJson("/api/driving-models/selection", {field, value});
-        if (reply.job) latest = {...latest, selector: {...latest.selector, job: reply.job}};
-      } catch (error) {
-        if (typeof showAppToast === "function") showAppToast(error.message || String(error), {tone: "error"});
-      } finally {
-        await globalThis.CarrotEgpuModel?.refresh();
-        writing = false;
-        delete root.dataset.signature;
-        await renderDrivingLibrary(root, latest);
-      }
-    });
+    select.addEventListener("change", () => submit(field, field === "scene" ? Number(select.value) : select.value));
     label.append(select);
     root.append(label);
   }
@@ -160,9 +171,18 @@ export async function renderDrivingLibrary(root, library) {
   addSelect("primary", state.next.primary, [["", [["internal", t("internal")], ["auto", t("auto")]]]]);
   addSelect("scene", state.scene, [["", ["legacy", "dynamic", "camera", "perception"].map((label, i) => [i - 1, t(label)])]]);
   if (job?.state === "failed" || (job?.state === "saved" && [state.next.small, state.next.large].includes(job.model))) {
-    const note = element("p", name(job.model) + " · " + (job.detail || t(job.state)));
+    const detail = job.park_block ? t("lat2v_unsaved") : job.detail || t(job.state);
+    const note = element("p", name(job.model) + " · " + detail);
     note.setAttribute("role", "status");
     root.append(note);
+  }
+  if (job?.state !== "preparing" && ((job?.model === "lat2v" && job.state === "failed") || state.next.large === "lat2v")) {
+    const retry = element("button", t("lat2v_retry"));
+    retry.type = "button";
+    retry.className = "btn btn-secondary";
+    retry.disabled = !state.offroad || Boolean(lat2vBlock);
+    retry.addEventListener("click", () => submit("large", "lat2v"));
+    root.append(retry);
   }
   for (const key of state.failed || []) root.append(element("p", t("load_failed") + " · " + name(key)));
   if (state.internal_build_failed) root.append(element("p", t("load_failed") + " · " + t("small")));

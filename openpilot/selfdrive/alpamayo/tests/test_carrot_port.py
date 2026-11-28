@@ -139,15 +139,22 @@ def test_carrot_capture_wire_names():
 def test_first_selection_and_failed_validation_never_change_saved_choice(monkeypatch, tmp_path):
   from openpilot.selfdrive.alpamayo import carrot
   monkeypatch.setenv('CARROT_BIG_MODEL_DIR', str(tmp_path))
+  flags = {'IsOffroad'}
+  params = SimpleNamespace(get_bool=flags.__contains__)
   sunny_models.save('big', None)
   def reject(*args):
     raise ValueError('recording did not qualify')
   monkeypatch.setattr(carrot, 'prepare_selection', reject)
   with pytest.raises(ValueError, match='did not qualify'):
-    sunny_models.choose_model(True, 'lat2v', lambda: True)
+    sunny_models.choose_model(True, 'lat2v', lambda: True, params=params)
   assert sunny_models.key_for(True) is None
+  monkeypatch.setattr(carrot, 'prepare_selection', lambda *args: flags.add('ForceOffroad'))
+  with pytest.raises(sunny_models.Lat2vParkedError) as stopped:
+    sunny_models.choose_model(True, 'lat2v', lambda: True, params=params)
+  assert stopped.value.reason == 'forced_offroad' and sunny_models.key_for(True) is None
+  flags.remove('ForceOffroad')
   monkeypatch.setattr(carrot, 'prepare_selection', lambda *args: None)
-  sunny_models.choose_model(True, 'lat2v', lambda: True)
+  sunny_models.choose_model(True, 'lat2v', lambda: True, params=params)
   assert sunny_models.key_for(True) == 'lat2v'
   assert sunny_models.key_for(True, True) is None
 

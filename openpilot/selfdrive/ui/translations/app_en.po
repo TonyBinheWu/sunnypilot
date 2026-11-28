@@ -1819,3 +1819,19 @@ msgstr "Turn off openpilot and switch to dashcam mode?"
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Turn off openpilot"
 msgstr "Turn off openpilot"
+
+#: openpilot/common/sunny_models.py
+msgid "Forced offroad is active. Turn the ignition off."
+msgstr "Forced offroad is active. Turn the ignition off."
+
+#: openpilot/common/sunny_models.py
+msgid "Disengage assistance and turn the ignition off."
+msgstr "Disengage assistance and turn the ignition off."
+
+#: openpilot/common/sunny_models.py
+msgid "Wait for ignition-off offroad mode."
+msgstr "Wait for ignition-off offroad mode."
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Select again"
+msgstr "Select again"

@@ -8,8 +8,9 @@ from openpilot.system.ui.lib.multilang import tr
 
 
 class ModelChoices:
-  def __init__(self, offroad):
+  def __init__(self, offroad, params):
     self.offroad = offroad
+    self.params = params
     self.items = sunny.model_items()
     self.query = ""
     self.visible_models = set()
@@ -17,6 +18,8 @@ class ModelChoices:
     self._filter()
     self.busy = False
     self.error = self.error_detail = None
+    self.park_error = False
+    self.lat2v_block = None
     self.next_role = 0.
     self.role_value = ""
     self.next_refresh = 0.
@@ -30,6 +33,9 @@ class ModelChoices:
       self.active = tuple(sunny.key_for(bool(b), True) or default for b, default in enumerate((internal.active(), external.effective_id())))
       self.pending = tuple(sunny.key_for(bool(b)) or default for b, default in enumerate((internal.pending(), external.preferences()['selected'])))
       self.failed = bool(internal.state().get('failed'))
+      self.lat2v_block = sunny.lat2v_park_block(self.params)
+    if key == sunny.LAT2V and self.park_error and self.error == (big, key):
+      return tr(sunny.LAT2V_PARK_MESSAGES[self.lat2v_block]) if self.lat2v_block else tr("Select again")
     if self.error == (big, key):
       return self.error_detail or tr("Selection failed")
     if self.busy == (big, key):
@@ -42,6 +48,8 @@ class ModelChoices:
       return tr("This boot")
     if self.pending[big] == key:
       return tr("Next boot")
+    if key == sunny.LAT2V and self.lat2v_block:
+      return tr(sunny.LAT2V_PARK_MESSAGES[self.lat2v_block])
     return tr("Select")
 
   def next_group(self):
@@ -65,14 +73,19 @@ class ModelChoices:
   def includes(self, big, key):
     return (big, key) in self.visible_models
 
+  def can_choose(self, key):
+    return self.offroad() and not self.busy and (key != sunny.LAT2V or not self.lat2v_block)
+
   def choose(self, big, key):
-    if self.busy or not self.offroad():
+    if not self.can_choose(key):
       return
     self.busy, self.error, self.error_detail = (big, key), None, None
+    self.park_error = False
     def run():
       try:
-        sunny.choose_model(big, key, self.offroad)
+        sunny.choose_model(big, key, self.offroad, params=self.params)
       except Exception as exc:
+        self.park_error = isinstance(exc, sunny.Lat2vParkedError)
         self.error_detail = str(exc) if key == sunny.LAT2V and isinstance(exc, ValueError) else None
         self.error = (big, key)
       finally:

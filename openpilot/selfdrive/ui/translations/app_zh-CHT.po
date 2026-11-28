@@ -2839,3 +2839,19 @@ msgstr "要關閉 openpilot，切換為行車記錄器模式嗎？"
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Turn off openpilot"
 msgstr "關閉 openpilot"
+
+#: openpilot/common/sunny_models.py
+msgid "Forced offroad is active. Turn the ignition off."
+msgstr "強制非行車模式已啟用，請將車輛熄火。"
+
+#: openpilot/common/sunny_models.py
+msgid "Disengage assistance and turn the ignition off."
+msgstr "請先解除駕駛輔助，再將車輛熄火。"
+
+#: openpilot/common/sunny_models.py
+msgid "Wait for ignition-off offroad mode."
+msgstr "請熄火並等待車機進入非行車模式。"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Select again"
+msgstr "重新選取"

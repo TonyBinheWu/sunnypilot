@@ -2153,3 +2153,19 @@ msgstr "오픈파일럿을 끄고 블랙박스 모드로 전환할까요?"
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Turn off openpilot"
 msgstr "오픈파일럿 끄기"
+
+#: openpilot/common/sunny_models.py
+msgid "Forced offroad is active. Turn the ignition off."
+msgstr "강제 오프로드 모드입니다. 차량 시동을 꺼 주세요."
+
+#: openpilot/common/sunny_models.py
+msgid "Disengage assistance and turn the ignition off."
+msgstr "주행 보조를 해제하고 차량 시동을 꺼 주세요."
+
+#: openpilot/common/sunny_models.py
+msgid "Wait for ignition-off offroad mode."
+msgstr "시동을 끄고 오프로드 화면이 나타날 때까지 기다려 주세요."
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Select again"
+msgstr "다시 선택"

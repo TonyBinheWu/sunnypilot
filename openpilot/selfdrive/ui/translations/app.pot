@@ -1538,3 +1538,19 @@ msgstr ""
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
 msgid "Turn off openpilot"
 msgstr ""
+
+#: openpilot/common/sunny_models.py
+msgid "Forced offroad is active. Turn the ignition off."
+msgstr ""
+
+#: openpilot/common/sunny_models.py
+msgid "Disengage assistance and turn the ignition off."
+msgstr ""
+
+#: openpilot/common/sunny_models.py
+msgid "Wait for ignition-off offroad mode."
+msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Select again"
+msgstr ""

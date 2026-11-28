@@ -72,7 +72,7 @@ def test_display_page_reopens_saved_values_and_checks_vehicle_state_at_release(m
 
 
 def test_model_search_filters_real_catalog_and_both_sizes():
-  choices = ModelChoices(lambda: False)
+  choices = ModelChoices(lambda: False, None)
   original = set(choices.visible_models)
   assert {big for big, _ in original} == {False, True}
   for big, key, name in (choices.items[0], choices.items[-1]):
@@ -88,6 +88,23 @@ def test_model_search_filters_real_catalog_and_both_sizes():
     groups.append(choices.visible_models.copy())
   assert all(groups) and set.union(*groups) == original
   assert all(not big for big, _ in groups[1]) and all(big for big, _ in groups[2])
+
+
+def test_lat2v_selector_recovers_after_forced_offroad(monkeypatch, tmp_path):
+  from openpilot.common import sunny_models as sunny
+  from openpilot.selfdrive.ui.lib import model_choices
+
+  monkeypatch.setenv("CARROT_BIG_MODEL_DIR", str(tmp_path))
+  monkeypatch.setattr(model_choices, "tr", lambda text: text)
+  flags = {"IsOffroad", "ForceOffroadActive"}
+  choices = ModelChoices(lambda: True, SimpleNamespace(get_bool=flags.__contains__))
+  assert choices.status(True, sunny.LAT2V) == sunny.LAT2V_PARK_MESSAGES["forced_offroad"]
+  assert not choices.can_choose(sunny.LAT2V) and choices.can_choose("n16")
+  choices.error, choices.park_error = (True, sunny.LAT2V), True
+  flags.remove("ForceOffroadActive")
+  choices.next_refresh = 0.
+  assert choices.status(True, sunny.LAT2V) == "Select again" and choices.can_choose(sunny.LAT2V)
+  assert sunny.key_for(True) is None
 
 
 @pytest.mark.parametrize("device,w,h", [("c3x", 1600, 1000), ("c4", 476, 240)])

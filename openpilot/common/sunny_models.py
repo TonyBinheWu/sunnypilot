@@ -18,6 +18,11 @@ from openpilot.common.model_download import copy_download, notify
 # paired with sunnypilot modeld_v2 at abada631, which reads both catalog generations.
 LAT2V = 'lat2v'
 LAT2V_NAME = 'lat2v (Nvidia)'
+LAT2V_PARK_MESSAGES = {
+  'forced_offroad': 'Forced offroad is active. Turn the ignition off.',
+  'engaged': 'Disengage assistance and turn the ignition off.',
+  'offroad': 'Wait for ignition-off offroad mode.',
+}
 
 RUNTIME_REF = '92b742f711c7d216fd3ed7a46a30a959e3c43bd4'
 RUNTIME_SHA = 'b51c8befd2a9ee06e9e500531ef99da379c7f4b368f406d7d44e2e05e6efd7e6'
@@ -183,20 +188,53 @@ def model_items():
           + [(row['big'], key, row['name']) for key, row in reversed(catalog().items())])
 
 
-def choose_model(big, key, offroad, progress=None):
+class Lat2vParkedError(ValueError):
+  def __init__(self, reason):
+    self.reason = reason
+    super().__init__(LAT2V_PARK_MESSAGES[reason])
+
+
+def lat2v_park_block(params):
+  from openpilot.selfdrive.alpamayo.carrot import strictly_parked
+  try:
+    if params is not None:
+      if strictly_parked(params):
+        return None
+      if params.get_bool('ForceOffroad') or params.get_bool('ForceOffroadActive'):
+        return 'forced_offroad'
+      if params.get_bool('IsEngaged'):
+        return 'engaged'
+  except OSError:
+    pass
+  return 'offroad'
+
+
+def choose_model(big, key, offroad, progress=None, *, params=None):
   from openpilot.common import internal_models as internal
   with choice_lock():
-    if not offroad():
-      raise ValueError('Park before selecting a model')
     if key == LAT2V:
       if not big:
         raise ValueError('lat2v requires the external GPU')
+      if params is None:
+        from openpilot.common.params import Params
+        params = Params()
       from openpilot.selfdrive.alpamayo.carrot import prepare_selection
-      prepare_selection(offroad, progress)
-      if not offroad():
-        raise ValueError('Park before selecting a model')
+
+      def parked():
+        if reason := lat2v_park_block(params):
+          raise Lat2vParkedError(reason)
+        return offroad()
+
+      if not parked():
+        raise ValueError('Model selection interrupted')
+      prepare_selection(parked, progress)
+      if not parked():
+        raise ValueError('Model selection interrupted')
       save('big', key)
-    elif key in catalog():
+      return
+    if not offroad():
+      raise ValueError('Park before selecting a model')
+    if key in catalog():
       select(big, key, offroad, progress)
     else:
       if big:

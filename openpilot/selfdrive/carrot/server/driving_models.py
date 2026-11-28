@@ -33,6 +33,7 @@ def selection_status(params):
       'primary': 'internal' if sunny_models.internal_primary(boot) else 'auto',
     }
   return {'boot': selection(True), 'next': selection(False), 'offroad': offroad(params),
+          'lat2v_park_block': sunny_models.lat2v_park_block(params),
           'scene': raw_scene if raw_scene in (-1, 0, 1, 2) else None,
           'failed': [key for big in (False, True) if (key := sunny_models.failed_key(big))],
           'internal_build_failed': bool(internal_models.state().get('failed'))}
@@ -50,11 +51,13 @@ class ModelPreparation:
   async def prepare(self, params, field, key):
     try:
       await asyncio.to_thread(sunny_models.choose_model, field == 'large', key,
-                              lambda: not self.closing.is_set() and offroad(params), self.progress)
+                              lambda: not self.closing.is_set() and offroad(params), self.progress, params=params)
       self.job = {'state': 'saved', 'model': key}
     except Exception as exc:
       self.job = {'state': 'failed', 'model': key}
-      if key == sunny_models.LAT2V and isinstance(exc, ValueError):
+      if isinstance(exc, sunny_models.Lat2vParkedError):
+        self.job['park_block'] = exc.reason
+      elif key == sunny_models.LAT2V and isinstance(exc, ValueError):
         self.job['detail'] = str(exc)
 
 
@@ -78,6 +81,8 @@ async def change(request):
     if not isinstance(body, dict) or set(body) != {'field', 'value'}:
       raise ValueError('Invalid selection')
     field, value = body['field'], body['value']
+    if field == 'large' and value == sunny_models.LAT2V and (reason := sunny_models.lat2v_park_block(params)):
+      return web.json_response({'ok': False, 'error': sunny_models.LAT2V_PARK_MESSAGES[reason], 'park_block': reason}, status=409)
     if not offroad(params):
       raise ValueError('Park and turn the ignition off before changing this setting')
     if job.task is not None and not job.task.done():

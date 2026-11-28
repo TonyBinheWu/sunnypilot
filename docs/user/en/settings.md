@@ -601,3 +601,5 @@ Open Device → FormosaLink (C3X) or Settings → FormosaLink (C4) for independe
 ## Low-speed radar and lat2v
 
 LowSpeedRadarGuard adds the low-speed longitudinal and turn-request limits described in the [radar guide](radar.md). In the large-model selector, **lat2v (Nvidia)** prepares the two-camera model for a comma four with an 8 GiB gfx1200 Chestnut. Parked hardware replay must pass before the next-boot choice is saved. See the [port and qualification procedure](../../../openpilot/selfdrive/alpamayo/README.md).
+
+Turn the vehicle ignition off and keep the C4 and Chestnut powered for verification. The selector shows when forced offroad mode or active driving assistance blocks preparation. After an interrupted attempt, select lat2v again on the C4 or use **Prepare lat2v again** in Carrot Web. Once it shows **Saved for next boot**, choose **Prefer external large model** if you want lat2v to run, then restart the parked C4.

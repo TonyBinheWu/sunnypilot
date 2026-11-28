@@ -15,11 +15,11 @@ class UsbGpuLayout(Widget):
     super().__init__()
     self._checking = False
     self._check_result = "not checked"
-    self.choices = ModelChoices(ui_state.is_offroad)
+    self.choices = ModelChoices(ui_state.is_offroad, ui_state.params)
     model_items = [button_item(name, lambda b=big, k=key: self.choices.status(b, k),
                                lambda b=big: tr("External") if b else tr("Internal"),
                                callback=lambda b=big, k=key: self.choices.choose(b, k),
-                               enabled=lambda: ui_state.is_offroad() and not self.choices.busy)
+                               enabled=lambda k=key: self.choices.can_choose(k))
                    for big, key, name in self.choices.items]
     for item, (big, key, _) in zip(model_items, self.choices.items, strict=True):
       item.set_visible(lambda b=big, k=key: self.choices.includes(b,k))

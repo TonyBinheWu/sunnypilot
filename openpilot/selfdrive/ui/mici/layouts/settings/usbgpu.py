@@ -90,7 +90,7 @@ class UsbGpuLayoutMici(NavScroller):
     compile_button.set_visible(lambda: not ui_state.usbgpu_compiled)
     compile_button.set_enabled(lambda: not ui_state.started)
     compile_button.set_click_callback(self._force_compile)
-    self.choices = ModelChoices(ui_state.is_offroad)
+    self.choices = ModelChoices(ui_state.is_offroad, ui_state.params)
     self.group_button = BigButton(tr("Model list"), self.choices.group_text(), scroll=True)
     self.group_button.set_click_callback(self.choices.next_group)
     self.search = BigButton(tr("Search models"), "", scroll=True)
@@ -105,7 +105,7 @@ class UsbGpuLayoutMici(NavScroller):
     for big, key, name in self.choices.items:
       button = BigButton(name, "", scroll=True)
       button.set_visible(lambda b=big, k=key: self.choices.includes(b,k))
-      button.set_enabled(lambda: ui_state.is_offroad() and not self.choices.busy)
+      button.set_enabled(lambda k=key: self.choices.can_choose(k))
       button.set_click_callback(lambda b=big, k=key: self.choices.choose(b, k))
       self.model_buttons.append((button, big, key))
     self._scroller.add_widgets([self.group_button, self.search, empty, self.role, *(b for b, _, _ in self.model_buttons),
