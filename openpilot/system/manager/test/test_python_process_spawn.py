@@ -60,7 +60,9 @@ def test_deferred_and_restart_sensitive_services_select_spawn():
   calls = [n for n in ast.walk(ast.parse(path.read_text(encoding='utf-8')))
            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == 'PythonProcess']
   selected = [n.args[0].value for n in calls if any(k.arg == 'spawn' and ast.literal_eval(k.value) for k in n.keywords)]
-  assert selected == ['alpamayod', 'alpamayosubtitled', 'signalcolord', 'qcomgpsd', 'sceneobjectd', 'carrot_man', 'xiaoge_data']
+  assert selected == ['alpamayod', 'lat2vinstallerd', 'alpamayosubtitled', 'signalcolord', 'qcomgpsd', 'sceneobjectd', 'carrot_man', 'xiaoge_data']
+  installer = next(n for n in calls if n.args[0].value == 'lat2vinstallerd')
+  assert installer.args[1].value == 'openpilot.selfdrive.modeld.lat2v_installer' and installer.args[2].id == 'lat2v_install_requested'
 
 
 @pytest.mark.parametrize('legacy_fork', [False, True])
