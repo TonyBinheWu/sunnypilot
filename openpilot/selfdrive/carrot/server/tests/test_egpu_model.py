@@ -338,6 +338,7 @@ def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
   params = SimpleNamespace(get_bool=lambda k: bool(flags.get(k)), get=lambda k, **_: flags.get(k), put=flags.__setitem__)
   monkeypatch.setenv('CARROT_BIG_MODEL_DIR', str(tmp_path))
   monkeypatch.setattr(driving_models, 'device_params', lambda: params)
+  monkeypatch.setattr(sunny, 'lat2v_supported', lambda: True)
   monkeypatch.setattr(feature, 'Params', lambda: params)
   monkeypatch.setattr(feature, 'HAS_PARAMS', True)
   monkeypatch.setattr(feature, 'maintain_library_once', lambda: None)
@@ -383,7 +384,11 @@ def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
         flags[flag] = True
         assert (await state())['lat2v_park_block'] == block
         result = await change('large', sunny.LAT2V)
-        assert result.status == 409 and (await result.json())['park_block'] == block
+        if block == 'forced_offroad':
+          assert result.status == 202 and (await result.json())['lat2v_install'] == {'state': 'waiting_offroad'}
+          assert (await state())['next']['large'] == 'n16'
+        else:
+          assert result.status == 409 and (await result.json())['park_block'] == block
         assert app[driving_models.PREPARATION].task is None
         flags[flag] = False
       assert (await state())['lat2v_park_block'] is None
@@ -409,18 +414,20 @@ def test_web_model_selector_without_egpu(feature, monkeypatch, tmp_path):
       assert (await change('large', 'flip-flop')).status == 202
       await app[driving_models.PREPARATION].task
       assert (await state())['next'] == {'primary': 'internal', 'small': groups['small'][0], 'large': 'flip-flop'}
-      from openpilot.selfdrive.alpamayo import carrot
-      monkeypatch.setattr(carrot, 'prepare_selection', lambda parked, progress: flags.update(ForceOffroadActive=True))
-      assert (await change('large', sunny.LAT2V)).status == 202
-      await app[driving_models.PREPARATION].task
-      failed = await state()
-      assert failed['job'] == {'state': 'failed', 'model': 'lat2v', 'park_block': 'forced_offroad'}
-      assert failed['next']['large'] == 'flip-flop'
-      flags['ForceOffroadActive'] = False
-      monkeypatch.setattr(carrot, 'prepare_selection', lambda parked, progress: None)
-      assert (await change('large', sunny.LAT2V)).status == 202
-      await app[driving_models.PREPARATION].task
+      assert not (await state())['lat2v_install']
+      result = await change('large', sunny.LAT2V)
+      assert result.status == 202 and (await result.json())['lat2v_install'] == {'state': 'queued'}
+      queued = await state()
+      assert queued['lat2v_install'] == {'state': 'queued'} and queued['next']['large'] == 'flip-flop'
+      request_id = sunny.lat2v_request()['id']
+      assert (await change('large', sunny.LAT2V)).status == 202 and sunny.lat2v_request()['id'] == request_id
+      sunny.update_lat2v_request(request_id, 'waiting_egpu')
+      assert (await state())['lat2v_install'] == {'state': 'waiting_egpu'}
+      sunny.update_lat2v_request(request_id, 'saved', verified=lambda: True)
       saved = await state()
-      assert saved['job']['state'] == 'saved' and saved['next']['large'] == 'lat2v'
+      assert not saved['lat2v_install'] and saved['next']['large'] == 'lat2v'
       assert saved['boot']['large'] == 'n16' and saved['next']['primary'] == 'internal'
+      monkeypatch.setattr(sunny, 'lat2v_supported', lambda: False)
+      assert (await change('large', sunny.LAT2V)).status == 409
+      assert not (await state())['lat2v_install']
   asyncio.run(run())

@@ -7,7 +7,9 @@ from pathlib import Path
 import shutil
 import tempfile
 import threading
+import time
 import urllib.request
+import uuid
 import zipfile
 from functools import lru_cache
 
@@ -131,6 +133,82 @@ def save(field, value):
     library.atomic_json(directory() / 'selection.json', {**prefs(), field: value})
 
 
+def lat2v_supported():
+  try:
+    from openpilot.system.hardware import HARDWARE
+    return HARDWARE.get_device_type() == 'mici'
+  except (ImportError, OSError):
+    return False
+
+
+def lat2v_request(selection=None):
+  request = (prefs() if selection is None else selection).get('lat2v_install')
+  if isinstance(request, dict) and isinstance(request.get('id'), str) and request.get('state') in (
+      'queued', 'preparing', 'waiting_egpu', 'retry_download', 'failed'):
+    return request
+  return {}
+
+
+def lat2v_install_status(park_block):
+  request = lat2v_request()
+  if not request:
+    return {}
+  state = request['state']
+  if park_block and state in ('queued', 'preparing', 'retry_download'):
+    return {'state': 'waiting_offroad'}
+  if state != 'preparing':
+    return {k: request[k] for k in ('state', 'detail') if k in request}
+  from openpilot.selfdrive.alpamayo.install import STATUS
+  progress = library.read_json(STATUS)
+  if not progress or progress.get('time', 0) < request.get('since', 0):
+    return {'state': state}
+  return {'state': 'verifying_gpu' if progress.get('step') == 'verify' else state,
+          'progress': {'phase': progress.get('phase', 'installing'), 'file': progress.get('text', ''),
+                       'received': progress.get('received', 0), 'total': progress.get('total')}}
+
+
+def queue_lat2v():
+  with library.library_lock():
+    selection = prefs()
+    request = lat2v_request(selection)
+    if not request or request['state'] == 'failed':
+      request = {'id': uuid.uuid4().hex, 'state': 'queued'}
+      library.atomic_json(directory() / 'selection.json', {**selection, 'lat2v_install': request})
+    return request
+
+
+def cancel_lat2v_request():
+  with library.library_lock():
+    selection = prefs()
+    if selection.pop('lat2v_install', None) is not None:
+      library.atomic_json(directory() / 'selection.json', selection)
+
+
+def update_lat2v_request(request_id, state, detail='', *, verified=None):
+  """Publish progress or commit the qualified next-boot model only for the current choice."""
+  with library.library_lock():
+    selection = prefs()
+    current = lat2v_request(selection)
+    if not current or current['id'] != request_id:
+      return False
+    if state == 'saved':
+      if verified is None or not verified():
+        return False
+      selection.pop('lat2v_install')
+      selection['big'] = LAT2V
+    else:
+      request = {'id': request_id, 'state': state}
+      if detail:
+        request['detail'] = detail
+      if state == 'preparing':
+        request['since'] = time.time()
+      elif request == current:
+        return True
+      selection['lat2v_install'] = request
+    library.atomic_json(directory() / 'selection.json', selection)
+    return True
+
+
 def warp_url(sha, size):
   body = json.dumps({'operation': 'download', 'transfers': ['basic'], 'objects': [{'oid': sha, 'size': size}]}).encode()
   request = urllib.request.Request('https://huggingface.co/sunnypilot/sunnypilot-lfs.git/info/lfs/objects/batch', data=body,
@@ -209,31 +287,31 @@ def lat2v_park_block(params):
   return 'offroad'
 
 
+def lat2v_install_requested(started, params, _CP):
+  if started:
+    return False
+  request = lat2v_request()
+  return bool(request and request['state'] != 'failed' and lat2v_supported() and lat2v_park_block(params) is None)
+
+
 def choose_model(big, key, offroad, progress=None, *, params=None):
   from openpilot.common import internal_models as internal
   with choice_lock():
     if key == LAT2V:
       if not big:
         raise ValueError('lat2v requires the external GPU')
+      if not lat2v_supported():
+        raise ValueError('lat2v requires a comma four')
       if params is None:
         from openpilot.common.params import Params
         params = Params()
-      from openpilot.selfdrive.alpamayo.carrot import prepare_selection
-
-      def parked():
-        if reason := lat2v_park_block(params):
-          raise Lat2vParkedError(reason)
-        return offroad()
-
-      if not parked():
-        raise ValueError('Model selection interrupted')
-      prepare_selection(parked, progress)
-      if not parked():
-        raise ValueError('Model selection interrupted')
-      save('big', key)
-      return
+      if not offroad() or not params.get_bool('IsOffroad') or params.get_bool('IsOnroad') or params.get_bool('IsEngaged'):
+        raise Lat2vParkedError(lat2v_park_block(params) or 'offroad')
+      return queue_lat2v()
     if not offroad():
       raise ValueError('Park before selecting a model')
+    if big and (catalog().get(key, {}).get('big') is True or key in library.available()):
+      cancel_lat2v_request()
     if key in catalog():
       select(big, key, offroad, progress)
     else:
@@ -254,7 +332,9 @@ def set_primary(role, offroad):
 def freeze_boot():
   with library.library_lock():
     if prefs(True).get('boot') != library.boot_id():
-      library.atomic_json(directory() / 'boot.json', {**prefs(), 'boot': library.boot_id()})
+      selection = prefs()
+      selection.pop('lat2v_install', None)
+      library.atomic_json(directory() / 'boot.json', {**selection, 'boot': library.boot_id()})
 
 
 def internal_primary(boot=False):

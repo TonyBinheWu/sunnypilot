@@ -7,6 +7,17 @@ from openpilot.common import sunny_models as sunny
 from openpilot.system.ui.lib.multilang import tr
 
 
+LAT2V_INSTALL_TEXT = {
+  'queued': 'Queued for download',
+  'waiting_offroad': 'Queued · waiting for ignition off',
+  'preparing': 'Preparing model on C4',
+  'retry_download': 'Download interrupted · will retry',
+  'waiting_egpu': 'Downloaded · waiting for powered 5 Gbps Chestnut',
+  'verifying_gpu': 'Verifying on eGPU',
+  'failed': 'Verification failed · select to retry',
+}
+
+
 class ModelChoices:
   def __init__(self, offroad, params):
     self.offroad = offroad
@@ -20,6 +31,8 @@ class ModelChoices:
     self.error = self.error_detail = None
     self.park_error = False
     self.lat2v_block = None
+    self.lat2v_install = {}
+    self.lat2v_supported = sunny.lat2v_supported()
     self.next_role = 0.
     self.role_value = ""
     self.next_refresh = 0.
@@ -34,6 +47,18 @@ class ModelChoices:
       self.pending = tuple(sunny.key_for(bool(b)) or default for b, default in enumerate((internal.pending(), external.preferences()['selected'])))
       self.failed = bool(internal.state().get('failed'))
       self.lat2v_block = sunny.lat2v_park_block(self.params)
+      self.lat2v_install = sunny.lat2v_install_status(self.lat2v_block)
+    if key == sunny.LAT2V:
+      if not self.lat2v_supported:
+        return tr("Requires a comma four")
+      if state := self.lat2v_install.get('state'):
+        label = tr(LAT2V_INSTALL_TEXT[state])
+        if detail := self.lat2v_install.get('detail'):
+          return f"{label} · {detail}"
+        progress = self.lat2v_install.get('progress', {})
+        if progress.get('phase') == 'downloading' and progress.get('total'):
+          return f"{label} · {100 * progress['received'] // progress['total']}%"
+        return label
     if key == sunny.LAT2V and self.park_error and self.error == (big, key):
       return tr(sunny.LAT2V_PARK_MESSAGES[self.lat2v_block]) if self.lat2v_block else tr("Select again")
     if self.error == (big, key):
@@ -74,7 +99,8 @@ class ModelChoices:
     return (big, key) in self.visible_models
 
   def can_choose(self, key):
-    return self.offroad() and not self.busy and (key != sunny.LAT2V or not self.lat2v_block)
+    return self.offroad() and not self.busy and (key != sunny.LAT2V or
+           (self.lat2v_supported and self.lat2v_block in (None, 'forced_offroad')))
 
   def choose(self, big, key):
     if not self.can_choose(key):

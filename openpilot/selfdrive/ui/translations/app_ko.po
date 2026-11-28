@@ -2169,3 +2169,35 @@ msgstr "시동을 끄고 오프로드 화면이 나타날 때까지 기다려 �
 #: openpilot/selfdrive/ui/lib/model_choices.py
 msgid "Select again"
 msgstr "다시 선택"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Requires a comma four"
+msgstr "comma four가 필요합니다"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Queued for download"
+msgstr "다운로드 대기 중"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Queued · waiting for ignition off"
+msgstr "대기 중 · 시동을 끄면 준비합니다"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Preparing model on C4"
+msgstr "C4에서 모델 준비 중"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Download interrupted · will retry"
+msgstr "다운로드 중단 · 자동으로 다시 시도합니다"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Downloaded · waiting for powered 5 Gbps Chestnut"
+msgstr "다운로드 완료 · 전원이 켜진 5 Gbps Chestnut 연결 대기 중"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Verifying on eGPU"
+msgstr "eGPU에서 모델 검증 중"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Verification failed · select to retry"
+msgstr "검증 실패 · 선택하여 다시 시도"

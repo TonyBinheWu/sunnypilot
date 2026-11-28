@@ -4,6 +4,7 @@ import importlib.util
 
 from openpilot.cereal import car
 from openpilot.common.params import Params
+from openpilot.common.sunny_models import lat2v_install_requested
 from openpilot.system.hardware import PC, TICI
 from openpilot.system.manager.process import PythonProcess, NativeProcess, DaemonProcess
 
@@ -183,6 +184,7 @@ procs = [
   PythonProcess("timed", "openpilot.system.timed", always_run, enabled=not PC),
 
   PythonProcess("alpamayod", "openpilot.selfdrive.alpamayo.shadowd", lat2v_enabled, enabled=TICI, spawn=True),
+  PythonProcess("lat2vinstallerd", "openpilot.selfdrive.modeld.lat2v_installer", lat2v_install_requested, enabled=TICI, spawn=True),
   PythonProcess("alpamayosubtitled", "openpilot.selfdrive.alpamayo.subtitles", lat2v_chinese_subtitles, enabled=TICI, spawn=True),
   PythonProcess("modeld", "openpilot.selfdrive.modeld.modeld", only_onroad),
   PythonProcess("signalcolord", "openpilot.selfdrive.modeld.signal_color_shadow", signal_color_observer, spawn=True),

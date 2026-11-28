@@ -14,6 +14,14 @@ const EN = {
   lat2v_offroad: "Wait for ignition-off offroad mode.",
   lat2v_unsaved: "Preparation stopped before the choice was saved.",
   lat2v_retry: "Prepare lat2v again",
+  lat2v_unsupported: "Requires a comma four",
+  lat2v_queued: "Queued for download",
+  lat2v_waiting_offroad: "Queued · waiting for ignition off",
+  lat2v_preparing: "Preparing model on C4",
+  lat2v_retry_download: "Download interrupted · will retry",
+  lat2v_waiting_egpu: "Downloaded · waiting for powered 5 Gbps Chestnut",
+  lat2v_verifying_gpu: "Verifying on eGPU",
+  lat2v_failed: "Verification failed",
 };
 const t = key => typeof getUIText === "function" ? getUIText("driving_models_" + key, EN[key]) : EN[key];
 function element(tag, value) {
@@ -98,34 +106,47 @@ export async function renderDrivingLibrary(root, library) {
   if (current !== version || writing) return;
   const state = library.selector;
   const job = state.job;
+  const install = state.lat2v_install || {};
+  const transfer = job?.state === "preparing" ? job :
+    install.state === "preparing" ? {model: "lat2v", progress: install.progress} : null;
   const name = id => models.find(model => model.id === id)?.name || id;
-  const signature = JSON.stringify([{...state, job: [job?.state, job?.model, job?.park_block, job?.detail]}, library.selected, t("title")]);
+  const signature = JSON.stringify([{...state, lat2v_install: [install.state, install.detail],
+    job: [job?.state, job?.model, job?.park_block, job?.detail]}, library.selected, t("title")]);
   if (root.dataset.signature === signature) {
-    updateTransfer(root, job, name(job?.model), state.connection_lost);
+    updateTransfer(root, transfer, name(transfer?.model), state.connection_lost);
     return;
   }
   transferViews.delete(root);
   root.dataset.signature = signature;
   root.replaceChildren(element("h3", t("title")), element("p", t("help")));
-  if (job?.state === "preparing") {
-    transferView(root, name(job.model));
-    updateTransfer(root, job, name(job.model), state.connection_lost);
+  if (transfer) {
+    transferView(root, name(transfer.model));
+    updateTransfer(root, transfer, name(transfer.model), state.connection_lost);
   }
   const boot = element("p", t("boot") + " · " + [name(state.boot.small), name(state.boot.large), t(state.boot.primary)].join(" / "));
   boot.className = "model-boot";
   root.append(boot);
   if (!state.offroad) root.append(element("p", t("parked")));
   const lat2vBlock = state.lat2v_park_block;
-  if (lat2vBlock && (state.offroad || lat2vBlock !== "offroad") && !state.connection_lost)
+  const canQueue = state.lat2v_supported !== false && (!lat2vBlock || (state.lat2v_supported && lat2vBlock === "forced_offroad"));
+  if (!install.state && lat2vBlock && (state.offroad || lat2vBlock !== "offroad") && !state.connection_lost)
     root.append(element("p", name("lat2v") + " · " + t("lat2v_" + lat2vBlock)));
+  if (install.state) {
+    const note = element("p", [name("lat2v"), t("lat2v_" + install.state), install.detail].filter(Boolean).join(" · "));
+    note.setAttribute("role", "status");
+    root.append(note);
+  } else if (state.next.large === "lat2v" && state.boot.large !== "lat2v" && job?.model !== "lat2v") {
+    root.append(element("p", name("lat2v") + " · " + t("saved")));
+  }
 
   async function submit(field, value) {
-    if (writing || !state.offroad || (value === "lat2v" && lat2vBlock)) return;
+    if (writing || !state.offroad || (value === "lat2v" && !canQueue)) return;
     writing = true;
     for (const input of root.querySelectorAll("select")) input.disabled = true;
     try {
       const reply = await postJson("/api/driving-models/selection", {field, value});
-      if (reply.job) latest = {...latest, selector: {...latest.selector, job: reply.job}};
+      if (reply.lat2v_install) latest = {...latest, selector: {...latest.selector, lat2v_install: reply.lat2v_install, job: {}}};
+      else if (reply.job) latest = {...latest, selector: {...latest.selector, job: reply.job}};
     } catch (error) {
       const reason = error.payload?.park_block;
       if (typeof showAppToast === "function") showAppToast(reason ? t("lat2v_" + reason) : error.message || String(error), {tone: "error"});
@@ -151,7 +172,10 @@ export async function renderDrivingLibrary(root, library) {
       for (const [id, title] of options) {
         const option = element("option", title);
         option.value = id;
-        if (id === "lat2v" && lat2vBlock) option.disabled = true;
+        if (id === "lat2v" && !canQueue) {
+          option.disabled = true;
+          if (state.lat2v_supported === false) option.textContent += " · " + t("lat2v_unsupported");
+        }
         list.append(option);
       }
     }
@@ -166,7 +190,7 @@ export async function renderDrivingLibrary(root, library) {
         const original = library.models.find(item => item.id === m.id);
         return [m.id, original?.noo ? m.name + " · NOO" : m.name];
       })]);
-    addSelect(size, state.next[size], groups);
+    addSelect(size, size === "large" && install.state ? "lat2v" : state.next[size], groups);
   }
   addSelect("primary", state.next.primary, [["", [["internal", t("internal")], ["auto", t("auto")]]]]);
   addSelect("scene", state.scene, [["", ["legacy", "dynamic", "camera", "perception"].map((label, i) => [i - 1, t(label)])]]);
@@ -176,11 +200,12 @@ export async function renderDrivingLibrary(root, library) {
     note.setAttribute("role", "status");
     root.append(note);
   }
-  if (job?.state !== "preparing" && ((job?.model === "lat2v" && job.state === "failed") || state.next.large === "lat2v")) {
+  if (job?.state !== "preparing" && (install.state === "failed" ||
+      (!install.state && ((job?.model === "lat2v" && job.state === "failed") || state.next.large === "lat2v")))) {
     const retry = element("button", t("lat2v_retry"));
     retry.type = "button";
     retry.className = "btn btn-secondary";
-    retry.disabled = !state.offroad || Boolean(lat2vBlock);
+    retry.disabled = !state.offroad || !canQueue;
     retry.addEventListener("click", () => submit("large", "lat2v"));
     root.append(retry);
   }

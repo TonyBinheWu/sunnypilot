@@ -201,9 +201,10 @@ async def api_library(request: web.Request) -> web.Response:
     action, key = body['action'], body['model']
     if action != 'select' or not isinstance(key, str) or key not in catalog.available():
       raise ValueError('unknown model action')
-    from openpilot.common.sunny_models import choice_lock
+    from openpilot.common.sunny_models import cancel_lat2v_request, choice_lock
     def select_legacy_preset():
       with choice_lock():
+        cancel_lat2v_request()
         catalog.select(key)
     await asyncio.to_thread(select_legacy_preset)
     return web.json_response({'ok': True, 'library': await asyncio.to_thread(library.status)})

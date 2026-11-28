@@ -75,6 +75,37 @@ test('shared tools render both model catalogs without an eGPU and submit the sel
   assert.equal(root.querySelectorAll('select').find(e => e.dataset.field === 'large').value, 'n16');
   await root.querySelector('button').events.click();
   assert.deepEqual(calls.at(-1), ['/api/driving-models/selection', {field: 'large', value: 'lat2v'}]);
+  async function showInstall(job, extra = {}) {
+    await renderLibrary({...data, selector: {...selector, lat2v_supported: true, lat2v_install: job, ...extra}});
+  }
+  const paragraphs = () => root.querySelectorAll('p').map(e => e.textContent).join(' ');
+  await showInstall({state: 'waiting_offroad'}, {lat2v_park_block: 'forced_offroad'});
+  assert.ok(!root.querySelectorAll('option').find(e => e.value === 'lat2v').disabled);
+  assert.match(paragraphs(), /waiting for ignition off/);
+  const pendingTransfer = received => ({state: 'preparing', progress: {phase: 'downloading', file: 'lat2v weights', received, total: 4096}});
+  await showInstall(pendingTransfer(1024));
+  const gpuTrack = root.querySelectorAll('div').find(e => e.attributes.role === 'progressbar');
+  await showInstall(pendingTransfer(2048));
+  assert.equal(gpuTrack.attributes['aria-valuenow'], '50');
+  await showInstall({state: 'verifying_gpu', progress: {phase: 'installing'}});
+  assert.match(paragraphs(), /Verifying on eGPU/);
+  assert.ok(!root.querySelectorAll('div').some(e => e.attributes.role === 'progressbar'));
+  await showInstall({state: 'waiting_egpu'});
+  assert.match(paragraphs(), /Downloaded · waiting for powered 5 Gbps Chestnut/);
+  assert.match(paragraphs(), /Selected for this boot.*N16/);
+  const pendingLarge = root.querySelectorAll('select').find(e => e.dataset.field === 'large');
+  assert.equal(pendingLarge.value, 'lat2v');
+  assert.ok(!pendingLarge.disabled && !root.querySelector('button'));
+  pendingLarge.value = 'n16';
+  await pendingLarge.events.change();
+  assert.deepEqual(calls.at(-1)[1], {field: 'large', value: 'n16'});
+  await showInstall({state: 'failed', detail: 'No suitable recordings'});
+  assert.match(paragraphs(), /Verification failed · No suitable recordings/);
+  assert.ok(!root.querySelector('button').disabled);
+  await showInstall({}, {next: {...selector.next, large: 'lat2v'}});
+  assert.match(paragraphs(), /Saved for next boot/);
+  await showInstall({}, {lat2v_supported: false});
+  assert.ok(root.querySelectorAll('option').find(e => e.value === 'lat2v').disabled);
   assert.equal(loads, 1);
 });
 test('model choice distinguishes current/pending/NOO and preserves in-flight choice across polls', t => {

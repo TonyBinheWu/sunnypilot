@@ -96,14 +96,17 @@ def test_lat2v_selector_recovers_after_forced_offroad(monkeypatch, tmp_path):
 
   monkeypatch.setenv("CARROT_BIG_MODEL_DIR", str(tmp_path))
   monkeypatch.setattr(model_choices, "tr", lambda text: text)
+  monkeypatch.setattr(sunny, "lat2v_supported", lambda: True)
   flags = {"IsOffroad", "ForceOffroadActive"}
   choices = ModelChoices(lambda: True, SimpleNamespace(get_bool=flags.__contains__))
   assert choices.status(True, sunny.LAT2V) == sunny.LAT2V_PARK_MESSAGES["forced_offroad"]
-  assert not choices.can_choose(sunny.LAT2V) and choices.can_choose("n16")
-  choices.error, choices.park_error = (True, sunny.LAT2V), True
+  assert choices.can_choose(sunny.LAT2V) and choices.can_choose("n16")
+  sunny.choose_model(True, sunny.LAT2V, lambda: True, params=choices.params)
+  choices.next_refresh = 0.
+  assert choices.status(True, sunny.LAT2V) == "Queued · waiting for ignition off"
   flags.remove("ForceOffroadActive")
   choices.next_refresh = 0.
-  assert choices.status(True, sunny.LAT2V) == "Select again" and choices.can_choose(sunny.LAT2V)
+  assert choices.status(True, sunny.LAT2V) == "Queued for download" and choices.can_choose(sunny.LAT2V)
   assert sunny.key_for(True) is None
 
 

@@ -1554,3 +1554,35 @@ msgstr ""
 #: openpilot/selfdrive/ui/lib/model_choices.py
 msgid "Select again"
 msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Requires a comma four"
+msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Queued for download"
+msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Queued · waiting for ignition off"
+msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Preparing model on C4"
+msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Download interrupted · will retry"
+msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Downloaded · waiting for powered 5 Gbps Chestnut"
+msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Verifying on eGPU"
+msgstr ""
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Verification failed · select to retry"
+msgstr ""

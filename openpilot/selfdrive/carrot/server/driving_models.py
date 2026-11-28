@@ -32,8 +32,10 @@ def selection_status(params):
       'large': sunny_models.key_for(True, boot) or (big_model_catalog.effective_id() if boot else big_model_catalog.preferences()['selected']),
       'primary': 'internal' if sunny_models.internal_primary(boot) else 'auto',
     }
+  park_block = sunny_models.lat2v_park_block(params)
   return {'boot': selection(True), 'next': selection(False), 'offroad': offroad(params),
-          'lat2v_park_block': sunny_models.lat2v_park_block(params),
+          'lat2v_park_block': park_block, 'lat2v_supported': sunny_models.lat2v_supported(),
+          'lat2v_install': sunny_models.lat2v_install_status(park_block),
           'scene': raw_scene if raw_scene in (-1, 0, 1, 2) else None,
           'failed': [key for big in (False, True) if (key := sunny_models.failed_key(big))],
           'internal_build_failed': bool(internal_models.state().get('failed'))}
@@ -81,12 +83,19 @@ async def change(request):
     if not isinstance(body, dict) or set(body) != {'field', 'value'}:
       raise ValueError('Invalid selection')
     field, value = body['field'], body['value']
-    if field == 'large' and value == sunny_models.LAT2V and (reason := sunny_models.lat2v_park_block(params)):
-      return web.json_response({'ok': False, 'error': sunny_models.LAT2V_PARK_MESSAGES[reason], 'park_block': reason}, status=409)
+    is_lat2v = field == 'large' and value == sunny_models.LAT2V
     if not offroad(params):
+      if is_lat2v:
+        reason = sunny_models.lat2v_park_block(params) or 'offroad'
+        return web.json_response({'ok': False, 'error': sunny_models.LAT2V_PARK_MESSAGES[reason], 'park_block': reason}, status=409)
       raise ValueError('Park and turn the ignition off before changing this setting')
     if job.task is not None and not job.task.done():
       raise ValueError('Another model selection is in progress')
+    if is_lat2v:
+      await asyncio.to_thread(sunny_models.choose_model, True, value, lambda: offroad(params), params=params)
+      job.job = {}
+      return web.json_response({'ok': True, 'lat2v_install': sunny_models.lat2v_install_status(sunny_models.lat2v_park_block(params))},
+                               status=202)
     if field == 'primary':
       await asyncio.to_thread(sunny_models.set_primary, value, lambda: offroad(params))
     elif field == 'scene':

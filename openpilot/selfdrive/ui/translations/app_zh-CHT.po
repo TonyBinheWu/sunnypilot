@@ -2855,3 +2855,35 @@ msgstr "請熄火並等待車機進入非行車模式。"
 #: openpilot/selfdrive/ui/lib/model_choices.py
 msgid "Select again"
 msgstr "重新選取"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Requires a comma four"
+msgstr "需要 comma four"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Queued for download"
+msgstr "已排程下載"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Queued · waiting for ignition off"
+msgstr "已排程，等待車輛熄火"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Preparing model on C4"
+msgstr "正在 C4 上準備模型"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Download interrupted · will retry"
+msgstr "下載中斷，將自動重試"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Downloaded · waiting for powered 5 Gbps Chestnut"
+msgstr "已下載，等待接上已供電的 5 Gbps Chestnut"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Verifying on eGPU"
+msgstr "正在 eGPU 上驗證模型"
+
+#: openpilot/selfdrive/ui/lib/model_choices.py
+msgid "Verification failed · select to retry"
+msgstr "模型驗證失敗，點選可重試"
